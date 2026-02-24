@@ -9,6 +9,9 @@
 - [ ] Validate all Supabase migrations in cloud project
 - [ ] Workspace bootstrap trigger QA
 - [ ] Role-based access policies tested
+- [x] Wire sign-up/sign-in screens to Supabase auth (local app)
+- [x] Protect workspace route group with server-side auth check
+- [ ] Add sign-out + session UX polish in workspace nav
 
 ## Epic 2 — Ingestion Pipeline
 - [ ] GTFS ingestion happy-path + failure handling
