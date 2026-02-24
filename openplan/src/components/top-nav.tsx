@@ -1,14 +1,32 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/explore", label: "Explore" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/sign-in", label: "Sign in" },
-  { href: "/sign-up", label: "Sign up" },
-];
+export async function TopNav() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export function TopNav() {
+  const navLinks = user
+    ? [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/explore", label: "Explore" },
+      ]
+    : [
+        { href: "/", label: "Home" },
+        { href: "/explore", label: "Explore" },
+        { href: "/sign-in", label: "Sign in" },
+        { href: "/sign-up", label: "Sign up" },
+      ];
+
+  async function handleSignOut() {
+    "use server";
+    const actionSupabase = await createClient();
+    await actionSupabase.auth.signOut();
+    redirect("/");
+  }
+
   return (
     <header className="border-b border-border bg-card/70 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -25,6 +43,16 @@ export function TopNav() {
               {link.label}
             </Link>
           ))}
+          {user ? (
+            <form action={handleSignOut}>
+              <button
+                type="submit"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sign out
+              </button>
+            </form>
+          ) : null}
         </nav>
       </div>
     </header>
