@@ -34,10 +34,18 @@ type AnalysisResult = {
     confidence?: string;
     totalTransitStops?: number;
     transitAccessTier?: string;
+    dataQuality?: {
+      censusAvailable?: boolean;
+      crashDataAvailable?: boolean;
+      lodesSource?: string;
+      equitySource?: string;
+    };
     [key: string]: unknown;
   };
   geojson: GeoJSON.FeatureCollection;
   summary: string;
+  aiInterpretation?: string;
+  aiInterpretationSource?: string;
 };
 
 function collectPositions(geometry: CorridorGeometry): Position[] {
@@ -260,7 +268,7 @@ export default function ExplorePage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle>Analysis Workspace</CardTitle>
-            <CardDescription>Upload a corridor, enter a prompt, and run a deterministic demo analysis.</CardDescription>
+            <CardDescription>Upload a corridor, enter a prompt, and run a grant-ready corridor analysis.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Input
@@ -296,9 +304,13 @@ export default function ExplorePage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle>Latest Result</CardTitle>
-              <CardDescription>{analysisResult.summary}</CardDescription>
+              <CardDescription>
+                {analysisResult.aiInterpretationSource === "ai"
+                  ? "AI-enhanced interpretation generated."
+                  : "Interpretation generated using deterministic fallback summary."}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">Accessibility: {analysisResult.metrics.accessibilityScore}</Badge>
                 <Badge variant="outline">Safety: {analysisResult.metrics.safetyScore}</Badge>
@@ -309,7 +321,41 @@ export default function ExplorePage() {
                 {analysisResult.metrics.transitAccessTier ? (
                   <Badge variant="outline">Transit Access: {String(analysisResult.metrics.transitAccessTier)}</Badge>
                 ) : null}
+                {analysisResult.metrics.confidence ? (
+                  <Badge variant="outline">Confidence: {String(analysisResult.metrics.confidence)}</Badge>
+                ) : null}
               </div>
+
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Summary</p>
+                <p className="text-sm text-foreground">{analysisResult.summary}</p>
+              </div>
+
+              {analysisResult.aiInterpretation ? (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Interpretation</p>
+                  <p className="text-sm text-foreground">{analysisResult.aiInterpretation}</p>
+                </div>
+              ) : null}
+
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Data Quality</p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline">
+                    Census: {analysisResult.metrics.dataQuality?.censusAvailable ? "Live" : "Unavailable"}
+                  </Badge>
+                  <Badge variant="outline">
+                    Crashes: {analysisResult.metrics.dataQuality?.crashDataAvailable ? "Live" : "Estimated"}
+                  </Badge>
+                  <Badge variant="outline">
+                    LODES: {String(analysisResult.metrics.dataQuality?.lodesSource ?? "unknown")}
+                  </Badge>
+                  <Badge variant="outline">
+                    Equity: {String(analysisResult.metrics.dataQuality?.equitySource ?? analysisResult.metrics["equitySource"] ?? "unknown")}
+                  </Badge>
+                </div>
+              </div>
+
               <p className="text-xs text-muted-foreground">Run ID: {analysisResult.runId}</p>
             </CardContent>
           </Card>
