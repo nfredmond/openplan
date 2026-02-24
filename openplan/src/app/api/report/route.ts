@@ -193,7 +193,9 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
   <tr><td>Total Fatalities</td><td>${fmt(m.totalFatalities as number)}</td></tr>
   <tr><td>Pedestrian Fatalities</td><td>${fmt(m.pedestrianFatalities as number)}</td></tr>
   <tr><td>Bicyclist Fatalities</td><td>${fmt(m.bicyclistFatalities as number)}</td></tr>
-  <tr><td>Fatal Crashes per Sq Mi (annual)</td><td>${m.crashesPerSquareMile ?? "N/A"}</td></tr>
+  <tr><td>Severe Injury Crashes</td><td>${fmt(m.severeInjuryCrashes as number)}</td></tr>
+  <tr><td>Total Injury Crashes</td><td>${fmt(m.totalInjuryCrashes as number)}</td></tr>
+  <tr><td>Crashes per Sq Mi (annualized)</td><td>${m.crashesPerSquareMile ?? "N/A"}</td></tr>
 </table>
 
 <!-- EQUITY -->

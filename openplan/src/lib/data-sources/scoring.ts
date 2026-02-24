@@ -127,7 +127,7 @@ export function computeCorridorScores(
 
   // Data quality assessment
   const censusAvailable = census.tracts.length > 0;
-  const crashDataAvailable = crashes.source === "fars-api";
+  const crashDataAvailable = !crashes.source.includes("estimate");
 
   const confidence =
     censusAvailable && crashDataAvailable

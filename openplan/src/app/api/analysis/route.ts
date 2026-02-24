@@ -222,6 +222,8 @@ export async function POST(request: NextRequest) {
     totalFatalities: crashes.totalFatalities,
     pedestrianFatalities: crashes.pedestrianFatalities,
     bicyclistFatalities: crashes.bicyclistFatalities,
+    severeInjuryCrashes: crashes.severeInjuryCrashes,
+    totalInjuryCrashes: crashes.totalInjuryCrashes,
     crashesPerSquareMile: crashes.crashesPerSquareMile,
 
     // Equity
