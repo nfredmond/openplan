@@ -7,6 +7,7 @@ import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
+import { generateGrantInterpretation } from "@/lib/ai/interpret";
 
 type Position = [number, number] | [number, number, number];
 
@@ -111,7 +112,8 @@ function generateSummary(
   // Equity
   lines.push(
     `**Equity:** ${equity.disadvantagedTracts} of ${equity.totalTracts} tracts are disadvantaged ` +
-      `(${equity.pctDisadvantaged}%). Justice40 eligible: ${equity.justice40Eligible ? "Yes" : "No"}.`
+      `(${equity.pctDisadvantaged}%). Justice40 eligible: ${equity.justice40Eligible ? "Yes" : "No"}. ` +
+      `Method: ${equity.source}.`
   );
   if (equity.title6Flags.length > 0) {
     lines.push(`Title VI considerations: ${equity.title6Flags.join("; ")}.`);
@@ -229,12 +231,21 @@ export async function POST(request: NextRequest) {
     // Equity
     disadvantagedTracts: equity.disadvantagedTracts,
     pctDisadvantaged: equity.pctDisadvantaged,
+    lowIncomeTracts: equity.lowIncomeTracts,
+    highPovertyTracts: equity.highPovertyTracts,
+    highMinorityTracts: equity.highMinorityTracts,
+    lowVehicleAccessTracts: equity.lowVehicleAccessTracts,
+    highTransitDependencyTracts: equity.highTransitDependencyTracts,
+    burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
+    equitySource: equity.source,
     justice40Eligible: equity.justice40Eligible,
     title6Flags: equity.title6Flags,
 
     // Data quality
     dataQuality: scores.dataQuality,
   };
+
+  const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
 
   // --- Persist run ---
   const supabase = createServiceRoleClient();
@@ -247,6 +258,7 @@ export async function POST(request: NextRequest) {
     metrics,
     result_geojson: geojson,
     summary_text: summary,
+    ai_interpretation: aiInterpretationResult.text,
   });
 
   if (insertError) {
@@ -256,5 +268,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ runId, metrics, geojson, summary }, { status: 200 });
+  return NextResponse.json(
+    {
+      runId,
+      metrics,
+      geojson,
+      summary,
+      aiInterpretation: aiInterpretationResult.text,
+      aiInterpretationSource: aiInterpretationResult.source,
+    },
+    { status: 200 }
+  );
 }

@@ -56,6 +56,7 @@ function buildHtml(run: any): string {
   const timestamp = run.created_at ? new Date(run.created_at).toLocaleString() : "Unknown";
   const generatedAt = new Date().toLocaleString();
   const title = (run.title as string) ?? "Corridor Analysis Report";
+  const aiInterpretation = (run.ai_interpretation as string | null) ?? null;
 
   // Data quality
   const dq = (m.dataQuality ?? {}) as Record<string, unknown>;
@@ -138,6 +139,10 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 <h2>Analysis Summary</h2>
 <div class="summary-box">${esc(run.summary_text ?? "No summary available.")}</div>
 
+<!-- AI INTERPRETATION -->
+<h2>AI Interpretation (Grant Narrative)</h2>
+<div class="summary-box">${esc(aiInterpretation ?? run.summary_text ?? "No interpretation available.")}</div>
+
 <!-- DEMOGRAPHICS -->
 <h2>Demographics &amp; Commute Patterns</h2>
 <div class="two-col">
@@ -203,6 +208,13 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 <table>
   <tr><th>Metric</th><th>Value</th></tr>
   <tr><td>Disadvantaged Tracts (CEJST-aligned)</td><td>${fmt(m.disadvantagedTracts as number)} of ${fmt(m.tractCount as number)} (${pct(m.pctDisadvantaged as number)})</td></tr>
+  <tr><td>Low-Income Tracts</td><td>${fmt(m.lowIncomeTracts as number)}</td></tr>
+  <tr><td>High-Poverty Tracts (&ge;30%)</td><td>${fmt(m.highPovertyTracts as number)}</td></tr>
+  <tr><td>High-Minority Tracts (&ge;50%)</td><td>${fmt(m.highMinorityTracts as number)}</td></tr>
+  <tr><td>Low Vehicle Access Tracts (&ge;10% zero-vehicle households)</td><td>${fmt(m.lowVehicleAccessTracts as number)}</td></tr>
+  <tr><td>Transit Dependency Tracts (&ge;15% transit commute share)</td><td>${fmt(m.highTransitDependencyTracts as number)}</td></tr>
+  <tr><td>Burdened Low-Income Tracts</td><td>${fmt(m.burdenedLowIncomeTracts as number)}</td></tr>
+  <tr><td>Screening Method</td><td>${esc(String(m.equitySource ?? dq.equitySource ?? "cejst-proxy-census"))}</td></tr>
   <tr><td>Justice40 Eligible</td><td>${(m.justice40Eligible as boolean) ? "✅ Yes" : "No"}</td></tr>
 </table>
 
@@ -254,7 +266,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: run, error } = await supabase
     .from("runs")
-    .select("id, title, query_text, summary_text, metrics, corridor_geojson, created_at")
+    .select("id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at")
     .eq("id", parsed.data.runId)
     .single();
 
