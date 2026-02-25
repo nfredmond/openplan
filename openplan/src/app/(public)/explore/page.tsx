@@ -108,6 +108,7 @@ export default function ExplorePage() {
   const [comparisonRun, setComparisonRun] = useState<Run | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [error, setError] = useState("");
   const [workspaceLoadState, setWorkspaceLoadState] = useState<WorkspaceLoadState>("loading");
   const [workspaceName, setWorkspaceName] = useState<string | null>(null);
@@ -358,6 +359,50 @@ export default function ExplorePage() {
     }
   };
 
+  const downloadPdfReport = async () => {
+    if (!analysisResult?.runId) {
+      setError("Run an analysis before downloading a report.");
+      return;
+    }
+
+    setError("");
+    setIsDownloadingPdf(true);
+
+    try {
+      const response = await fetch("/api/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ runId: analysisResult.runId, format: "pdf" }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error ?? "PDF report generation failed.");
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("content-disposition");
+      const nameMatch = disposition?.match(/filename=\"([^\"]+)\"/i);
+      const filename = nameMatch?.[1] ?? `openplan-report-${analysisResult.runId}.pdf`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (reportError) {
+      const message = reportError instanceof Error ? reportError.message : "PDF report generation failed.";
+      setError(message);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   const exportMetrics = () => {
     if (!analysisResult) {
       return;
@@ -472,6 +517,14 @@ export default function ExplorePage() {
                 disabled={!analysisResult?.runId || isGeneratingReport}
               >
                 {isGeneratingReport ? "Generating..." : "Generate Report"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void downloadPdfReport()}
+                disabled={!analysisResult?.runId || isDownloadingPdf}
+              >
+                {isDownloadingPdf ? "Downloading..." : "Download PDF"}
               </Button>
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}

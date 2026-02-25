@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const reportRequestSchema = z.object({
   runId: z.string().uuid(),
+  format: z.enum(["html", "pdf"]).default("html"),
 });
 
 function esc(value: string): string {
@@ -49,6 +50,152 @@ function scoreBar(score: number, label: string): string {
         <div style="width:${score}%;background:${color};height:100%;border-radius:6px;"></div>
       </div>
     </div>`;
+}
+
+function toAscii(value: string): string {
+  return value.replace(/[^\x20-\x7E]/g, "?");
+}
+
+function sanitizeText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  return toAscii(String(value).replace(/\s+/g, " ").trim());
+}
+
+function wrapText(line: string, max = 95): string[] {
+  if (!line || line.length <= max) {
+    return [line];
+  }
+
+  const words = line.split(" ");
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= max) {
+      current = next;
+      continue;
+    }
+
+    if (current) {
+      lines.push(current);
+      current = word;
+      continue;
+    }
+
+    let remainder = word;
+    while (remainder.length > max) {
+      lines.push(remainder.slice(0, max));
+      remainder = remainder.slice(max);
+    }
+    current = remainder;
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines.length > 0 ? lines : [""];
+}
+
+function pdfEscape(text: string): string {
+  return text
+    .replaceAll("\\", "\\\\")
+    .replaceAll("(", "\\(")
+    .replaceAll(")", "\\)");
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildPdf(run: any): Uint8Array {
+  const encoder = new TextEncoder();
+  const metrics = (run.metrics ?? {}) as Record<string, unknown>;
+  const createdAt = run.created_at ? new Date(run.created_at).toISOString() : "Unknown";
+  const title = sanitizeText((run.title as string) ?? "Corridor Analysis Report");
+  const queryText = sanitizeText(run.query_text);
+  const summaryText = sanitizeText(run.summary_text ?? "No summary available.");
+  const interpretation = sanitizeText(
+    run.ai_interpretation ?? run.summary_text ?? "No interpretation available."
+  );
+
+  const selectedMetrics: Array<[string, unknown]> = [
+    ["Overall Score", metrics.overallScore],
+    ["Accessibility Score", metrics.accessibilityScore],
+    ["Safety Score", metrics.safetyScore],
+    ["Equity Score", metrics.equityScore],
+    ["Total Population", metrics.totalPopulation],
+    ["Transit Stops", metrics.totalTransitStops],
+    ["Fatal Crashes", metrics.totalFatalCrashes],
+    ["Justice40 Eligible", metrics.justice40Eligible],
+  ];
+
+  const lines: string[] = [
+    "OpenPlan Report",
+    `Title: ${title}`,
+    `Run ID: ${sanitizeText(run.id)}`,
+    `Created At: ${createdAt}`,
+    "",
+    "Query:",
+    queryText || "N/A",
+    "",
+    "Summary:",
+    summaryText,
+    "",
+    "AI Interpretation:",
+    interpretation,
+    "",
+    "Selected Metrics:",
+    ...selectedMetrics.map(([label, value]) => `${label}: ${sanitizeText(value ?? "N/A") || "N/A"}`),
+  ];
+
+  const wrappedLines = lines.flatMap((line) => wrapText(line));
+  const visibleLines = wrappedLines.slice(0, 48);
+
+  const contentCommands = ["BT", "/F1 12 Tf", "50 760 Td", "14 TL"];
+  for (const line of visibleLines) {
+    contentCommands.push(`(${pdfEscape(line)}) Tj`);
+    contentCommands.push("T*");
+  }
+  contentCommands.push("ET");
+
+  const contentStream = contentCommands.join("\n");
+  const contentLength = encoder.encode(contentStream).length;
+
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${contentLength} >>\nstream\n${contentStream}\nendstream`,
+  ];
+
+  const pdfParts: string[] = [];
+  let length = 0;
+  const offsets = [0];
+
+  const pushPart = (part: string) => {
+    pdfParts.push(part);
+    length += encoder.encode(part).length;
+  };
+
+  pushPart("%PDF-1.4\n%OpenPlan\n");
+
+  for (let index = 0; index < objects.length; index += 1) {
+    offsets.push(length);
+    pushPart(`${index + 1} 0 obj\n${objects[index]}\nendobj\n`);
+  }
+
+  const xrefStart = length;
+  pushPart(`xref\n0 ${objects.length + 1}\n`);
+  pushPart("0000000000 65535 f \n");
+
+  for (let index = 1; index < offsets.length; index += 1) {
+    pushPart(`${String(offsets[index]).padStart(10, "0")} 00000 n \n`);
+  }
+
+  pushPart(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`);
+  pushPart(`startxref\n${xrefStart}\n%%EOF\n`);
+
+  return encoder.encode(pdfParts.join(""));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,17 +407,27 @@ export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("report", request);
   const startedAt = Date.now();
   let runId: string | undefined;
+  let format: "html" | "pdf" = "html";
 
   try {
     const body = await request.json().catch(() => null);
     const parsed = reportRequestSchema.safeParse(body);
 
     if (!parsed.success) {
-      audit.warn("validation_failed", { issues: parsed.error.issues.length });
+      const requestedFormat =
+        body && typeof body === "object" && "format" in body
+          ? (body as { format?: unknown }).format
+          : undefined;
+
+      audit.warn("validation_failed", {
+        issues: parsed.error.issues.length,
+        requestedFormat,
+      });
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
     runId = parsed.data.runId;
+    format = parsed.data.format;
 
     const supabase = await createClient();
     const { data: run, error } = await supabase
@@ -282,6 +439,7 @@ export async function POST(request: NextRequest) {
     if (error || !run) {
       audit.warn("run_not_found", {
         runId,
+        format,
         message: error?.message ?? null,
         code: error?.code ?? null,
       });
@@ -289,7 +447,23 @@ export async function POST(request: NextRequest) {
     }
 
     const durationMs = Date.now() - startedAt;
-    audit.info("report_generated", { runId, durationMs });
+    audit.info("report_generated", { runId, format, durationMs });
+
+    if (format === "pdf") {
+      const pdfBytes = buildPdf(run);
+      const pdfBuffer = pdfBytes.buffer.slice(
+        pdfBytes.byteOffset,
+        pdfBytes.byteOffset + pdfBytes.byteLength
+      ) as ArrayBuffer;
+
+      return new NextResponse(pdfBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="openplan-report-${run.id}.pdf"`,
+        },
+      });
+    }
 
     return new NextResponse(buildHtml(run), {
       status: 200,
@@ -298,6 +472,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     audit.error("report_unhandled_error", {
       runId,
+      format,
       durationMs: Date.now() - startedAt,
       error,
     });
