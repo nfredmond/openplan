@@ -7,16 +7,16 @@ vi.mock('@/lib/supabase/middleware', () => ({
   updateSession: (...args: unknown[]) => updateSessionMock(...args),
 }))
 
-describe('middleware auth/session guard', () => {
+describe('proxy auth/session guard', () => {
   it('redirects unauthenticated dashboard requests to /sign-in', async () => {
     updateSessionMock.mockResolvedValueOnce({
       response: NextResponse.next(),
       user: null,
     })
 
-    const { middleware } = await import('@/middleware')
+    const { proxy } = await import('@/proxy')
     const request = new NextRequest('http://localhost/dashboard')
-    const response = await middleware(request)
+    const response = await proxy(request)
 
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toContain('/sign-in')
@@ -29,9 +29,9 @@ describe('middleware auth/session guard', () => {
       user: { id: 'user-1' },
     })
 
-    const { middleware } = await import('@/middleware')
+    const { proxy } = await import('@/proxy')
     const request = new NextRequest('http://localhost/dashboard')
-    const response = await middleware(request)
+    const response = await proxy(request)
 
     expect(response.status).toBe(200)
   })
