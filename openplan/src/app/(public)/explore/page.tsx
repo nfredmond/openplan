@@ -301,64 +301,91 @@ export default function ExplorePage() {
         </Card>
 
         {analysisResult ? (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Latest Result</CardTitle>
-              <CardDescription>
-                {analysisResult.aiInterpretationSource === "ai"
-                  ? "AI-enhanced interpretation generated."
-                  : "Interpretation generated using deterministic fallback summary."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline">Accessibility: {analysisResult.metrics.accessibilityScore}</Badge>
-                <Badge variant="outline">Safety: {analysisResult.metrics.safetyScore}</Badge>
-                <Badge variant="outline">Equity: {analysisResult.metrics.equityScore}</Badge>
-                {typeof analysisResult.metrics.overallScore === "number" ? (
-                  <Badge variant="outline">Overall: {analysisResult.metrics.overallScore}</Badge>
-                ) : null}
-                {analysisResult.metrics.transitAccessTier ? (
-                  <Badge variant="outline">Transit Access: {String(analysisResult.metrics.transitAccessTier)}</Badge>
-                ) : null}
-                {analysisResult.metrics.confidence ? (
-                  <Badge variant="outline">Confidence: {String(analysisResult.metrics.confidence)}</Badge>
-                ) : null}
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Summary</p>
-                <p className="text-sm text-foreground">{analysisResult.summary}</p>
-              </div>
-
-              {analysisResult.aiInterpretation ? (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Interpretation</p>
-                  <p className="text-sm text-foreground">{analysisResult.aiInterpretation}</p>
-                </div>
-              ) : null}
-
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Data Quality</p>
+          <>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle>Latest Result</CardTitle>
+                <CardDescription>
+                  {analysisResult.aiInterpretationSource === "ai"
+                    ? "AI-enhanced interpretation generated."
+                    : "Interpretation generated using deterministic fallback summary."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">
-                    Census: {analysisResult.metrics.dataQuality?.censusAvailable ? "Live" : "Unavailable"}
-                  </Badge>
-                  <Badge variant="outline">
-                    Crashes: {analysisResult.metrics.dataQuality?.crashDataAvailable ? "Live" : "Estimated"}
-                  </Badge>
-                  <Badge variant="outline">
-                    LODES: {String(analysisResult.metrics.dataQuality?.lodesSource ?? "unknown")}
-                  </Badge>
-                  <Badge variant="outline">
-                    Equity: {String(analysisResult.metrics.dataQuality?.equitySource ?? analysisResult.metrics["equitySource"] ?? "unknown")}
-                  </Badge>
+                  <Badge variant="outline">Accessibility: {analysisResult.metrics.accessibilityScore}</Badge>
+                  <Badge variant="outline">Safety: {analysisResult.metrics.safetyScore}</Badge>
+                  <Badge variant="outline">Equity: {analysisResult.metrics.equityScore}</Badge>
+                  {typeof analysisResult.metrics.overallScore === "number" ? (
+                    <Badge variant="outline">Overall: {analysisResult.metrics.overallScore}</Badge>
+                  ) : null}
+                  {analysisResult.metrics.transitAccessTier ? (
+                    <Badge variant="outline">Transit Access: {String(analysisResult.metrics.transitAccessTier)}</Badge>
+                  ) : null}
+                  {analysisResult.metrics.confidence ? (
+                    <Badge variant="outline">Confidence: {String(analysisResult.metrics.confidence)}</Badge>
+                  ) : null}
                 </div>
-              </div>
 
-              <p className="text-xs text-muted-foreground">Run ID: {analysisResult.runId}</p>
-            </CardContent>
-          </Card>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Summary</p>
+                  <p className="text-sm text-foreground">{analysisResult.summary}</p>
+                </div>
+
+                {analysisResult.aiInterpretation ? (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Interpretation</p>
+                    <p className="text-sm text-foreground">{analysisResult.aiInterpretation}</p>
+                  </div>
+                ) : null}
+
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Data Quality</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">
+                      Census: {analysisResult.metrics.dataQuality?.censusAvailable ? "Live" : "Unavailable"}
+                    </Badge>
+                    <Badge variant="outline">
+                      Crashes: {analysisResult.metrics.dataQuality?.crashDataAvailable ? "Live" : "Estimated"}
+                    </Badge>
+                    <Badge variant="outline">
+                      LODES: {String(analysisResult.metrics.dataQuality?.lodesSource ?? "unknown")}
+                    </Badge>
+                    <Badge variant="outline">
+                      Equity: {String(analysisResult.metrics.dataQuality?.equitySource ?? analysisResult.metrics["equitySource"] ?? "unknown")}
+                    </Badge>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">Run ID: {analysisResult.runId}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle>Methods &amp; Assumptions + AI Disclosure</CardTitle>
+                <CardDescription>
+                  Client-safe methodology notes for grant and planning workflows.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>
+                    AI is used to accelerate drafting and interpretation; final analysis and conclusions require human review and approval.
+                  </li>
+                  <li>
+                    Regulatory and policy-sensitive claims should be citation-backed or explicitly marked for verification.
+                  </li>
+                  <li>
+                    This run is based on available source data and proxy methods where direct sources are unavailable.
+                  </li>
+                  <li>
+                    Recommendations should be checked for equity impacts and must not shift disproportionate burden onto disadvantaged communities.
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </>
         ) : null}
 
         <RunHistory workspaceId={workspaceId} />
