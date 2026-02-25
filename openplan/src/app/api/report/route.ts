@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const reportRequestSchema = z.object({
   runId: z.string().uuid(),
@@ -256,26 +257,53 @@ ${(m.justice40Eligible as boolean) ? `
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
-  const parsed = reportRequestSchema.safeParse(body);
+  const audit = createApiAuditLogger("report", request);
+  const startedAt = Date.now();
+  let runId: string | undefined;
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = reportRequestSchema.safeParse(body);
+
+    if (!parsed.success) {
+      audit.warn("validation_failed", { issues: parsed.error.issues.length });
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    runId = parsed.data.runId;
+
+    const supabase = await createClient();
+    const { data: run, error } = await supabase
+      .from("runs")
+      .select("id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at")
+      .eq("id", runId)
+      .single();
+
+    if (error || !run) {
+      audit.warn("run_not_found", {
+        runId,
+        message: error?.message ?? null,
+        code: error?.code ?? null,
+      });
+      return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    }
+
+    const durationMs = Date.now() - startedAt;
+    audit.info("report_generated", { runId, durationMs });
+
+    return new NextResponse(buildHtml(run), {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  } catch (error) {
+    audit.error("report_unhandled_error", {
+      runId,
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+    return NextResponse.json(
+      { error: "Report generation failed unexpectedly" },
+      { status: 500 }
+    );
   }
-
-  const supabase = await createClient();
-  const { data: run, error } = await supabase
-    .from("runs")
-    .select("id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at")
-    .eq("id", parsed.data.runId)
-    .single();
-
-  if (error || !run) {
-    return NextResponse.json({ error: "Run not found" }, { status: 404 });
-  }
-
-  return new NextResponse(buildHtml(run), {
-    status: 200,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
 }

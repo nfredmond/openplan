@@ -8,6 +8,7 @@ import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 type Position = [number, number] | [number, number, number];
 
@@ -131,152 +132,203 @@ function generateSummary(
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
-  const parsed = analysisRequestSchema.safeParse(body);
+  const audit = createApiAuditLogger("analysis", request);
+  const startedAt = Date.now();
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
+  let workspaceId: string | undefined;
+  let runId: string | undefined;
+
+  try {
+    const body = await request.json().catch(() => null);
+    const parsed = analysisRequestSchema.safeParse(body);
+
+    if (!parsed.success) {
+      audit.warn("validation_failed", {
+        issues: parsed.error.issues.length,
+      });
+
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { corridorGeojson, queryText, workspaceId: parsedWorkspaceId } = parsed.data;
+    workspaceId = parsedWorkspaceId;
+    runId = crypto.randomUUID();
+
+    audit.info("analysis_started", {
+      runId,
+      workspaceId,
+      queryLength: queryText.length,
+    });
+
+    // --- Fetch real data from external sources ---
+    const corridorForApi = corridorGeojson as {
+      type: string;
+      coordinates: number[][][] | number[][][][];
+    };
+    const bbox = bboxFromGeojson(corridorForApi);
+
+    // Run Census, transit access, and crash fetches in parallel
+    const [census, transit, crashes] = await Promise.all([
+      fetchCensusForCorridor(corridorForApi),
+      fetchTransitAccessForBbox(bbox),
+      fetchCrashesForBbox(bbox),
+    ]);
+
+    // LODES depends on census population
+    const lodes = await fetchLODESForCorridor(
+      corridorForApi,
+      census.totalPopulation,
+      census.totalCommuters
     );
-  }
 
-  const { corridorGeojson, queryText, workspaceId } = parsed.data;
-  const runId = crypto.randomUUID();
+    // Equity screening from census data
+    const equity = screenEquity(census);
 
-  // --- Fetch real data from external sources ---
-  const corridorForApi = corridorGeojson as { type: string; coordinates: number[][][] | number[][][][] };
-  const bbox = bboxFromGeojson(corridorForApi);
+    // Compute composite scores
+    const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
 
-  // Run Census, transit access, and crash fetches in parallel
-  const [census, transit, crashes] = await Promise.all([
-    fetchCensusForCorridor(corridorForApi),
-    fetchTransitAccessForBbox(bbox),
-    fetchCrashesForBbox(bbox),
-  ]);
+    // Build result GeoJSON
+    const geojson = {
+      type: "FeatureCollection" as const,
+      features: [
+        {
+          type: "Feature" as const,
+          geometry: corridorGeojson,
+          properties: { kind: "analysis_corridor", runId },
+        },
+        buildCentroidFeature(corridorGeojson),
+      ],
+    };
 
-  // LODES depends on census population
-  const lodes = await fetchLODESForCorridor(
-    corridorForApi,
-    census.totalPopulation,
-    census.totalCommuters
-  );
+    // Generate human-readable summary
+    const summary = generateSummary(census, lodes, transit, crashes, equity, scores);
 
-  // Equity screening from census data
-  const equity = screenEquity(census);
+    // Build metrics object
+    const metrics = {
+      // Scores
+      accessibilityScore: scores.accessibilityScore,
+      safetyScore: scores.safetyScore,
+      equityScore: scores.equityScore,
+      overallScore: scores.overallScore,
+      confidence: scores.confidence,
 
-  // Compute composite scores
-  const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
+      // Census demographics
+      totalPopulation: census.totalPopulation,
+      medianIncome: census.medianIncomeWeighted,
+      pctMinority: census.pctMinority,
+      pctBelowPoverty: census.pctBelowPoverty,
+      tractCount: census.tracts.length,
 
-  // Build result GeoJSON
-  const geojson = {
-    type: "FeatureCollection" as const,
-    features: [
-      {
-        type: "Feature" as const,
-        geometry: corridorGeojson,
-        properties: { kind: "analysis_corridor", runId },
-      },
-      buildCentroidFeature(corridorGeojson),
-    ],
-  };
+      // Commute patterns
+      pctTransit: census.pctTransit,
+      pctWalk: census.pctWalk,
+      pctBike: census.pctBike,
+      pctWfh: census.pctWfh,
+      pctZeroVehicle: census.pctZeroVehicle,
 
-  // Generate human-readable summary
-  const summary = generateSummary(census, lodes, transit, crashes, equity, scores);
+      // Employment
+      totalJobs: lodes.totalJobs,
+      jobsPerResident: lodes.jobsPerResident,
 
-  // Build metrics object
-  const metrics = {
-    // Scores
-    accessibilityScore: scores.accessibilityScore,
-    safetyScore: scores.safetyScore,
-    equityScore: scores.equityScore,
-    overallScore: scores.overallScore,
-    confidence: scores.confidence,
+      // Transit access
+      totalTransitStops: transit.totalStops,
+      busStops: transit.busStops,
+      railStations: transit.railStations,
+      ferryStops: transit.ferryStops,
+      stopsPerSquareMile: transit.stopsPerSqMile,
+      transitAccessTier: transit.accessTier,
 
-    // Census demographics
-    totalPopulation: census.totalPopulation,
-    medianIncome: census.medianIncomeWeighted,
-    pctMinority: census.pctMinority,
-    pctBelowPoverty: census.pctBelowPoverty,
-    tractCount: census.tracts.length,
+      // Safety
+      totalFatalCrashes: crashes.totalFatalCrashes,
+      totalFatalities: crashes.totalFatalities,
+      pedestrianFatalities: crashes.pedestrianFatalities,
+      bicyclistFatalities: crashes.bicyclistFatalities,
+      severeInjuryCrashes: crashes.severeInjuryCrashes,
+      totalInjuryCrashes: crashes.totalInjuryCrashes,
+      crashesPerSquareMile: crashes.crashesPerSquareMile,
 
-    // Commute patterns
-    pctTransit: census.pctTransit,
-    pctWalk: census.pctWalk,
-    pctBike: census.pctBike,
-    pctWfh: census.pctWfh,
-    pctZeroVehicle: census.pctZeroVehicle,
+      // Equity
+      disadvantagedTracts: equity.disadvantagedTracts,
+      pctDisadvantaged: equity.pctDisadvantaged,
+      lowIncomeTracts: equity.lowIncomeTracts,
+      highPovertyTracts: equity.highPovertyTracts,
+      highMinorityTracts: equity.highMinorityTracts,
+      lowVehicleAccessTracts: equity.lowVehicleAccessTracts,
+      highTransitDependencyTracts: equity.highTransitDependencyTracts,
+      burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
+      equitySource: equity.source,
+      justice40Eligible: equity.justice40Eligible,
+      title6Flags: equity.title6Flags,
 
-    // Employment
-    totalJobs: lodes.totalJobs,
-    jobsPerResident: lodes.jobsPerResident,
+      // Data quality
+      dataQuality: scores.dataQuality,
+    };
 
-    // Transit access
-    totalTransitStops: transit.totalStops,
-    busStops: transit.busStops,
-    railStations: transit.railStations,
-    ferryStops: transit.ferryStops,
-    stopsPerSquareMile: transit.stopsPerSqMile,
-    transitAccessTier: transit.accessTier,
+    const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
 
-    // Safety
-    totalFatalCrashes: crashes.totalFatalCrashes,
-    totalFatalities: crashes.totalFatalities,
-    pedestrianFatalities: crashes.pedestrianFatalities,
-    bicyclistFatalities: crashes.bicyclistFatalities,
-    severeInjuryCrashes: crashes.severeInjuryCrashes,
-    totalInjuryCrashes: crashes.totalInjuryCrashes,
-    crashesPerSquareMile: crashes.crashesPerSquareMile,
+    // --- Persist run ---
+    const supabase = createServiceRoleClient();
+    const { error: insertError } = await supabase.from("runs").insert({
+      id: runId,
+      workspace_id: workspaceId,
+      title: queryText.length > 60 ? queryText.slice(0, 57) + "..." : queryText,
+      query_text: queryText,
+      corridor_geojson: corridorGeojson,
+      metrics,
+      result_geojson: geojson,
+      summary_text: summary,
+      ai_interpretation: aiInterpretationResult.text,
+    });
 
-    // Equity
-    disadvantagedTracts: equity.disadvantagedTracts,
-    pctDisadvantaged: equity.pctDisadvantaged,
-    lowIncomeTracts: equity.lowIncomeTracts,
-    highPovertyTracts: equity.highPovertyTracts,
-    highMinorityTracts: equity.highMinorityTracts,
-    lowVehicleAccessTracts: equity.lowVehicleAccessTracts,
-    highTransitDependencyTracts: equity.highTransitDependencyTracts,
-    burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
-    equitySource: equity.source,
-    justice40Eligible: equity.justice40Eligible,
-    title6Flags: equity.title6Flags,
+    if (insertError) {
+      audit.error("persist_failed", {
+        runId,
+        workspaceId,
+        message: insertError.message,
+        code: insertError.code ?? null,
+        details: insertError.details ?? null,
+      });
 
-    // Data quality
-    dataQuality: scores.dataQuality,
-  };
+      return NextResponse.json(
+        { error: "Failed to persist run", details: insertError.message },
+        { status: 500 }
+      );
+    }
 
-  const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
+    const durationMs = Date.now() - startedAt;
+    audit.info("analysis_completed", {
+      runId,
+      workspaceId,
+      durationMs,
+      confidence: scores.confidence,
+      aiSource: aiInterpretationResult.source,
+    });
 
-  // --- Persist run ---
-  const supabase = createServiceRoleClient();
-  const { error: insertError } = await supabase.from("runs").insert({
-    id: runId,
-    workspace_id: workspaceId,
-    title: queryText.length > 60 ? queryText.slice(0, 57) + "..." : queryText,
-    query_text: queryText,
-    corridor_geojson: corridorGeojson,
-    metrics,
-    result_geojson: geojson,
-    summary_text: summary,
-    ai_interpretation: aiInterpretationResult.text,
-  });
-
-  if (insertError) {
     return NextResponse.json(
-      { error: "Failed to persist run", details: insertError.message },
+      {
+        runId,
+        metrics,
+        geojson,
+        summary,
+        aiInterpretation: aiInterpretationResult.text,
+        aiInterpretationSource: aiInterpretationResult.source,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    audit.error("analysis_unhandled_error", {
+      runId,
+      workspaceId,
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+
+    return NextResponse.json(
+      { error: "Analysis failed unexpectedly" },
       { status: 500 }
     );
   }
-
-  return NextResponse.json(
-    {
-      runId,
-      metrics,
-      geojson,
-      summary,
-      aiInterpretation: aiInterpretationResult.text,
-      aiInterpretationSource: aiInterpretationResult.source,
-    },
-    { status: 200 }
-  );
 }

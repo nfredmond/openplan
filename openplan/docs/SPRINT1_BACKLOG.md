@@ -68,6 +68,10 @@ Convert current technical MVP into a pilot-ready commercial product with repeata
    - Acceptance:
      - API errors are captured with run/workspace context.
      - Sensitive values are redacted.
+   - Status (2026-02-25):
+     - ✅ Added structured API audit logging for `/api/analysis`, `/api/report`, and `/api/runs`.
+     - ✅ Added recursive redaction for tokens/keys/password-like fields before logging.
+     - ✅ Added test coverage for sanitization (`src/test/audit-logger.test.ts`).
 
 9. **Template variants for ATP vs SS4A narrative framing**
    - Owner: Sofia
