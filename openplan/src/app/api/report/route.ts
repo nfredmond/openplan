@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
@@ -440,7 +440,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: run, error } = await supabase
       .from("runs")
-      .select("id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at")
+      .select(
+        "id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at, report_generated_count, first_report_generated_at, last_report_generated_at"
+      )
       .eq("id", runId)
       .single();
 
@@ -454,8 +456,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });
     }
 
+    const reportGeneratedAt = new Date().toISOString();
+    const currentReportCount = typeof run.report_generated_count === "number" ? run.report_generated_count : 0;
+
+    const serviceSupabase = createServiceRoleClient();
+    const { error: telemetryError } = await serviceSupabase
+      .from("runs")
+      .update({
+        report_generated_count: currentReportCount + 1,
+        first_report_generated_at: run.first_report_generated_at ?? reportGeneratedAt,
+        last_report_generated_at: reportGeneratedAt,
+      })
+      .eq("id", run.id);
+
+    if (telemetryError) {
+      audit.warn("report_telemetry_update_failed", {
+        runId,
+        format,
+        message: telemetryError.message,
+        code: telemetryError.code ?? null,
+      });
+    }
+
     const durationMs = Date.now() - startedAt;
-    audit.info("report_generated", { runId, format, durationMs });
+    audit.info("report_generated", {
+      runId,
+      format,
+      durationMs,
+      reportGeneratedCount: currentReportCount + 1,
+    });
 
     if (format === "pdf") {
       const pdfBytes = buildPdf(run);
