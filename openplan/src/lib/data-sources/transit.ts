@@ -6,6 +6,8 @@
  * for GTFS accessibility until full GTFS feed ingestion lands.
  */
 
+import { fetchJsonWithRetry } from "./http";
+
 export interface TransitAccessSummary {
   totalStops: number;
   busStops: number;
@@ -51,39 +53,61 @@ export async function fetchTransitAccessForBbox(bbox: BBox): Promise<TransitAcce
 out tags center;
 `;
 
-  try {
-    const resp = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(query)}`,
-      signal: AbortSignal.timeout(15000),
-    });
+  const endpoints = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+  ];
 
-    if (!resp.ok) throw new Error(`Overpass HTTP ${resp.status}`);
-
-    const data = (await resp.json()) as {
-      elements?: Array<{ tags?: Record<string, string> }>;
-    };
-
-    const elements = data.elements ?? [];
-    let busStops = 0;
-    let railStations = 0;
-    let ferryStops = 0;
-
-    for (const el of elements) {
-      const tags = el.tags ?? {};
-      if (tags.highway === "bus_stop" || tags.public_transport === "stop_position") {
-        busStops += 1;
+  for (const endpoint of endpoints) {
+    const data = await fetchJsonWithRetry<{ elements?: Array<{ id?: number; lat?: number; lon?: number; tags?: Record<string, string> }> }>(
+      endpoint,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+      },
+      {
+        timeoutMs: 15000,
+        retries: 1,
+        cacheTtlMs: 5 * 60 * 1000,
+        cacheKey: `overpass:${endpoint}:${bbox.minLat.toFixed(4)}:${bbox.minLon.toFixed(4)}:${bbox.maxLat.toFixed(4)}:${bbox.maxLon.toFixed(4)}`,
       }
-      if (tags.railway === "station") {
-        railStations += 1;
-      }
-      if (tags.amenity === "ferry_terminal") {
-        ferryStops += 1;
-      }
+    );
+
+    if (!data?.elements) {
+      continue;
     }
 
-    const totalStops = busStops + railStations + ferryStops;
+    const stopKeys = new Set<string>();
+    const busStopKeys = new Set<string>();
+    const railStationKeys = new Set<string>();
+    const ferryStopKeys = new Set<string>();
+
+    for (const el of data.elements) {
+      const tags = el.tags ?? {};
+      const key =
+        typeof el.id === "number"
+          ? `node:${el.id}`
+          : `pt:${(el.lat ?? 0).toFixed(6)}:${(el.lon ?? 0).toFixed(6)}`;
+
+      const isBus = tags.highway === "bus_stop" || tags.public_transport === "stop_position";
+      const isRail = tags.railway === "station";
+      const isFerry = tags.amenity === "ferry_terminal";
+
+      if (!isBus && !isRail && !isFerry) {
+        continue;
+      }
+
+      stopKeys.add(key);
+      if (isBus) busStopKeys.add(key);
+      if (isRail) railStationKeys.add(key);
+      if (isFerry) ferryStopKeys.add(key);
+    }
+
+    const totalStops = stopKeys.size;
+    const busStops = busStopKeys.size;
+    const railStations = railStationKeys.size;
+    const ferryStops = ferryStopKeys.size;
     const stopsPerSqMile = Math.round((totalStops / area) * 10) / 10;
 
     return {
@@ -95,19 +119,19 @@ out tags center;
       accessTier: classifyTier(stopsPerSqMile),
       source: "osm-overpass",
     };
-  } catch {
-    // Fallback estimate for resilience
-    const estStops = Math.max(1, Math.round(area * 2.5));
-    const stopsPerSqMile = Math.round((estStops / area) * 10) / 10;
-
-    return {
-      totalStops: estStops,
-      busStops: Math.round(estStops * 0.85),
-      railStations: Math.round(estStops * 0.1),
-      ferryStops: Math.round(estStops * 0.05),
-      stopsPerSqMile,
-      accessTier: classifyTier(stopsPerSqMile),
-      source: "estimate",
-    };
   }
+
+  // Fallback estimate for resilience
+  const estStops = Math.max(1, Math.round(area * 2.5));
+  const stopsPerSqMile = Math.round((estStops / area) * 10) / 10;
+
+  return {
+    totalStops: estStops,
+    busStops: Math.round(estStops * 0.85),
+    railStations: Math.round(estStops * 0.1),
+    ferryStops: Math.round(estStops * 0.05),
+    stopsPerSqMile,
+    accessTier: classifyTier(stopsPerSqMile),
+    source: "estimate",
+  };
 }

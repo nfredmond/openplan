@@ -23,6 +23,8 @@
  *   - B17001_002E  Below poverty level
  */
 
+import { fetchJsonWithRetry } from "./http";
+
 export interface CensusTractData {
   geoid: string;
   state: string;
@@ -106,6 +108,10 @@ export function bboxFromGeojson(geojson: { type: string; coordinates: number[][]
     }
   }
 
+  if (coords.length === 0) {
+    return { minLon: -124.3, maxLon: -121.8, minLat: 39.0, maxLat: 40.4 };
+  }
+
   const lons = coords.map((c) => c[0]);
   const lats = coords.map((c) => c[1]);
 
@@ -135,23 +141,23 @@ async function resolveCountiesFromBbox(bbox: BBox): Promise<Array<{ state: strin
   const results: Array<{ state: string; county: string }> = [];
 
   for (const [lon, lat] of corners) {
-    try {
-      const url = `https://geo.fcc.gov/api/census/block/find?latitude=${lat}&longitude=${lon}&format=json`;
-      const resp = await fetch(url);
-      if (!resp.ok) continue;
-      const data = await resp.json();
-      const fips = data?.Block?.FIPS;
-      if (!fips || fips.length < 5) continue;
+    const url = `https://geo.fcc.gov/api/census/block/find?latitude=${lat}&longitude=${lon}&format=json`;
+    const data = await fetchJsonWithRetry<{ Block?: { FIPS?: string } }>(url, undefined, {
+      timeoutMs: 6000,
+      retries: 1,
+      cacheTtlMs: 24 * 60 * 60 * 1000,
+      cacheKey: `fcc:${lat.toFixed(4)}:${lon.toFixed(4)}`,
+    });
 
-      const state = fips.substring(0, 2);
-      const county = fips.substring(2, 5);
-      const key = `${state}${county}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        results.push({ state, county });
-      }
-    } catch {
-      // skip failed lookups
+    const fips = data?.Block?.FIPS;
+    if (!fips || fips.length < 5) continue;
+
+    const state = fips.substring(0, 2);
+    const county = fips.substring(2, 5);
+    const key = `${state}${county}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      results.push({ state, county });
     }
   }
 
@@ -164,26 +170,28 @@ async function resolveCountiesFromBbox(bbox: BBox): Promise<Array<{ state: strin
 async function fetchAcsForCounties(
   counties: Array<{ state: string; county: string }>
 ): Promise<CensusTractData[]> {
-  const allTracts: CensusTractData[] = [];
-
-  for (const { state, county } of counties) {
-    try {
+  const countyResults = await Promise.all(
+    counties.map(async ({ state, county }) => {
       const url =
         `${CENSUS_BASE}/${ACS_YEAR}/${ACS_DATASET}?get=NAME,${VARIABLES}` +
         `&for=tract:*&in=state:${state}%20county:${county}` +
         (CENSUS_API_KEY ? `&key=${encodeURIComponent(CENSUS_API_KEY)}` : "");
 
-      const resp = await fetch(url);
-      if (!resp.ok) continue;
+      const rows = await fetchJsonWithRetry<string[][]>(url, undefined, {
+        timeoutMs: 14000,
+        retries: 1,
+        cacheTtlMs: 6 * 60 * 60 * 1000,
+        cacheKey: `acs:${ACS_YEAR}:${state}:${county}`,
+      });
 
-      const rows: string[][] = await resp.json();
-      if (!rows || rows.length < 2) continue;
+      if (!rows || rows.length < 2) {
+        return [] as CensusTractData[];
+      }
 
       const header = rows[0];
       const colIndex = (name: string) => header.indexOf(name);
 
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
+      return rows.slice(1).map((row) => {
         const num = (col: string): number => {
           const val = parseInt(row[colIndex(col)], 10);
           return isNaN(val) || val < 0 ? 0 : val;
@@ -206,7 +214,7 @@ async function fetchAcsForCounties(
         const coFips = row[colIndex("county")];
         const trFips = row[colIndex("tract")];
 
-        allTracts.push({
+        return {
           geoid: `${stFips}${coFips}${trFips}`,
           state: stFips,
           county: coFips,
@@ -222,14 +230,12 @@ async function fetchAcsForCounties(
           totalHouseholds: totalHH,
           pctMinority: totalPopRace > 0 ? Math.round(((totalPopRace - whiteNonHisp) / totalPopRace) * 1000) / 10 : 0,
           pctBelowPoverty: povertyTotal > 0 ? Math.round((belowPoverty / povertyTotal) * 1000) / 10 : 0,
-        });
-      }
-    } catch {
-      // skip failed county fetches
-    }
-  }
+        } satisfies CensusTractData;
+      });
+    })
+  );
 
-  return allTracts;
+  return countyResults.flat();
 }
 
 /**
@@ -323,5 +329,10 @@ export async function fetchCensusForCorridor(
   }
 
   const tracts = await fetchAcsForCounties(counties);
-  return summarizeTracts(tracts);
+
+  const dedupedTracts = Array.from(
+    new Map(tracts.map((tract) => [tract.geoid, tract])).values()
+  );
+
+  return summarizeTracts(dedupedTracts);
 }
