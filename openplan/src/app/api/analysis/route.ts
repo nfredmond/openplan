@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { isWorkspaceSubscriptionActive, subscriptionGateMessage } from "@/lib/billing/subscription";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
@@ -158,11 +159,65 @@ export async function POST(request: NextRequest) {
 
     const { corridorGeojson, queryText, workspaceId: parsedWorkspaceId } = parsed.data;
     workspaceId = parsedWorkspaceId;
+
+    const userSupabase = await createClient();
+    const {
+      data: { user },
+    } = await userSupabase.auth.getUser();
+
+    if (!user) {
+      audit.warn("unauthorized", { workspaceId });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: membership, error: membershipError } = await userSupabase
+      .from("workspace_members")
+      .select("workspace_id, role, workspaces(plan, subscription_plan, subscription_status)")
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membershipError) {
+      audit.error("membership_lookup_failed", {
+        workspaceId,
+        userId: user.id,
+        message: membershipError.message,
+        code: membershipError.code ?? null,
+      });
+
+      return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
+    }
+
+    if (!membership) {
+      audit.warn("forbidden_workspace", {
+        workspaceId,
+        userId: user.id,
+      });
+
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    const workspaceBilling = Array.isArray(membership.workspaces)
+      ? membership.workspaces[0] ?? null
+      : membership.workspaces;
+
+    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
+      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
+      audit.warn("subscription_inactive", {
+        workspaceId,
+        userId: user.id,
+        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
+      });
+
+      return NextResponse.json({ error: gateMessage }, { status: 402 });
+    }
+
     runId = crypto.randomUUID();
 
     audit.info("analysis_started", {
       runId,
       workspaceId,
+      userId: user.id,
       queryLength: queryText.length,
     });
 

@@ -90,6 +90,11 @@ export default async function DashboardPage() {
       description: "Start a new run and move from corridor geometry to scored output.",
     },
     {
+      href: "/billing",
+      title: "Open Billing",
+      description: "Initialize Starter/Professional checkout and review subscription status.",
+    },
+    {
       href: "/sign-up",
       title: "Add a Test User",
       description: "Validate workspace bootstrap and role assignment with a second account.",
@@ -144,7 +149,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         {actions.map((action) => (
           <Link
             key={action.href}

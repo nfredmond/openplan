@@ -14,6 +14,7 @@ export async function TopNav() {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/explore", label: "Explore" },
         { href: "/pricing", label: "Pricing" },
+        { href: "/billing", label: "Billing" },
       ]
     : [
         { href: "/", label: "Home" },
