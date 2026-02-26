@@ -7,6 +7,7 @@ import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
+import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
@@ -68,7 +69,8 @@ function generateSummary(
   transit: Awaited<ReturnType<typeof fetchTransitAccessForBbox>>,
   crashes: Awaited<ReturnType<typeof fetchCrashesForBbox>>,
   equity: ReturnType<typeof screenEquity>,
-  scores: ReturnType<typeof computeCorridorScores>
+  scores: ReturnType<typeof computeCorridorScores>,
+  walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess>
 ): string {
   const lines: string[] = [];
 
@@ -101,6 +103,7 @@ function generateSummary(
       `including ${transit.busStops} bus stops, ${transit.railStations} rail stations, ` +
       `${transit.ferryStops} ferry terminals. Access tier: ${transit.accessTier}.`
   );
+  lines.push(`**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`);
 
   // Safety
   const yearsStr = crashes.yearsQueried.join(", ");
@@ -189,6 +192,12 @@ export async function POST(request: NextRequest) {
 
     // Compute composite scores
     const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
+    const walkBikeAccess = classifyWalkBikeAccess({
+      pctWalk: census.pctWalk,
+      pctBike: census.pctBike,
+      pctZeroVehicle: census.pctZeroVehicle,
+      transitStopsPerSqMile: transit.stopsPerSqMile,
+    });
 
     // Build result GeoJSON
     const geojson = {
@@ -204,7 +213,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate human-readable summary
-    const summary = generateSummary(census, lodes, transit, crashes, equity, scores);
+    const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
 
     // Build metrics object
     const metrics = {
@@ -240,6 +249,9 @@ export async function POST(request: NextRequest) {
       ferryStops: transit.ferryStops,
       stopsPerSquareMile: transit.stopsPerSqMile,
       transitAccessTier: transit.accessTier,
+      walkBikeAccessTier: walkBikeAccess.tier,
+      walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
+      walkBikeAccessRationale: walkBikeAccess.rationale,
 
       // Safety
       totalFatalCrashes: crashes.totalFatalCrashes,
@@ -269,6 +281,15 @@ export async function POST(request: NextRequest) {
 
     const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
 
+    const finalizedMetrics = {
+      ...metrics,
+      aiInterpretationSource: aiInterpretationResult.source,
+      dataQuality: {
+        ...(scores.dataQuality ?? {}),
+        aiInterpretationSource: aiInterpretationResult.source,
+      },
+    };
+
     // --- Persist run ---
     const supabase = createServiceRoleClient();
     const { error: insertError } = await supabase.from("runs").insert({
@@ -277,7 +298,7 @@ export async function POST(request: NextRequest) {
       title: queryText.length > 60 ? queryText.slice(0, 57) + "..." : queryText,
       query_text: queryText,
       corridor_geojson: corridorGeojson,
-      metrics,
+      metrics: finalizedMetrics,
       result_geojson: geojson,
       summary_text: summary,
       ai_interpretation: aiInterpretationResult.text,
@@ -310,7 +331,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         runId,
-        metrics,
+        metrics: finalizedMetrics,
         geojson,
         summary,
         aiInterpretation: aiInterpretationResult.text,

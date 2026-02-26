@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const reportRequestSchema = z.object({
@@ -126,6 +127,7 @@ function buildPdf(run: any): Uint8Array {
     ["Transit Stops", metrics.totalTransitStops],
     ["Fatal Crashes", metrics.totalFatalCrashes],
     ["Justice40 Eligible", metrics.justice40Eligible],
+    ["AI Interpretation Source", metrics.aiInterpretationSource ?? (metrics.dataQuality as { aiInterpretationSource?: string } | undefined)?.aiInterpretationSource ?? "unknown"],
   ];
 
   const lines: string[] = [
@@ -206,10 +208,13 @@ function buildHtml(run: any): string {
   const title = (run.title as string) ?? "Corridor Analysis Report";
   const aiInterpretation = (run.ai_interpretation as string | null) ?? null;
 
-  // Data quality
-  const dq = (m.dataQuality ?? {}) as Record<string, unknown>;
   const confidence = (m.confidence as string) ?? "unknown";
   const title6Flags = (m.title6Flags ?? []) as string[];
+  const sourceTransparency = buildSourceTransparency(
+    m,
+    (m.aiInterpretationSource as string | undefined) ?? undefined
+  );
+  const aiNarrativeStatus = sourceTransparency.find((item) => item.key === "ai")?.status ?? "Unknown";
 
   return `<!doctype html>
 <html lang="en">
@@ -255,7 +260,7 @@ function buildHtml(run: any): string {
   <div class="logo">OpenPlan</div>
   <h1>${esc(title)}</h1>
   <div class="subtitle">
-    Generated: ${esc(generatedAt)} · Analysis run: ${esc(timestamp)} · Confidence: ${esc(confidence)}
+    Generated: ${esc(generatedAt)} · Analysis run: ${esc(timestamp)} · Confidence: ${esc(confidence)} · Narrative mode: ${esc(aiNarrativeStatus)}
   </div>
 </div>
 
@@ -336,6 +341,8 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
   <tr><td>Ferry Terminals</td><td>${fmt(m.ferryStops as number)}</td></tr>
   <tr><td>Stops per Square Mile</td><td>${m.stopsPerSquareMile ?? "N/A"}</td></tr>
   <tr><td>Transit Access Tier</td><td>${esc(String(m.transitAccessTier ?? "N/A"))}</td></tr>
+  <tr><td>Walk/Bike Access Tier</td><td>${esc(String(m.walkBikeAccessTier ?? "N/A"))}</td></tr>
+  <tr><td>Walk/Bike Access Rationale</td><td>${esc(String(m.walkBikeAccessRationale ?? "N/A"))}</td></tr>
 </table>
 
 <!-- SAFETY -->
@@ -362,7 +369,7 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
   <tr><td>Low Vehicle Access Tracts (&ge;10% zero-vehicle households)</td><td>${fmt(m.lowVehicleAccessTracts as number)}</td></tr>
   <tr><td>Transit Dependency Tracts (&ge;15% transit commute share)</td><td>${fmt(m.highTransitDependencyTracts as number)}</td></tr>
   <tr><td>Burdened Low-Income Tracts</td><td>${fmt(m.burdenedLowIncomeTracts as number)}</td></tr>
-  <tr><td>Screening Method</td><td>${esc(String(m.equitySource ?? dq.equitySource ?? "cejst-proxy-census"))}</td></tr>
+  <tr><td>Screening Method</td><td>${esc(String(m.equitySource ?? "cejst-proxy-census"))}</td></tr>
   <tr><td>Justice40 Eligible</td><td>${(m.justice40Eligible as boolean) ? "✅ Yes" : "No"}</td></tr>
 </table>
 
@@ -382,13 +389,14 @@ ${(m.justice40Eligible as boolean) ? `
 <!-- DATA QUALITY -->
 <h2>Data Sources &amp; Quality</h2>
 <table>
-  <tr><th>Source</th><th>Status</th></tr>
-  <tr><td>Census / ACS 5-Year</td><td>${(dq.censusAvailable as boolean) ? "✅ Live data" : "⚠️ Unavailable"}</td></tr>
-  <tr><td>FARS Crash Data</td><td>${(dq.crashDataAvailable as boolean) ? "✅ Live data" : "⚠️ Estimated"}</td></tr>
-  <tr><td>LODES Employment</td><td>${esc(String(dq.lodesSource ?? "unknown"))}</td></tr>
-  <tr><td>Equity Screening</td><td>${esc(String(dq.equitySource ?? "unknown"))}</td></tr>
+  <tr><th>Source</th><th>Status</th><th>Transparency Note</th></tr>
+  ${sourceTransparency
+    .map(
+      (item) => `<tr><td>${esc(item.label)}</td><td>${esc(item.status)}</td><td>${esc(item.detail)}</td></tr>`
+    )
+    .join("\n")}
 </table>
-<p class="muted">Analysis confidence: ${esc(confidence)}. Data sourced from U.S. Census Bureau, NHTSA FARS, and derived equity screening aligned with CEJST methodology.</p>
+<p class="muted">Analysis confidence: ${esc(confidence)}. Source transparency values are generated from run metadata and carried into both the UI and exported report.</p>
 
 <!-- QUERY -->
 <h2>Analysis Query</h2>

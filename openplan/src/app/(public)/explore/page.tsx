@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import maplibregl, { LngLatBoundsLike, Map } from "maplibre-gl";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import type { Run } from "@/components/runs/RunHistory";
@@ -13,8 +14,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildMetricDeltas, deltaTone, formatDelta } from "@/lib/analysis/compare";
+import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { downloadGeojson, downloadMetricsCsv } from "@/lib/export/download";
-import { resolveStatusTone, toneFromBoolean, toneFromDelta } from "@/lib/ui/status";
+import { resolveStatusTone, toneFromDelta } from "@/lib/ui/status";
 
 type Position = [number, number] | [number, number, number];
 
@@ -45,7 +47,9 @@ type AnalysisResult = {
       crashDataAvailable?: boolean;
       lodesSource?: string;
       equitySource?: string;
+      aiInterpretationSource?: string;
     };
+    aiInterpretationSource?: string;
     [key: string]: unknown;
   };
   geojson: GeoJSON.FeatureCollection;
@@ -58,6 +62,13 @@ type CurrentWorkspaceResponse = {
   workspaceId: string;
   name: string | null;
   role: string;
+};
+
+type WorkspaceBootstrapResponse = {
+  workspaceId: string;
+  slug: string;
+  plan: string;
+  onboardingChecklist: string[];
 };
 
 type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
@@ -116,6 +127,9 @@ export default function ExplorePage() {
   const [workspaceLoadState, setWorkspaceLoadState] = useState<WorkspaceLoadState>("loading");
   const [workspaceName, setWorkspaceName] = useState<string | null>(null);
   const [workspaceRole, setWorkspaceRole] = useState<string | null>(null);
+  const [bootstrapWorkspaceName, setBootstrapWorkspaceName] = useState("");
+  const [isBootstrappingWorkspace, setIsBootstrappingWorkspace] = useState(false);
+  const [bootstrapChecklist, setBootstrapChecklist] = useState<string[]>([]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) {
@@ -293,6 +307,46 @@ export default function ExplorePage() {
     }
   };
 
+  const bootstrapWorkspace = async () => {
+    const trimmedName = bootstrapWorkspaceName.trim();
+
+    if (!trimmedName) {
+      setError("Enter a workspace name to bootstrap your pilot environment.");
+      return;
+    }
+
+    setError("");
+    setIsBootstrappingWorkspace(true);
+
+    try {
+      const response = await fetch("/api/workspaces/bootstrap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ workspaceName: trimmedName, plan: "pilot" }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error ?? "Workspace bootstrap failed.");
+      }
+
+      const payload = (await response.json()) as WorkspaceBootstrapResponse;
+      setWorkspaceId(payload.workspaceId);
+      setWorkspaceName(trimmedName);
+      setWorkspaceRole("owner");
+      setWorkspaceLoadState("loaded");
+      setBootstrapChecklist(payload.onboardingChecklist ?? []);
+      setBootstrapWorkspaceName("");
+    } catch (bootstrapError) {
+      const message = bootstrapError instanceof Error ? bootstrapError.message : "Workspace bootstrap failed.";
+      setError(message);
+    } finally {
+      setIsBootstrappingWorkspace(false);
+    }
+  };
+
   const loadRun = useCallback(
     (run: Run) => {
       setQueryText(run.query_text);
@@ -311,13 +365,18 @@ export default function ExplorePage() {
       }
 
       setError("");
+      const runMetrics = run.metrics as AnalysisResult["metrics"];
+
       setAnalysisResult({
         runId: run.id,
-        metrics: run.metrics as AnalysisResult["metrics"],
+        metrics: runMetrics,
         geojson: run.result_geojson,
         summary: run.summary_text,
         aiInterpretation: run.ai_interpretation ?? undefined,
-        aiInterpretationSource: run.ai_interpretation ? "ai" : "fallback",
+        aiInterpretationSource:
+          (typeof runMetrics.aiInterpretationSource === "string" && runMetrics.aiInterpretationSource) ||
+          (typeof runMetrics.dataQuality?.aiInterpretationSource === "string" && runMetrics.dataQuality?.aiInterpretationSource) ||
+          (run.ai_interpretation ? "ai" : "fallback"),
       });
     },
     [comparisonRun?.id]
@@ -461,6 +520,14 @@ export default function ExplorePage() {
     return buildMetricDeltas(analysisResult.metrics, comparisonRun.metrics);
   }, [analysisResult, comparisonRun]);
 
+  const sourceTransparency = useMemo(() => {
+    if (!analysisResult) {
+      return [];
+    }
+
+    return buildSourceTransparency(analysisResult.metrics, analysisResult.aiInterpretationSource);
+  }, [analysisResult]);
+
   const workspaceHelperText = useMemo(() => {
     if (workspaceLoadState === "loading") {
       return "Checking your default workspace and permissions...";
@@ -525,6 +592,53 @@ export default function ExplorePage() {
               <StatusBadge tone={resolveStatusTone(workspaceLoadState)}>{workspaceStatusLabel}</StatusBadge>
               <p className="text-xs text-muted-foreground">{workspaceHelperText}</p>
             </div>
+
+            {workspaceLoadState === "signedOut" ? (
+              <div className="rounded-xl border border-border/80 bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">Authenticate to access your workspace automatically.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/sign-in">Sign in</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/sign-up">Create account</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            {workspaceLoadState === "noMembership" ? (
+              <div className="rounded-xl border border-border/80 bg-muted/30 p-3 space-y-2.5">
+                <p className="text-xs text-muted-foreground">
+                  No workspace membership detected. Bootstrap a pilot workspace in under 10 minutes.
+                </p>
+                <Input
+                  value={bootstrapWorkspaceName}
+                  onChange={(event) => setBootstrapWorkspaceName(event.target.value)}
+                  placeholder="Example: Nevada County Pilot Workspace"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => void bootstrapWorkspace()}
+                  disabled={isBootstrappingWorkspace}
+                >
+                  {isBootstrappingWorkspace ? "Bootstrapping workspace..." : "Create Pilot Workspace"}
+                </Button>
+              </div>
+            ) : null}
+
+            {bootstrapChecklist.length > 0 ? (
+              <div className="rounded-xl border border-border/80 bg-background p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Pilot Onboarding Checklist</p>
+                <ul className="mt-2 list-disc space-y-1.5 pl-5 text-xs text-muted-foreground">
+                  {bootstrapChecklist.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
             <Textarea
               value={queryText}
@@ -609,25 +723,18 @@ export default function ExplorePage() {
                   </div>
                 ) : null}
 
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Data Quality</p>
-                  <div className="flex flex-wrap gap-2">
-                    <StatusBadge tone={toneFromBoolean(analysisResult.metrics.dataQuality?.censusAvailable, "success", "warning")}>
-                      Census: {analysisResult.metrics.dataQuality?.censusAvailable ? "Live" : "Unavailable"}
-                    </StatusBadge>
-                    <StatusBadge tone={toneFromBoolean(analysisResult.metrics.dataQuality?.crashDataAvailable, "success", "info")}>
-                      Crashes: {analysisResult.metrics.dataQuality?.crashDataAvailable ? "Live" : "Estimated"}
-                    </StatusBadge>
-                    <StatusBadge tone={resolveStatusTone(String(analysisResult.metrics.dataQuality?.lodesSource ?? "unknown"))}>
-                      LODES: {String(analysisResult.metrics.dataQuality?.lodesSource ?? "unknown")}
-                    </StatusBadge>
-                    <StatusBadge
-                      tone={resolveStatusTone(
-                        String(analysisResult.metrics.dataQuality?.equitySource ?? analysisResult.metrics["equitySource"] ?? "unknown")
-                      )}
-                    >
-                      Equity: {String(analysisResult.metrics.dataQuality?.equitySource ?? analysisResult.metrics["equitySource"] ?? "unknown")}
-                    </StatusBadge>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Source Transparency</p>
+                  <div className="space-y-2">
+                    {sourceTransparency.map((item) => (
+                      <div key={item.key} className="rounded-xl border border-border/80 bg-background p-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-foreground">{item.label}</p>
+                          <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
