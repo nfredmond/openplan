@@ -27,7 +27,7 @@
 
 ## 3) Integrity + Traceability
 - [x] Source-to-derived lineage partially documented in source modules (`census.ts`, `transit.ts`, `crashes.ts`, `equity.ts`, `scoring.ts`).
-- [ ] Last refresh timestamp persistently recorded by source layer in run output.
+- [x] Source snapshot metadata now captured in run output (`metrics.sourceSnapshots.*.fetchedAt` + source tags).
 - [x] Known limitations logged (runtime API fallback behavior identified).
 - [ ] “Safe for decision-support” status assigned by artifact class.
 
@@ -41,13 +41,12 @@
 ### Findings
 1. OpenPlan currently supports **concept-level corridor analytics**, not full canonical GIS layer governance.
 2. Multiple required pilot layers for council-grade defensibility are still absent as persisted GIS tables.
-3. CRS/geometry validity for uploaded corridor geometry is now hard-gated, but canonical layer-level topology gates are still pending.
+3. Corridor ingest now enforces WGS84/ring validity and analysis outputs now include source snapshot timestamps, but canonical layer-level topology gates are still pending.
 
 ### Immediate remediation queue (P0/P1)
 - **P1:** Extend CRS/topology validation from corridor ingest to all future canonical persisted GIS layers.
 - **P0:** Define and persist canonical pilot layer registry + data quality metadata table.
 - **P1:** Add topology/validity checks for derived/ingested geometries.
-- **P1:** Snapshot source timestamps + source IDs into run metadata for every output artifact.
 
 ## 5) Go / Hold recommendation
 - **Internal pilot/demo analytics:** **GO with caveats** (concept-level only).

@@ -42,6 +42,17 @@ For each published metric, include:
 - PNG embeds for briefs
 - CSV metric table (with metadata)
 
+### Runtime traceability requirement
+Council-bound exports must include source snapshots from analysis output:
+- `metrics.sourceSnapshots.census`
+- `metrics.sourceSnapshots.lodes`
+- `metrics.sourceSnapshots.transit`
+- `metrics.sourceSnapshots.crashes`
+- `metrics.sourceSnapshots.equity`
+
+Each snapshot must provide `source` and `fetchedAt` at minimum.
+
+
 ## Metadata block (must include)
 - Data date range
 - Source layers used

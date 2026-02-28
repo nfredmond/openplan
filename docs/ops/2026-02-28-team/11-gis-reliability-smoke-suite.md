@@ -24,7 +24,7 @@ Catch geospatial failures before demos, council packets, or pilot operations.
 ## Current v1 implementation mapping
 - **Layer availability:** partial (runtime source modules available; canonical GIS layer tables not complete).
 - **CRS + geometry sanity:** improved (WGS84 bounds + ring-closure checks now enforced for uploaded corridor geometry; full canonical-layer topology gates still pending).
-- **Core analytics query:** available via `/api/analysis` + test suite coverage.
+- **Core analytics query:** available via `/api/analysis` + test suite coverage, including geometry guard-rail checks.
 - **Map render:** covered by production build pass (Next.js map stack compile).
 - **Export:** covered by `export-download` tests; council pack export workflow still partial.
 - **Performance:** basic baseline from build/test runtime; query SLOs not fully enforced yet.
@@ -47,6 +47,7 @@ Catch geospatial failures before demos, council packets, or pilot operations.
 - `npm run lint` may allow warnings, but **0 errors**.
 - API smoke route tests must pass (`analysis`, `report`, `runs`).
 - Any council packet export with unresolved P0 => automatic **NO-GO**.
+- Analysis output must include `metrics.sourceSnapshots` metadata before council-facing export.
 
 ## Initial smoke run (kickoff)
 - **timestamp:** 2026-02-28 02:15 PT

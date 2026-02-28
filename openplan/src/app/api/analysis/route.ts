@@ -327,6 +327,7 @@ export async function POST(request: NextRequest) {
 
     // Generate human-readable summary
     const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
+    const analysisGeneratedAt = new Date().toISOString();
 
     // Build metrics object
     const metrics = {
@@ -390,6 +391,35 @@ export async function POST(request: NextRequest) {
 
       // Data quality
       dataQuality: scores.dataQuality,
+
+      // Traceability metadata
+      methodsVersion: "openplan-gis-methods-v0.2",
+      analysisGeneratedAt,
+      decisionUseStatus: "concept-level",
+      sourceSnapshots: {
+        census: {
+          source: "census-acs5-2023",
+          tractCount: census.tracts.length,
+          fetchedAt: analysisGeneratedAt,
+        },
+        lodes: {
+          source: lodes.source,
+          fetchedAt: analysisGeneratedAt,
+        },
+        transit: {
+          source: transit.source,
+          fetchedAt: analysisGeneratedAt,
+        },
+        crashes: {
+          source: crashes.source,
+          yearsQueried: crashes.yearsQueried,
+          fetchedAt: analysisGeneratedAt,
+        },
+        equity: {
+          source: equity.source,
+          fetchedAt: analysisGeneratedAt,
+        },
+      },
     };
 
     const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);

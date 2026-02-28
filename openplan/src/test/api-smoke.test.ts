@@ -22,6 +22,32 @@ describe('API smoke tests (validation + guard rails)', () => {
     expect(payload.error).toBe('Invalid input')
   })
 
+
+  it('POST /api/analysis rejects corridor geometries outside WGS84 bounds with HTTP 400', async () => {
+    const request = jsonRequest('http://localhost/api/analysis', {
+      workspaceId: '00000000-0000-0000-0000-000000000000',
+      queryText: 'test corridor',
+      corridorGeojson: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [630000, 4340000],
+            [631000, 4340000],
+            [631000, 4341000],
+            [630000, 4341000],
+            [630000, 4340000],
+          ],
+        ],
+      },
+    })
+
+    const response = await postAnalysis(request)
+    expect(response.status).toBe(400)
+
+    const payload = (await response.json()) as { error?: string }
+    expect(payload.error).toBe('Invalid corridor geometry')
+  })
+
   it('POST /api/report rejects invalid run IDs with HTTP 400', async () => {
     const request = jsonRequest('http://localhost/api/report', { runId: 'not-a-uuid' })
     const response = await postReport(request)
