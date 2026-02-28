@@ -45,7 +45,7 @@
 
 
 ## Monetization (Stripe P0) Oversight
-- IN_PROGRESS — Stripe P0 readiness coordination reactivated
-- TODO — Confirm production `STRIPE_LINK_*` completeness (12/12)
-- TODO — Run production readiness endpoint and checkout smoke tests
-- TODO — Publish READY/HOLD monetization decision packet
+- DONE — Stripe P0 readiness coordination completed
+- DONE — Production `STRIPE_LINK_*` completeness confirmed (12/12)
+- DONE — Readiness + smoke checks passed (configured=12, smoke PASS=12/12)
+- DONE — Monetization checkpoint closed as READY
