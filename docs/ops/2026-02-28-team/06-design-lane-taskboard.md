@@ -7,7 +7,7 @@
 - DONE
 
 ## Camila (Urban Design)
-- IN_PROGRESS — v1.1 must-fix revision cycle on Tier 1 premium PDFs
+- IN_PROGRESS — v2 plain-language + decision-clarity revision cycle on Tier 1 premium PDFs
 - TODO — Top-5 screen annotated polish pass
 - TODO — Brand mini-pack
 - TODO — Engineering handoff spec
@@ -15,7 +15,8 @@
 ## Principal Support to Camila
 - DONE — Must-fix patch text package prepared (`14-camila-v1_1-must-fix-patchtext.md`)
 - DONE — Rubric-based Tier 1 sign-off review published (`15-camila-tier1-signoff-rubric-review-v1.md`)
-- IN_PROGRESS — Awaiting v1.1 resubmission for final release sign-off
+- DONE — Tier 1 PASS/HOLD package published (`17-tier1-final-pass-hold-package-v1.md`)
+- IN_PROGRESS — Awaiting Tier 1 v2 resubmission for final PASS/HOLD decision
 
 ## Mateo (Assistant Planner)
 - IN_PROGRESS — Top-5 screen inventory + evidence pack
