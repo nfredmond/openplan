@@ -1,4 +1,4 @@
-# OpenPlan Design Lane Taskboard — 2026-02-28
+# OpenPlan Design + GIS Coordination Taskboard — 2026-02-28
 
 ## Status Legend
 - TODO
@@ -23,8 +23,15 @@
 - TODO — Principal review template for +24h/+48h
 - TODO — Top 5 risk/gap note with mitigations
 
+## Priya (GIS Expert)
+- IN_PROGRESS — Post-SRF transition to OpenPlan GIS lane
+- TODO — Pilot geospatial data hardening checklist execution
+- TODO — Council analytics pack spec execution
+- TODO — GIS reliability smoke suite baseline run
+
 ## Elena (Principal Planner)
 - IN_PROGRESS — Maintain design-lane governance + decision gates
+- IN_PROGRESS — Coordinate GIS lane with design outputs
 - TODO — Execute +24h checkpoint decision
 - TODO — Execute +48h final gate review
 
