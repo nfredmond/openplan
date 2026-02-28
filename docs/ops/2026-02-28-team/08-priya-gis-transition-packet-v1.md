@@ -1,10 +1,12 @@
 # Priya GIS Transition Packet v1 — Post-SRF Priority Queue
 
 - **Date Issued (PT):** 2026-02-28
+- **Execution Start (PT):** 2026-02-28 02:17
 - **Owner:** Priya (GIS Expert)
 - **Manager:** Elena (Principal Planner)
 - **Priority:** P0
 - **Context:** Transition immediately after SRF app completion
+- **Status:** ACTIVE
 
 ## Mission
 Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability, decision-quality analytics, and map/report performance under one execution lane.
@@ -38,9 +40,18 @@ Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability
 **Artifact:** `11-gis-reliability-smoke-suite.md`
 
 ## Check-in cadence
-- **+12h:** status + blockers
+- **+12h:** status + blockers (**due 2026-02-28 14:10 PT**)
 - **+24h:** first artifact draft set
 - **+48h:** v1 complete with recommendations
+
+## Initial execution notes (completed at kickoff)
+- Confirmed OpenPlan repository structure and current GIS/analysis code paths.
+- Ran baseline engineering checks in `openplan/openplan`:
+  - `npm run test` ✅ (12 files / 40 tests passed)
+  - `npm run build` ✅
+  - `npm run lint` ⚠️ (1 non-blocking warning in `src/lib/export/download.ts`)
+- Confirmed corridor upload currently validates only `Polygon` / `MultiPolygon` shapes and file extension; CRS enforcement is not explicit.
+- Confirmed existing analytics are currently source-mixed (Census/OSM/FARS or SWITRS fallback + estimates), requiring council-facing caveat discipline.
 
 ## Required status format
 - Completed

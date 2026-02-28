@@ -1,5 +1,10 @@
 # Council Analytics Pack Spec — OpenPlan GIS v1
 
+- **Updated (PT):** 2026-02-28 02:19
+- **Owner:** Priya
+- **Status:** Draft v1 (concept-level)
+- **Methods Version:** `openplan-gis-methods-v0.1`
+
 ## Purpose
 Define a repeatable GIS output set for leadership/council briefings and decision packages.
 
@@ -17,6 +22,21 @@ Define a repeatable GIS output set for leadership/council briefings and decision
 - Estimated curb conflict hotspot count
 - Phase 1 intervention coverage summary
 
+## Metric definition block (required in packet appendix)
+For each published metric, include:
+- Formula definition
+- Unit
+- Input layer list
+- Data date range
+- Caveat/confidence label
+
+### Baseline metric conventions (v1)
+- `severe_conflict_exposure_index`: normalized 0–100 risk indicator (higher = worse baseline risk).
+- `high_comfort_crossing_opportunity_count`: count of crossings meeting comfort criteria under methods v0.1.
+- `ada_continuity_share_core_blocks`: `%` of frontage segments meeting continuity rule in audited core blocks.
+- `curb_conflict_hotspot_count`: count of curb segments exceeding conflict threshold.
+- `phase1_intervention_coverage_summary`: share of priority conflict locations covered by Phase 1 pilot treatment footprint.
+
 ## Output formats
 - PDF slide-ready maps
 - PNG embeds for briefs
@@ -32,5 +52,40 @@ Define a repeatable GIS output set for leadership/council briefings and decision
 ## Naming convention
 `openplan_<jurisdiction>_<corridor>_<artifact>_v<major>_<YYYYMMDD>`
 
-## Decision-use disclaimer
-“Concept-level planning analytics for direction-setting; not final engineering or construction documents.”
+### Artifact type suffixes (required)
+- `map_context_nodes`
+- `map_crossing_exposure`
+- `map_ada_continuity`
+- `map_curb_conflicts`
+- `map_phase1_blockA`
+- `map_phase1_blockB`
+- `metrics_table`
+- `methods_appendix`
+
+## Mock output bundle path (replication template)
+```
+openplan/docs/ops/packs/<YYYYMMDD>_<jurisdiction>_<corridor>/
+  01_maps_pdf/
+    openplan_<jurisdiction>_<corridor>_map_context_nodes_v1_<YYYYMMDD>.pdf
+    openplan_<jurisdiction>_<corridor>_map_crossing_exposure_v1_<YYYYMMDD>.pdf
+    ...
+  02_maps_png/
+    openplan_<jurisdiction>_<corridor>_map_context_nodes_v1_<YYYYMMDD>.png
+    ...
+  03_metrics_csv/
+    openplan_<jurisdiction>_<corridor>_metrics_table_v1_<YYYYMMDD>.csv
+  04_methods/
+    openplan_<jurisdiction>_<corridor>_methods_appendix_v1_<YYYYMMDD>.md
+  05_qa/
+    qa_log.md
+    caveats.md
+```
+
+## Decision-use disclaimer (standard)
+“Concept-level planning analytics for direction-setting; not final engineering or construction documents. Metrics and map outputs are preliminary pending field verification and technical refinement.”
+
+## Release gates (must pass before council-facing packet)
+1. Canonical layer registry populated for all metrics used.
+2. Metric appendix complete with formulas + caveats.
+3. QA log shows no unresolved P0 defects.
+4. Required metadata block present in every map/table export.
