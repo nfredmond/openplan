@@ -7,11 +7,14 @@
 - DONE
 
 ## Camila (Urban Design)
-- IN_PROGRESS — Visual direction one-pager
-- IN_PROGRESS — Core component style set
+- IN_PROGRESS — v1.1 must-fix revision cycle on Tier 1 premium PDFs
 - TODO — Top-5 screen annotated polish pass
 - TODO — Brand mini-pack
 - TODO — Engineering handoff spec
+
+## Principal Support to Camila
+- DONE — Must-fix patch text package prepared (`14-camila-v1_1-must-fix-patchtext.md`)
+- IN_PROGRESS — Awaiting v1.1 resubmission for final release sign-off
 
 ## Mateo (Assistant Planner)
 - IN_PROGRESS — Top-5 screen inventory + evidence pack
