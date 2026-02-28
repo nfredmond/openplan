@@ -6,7 +6,7 @@
 - **Methods Version:** `openplan-gis-methods-v0.1`
 
 ## Purpose
-Define a repeatable GIS output set for leadership/council briefings and decision packages.
+Define a repeatable GIS output set for leadership/council briefings and decision packages across U.S. municipalities, counties/county-equivalents, tribal governments, regional commissions, and state DOT contexts.
 
 ## Required Maps (minimum)
 1. Corridor context + nodes map
@@ -60,6 +60,19 @@ Each snapshot must provide `source` and `fetchedAt` at minimum.
 - Assumptions / caveats
 - Draft status (concept-level vs field-verified)
 
+
+
+## Jurisdiction token standard (national)
+Use a normalized jurisdiction token in filenames/metadata:
+- `city-<slug>`
+- `county-<slug>`
+- `county-equivalent-<slug>` (parish/borough/municipio/independent-city)
+- `tribal-<slug>`
+- `rtpa-commission-<slug>`
+- `state-dot-<slug>`
+
+`<jurisdiction>` in naming convention should use one of the tokens above.
+
 ## Naming convention
 `openplan_<jurisdiction>_<corridor>_<artifact>_v<major>_<YYYYMMDD>`
 
@@ -91,6 +104,15 @@ openplan/docs/ops/packs/<YYYYMMDD>_<jurisdiction>_<corridor>/
     qa_log.md
     caveats.md
 ```
+
+
+
+## National disclosure addendum
+When a package includes tribal or county-equivalent context, metadata must explicitly list:
+- jurisdiction classification,
+- governing data authority/source,
+- any data sovereignty/availability limitations,
+- any state-specific crash-data adapter used.
 
 ## Decision-use disclaimer (standard)
 “Concept-level planning analytics for direction-setting; not final engineering or construction documents. Metrics and map outputs are preliminary pending field verification and technical refinement.”

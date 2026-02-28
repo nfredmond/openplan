@@ -9,7 +9,7 @@
 - **Status:** ACTIVE
 
 ## Mission
-Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability, decision-quality analytics, and map/report performance under one execution lane.
+Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability, decision-quality analytics, and map/report performance under one execution lane, with nationwide U.S. jurisdiction support.
 
 ## Top 3 Priorities (in order)
 1. **Pilot geospatial data hardening**
@@ -38,6 +38,17 @@ Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability
 - Flag top infra risks and immediate mitigations.
 
 **Artifact:** `11-gis-reliability-smoke-suite.md`
+
+
+## U.S. nationwide scope alignment
+- This GIS lane is now explicitly **jurisdiction-agnostic across the United States**.
+- Method/docs language must support:
+  - municipalities, counties, and county-equivalents (parishes, boroughs, municipios, independent cities),
+  - tribal governments and tribal transportation contexts,
+  - RTPAs/transportation commissions,
+  - state DOT agencies.
+- Positioning line for outward contexts remains:
+  - **"Based in Northern California, serving agencies across the United States."**
 
 ## Check-in cadence
 - **+12h:** status + blockers (**due 2026-02-28 14:10 PT**)

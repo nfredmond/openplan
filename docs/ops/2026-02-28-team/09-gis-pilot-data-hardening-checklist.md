@@ -13,9 +13,19 @@
 | Sidewalk / ADA frontage network | **Not yet implemented** | n/a | n/a | n/a | ADA continuity metric currently not layer-backed | 🔶 Gap |
 | Curb use / loading zones | **Not yet implemented** | n/a | n/a | n/a | Curb conflict outputs cannot be auditable yet | 🔶 Gap |
 | Transit stops + access | OSM Overpass pull at runtime (`transit.ts`) | live query per run | code-driven | WGS84 | External API variability; not snapshotted per run | 🟡 Partial |
-| Collision / safety events | SWITRS local CSV (if configured) else FARS API / estimate (`crashes.ts`) | runtime | code-driven | WGS84 | Source fallback introduces confidence variance | 🟡 Partial |
+| Collision / safety events | State/local crash adapter when available (SWITRS in CA today) else national FARS/estimate fallback (`crashes.ts`) | runtime | code-driven | WGS84 | Jurisdiction-dependent source quality variance | 🟡 Partial |
 | Speed / volume observation points | **Not yet implemented** | n/a | n/a | n/a | No observed operational baseline layer | 🔶 Gap |
 | Parcel / frontage references | **Not yet implemented** | n/a | n/a | n/a | Frontage continuity claims are non-auditable | 🔶 Gap |
+
+
+
+## 1A) Nationwide jurisdiction portability guardrails
+- [ ] Jurisdiction taxonomy field included in packet metadata:
+  - `municipality | county | county-equivalent | tribal-government | rtpa-commission | state-dot`
+- [ ] County-equivalent handling language included where relevant (parish, borough, municipio, independent city).
+- [ ] Tribal context flag available for sovereign tribal transportation priorities and data constraints.
+- [ ] Crash-data adapter selected by jurisdiction/state with explicit source + confidence label.
+- [ ] Method text avoids region-limited assumptions unless case-specific.
 
 ## 2) Schema + Geometry QA
 - [x] Required fields present for existing runtime metrics payload in `/api/analysis`.
@@ -42,10 +52,12 @@
 1. OpenPlan currently supports **concept-level corridor analytics**, not full canonical GIS layer governance.
 2. Multiple required pilot layers for council-grade defensibility are still absent as persisted GIS tables.
 3. Corridor ingest now enforces WGS84/ring validity and analysis outputs now include source snapshot timestamps, but canonical layer-level topology gates are still pending.
+4. Nationwide portability is partially implemented; jurisdiction taxonomy + county-equivalent/tribal handling is documented but not yet fully encoded in runtime outputs.
 
 ### Immediate remediation queue (P0/P1)
 - **P1:** Extend CRS/topology validation from corridor ingest to all future canonical persisted GIS layers.
 - **P0:** Define and persist canonical pilot layer registry + data quality metadata table.
+- **P0:** Add jurisdiction taxonomy + county-equivalent/tribal context metadata to council export artifacts.
 - **P1:** Add topology/validity checks for derived/ingested geometries.
 
 ## 5) Go / Hold recommendation

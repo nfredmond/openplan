@@ -10,15 +10,17 @@ Catch geospatial failures before demos, council packets, or pilot operations.
 ## Smoke checks (run in sequence)
 1. **Layer availability check**
    - Can all canonical layers be queried?
-2. **CRS + geometry sanity check**
+2. **Jurisdiction adapter check (national scope)**
+   - Is the correct source adapter selected for jurisdiction type/state (e.g., SWITRS for CA, national fallback elsewhere) with explicit confidence flag?
+3. **CRS + geometry sanity check**
    - Any invalid geometries or CRS mismatches?
-3. **Core analytics query check**
+4. **Core analytics query check**
    - Baseline safety/ADA metrics compute successfully?
-4. **Map render check**
+5. **Map render check**
    - Standard map set renders without tile/style failures?
-5. **Export check**
+6. **Export check**
    - PDF/PNG/CSV export paths complete with no schema errors?
-6. **Performance threshold check**
+7. **Performance threshold check**
    - Queries/renders stay under agreed response time budget?
 
 ## Current v1 implementation mapping
@@ -56,6 +58,7 @@ Catch geospatial failures before demos, council packets, or pilot operations.
 | Step | Result | Notes |
 |---|---|---|
 | Layer availability | ⚠️ Partial | Runtime source modules present; canonical pilot layers incomplete |
+| Jurisdiction adapter check | ⚠️ Partial | CA/non-CA fallback logic exists; explicit jurisdiction taxonomy assertion in exports is pending |
 | CRS + geometry sanity | 🟡 Improved | Polygon/MultiPolygon + WGS84 bounds + ring-closure gate now active for corridor ingest; broader layer harmonization remains pending |
 | Core analytics query check | ✅ Pass | API test suite and analysis route validation coverage present |
 | Map render check | ✅ Pass | `npm run build` successful |
@@ -72,3 +75,9 @@ Catch geospatial failures before demos, council packets, or pilot operations.
 
 ## Go/No-Go rule
 No external decision packet should ship if any P0 remains unresolved.
+
+
+## National-scope constraints (current)
+1. Crash safety source depth is uneven across states unless a state-specific adapter is configured.
+2. Tribal and county-equivalent contexts need explicit metadata tagging in exports to avoid jurisdiction ambiguity.
+3. Regional/state agency datasets may vary in schema and refresh cadence, requiring per-jurisdiction adapter QA.
