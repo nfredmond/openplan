@@ -1,7 +1,9 @@
 # Mateo Readability Pass — v2 Plain-English Edit Set
 
-- **Date/Time (PT):** 2026-02-28 02:52
-- **Source:** Mateo readability pass on Camila premium batch
+- **Date/Time (PT):** 2026-02-28 02:52 (updated 03:28 ingestion)
+- **Source:**
+  - `agents/team/assistant-planner/pdf_polish_readability_review_2026-02-28_batch1.md`
+  - `agents/team/associate-planner/pdf_polish_review_rubric_v1.md`
 - **Owner for application:** Camila (urban-design-expert)
 - **Priority:** P0 before v2 external ship review
 
@@ -27,10 +29,25 @@
    -> `sidewalk comfort gaps`
 
 6. `Safety uplift: A3 | B4 | C5`
-   -> `Safety score (1-5): A=3, B=4, C=5`
+   -> `Safety score (1–5): Option A = 3, Option B = 4, Option C = 5`
 
-7. `phased local CIP match strategy`
+7. `operational compatibility`
+   -> `how well this works with current traffic and transit operations`
+
+8. `capital efficiency`
+   -> `cost-effectiveness for the benefits delivered`
+
+9. `phased local CIP match strategy`
    -> `phased local Capital Improvement Program match strategy`
+
+10. `Concept-level planning mock; not survey/engineering/construction documents.`
+   -> `Concept-level planning mockup; not a survey, engineering, or construction document.`
+
+## Fast-Apply Order (minimal layout churn)
+1. Recommended Action block
+2. Summary block
+3. Fiscal Impact label
+4. Concept comparison label/score lines
 
 ## QA Gate for v2
 - Replace terms consistently across client brief + council cover.
