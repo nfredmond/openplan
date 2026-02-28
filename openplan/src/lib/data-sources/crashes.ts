@@ -2,8 +2,8 @@
  * Crash data fetcher
  *
  * Priority order:
- * 1) SWITRS local CSV (California-only, all severities) when SWITRS_CSV_PATH is set
- * 2) FARS API (fatal-only)
+ * 1) State/local crash CSV adapter when configured (e.g., SWITRS for California)
+ * 2) FARS API (fatal-only, nationwide)
  * 3) Area-based estimate fallback
  */
 

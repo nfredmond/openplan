@@ -29,7 +29,7 @@ Ship a sellable OpenPlan SaaS product for small/rural agencies, tribal programs,
 ## 3) Target Customer + Use Case
 
 ### Primary Buyer
-Small/rural transportation agencies, tribal transportation programs, and small consultancies in California and the Western US.
+Small/rural transportation agencies, tribal transportation programs, counties/county-equivalents, RTPAs/transportation commissions, and small consultancies across the United States.
 
 ### Killer Use Case
 **Grant application support.** These agencies spend $15K-$50K per ATP/SS4A/RAISE application hiring consultants to do accessibility analysis, equity assessment, and write the technical sections. If OpenPlan can generate a defensible analysis + report in 15 minutes, a $599/mo subscription pays for itself on the first grant cycle.
