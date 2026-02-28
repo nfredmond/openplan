@@ -29,7 +29,7 @@
 
 ## 3) Capability One-Pager — Contact + disclosure cleanup
 ### Replace contact line with:
-**Contact: nathaniel@natfordplanning.com • natfordplanning.com • California, USA**
+**Contact: nathaniel@natfordplanning.com • natfordplanning.com • Based in Northern California, serving agencies across the United States.**
 
 ### Add footer disclosure line:
 **Portfolio examples shown may include conceptual/synthetic mock representations prepared for planning communication and internal workflow demonstration.**

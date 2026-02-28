@@ -63,7 +63,7 @@ Add small note block:
 
 ### 1) Replace contact line
 Use:
-**Contact: nathaniel@natfordplanning.com • natfordplanning.com • California, USA**
+**Contact: nathaniel@natfordplanning.com • natfordplanning.com • Based in Northern California, serving agencies across the United States.**
 
 ### 2) Add disclosure footer
 Use:
