@@ -1,0 +1,5 @@
+# qgis_process presence check
+2026-02-28 19:50:22 PST
+$ which qgis_process
+$ qgis_process --version
+/bin/bash: line 7: qgis_process: command not found
