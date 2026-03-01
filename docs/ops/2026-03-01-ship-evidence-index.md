@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 12:57 PT (post-priority-directive gate run)  
+**Refresh checkpoint:** 13:08 PT (priority evidence-hygiene enforcement pass)  
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** 17:30 ship gate
@@ -27,7 +27,7 @@
 
 ## 2) Ship-Board Traceability (P0 Must-Ship)
 
-| Ship-board P0 item | Status @ 12:20 | Evidence path(s) |
+| Ship-board P0 item | Status @ 13:08 | Evidence path(s) |
 |---|---|---|
 | Auth/session regression suite passes | PASS (test-level) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-auth-workspace-billing-vitest.log` |
 | Workspace + role enforcement verified server-side | PASS WITH NOTE (provider webhook route is expected auth exception) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` |
@@ -55,6 +55,7 @@
 | B-04 (P0-D04) | P0 | Grant-lab E2E run evidence not posted yet | Owen + Iris + Camila | Confirm capture method and owner before 13:00 sweep | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md`<br>`openplan/docs/ops/2026-03-01-ship-evidence-index.md` | Cadence requirement documented | Grant-lab E2E artifact posted and verified | Pending run |
 | B-05 (P0-D05) | P0 | Post-purchase “what happens next” clarity proof not linked to implementation artifact | Camila + Iris | Confirm implementation proof path (not concept-only) | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Copy proposal exists | Deployed/implemented screen-state evidence linked | Pending implementation proof |
 | B-06 (P0-D06) | P0 | Payment/activation safe-error messaging proof not linked to implemented state | Camila + Iris | Confirm implementation proof path for error states | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Safe-error copy proposal exists | Implemented error-state evidence linked | Pending implementation proof |
+| B-07 (P0-D07) | P0 | Production rollback checklist proof artifact missing for P0 ship-board claim | Iris + Elena | Publish rollback checklist artifact path for Day 1 gate | `openplan/docs/ops/2026-03-01-openplan-ship-board.md`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` | Clean gate test/build log exists | Timestamped rollback checklist artifact posted and linked in evidence index | Pending artifact |
 
 ### 3.3 Recently closed blocker
 | Blocker ID | Severity | Closure summary | Owner | Evidence path(s) |
@@ -79,3 +80,31 @@
 - [ ] Grant-lab E2E artifacts posted.
 - [ ] P0 UX implementation proofs posted.
 - [ ] Final PASS/HOLD recommendation updated with gate-time truth.
+
+
+## 6) Missing-proof List by Owner (strict gate mapping)
+
+Rule enforced: every gate claim must map to at least one concrete artifact/log path. If proof is missing, it is listed as a blocker.
+
+### 6.1 Gate claim -> proof map
+
+| Gate claim | Proof status | Concrete artifact/log path(s) | Blocker ID | Owner |
+|---|---|---|---|---|
+| Auth/session regression suite passes | PROVED | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-auth-workspace-billing-vitest.log` | — | Iris |
+| Workspace + role enforcement verified server-side | PROVED (webhook route exception only) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` | — | Iris |
+| Core planner workflow E2E pass in production-like env | MISSING PROOF | *(pending artifact in `2026-03-01-test-output`)* | B-03 | Owen + Iris |
+| Grant-lab workflow E2E pass | MISSING PROOF | *(pending artifact in `2026-03-01-test-output`)* | B-04 | Owen + Iris + Camila |
+| Billing checkout + webhook + cancel/refund canary evidence captured | PARTIAL PROOF (closure not complete) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log` | B-01 | Iris |
+| Production smoke + rollback checklist complete | MISSING PROOF (rollback artifact) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` *(rollback artifact pending)* | B-07 | Iris + Elena |
+| Post-purchase next-step clarity implemented | MISSING PROOF | `openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` *(implementation artifact pending)* | B-05 | Camila + Iris |
+| Payment/activation safe-error messaging implemented | MISSING PROOF | `openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` *(implementation artifact pending)* | B-06 | Camila + Iris |
+
+### 6.2 Current missing-proof list by owner
+
+| Owner | Missing-proof items (blocker IDs) | Required artifact to close |
+|---|---|---|
+| Iris | B-01, B-03, B-07 (plus shared B-04/B-05/B-06) | Live webhook closure logs with matching Stripe->Supabase evidence; planner E2E run artifact; rollback checklist artifact; implementation proof links for shared UX blockers |
+| Owen | B-03, B-04 | Core planner E2E evidence artifact; grant-lab E2E evidence artifact mapping to acceptance criteria |
+| Camila | B-04, B-05, B-06 | Grant-lab E2E evidence artifact; implemented post-purchase clarity proof; implemented safe-error state proof |
+| Elena | B-07 governance closeout | Day-1 rollback checklist publication + gate memo linkage |
+
