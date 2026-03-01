@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 12:10 PT (system recovery follow-up)  
+**Refresh checkpoint:** 12:20 PT (post-recovery sync)  
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** 17:30 ship gate
@@ -13,27 +13,27 @@
 | Required pack item | Current status | Evidence path(s) | Owner |
 |---|---|---|---|
 | Auth regression result | **PASS (test-level)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-auth-workspace-billing-vitest.log` | Iris |
-| Workspace/role API guardrail checks | **MIXED (OPEN P0)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-auth-coverage-scan.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Iris |
+| Workspace/role API guardrail checks | **PASS WITH NOTE** (webhook route exempt) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Iris |
 | Core planner E2E result | **MISSING evidence artifact** | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` (criteria)<br>`openplan/docs/ops/2026-03-01-owen-acceptance-evidence-alignment.md` (alignment note)<br>Expected run evidence (pending): `openplan/docs/ops/2026-03-01-test-output/` | Owen + Iris |
 | Grant-lab E2E result | **MISSING evidence artifact** | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` (required cadence)<br>Expected run evidence (pending): `openplan/docs/ops/2026-03-01-test-output/` | Owen + Iris + Camila |
 | Billing/webhook reliability evidence | **MIXED / OPEN P0** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Iris |
-| Geospatial QA/trust gate (pilot-safe constraints) | **READY WITH CAVEATS** | `openplan/docs/ops/2026-03-01-geospatial-qa-gate.md` | Priya |
+| Geospatial QA/trust gate (pilot-safe constraints) | **READY WITH CAVEATS** | `openplan/docs/ops/2026-03-01-geospatial-qa-gate.md`<br>`openplan/docs/ops/2026-03-01-geospatial-risk-update-1300.md` | Priya |
 | Support fallback + entitlement delay scripts | **READY** | `openplan/docs/ops/2026-02-28-team/23-mateo-paid-access-onboarding-copy-and-fallback-v1.md` | Mateo |
-| Critical UX risk audit (ship-critical only) | **READY (OPEN P0 UX ITEMS)** | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`agents/team/urban-design-expert/reports/product_checkout_messaging_clear_safe_conversion_v1.md` | Camila |
+| Critical UX risk audit (ship-critical only) | **READY (P0 UX closure evidence pending)** | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md`<br>`agents/team/urban-design-expert/reports/product_checkout_messaging_clear_safe_conversion_v1.md` | Camila |
 | Principal governance cadence + consolidated packet | **READY** | `openplan/docs/ops/2026-03-01-principal-qa-assembly-plan.md`<br>`openplan/docs/ops/2026-03-01-consolidated-status-packet.md`<br>`openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md` | Elena |
 
 ---
 
 ## 2) Ship-Board Traceability (P0 Must-Ship)
 
-| Ship-board P0 item | Status @ 12:10 | Evidence path(s) |
+| Ship-board P0 item | Status @ 12:20 | Evidence path(s) |
 |---|---|---|
 | Auth/session regression suite passes | PASS (test-level) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-auth-workspace-billing-vitest.log` |
-| Workspace + role enforcement verified server-side | MIXED (coverage gaps remain) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-auth-coverage-scan.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` |
+| Workspace + role enforcement verified server-side | PASS WITH NOTE (provider webhook route is expected auth exception) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` |
 | Core planner workflow E2E pass in production-like env | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` (criteria only; execution evidence pending) |
 | Grant-lab workflow E2E pass | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` (requirement) + execution evidence pending |
 | Billing checkout + webhook + cancel/refund canary evidence captured | MIXED (test pass; live closure still open) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log` |
-| Production smoke + rollback checklist complete | PARTIAL | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log` (rollback artifact still pending) |
+| Production smoke + rollback checklist complete | PARTIAL | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log` (rollback artifact pending) |
 
 **Day 1 provisional posture:** **HOLD** until unresolved P0 blockers in Section 3 are closed or approved with explicit mitigation.
 
@@ -50,11 +50,15 @@
 | Blocker ID | Severity | Blocker summary | Owner | Decision needed | Evidence path(s) | Mitigation in place | Exit criteria | ETA |
 |---|---|---|---|---|---|---|---|---|
 | B-01 (P0-D01) | P0 | Live billing webhook ingestion closure still not fully evidenced in canary lifecycle | Iris | Approve replay/verification sequence and closure criteria | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Billing tests + mutation probe pass | Matching Stripe lifecycle evidence with corresponding `billing_webhook_receipts` + `billing_events` + correct workspace state | Pending owner rerun |
-| B-02 (P0-D02) | P0 | Explicit auth guard coverage gap on `report` and `runs` API routes | Iris | Confirm patch + rerun auth coverage scan | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-auth-coverage-scan.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Partial route protections exist | Coverage scan no longer flags `report`/`runs`; regression tests pass | Pending patch |
 | B-03 (P0-D03) | P0 | Core planner E2E run evidence not posted yet | Owen + Iris | Assign run owner and publish artifact path before 13:00 sweep | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md`<br>`openplan/docs/ops/2026-03-01-owen-acceptance-evidence-alignment.md` | Acceptance criteria defined | Planner E2E proof (log/screenshot/video) posted under test-output and mapped to acceptance criteria | Pending run |
 | B-04 (P0-D04) | P0 | Grant-lab E2E run evidence not posted yet | Owen + Iris + Camila | Confirm capture method and owner before 13:00 sweep | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md`<br>`openplan/docs/ops/2026-03-01-ship-evidence-index.md` | Cadence requirement documented | Grant-lab E2E artifact posted and verified | Pending run |
-| B-05 (P0-D05) | P0 | Post-purchase “what happens next” clarity proof not linked to implementation artifact | Camila + Iris | Confirm implementation proof path (not concept-only) | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`agents/team/urban-design-expert/reports/product_checkout_messaging_clear_safe_conversion_v1.md` | Copy proposal exists | Deployed/implemented screen-state evidence linked | Pending implementation proof |
-| B-06 (P0-D06) | P0 | Payment/activation safe-error messaging proof not linked to implemented state | Camila + Iris | Confirm implementation proof path for error states | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`agents/team/urban-design-expert/reports/product_checkout_messaging_clear_safe_conversion_v1.md` | Safe-error copy proposal exists | Implemented error-state evidence linked | Pending implementation proof |
+| B-05 (P0-D05) | P0 | Post-purchase “what happens next” clarity proof not linked to implementation artifact | Camila + Iris | Confirm implementation proof path (not concept-only) | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Copy proposal exists | Deployed/implemented screen-state evidence linked | Pending implementation proof |
+| B-06 (P0-D06) | P0 | Payment/activation safe-error messaging proof not linked to implemented state | Camila + Iris | Confirm implementation proof path for error states | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Safe-error copy proposal exists | Implemented error-state evidence linked | Pending implementation proof |
+
+### 3.3 Recently closed blocker
+| Blocker ID | Severity | Closure summary | Owner | Evidence path(s) |
+|---|---|---|---|---|
+| B-02 (P0-D02) | P0 | Route-level auth guard coverage gap on `report`/`runs` closed; only provider webhook route remains as expected auth exception | Iris | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` |
 
 ---
 
@@ -69,6 +73,7 @@
 ## 5) 13:00 / 17:30 Ready-Check
 - [x] Evidence links refreshed after recovery checkpoint.
 - [x] Blocker digest aligned to current P0/P1 defect ownership list.
+- [x] Route-auth closure evidence added (B-02 closed).
 - [ ] Core planner E2E artifacts posted.
 - [ ] Grant-lab E2E artifacts posted.
 - [ ] P0 UX implementation proofs posted.
