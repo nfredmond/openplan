@@ -99,3 +99,30 @@
 - `openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
 - `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
 - `openplan/docs/ops/2026-03-01-principal-qa-assembly-plan.md`
+
+---
+
+## 4) Recovery Checkpoint — 11:54 PT (System Back Up)
+
+- **Done**
+  - Governance lane resumed immediately after system recovery.
+  - Fresh owner status request dispatched to Iris, Owen, Mateo, Priya, and Camila with required format and evidence-path requirement.
+  - 13:00 / 17:30 gate cadence reaffirmed as non-negotiable.
+
+- **In Progress**
+  - Collecting owner refresh submissions for pre-13:00 packet update.
+  - Updating P0/P1 defect ownership states with any new evidence artifacts.
+  - Preparing 13:00 QA sweep section for live status substitution.
+
+- **Blockers**
+  - Waiting on fresh owner status returns (expected by ~12:10 PT).
+  - P0 reliability proof remains dependent on updated engineering evidence paths.
+
+- **ETA Confidence**
+  - **High** for cadence enforcement and packet refresh before 13:00 gate.
+
+- **Evidence Paths**
+  - `openplan/docs/ops/2026-03-01-principal-qa-assembly-plan.md`
+  - `openplan/docs/ops/2026-03-01-consolidated-status-packet.md`
+  - `openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
+  - `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
