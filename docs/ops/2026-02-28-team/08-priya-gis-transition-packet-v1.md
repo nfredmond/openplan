@@ -49,6 +49,13 @@ Shift GIS capacity to OpenPlan pilot-readiness by locking geospatial reliability
   - state DOT agencies.
 - Positioning line for outward contexts remains:
   - **"Based in Northern California, serving agencies across the United States."**
+- Jurisdiction coverage addendum artifact: `22-jurisdiction-coverage-addendum.md`
+
+
+
+## Updated handoff note paths (nationwide framing)
+- `/home/nathaniel/.openclaw/workspace/projects/map-data-pipeline/docs/handoff-expert-programmer.md`
+- `/home/nathaniel/.openclaw/workspace/agents/team/gis-expert/projects/map-data-pipeline/docs/handoff-expert-programmer.md`
 
 ## Check-in cadence
 - **+12h:** status + blockers (**due 2026-02-28 14:10 PT**)
