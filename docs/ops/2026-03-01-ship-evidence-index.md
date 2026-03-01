@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 12:20 PT (post-recovery sync)  
+**Refresh checkpoint:** 12:57 PT (post-priority-directive gate run)  
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** 17:30 ship gate
@@ -13,6 +13,7 @@
 | Required pack item | Current status | Evidence path(s) | Owner |
 |---|---|---|---|
 | Auth regression result | **PASS (test-level)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-auth-workspace-billing-vitest.log` | Iris |
+| Clean merge gate (`lint`,`test`,`build`) | **PASS** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` | Iris |
 | Workspace/role API guardrail checks | **PASS WITH NOTE** (webhook route exempt) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log`<br>`openplan/docs/ops/2026-03-01-engineering-p0-burn-plan.md` | Iris |
 | Core planner E2E result | **MISSING evidence artifact** | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` (criteria)<br>`openplan/docs/ops/2026-03-01-owen-acceptance-evidence-alignment.md` (alignment note)<br>Expected run evidence (pending): `openplan/docs/ops/2026-03-01-test-output/` | Owen + Iris |
 | Grant-lab E2E result | **MISSING evidence artifact** | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` (required cadence)<br>Expected run evidence (pending): `openplan/docs/ops/2026-03-01-test-output/` | Owen + Iris + Camila |
@@ -33,7 +34,7 @@
 | Core planner workflow E2E pass in production-like env | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` (criteria only; execution evidence pending) |
 | Grant-lab workflow E2E pass | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` (requirement) + execution evidence pending |
 | Billing checkout + webhook + cancel/refund canary evidence captured | MIXED (test pass; live closure still open) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log` |
-| Production smoke + rollback checklist complete | PARTIAL | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log` (rollback artifact pending) |
+| Production smoke + rollback checklist complete | PARTIAL (clean gate pass; rollback artifact pending) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log` (rollback artifact pending) |
 
 **Day 1 provisional posture:** **HOLD** until unresolved P0 blockers in Section 3 are closed or approved with explicit mitigation.
 

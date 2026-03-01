@@ -1,5 +1,3 @@
-type Primitive = string | number | boolean | null | undefined;
-type MetricValue = Primitive | Primitive[] | Record<string, unknown>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
