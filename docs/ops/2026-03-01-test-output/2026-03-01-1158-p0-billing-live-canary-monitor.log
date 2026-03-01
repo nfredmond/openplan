@@ -1,0 +1,19 @@
+========================================
+OpenPlan Starter Canary Monitor
+Time: 2026-03-01 19:56:55 UTC
+Since: last 1440 minutes (epoch >= 1772308615)
+Workspace filter: <none>
+Email filter: <none>
+Env file: /tmp/openplan.vercel.env
+========================================
+\n[Stripe events]
+  (no matching Stripe events found yet)
+\n[Supabase billing evidence]
+  workspace 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 name=OpenClaw Test Org sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-28T07:47:51.483696+00:00
+  workspace a098f215-8ecb-4daa-8cfb-ad74de25bf93 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace 2afa9a0e-593a-4ec1-8342-cf32b8d45d02 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace dcc7a88a-e424-44a6-a02f-bc15857bce9e name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace 8d2e0200-5d2a-4e81-a4ed-9dc592638914 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  billing_events: no matching rows
+  webhook_receipts:
+    1534b67e-3086-4c8c-9522-a6d9da3d4e01 checkout.session.completed event_id=evt_test_webhook_after_fix status=ignored workspace=n/a processed=2026-03-01T02:04:57.128+00:00
