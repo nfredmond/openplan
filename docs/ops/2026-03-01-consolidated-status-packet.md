@@ -126,3 +126,21 @@
   - `openplan/docs/ops/2026-03-01-consolidated-status-packet.md`
   - `openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
   - `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
+
+---
+
+## 5) Enforcement Actions Update — 12:54 PT Directive
+
+### Actions implemented immediately
+1. **Activated hard no-bypass governance** (unresolved P0 => HOLD at all gates).
+2. **Locked Principal QA artifact requirement** before any external-ready claim.
+3. **Locked gate packet schema** at 13:00 and 17:30 to require blocker-level owner/ETA/evidence.
+4. **Set evidence-missing rule**: any blocker without evidence path remains unresolved.
+5. **Published hold criteria snapshot artifact** for consistent gate decisions.
+
+### Hold Criteria Snapshot (canonical)
+- `openplan/docs/ops/2026-03-01-hold-criteria-snapshot.md`
+
+### Gate packet compliance check
+- 13:00 packet: must include all open blockers with owner/ETA/evidence.
+- 17:30 packet: must include final P0 closure truth table + PASS/HOLD call.

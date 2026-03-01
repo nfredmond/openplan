@@ -7,6 +7,15 @@
 ## Command Objective
 Ship a reliable, pilot-ready OpenPlan v1 in 7 days with strict scope control and evidence-backed gating.
 
+
+## Effective Immediate Enforcement Update (12:54 PT)
+- **Hard no-bypass governance is active.**
+- Any unresolved **P0** at any gate = **HOLD**.
+- No **external-ready** claim is valid without a dated Principal QA PASS artifact.
+- 13:00 and 17:30 packets must include blocker-level **owner + ETA + evidence paths**.
+- Missing evidence path = unresolved blocker.
+- Reference: `openplan/docs/ops/2026-03-01-hold-criteria-snapshot.md`
+
 ## Gate Cadence (enforced)
 1. **09:00 — Scope Gate**
    - Collect owner status in required format.
