@@ -1,0 +1,11 @@
+# B-01 fresh in-scope Stripe lifecycle bundle
+timestamp_utc 2026-03-02T09:20:04.430Z
+workspace_target 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 OpenClaw Test Org
+workspace_before {"plan":"free","subscription_plan":null,"subscription_status":"pilot","stripe_customer_id":null,"stripe_subscription_id":null,"billing_updated_at":"2026-03-02T06:17:56.615+00:00"}
+marker b01_1772443204866
+stripe_customer_create_status 200
+customer_id cus_U4brw9BwQh1wUz
+stripe_subscription_create_status 200
+subscription_id sub_1T6Se12WNrI0StLiZ6KeS5Qd subscription_status active
+stripe_subscription_cancel_status 404
+stripe_subscription_cancel_error {"error":{"message":"Unrecognized request URL (POST: /v1/subscriptions/sub_1T6Se12WNrI0StLiZ6KeS5Qd/cancel). Please see https://stripe.com/docs or we can help at https://support.stripe.com/.","type":"invalid_request_error"}}

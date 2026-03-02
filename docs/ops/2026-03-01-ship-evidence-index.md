@@ -74,3 +74,15 @@ Source of truth:
 | P1-UX-03 helper/status text contrast runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/urban-design-expert/reports/2026-02-28-light-mode-contrast-polish-p1/TOKEN_CLASS_PATCHLIST_v1.md` |
 | P1-UX-04 outline control affordance runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/urban-design-expert/reports/2026-02-28-light-mode-contrast-polish-p1/TOKEN_CLASS_PATCHLIST_v1.md` |
 | P1-UX-05 focus-visible runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` |
+
+## 9) B-01 Fresh In-Scope Lifecycle Closure (01:23 PT retry run)
+
+- Primary closure bundle:
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log`
+- Retry precursor (failed cancel endpoint attempt, retained for traceability):
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-02-0108-b01-fresh-in-scope-lifecycle-bundle.log`
+
+Result: **B01_FRESH_SCOPE_PASS**
+- In-scope Stripe lifecycle created and replayed with ack `200`.
+- Receipts + billing events correlation present for both replayed event IDs.
+- Workspace mutation observed then reverted to baseline.
