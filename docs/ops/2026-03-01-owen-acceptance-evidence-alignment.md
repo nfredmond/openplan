@@ -38,3 +38,6 @@ Keep pilot acceptance criteria and gate packet evidence synchronized for QA swee
 
 ## Gate-time update rule
 At 13:00 and 17:30, replace bracket placeholders with exact evidence links. Any missing evidence path = unresolved item.
+
+## Morning gap flag reference
+- Remaining E2E blocker summary for governance packet: `openplan/docs/ops/2026-03-01-owen-morning-e2e-gap-flag.md`
