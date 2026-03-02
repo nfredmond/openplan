@@ -144,3 +144,26 @@
 ### Gate packet compliance check
 - 13:00 packet: must include all open blockers with owner/ETA/evidence.
 - 17:30 packet: must include final P0 closure truth table + PASS/HOLD call.
+
+---
+
+## 6) Live Roll-Call Sync — 15:59 PT
+
+- **Done**
+  - 13:00→now QA/QC control maintained with hard no-bypass governance active.
+  - Blocker truth table corrected: **B-07 (rollback artifact) closed**.
+
+- **In Progress**
+  - 17:30 ship-gate packet assembly with owner-level closure evidence chase.
+
+- **Blockers (Open P0 only)**
+  - **B-01 / B-03 / B-04 / B-05 / B-06**
+
+- **ETA**
+  - 17:30 gate packet delivery on schedule (next internal refresh ~16:45 PT).
+
+- **Evidence**
+  - `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
+  - `openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
+  - `openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md`
+  - `openplan/docs/ops/2026-03-01-hold-criteria-snapshot.md`
