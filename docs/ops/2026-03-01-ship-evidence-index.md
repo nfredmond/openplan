@@ -127,3 +127,12 @@ Rule enforced: every gate claim must map to at least one concrete artifact/log p
 
 ### Mitigation ETA
 - 45 minutes to create a fresh checkout lifecycle with UUID workspace metadata in current Stripe scope and rerun replay/ack + correlation bundle.
+
+## 8) Evening B-01 Update — External replay blocker + deterministic fallback proof
+
+- Blocker+mitigation memo:
+  - `openplan/docs/ops/2026-03-01-b01-external-replay-blocker-mitigation.md`
+- Next-best deterministic proof (signed synthetic lifecycle):
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-01-2219-b01-synthetic-lifecycle-proof.log`
+
+Status: external replay for historical event lineage remains blocked by key-scope event availability, but deterministic webhook lifecycle processing path is now fully evidenced with receipts/events/workspace-state correlation and revert hygiene.
