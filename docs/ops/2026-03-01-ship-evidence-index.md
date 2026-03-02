@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 01:31 PT (B-01 closure validation sync)
+**Refresh checkpoint:** 01:42 PT (B-03/B-04 runtime support delta)
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** Morning kickoff -> 09:00 scope gate
@@ -17,7 +17,7 @@
 | Clean merge gate (`lint`,`test`,`build`) | **PROVED** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` | Iris |
 | Workspace + role enforcement verified server-side | **PROVED (webhook route exception expected)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` | Iris |
 | Core planner E2E pass in production-like env | **PARTIAL PROOF (artifact posted; production-like runtime proof still pending)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-2220-evidence-presence-scan.log` | Owen + Iris |
-| Grant-lab E2E pass | **MISSING PROOF** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-2220-evidence-presence-scan.log` (no grant-lab artifact found) | Owen + Iris + Camila |
+| Grant-lab E2E pass | **PARTIAL PROOF (runtime log posted; final acceptance linkage pending)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-2220-evidence-presence-scan.log` | Owen + Iris + Camila |
 | Billing checkout + webhook + cancel/refund lifecycle evidence | **PROVED (B-01 closure bundle in active Stripe scope)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-02-0108-b01-fresh-in-scope-lifecycle-bundle.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-2051-b01-workspace-revert.log` | Iris |
 | Production smoke + rollback checklist complete | **PROVED** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log`<br>`openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md` | Iris + Elena |
 | Post-purchase next-step clarity implemented | **PROVED (runtime evidence linked)** | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1622-b05-post-purchase-proof.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-02-0106-b05-runtime-ui-proof.png`<br>`openplan/openplan/src/app/(auth)/sign-in/page.tsx` | Camila + Iris |
@@ -30,7 +30,7 @@
 | Blocker ID | Severity | Status | Owner | ETA | Evidence path(s) |
 |---|---|---|---|---|---|
 | B-03 (P0-D03) | P0 | **OPEN** (core planner artifact exists but production-like runtime proof not yet linked) | Owen + Iris | Morning 09:00 gate | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log`<br>`openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` |
-| B-04 (P0-D04) | P0 | **OPEN** (grant-lab artifact missing) | Owen + Iris + Camila | Morning 09:00 gate | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-2220-evidence-presence-scan.log`<br>`openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` |
+| B-04 (P0-D04) | P0 | **OPEN** (runtime artifact posted; final acceptance linkage pending) | Owen + Iris + Camila | Morning 09:00 gate | `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log`<br>`openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` |
 
 ### Recently closed
 - **B-01 (P0-D01)** billing lifecycle closure: CLOSED with fresh in-scope replay/ack/correlation + workspace mutation/revert proof (`2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log`).
