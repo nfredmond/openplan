@@ -195,3 +195,14 @@
 
 ### Not allowed
 - Feature expansion, exploratory enhancements, or non-blocker implementation work.
+
+---
+
+## 9) Live Command Packet Published — 2026-03-02 01:04 PT
+
+- Command packet path:
+  - `openplan/docs/ops/2026-03-02-live-command-packet-p0-blockers.md`
+- Active open P0 scope for closure:
+  - **B-01 / B-03 / B-04 / B-05 / B-06**
+- Scope lock reaffirmed:
+  - **No new features** until all listed P0 blockers close with evidence.
