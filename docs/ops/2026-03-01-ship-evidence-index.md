@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 13:08 PT (priority evidence-hygiene enforcement pass)  
+**Refresh checkpoint:** 15:59 PT (live task push sync pass)  
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** 17:30 ship gate
@@ -34,7 +34,7 @@
 | Core planner workflow E2E pass in production-like env | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-pilot-acceptance-criteria.md` (criteria only; execution evidence pending) |
 | Grant-lab workflow E2E pass | NOT YET VERIFIED | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md` (requirement) + execution evidence pending |
 | Billing checkout + webhook + cancel/refund canary evidence captured | MIXED (test pass; live closure still open) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log` |
-| Production smoke + rollback checklist complete | PARTIAL (clean gate pass; rollback artifact pending) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log` (rollback artifact pending) |
+| Production smoke + rollback checklist complete | PASS WITH NOTE (rollback artifact published; principal linkage pending final gate packet) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-p0-api-smoke-report.log`<br>`openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md` |
 
 **Day 1 provisional posture:** **HOLD** until unresolved P0 blockers in Section 3 are closed or approved with explicit mitigation.
 
@@ -55,11 +55,11 @@
 | B-04 (P0-D04) | P0 | Grant-lab E2E run evidence not posted yet | Owen + Iris + Camila | Confirm capture method and owner before 13:00 sweep | `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md`<br>`openplan/docs/ops/2026-03-01-ship-evidence-index.md` | Cadence requirement documented | Grant-lab E2E artifact posted and verified | Pending run |
 | B-05 (P0-D05) | P0 | Post-purchase “what happens next” clarity proof not linked to implementation artifact | Camila + Iris | Confirm implementation proof path (not concept-only) | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Copy proposal exists | Deployed/implemented screen-state evidence linked | Pending implementation proof |
 | B-06 (P0-D06) | P0 | Payment/activation safe-error messaging proof not linked to implemented state | Camila + Iris | Confirm implementation proof path for error states | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` | Safe-error copy proposal exists | Implemented error-state evidence linked | Pending implementation proof |
-| B-07 (P0-D07) | P0 | Production rollback checklist proof artifact missing for P0 ship-board claim | Iris + Elena | Publish rollback checklist artifact path for Day 1 gate | `openplan/docs/ops/2026-03-01-openplan-ship-board.md`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` | Clean gate test/build log exists | Timestamped rollback checklist artifact posted and linked in evidence index | Pending artifact |
 
 ### 3.3 Recently closed blocker
 | Blocker ID | Severity | Closure summary | Owner | Evidence path(s) |
 |---|---|---|---|---|
+| B-07 (P0-D07) | P0 | Day-1 rollback checklist artifact published and linked for ship-board claim | Iris + Elena | `openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` |
 | B-02 (P0-D02) | P0 | Route-level auth guard coverage gap on `report`/`runs` closed; only provider webhook route remains as expected auth exception | Iris | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1202-p0-route-auth-membership-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1206-p0-api-auth-coverage-scan.log` |
 
 ---
@@ -95,7 +95,7 @@ Rule enforced: every gate claim must map to at least one concrete artifact/log p
 | Core planner workflow E2E pass in production-like env | MISSING PROOF | *(pending artifact in `2026-03-01-test-output`)* | B-03 | Owen + Iris |
 | Grant-lab workflow E2E pass | MISSING PROOF | *(pending artifact in `2026-03-01-test-output`)* | B-04 | Owen + Iris + Camila |
 | Billing checkout + webhook + cancel/refund canary evidence captured | PARTIAL PROOF (closure not complete) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1155-p0-billing-tests.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1156-p0-billing-workspace-mutation-check.log`<br>`openplan/docs/ops/2026-03-01-test-output/2026-03-01-1158-p0-billing-live-canary-monitor.log` | B-01 | Iris |
-| Production smoke + rollback checklist complete | MISSING PROOF (rollback artifact) | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log` *(rollback artifact pending)* | B-07 | Iris + Elena |
+| Production smoke + rollback checklist complete | PROVED | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1257-clean-gate-lint-test-build.log`<br>`openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md` | — | Iris + Elena |
 | Post-purchase next-step clarity implemented | MISSING PROOF | `openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` *(implementation artifact pending)* | B-05 | Camila + Iris |
 | Payment/activation safe-error messaging implemented | MISSING PROOF | `openplan/docs/ops/2026-03-01-critical-ux-risk-closure-status.md` *(implementation artifact pending)* | B-06 | Camila + Iris |
 
@@ -103,8 +103,8 @@ Rule enforced: every gate claim must map to at least one concrete artifact/log p
 
 | Owner | Missing-proof items (blocker IDs) | Required artifact to close |
 |---|---|---|
-| Iris | B-01, B-03, B-07 (plus shared B-04/B-05/B-06) | Live webhook closure logs with matching Stripe->Supabase evidence; planner E2E run artifact; rollback checklist artifact; implementation proof links for shared UX blockers |
+| Iris | B-01, B-03 (plus shared B-04/B-05/B-06) | Live webhook closure logs with matching Stripe->Supabase evidence; planner E2E run artifact; implementation proof links for shared UX blockers |
 | Owen | B-03, B-04 | Core planner E2E evidence artifact; grant-lab E2E evidence artifact mapping to acceptance criteria |
 | Camila | B-04, B-05, B-06 | Grant-lab E2E evidence artifact; implemented post-purchase clarity proof; implemented safe-error state proof |
-| Elena | B-07 governance closeout | Day-1 rollback checklist publication + gate memo linkage |
+| Elena | — | Principal gate memo linkage to published rollback checklist artifact |
 
