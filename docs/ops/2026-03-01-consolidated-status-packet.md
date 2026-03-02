@@ -167,3 +167,15 @@
   - `openplan/docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
   - `openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md`
   - `openplan/docs/ops/2026-03-01-hold-criteria-snapshot.md`
+
+---
+
+## 7) Evening Board Focus Update — 20:47 PT
+
+- **Priority focus:** **B-01 remains top blocker**.
+- **Gate posture:** **HOLD** until Iris posts full lifecycle closure bundle.
+- **Required closure bundle (all required):**
+  1. Stripe replay/ack evidence
+  2. `billing_webhook_receipts` ↔ `billing_events` correlation evidence
+  3. Workspace subscription-state mutation proof
+- **Action rule:** update this consolidated packet immediately when closure evidence lands.
