@@ -30,7 +30,11 @@ Keep pilot acceptance criteria and gate packet evidence synchronized for QA swee
 - Billing regression tests: `openplan/openplan/src/test/billing-checkout.test.ts`, `openplan/openplan/src/test/billing-webhook-route.test.ts`, `openplan/openplan/src/test/billing-webhook-utils.test.ts`
 
 ### P0-D Planner Core Output Flow
-- Pilot output proofs: pending execution artifact (see blocker references in `openplan/docs/ops/2026-03-01-ship-evidence-index.md`, Blocker `B-03`).
+- Core planner production-like runtime proof link:
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log` (B-03)
+- Grant-lab production-like runtime proof link (target path for B-04 closure):
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log` (pending capture)
+- Gap tracker: `openplan/docs/ops/2026-03-02-b03-b04-runtime-proof-linkage-status.md`
 
 ### P0-E Support Handoff + Incident Clarity
 - Onboarding/fallback copy: `openplan/docs/ops/2026-02-28-team/23-mateo-paid-access-onboarding-copy-and-fallback-v1.md`
