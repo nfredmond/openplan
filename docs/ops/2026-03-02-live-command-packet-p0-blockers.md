@@ -13,6 +13,8 @@ Allowed work only:
 Not allowed:
 - Any feature expansion or non-blocker implementation work
 
+**GIS API strategy note:** GIS API work is **strategy-only** in this phase (no implementation until all P0 blockers are closed) and is **approval-gated** for any Phase 1+ exposure.
+
 ## Live Closure Commands (Owners / ETA / Closure Criteria)
 
 | Blocker | Owner | Target ETA (PT) | Closure Criteria (all required) | Evidence Paths (must post) |
