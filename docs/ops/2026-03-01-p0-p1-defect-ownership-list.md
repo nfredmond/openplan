@@ -2,6 +2,7 @@
 
 **Date (PT):** 2026-03-01  
 **Maintainer:** Elena Marquez (Principal Planner)  
+**Decision lock:** APPROVED A + strict NO NEW FEATURES (closure-only lane)  
 **Source references:**
 - `openplan/docs/ops/2026-03-01-openplan-ship-board.md`
 - `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
@@ -33,6 +34,7 @@
 ## Governance Rule
 - Any unresolved **P0** at 17:30 gate = **automatic HOLD**.
 - Every status change must include at least one updated evidence path.
+- No new feature claims enter gate packet unless tied to explicit blocker closure evidence.
 
 ## Scope Control Lock (2026-03-02 01:00 PT)
 - **Executive decision:** APPROVED A.

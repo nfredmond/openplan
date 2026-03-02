@@ -3,6 +3,7 @@
 **Prepared (PT):** 2026-03-01 22:22  
 **Prepared by:** Mateo Ruiz (Assistant Planner)  
 **Governance mode:** Hard no-bypass (unresolved P0 = HOLD)
+**Scope lock:** APPROVED A + strict NO NEW FEATURES (closure-only updates).
 
 ## 1) Executive posture
 - **Current gate posture:** **HOLD** (open P0 blockers remain).

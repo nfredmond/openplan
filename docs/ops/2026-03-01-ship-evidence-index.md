@@ -5,6 +5,7 @@
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** Morning kickoff -> 09:00 scope gate
+**Decision lock:** APPROVED A + strict NO NEW FEATURES (closure-only gate packet)
 
 ---
 
@@ -55,6 +56,7 @@
 1. Any unresolved **P0** at gate time = **HOLD**.
 2. No external-ready posture without Principal QA artifact linkage.
 3. Every claim must include a concrete artifact/log path; missing proof is recorded as blocker.
+4. No new feature claims may enter the gate packet unless they directly close an existing blocker with concrete evidence.
 
 ---
 
