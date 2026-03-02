@@ -3,6 +3,8 @@
 **Sprint Window:** 2026-03-01 to 2026-03-07  
 **Status:** Active
 
+**Freeze order (2026-03-02 01:00 PT):** APPROVED A; no new features. Only B-01/B-03/B-04/B-05/B-06 closure, evidence updates, and QA packet prep allowed until B-01 real closure evidence lands.
+
 ## P0 Must-Ship
 - [ ] Auth/session regression suite passes (signup/login/reset/session expiry).
 - [ ] Workspace + role enforcement verified server-side.

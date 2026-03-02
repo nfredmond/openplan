@@ -75,3 +75,8 @@ Ship a reliable, pilot-ready OpenPlan v1 in 7 days with strict scope control and
 - 09:00 scope-gate summary (owner statuses + scope lock)
 - 13:00 QA sweep summary (evidence validation + blocker escalation)
 - 17:30 ship-gate summary (PASS/HOLD + carry-forward list)
+
+## Overnight Freeze Directive (2026-03-02 01:00 PT)
+- **APPROVED A** applied.
+- Maintain strict **HOLD** until B-01 real closure evidence lands.
+- **No new features**: only blocker closures (B-01/B-03/B-04/B-05/B-06), evidence updates, and QA packet prep allowed.

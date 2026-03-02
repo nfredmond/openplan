@@ -179,3 +179,19 @@
   2. `billing_webhook_receipts` ↔ `billing_events` correlation evidence
   3. Workspace subscription-state mutation proof
 - **Action rule:** update this consolidated packet immediately when closure evidence lands.
+
+---
+
+## 8) Executive Freeze Order — 2026-03-02 01:00 PT
+
+- **Decision:** APPROVED A (Nathaniel).
+- **Gate posture:** strict **HOLD** remains until real B-01 closure evidence lands.
+- **Scope freeze:** **NO NEW FEATURES** effective immediately.
+
+### Allowed work only
+1. Blocker closure work for **B-01 / B-03 / B-04 / B-05 / B-06**
+2. Evidence updates in control artifacts/logs
+3. QA packet preparation for gate decisions
+
+### Not allowed
+- Feature expansion, exploratory enhancements, or non-blocker implementation work.

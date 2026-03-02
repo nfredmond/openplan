@@ -33,3 +33,8 @@
 ## Governance Rule
 - Any unresolved **P0** at 17:30 gate = **automatic HOLD**.
 - Every status change must include at least one updated evidence path.
+
+## Scope Control Lock (2026-03-02 01:00 PT)
+- **Executive decision:** APPROVED A.
+- **Hard rule:** no new features until P0 blockers are closed with evidence.
+- **Permitted execution only:** B-01/B-03/B-04/B-05/B-06 closure, evidence updates, and QA packet prep.
