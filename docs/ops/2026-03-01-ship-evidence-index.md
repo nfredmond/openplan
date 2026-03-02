@@ -1,7 +1,7 @@
 # OpenPlan Ship Week Day 1 — Ship Evidence Index
 
 **Date (PT):** 2026-03-01  
-**Refresh checkpoint:** 22:20 PT (overnight governance sync)  
+**Refresh checkpoint:** 22:28 PT (UX proof-gap tracking sync)  
 **Owner:** Mateo Ruiz (Assistant Planner)  
 **Source matrix:** `openplan/docs/ops/2026-03-01-team-tasking-matrix.md`  
 **Gate target:** Morning kickoff -> 09:00 scope gate
@@ -55,3 +55,20 @@
 1. Any unresolved **P0** at gate time = **HOLD**.
 2. No external-ready posture without Principal QA artifact linkage.
 3. Every claim must include a concrete artifact/log path; missing proof is recorded as blocker.
+
+---
+
+## 7) UX Lane Unresolved Proof-Gap Tracker (P0/P1)
+
+Source of truth:
+- `openplan/docs/ops/2026-03-01-critical-ux-implementation-verification-checklist.md`
+
+| UX item | Severity | Current | Owner | ETA | Evidence path(s) |
+|---|---|---|---|---|---|
+| P0-UX-01 (B-05) post-purchase next-step clarity runtime proof | P0 | OPEN (PARTIAL) | Camila + Iris | 09:00 gate packet | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1622-b05-post-purchase-proof.log` · `openplan/openplan/src/app/(workspace)/billing/page.tsx` |
+| P0-UX-02 (B-06) safe-error messaging runtime proof | P0 | OPEN (PARTIAL) | Camila + Iris | 09:00 gate packet | `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1620-b06-safe-error-route-tests.log` · `openplan/openplan/src/app/api/billing/checkout/route.ts` |
+| P1-UX-01 light-mode nav contrast runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` · `openplan/openplan/src/components/top-nav.tsx` |
+| P1-UX-02 light-header logo contrast runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` · `openplan/openplan/src/components/top-nav.tsx` |
+| P1-UX-03 helper/status text contrast runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/urban-design-expert/reports/2026-02-28-light-mode-contrast-polish-p1/TOKEN_CLASS_PATCHLIST_v1.md` |
+| P1-UX-04 outline control affordance runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/urban-design-expert/reports/2026-02-28-light-mode-contrast-polish-p1/TOKEN_CLASS_PATCHLIST_v1.md` |
+| P1-UX-05 focus-visible runtime proof | P1 | OPEN (FAIL) | Camila + Iris | 09:00 gate packet | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` |
