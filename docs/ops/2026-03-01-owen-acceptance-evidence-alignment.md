@@ -32,8 +32,8 @@ Keep pilot acceptance criteria and gate packet evidence synchronized for QA swee
 ### P0-D Planner Core Output Flow
 - Core planner production-like runtime proof link:
   - `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log` (B-03)
-- Grant-lab production-like runtime proof link (target path for B-04 closure):
-  - `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log` (pending capture)
+- Grant-lab production-like runtime proof link:
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log` (B-04)
 - Gap tracker: `openplan/docs/ops/2026-03-02-b03-b04-runtime-proof-linkage-status.md`
 
 ### P0-E Support Handoff + Incident Clarity
