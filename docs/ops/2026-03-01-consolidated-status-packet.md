@@ -206,3 +206,18 @@
   - **B-01 / B-03 / B-04 / B-05 / B-06**
 - Scope lock reaffirmed:
   - **No new features** until all listed P0 blockers close with evidence.
+
+---
+
+## 10) B-01 Adjudication Update — 2026-03-02 01:27 PT (Superseding prior B-01 HOLD notes)
+
+- **Governance call:** `openplan/docs/ops/2026-03-02-b01-closure-governance-call.md`
+- **B-01 decision:** **PASS / CLOSED**
+- **Criteria verification:** replay/ack PASS + receipts/events correlation PASS + workspace mutation/revert PASS
+
+### Current unresolved P0 after B-01 adjudication
+- **B-03** core planner E2E proof
+- **B-04** grant-lab E2E proof
+
+### Gate posture
+- Remains **HOLD** until all unresolved P0 blockers close with evidence.
