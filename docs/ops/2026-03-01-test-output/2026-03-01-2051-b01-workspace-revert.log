@@ -1,0 +1,21 @@
+Before revert: {
+  id: '4d1e7e7b-545e-4c6b-9407-d21dceff20b4',
+  name: 'OpenClaw Test Org',
+  plan: 'starter',
+  subscription_plan: 'starter',
+  subscription_status: 'active',
+  stripe_customer_id: 'cus_manual_1772427257509',
+  stripe_subscription_id: 'sub_manual_1772427257509',
+  billing_updated_at: '2026-03-02T04:54:19.778+00:00'
+}
+Update error: null
+After revert: {
+  id: '4d1e7e7b-545e-4c6b-9407-d21dceff20b4',
+  name: 'OpenClaw Test Org',
+  plan: 'free',
+  subscription_plan: null,
+  subscription_status: 'pilot',
+  stripe_customer_id: null,
+  stripe_subscription_id: null,
+  billing_updated_at: '2026-03-02T04:54:35.048+00:00'
+}

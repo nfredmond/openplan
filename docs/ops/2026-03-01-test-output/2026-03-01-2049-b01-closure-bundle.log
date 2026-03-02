@@ -1,0 +1,28 @@
+# B-01 Closure Bundle
+Timestamp UTC: 2026-03-02T04:54:15.309Z
+Webhook endpoint: https://openplan-zeta.vercel.app/api/billing/webhook
+
+## 1) Stripe replay/ack proof
+Target real Stripe event: evt_1T5z5sFRyHCgEytnojyHBuxt
+Stripe fetch status: 404
+Replay skipped: Stripe event fetch failed
+
+## 2) Correlation + 3) Workspace subscription-state mutation proof
+Workspace target: 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 (OpenClaw Test Org)
+Before: status=pilot plan=free stripe_sub=null
+Manual signed replay event id: evt_manual_replay_1772427257509
+Manual replay POST status: 200
+Manual replay POST body: {"ok":true}
+Receipts count for replayed events: 1
+  receipt id=7af4a654-d21f-4344-b8c9-26f3ff1b0b2c event_id=evt_manual_replay_1772427257509 type=checkout.session.completed status=processed workspace=4d1e7e7b-545e-4c6b-9407-d21dceff20b4 processed=2026-03-02T04:54:20.245+00:00 failure=n/a
+Billing events matched by providerEventId: 1
+  billing_event id=b88e6be3-d7e5-4bf4-a405-3b88eea7cec0 workspace=4d1e7e7b-545e-4c6b-9407-d21dceff20b4 event_type=webhook_billing_updated providerEventId=evt_manual_replay_1772427257509 verificationMode=stripe_signature at=2026-03-02T04:54:20.183343+00:00
+After: status=active plan=starter stripe_sub=sub_manual_1772427257509 stripe_cus=cus_manual_1772427257509 updated=2026-03-02T04:54:19.778+00:00
+
+## 4) Closure assessment
+FAILURE POINT: Real Stripe canary event replay did not process to workspace mutation.
+Observed: real event receipt status=missing; root cause likely missing/invalid workspaceId metadata in original Stripe event payload.
+Mitigation ETA: 45 minutes to create fresh checkout with UUID workspaceId metadata, replay signed event, and refresh correlation proof.
+Deterministic pipeline proof: manual signed replay processed with receipt correlation and workspace mutation.
+
+Bundle complete.
