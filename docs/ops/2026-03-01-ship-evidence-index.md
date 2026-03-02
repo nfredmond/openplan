@@ -108,3 +108,18 @@ Rule enforced: every gate claim must map to at least one concrete artifact/log p
 | Camila | B-04, B-05, B-06 | Grant-lab E2E evidence artifact; implemented post-purchase clarity proof; implemented safe-error state proof |
 | Elena | — | Principal gate memo linkage to published rollback checklist artifact |
 
+
+## 7) B-01 Closure Run Update (20:49 PT)
+
+- Bundle log: `openplan/docs/ops/2026-03-01-test-output/2026-03-01-2049-b01-closure-bundle.log`
+- Workspace revert log (post-proof hygiene): `openplan/docs/ops/2026-03-01-test-output/2026-03-01-2051-b01-workspace-revert.log`
+
+### Outcome
+- Stripe-signed manual replay event processed end-to-end (receipt + billing event + workspace mutation) and then workspace reverted.
+- Real historical Stripe canary event fetch by prior ID returned `404` in current key scope, so full live-lifecycle closure remains open.
+
+### Exact failure point
+- Historical canary event `evt_1T5z5sFRyHCgEytnojyHBuxt` not retrievable in current Stripe API scope (`404`), preventing direct replay/ack linkage for that event lineage.
+
+### Mitigation ETA
+- 45 minutes to create a fresh checkout lifecycle with UUID workspace metadata in current Stripe scope and rerun replay/ack + correlation bundle.
