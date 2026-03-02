@@ -1,0 +1,16 @@
+B-05 post-purchase UX implementation proof (runtime extraction)
+Timestamp: 2026-03-02 00:21:53 UTC
+
+File: openplan/openplan/src/app/(workspace)/billing/page.tsx
+124:            Updated: {workspace.billing_updated_at ? new Date(workspace.billing_updated_at).toLocaleString() : "N/A"}
+129:          Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records selected
+150:        <h2 className="text-lg font-semibold tracking-tight">Recent Billing Events</h2>
+153:          <p className="text-sm text-muted-foreground">No billing events recorded yet for this workspace.</p>
+
+File: openplan/openplan/src/app/api/billing/checkout/route.ts
+59:      subscription_status: "checkout_pending",
+112:    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
+133:    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
+146:    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
+152:      eventType: "checkout_initialized",
+170:  audit.info("checkout_initialized", {
