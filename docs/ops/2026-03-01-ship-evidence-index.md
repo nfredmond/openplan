@@ -87,3 +87,4 @@ Result: **B01_FRESH_SCOPE_PASS**
 - Receipts + billing events correlation present for both replayed event IDs.
 - Workspace mutation observed then reverted to baseline.
 - **B-01 status decision:** OPEN -> **CLOSED** (closure criteria satisfied).
+- Validation checkpoint (01:27 PT): all closure criteria confirmed from `2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log`.

@@ -36,6 +36,8 @@
 - Every status change must include at least one updated evidence path.
 - No new feature claims enter gate packet unless tied to explicit blocker closure evidence.
 
+- Validation checkpoint (01:27 PT): P0-D01 closure criteria verified against fresh in-scope bundle `2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log`.
+
 ## Scope Control Lock (2026-03-02 01:00 PT)
 - **Executive decision:** APPROVED A.
 - **Hard rule:** no new features until P0 blockers are closed with evidence.
