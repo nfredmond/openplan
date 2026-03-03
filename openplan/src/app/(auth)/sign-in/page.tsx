@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const checkoutState = searchParams.get("checkout");
@@ -118,5 +118,19 @@ export default function SignInPage() {
         .
       </p>
     </section>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="mx-auto w-full max-w-md rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          Loading sign-in…
+        </section>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }

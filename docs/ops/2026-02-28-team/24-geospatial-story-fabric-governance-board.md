@@ -23,7 +23,7 @@
 | Owner | Lane | Tonight Scope | ETA | Current Blockers | Evidence Required |
 |---|---|---|---|---|---|
 | Iris (Expert Programmer) | **P0 primary** | Deterministic workspace-bound purchase + billing mutation path hardening; mismatch/idempotency protections; tests + notes | 9:00 PM | Deterministic provisioning path not fully closed | PR path, migration/update notes path, test output path, sample webhook event IDs |
-| Iris (Expert Programmer) | P2 Lane 23 | `story-pack` orchestration scaffold plan and command contract draft (after P0 critical path) | 10:15 PM | CARTO CLI not installed/auth; QGIS integration path undecided | design doc path + command spec path |
+| Iris (Expert Programmer) | P2 Lane 23 | `story-pack` orchestration scaffold plan and command contract draft (after P0 critical path) | 10:15 PM | CARTO CLI installed (v0.1.2) but org auth pending; QGIS integration path undecided | design doc path + command spec path |
 | Priya (GIS Expert) | P2 Lane 23 | QGIS automation baseline decision (CLI vs MCP), QA rubric seed (CRS/legend/readability/contrast/metadata) | 10:00 PM | No QGIS MCP configured; toolchain baseline not documented | rubric path + baseline decision note path |
 | Camila (Urban Design) | P2 Lane 23 | Visual spec draft for report/web/motion map consistency | 10:00 PM | Awaiting final map output contract from Iris/Priya | style-spec path + sample references path |
 | Owen (Associate Planner) | P2 Lane 23 | Narrative template mapping map outputs to council/grant language | 10:00 PM | Depends on manifest field list + QA gate headings | template path + checklist path |

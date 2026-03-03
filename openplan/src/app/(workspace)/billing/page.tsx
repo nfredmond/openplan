@@ -112,7 +112,7 @@ export default async function BillingPage({
       {checkoutState === "mock" ? (
         <article className="rounded-2xl border border-border/80 bg-card p-4 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
           Mock checkout completed for plan <span className="font-semibold text-foreground">{titleCase(checkoutPlan)}</span>. Configure
-          `OPENPLAN_STRIPE_CHECKOUT_URL_STARTER/PROFESSIONAL` to route to live Stripe links.
+          `OPENPLAN_STRIPE_SECRET_KEY` and Stripe price IDs to route to live Checkout Sessions.
         </article>
       ) : null}
 
