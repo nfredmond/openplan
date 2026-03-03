@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const checkoutState = searchParams.get("checkout");
+  const activationState = searchParams.get("activation");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +46,28 @@ export default function SignInPage() {
           Access your OpenPlan workspace.
         </p>
       </header>
+
+
+      {checkoutState === "success" ? (
+        <article className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+          <p className="font-semibold">Payment received — here’s what happens next</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Check your email for “Activate your access.”</li>
+            <li>If needed, create an account with the same checkout email.</li>
+            <li>Activate access, then sign in to your dashboard.</li>
+          </ol>
+        </article>
+      ) : null}
+
+      {checkoutState === "error" || activationState === "error" ? (
+        <article className="rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          <p className="font-semibold">We couldn’t confirm activation yet</p>
+          <p className="mt-1">
+            If a payment attempt failed, no charge was made. If confirmation timed out, duplicate charges are prevented.
+          </p>
+          <p className="mt-1">Next step: retry checkout once, or contact support if this persists.</p>
+        </article>
+      ) : null}
 
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
@@ -93,5 +118,19 @@ export default function SignInPage() {
         .
       </p>
     </section>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="mx-auto w-full max-w-md rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          Loading sign-in…
+        </section>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }

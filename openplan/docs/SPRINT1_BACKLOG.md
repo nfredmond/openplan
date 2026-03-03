@@ -22,6 +22,10 @@ Convert current technical MVP into a pilot-ready commercial product with repeata
    - Acceptance:
      - Corridor run computes walk and bike catchments from OSM network.
      - Accessibility score uses catchment coverage + destination opportunity density.
+   - Status (2026-02-26):
+     - ✅ Added deterministic baseline classifier (`src/lib/accessibility/isochrone.ts`) with transparent low/medium/high walk-bike access tiers.
+     - ✅ Integrated additive analysis outputs: `walkBikeAccessTier`, `walkBikeAccessScoreBoost`, `walkBikeAccessRationale`, plus summary line.
+     - ✅ Added tests for low/medium/high and score-boost monotonic sanity (`src/test/isochrone-accessibility.test.ts`).
 
 3. **Pilot tenant onboarding checklist + workspace bootstrap**
    - Owner: Evelyn

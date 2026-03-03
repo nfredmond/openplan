@@ -22,14 +22,7 @@ type WebhookEnvelope = {
 };
 
 function isGuardedStripeFallbackAllowed(): boolean {
-  const explicitAllow =
-    process.env.OPENPLAN_STRIPE_ALLOW_GUARDED_FALLBACK?.trim().toLowerCase() === "true";
-
-  if (explicitAllow) {
-    return true;
-  }
-
-  return process.env.NODE_ENV !== "production";
+  return process.env.OPENPLAN_STRIPE_ALLOW_GUARDED_FALLBACK?.trim().toLowerCase() === "true";
 }
 
 function isLegacyAuthorized(request: NextRequest): boolean {

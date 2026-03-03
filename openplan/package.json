@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:gtfs": "tsx scripts/seed-gtfs.ts"
+    "seed:gtfs": "tsx scripts/seed-gtfs.ts",
+    "qa:gate": "npm run lint && npm test && npm run build",
+    "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

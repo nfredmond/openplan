@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import Stripe from "stripe";
 import { z } from "zod";
 
 const BILLING_STATUSES = [
@@ -163,17 +164,7 @@ function asIsoDatetime(value: unknown): string | undefined {
 }
 
 async function defaultStripeConstructorLoader(): Promise<StripeConstructorLike | null> {
-  const dynamicImport = new Function("modulePath", "return import(modulePath)") as (
-    modulePath: string
-  ) => Promise<unknown>;
-
-  try {
-    const modulePath = "stripe";
-    const imported = (await dynamicImport(modulePath)) as { default?: StripeConstructorLike };
-    return imported.default ?? null;
-  } catch {
-    return null;
-  }
+  return Stripe as unknown as StripeConstructorLike;
 }
 
 export function parseLegacyWebhookPayload(payload: unknown) {

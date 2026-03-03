@@ -1,0 +1,10 @@
+Evidence presence scan timestamp_utc 2026-03-02T06:19:51.497939Z
+core_planner_e2e_artifact: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log
+grant_lab_e2e_artifact: MISSING :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-16xx-grant-lab-e2e.log
+b01_closure_bundle: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-2049-b01-closure-bundle.log
+b01_synthetic_lifecycle: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-2219-b01-synthetic-lifecycle-proof.log
+b05_impl_proof: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-1622-b05-post-purchase-proof.log
+b06_impl_proof: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-01-1620-b06-safe-error-route-tests.log
+rollback_checklist: FOUND :: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-openplan-rollback-checklist-day1.md
+grant_lab_candidates:
+  NONE

@@ -1,0 +1,4 @@
+API routes without auth.getUser call:
+/home/nathaniel/.openclaw/workspace/openplan/openplan/src/app/api/billing/webhook/route.ts
+/home/nathaniel/.openclaw/workspace/openplan/openplan/src/app/api/report/route.ts
+/home/nathaniel/.openclaw/workspace/openplan/openplan/src/app/api/runs/route.ts

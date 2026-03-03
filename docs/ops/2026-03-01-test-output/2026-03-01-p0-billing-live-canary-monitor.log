@@ -1,0 +1,23 @@
+========================================
+OpenPlan Starter Canary Monitor
+Time: 2026-03-01 06:29:27 UTC
+Since: last 720 minutes (epoch >= 1772303367)
+Workspace filter: <none>
+Email filter: <none>
+Env file: /tmp/openplan.vercel.env
+========================================
+\n[Stripe events]
+  evt_1T5z5sFRyHCgEytnojyHBuxt  checkout.session.completed          created=1772329612 workspace=gvcanyon@gmail.com email=n/a
+  evt_1T5z5sFRyHCgEytnsaSIYsTB  customer.subscription.created       created=1772329612 workspace=n/a email=n/a
+  evt_1T5zFbFRyHCgEytn6jmETfBA  customer.subscription.deleted       created=1772330215 workspace=n/a email=n/a
+  evt_1T5z5sFRyHCgEytnSFqeaKkj  invoice.payment_succeeded           created=1772329611 workspace=gvcanyon@gmail.com email=n/a
+  evt_3T5z5pFRyHCgEytn08Ze8L3S  charge.refunded                     created=1772329961 workspace=n/a email=n/a
+\n[Supabase billing evidence]
+  workspace 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 name=OpenClaw Test Org sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-28T07:47:51.483696+00:00
+  workspace 6f0da13f-e061-43ba-afad-37af788d4eb5 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace a098f215-8ecb-4daa-8cfb-ad74de25bf93 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace 2afa9a0e-593a-4ec1-8342-cf32b8d45d02 name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  workspace dcc7a88a-e424-44a6-a02f-bc15857bce9e name=Nat Ford OpenPlan Agents sub_status=pilot sub_plan=n/a stripe_sub=n/a billing_updated=2026-02-26T04:40:18.218642+00:00
+  billing_events: no matching rows
+  webhook_receipts:
+    1534b67e-3086-4c8c-9522-a6d9da3d4e01 checkout.session.completed event_id=evt_test_webhook_after_fix status=ignored workspace=n/a processed=2026-03-01T02:04:57.128+00:00

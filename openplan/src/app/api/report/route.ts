@@ -468,10 +468,23 @@ export async function POST(request: NextRequest) {
     template = parsed.data.template;
 
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      audit.warn("unauthorized", {
+        runId,
+        format,
+        template,
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data: run, error } = await supabase
       .from("runs")
       .select(
-        "id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at, report_generated_count, first_report_generated_at, last_report_generated_at"
+        "id, workspace_id, title, query_text, summary_text, ai_interpretation, metrics, corridor_geojson, created_at, report_generated_count, first_report_generated_at, last_report_generated_at"
       )
       .eq("id", runId)
       .single();
@@ -486,35 +499,77 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });
     }
 
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("workspace_id", run.workspace_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membershipError) {
+      audit.error("membership_lookup_failed", {
+        runId,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        format,
+        template,
+        message: membershipError.message,
+        code: membershipError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
+    }
+
+    if (!membership) {
+      audit.warn("forbidden_workspace", {
+        runId,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        format,
+        template,
+      });
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
     const reportGeneratedAt = new Date().toISOString();
     const currentReportCount = typeof run.report_generated_count === "number" ? run.report_generated_count : 0;
+    const nextReportCount = currentReportCount + 1;
 
-    const serviceSupabase = createServiceRoleClient();
-    const { error: telemetryError } = await serviceSupabase
-      .from("runs")
-      .update({
-        report_generated_count: currentReportCount + 1,
-        first_report_generated_at: run.first_report_generated_at ?? reportGeneratedAt,
-        last_report_generated_at: reportGeneratedAt,
-      })
-      .eq("id", run.id);
+    try {
+      const serviceSupabase = createServiceRoleClient();
+      const { error: telemetryError } = await serviceSupabase
+        .from("runs")
+        .update({
+          report_generated_count: nextReportCount,
+          first_report_generated_at: run.first_report_generated_at ?? reportGeneratedAt,
+          last_report_generated_at: reportGeneratedAt,
+        })
+        .eq("id", run.id);
 
-    if (telemetryError) {
-      audit.warn("report_telemetry_update_failed", {
+      if (telemetryError) {
+        audit.warn("report_telemetry_update_failed", {
+          runId,
+          format,
+          message: telemetryError.message,
+          code: telemetryError.code ?? null,
+        });
+      }
+    } catch (telemetryClientError) {
+      audit.warn("report_telemetry_client_failed", {
         runId,
         format,
-        message: telemetryError.message,
-        code: telemetryError.code ?? null,
+        error: telemetryClientError,
       });
     }
 
     const durationMs = Date.now() - startedAt;
     audit.info("report_generated", {
       runId,
+      workspaceId: run.workspace_id,
+      userId: user.id,
       format,
       template,
       durationMs,
-      reportGeneratedCount: currentReportCount + 1,
+      reportGeneratedCount: nextReportCount,
     });
 
     if (format === "pdf") {

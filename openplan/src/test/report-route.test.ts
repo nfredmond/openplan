@@ -2,7 +2,35 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
+
+const authGetUserMock = vi.fn();
+
+const runsSingleMock = vi.fn();
+const runsEqMock = vi.fn(() => ({ single: runsSingleMock }));
+const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
+
+const membershipMaybeSingleMock = vi.fn();
+const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
+const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
+const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
+
+const clientFromMock = vi.fn((table: string) => {
+  if (table === "runs") {
+    return { select: runsSelectMock };
+  }
+
+  if (table === "workspace_members") {
+    return { select: membershipSelectMock };
+  }
+
+  throw new Error(`Unexpected table: ${table}`);
+});
+
+const telemetryEqMock = vi.fn().mockResolvedValue({ error: null });
+const telemetryUpdateMock = vi.fn(() => ({ eq: telemetryEqMock }));
+const telemetryFromMock = vi.fn(() => ({ update: telemetryUpdateMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -10,13 +38,9 @@ const mockAudit = {
   error: vi.fn(),
 };
 
-const mockSingle = vi.fn();
-const mockEq = vi.fn(() => ({ single: mockSingle }));
-const mockSelect = vi.fn(() => ({ eq: mockEq }));
-const mockFrom = vi.fn(() => ({ select: mockSelect }));
-
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -40,11 +64,29 @@ describe("POST /api/report", () => {
     vi.clearAllMocks();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    createClientMock.mockResolvedValue({ from: mockFrom });
 
-    mockSingle.mockResolvedValue({
+    authGetUserMock.mockResolvedValue({
+      data: {
+        user: {
+          id: "22222222-2222-4222-8222-222222222222",
+          email: "owner@example.com",
+        },
+      },
+    });
+
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      from: clientFromMock,
+    });
+
+    createServiceRoleClientMock.mockReturnValue({
+      from: telemetryFromMock,
+    });
+
+    runsSingleMock.mockResolvedValue({
       data: {
         id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
         title: "Test Corridor",
         query_text: "Evaluate this corridor",
         summary_text: "Summary text",
@@ -63,12 +105,35 @@ describe("POST /api/report", () => {
       },
       error: null,
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: "33333333-3333-4333-8333-333333333333" },
+      error: null,
+    });
   });
 
   it("returns 400 for invalid format", async () => {
     const response = await postReport(jsonRequest({ runId, format: "docx" }));
 
     expect(response.status).toBe(400);
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toMatchObject({ error: "Unauthorized" });
+  });
+
+  it("returns 403 when user is not a workspace member", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
   it("returns html for format=html", async () => {

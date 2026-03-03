@@ -1,0 +1,18 @@
+# B-01 fresh in-scope Stripe lifecycle bundle (retry)
+timestamp_utc 2026-03-02T09:20:44.306Z
+workspace_target 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 OpenClaw Test Org
+workspace_before {"plan":"free","subscription_plan":null,"subscription_status":"pilot","stripe_customer_id":null,"stripe_subscription_id":null,"billing_updated_at":"2026-03-02T06:17:56.615+00:00"}
+marker b01r_1772443244646
+stripe_customer_create {"status":200,"id":"cus_U4bsw9j0R8qKtv"}
+stripe_subscription_create {"status":200,"id":"sub_1T6Sef2WNrI0StLionZrshSK","sub_status":"active"}
+stripe_subscription_delete {"status":200,"id":"sub_1T6Sef2WNrI0StLionZrshSK","sub_status":"canceled"}
+stripe_events_list_status {"created":200,"deleted":200}
+event_ids {"created":"evt_1T6Sef2WNrI0StLixVPsrdaK","deleted":"evt_1T6Seg2WNrI0StLihHashvfm"}
+event_fetch_status {"created":200,"deleted":200}
+replay_ack_status {"createdEventId":"evt_1T6Sef2WNrI0StLixVPsrdaK","createdAckStatus":200,"createdAckBody":"{\"ok\":true}","deletedEventId":"evt_1T6Seg2WNrI0StLihHashvfm","deletedAckStatus":200,"deletedAckBody":"{\"ok\":true}"}
+billing_webhook_receipts_correlation [{"id":"04dec176-132b-4a35-8441-8aa7d8911ea5","event_id":"evt_1T6Sef2WNrI0StLixVPsrdaK","event_type":"customer.subscription.created","status":"processed","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","processed_at":"2026-03-02T09:20:52.666+00:00","failure_reason":null},{"id":"71cb79ce-c976-4d80-bf1e-b1e02d59afe9","event_id":"evt_1T6Seg2WNrI0StLihHashvfm","event_type":"customer.subscription.deleted","status":"processed","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","processed_at":"2026-03-02T09:20:53.604+00:00","failure_reason":null}]
+billing_events_correlation [{"id":"81bd8c57-8754-42b0-bc60-876ac2236f55","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","event_type":"webhook_billing_updated","providerEventId":"evt_1T6Seg2WNrI0StLihHashvfm","verificationMode":"stripe_signature","created_at":"2026-03-02T09:20:53.519915+00:00"},{"id":"ca56af91-2624-4fdd-a707-aea0eb95ec33","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","event_type":"webhook_billing_updated","providerEventId":"evt_1T6Sef2WNrI0StLixVPsrdaK","verificationMode":"stripe_signature","created_at":"2026-03-02T09:20:52.589247+00:00"}]
+workspace_after_mutation {"id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","name":"OpenClaw Test Org","plan":"starter","subscription_plan":"starter","subscription_status":"canceled","stripe_customer_id":"cus_U4bsw9j0R8qKtv","stripe_subscription_id":"sub_1T6Sef2WNrI0StLionZrshSK","billing_updated_at":"2026-03-02T09:20:53.322+00:00"}
+workspace_reverted {"id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","name":"OpenClaw Test Org","plan":"free","subscription_plan":null,"subscription_status":"pilot","stripe_customer_id":null,"stripe_subscription_id":null,"billing_updated_at":"2026-03-02T09:20:54.511+00:00"}
+closure_assessment B01_FRESH_SCOPE_PASS
+bundle_log_path /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-01-test-output/2026-03-02-0123-b01-fresh-in-scope-lifecycle-bundle.log

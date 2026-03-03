@@ -1,0 +1,27 @@
+# B-01 Next-best deterministic proof: synthetic signed lifecycle
+timestamp_utc 2026-03-02T06:17:52.184Z
+workspace_target 4d1e7e7b-545e-4c6b-9407-d21dceff20b4 OpenClaw Test Org
+before {"plan":"free","subscription_plan":null,"subscription_status":"pilot","stripe_customer_id":null,"stripe_subscription_id":null}
+
+post checkout.session.completed
+{ status: 200, body: '{"ok":true}' }
+post customer.subscription.created
+{ status: 200, body: '{"ok":true}' }
+post customer.subscription.deleted
+{ status: 200, body: '{"ok":true}' }
+
+receipts
+{"event_id":"evt_syn_checkout_1772432272652","event_type":"checkout.session.completed","status":"processed","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","processed_at":"2026-03-02T06:17:54.319+00:00","failure_reason":null}
+{"event_id":"evt_syn_sub_created_1772432272652","event_type":"customer.subscription.created","status":"processed","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","processed_at":"2026-03-02T06:17:55.313+00:00","failure_reason":null}
+{"event_id":"evt_syn_sub_deleted_1772432272652","event_type":"customer.subscription.deleted","status":"processed","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","processed_at":"2026-03-02T06:17:55.92+00:00","failure_reason":null}
+
+billing_events_matched 3
+{"event_type":"webhook_billing_updated","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","providerEventId":"evt_syn_sub_deleted_1772432272652","verificationMode":"stripe_signature","created_at":"2026-03-02T06:17:55.863039+00:00"}
+{"event_type":"webhook_billing_updated","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","providerEventId":"evt_syn_sub_created_1772432272652","verificationMode":"stripe_signature","created_at":"2026-03-02T06:17:55.253875+00:00"}
+{"event_type":"webhook_billing_updated","workspace_id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","providerEventId":"evt_syn_checkout_1772432272652","verificationMode":"stripe_signature","created_at":"2026-03-02T06:17:54.259748+00:00"}
+
+after_lifecycle {"id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","name":"OpenClaw Test Org","plan":"starter","subscription_plan":"starter","subscription_status":"canceled","stripe_customer_id":"cus_syn_1772432272652","stripe_subscription_id":"sub_syn_1772432272652","billing_updated_at":"2026-03-02T06:17:55.693+00:00"}
+
+reverted {"id":"4d1e7e7b-545e-4c6b-9407-d21dceff20b4","name":"OpenClaw Test Org","plan":"free","subscription_plan":null,"subscription_status":"pilot","stripe_customer_id":null,"stripe_subscription_id":null,"billing_updated_at":"2026-03-02T06:17:56.615+00:00"}
+
+assessment PASS_SYNTHETIC_LIFECYCLE

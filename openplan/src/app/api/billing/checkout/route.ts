@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { createStripeCheckoutSession } from "@/lib/billing/checkout";
 import { logBillingEvent } from "@/lib/billing/events";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -10,21 +11,6 @@ const billingCheckoutSchema = z.object({
 });
 
 type Plan = z.infer<typeof billingCheckoutSchema>["plan"];
-
-function getCheckoutUrl(plan: Plan, origin: string): { url: string; mode: "payment_link" | "mock" } {
-  const starter = process.env.OPENPLAN_STRIPE_CHECKOUT_URL_STARTER?.trim();
-  const professional = process.env.OPENPLAN_STRIPE_CHECKOUT_URL_PROFESSIONAL?.trim();
-
-  const configured = plan === "starter" ? starter : professional;
-  if (configured) {
-    return { url: configured, mode: "payment_link" };
-  }
-
-  return {
-    url: `${origin}/dashboard/billing?checkout=mock&plan=${plan}`,
-    mode: "mock",
-  };
-}
 
 async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
   const supabase = await createClient();
@@ -44,6 +30,23 @@ async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
   }
 
   return data;
+}
+
+async function getWorkspaceBillingContext(workspaceId: string): Promise<{ stripeCustomerId?: string | null }> {
+  const serviceSupabase = createServiceRoleClient();
+  const { data, error } = await serviceSupabase
+    .from("workspaces")
+    .select("stripe_customer_id")
+    .eq("id", workspaceId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    stripeCustomerId: data?.stripe_customer_id ?? null,
+  };
 }
 
 async function markCheckoutPending(workspaceId: string, plan: Plan) {
@@ -95,7 +98,40 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
     return NextResponse.json({ error: "Owner/admin access is required" }, { status: 403 });
   }
 
-  const checkout = getCheckoutUrl(plan, request.nextUrl.origin);
+  let billingContext: { stripeCustomerId?: string | null };
+  try {
+    billingContext = await getWorkspaceBillingContext(workspaceId);
+  } catch (error) {
+    audit.error("workspace_billing_context_failed", {
+      workspaceId,
+      userId: user.id,
+      plan,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+
+    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
+  }
+
+  let checkoutSession: { id: string; url: string };
+  try {
+    checkoutSession = await createStripeCheckoutSession({
+      workspaceId,
+      plan,
+      initiatedByUserId: user.id,
+      initiatedByUserEmail: user.email,
+      existingStripeCustomerId: billingContext.stripeCustomerId,
+      origin: request.nextUrl.origin,
+    });
+  } catch (error) {
+    audit.error("stripe_checkout_session_failed", {
+      workspaceId,
+      userId: user.id,
+      plan,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+
+    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
+  }
 
   try {
     await markCheckoutPending(workspaceId, plan);
@@ -114,18 +150,19 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
     await logBillingEvent({
       workspaceId,
       eventType: "checkout_initialized",
-      source: checkout.mode === "payment_link" ? "stripe_payment_link" : "mock_checkout",
+      source: "stripe_checkout_session",
       payload: {
         plan,
-        mode: checkout.mode,
+        mode: "stripe_checkout_session",
         userId: user.id,
+        sessionId: checkoutSession.id,
       },
     });
   } catch (eventError) {
     audit.warn("billing_event_log_failed", {
       workspaceId,
       plan,
-      mode: checkout.mode,
+      mode: "stripe_checkout_session",
       message: eventError instanceof Error ? eventError.message : "unknown",
     });
   }
@@ -134,14 +171,15 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
     workspaceId,
     userId: user.id,
     plan,
-    mode: checkout.mode,
+    mode: "stripe_checkout_session",
+    sessionId: checkoutSession.id,
     durationMs: Date.now() - startedAt,
   });
 
   return NextResponse.json(
     {
-      checkoutUrl: checkout.url,
-      mode: checkout.mode,
+      checkoutUrl: checkoutSession.url,
+      mode: "stripe_checkout_session",
       workspaceId,
       plan,
     },
