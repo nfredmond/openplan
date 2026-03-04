@@ -38,7 +38,8 @@ export default function PricingPage() {
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">OpenPlan Pricing for Pilot Agencies</h1>
         <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
           Transparent pilot pricing for corridor analysis workflows. AI accelerates drafting, but final planning
-          recommendations must be reviewed and approved by a qualified human professional.
+          recommendations must be reviewed and approved by a qualified human professional. OpenPlan can also be
+          customized for any profession, including law, science, education, engineering, and real estate.
         </p>
       </header>
 
@@ -71,6 +72,7 @@ export default function PricingPage() {
           <li>Pricing shown is baseline pilot pricing and may vary by agency complexity and data requirements.</li>
           <li>Stripe checkout wiring is in progress; sign-up currently routes through pilot onboarding flow.</li>
           <li>No hidden fees, punitive change orders, or black-box scoring claims.</li>
+          <li>Customization programs are available for non-transportation domains (law, science, education, engineering, real estate, and more).</li>
         </ul>
       </article>
     </section>

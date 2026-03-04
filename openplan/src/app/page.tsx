@@ -35,6 +35,7 @@ const trustPoints = [
   "Grant-oriented scoring aligned to ATP / SS4A / RAISE framing",
   "Transparent methods and assumptions with client-safe disclosure language",
   "Exports built for review packets, reports, and GIS handoff",
+  "Modular architecture that can be adapted to law, science, education, engineering, real estate, and more",
 ];
 
 export default function HomePage() {
@@ -54,7 +55,8 @@ export default function HomePage() {
             </h1>
             <p className="max-w-2xl text-sm text-slate-200/85 sm:text-base">
               OpenPlan helps transportation teams move from boundary file to defensible scoring, narrative summary,
-              and report packaging in minutes—while keeping methods transparent and reviewable.
+              and report packaging in minutes—while keeping methods transparent and reviewable. The same platform can
+              be customized for any profession, including law, science, education, engineering, and real estate.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
