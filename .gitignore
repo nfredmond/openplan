@@ -1,0 +1,10 @@
+# OpenPlan monorepo-level local artifacts
+
+# Generated local story-pack artifacts (non-canonical)
+openplan/.artifacts/
+
+# Supabase CLI local temp metadata
+openplan/supabase/.temp/
+
+# Local env snapshots
+*.env.local.backup
