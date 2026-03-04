@@ -9,11 +9,13 @@ Keep pilot acceptance mapping linked to production-like runtime evidence for:
 - B-04 grant-lab E2E
 
 ## Current linkage
-- **B-03 (core planner):** linked
+- **B-03 (core planner):** CLOSED (linked)
   - `openplan/docs/ops/2026-03-01-test-output/2026-03-01-1615-core-planner-e2e.log`
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-03-core-planner-runtime-proof.png`
 
-- **B-04 (grant-lab):** runtime artifact posted (test-level), awaiting final cross-lane acceptance linkage
+- **B-04 (grant-lab):** CLOSED (linked)
   - artifact: `openplan/docs/ops/2026-03-01-test-output/2026-03-02-grant-lab-e2e-runtime.log`
+  - `openplan/docs/ops/2026-03-01-test-output/2026-03-03-grant-lab-runtime-proof.png`
 
 ## Owners and ETA
 - B-03 linkage owner: Owen (linked now)
