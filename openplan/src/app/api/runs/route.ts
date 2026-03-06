@@ -134,6 +134,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Invalid run id" }, { status: 400 });
     }
 
+    const confirmed = request.nextUrl.searchParams.get("confirm") === "true";
+    if (!confirmed) {
+      audit.warn("delete_confirmation_required", {
+        runId: parsed.data,
+      });
+
+      return NextResponse.json(
+        { error: "Run deletion requires explicit confirmation" },
+        { status: 400 }
+      );
+    }
+
     const supabase = await createClient();
     const {
       data: { user },

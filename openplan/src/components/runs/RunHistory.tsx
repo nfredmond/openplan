@@ -45,6 +45,7 @@ export function RunHistory({
   const [runs, setRuns] = useState<Run[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
 
   const fetchRuns = useCallback(async () => {
     if (!workspaceId) {
@@ -83,19 +84,39 @@ export function RunHistory({
   }, [fetchRuns]);
 
   const deleteRun = async (id: string) => {
-    setError("");
-
-    const response = await fetch(`/api/runs?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(payload.error ?? "Failed to delete run.");
+    if (deletingRunId) {
       return;
     }
 
-    await fetchRuns();
+    const confirmed = window.confirm(
+      "Delete this analysis run? This action cannot be undone."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError("");
+    setDeletingRunId(id);
+
+    try {
+      const response = await fetch(
+        `/api/runs?id=${encodeURIComponent(id)}&confirm=true`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        setError(payload.error ?? "Failed to delete run.");
+        return;
+      }
+
+      await fetchRuns();
+    } finally {
+      setDeletingRunId((current) => (current === id ? null : current));
+    }
   };
 
   return (
@@ -168,8 +189,14 @@ export function RunHistory({
                       {isComparison ? "Comparing" : "Compare"}
                     </Button>
                   ) : null}
-                  <Button type="button" variant="destructive" size="sm" onClick={() => void deleteRun(run.id)}>
-                    Delete run
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => void deleteRun(run.id)}
+                    disabled={Boolean(deletingRunId)}
+                  >
+                    {deletingRunId === run.id ? "Deleting…" : "Delete run"}
                   </Button>
                 </div>
               </div>

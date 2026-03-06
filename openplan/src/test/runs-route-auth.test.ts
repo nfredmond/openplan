@@ -141,10 +141,29 @@ describe("/api/runs auth + membership guards", () => {
     expect(await response.json()).toMatchObject({ runs: expect.any(Array) });
   });
 
+  it("DELETE returns 400 when explicit confirmation is missing", async () => {
+    const response = await deleteRun(
+      new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", {
+        method: "DELETE",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "Run deletion requires explicit confirmation",
+    });
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
   it("DELETE returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
 
-    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
 
     expect(response.status).toBe(401);
   });
@@ -152,7 +171,12 @@ describe("/api/runs auth + membership guards", () => {
   it("DELETE returns 404 when run does not exist", async () => {
     runsDeleteLookupMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
-    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: "Run not found" });
@@ -161,7 +185,12 @@ describe("/api/runs auth + membership guards", () => {
   it("DELETE returns 403 when user is not a workspace member", async () => {
     membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
-    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
 
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
@@ -173,14 +202,24 @@ describe("/api/runs auth + membership guards", () => {
       error: null,
     });
 
-    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
 
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
   it("DELETE returns 200 when user is authorized", async () => {
-    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ success: true });
