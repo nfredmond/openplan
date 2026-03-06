@@ -1,9 +1,9 @@
-# OpenPlan Phase 1 Gate Packet — 2026-03-05 (09:00 / 13:00 / 17:30)
+# OpenPlan Phase 1 Gate Packet — 2026-03-05 (09:00 / 13:00 / 17:30 / 19:30 normalization)
 
 Date: 2026-03-05 (PT)  
 Prepared by: Owen Park (Associate Planner)  
 Branch: `ship/phase1-core`  
-Current governance posture: **HOLD** (evidence gaps remain)
+Current governance posture: **HOLD** (principal final re-adjudication pending on residual OP-001/OP-003 PARTIAL criteria)
 
 ## Evidence baseline used for this packet
 - Blueprint source file (canonical target-state): `/home/nathaniel/.openclaw/workspace/openplan-blueprint.md`
@@ -11,7 +11,9 @@ Current governance posture: **HOLD** (evidence gaps remain)
 - Module-to-epic mapping: `docs/ops/2026-03-05-blueprint-module-to-epic-map.md`
 - Prior hard-gate rules: `docs/ops/2026-03-01-hold-criteria-snapshot.md`
 - Principal QA assembly rules: `docs/ops/2026-03-01-principal-qa-assembly-plan.md`
-- Latest runtime evidence index currently on file: `docs/ops/2026-03-01-ship-evidence-index.md`
+- Latest runtime evidence index currently on file: `docs/ops/2026-03-05-ship-evidence-index.md`
+- Canonical governance truth state for this cycle: `docs/ops/2026-03-05-authoritative-governance-state.md`
+- P1 UX trust/readability mitigation + closure memo: `docs/ops/2026-03-05-p1-ux-mitigation-and-closure-memo.md`
 
 ---
 
@@ -119,6 +121,8 @@ Current governance posture: **HOLD** (evidence gaps remain)
 - Engineering follow-on implementation report (OP-003 bootstrap template binding): `docs/ops/2026-03-05-iris-op003-template-binding-report.md`
 - GIS follow-on v0.2 review pack: `docs/ops/2026-03-05-ca-stage-gate-lapm-v02-review-pack.md`
 - Defect + ship-board reconciliation packet (same-cycle): `docs/ops/2026-03-05-defect-shipboard-reconciliation.md`
+- Canonical governance state normalization: `docs/ops/2026-03-05-authoritative-governance-state.md`
+- P1 UX mitigation + closure memo: `docs/ops/2026-03-05-p1-ux-mitigation-and-closure-memo.md`
 
 ## 18:35 Closure Sprint addendum — stale blocker cleanup
 
@@ -131,14 +135,24 @@ Current governance posture: **HOLD** (evidence gaps remain)
 3. **Defect/ship-board reconciliation drift not assembled** -> resolved at 18:35 with:
    - `docs/ops/2026-03-05-defect-shipboard-reconciliation.md`
 
-### Active blockers after cleanup (post-18:42 evidence refresh)
+### Active blockers after cleanup (post-19:30 normalization refresh)
 
 Closed in this closure sprint (remove as active blockers):
 - Runtime evidence dashboard/index blocker -> closed with `docs/ops/2026-03-05-ship-evidence-index.md` and fresh logs in `docs/ops/2026-03-05-test-output/`.
-- OP-001/OP-003 acceptance-matrix missing blocker -> closed with `docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md`.
+- OP-001/OP-003 acceptance-matrix missing blocker -> closed with `docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md` (**MISSING 0**).
+- P1 UX trust/readability blockers (P1-D01..P1-D05) -> closed with same-cycle closure packet and memo:
+  - `docs/ops/2026-03-05-p1-d01-d05-closure-evidence-packet.md`
+  - `docs/ops/2026-03-05-p1-ux-mitigation-and-closure-memo.md`
+  - `docs/ops/2026-03-01-critical-ux-implementation-verification-checklist.md`
+  - `docs/ops/2026-03-01-p0-p1-defect-ownership-list.md`
 
 | Remaining blocker | Owner | ETA | Evidence |
 |---|---|---|---|
-| P1 UX trust/readability defects (P1-D01..P1-D05) remain open without same-cycle closure proof. | Camila + Iris | Stale ETA from source: 2026-03-01 17:30 gate (needs refresh) | `docs/ops/2026-03-01-critical-ux-implementation-verification-checklist.md`, `docs/ops/2026-03-01-p0-p1-defect-ownership-list.md` |
-| Principal final re-adjudication after same-cycle engineering refresh is still pending. | Elena | ETA not set in current-cycle docs (HOLD) | `docs/ops/2026-03-05-ship-evidence-index.md`, `docs/ops/PRINCIPAL_QA_APPROVAL.md` |
-| OP-001/OP-003 acceptance gaps still marked PARTIAL/MISSING at criterion level (integration/runtime depth). | Engineering + Planning lanes (owner not explicitly assigned in current-cycle docs) | ETA not set in current-cycle docs (HOLD) | `docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md`, `docs/ops/2026-03-05-ship-evidence-index.md` |
+| Principal final re-adjudication after same-cycle engineering + governance refresh is still pending. | Elena | Pending principal checkpoint scheduling | `docs/ops/2026-03-05-authoritative-governance-state.md`, `docs/ops/2026-03-05-defect-shipboard-reconciliation.md`, `docs/ops/PRINCIPAL_QA_APPROVAL.md` |
+| OP-001/OP-003 residual PARTIAL criteria (PASS 4 / PARTIAL 4 / MISSING 0) require explicit disposition (accept residual risk vs require additional closure work). | Engineering + Planning lanes (owner not explicitly assigned in current-cycle docs) | ETA not set in current-cycle docs (HOLD) | `docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md`, `docs/ops/2026-03-05-ship-evidence-index.md` |
+
+### Governance normalization linkage (19:30 PT)
+- Drift normalization authority is centralized in `docs/ops/2026-03-05-authoritative-governance-state.md`.
+- Defect-board reconciliation authority is `docs/ops/2026-03-05-defect-shipboard-reconciliation.md`.
+- P1 trust/readability closure authority is `docs/ops/2026-03-05-p1-d01-d05-closure-evidence-packet.md` + `docs/ops/2026-03-05-p1-ux-mitigation-and-closure-memo.md`.
+- This packet remains **HOLD** only until principal final re-adjudication is posted on residual OP-001/OP-003 PARTIAL criteria.

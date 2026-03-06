@@ -25,11 +25,11 @@
 
 | ID | Defect | Owner | Backup | Current Status | ETA | Evidence Paths |
 |---|---|---|---|---|---|---|
-| P1-D01 | Light-mode header nav contrast below readability comfort | Camila | Iris | OPEN | 17:30 gate | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md`<br>`openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md` |
-| P1-D02 | Light-mode logo trust cue too weak | Camila | Iris | OPEN | 17:30 gate | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` |
-| P1-D03 | Small helper/status text legibility weak on light surfaces | Camila | Iris | OPEN | 17:30 gate | `agents/team/assistant-planner/reports/2026-02-28-light-mode-contrast-punch-list.md` |
-| P1-D04 | Outline controls/onboarding CTAs not visually assertive enough | Camila | Iris | OPEN | 17:30 gate | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md` |
-| P1-D05 | Focus-visible state likely too weak for keyboard trust/accessibility | Camila | Iris | OPEN | 17:30 gate | `openplan/docs/ops/2026-03-01-critical-ux-risk-audit.md` |
+| P1-D01 | Light-mode header nav contrast below readability comfort | Camila | Iris | CLOSED | Closed @ 19:24 PT | `docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d01-header-nav-contrast.png`<br>`docs/ops/2026-03-05-test-output/2026-03-05-1920-p1-d01-d05-runtime-proof.log`<br>`openplan/openplan/src/components/top-nav.tsx`<br>`openplan/openplan/src/components/nav/nav-link-pill.tsx` |
+| P1-D02 | Light-mode logo trust cue too weak | Camila | Iris | CLOSED | Closed @ 19:24 PT | `docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d02-logo-trust-cue.png`<br>`docs/ops/2026-03-05-test-output/2026-03-05-1920-p1-d01-d05-runtime-proof.log`<br>`openplan/openplan/src/components/top-nav.tsx` |
+| P1-D03 | Small helper/status text legibility weak on light surfaces | Camila | Iris | CLOSED | Closed @ 19:24 PT | `docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d03-helper-status-contrast-signin.png`<br>`docs/ops/2026-03-05-test-output/2026-03-05-1920-p1-d01-d05-runtime-proof.log`<br>`openplan/openplan/src/app/globals.css`<br>`openplan/openplan/src/app/(public)/pricing/page.tsx` |
+| P1-D04 | Outline controls/onboarding CTAs not visually assertive enough | Camila | Iris | CLOSED | Closed @ 19:24 PT | `docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d04-outline-onboarding-cta-pricing.png`<br>`docs/ops/2026-03-05-test-output/2026-03-05-1920-p1-d01-d05-runtime-proof.log`<br>`openplan/openplan/src/components/ui/button.tsx`<br>`openplan/openplan/src/app/(public)/pricing/page.tsx` |
+| P1-D05 | Focus-visible state likely too weak for keyboard trust/accessibility | Camila | Iris | CLOSED | Closed @ 19:24 PT | `docs/ops/2026-03-05-test-output/2026-03-05-1920-p1-d01-d05-runtime-proof.log`<br>`openplan/openplan/src/app/globals.css`<br>`openplan/openplan/src/components/ui/button.tsx`<br>`openplan/openplan/src/components/ui/input.tsx`<br>`openplan/openplan/src/components/ui/textarea.tsx`<br>`openplan/openplan/src/components/nav/nav-link-pill.tsx` |
 
 ## Governance Rule
 - Any unresolved **P0** at 17:30 gate = **automatic HOLD**.
