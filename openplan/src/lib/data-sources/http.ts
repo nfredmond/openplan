@@ -12,6 +12,7 @@ type CacheEntry = {
 };
 
 const responseCache = new Map<string, CacheEntry>();
+const MAX_CACHE_ENTRIES = 500;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -22,6 +23,56 @@ function buildCacheKey(url: string, init?: RequestInit, explicit?: string): stri
   const method = (init?.method ?? "GET").toUpperCase();
   const body = typeof init?.body === "string" ? init.body : "";
   return `${method}:${url}:${body}`;
+}
+
+function pruneExpiredCacheEntries(now = Date.now()) {
+  for (const [key, entry] of responseCache.entries()) {
+    if (entry.expiresAt <= now) {
+      responseCache.delete(key);
+    }
+  }
+}
+
+function enforceCacheLimit() {
+  if (responseCache.size <= MAX_CACHE_ENTRIES) {
+    return;
+  }
+
+  const overflow = responseCache.size - MAX_CACHE_ENTRIES;
+  let removed = 0;
+  for (const key of responseCache.keys()) {
+    responseCache.delete(key);
+    removed += 1;
+    if (removed >= overflow) {
+      break;
+    }
+  }
+}
+
+function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): AbortSignal {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+
+  if (!upstream) {
+    return timeoutSignal;
+  }
+
+  if (typeof AbortSignal.any === "function") {
+    return AbortSignal.any([upstream, timeoutSignal]);
+  }
+
+  if (upstream.aborted) {
+    return upstream;
+  }
+
+  return timeoutSignal;
+}
+
+export function __clearFetchJsonResponseCacheForTests() {
+  responseCache.clear();
+}
+
+export function __fetchJsonResponseCacheSizeForTests() {
+  return responseCache.size;
 }
 
 export async function fetchJsonWithRetry<T>(
@@ -40,6 +91,8 @@ export async function fetchJsonWithRetry<T>(
   const key = buildCacheKey(url, init, cacheKey);
 
   if (cacheTtlMs > 0) {
+    pruneExpiredCacheEntries();
+
     const cached = responseCache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
       return cached.payload as T;
@@ -50,7 +103,7 @@ export async function fetchJsonWithRetry<T>(
     try {
       const response = await fetch(url, {
         ...init,
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: withTimeoutSignal(timeoutMs, init?.signal),
       });
 
       if (!response.ok) {
@@ -62,6 +115,7 @@ export async function fetchJsonWithRetry<T>(
         const payload = (await response.json()) as T;
         if (cacheTtlMs > 0) {
           responseCache.set(key, { payload, expiresAt: Date.now() + cacheTtlMs });
+          enforceCacheLimit();
         }
         return payload;
       }
