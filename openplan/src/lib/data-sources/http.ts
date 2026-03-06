@@ -204,8 +204,29 @@ function enforceCacheLimit() {
   }
 }
 
+function buildTimeoutSignal(timeoutMs: number): AbortSignal {
+  if (typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(timeoutMs);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort(new Error("Request timed out"));
+  }, timeoutMs);
+
+  controller.signal.addEventListener(
+    "abort",
+    () => {
+      clearTimeout(timeoutId);
+    },
+    { once: true }
+  );
+
+  return controller.signal;
+}
+
 function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): AbortSignal {
-  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  const timeoutSignal = buildTimeoutSignal(timeoutMs);
 
   if (!upstream) {
     return timeoutSignal;

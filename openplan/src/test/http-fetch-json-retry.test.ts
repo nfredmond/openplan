@@ -392,6 +392,68 @@ describe("fetchJsonWithRetry", () => {
     }
   });
 
+  it("uses a manual timeout signal fallback when AbortSignal.timeout is unavailable", async () => {
+    vi.useFakeTimers();
+
+    const originalAbortSignalTimeout = AbortSignal.timeout;
+    Object.defineProperty(AbortSignal, "timeout", {
+      configurable: true,
+      value: undefined,
+    });
+
+    const abortError = Object.assign(new Error("The operation was aborted"), {
+      name: "AbortError",
+    });
+    let requestSignal: AbortSignal | null = null;
+
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      requestSignal = init?.signal ?? null;
+
+      return new Promise((_, reject) => {
+        if (requestSignal?.aborted) {
+          reject(abortError);
+          return;
+        }
+
+        requestSignal?.addEventListener("abort", () => reject(abortError), {
+          once: true,
+        });
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    try {
+      const resultPromise = fetchJsonWithRetry(
+        "https://example.com/timeout-fallback",
+        undefined,
+        {
+          timeoutMs: 50,
+          retries: 0,
+        }
+      );
+
+      await Promise.resolve();
+      expect(requestSignal).not.toBeNull();
+      expect(requestSignal?.aborted).toBe(false);
+
+      vi.advanceTimersByTime(50);
+      await Promise.resolve();
+
+      const result = await resultPromise;
+
+      expect(result).toBeNull();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(requestSignal?.aborted).toBe(true);
+    } finally {
+      Object.defineProperty(AbortSignal, "timeout", {
+        configurable: true,
+        value: originalAbortSignalTimeout,
+      });
+      vi.useRealTimers();
+    }
+  });
+
   it("exits retry backoff immediately when caller aborts between attempts", async () => {
     vi.useFakeTimers();
 
