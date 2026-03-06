@@ -29,6 +29,17 @@ const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
   "cookie",
   "x-api-key",
 ]);
+const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
+  "access_token",
+  "api_key",
+  "apikey",
+  "auth",
+  "authorization",
+  "key",
+  "sig",
+  "signature",
+  "token",
+]);
 const IDEMPOTENT_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS", "PUT", "DELETE"]);
 
 function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
@@ -145,7 +156,26 @@ function hasImplicitCacheBlockedHeaders(headers?: HeadersInit): boolean {
   return false;
 }
 
+function hasImplicitCacheBlockedQueryParams(url: string): boolean {
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(url, "http://localhost");
+  } catch {
+    return false;
+  }
+
+  for (const [param] of parsedUrl.searchParams) {
+    if (IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS.has(param.toLowerCase())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function canUseResponseCache(
+  url: string,
   method: string,
   explicitCacheKey?: string,
   headers?: HeadersInit
@@ -155,6 +185,10 @@ function canUseResponseCache(
   }
 
   if (hasImplicitCacheBlockedHeaders(headers)) {
+    return false;
+  }
+
+  if (hasImplicitCacheBlockedQueryParams(url)) {
     return false;
   }
 
@@ -330,7 +364,7 @@ export async function fetchJsonWithRetry<T>(
   const cacheTtlMs = normalizeNonNegativeInteger(options.cacheTtlMs, DEFAULT_CACHE_TTL_MS);
   const method = getRequestMethod(init);
   const shouldUseResponseCache =
-    cacheTtlMs > 0 && canUseResponseCache(method, options.cacheKey, init?.headers);
+    cacheTtlMs > 0 && canUseResponseCache(url, method, options.cacheKey, init?.headers);
   const shouldRetryMethod = canRetryMethod(method, options);
   const key = shouldUseResponseCache
     ? buildCacheKey(url, method, init, options.cacheKey)
