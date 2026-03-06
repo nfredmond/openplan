@@ -69,6 +69,9 @@ out tags center;
       {
         timeoutMs: 15000,
         retries: 1,
+        // Overpass interpreter requests are read-only queries sent via POST.
+        // Explicit opt-in keeps transient retry behavior after the idempotency guardrail.
+        retryNonIdempotentMethods: true,
         cacheTtlMs: 5 * 60 * 1000,
         cacheKey: `overpass:${endpoint}:${bbox.minLat.toFixed(4)}:${bbox.minLon.toFixed(4)}:${bbox.maxLat.toFixed(4)}:${bbox.maxLon.toFixed(4)}`,
       }
