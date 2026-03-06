@@ -23,6 +23,30 @@ const DEFAULT_CACHE_TTL_MS = 0;
 const RETRIABLE_STATUS_CODES = new Set([408, 429]);
 const CACHEABLE_HTTP_METHODS = new Set(["GET", "HEAD"]);
 
+function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
+  if (!retryAfterValue) {
+    return null;
+  }
+
+  const normalized = retryAfterValue.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const asSeconds = Number(normalized);
+  if (Number.isFinite(asSeconds) && asSeconds >= 0) {
+    return Math.min(Math.trunc(asSeconds * 1000), MAX_BACKOFF_DELAY_MS);
+  }
+
+  const asDate = Date.parse(normalized);
+  if (Number.isNaN(asDate)) {
+    return null;
+  }
+
+  const deltaMs = Math.max(0, asDate - Date.now());
+  return Math.min(deltaMs, MAX_BACKOFF_DELAY_MS);
+}
+
 function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
   if (!signal) {
     return new Promise((resolve) => setTimeout(() => resolve(true), ms));
@@ -201,6 +225,8 @@ export async function fetchJsonWithRetry<T>(
       return null;
     }
 
+    let retryAfterHintMs: number | null = null;
+
     try {
       const response = await fetch(url, {
         ...init,
@@ -212,6 +238,10 @@ export async function fetchJsonWithRetry<T>(
         if (!retriable || attempt === retries) {
           return null;
         }
+
+        retryAfterHintMs = parseRetryAfterDelayMs(
+          response.headers?.get?.("retry-after") ?? null
+        );
       } else {
         let payload: T;
 
@@ -237,10 +267,14 @@ export async function fetchJsonWithRetry<T>(
       return null;
     }
 
-    const backoffDelayMs = Math.min(
+    const baseBackoffDelayMs = Math.min(
       retryDelayMs * Math.pow(2, attempt),
       MAX_BACKOFF_DELAY_MS
     );
+    const backoffDelayMs =
+      retryAfterHintMs === null
+        ? baseBackoffDelayMs
+        : Math.max(baseBackoffDelayMs, retryAfterHintMs);
 
     const continueRetrying = await sleep(backoffDelayMs, init?.signal);
     if (!continueRetrying) {

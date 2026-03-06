@@ -327,6 +327,80 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("uses retry-after header delays for throttled 429 responses", async () => {
+    vi.useFakeTimers();
+
+    const controller = new AbortController();
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      headers: new Headers({ "retry-after": "7" }),
+      json: vi.fn().mockResolvedValue({ error: "too many requests" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const resultPromise = fetchJsonWithRetry(
+      "https://example.com/retry-after-seconds",
+      {
+        signal: controller.signal,
+      },
+      {
+        retries: 1,
+        retryDelayMs: 100,
+      }
+    );
+
+    await Promise.resolve();
+
+    const latestDelay = Number(setTimeoutSpy.mock.calls.at(-1)?.[1]);
+    expect(latestDelay).toBe(7_000);
+
+    controller.abort("test_complete");
+    const result = await resultPromise;
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to exponential backoff when retry-after is invalid", async () => {
+    vi.useFakeTimers();
+
+    const controller = new AbortController();
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      headers: new Headers({ "retry-after": "not-a-date" }),
+      json: vi.fn().mockResolvedValue({ error: "too many requests" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const resultPromise = fetchJsonWithRetry(
+      "https://example.com/retry-after-invalid",
+      {
+        signal: controller.signal,
+      },
+      {
+        retries: 1,
+        retryDelayMs: 250,
+      }
+    );
+
+    await Promise.resolve();
+
+    const latestDelay = Number(setTimeoutSpy.mock.calls.at(-1)?.[1]);
+    expect(latestDelay).toBe(250);
+
+    controller.abort("test_complete");
+    const result = await resultPromise;
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("does not retry when a successful response has invalid JSON", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
