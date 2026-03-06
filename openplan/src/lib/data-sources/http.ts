@@ -4,6 +4,7 @@ type FetchJsonOptions = {
   retryDelayMs?: number;
   cacheTtlMs?: number;
   cacheKey?: string;
+  retryNonIdempotentMethods?: boolean;
 };
 
 type CacheEntry = {
@@ -22,6 +23,7 @@ const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
 const RETRIABLE_STATUS_CODES = new Set([408, 425, 429]);
 const CACHEABLE_HTTP_METHODS = new Set(["GET", "HEAD"]);
+const IDEMPOTENT_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS", "PUT", "DELETE"]);
 
 function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
   if (!retryAfterValue) {
@@ -77,7 +79,7 @@ function normalizePositiveInteger(
   fallback: number,
   max?: number
 ): number {
-  if (!Number.isFinite(value)) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     return fallback;
   }
 
@@ -98,7 +100,7 @@ function normalizeNonNegativeInteger(
   fallback: number,
   max?: number
 ): number {
-  if (!Number.isFinite(value)) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     return fallback;
   }
 
@@ -128,6 +130,14 @@ function canUseResponseCache(method: string, explicitCacheKey?: string): boolean
   }
 
   return CACHEABLE_HTTP_METHODS.has(method);
+}
+
+function canRetryMethod(method: string, options: FetchJsonOptions): boolean {
+  if (options.retryNonIdempotentMethods) {
+    return true;
+  }
+
+  return IDEMPOTENT_HTTP_METHODS.has(method);
 }
 
 function buildCacheKey(
@@ -234,6 +244,7 @@ export async function fetchJsonWithRetry<T>(
   const method = getRequestMethod(init);
   const shouldUseResponseCache =
     cacheTtlMs > 0 && canUseResponseCache(method, options.cacheKey);
+  const shouldRetryMethod = canRetryMethod(method, options);
   const key = shouldUseResponseCache
     ? buildCacheKey(url, method, init, options.cacheKey)
     : null;
@@ -262,7 +273,7 @@ export async function fetchJsonWithRetry<T>(
 
       if (!response.ok) {
         const retriable = isRetriableStatus(response.status);
-        if (!retriable || attempt === retries) {
+        if (!retriable || !shouldRetryMethod || attempt === retries) {
           return null;
         }
 
@@ -285,7 +296,7 @@ export async function fetchJsonWithRetry<T>(
         return payload;
       }
     } catch {
-      if (init?.signal?.aborted || attempt === retries) {
+      if (init?.signal?.aborted || !shouldRetryMethod || attempt === retries) {
         return null;
       }
     }

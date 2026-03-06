@@ -73,6 +73,68 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("does not retry retriable HTTP responses for non-idempotent methods by default", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry("https://example.com/post-no-retry", { method: "POST" }, {
+      retries: 3,
+      retryDelayMs: 0,
+    });
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry network failures for non-idempotent methods by default", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry("https://example.com/post-network-no-retry", { method: "POST" }, {
+      retries: 3,
+      retryDelayMs: 0,
+    });
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows retrying non-idempotent methods when explicitly enabled", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/post-retry-opt-in",
+      { method: "POST" },
+      {
+        retries: 1,
+        retryDelayMs: 0,
+        retryNonIdempotentMethods: true,
+      }
+    );
+
+    expect(result).toEqual({ source: "network" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("allows caching non-GET requests when an explicit cache key is supplied", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
