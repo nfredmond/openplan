@@ -28,10 +28,10 @@ export function NavLinkPill({ href, label }: NavLinkPillProps) {
       aria-current={isActive ? "page" : undefined}
       data-active={isActive ? "true" : "false"}
       className={cn(
-        "rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-200",
+        "rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/40 focus-visible:ring-offset-2",
         isActive
-          ? "border border-border/70 bg-muted text-foreground shadow-sm"
-          : "border border-transparent text-muted-foreground hover:border-border/65 hover:bg-muted hover:text-foreground"
+          ? "border border-[color:color-mix(in_srgb,var(--line)_72%,var(--pine)_28%)] bg-[color:color-mix(in_srgb,var(--pine)_8%,white)] text-[color:var(--pine-deep)] shadow-sm"
+          : "border border-transparent text-[color:var(--ink)]/85 hover:border-[color:var(--line)] hover:bg-muted hover:text-[color:var(--pine-deep)]"
       )}
     >
       {label}

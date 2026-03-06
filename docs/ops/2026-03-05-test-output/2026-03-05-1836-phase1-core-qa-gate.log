@@ -1,0 +1,91 @@
+
+> openplan@0.1.0 qa:gate
+> npm run lint && npm test && npm run build
+
+
+> openplan@0.1.0 lint
+> eslint
+
+
+> openplan@0.1.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/nathaniel/.openclaw/workspace/openplan/openplan[39m
+
+ [32m✓[39m src/test/setup.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/export-download.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/test/audit-logger.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/test/corridor-geometry.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/report-artifacts-gate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/analysis-compare.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/isochrone-accessibility.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/test/billing-checkout.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/test/stage-gate-template-loader.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/test/middleware.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 101[2mms[22m[39m
+ [32m✓[39m src/test/billing-webhook-route.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/test/runs-route-auth.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/test/billing-checkout-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/test/workspaces-bootstrap-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/test/billing-webhook-utils.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/test/report-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/analysis rejects invalid payloads with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:36:48.314Z","subsystem":"openplan/api","route":"analysis","level":"warn","event":"validation_failed","requestId":"ee47d274-d20a-4ada-9cd3-5856624635e9","method":"POST","path":"/api/analysis","userAgent":"unknown","clientIp":"unknown","context":{"issues":3}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/analysis rejects corridor geometries outside WGS84 bounds with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:36:48.318Z","subsystem":"openplan/api","route":"analysis","level":"warn","event":"geometry_validation_failed","requestId":"f8581cde-09e7-4695-9d24-d2ab644a4ca3","method":"POST","path":"/api/analysis","userAgent":"unknown","clientIp":"unknown","context":{"issues":5,"sample":["ring_0[0]: coordinate [630000, 4340000] is outside WGS84 lon/lat bounds; projected CRS is not accepted","ring_0[1]: coordinate [631000, 4340000] is outside WGS84 lon/lat bounds; projected CRS is not accepted","ring_0[2]: coordinate [631000, 4341000] is outside WGS84 lon/lat bounds; projected CRS is not accepted"]}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/report rejects invalid run IDs with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:36:48.319Z","subsystem":"openplan/api","route":"report","level":"warn","event":"validation_failed","requestId":"00d7603d-6179-4b0d-9d85-c8c4be15c863","method":"POST","path":"/api/report","userAgent":"unknown","clientIp":"unknown","context":{"issues":1}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mGET /api/runs rejects invalid workspaceId with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:36:48.320Z","subsystem":"openplan/api","route":"runs.get","level":"warn","event":"validation_failed","requestId":"5dc46d83-d21d-4abb-9400-64cb626b3a65","method":"GET","path":"/api/runs","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"bad-id"}}
+
+ [32m✓[39m src/test/api-smoke.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m      Tests [22m [1m[32m63 passed[39m[22m[90m (63)[39m
+[2m   Start at [22m 18:36:46
+[2m   Duration [22m 1.54s[2m (transform 2.45s, setup 1.57s, import 3.93s, tests 296ms, environment 13.20s)[22m
+
+
+> openplan@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.1.6 (webpack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.2s
+  Running TypeScript ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/17) ...
+  Generating static pages using 23 workers (4/17) 
+  Generating static pages using 23 workers (8/17) 
+  Generating static pages using 23 workers (12/17) 
+✓ Generating static pages using 23 workers (17/17) in 544.3ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/analysis
+├ ƒ /api/billing/checkout
+├ ƒ /api/billing/webhook
+├ ƒ /api/report
+├ ƒ /api/runs
+├ ƒ /api/workspaces/bootstrap
+├ ƒ /api/workspaces/current
+├ ƒ /billing
+├ ƒ /dashboard
+├ ƒ /explore
+├ ƒ /pricing
+├ ƒ /sign-in
+└ ƒ /sign-up
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+

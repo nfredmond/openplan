@@ -4,6 +4,7 @@ import { createStripeCheckoutSession } from "@/lib/billing/checkout";
 import { logBillingEvent } from "@/lib/billing/events";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 const billingCheckoutSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -25,7 +26,7 @@ async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
     throw new Error(error.message);
   }
 
-  if (!data || !["owner", "admin"].includes((data.role ?? "").toLowerCase())) {
+  if (!data || !canAccessWorkspaceAction("billing.checkout", data.role)) {
     return null;
   }
 

@@ -16,6 +16,8 @@ const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMo
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
+const decisionInsertMock = vi.fn();
+
 const clientFromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
@@ -23,6 +25,10 @@ const clientFromMock = vi.fn((table: string) => {
 
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
+  }
+
+  if (table === "stage_gate_decisions") {
+    return { insert: decisionInsertMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -96,10 +102,16 @@ describe("POST /api/report", () => {
           accessibilityScore: 68,
           safetyScore: 72,
           equityScore: 74,
+          confidence: "high",
           totalPopulation: 12345,
           totalTransitStops: 56,
           totalFatalCrashes: 3,
           justice40Eligible: true,
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
         },
         created_at: "2025-01-01T00:00:00.000Z",
       },
@@ -107,9 +119,11 @@ describe("POST /api/report", () => {
     });
 
     membershipMaybeSingleMock.mockResolvedValue({
-      data: { workspace_id: "33333333-3333-4333-8333-333333333333" },
+      data: { workspace_id: "33333333-3333-4333-8333-333333333333", role: "member" },
       error: null,
     });
+
+    decisionInsertMock.mockResolvedValue({ error: null });
   });
 
   it("returns 400 for invalid format", async () => {
@@ -136,11 +150,80 @@ describe("POST /api/report", () => {
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
+  it("returns 409 HOLD when required report artifacts are missing", async () => {
+    runsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Missing artifacts run",
+        query_text: "Evaluate this corridor",
+        summary_text: "",
+        ai_interpretation: "Interpretation text",
+        metrics: {
+          overallScore: 70,
+          accessibilityScore: 68,
+          safetyScore: 72,
+          equityScore: 74,
+          confidence: "high",
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: "Required report artifacts missing",
+      decision: "HOLD",
+      missingArtifacts: expect.arrayContaining([
+        "summary_text",
+        "metrics.sourceSnapshots.crashes.fetchedAt",
+      ]),
+    });
+    expect(decisionInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "HOLD",
+        gate_id: "report_artifact_gate",
+        run_id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        missing_artifacts: expect.arrayContaining([
+          "summary_text",
+          "metrics.sourceSnapshots.crashes.fetchedAt",
+        ]),
+      })
+    );
+    expect(telemetryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when decision persistence fails", async () => {
+    decisionInsertMock.mockResolvedValueOnce({
+      error: { message: "write failed", code: "XX000" },
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to persist stage-gate decision" });
+  });
+
   it("returns html for format=html", async () => {
     const response = await postReport(jsonRequest({ runId, format: "html" }));
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
+    expect(decisionInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "PASS",
+        gate_id: "report_artifact_gate",
+        run_id: runId,
+      })
+    );
   });
 
   it("returns pdf bytes for format=pdf", async () => {

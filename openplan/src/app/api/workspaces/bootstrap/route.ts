@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
 
 const bootstrapSchema = z.object({
   workspaceName: z.string().trim().min(1).max(120),
   plan: z.string().trim().min(1).max(40).optional(),
+  stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
 });
 
 const onboardingChecklist = [
@@ -23,6 +25,8 @@ type InsertWorkspaceResult = {
   id: string;
   slug: string;
   plan: string;
+  stage_gate_template_id: string;
+  stage_gate_template_version: string;
 };
 
 function normalizeSlug(value: string): string {
@@ -85,14 +89,31 @@ export async function POST(request: NextRequest) {
     const plan = parsed.data.plan ?? "pilot";
     const baseSlug = normalizeSlug(workspaceName);
 
+    let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
+    try {
+      stageGateBinding = resolveStageGateTemplateBinding(parsed.data.stageGateTemplateId);
+    } catch {
+      audit.warn("unsupported_stage_gate_template", {
+        requestedTemplateId: parsed.data.stageGateTemplateId ?? null,
+      });
+      return NextResponse.json({ error: "Unsupported stage-gate template" }, { status: 400 });
+    }
+
     let workspace: InsertWorkspaceResult | null = null;
     for (let attempt = 0; attempt <= 3; attempt += 1) {
       const slug = slugWithSuffix(baseSlug, attempt);
 
       const { data, error } = await supabase
         .from("workspaces")
-        .insert({ name: workspaceName, slug, plan })
-        .select("id, slug, plan")
+        .insert({
+          name: workspaceName,
+          slug,
+          plan,
+          stage_gate_template_id: stageGateBinding.templateId,
+          stage_gate_template_version: stageGateBinding.templateVersion,
+          stage_gate_binding_source: stageGateBinding.bindingMode,
+        })
+        .select("id, slug, plan, stage_gate_template_id, stage_gate_template_version")
         .single();
 
       if (!error && data) {
@@ -148,6 +169,8 @@ export async function POST(request: NextRequest) {
       workspaceId: workspace.id,
       userId: user.id,
       slug: workspace.slug,
+      stageGateTemplateId: workspace.stage_gate_template_id,
+      stageGateTemplateVersion: workspace.stage_gate_template_version,
       durationMs: Date.now() - startedAt,
     });
 
@@ -156,6 +179,13 @@ export async function POST(request: NextRequest) {
         workspaceId: workspace.id,
         slug: workspace.slug,
         plan: workspace.plan,
+        stageGateTemplate: {
+          id: workspace.stage_gate_template_id,
+          version: workspace.stage_gate_template_version,
+          jurisdiction: stageGateBinding.jurisdiction,
+          bindingMode: stageGateBinding.bindingMode,
+          lapmFormIdsStatus: stageGateBinding.lapmFormIdsStatus,
+        },
         onboardingChecklist,
       },
       { status: 200 }
