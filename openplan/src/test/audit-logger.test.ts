@@ -29,4 +29,29 @@ describe("audit sanitization", () => {
     expect(error.name).toBe("Error");
     expect(error.message).toContain("boom");
   });
+
+  it("replaces circular object references instead of recursing forever", () => {
+    const payload: Record<string, unknown> = {
+      level: "root",
+    };
+    payload.self = payload;
+
+    const sanitized = sanitizeForAudit(payload) as Record<string, unknown>;
+
+    expect(sanitized.level).toBe("root");
+    expect(sanitized.self).toBe("[circular]");
+  });
+
+  it("allows repeated non-circular references in separate branches", () => {
+    const shared = { status: "ok" };
+    const payload = {
+      first: shared,
+      second: shared,
+    };
+
+    const sanitized = sanitizeForAudit(payload) as Record<string, unknown>;
+
+    expect(sanitized.first).toEqual({ status: "ok" });
+    expect(sanitized.second).toEqual({ status: "ok" });
+  });
 });

@@ -8,6 +8,7 @@ const SENSITIVE_KEY =
 const MAX_DEPTH = 5;
 const MAX_ARRAY = 20;
 const MAX_STRING = 500;
+const CIRCULAR_REFERENCE = "[circular]";
 
 function truncate(value: string): string {
   if (value.length <= MAX_STRING) return value;
@@ -41,7 +42,8 @@ function safeError(error: unknown) {
 export function sanitizeForAudit(
   value: unknown,
   key?: string,
-  depth = 0
+  depth = 0,
+  seen = new WeakSet<object>()
 ): unknown {
   if (depth > MAX_DEPTH) return "[max-depth]";
 
@@ -59,18 +61,29 @@ export function sanitizeForAudit(
     return safeError(redacted);
   }
 
-  if (Array.isArray(redacted)) {
-    return redacted.slice(0, MAX_ARRAY).map((item) => sanitizeForAudit(item, undefined, depth + 1));
-  }
-
   if (typeof redacted === "object") {
+    if (seen.has(redacted)) {
+      return CIRCULAR_REFERENCE;
+    }
+
+    seen.add(redacted);
+
+    if (Array.isArray(redacted)) {
+      const values = redacted
+        .slice(0, MAX_ARRAY)
+        .map((item) => sanitizeForAudit(item, undefined, depth + 1, seen));
+      seen.delete(redacted);
+      return values;
+    }
+
     const source = redacted as Record<string, unknown>;
     const out: Record<string, unknown> = {};
 
     for (const [k, v] of Object.entries(source)) {
-      out[k] = sanitizeForAudit(v, k, depth + 1);
+      out[k] = sanitizeForAudit(v, k, depth + 1, seen);
     }
 
+    seen.delete(redacted);
     return out;
   }
 
