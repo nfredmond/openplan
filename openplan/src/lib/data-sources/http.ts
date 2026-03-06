@@ -20,7 +20,7 @@ const DEFAULT_RETRY_DELAY_MS = 250;
 const MAX_RETRY_DELAY_MS = 60_000;
 const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
-const RETRIABLE_STATUS_CODES = new Set([408, 429]);
+const RETRIABLE_STATUS_CODES = new Set([408, 425, 429]);
 const CACHEABLE_HTTP_METHODS = new Set(["GET", "HEAD"]);
 
 function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
