@@ -13,9 +13,39 @@ type CacheEntry = {
 
 const responseCache = new Map<string, CacheEntry>();
 const MAX_CACHE_ENTRIES = 500;
+const DEFAULT_TIMEOUT_MS = 12000;
+const DEFAULT_RETRIES = 1;
+const DEFAULT_RETRY_DELAY_MS = 250;
+const DEFAULT_CACHE_TTL_MS = 0;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+
+  const normalized = Math.trunc(value);
+  if (normalized <= 0) {
+    return fallback;
+  }
+
+  return normalized;
+}
+
+function normalizeNonNegativeInteger(value: number | undefined, fallback: number): number {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+
+  const normalized = Math.trunc(value);
+  if (normalized < 0) {
+    return 0;
+  }
+
+  return normalized;
 }
 
 function buildCacheKey(url: string, init?: RequestInit, explicit?: string): string {
@@ -80,15 +110,14 @@ export async function fetchJsonWithRetry<T>(
   init?: RequestInit,
   options: FetchJsonOptions = {}
 ): Promise<T | null> {
-  const {
-    timeoutMs = 12000,
-    retries = 1,
-    retryDelayMs = 250,
-    cacheTtlMs = 0,
-    cacheKey,
-  } = options;
-
-  const key = buildCacheKey(url, init, cacheKey);
+  const timeoutMs = normalizePositiveInteger(options.timeoutMs, DEFAULT_TIMEOUT_MS);
+  const retries = normalizeNonNegativeInteger(options.retries, DEFAULT_RETRIES);
+  const retryDelayMs = normalizeNonNegativeInteger(
+    options.retryDelayMs,
+    DEFAULT_RETRY_DELAY_MS
+  );
+  const cacheTtlMs = normalizeNonNegativeInteger(options.cacheTtlMs, DEFAULT_CACHE_TTL_MS);
+  const key = buildCacheKey(url, init, options.cacheKey);
 
   if (cacheTtlMs > 0) {
     pruneExpiredCacheEntries();

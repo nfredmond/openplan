@@ -110,4 +110,60 @@ describe("fetchJsonWithRetry", () => {
     expect(init.signal).toBeDefined();
     expect(init.signal?.aborted).toBe(true);
   });
+
+  it("normalizes invalid timeout and cache TTL options without crashing", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/invalid-options",
+      undefined,
+      {
+        timeoutMs: -25,
+        cacheTtlMs: -500,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/invalid-options",
+      undefined,
+      {
+        timeoutMs: -25,
+        cacheTtlMs: -500,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network" });
+    expect(second).toEqual({ source: "network" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.signal).toBeDefined();
+  });
+
+  it("clamps negative retries to a single request attempt", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry("https://example.com/retry-clamp", undefined, {
+      retries: -3,
+      retryDelayMs: -100,
+    });
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
