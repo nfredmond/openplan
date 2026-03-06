@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildMetricDeltas, deltaTone, formatDelta } from "@/lib/analysis/compare";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { downloadGeojson, downloadMetricsCsv } from "@/lib/export/download";
 import { resolveStatusTone, toneFromDelta } from "@/lib/ui/status";
 
@@ -268,13 +269,22 @@ export default function ExplorePage() {
     }
   }, [analysisResult, corridorGeojson]);
 
+  const trimmedQueryText = queryText.trim();
+  const queryCharacterCount = queryText.length;
+  const isQueryTooLong = trimmedQueryText.length > ANALYSIS_QUERY_MAX_CHARS;
+
   const canSubmit = useMemo(() => {
-    return Boolean(workspaceId && queryText.trim().length > 0 && corridorGeojson);
-  }, [workspaceId, queryText, corridorGeojson]);
+    return Boolean(workspaceId && trimmedQueryText.length > 0 && corridorGeojson && !isQueryTooLong);
+  }, [workspaceId, trimmedQueryText, corridorGeojson, isQueryTooLong]);
 
   const runAnalysis = async () => {
-    if (!corridorGeojson || !workspaceId || !queryText.trim()) {
+    if (!corridorGeojson || !workspaceId || !trimmedQueryText) {
       setError("Workspace ID, corridor, and query are required.");
+      return;
+    }
+
+    if (isQueryTooLong) {
+      setError(`Query must be ${ANALYSIS_QUERY_MAX_CHARS} characters or fewer.`);
       return;
     }
 
@@ -289,7 +299,7 @@ export default function ExplorePage() {
         },
         body: JSON.stringify({
           workspaceId,
-          queryText: queryText.trim(),
+          queryText: trimmedQueryText,
           corridorGeojson,
         }),
       });
@@ -642,12 +652,23 @@ export default function ExplorePage() {
             ) : null}
 
             <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
-            <Textarea
-              value={queryText}
-              onChange={(event) => setQueryText(event.target.value)}
-              placeholder="Example: Evaluate transit accessibility, safety risk, and equity implications for this corridor."
-              rows={4}
-            />
+            <div className="space-y-1.5">
+              <Textarea
+                value={queryText}
+                onChange={(event) => setQueryText(event.target.value)}
+                placeholder="Example: Evaluate transit accessibility, safety risk, and equity implications for this corridor."
+                rows={4}
+                maxLength={ANALYSIS_QUERY_MAX_CHARS}
+              />
+              <p className="text-[0.72rem] text-muted-foreground">
+                Query length: {queryCharacterCount}/{ANALYSIS_QUERY_MAX_CHARS} characters.
+              </p>
+              {isQueryTooLong ? (
+                <p className="text-[0.72rem] text-destructive">
+                  Trim the prompt before running analysis.
+                </p>
+              ) : null}
+            </div>
             <div className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Report template</p>
               <div className="flex flex-wrap gap-2">

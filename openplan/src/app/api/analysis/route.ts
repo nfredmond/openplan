@@ -18,6 +18,7 @@ import { generateGrantInterpretation } from "@/lib/ai/interpret";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 
 type Position = [number, number] | [number, number, number];
 
@@ -36,7 +37,7 @@ const multiPolygonSchema = z.object({
 
 const analysisRequestSchema = z.object({
   corridorGeojson: z.union([polygonSchema, multiPolygonSchema]),
-  queryText: z.string().trim().min(1),
+  queryText: z.string().trim().min(1).max(ANALYSIS_QUERY_MAX_CHARS),
   workspaceId: z.string().uuid(),
 });
 

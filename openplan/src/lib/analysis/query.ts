@@ -1,0 +1,1 @@
+export const ANALYSIS_QUERY_MAX_CHARS = 600;
