@@ -82,33 +82,54 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("respects caller abort signals while still applying timeout protection", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    });
+  it("short-circuits when caller abort signal is already aborted", async () => {
+    const fetchMock = vi.fn();
 
     vi.stubGlobal("fetch", fetchMock as typeof fetch);
 
     const controller = new AbortController();
     controller.abort("caller_cancelled");
 
-    await fetchJsonWithRetry(
+    const result = await fetchJsonWithRetry(
       "https://example.com/cancel",
       {
         signal: controller.signal,
       },
       {
-        retries: 0,
+        retries: 2,
       }
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(init.signal).toBeDefined();
-    expect(init.signal?.aborted).toBe(true);
+  it("does not retry when caller aborts during an in-flight request", async () => {
+    const controller = new AbortController();
+    const abortError = Object.assign(new Error("The operation was aborted"), {
+      name: "AbortError",
+    });
+
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      controller.abort("caller_cancelled");
+      throw abortError;
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry(
+      "https://example.com/cancel-during-request",
+      {
+        signal: controller.signal,
+      },
+      {
+        retries: 3,
+        retryDelayMs: 1,
+      }
+    );
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("normalizes invalid timeout and cache TTL options without crashing", async () => {

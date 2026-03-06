@@ -129,6 +129,10 @@ export async function fetchJsonWithRetry<T>(
   }
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
+    if (init?.signal?.aborted) {
+      return null;
+    }
+
     try {
       const response = await fetch(url, {
         ...init,
@@ -149,9 +153,13 @@ export async function fetchJsonWithRetry<T>(
         return payload;
       }
     } catch {
-      if (attempt === retries) {
+      if (init?.signal?.aborted || attempt === retries) {
         return null;
       }
+    }
+
+    if (init?.signal?.aborted) {
+      return null;
     }
 
     await sleep(retryDelayMs * Math.pow(2, attempt));
