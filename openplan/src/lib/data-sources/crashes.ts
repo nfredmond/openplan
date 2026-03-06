@@ -28,6 +28,12 @@ interface BBox {
   maxLat: number;
 }
 
+type FarsCrashRecord = {
+  FATALS?: unknown;
+  PEDS?: unknown;
+  BICYCLISTS?: unknown;
+};
+
 const SWITRS_CSV_PATH = process.env.SWITRS_CSV_PATH;
 
 const FARS_TIMEOUT_MS = 10_000;
@@ -84,6 +90,51 @@ function parseNum(value: string | undefined): number {
   if (!value) return 0;
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+function parseCount(value: unknown): number {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+  }
+
+  return 0;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function parseFarsCrashesResponse(data: unknown): {
+  parsed: boolean;
+  crashes: FarsCrashRecord[];
+} {
+  const rawResults = isRecord(data) ? data["Results"] : undefined;
+  if (!Array.isArray(rawResults)) {
+    return { parsed: false, crashes: [] };
+  }
+
+  const results = rawResults;
+  if (results.length === 0) {
+    return { parsed: true, crashes: [] };
+  }
+
+  const first = results[0];
+  if (Array.isArray(first)) {
+    return {
+      parsed: true,
+      crashes: first.filter(isRecord) as FarsCrashRecord[],
+    };
+  }
+
+  return {
+    parsed: true,
+    crashes: results.filter(isRecord) as FarsCrashRecord[],
+  };
 }
 
 function splitCsvLine(line: string): string[] {
@@ -215,14 +266,18 @@ async function fetchFars(bbox: BBox): Promise<CrashSummary> {
         if (!resp.ok) continue;
 
         const data = await resp.json();
-        const results = data?.Results?.[0] || [];
+        const parsed = parseFarsCrashesResponse(data);
+        if (!parsed.parsed) {
+          continue;
+        }
+
         queriedYears.push(year);
 
-        for (const crash of results) {
+        for (const crash of parsed.crashes) {
           totalCrashes += 1;
-          totalFatalities += parseInt(crash.FATALS, 10) || 0;
-          pedFatalities += parseInt(crash.PEDS, 10) || 0;
-          bikeFatalities += parseInt(crash.BICYCLISTS, 10) || 0;
+          totalFatalities += parseCount(crash.FATALS);
+          pedFatalities += parseCount(crash.PEDS);
+          bikeFatalities += parseCount(crash.BICYCLISTS);
         }
       } finally {
         requestTimeout.cleanup();
