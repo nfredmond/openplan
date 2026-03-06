@@ -267,6 +267,27 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("does not retry when a successful response has invalid JSON", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockRejectedValue(new SyntaxError("Unexpected token <")),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry("https://example.com/invalid-json", undefined, {
+      retries: 3,
+      retryDelayMs: 0,
+      cacheTtlMs: 30_000,
+      cacheKey: "cache:invalid-json",
+    });
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("caps retry backoff delay to one minute", async () => {
     vi.useFakeTimers();
 

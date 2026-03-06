@@ -191,7 +191,14 @@ export async function fetchJsonWithRetry<T>(
           return null;
         }
       } else {
-        const payload = (await response.json()) as T;
+        let payload: T;
+
+        try {
+          payload = (await response.json()) as T;
+        } catch {
+          return null;
+        }
+
         if (cacheTtlMs > 0) {
           responseCache.set(key, { payload, expiresAt: Date.now() + cacheTtlMs });
           enforceCacheLimit();
