@@ -96,10 +96,16 @@ describe("POST /api/report", () => {
           accessibilityScore: 68,
           safetyScore: 72,
           equityScore: 74,
+          confidence: "high",
           totalPopulation: 12345,
           totalTransitStops: 56,
           totalFatalCrashes: 3,
           justice40Eligible: true,
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
         },
         created_at: "2025-01-01T00:00:00.000Z",
       },
@@ -134,6 +140,45 @@ describe("POST /api/report", () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
+  });
+
+  it("returns 409 HOLD when required report artifacts are missing", async () => {
+    runsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Missing artifacts run",
+        query_text: "Evaluate this corridor",
+        summary_text: "",
+        ai_interpretation: "Interpretation text",
+        metrics: {
+          overallScore: 70,
+          accessibilityScore: 68,
+          safetyScore: 72,
+          equityScore: 74,
+          confidence: "high",
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: "Required report artifacts missing",
+      decision: "HOLD",
+      missingArtifacts: expect.arrayContaining([
+        "summary_text",
+        "metrics.sourceSnapshots.crashes.fetchedAt",
+      ]),
+    });
+    expect(telemetryUpdateMock).not.toHaveBeenCalled();
   });
 
   it("returns html for format=html", async () => {

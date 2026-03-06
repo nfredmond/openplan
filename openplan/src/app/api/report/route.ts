@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 
 const reportRequestSchema = z.object({
   runId: z.string().uuid(),
@@ -528,6 +529,28 @@ export async function POST(request: NextRequest) {
         template,
       });
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    const gateResult = evaluateReportArtifactGate(run);
+    audit.info("report_gate_decision", {
+      runId,
+      workspaceId: run.workspace_id,
+      userId: user.id,
+      format,
+      template,
+      decision: gateResult.decision,
+      missingArtifacts: gateResult.missingArtifacts,
+    });
+
+    if (gateResult.decision === "HOLD") {
+      return NextResponse.json(
+        {
+          error: "Required report artifacts missing",
+          decision: gateResult.decision,
+          missingArtifacts: gateResult.missingArtifacts,
+        },
+        { status: 409 }
+      );
     }
 
     const reportGeneratedAt = new Date().toISOString();
