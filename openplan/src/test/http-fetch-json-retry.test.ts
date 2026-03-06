@@ -192,6 +192,67 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("respects caller aborts even when AbortSignal.any is unavailable", async () => {
+    const originalAbortSignalAny = AbortSignal.any;
+    Object.defineProperty(AbortSignal, "any", {
+      configurable: true,
+      value: undefined,
+    });
+
+    const controller = new AbortController();
+    const abortError = Object.assign(new Error("The operation was aborted"), {
+      name: "AbortError",
+    });
+    let requestSignal: AbortSignal | null = null;
+
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) => {
+      requestSignal = init?.signal ?? null;
+
+      return new Promise((_, reject) => {
+        if (requestSignal?.aborted) {
+          reject(abortError);
+          return;
+        }
+
+        requestSignal?.addEventListener("abort", () => reject(abortError), {
+          once: true,
+        });
+      });
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    try {
+      const resultPromise = fetchJsonWithRetry(
+        "https://example.com/cancel-during-request-no-any",
+        {
+          signal: controller.signal,
+        },
+        {
+          retries: 2,
+          retryDelayMs: 1,
+        }
+      );
+
+      await Promise.resolve();
+      expect(requestSignal).not.toBeNull();
+      expect(requestSignal?.aborted).toBe(false);
+
+      controller.abort("caller_cancelled");
+
+      const result = await resultPromise;
+
+      expect(result).toBeNull();
+      expect(requestSignal?.aborted).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(AbortSignal, "any", {
+        configurable: true,
+        value: originalAbortSignalAny,
+      });
+    }
+  });
+
   it("exits retry backoff immediately when caller aborts between attempts", async () => {
     vi.useFakeTimers();
 

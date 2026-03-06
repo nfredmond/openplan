@@ -180,7 +180,34 @@ function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): Ab
     return upstream;
   }
 
-  return timeoutSignal;
+  if (timeoutSignal.aborted) {
+    return timeoutSignal;
+  }
+
+  const controller = new AbortController();
+
+  const abortFrom = (source: AbortSignal) => {
+    if (controller.signal.aborted) {
+      return;
+    }
+
+    controller.abort((source as AbortSignal & { reason?: unknown }).reason);
+  };
+
+  const onUpstreamAbort = () => {
+    timeoutSignal.removeEventListener("abort", onTimeoutAbort);
+    abortFrom(upstream);
+  };
+
+  const onTimeoutAbort = () => {
+    upstream.removeEventListener("abort", onUpstreamAbort);
+    abortFrom(timeoutSignal);
+  };
+
+  upstream.addEventListener("abort", onUpstreamAbort, { once: true });
+  timeoutSignal.addEventListener("abort", onTimeoutAbort, { once: true });
+
+  return controller.signal;
 }
 
 export function __clearFetchJsonResponseCacheForTests() {
