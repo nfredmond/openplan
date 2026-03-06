@@ -73,6 +73,83 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("does not implicitly cache authenticated GET requests without an explicit cache key", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const requestInit: RequestInit = {
+      headers: {
+        Authorization: "Bearer test-token",
+      },
+    };
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      requestInit,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      requestInit,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
+  it("allows caching authenticated GET requests when an explicit cache key is supplied", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const requestInit: RequestInit = {
+      headers: {
+        Authorization: "Bearer test-token",
+      },
+    };
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/private-data", requestInit, {
+      cacheTtlMs: 30_000,
+      cacheKey: "workspace:private-data",
+      retries: 0,
+    });
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/private-data", requestInit, {
+      cacheTtlMs: 30_000,
+      cacheKey: "workspace:private-data",
+      retries: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("does not retry retriable HTTP responses for non-idempotent methods by default", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

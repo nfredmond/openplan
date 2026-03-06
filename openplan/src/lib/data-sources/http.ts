@@ -23,6 +23,12 @@ const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
 const RETRIABLE_STATUS_CODES = new Set([408, 425, 429]);
 const CACHEABLE_HTTP_METHODS = new Set(["GET", "HEAD"]);
+const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
+  "authorization",
+  "proxy-authorization",
+  "cookie",
+  "x-api-key",
+]);
 const IDEMPOTENT_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS", "PUT", "DELETE"]);
 
 function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
@@ -124,9 +130,32 @@ function getRequestMethod(init?: RequestInit): string {
   return (init?.method ?? "GET").toUpperCase();
 }
 
-function canUseResponseCache(method: string, explicitCacheKey?: string): boolean {
+function hasImplicitCacheBlockedHeaders(headers?: HeadersInit): boolean {
+  if (!headers) {
+    return false;
+  }
+
+  const normalized = new Headers(headers);
+  for (const headerName of IMPLICIT_CACHE_BLOCKED_HEADERS) {
+    if (normalized.has(headerName)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function canUseResponseCache(
+  method: string,
+  explicitCacheKey?: string,
+  headers?: HeadersInit
+): boolean {
   if (explicitCacheKey) {
     return true;
+  }
+
+  if (hasImplicitCacheBlockedHeaders(headers)) {
+    return false;
   }
 
   return CACHEABLE_HTTP_METHODS.has(method);
@@ -243,7 +272,7 @@ export async function fetchJsonWithRetry<T>(
   const cacheTtlMs = normalizeNonNegativeInteger(options.cacheTtlMs, DEFAULT_CACHE_TTL_MS);
   const method = getRequestMethod(init);
   const shouldUseResponseCache =
-    cacheTtlMs > 0 && canUseResponseCache(method, options.cacheKey);
+    cacheTtlMs > 0 && canUseResponseCache(method, options.cacheKey, init?.headers);
   const shouldRetryMethod = canRetryMethod(method, options);
   const key = shouldUseResponseCache
     ? buildCacheKey(url, method, init, options.cacheKey)
