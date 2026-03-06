@@ -21,6 +21,7 @@ const MAX_RETRY_DELAY_MS = 60_000;
 const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
 const RETRIABLE_STATUS_CODES = new Set([408, 429]);
+const CACHEABLE_HTTP_METHODS = new Set(["GET", "HEAD"]);
 
 function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
   if (!signal) {
@@ -93,9 +94,25 @@ function isRetriableStatus(status: number): boolean {
   return status >= 500 || RETRIABLE_STATUS_CODES.has(status);
 }
 
-function buildCacheKey(url: string, init?: RequestInit, explicit?: string): string {
+function getRequestMethod(init?: RequestInit): string {
+  return (init?.method ?? "GET").toUpperCase();
+}
+
+function canUseResponseCache(method: string, explicitCacheKey?: string): boolean {
+  if (explicitCacheKey) {
+    return true;
+  }
+
+  return CACHEABLE_HTTP_METHODS.has(method);
+}
+
+function buildCacheKey(
+  url: string,
+  method: string,
+  init?: RequestInit,
+  explicit?: string
+): string {
   if (explicit) return explicit;
-  const method = (init?.method ?? "GET").toUpperCase();
   const body = typeof init?.body === "string" ? init.body : "";
   return `${method}:${url}:${body}`;
 }
@@ -163,9 +180,14 @@ export async function fetchJsonWithRetry<T>(
     MAX_RETRY_DELAY_MS
   );
   const cacheTtlMs = normalizeNonNegativeInteger(options.cacheTtlMs, DEFAULT_CACHE_TTL_MS);
-  const key = buildCacheKey(url, init, options.cacheKey);
+  const method = getRequestMethod(init);
+  const shouldUseResponseCache =
+    cacheTtlMs > 0 && canUseResponseCache(method, options.cacheKey);
+  const key = shouldUseResponseCache
+    ? buildCacheKey(url, method, init, options.cacheKey)
+    : null;
 
-  if (cacheTtlMs > 0) {
+  if (shouldUseResponseCache && key) {
     pruneExpiredCacheEntries();
 
     const cached = responseCache.get(key);
@@ -199,7 +221,7 @@ export async function fetchJsonWithRetry<T>(
           return null;
         }
 
-        if (cacheTtlMs > 0) {
+        if (shouldUseResponseCache && key) {
           responseCache.set(key, { payload, expiresAt: Date.now() + cacheTtlMs });
           enforceCacheLimit();
         }

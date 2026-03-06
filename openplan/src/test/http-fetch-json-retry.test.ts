@@ -44,6 +44,66 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("does not cache non-GET/HEAD requests without an explicit cache key", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const requestInit: RequestInit = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ corridorId: "abc123" }),
+    };
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/mutate", requestInit, {
+      cacheTtlMs: 30_000,
+      retries: 0,
+    });
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/mutate", requestInit, {
+      cacheTtlMs: 30_000,
+      retries: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
+  it("allows caching non-GET requests when an explicit cache key is supplied", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const requestInit: RequestInit = {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "data=%5Bout%3Ajson%5D",
+    };
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/overpass", requestInit, {
+      cacheTtlMs: 30_000,
+      cacheKey: "overpass:bbox:1",
+      retries: 0,
+    });
+
+    await fetchJsonWithRetry<{ source: string }>("https://example.com/overpass", requestInit, {
+      cacheTtlMs: 30_000,
+      cacheKey: "overpass:bbox:1",
+      retries: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("prunes expired cache entries before setting new cache values", async () => {
     vi.useFakeTimers();
 
