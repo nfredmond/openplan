@@ -1,0 +1,33 @@
+
+> openplan@0.1.0 test
+> vitest run src/test/runs-route-auth.test.ts src/test/workspaces-bootstrap-route.test.ts src/test/billing-checkout-route.test.ts src/test/middleware.test.ts src/test/report-artifacts-gate.test.ts src/test/report-route.test.ts src/test/stage-gate-template-loader.test.ts src/test/api-smoke.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/nathaniel/.openclaw/workspace/openplan/openplan[39m
+
+ [32m✓[39m src/test/stage-gate-template-loader.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/report-artifacts-gate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/middleware.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/test/billing-checkout-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/test/runs-route-auth.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/test/workspaces-bootstrap-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/test/report-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/analysis rejects invalid payloads with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:38:30.737Z","subsystem":"openplan/api","route":"analysis","level":"warn","event":"validation_failed","requestId":"d3091751-8818-470d-9d3b-008f2eec4ed7","method":"POST","path":"/api/analysis","userAgent":"unknown","clientIp":"unknown","context":{"issues":3}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/analysis rejects corridor geometries outside WGS84 bounds with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:38:30.740Z","subsystem":"openplan/api","route":"analysis","level":"warn","event":"geometry_validation_failed","requestId":"a7cff2b8-fdd2-4183-90bf-585b08dee0be","method":"POST","path":"/api/analysis","userAgent":"unknown","clientIp":"unknown","context":{"issues":5,"sample":["ring_0[0]: coordinate [630000, 4340000] is outside WGS84 lon/lat bounds; projected CRS is not accepted","ring_0[1]: coordinate [631000, 4340000] is outside WGS84 lon/lat bounds; projected CRS is not accepted","ring_0[2]: coordinate [631000, 4341000] is outside WGS84 lon/lat bounds; projected CRS is not accepted"]}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mPOST /api/report rejects invalid run IDs with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:38:30.742Z","subsystem":"openplan/api","route":"report","level":"warn","event":"validation_failed","requestId":"b1df5587-7e97-479b-a6ab-bddfb0923bf7","method":"POST","path":"/api/report","userAgent":"unknown","clientIp":"unknown","context":{"issues":1}}
+
+[90mstderr[2m | src/test/api-smoke.test.ts[2m > [22m[2mAPI smoke tests (validation + guard rails)[2m > [22m[2mGET /api/runs rejects invalid workspaceId with HTTP 400
+[22m[39m{"ts":"2026-03-06T02:38:30.743Z","subsystem":"openplan/api","route":"runs.get","level":"warn","event":"validation_failed","requestId":"a681aef8-29bf-4455-9081-7a22b903bdce","method":"GET","path":"/api/runs","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"bad-id"}}
+
+ [32m✓[39m src/test/api-smoke.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[32m32 passed[39m[22m[90m (32)[39m
+[2m   Start at [22m 18:38:29
+[2m   Duration [22m 1.08s[2m (transform 812ms, setup 489ms, import 1.24s, tests 144ms, environment 4.34s)[22m
+

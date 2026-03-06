@@ -5,20 +5,21 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-primary",
+        default:
+          "bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45",
         destructive:
-          "bg-destructive text-white hover:brightness-110 focus-visible:ring-destructive/50",
+          "bg-destructive text-white hover:brightness-110 focus-visible:ring-destructive/55",
         outline:
-          "border border-border bg-background text-foreground hover:border-primary hover:text-primary focus-visible:ring-primary",
+          "border border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-white text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,white)] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45",
         secondary:
-          "bg-[color:var(--copper)] text-[#1f2428] hover:brightness-105 focus-visible:ring-[color:var(--copper)]",
+          "bg-[color:var(--copper)] text-[#1f2428] hover:brightness-105 focus-visible:ring-[color:var(--focus-ring-light)]/45",
         ghost:
-          "text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-primary",
-        link: "text-primary underline-offset-4 hover:underline focus-visible:ring-primary",
+          "text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-[color:var(--focus-ring-light)]/45",
+        link: "text-primary underline-offset-4 hover:underline focus-visible:ring-[color:var(--focus-ring-light)]/45",
       },
       size: {
         default: "h-10 px-4.5 py-2 has-[>svg]:px-3.5",

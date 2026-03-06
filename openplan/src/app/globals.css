@@ -77,13 +77,15 @@
   --secondary: var(--sand);
   --secondary-foreground: var(--ink);
   --muted: var(--fog);
-  --muted-foreground: #4f6070;
+  --muted-foreground: #3f5161;
   --accent: #3f7fb8;
   --accent-foreground: #f5fbff;
   --destructive: #b54747;
   --border: var(--line);
   --input: var(--line);
-  --ring: color-mix(in srgb, var(--pine) 70%, white 30%);
+  --focus-ring-light: #0b6b60;
+  --focus-ring-dark: #8dddc3;
+  --ring: color-mix(in srgb, var(--focus-ring-light) 78%, white 22%);
 
   --chart-1: #1f4e2e;
   --chart-2: #3f7fb8;
@@ -127,7 +129,7 @@
   --destructive: #c15b5b;
   --border: var(--line);
   --input: #344656;
-  --ring: color-mix(in srgb, var(--pine) 74%, white 26%);
+  --ring: color-mix(in srgb, var(--focus-ring-dark) 72%, white 28%);
 
   --chart-1: #63a0d4;
   --chart-2: #56a271;
@@ -162,10 +164,10 @@
 }
 
 :focus-visible {
-  outline: 2px solid var(--pine);
-  outline-offset: 2px;
+  outline: 3px solid var(--focus-ring-light);
+  outline-offset: 3px;
 }
 
 .dark :focus-visible {
-  outline-color: #75c790;
+  outline-color: var(--focus-ring-dark);
 }

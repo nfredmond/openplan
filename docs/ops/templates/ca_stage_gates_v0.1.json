@@ -1,0 +1,461 @@
+{
+  "template_id": "ca_stage_gates_v0_1",
+  "template_name": "California Stage-Gate Scaffold",
+  "version": "0.1.0",
+  "jurisdiction": "CA",
+  "effective_date": "2026-03-05",
+  "source_lock": {
+    "requirements_lock_doc": "docs/ops/2026-03-05-openplan-blueprint-requirements-lock.md",
+    "epic_map_doc": "docs/ops/2026-03-05-blueprint-module-to-epic-map.md",
+    "blueprint_doc": "/home/nathaniel/.openclaw/workspace/openplan-blueprint.md"
+  },
+  "decision_model": {
+    "gate_states": [
+      "not_started",
+      "in_progress",
+      "hold",
+      "pass"
+    ],
+    "evidence_states": [
+      "missing",
+      "uploaded",
+      "approved",
+      "rejected"
+    ],
+    "decision_states": [
+      "PASS",
+      "HOLD"
+    ],
+    "advance_rule": "ALL_REQUIRED_EVIDENCE_APPROVED"
+  },
+  "gate_order": [
+    "G01_INITIATION_AUTHORIZATION",
+    "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+    "G03_ENVIRONMENTAL_CEQA_VMT_METHOD",
+    "G04_OUTREACH_PUBLIC_HEARING",
+    "G05_PLANNING_TO_PROGRAMMING_STIP_RTIP",
+    "G06_DESIGN_PSE_ROW_UTILITIES_COST",
+    "G07_ADVERTISE_AWARD",
+    "G08_CONSTRUCTION_ADMINISTRATION",
+    "G09_COMPLETION_MAINTENANCE_AUDIT"
+  ],
+  "gates": [
+    {
+      "gate_id": "G01_INITIATION_AUTHORIZATION",
+      "sequence": 1,
+      "name": "Initiation & Project Authorization",
+      "lapm_mapping": [
+        "Project Authorization",
+        "Agreements (initial setup)"
+      ],
+      "stip_rtip_mapping": [
+        "Program intent captured with cycle metadata"
+      ],
+      "ceqa_vmt_mapping": [
+        "Initial project classification for CEQA transportation track"
+      ],
+      "outreach_mapping": [
+        "Outreach lead assignment and preliminary engagement strategy"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G01_E01",
+          "title": "Project charter and scope baseline",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "G01_E02",
+          "title": "LAPM authorization checklist packet",
+          "artifact_type": "checklist",
+          "required": true
+        },
+        {
+          "evidence_id": "G01_E03",
+          "title": "Funding/program intent register (STIP/RTIP flag + cycle)",
+          "artifact_type": "structured_form",
+          "required": true
+        },
+        {
+          "evidence_id": "G01_E04",
+          "title": "Compliance role assignment record",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+      "sequence": 2,
+      "name": "Agreements, Procurement, and Civil Rights Setup",
+      "lapm_mapping": [
+        "Agreements",
+        "Consultant Selection",
+        "Civil Rights/DBE",
+        "Invoicing controls"
+      ],
+      "stip_rtip_mapping": [
+        "Programming package prerequisites established"
+      ],
+      "ceqa_vmt_mapping": [
+        "CEQA lead and method ownership assigned"
+      ],
+      "outreach_mapping": [
+        "Equity/access commitments and engagement roles confirmed"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G02_E01",
+          "title": "Agreement/execution tracker",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "G02_E02",
+          "title": "Consultant selection package (if consultant delivery path)",
+          "artifact_type": "document_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G02_E03",
+          "title": "Civil rights/DBE/ADA/Title VI compliance plan",
+          "artifact_type": "plan",
+          "required": true
+        },
+        {
+          "evidence_id": "G02_E04",
+          "title": "Invoicing controls and eligible cost protocol",
+          "artifact_type": "protocol",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G03_ENVIRONMENTAL_CEQA_VMT_METHOD",
+      "sequence": 3,
+      "name": "Environmental + CEQA VMT Method Gate",
+      "lapm_mapping": [
+        "Environmental Procedures",
+        "Approval-before-downstream progression"
+      ],
+      "stip_rtip_mapping": [
+        "Environmental readiness support for programming credibility"
+      ],
+      "ceqa_vmt_mapping": [
+        "CEQA Guidelines §15064.3 VMT-primary logic",
+        "Document assumptions and revisions",
+        "LOS/delay carve-out evaluation",
+        "SHS induced-travel path when applicable"
+      ],
+      "outreach_mapping": [
+        "Scoping communication inputs prepared"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G03_E01",
+          "title": "CEQA transportation approach memo (§15064.3)",
+          "artifact_type": "memo",
+          "required": true
+        },
+        {
+          "evidence_id": "G03_E02",
+          "title": "VMT method declaration and assumptions register",
+          "artifact_type": "method_record",
+          "required": true
+        },
+        {
+          "evidence_id": "G03_E03",
+          "title": "LOS/delay carve-out determination note",
+          "artifact_type": "determination",
+          "required": true
+        },
+        {
+          "evidence_id": "G03_E04",
+          "title": "SHS induced-travel method note (conditional if SHS=true)",
+          "artifact_type": "method_record",
+          "required": true,
+          "conditional_required_when": "project.is_shs == true"
+        }
+      ]
+    },
+    {
+      "gate_id": "G04_OUTREACH_PUBLIC_HEARING",
+      "sequence": 4,
+      "name": "Outreach + Public Hearing Documentation Gate",
+      "lapm_mapping": [
+        "Public Hearings",
+        "Field/public documentation readiness"
+      ],
+      "stip_rtip_mapping": [
+        "Robust engagement evidence accumulation for RTIP/ITIP"
+      ],
+      "ceqa_vmt_mapping": [
+        "Input traceability to impact/mitigation narrative"
+      ],
+      "outreach_mapping": [
+        "Activities documented",
+        "Feedback acknowledged/incorporated",
+        "Benefits, negative impacts, mitigations captured"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G04_E01",
+          "title": "Outreach strategy and schedule",
+          "artifact_type": "plan",
+          "required": true
+        },
+        {
+          "evidence_id": "G04_E02",
+          "title": "Engagement activity log",
+          "artifact_type": "log",
+          "required": true
+        },
+        {
+          "evidence_id": "G04_E03",
+          "title": "Comment-response matrix",
+          "artifact_type": "matrix",
+          "required": true
+        },
+        {
+          "evidence_id": "G04_E04",
+          "title": "Public hearing notice/package/record",
+          "artifact_type": "document_bundle",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G05_PLANNING_TO_PROGRAMMING_STIP_RTIP",
+      "sequence": 5,
+      "name": "Planning-to-Programming (RTIP/STIP) Gate",
+      "lapm_mapping": [
+        "Program-readiness linkage to delivery artifacts"
+      ],
+      "stip_rtip_mapping": [
+        "Schedule milestones",
+        "RTIP/ITIP documentation completeness",
+        "Community engagement documentation completeness",
+        "Complete Streets consideration where applicable"
+      ],
+      "ceqa_vmt_mapping": [
+        "Scenario rationale and VMT implications traceable"
+      ],
+      "outreach_mapping": [
+        "Engagement outcomes tied to programming decisions"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G05_E01",
+          "title": "RTP/scenario linkage memo",
+          "artifact_type": "memo",
+          "required": true
+        },
+        {
+          "evidence_id": "G05_E02",
+          "title": "Programming narrative completeness sheet",
+          "artifact_type": "checklist",
+          "required": true
+        },
+        {
+          "evidence_id": "G05_E03",
+          "title": "STIP/RTIP schedule checklist",
+          "artifact_type": "calendar_checklist",
+          "required": true
+        },
+        {
+          "evidence_id": "G05_E04",
+          "title": "Complete Streets consideration statement",
+          "artifact_type": "statement",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G06_DESIGN_PSE_ROW_UTILITIES_COST",
+      "sequence": 6,
+      "name": "Design/PS&E + ROW/Utilities + Cost Documentation Gate",
+      "lapm_mapping": [
+        "Design Guidance",
+        "PS&E",
+        "Right of Way",
+        "Utility Relocations",
+        "Invoicing",
+        "Field Review"
+      ],
+      "stip_rtip_mapping": [
+        "Cost/scope/schedule reliability for programmed projects"
+      ],
+      "ceqa_vmt_mapping": [
+        "Method/assumption updates if design materially changes transportation effects"
+      ],
+      "outreach_mapping": [
+        "Material scope changes communicated and logged"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G06_E01",
+          "title": "Design basis + PS&E readiness checklist",
+          "artifact_type": "checklist",
+          "required": true
+        },
+        {
+          "evidence_id": "G06_E02",
+          "title": "ROW status/certification artifact",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "G06_E03",
+          "title": "Utility relocation coordination log",
+          "artifact_type": "log",
+          "required": true
+        },
+        {
+          "evidence_id": "G06_E04",
+          "title": "Cost/invoicing update + field review disposition",
+          "artifact_type": "document_bundle",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G07_ADVERTISE_AWARD",
+      "sequence": 7,
+      "name": "Advertise & Award Gate",
+      "lapm_mapping": [
+        "Advertise & Award",
+        "Civil rights/DBE implementation at award"
+      ],
+      "stip_rtip_mapping": [
+        "Programmed project award readiness evidence"
+      ],
+      "ceqa_vmt_mapping": [
+        "CEQA commitment continuity into procurement package"
+      ],
+      "outreach_mapping": [
+        "Award/public communication artifacts retained"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G07_E01",
+          "title": "Advertisement/bid package archive",
+          "artifact_type": "document_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G07_E02",
+          "title": "Bid analysis and award recommendation",
+          "artifact_type": "memo",
+          "required": true
+        },
+        {
+          "evidence_id": "G07_E03",
+          "title": "DBE/civil-rights award-stage confirmation",
+          "artifact_type": "compliance_record",
+          "required": true
+        },
+        {
+          "evidence_id": "G07_E04",
+          "title": "Pre-construction compliance kickoff minutes",
+          "artifact_type": "minutes",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G08_CONSTRUCTION_ADMINISTRATION",
+      "sequence": 8,
+      "name": "Construction Administration Gate",
+      "lapm_mapping": [
+        "Administer Construction Contracts",
+        "Progress payments/change governance"
+      ],
+      "stip_rtip_mapping": [
+        "Program commitment tracking through implementation"
+      ],
+      "ceqa_vmt_mapping": [
+        "Mitigation/impact commitment traceability during delivery"
+      ],
+      "outreach_mapping": [
+        "Construction-phase public impact communications logged"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G08_E01",
+          "title": "Daily reports + progress payment records",
+          "artifact_type": "document_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G08_E02",
+          "title": "Change-order register + rationale",
+          "artifact_type": "register",
+          "required": true
+        },
+        {
+          "evidence_id": "G08_E03",
+          "title": "Claims/disputes tracker",
+          "artifact_type": "tracker",
+          "required": true
+        },
+        {
+          "evidence_id": "G08_E04",
+          "title": "Construction impact outreach log",
+          "artifact_type": "log",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "G09_COMPLETION_MAINTENANCE_AUDIT",
+      "sequence": 9,
+      "name": "Completion, Maintenance, Audit/Corrective Action Gate",
+      "lapm_mapping": [
+        "Project Completion",
+        "Maintenance",
+        "Audits/Corrective Actions"
+      ],
+      "stip_rtip_mapping": [
+        "Closeout records support future programming cycles"
+      ],
+      "ceqa_vmt_mapping": [
+        "Final CEQA/VMT narrative archive with revision trail"
+      ],
+      "outreach_mapping": [
+        "Final outreach closeout and lessons-learned archive"
+      ],
+      "required_evidence": [
+        {
+          "evidence_id": "G09_E01",
+          "title": "Completion/closeout report + as-built archive index",
+          "artifact_type": "document_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G09_E02",
+          "title": "Maintenance handoff record",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "G09_E03",
+          "title": "Final invoicing and financial closeout package",
+          "artifact_type": "financial_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G09_E04",
+          "title": "Audit package and corrective-action tracker",
+          "artifact_type": "audit_bundle",
+          "required": true
+        },
+        {
+          "evidence_id": "G09_E05",
+          "title": "Policy delta acknowledgement log (Office Bulletins/LPP)",
+          "artifact_type": "policy_log",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

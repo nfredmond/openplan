@@ -1,0 +1,40 @@
+P1-D01..P1-D05 Runtime Proof Log
+Timestamp: 2026-03-06 03:25:13 UTC
+Server: http://localhost:4100
+
+[Runtime artifacts]
+- HTML snapshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1920-home-runtime.html
+- CSS snapshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1920-runtime.css
+- Header/nav screenshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d01-header-nav-contrast.png
+- Logo screenshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d02-logo-trust-cue.png
+- Helper/status screenshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d03-helper-status-contrast-signin.png
+- Outline CTA screenshot: /home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-05-test-output/2026-03-05-1918-p1-d04-outline-onboarding-cta-pricing.png
+
+[D01 runtime class evidence — nav link contrast classes present in rendered HTML]
+text-[color:var(--ink)]/85
+text-[color:var(--ink)]/85
+text-[color:var(--ink)]/85
+font-semibold transition-colors duration-200 focus-visible:outline-none
+
+[D02 runtime class evidence — logo trust cue classes present in rendered HTML]
+bg-white/95
+text-[color:var(--pine-deep)]
+
+[D05 runtime CSS evidence — global focus-visible selector in compiled CSS]
+2175:  .focus-visible\:border-\[color\:var\(--focus-ring-light\)\]:focus-visible {
+2179:  .focus-visible\:border-ring:focus-visible {
+2183:  .focus-visible\:ring-2:focus-visible {
+2188:  .focus-visible\:ring-3:focus-visible {
+2193:  .focus-visible\:ring-\[3px\]:focus-visible {
+2175:  .focus-visible\:border-\[color\:var\(--focus-ring-light\)\]:focus-visible {
+2176:    border-color: var(--focus-ring-light);
+2198:  .focus-visible\:ring-\[color\:var\(--focus-ring-light\)\]\/35:focus-visible {
+2199:    --tw-ring-color: var(--focus-ring-light);
+2203:    .focus-visible\:ring-\[color\:var\(--focus-ring-light\)\]\/35:focus-visible {
+
+[Contrast calculations]
+- D01 nav text: #14212b on #f7f8f4 => 15.36:1 (threshold 4.5:1) => PASS
+- D02 logo text: #12301f on #ffffff => 14.30:1 (threshold 4.5:1) => PASS
+- D03 helper/status text token: #3f5161 on #f7f8f4 => 7.69:1 (threshold 4.5:1) => PASS
+- D04 outline CTA text: #14212b on #ffffff => 16.38:1 (threshold 4.5:1) => PASS
+- D05 focus ring token: #0b6b60 on #f7f8f4 => 5.99:1 (threshold 3:1) => PASS

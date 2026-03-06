@@ -50,4 +50,11 @@ The blueprint is accepted as the strategic target-state for OpenPlan (California
 - [x] Scope declared canonical target-state.
 - [x] Phased delivery sequence documented.
 - [x] Backlog epics linked 1:1 to module requirements (`openplan/docs/ops/2026-03-05-blueprint-module-to-epic-map.md`).
-- [ ] Runtime evidence pack updated with phase status dashboard.
+- [x] Runtime evidence pack updated with phase status dashboard (`docs/ops/2026-03-05-ship-evidence-index.md`, `docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md`).
+
+## Execution Tracking (2026-03-05 night addendum)
+- Gate packet (09:00 / 13:00 / 17:30 backfill + recommendations): `openplan/docs/ops/2026-03-05-phase1-gate-packet.md`
+- Reusable daily checklist template for evidence hygiene: `openplan/docs/ops/2026-03-05-phase1-evidence-checklist.md`
+- Same-cycle engineering evidence index: `openplan/docs/ops/2026-03-05-ship-evidence-index.md`
+- Dated OP-001/OP-003 acceptance crosswalk: `openplan/docs/ops/2026-03-05-op001-op003-acceptance-crosswalk.md`
+- These files are now the working control pair + evidence companion set for Phase-1 governance updates until superseded by a dated next-day packet.
