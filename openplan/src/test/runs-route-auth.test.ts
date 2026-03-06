@@ -79,7 +79,7 @@ describe("/api/runs auth + membership guards", () => {
     });
 
     membershipMaybeSingleMock.mockResolvedValue({
-      data: { workspace_id: "11111111-1111-4111-8111-111111111111" },
+      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "member" },
       error: null,
     });
 
@@ -122,6 +122,18 @@ describe("/api/runs auth + membership guards", () => {
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
+  it("GET returns 403 when workspace role is unsupported (deny-by-default)", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "viewer" },
+      error: null,
+    });
+
+    const response = await getRuns(new NextRequest("http://localhost/api/runs?workspaceId=11111111-1111-4111-8111-111111111111"));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
+  });
+
   it("GET returns 200 when user is a workspace member", async () => {
     const response = await getRuns(new NextRequest("http://localhost/api/runs?workspaceId=11111111-1111-4111-8111-111111111111"));
 
@@ -148,6 +160,18 @@ describe("/api/runs auth + membership guards", () => {
 
   it("DELETE returns 403 when user is not a workspace member", async () => {
     membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
+  });
+
+  it("DELETE returns 403 when workspace role is unsupported (deny-by-default)", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "viewer" },
+      error: null,
+    });
 
     const response = await deleteRun(new NextRequest("http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", { method: "DELETE" }));
 

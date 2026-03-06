@@ -124,6 +124,49 @@ Owner: Engineering lead (TBD)
 - Execute merge/wiring steps in Section 5 using principal-approved template only.
 - Keep fallback path to v0.1 until production verification is complete.
 
+### Ready-to-review checklist (explicit pre-session gate)
+
+Use this checklist before scheduling principal/legal adjudication. Mark every item `YES` or `NO`.
+
+| Checklist item | Status (YES/NO) | Evidence / link |
+|---|---|---|
+| Review pack (`this file`) is current with latest v0.2 draft JSON and insertion paths | PENDING_REVIEW | PENDING_REVIEW |
+| Decision log template prepared: `docs/ops/2026-03-05-lapm-review-decision-log-template.md` | PENDING_REVIEW | PENDING_REVIEW |
+| Source citation index prepared: `docs/ops/2026-03-05-lapm-source-citation-index-draft.md` | PENDING_REVIEW | PENDING_REVIEW |
+| All unresolved legal-sensitive fields remain marked `PENDING_REVIEW` (no implied legal certainty) | PENDING_REVIEW | PENDING_REVIEW |
+| Known supersession risk points (Office Bulletin/LPP) are explicitly listed for legal review | PENDING_REVIEW | PENDING_REVIEW |
+| Planning reviewer and legal reviewer are named for session ownership | PENDING_REVIEW | PENDING_REVIEW |
+| Principal decision format expected (PASS/HOLD memo + conditions) is confirmed | PENDING_REVIEW | PENDING_REVIEW |
+| Fallback posture to `ca_stage_gates_v0_1` is documented and accepted | PENDING_REVIEW | PENDING_REVIEW |
+
+**Ready-to-review rule:** only schedule principal/legal session once all checklist items above are `YES` or explicitly accepted as open risks by principal.
+
+### Principal/legal session handoff steps (clear runbook)
+
+1. **Assemble packet (owner: Priya/Planning coordinator)**
+   - Include: this review pack, decision log template, citation index draft, and `ca_stage_gates_v0.2_draft.json`.
+   - Include explicit list of unresolved items requiring legal interpretation.
+
+2. **Issue pre-read (owner: Planning coordinator)**
+   - Send packet at least one business day before session.
+   - Ask reviewers to annotate: disputed chapter mappings, disputed form IDs, supersession concerns.
+
+3. **Run session (owner: Principal)**
+   - Sequence: Planning summary -> Legal validation -> Principal decision discussion.
+   - For each disputed row, capture decision directly in the decision log template.
+
+4. **Record conflict handling in-session (owner: Legal reviewer + note taker)**
+   - If LAPM text conflicts with Office Bulletin/LPP updates, complete supersession block before closing session.
+   - Mark interim handling and whether activation remains PASS-eligible or HOLD.
+
+5. **Close with explicit signoff outputs (owner: Principal + Legal)**
+   - Legal: `APPROVE`, `HOLD`, or `APPROVE_WITH_EXCEPTIONS` with conditions.
+   - Principal: final `PASS` or `HOLD` with dated signature and any prerequisites.
+
+6. **Post-session handoff to engineering (owner: Priya -> Engineering lead)**
+   - If PASS: hand off approved artifact/hash and conditions for Section 5 implementation.
+   - If HOLD: log blockers, keep v0.1 active, and open follow-up review ticket.
+
 ## 4) PASS criteria to approve v0.2 LAPM ID activation
 
 v0.2 is PASS-eligible only when all conditions are true:

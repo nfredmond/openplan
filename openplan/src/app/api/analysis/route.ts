@@ -17,6 +17,7 @@ import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 type Position = [number, number] | [number, number, number];
 
@@ -211,6 +212,16 @@ export async function POST(request: NextRequest) {
       audit.warn("forbidden_workspace", {
         workspaceId,
         userId: user.id,
+      });
+
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (!canAccessWorkspaceAction("analysis.create", membership.role)) {
+      audit.warn("forbidden_role", {
+        workspaceId,
+        userId: user.id,
+        role: membership.role ?? null,
       });
 
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
