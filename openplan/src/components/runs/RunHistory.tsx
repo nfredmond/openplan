@@ -35,6 +35,8 @@ function formatDate(value: string): string {
   return parsed.toLocaleString();
 }
 
+const RUN_HISTORY_LIMIT = 25;
+
 export function RunHistory({
   workspaceId,
   onLoadRun,
@@ -58,7 +60,7 @@ export function RunHistory({
 
     try {
       const response = await fetch(
-        `/api/runs?workspaceId=${encodeURIComponent(workspaceId)}`,
+        `/api/runs?workspaceId=${encodeURIComponent(workspaceId)}&limit=${RUN_HISTORY_LIMIT}`,
         {
           method: "GET",
         }

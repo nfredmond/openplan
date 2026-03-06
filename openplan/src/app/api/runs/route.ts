@@ -6,6 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 const workspaceIdSchema = z.string().uuid();
 const runIdSchema = z.string().uuid();
+const runLimitSchema = z.coerce.number().int().min(1).max(200);
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("runs.get", request);
@@ -18,6 +19,24 @@ export async function GET(request: NextRequest) {
     if (!parsed.success) {
       audit.warn("validation_failed", { workspaceId });
       return NextResponse.json({ error: "Invalid workspaceId" }, { status: 400 });
+    }
+
+    const requestedLimit = request.nextUrl.searchParams.get("limit");
+    let limit = 50;
+
+    if (requestedLimit !== null) {
+      const parsedLimit = runLimitSchema.safeParse(requestedLimit);
+
+      if (!parsedLimit.success) {
+        audit.warn("validation_failed", {
+          workspaceId: parsed.data,
+          requestedLimit,
+          issues: parsedLimit.error.issues,
+        });
+        return NextResponse.json({ error: "Invalid limit" }, { status: 400 });
+      }
+
+      limit = parsedLimit.data;
     }
 
     const supabase = await createClient();
@@ -81,7 +100,7 @@ export async function GET(request: NextRequest) {
       )
       .eq("workspace_id", parsed.data)
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(limit);
 
     if (error) {
       audit.error("fetch_failed", {
@@ -104,6 +123,7 @@ export async function GET(request: NextRequest) {
       workspaceId: parsed.data,
       userId: user.id,
       runCount: data?.length ?? 0,
+      limit,
       durationMs: Date.now() - startedAt,
     });
 

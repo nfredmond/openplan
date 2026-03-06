@@ -65,6 +65,15 @@ describe('API smoke tests (validation + guard rails)', () => {
     expect(payload.error).toBe('Invalid workspaceId')
   })
 
+  it('GET /api/runs rejects invalid limit values with HTTP 400', async () => {
+    const request = new NextRequest('http://localhost/api/runs?workspaceId=11111111-1111-4111-8111-111111111111&limit=999')
+    const response = await getRuns(request)
+
+    expect(response.status).toBe(400)
+    const payload = (await response.json()) as { error?: string }
+    expect(payload.error).toBe('Invalid limit')
+  })
+
   it('GET /api/stage-gates/decisions rejects invalid query params with HTTP 400', async () => {
     const request = new NextRequest('http://localhost/api/stage-gates/decisions?workspaceId=bad-id')
     const response = await getStageGateDecisions(request)

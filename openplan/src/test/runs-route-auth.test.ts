@@ -105,6 +105,18 @@ describe("/api/runs auth + membership guards", () => {
     runsDeleteEqMock.mockResolvedValue({ error: null });
   });
 
+  it("GET returns 400 when limit is invalid", async () => {
+    const response = await getRuns(
+      new NextRequest(
+        "http://localhost/api/runs?workspaceId=11111111-1111-4111-8111-111111111111&limit=0"
+      )
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Invalid limit" });
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
   it("GET returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
 
@@ -139,6 +151,18 @@ describe("/api/runs auth + membership guards", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ runs: expect.any(Array) });
+    expect(runsGetLimitMock).toHaveBeenCalledWith(50);
+  });
+
+  it("GET uses a caller-provided limit when supplied", async () => {
+    const response = await getRuns(
+      new NextRequest(
+        "http://localhost/api/runs?workspaceId=11111111-1111-4111-8111-111111111111&limit=10"
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(runsGetLimitMock).toHaveBeenCalledWith(10);
   });
 
   it("DELETE returns 400 when explicit confirmation is missing", async () => {
