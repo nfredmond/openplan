@@ -18,8 +18,29 @@ const DEFAULT_RETRIES = 1;
 const DEFAULT_RETRY_DELAY_MS = 250;
 const DEFAULT_CACHE_TTL_MS = 0;
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
+  if (!signal) {
+    return new Promise((resolve) => setTimeout(() => resolve(true), ms));
+  }
+
+  if (signal.aborted) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve(true);
+    }, ms);
+
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", onAbort);
+      resolve(false);
+    };
+
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }
 
 function normalizePositiveInteger(value: number | undefined, fallback: number): number {
@@ -162,7 +183,10 @@ export async function fetchJsonWithRetry<T>(
       return null;
     }
 
-    await sleep(retryDelayMs * Math.pow(2, attempt));
+    const continueRetrying = await sleep(retryDelayMs * Math.pow(2, attempt), init?.signal);
+    if (!continueRetrying) {
+      return null;
+    }
   }
 
   return null;

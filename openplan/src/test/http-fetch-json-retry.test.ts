@@ -132,6 +132,38 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("exits retry backoff immediately when caller aborts between attempts", async () => {
+    vi.useFakeTimers();
+
+    const controller = new AbortController();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const resultPromise = fetchJsonWithRetry(
+      "https://example.com/cancel-during-backoff",
+      {
+        signal: controller.signal,
+      },
+      {
+        retries: 3,
+        retryDelayMs: 5_000,
+      }
+    );
+
+    await Promise.resolve();
+    controller.abort("caller_cancelled");
+
+    const result = await resultPromise;
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("normalizes invalid timeout and cache TTL options without crashing", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
