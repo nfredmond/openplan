@@ -454,6 +454,48 @@ describe("fetchJsonWithRetry", () => {
     }
   });
 
+  it("cleans up fallback timeout timers after successful requests", async () => {
+    vi.useFakeTimers();
+
+    const originalAbortSignalTimeout = AbortSignal.timeout;
+    Object.defineProperty(AbortSignal, "timeout", {
+      configurable: true,
+      value: undefined,
+    });
+
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    try {
+      const clearCallsBefore = clearTimeoutSpy.mock.calls.length;
+
+      const result = await fetchJsonWithRetry<{ source: string }>(
+        "https://example.com/timeout-cleanup",
+        undefined,
+        {
+          timeoutMs: 10_000,
+          retries: 0,
+        }
+      );
+
+      expect(result).toEqual({ source: "network" });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(clearTimeoutSpy.mock.calls.length).toBeGreaterThan(clearCallsBefore);
+    } finally {
+      Object.defineProperty(AbortSignal, "timeout", {
+        configurable: true,
+        value: originalAbortSignalTimeout,
+      });
+      vi.useRealTimers();
+    }
+  });
+
   it("exits retry backoff immediately when caller aborts between attempts", async () => {
     vi.useFakeTimers();
 

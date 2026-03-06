@@ -204,9 +204,17 @@ function enforceCacheLimit() {
   }
 }
 
-function buildTimeoutSignal(timeoutMs: number): AbortSignal {
+type TimeoutSignalResult = {
+  signal: AbortSignal;
+  cleanup: () => void;
+};
+
+function buildTimeoutSignal(timeoutMs: number): TimeoutSignalResult {
   if (typeof AbortSignal.timeout === "function") {
-    return AbortSignal.timeout(timeoutMs);
+    return {
+      signal: AbortSignal.timeout(timeoutMs),
+      cleanup: () => {},
+    };
   }
 
   const controller = new AbortController();
@@ -214,60 +222,89 @@ function buildTimeoutSignal(timeoutMs: number): AbortSignal {
     controller.abort(new Error("Request timed out"));
   }, timeoutMs);
 
-  controller.signal.addEventListener(
-    "abort",
-    () => {
-      clearTimeout(timeoutId);
-    },
-    { once: true }
-  );
-
-  return controller.signal;
-}
-
-function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): AbortSignal {
-  const timeoutSignal = buildTimeoutSignal(timeoutMs);
-
-  if (!upstream) {
-    return timeoutSignal;
-  }
-
-  if (typeof AbortSignal.any === "function") {
-    return AbortSignal.any([upstream, timeoutSignal]);
-  }
-
-  if (upstream.aborted) {
-    return upstream;
-  }
-
-  if (timeoutSignal.aborted) {
-    return timeoutSignal;
-  }
-
-  const controller = new AbortController();
-
-  const abortFrom = (source: AbortSignal) => {
-    if (controller.signal.aborted) {
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) {
       return;
     }
 
-    controller.abort((source as AbortSignal & { reason?: unknown }).reason);
+    cleanedUp = true;
+    clearTimeout(timeoutId);
+    controller.signal.removeEventListener("abort", cleanup);
+  };
+
+  controller.signal.addEventListener("abort", cleanup, { once: true });
+
+  return {
+    signal: controller.signal,
+    cleanup,
+  };
+}
+
+function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): TimeoutSignalResult {
+  const timeoutResult = buildTimeoutSignal(timeoutMs);
+  const timeoutSignal = timeoutResult.signal;
+
+  if (!upstream) {
+    return timeoutResult;
+  }
+
+  if (typeof AbortSignal.any === "function") {
+    return {
+      signal: AbortSignal.any([upstream, timeoutSignal]),
+      cleanup: timeoutResult.cleanup,
+    };
+  }
+
+  if (upstream.aborted) {
+    timeoutResult.cleanup();
+    return {
+      signal: upstream,
+      cleanup: () => {},
+    };
+  }
+
+  if (timeoutSignal.aborted) {
+    return timeoutResult;
+  }
+
+  const controller = new AbortController();
+  let cleanedUp = false;
+
+  const cleanup = () => {
+    if (cleanedUp) {
+      return;
+    }
+
+    cleanedUp = true;
+    upstream.removeEventListener("abort", onUpstreamAbort);
+    timeoutSignal.removeEventListener("abort", onTimeoutAbort);
+    timeoutResult.cleanup();
+  };
+
+  const abortFrom = (source: AbortSignal) => {
+    if (!controller.signal.aborted) {
+      controller.abort((source as AbortSignal & { reason?: unknown }).reason);
+    }
+
+    cleanup();
   };
 
   const onUpstreamAbort = () => {
-    timeoutSignal.removeEventListener("abort", onTimeoutAbort);
     abortFrom(upstream);
   };
 
   const onTimeoutAbort = () => {
-    upstream.removeEventListener("abort", onUpstreamAbort);
     abortFrom(timeoutSignal);
   };
 
   upstream.addEventListener("abort", onUpstreamAbort, { once: true });
   timeoutSignal.addEventListener("abort", onTimeoutAbort, { once: true });
 
-  return controller.signal;
+  return {
+    signal: controller.signal,
+    cleanup,
+  };
 }
 
 export function __clearFetchJsonResponseCacheForTests() {
@@ -315,10 +352,12 @@ export async function fetchJsonWithRetry<T>(
 
     let retryAfterHintMs: number | null = null;
 
+    const requestTimeout = withTimeoutSignal(timeoutMs, init?.signal);
+
     try {
       const response = await fetch(url, {
         ...init,
-        signal: withTimeoutSignal(timeoutMs, init?.signal),
+        signal: requestTimeout.signal,
       });
 
       if (!response.ok) {
@@ -349,6 +388,8 @@ export async function fetchJsonWithRetry<T>(
       if (init?.signal?.aborted || !shouldRetryMethod || attempt === retries) {
         return null;
       }
+    } finally {
+      requestTimeout.cleanup();
     }
 
     if (init?.signal?.aborted) {
