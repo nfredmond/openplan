@@ -30,6 +30,45 @@ interface BBox {
 
 const SWITRS_CSV_PATH = process.env.SWITRS_CSV_PATH;
 
+const FARS_TIMEOUT_MS = 10_000;
+
+type TimeoutSignalResult = {
+  signal: AbortSignal;
+  cleanup: () => void;
+};
+
+function buildTimeoutSignal(timeoutMs: number): TimeoutSignalResult {
+  if (typeof AbortSignal.timeout === "function") {
+    return {
+      signal: AbortSignal.timeout(timeoutMs),
+      cleanup: () => {},
+    };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort(new Error("Request timed out"));
+  }, timeoutMs);
+
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) {
+      return;
+    }
+
+    cleanedUp = true;
+    clearTimeout(timeoutId);
+    controller.signal.removeEventListener("abort", cleanup);
+  };
+
+  controller.signal.addEventListener("abort", cleanup, { once: true });
+
+  return {
+    signal: controller.signal,
+    cleanup,
+  };
+}
+
 function bboxArea(bbox: BBox): number {
   const latMid = (bbox.minLat + bbox.maxLat) / 2;
   const latDist = Math.abs(bbox.maxLat - bbox.minLat) * 69.0;
@@ -170,18 +209,23 @@ async function fetchFars(bbox: BBox): Promise<CrashSummary> {
         `&minLong=${bbox.minLon}&maxLong=${bbox.maxLon}` +
         `&format=json`;
 
-      const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-      if (!resp.ok) continue;
+      const requestTimeout = buildTimeoutSignal(FARS_TIMEOUT_MS);
+      try {
+        const resp = await fetch(url, { signal: requestTimeout.signal });
+        if (!resp.ok) continue;
 
-      const data = await resp.json();
-      const results = data?.Results?.[0] || [];
-      queriedYears.push(year);
+        const data = await resp.json();
+        const results = data?.Results?.[0] || [];
+        queriedYears.push(year);
 
-      for (const crash of results) {
-        totalCrashes += 1;
-        totalFatalities += parseInt(crash.FATALS, 10) || 0;
-        pedFatalities += parseInt(crash.PEDS, 10) || 0;
-        bikeFatalities += parseInt(crash.BICYCLISTS, 10) || 0;
+        for (const crash of results) {
+          totalCrashes += 1;
+          totalFatalities += parseInt(crash.FATALS, 10) || 0;
+          pedFatalities += parseInt(crash.PEDS, 10) || 0;
+          bikeFatalities += parseInt(crash.BICYCLISTS, 10) || 0;
+        }
+      } finally {
+        requestTimeout.cleanup();
       }
     } catch {
       // ignore API failures per-year
