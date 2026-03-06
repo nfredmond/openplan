@@ -46,6 +46,8 @@ describe("POST /api/workspaces/bootstrap", () => {
         id: "11111111-1111-4111-8111-111111111111",
         slug: "regional-planning-commission",
         plan: "pilot",
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
       },
       error: null,
     });
@@ -112,18 +114,69 @@ describe("POST /api/workspaces/bootstrap", () => {
       workspaceId: string;
       slug: string;
       plan: string;
+      stageGateTemplate: {
+        id: string;
+        version: string;
+        jurisdiction: string;
+        bindingMode: string;
+        lapmFormIdsStatus: string;
+      };
       onboardingChecklist: string[];
     };
 
     expect(payload.workspaceId).toBeDefined();
     expect(payload.slug).toBe("regional-planning-commission");
     expect(payload.plan).toBe("pilot");
+    expect(payload.stageGateTemplate).toMatchObject({
+      id: "ca_stage_gates_v0_1",
+      version: "0.1.0",
+      jurisdiction: "CA",
+      bindingMode: "workspace_bootstrap_interim",
+      lapmFormIdsStatus: "deferred_to_v0_2",
+    });
     expect(Array.isArray(payload.onboardingChecklist)).toBe(true);
     expect(payload.onboardingChecklist.length).toBeGreaterThan(0);
+
+    expect(workspaceInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        stage_gate_binding_source: "workspace_bootstrap_interim",
+      })
+    );
 
     expect(createApiAuditLoggerMock).toHaveBeenCalledWith(
       "workspaces.bootstrap",
       expect.any(NextRequest)
+    );
+  });
+
+  it("returns 400 when unsupported stage-gate template is requested", async () => {
+    const response = await postBootstrap(
+      jsonRequest({
+        workspaceName: "Regional Planning Commission",
+        stageGateTemplateId: "unsupported_template",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Unsupported stage-gate template" });
+    expect(workspaceInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts explicit california stage-gate template selection", async () => {
+    const response = await postBootstrap(
+      jsonRequest({
+        workspaceName: "Regional Planning Commission",
+        stageGateTemplateId: "ca_stage_gates_v0_1",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(workspaceInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+      })
     );
   });
 
