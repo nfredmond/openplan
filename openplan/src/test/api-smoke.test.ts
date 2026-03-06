@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { POST as postAnalysis } from '@/app/api/analysis/route'
 import { POST as postReport } from '@/app/api/report/route'
 import { GET as getRuns } from '@/app/api/runs/route'
+import { GET as getStageGateDecisions } from '@/app/api/stage-gates/decisions/route'
 
 function jsonRequest(url: string, payload: unknown) {
   return new NextRequest(url, {
@@ -62,5 +63,14 @@ describe('API smoke tests (validation + guard rails)', () => {
     expect(response.status).toBe(400)
     const payload = (await response.json()) as { error?: string }
     expect(payload.error).toBe('Invalid workspaceId')
+  })
+
+  it('GET /api/stage-gates/decisions rejects invalid query params with HTTP 400', async () => {
+    const request = new NextRequest('http://localhost/api/stage-gates/decisions?workspaceId=bad-id')
+    const response = await getStageGateDecisions(request)
+
+    expect(response.status).toBe(400)
+    const payload = (await response.json()) as { error?: string }
+    expect(payload.error).toBe('Invalid stage-gate decision query')
   })
 })

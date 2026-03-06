@@ -16,6 +16,8 @@ const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMo
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
+const decisionInsertMock = vi.fn();
+
 const clientFromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
@@ -23,6 +25,10 @@ const clientFromMock = vi.fn((table: string) => {
 
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
+  }
+
+  if (table === "stage_gate_decisions") {
+    return { insert: decisionInsertMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -113,9 +119,11 @@ describe("POST /api/report", () => {
     });
 
     membershipMaybeSingleMock.mockResolvedValue({
-      data: { workspace_id: "33333333-3333-4333-8333-333333333333" },
+      data: { workspace_id: "33333333-3333-4333-8333-333333333333", role: "member" },
       error: null,
     });
+
+    decisionInsertMock.mockResolvedValue({ error: null });
   });
 
   it("returns 400 for invalid format", async () => {
@@ -178,7 +186,30 @@ describe("POST /api/report", () => {
         "metrics.sourceSnapshots.crashes.fetchedAt",
       ]),
     });
+    expect(decisionInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "HOLD",
+        gate_id: "report_artifact_gate",
+        run_id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        missing_artifacts: expect.arrayContaining([
+          "summary_text",
+          "metrics.sourceSnapshots.crashes.fetchedAt",
+        ]),
+      })
+    );
     expect(telemetryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when decision persistence fails", async () => {
+    decisionInsertMock.mockResolvedValueOnce({
+      error: { message: "write failed", code: "XX000" },
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to persist stage-gate decision" });
   });
 
   it("returns html for format=html", async () => {
@@ -186,6 +217,13 @@ describe("POST /api/report", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
+    expect(decisionInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "PASS",
+        gate_id: "report_artifact_gate",
+        run_id: runId,
+      })
+    );
   });
 
   it("returns pdf bytes for format=pdf", async () => {

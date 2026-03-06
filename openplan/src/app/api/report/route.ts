@@ -4,6 +4,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 const reportRequestSchema = z.object({
   runId: z.string().uuid(),
@@ -502,7 +503,7 @@ export async function POST(request: NextRequest) {
 
     const { data: membership, error: membershipError } = await supabase
       .from("workspace_members")
-      .select("workspace_id")
+      .select("workspace_id, role")
       .eq("workspace_id", run.workspace_id)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -531,6 +532,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    if (!canAccessWorkspaceAction("report.generate", membership.role)) {
+      audit.warn("forbidden_role", {
+        runId,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        role: membership.role ?? null,
+        format,
+        template,
+      });
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
     const gateResult = evaluateReportArtifactGate(run);
     audit.info("report_gate_decision", {
       runId,
@@ -541,6 +554,43 @@ export async function POST(request: NextRequest) {
       decision: gateResult.decision,
       missingArtifacts: gateResult.missingArtifacts,
     });
+
+    const decisionRationale =
+      gateResult.decision === "PASS"
+        ? "Report artifact gate passed: all required artifacts are present."
+        : `Report artifact gate hold: missing ${gateResult.missingArtifacts.length} required artifact(s).`;
+
+    const { error: decisionPersistenceError } = await supabase
+      .from("stage_gate_decisions")
+      .insert({
+        workspace_id: run.workspace_id,
+        run_id: run.id,
+        gate_id: "report_artifact_gate",
+        decision: gateResult.decision,
+        rationale: decisionRationale,
+        missing_artifacts: gateResult.missingArtifacts,
+        metadata: {
+          source: "api.report",
+          template,
+          format,
+        },
+        decided_by: user.id,
+      });
+
+    if (decisionPersistenceError) {
+      audit.error("report_gate_decision_persist_failed", {
+        runId,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        format,
+        template,
+        decision: gateResult.decision,
+        message: decisionPersistenceError.message,
+        code: decisionPersistenceError.code ?? null,
+      });
+
+      return NextResponse.json({ error: "Failed to persist stage-gate decision" }, { status: 500 });
+    }
 
     if (gateResult.decision === "HOLD") {
       return NextResponse.json(

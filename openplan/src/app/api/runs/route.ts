@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 const workspaceIdSchema = z.string().uuid();
 const runIdSchema = z.string().uuid();
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     const { data: membership, error: membershipError } = await supabase
       .from("workspace_members")
-      .select("workspace_id")
+      .select("workspace_id, role")
       .eq("workspace_id", parsed.data)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -60,6 +61,15 @@ export async function GET(request: NextRequest) {
       audit.warn("forbidden_workspace", {
         workspaceId: parsed.data,
         userId: user.id,
+      });
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (!canAccessWorkspaceAction("runs.list", membership.role)) {
+      audit.warn("forbidden_role", {
+        workspaceId: parsed.data,
+        userId: user.id,
+        role: membership.role ?? null,
       });
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
@@ -170,7 +180,7 @@ export async function DELETE(request: NextRequest) {
 
     const { data: membership, error: membershipError } = await supabase
       .from("workspace_members")
-      .select("workspace_id")
+      .select("workspace_id, role")
       .eq("workspace_id", run.workspace_id)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -198,6 +208,16 @@ export async function DELETE(request: NextRequest) {
         runId: parsed.data,
         workspaceId: run.workspace_id,
         userId: user.id,
+      });
+      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (!canAccessWorkspaceAction("runs.delete", membership.role)) {
+      audit.warn("forbidden_role", {
+        runId: parsed.data,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        role: membership.role ?? null,
       });
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
