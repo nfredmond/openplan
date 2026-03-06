@@ -238,6 +238,35 @@ describe("fetchJsonWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
+  it("retries transient 408 responses and succeeds on the next attempt", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 408,
+        json: vi.fn().mockResolvedValue({ error: "request timeout" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/retry-408",
+      undefined,
+      {
+        retries: 1,
+        retryDelayMs: 0,
+      }
+    );
+
+    expect(result).toEqual({ source: "network" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("caps retry backoff delay to one minute", async () => {
     vi.useFakeTimers();
 

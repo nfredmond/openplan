@@ -20,6 +20,7 @@ const DEFAULT_RETRY_DELAY_MS = 250;
 const MAX_RETRY_DELAY_MS = 60_000;
 const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
+const RETRIABLE_STATUS_CODES = new Set([408, 429]);
 
 function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
   if (!signal) {
@@ -86,6 +87,10 @@ function normalizeNonNegativeInteger(
   }
 
   return normalized;
+}
+
+function isRetriableStatus(status: number): boolean {
+  return status >= 500 || RETRIABLE_STATUS_CODES.has(status);
 }
 
 function buildCacheKey(url: string, init?: RequestInit, explicit?: string): string {
@@ -181,7 +186,7 @@ export async function fetchJsonWithRetry<T>(
       });
 
       if (!response.ok) {
-        const retriable = response.status >= 500 || response.status === 429;
+        const retriable = isRetriableStatus(response.status);
         if (!retriable || attempt === retries) {
           return null;
         }
