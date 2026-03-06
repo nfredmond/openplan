@@ -15,7 +15,10 @@ const responseCache = new Map<string, CacheEntry>();
 const MAX_CACHE_ENTRIES = 500;
 const DEFAULT_TIMEOUT_MS = 12000;
 const DEFAULT_RETRIES = 1;
+const MAX_RETRIES = 5;
 const DEFAULT_RETRY_DELAY_MS = 250;
+const MAX_RETRY_DELAY_MS = 60_000;
+const MAX_BACKOFF_DELAY_MS = 60_000;
 const DEFAULT_CACHE_TTL_MS = 0;
 
 function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
@@ -43,7 +46,11 @@ function sleep(ms: number, signal?: AbortSignal | null): Promise<boolean> {
   });
 }
 
-function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+function normalizePositiveInteger(
+  value: number | undefined,
+  fallback: number,
+  max?: number
+): number {
   if (!Number.isFinite(value)) {
     return fallback;
   }
@@ -53,10 +60,18 @@ function normalizePositiveInteger(value: number | undefined, fallback: number): 
     return fallback;
   }
 
+  if (typeof max === "number") {
+    return Math.min(normalized, max);
+  }
+
   return normalized;
 }
 
-function normalizeNonNegativeInteger(value: number | undefined, fallback: number): number {
+function normalizeNonNegativeInteger(
+  value: number | undefined,
+  fallback: number,
+  max?: number
+): number {
   if (!Number.isFinite(value)) {
     return fallback;
   }
@@ -64,6 +79,10 @@ function normalizeNonNegativeInteger(value: number | undefined, fallback: number
   const normalized = Math.trunc(value);
   if (normalized < 0) {
     return 0;
+  }
+
+  if (typeof max === "number") {
+    return Math.min(normalized, max);
   }
 
   return normalized;
@@ -132,10 +151,11 @@ export async function fetchJsonWithRetry<T>(
   options: FetchJsonOptions = {}
 ): Promise<T | null> {
   const timeoutMs = normalizePositiveInteger(options.timeoutMs, DEFAULT_TIMEOUT_MS);
-  const retries = normalizeNonNegativeInteger(options.retries, DEFAULT_RETRIES);
+  const retries = normalizeNonNegativeInteger(options.retries, DEFAULT_RETRIES, MAX_RETRIES);
   const retryDelayMs = normalizeNonNegativeInteger(
     options.retryDelayMs,
-    DEFAULT_RETRY_DELAY_MS
+    DEFAULT_RETRY_DELAY_MS,
+    MAX_RETRY_DELAY_MS
   );
   const cacheTtlMs = normalizeNonNegativeInteger(options.cacheTtlMs, DEFAULT_CACHE_TTL_MS);
   const key = buildCacheKey(url, init, options.cacheKey);
@@ -183,7 +203,12 @@ export async function fetchJsonWithRetry<T>(
       return null;
     }
 
-    const continueRetrying = await sleep(retryDelayMs * Math.pow(2, attempt), init?.signal);
+    const backoffDelayMs = Math.min(
+      retryDelayMs * Math.pow(2, attempt),
+      MAX_BACKOFF_DELAY_MS
+    );
+
+    const continueRetrying = await sleep(backoffDelayMs, init?.signal);
     if (!continueRetrying) {
       return null;
     }

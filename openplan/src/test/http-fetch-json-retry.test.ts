@@ -219,4 +219,58 @@ describe("fetchJsonWithRetry", () => {
     expect(result).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it("caps oversized retry counts to prevent runaway retry loops", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const result = await fetchJsonWithRetry("https://example.com/retry-max", undefined, {
+      retries: 999,
+      retryDelayMs: 0,
+    });
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+  });
+
+  it("caps retry backoff delay to one minute", async () => {
+    vi.useFakeTimers();
+
+    const controller = new AbortController();
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: vi.fn().mockResolvedValue({ error: "temporarily unavailable" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const resultPromise = fetchJsonWithRetry(
+      "https://example.com/retry-delay-cap",
+      {
+        signal: controller.signal,
+      },
+      {
+        retries: 1,
+        retryDelayMs: 120_000,
+      }
+    );
+
+    await Promise.resolve();
+
+    const latestDelay = Number(setTimeoutSpy.mock.calls.at(-1)?.[1]);
+    expect(latestDelay).toBe(60_000);
+
+    controller.abort("test_complete");
+    const result = await resultPromise;
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
