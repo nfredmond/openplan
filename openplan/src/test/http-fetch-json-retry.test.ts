@@ -287,6 +287,16 @@ describe("fetchJsonWithRetry", () => {
         ok: true,
         status: 200,
         json: vi.fn().mockResolvedValue({ source: "network-4" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-5" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-6" }),
       });
 
     vi.stubGlobal("fetch", fetchMock as typeof fetch);
@@ -343,7 +353,33 @@ describe("fetchJsonWithRetry", () => {
       }
     );
 
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      {
+        headers: {
+          "x-id-token": "id-token-value",
+        },
+      },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      {
+        headers: {
+          "x-refresh-token": "refresh-token-value",
+        },
+      },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(6);
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
