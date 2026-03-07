@@ -5,8 +5,8 @@ Low-risk privacy/reliability hardening in shared HTTP fetch utility (`src/lib/da
 
 ## Change Summary
 - Added `IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS` for sensitive URL params, including:
-  - `access_token`, `api_key`, `apikey`, `auth`, `authorization`, `jwt`, `key`, `refresh_token`, `sig`, `signature`, `token`
-- Added `hasImplicitCacheBlockedQueryParams(url)`.
+  - `access_token`, `api_key`, `apikey`, `auth`, `authorization`, `id_token`, `jwt`, `key`, `oauth_token`, `refresh_token`, `sig`, `signature`, `token`
+- Added `hasImplicitCacheBlockedQueryParams(url)` with JWT-like value detection for query values that look like three-part base64url tokens.
 - Updated implicit cache eligibility logic:
   - Existing guardrails remain (safe methods + blocked auth headers).
   - New behavior: if URL contains sensitive query params, implicit cache is disabled.
@@ -17,6 +17,8 @@ Added unit coverage in `src/test/http-fetch-json-retry.test.ts`:
 - `does not implicitly cache GET requests containing sensitive query params`
 - `allows caching sensitive-query GET requests when an explicit cache key is supplied`
 - `treats jwt and refresh_token query params as sensitive for implicit caching`
+- `treats oauth_token and id_token query params as sensitive for implicit caching`
+- `treats JWT-like query values as sensitive for implicit caching`
 
 ## Verification Commands
 ```bash
