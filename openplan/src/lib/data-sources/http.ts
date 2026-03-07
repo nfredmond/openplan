@@ -40,6 +40,7 @@ const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "jwt",
   "key",
   "oauth_token",
+  "private_token",
   "refresh_token",
   "sig",
   "signature",
