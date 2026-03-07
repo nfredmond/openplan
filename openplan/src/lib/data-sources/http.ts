@@ -230,6 +230,10 @@ function canRetryMethod(method: string, options: FetchJsonOptions): boolean {
   return IDEMPOTENT_HTTP_METHODS.has(method);
 }
 
+function shouldTreatResponseAsEmptyBody(method: string, status: number): boolean {
+  return method === "HEAD" || status === 204 || status === 205;
+}
+
 function buildCacheKey(
   url: string,
   method: string,
@@ -402,7 +406,7 @@ export async function fetchJsonWithRetry<T>(
 
     const cached = responseCache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
-      return cached.payload as T;
+      return cached.payload as T | null;
     }
   }
 
@@ -431,6 +435,15 @@ export async function fetchJsonWithRetry<T>(
           response.headers?.get?.("retry-after") ?? null
         );
       } else {
+        if (shouldTreatResponseAsEmptyBody(method, response.status)) {
+          if (shouldUseResponseCache && key) {
+            responseCache.set(key, { payload: null, expiresAt: Date.now() + cacheTtlMs });
+            enforceCacheLimit();
+          }
+
+          return null;
+        }
+
         let payload: T;
 
         try {

@@ -44,6 +44,78 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("treats 204 responses as successful empty payloads and caches them", async () => {
+    const jsonMock = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: jsonMock,
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry(
+      "https://example.com/no-content",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        cacheKey: "cache:no-content",
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry(
+      "https://example.com/no-content",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        cacheKey: "cache:no-content",
+        retries: 0,
+      }
+    );
+
+    expect(first).toBeNull();
+    expect(second).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(jsonMock).not.toHaveBeenCalled();
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
+  it("treats HEAD responses as successful empty payloads and caches them", async () => {
+    const jsonMock = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jsonMock,
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry(
+      "https://example.com/head-check",
+      { method: "HEAD" },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry(
+      "https://example.com/head-check",
+      { method: "HEAD" },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toBeNull();
+    expect(second).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(jsonMock).not.toHaveBeenCalled();
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("does not cache non-GET/HEAD requests without an explicit cache key", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
