@@ -44,6 +44,80 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("isolates cached object payloads from caller mutation", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({
+        source: "network",
+        nested: { status: "fresh" },
+        list: ["a", "b"],
+      }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{
+      source: string;
+      nested: { status: string };
+      list: string[];
+    }>("https://example.com/data", undefined, {
+      cacheTtlMs: 30_000,
+      cacheKey: "cache:mutable",
+      retries: 0,
+    });
+
+    expect(first).not.toBeNull();
+    if (!first) {
+      throw new Error("expected first payload");
+    }
+
+    first.nested.status = "mutated-first";
+    first.list.push("first");
+
+    const second = await fetchJsonWithRetry<{
+      source: string;
+      nested: { status: string };
+      list: string[];
+    }>("https://example.com/data", undefined, {
+      cacheTtlMs: 30_000,
+      cacheKey: "cache:mutable",
+      retries: 0,
+    });
+
+    expect(second).toEqual({
+      source: "network",
+      nested: { status: "fresh" },
+      list: ["a", "b"],
+    });
+
+    if (!second) {
+      throw new Error("expected second payload");
+    }
+
+    second.nested.status = "mutated-second";
+    second.list.push("second");
+
+    const third = await fetchJsonWithRetry<{
+      source: string;
+      nested: { status: string };
+      list: string[];
+    }>("https://example.com/data", undefined, {
+      cacheTtlMs: 30_000,
+      cacheKey: "cache:mutable",
+      retries: 0,
+    });
+
+    expect(third).toEqual({
+      source: "network",
+      nested: { status: "fresh" },
+      list: ["a", "b"],
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("treats 204 responses as successful empty payloads and caches them", async () => {
     const jsonMock = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({

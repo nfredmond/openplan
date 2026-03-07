@@ -373,6 +373,22 @@ function withTimeoutSignal(timeoutMs: number, upstream?: AbortSignal | null): Ti
   };
 }
 
+function cloneCachedPayload<T>(payload: T): T {
+  if (payload === null || payload === undefined) {
+    return payload;
+  }
+
+  if (typeof globalThis.structuredClone === "function") {
+    return globalThis.structuredClone(payload);
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(payload)) as T;
+  } catch {
+    return payload;
+  }
+}
+
 export function __clearFetchJsonResponseCacheForTests() {
   responseCache.clear();
 }
@@ -407,7 +423,7 @@ export async function fetchJsonWithRetry<T>(
 
     const cached = responseCache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
-      return cached.payload as T | null;
+      return cloneCachedPayload(cached.payload as T | null);
     }
   }
 
@@ -454,7 +470,10 @@ export async function fetchJsonWithRetry<T>(
         }
 
         if (shouldUseResponseCache && key) {
-          responseCache.set(key, { payload, expiresAt: Date.now() + cacheTtlMs });
+          responseCache.set(key, {
+            payload: cloneCachedPayload(payload),
+            expiresAt: Date.now() + cacheTtlMs,
+          });
           enforceCacheLimit();
         }
         return payload;
