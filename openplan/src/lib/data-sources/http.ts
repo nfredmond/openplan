@@ -33,6 +33,7 @@ const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
   "x-session-token",
   "x-token",
 ]);
+const IMPLICIT_CACHE_BLOCKED_CUSTOM_TOKEN_HEADER = /^x-(?:[a-z0-9]+-)*token$/i;
 const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "accesstoken",
   "apikey",
@@ -172,6 +173,12 @@ function hasImplicitCacheBlockedHeaders(headers?: HeadersInit): boolean {
 
   for (const headerName of IMPLICIT_CACHE_BLOCKED_HEADERS) {
     if (normalized.has(headerName)) {
+      return true;
+    }
+  }
+
+  for (const headerName of normalized.keys()) {
+    if (IMPLICIT_CACHE_BLOCKED_CUSTOM_TOKEN_HEADER.test(headerName.toLowerCase())) {
       return true;
     }
   }
