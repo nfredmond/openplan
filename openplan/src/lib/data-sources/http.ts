@@ -200,6 +200,18 @@ function hasImplicitCacheBlockedQueryParams(url: string): boolean {
   return false;
 }
 
+function hasImplicitCacheBlockedUrlCredentials(url: string): boolean {
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(url, "http://localhost");
+  } catch {
+    return false;
+  }
+
+  return parsedUrl.username.length > 0 || parsedUrl.password.length > 0;
+}
+
 function isLikelyJwtQueryValue(value: string): boolean {
   const normalizedValue = value.trim();
   if (!normalizedValue) {
@@ -233,6 +245,10 @@ function canUseResponseCache(
   }
 
   if (hasImplicitCacheBlockedQueryParams(url)) {
+    return false;
+  }
+
+  if (hasImplicitCacheBlockedUrlCredentials(url)) {
     return false;
   }
 

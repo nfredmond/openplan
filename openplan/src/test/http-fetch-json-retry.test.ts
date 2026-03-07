@@ -493,6 +493,79 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("does not implicitly cache GET requests with URL-embedded credentials", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://planner-user:planner-pass@example.com/private-data",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://planner-user:planner-pass@example.com/private-data",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
+  it("allows caching URL-credential GET requests when an explicit cache key is supplied", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ source: "network" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://planner-user:planner-pass@example.com/private-data",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        cacheKey: "workspace:url-credential",
+        retries: 0,
+      }
+    );
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://planner-user:planner-pass@example.com/private-data",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        cacheKey: "workspace:url-credential",
+        retries: 0,
+      }
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("treats jwt and refresh_token query params as sensitive for implicit caching", async () => {
     const fetchMock = vi
       .fn()
