@@ -347,6 +347,48 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("handles malformed header init values without crashing implicit cache checks", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const malformedHeaders = [["bad header", "value"]] as unknown as HeadersInit;
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      { headers: malformedHeaders },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      { headers: malformedHeaders },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("allows caching authenticated GET requests when an explicit cache key is supplied", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

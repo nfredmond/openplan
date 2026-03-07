@@ -160,7 +160,15 @@ function hasImplicitCacheBlockedHeaders(headers?: HeadersInit): boolean {
     return false;
   }
 
-  const normalized = new Headers(headers);
+  let normalized: Headers;
+  try {
+    normalized = new Headers(headers);
+  } catch {
+    // Invalid header shapes should not crash retry/caching logic.
+    // Stay conservative: block implicit cache when headers cannot be normalized.
+    return true;
+  }
+
   for (const headerName of IMPLICIT_CACHE_BLOCKED_HEADERS) {
     if (normalized.has(headerName)) {
       return true;
