@@ -265,6 +265,70 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("does not implicitly cache GET requests with x-* token auth headers", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-3" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      {
+        headers: {
+          "x-access-token": "access-token",
+        },
+      },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      {
+        headers: {
+          "x-auth-token": "auth-token",
+        },
+      },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data",
+      {
+        headers: {
+          "x-session-token": "session-token",
+        },
+      },
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("allows caching authenticated GET requests when an explicit cache key is supplied", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

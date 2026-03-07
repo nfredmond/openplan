@@ -28,6 +28,9 @@ const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
   "proxy-authorization",
   "cookie",
   "x-api-key",
+  "x-access-token",
+  "x-auth-token",
+  "x-session-token",
 ]);
 const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "access_token",
