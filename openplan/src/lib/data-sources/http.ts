@@ -35,6 +35,7 @@ const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "apikey",
   "auth",
   "authorization",
+  "client_secret",
   "id_token",
   "jwt",
   "key",
