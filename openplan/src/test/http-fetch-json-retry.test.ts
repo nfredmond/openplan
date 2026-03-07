@@ -409,7 +409,7 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
-  it("treats oauth_token, id_token, client_secret, and private_token query params as sensitive for implicit caching", async () => {
+  it("treats oauth_token, id_token, client_secret, private_token, and auth_token query params as sensitive for implicit caching", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -431,6 +431,11 @@ describe("fetchJsonWithRetry", () => {
         ok: true,
         status: 200,
         json: vi.fn().mockResolvedValue({ source: "network-4" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-5" }),
       });
 
     vi.stubGlobal("fetch", fetchMock as typeof fetch);
@@ -471,11 +476,21 @@ describe("fetchJsonWithRetry", () => {
       }
     );
 
+    const fifth = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?auth_token=bearer-token",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
     expect(first).toEqual({ source: "network-1" });
     expect(second).toEqual({ source: "network-2" });
     expect(third).toEqual({ source: "network-3" });
     expect(fourth).toEqual({ source: "network-4" });
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fifth).toEqual({ source: "network-5" });
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 

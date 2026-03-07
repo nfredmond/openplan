@@ -41,6 +41,7 @@ const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "key",
   "oauth_token",
   "private_token",
+  "auth_token",
   "refresh_token",
   "sig",
   "signature",
