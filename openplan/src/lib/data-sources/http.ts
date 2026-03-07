@@ -31,6 +31,7 @@ const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
   "x-access-token",
   "x-auth-token",
   "x-session-token",
+  "x-token",
 ]);
 const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "access_token",
