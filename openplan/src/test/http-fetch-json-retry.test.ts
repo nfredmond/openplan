@@ -223,6 +223,46 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("treats jwt and refresh_token query params as sensitive for implicit caching", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?JWT=abc123",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?refresh_token=xyz789",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("does not retry retriable HTTP responses for non-idempotent methods by default", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
