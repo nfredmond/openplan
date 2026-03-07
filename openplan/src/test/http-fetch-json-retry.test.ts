@@ -263,6 +263,89 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("treats oauth_token and id_token query params as sensitive for implicit caching", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?oauth_token=abc123",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?id_token=xyz789",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
+  it("treats JWT-like query values as sensitive for implicit caching", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const jwtLikeToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSJ9.c2lnbg";
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      `https://example.com/private-data?session=${jwtLikeToken}`,
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      `https://example.com/private-data?session=${jwtLikeToken}`,
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("does not retry retriable HTTP responses for non-idempotent methods by default", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

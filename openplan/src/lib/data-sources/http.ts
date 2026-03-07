@@ -35,13 +35,16 @@ const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "apikey",
   "auth",
   "authorization",
+  "id_token",
   "jwt",
   "key",
+  "oauth_token",
   "refresh_token",
   "sig",
   "signature",
   "token",
 ]);
+const JWT_LIKE_TOKEN_SEGMENT_PATTERN = /^[A-Za-z0-9_-]+$/;
 const IDEMPOTENT_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS", "PUT", "DELETE"]);
 
 function parseRetryAfterDelayMs(retryAfterValue: string | null): number | null {
@@ -167,13 +170,35 @@ function hasImplicitCacheBlockedQueryParams(url: string): boolean {
     return false;
   }
 
-  for (const [param] of parsedUrl.searchParams) {
+  for (const [param, value] of parsedUrl.searchParams) {
     if (IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS.has(param.toLowerCase())) {
+      return true;
+    }
+
+    if (isLikelyJwtQueryValue(value)) {
       return true;
     }
   }
 
   return false;
+}
+
+function isLikelyJwtQueryValue(value: string): boolean {
+  const normalizedValue = value.trim();
+  if (!normalizedValue) {
+    return false;
+  }
+
+  const parts = normalizedValue.split(".");
+  if (parts.length !== 3) {
+    return false;
+  }
+
+  if (!parts.every((part) => part.length >= 4 && JWT_LIKE_TOKEN_SEGMENT_PATTERN.test(part))) {
+    return false;
+  }
+
+  return parts[0].startsWith("eyJ");
 }
 
 function canUseResponseCache(
