@@ -496,6 +496,46 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
+  it("does not implicitly cache GET requests containing cloud signed-url query params", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-1" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-2" }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+
+    const first = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?X-Amz-Signature=abc123&X-Amz-Credential=plan%2F20260306%2Fus-west-2%2Fs3%2Faws4_request",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const second = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?x-goog-signature=def456&x-goog-credential=openplan%40example.iam.gserviceaccount.com",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    expect(first).toEqual({ source: "network-1" });
+    expect(second).toEqual({ source: "network-2" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+  });
+
   it("allows caching sensitive-query GET requests when an explicit cache key is supplied", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

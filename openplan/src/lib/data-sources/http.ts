@@ -51,9 +51,15 @@ const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
   "refreshtoken",
   "secret",
   "sessiontoken",
+  "sharedaccesssignature",
   "sig",
   "signature",
   "token",
+  "xamzcredential",
+  "xamzsecuritytoken",
+  "xamzsignature",
+  "xgoogcredential",
+  "xgoogsignature",
 ]);
 const JWT_LIKE_TOKEN_SEGMENT_PATTERN = /^[A-Za-z0-9_-]+$/;
 const IDEMPOTENT_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS", "PUT", "DELETE"]);
