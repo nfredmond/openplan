@@ -606,7 +606,7 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 
-  it("treats oauth_token, id_token, client_secret, private_token, auth_token, secret, and password query params as sensitive for implicit caching", async () => {
+  it("treats oauth_token, id_token, client_secret, private_token, auth_token, api_token, secret, and password query params as sensitive for implicit caching", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -643,6 +643,11 @@ describe("fetchJsonWithRetry", () => {
         ok: true,
         status: 200,
         json: vi.fn().mockResolvedValue({ source: "network-7" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ source: "network-8" }),
       });
 
     vi.stubGlobal("fetch", fetchMock as typeof fetch);
@@ -693,7 +698,7 @@ describe("fetchJsonWithRetry", () => {
     );
 
     const sixth = await fetchJsonWithRetry<{ source: string }>(
-      "https://example.com/private-data?secret=ultra-secret",
+      "https://example.com/private-data?api_token=api-bearer-token",
       undefined,
       {
         cacheTtlMs: 30_000,
@@ -702,6 +707,15 @@ describe("fetchJsonWithRetry", () => {
     );
 
     const seventh = await fetchJsonWithRetry<{ source: string }>(
+      "https://example.com/private-data?secret=ultra-secret",
+      undefined,
+      {
+        cacheTtlMs: 30_000,
+        retries: 0,
+      }
+    );
+
+    const eighth = await fetchJsonWithRetry<{ source: string }>(
       "https://example.com/private-data?password=correct-horse-battery-staple",
       undefined,
       {
@@ -717,7 +731,8 @@ describe("fetchJsonWithRetry", () => {
     expect(fifth).toEqual({ source: "network-5" });
     expect(sixth).toEqual({ source: "network-6" });
     expect(seventh).toEqual({ source: "network-7" });
-    expect(fetchMock).toHaveBeenCalledTimes(7);
+    expect(eighth).toEqual({ source: "network-8" });
+    expect(fetchMock).toHaveBeenCalledTimes(8);
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
   });
 

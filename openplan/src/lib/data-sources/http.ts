@@ -34,21 +34,22 @@ const IMPLICIT_CACHE_BLOCKED_HEADERS = new Set([
   "x-token",
 ]);
 const IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS = new Set([
-  "access_token",
-  "api_key",
+  "accesstoken",
   "apikey",
   "auth",
   "authorization",
-  "client_secret",
-  "id_token",
+  "apitoken",
+  "authtoken",
+  "clientsecret",
+  "idtoken",
   "jwt",
   "key",
-  "oauth_token",
-  "private_token",
-  "auth_token",
-  "refresh_token",
-  "secret",
+  "oauthtoken",
   "password",
+  "privatetoken",
+  "refreshtoken",
+  "secret",
+  "sessiontoken",
   "sig",
   "signature",
   "token",
@@ -178,6 +179,10 @@ function hasImplicitCacheBlockedHeaders(headers?: HeadersInit): boolean {
   return false;
 }
 
+function normalizeQueryParamName(param: string): string {
+  return param.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function hasImplicitCacheBlockedQueryParams(url: string): boolean {
   let parsedUrl: URL;
 
@@ -188,7 +193,9 @@ function hasImplicitCacheBlockedQueryParams(url: string): boolean {
   }
 
   for (const [param, value] of parsedUrl.searchParams) {
-    if (IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS.has(param.toLowerCase())) {
+    const normalizedParam = normalizeQueryParamName(param);
+
+    if (IMPLICIT_CACHE_BLOCKED_QUERY_PARAMS.has(normalizedParam)) {
       return true;
     }
 
