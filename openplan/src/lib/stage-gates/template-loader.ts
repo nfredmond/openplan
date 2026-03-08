@@ -2,11 +2,13 @@ import caStageGatesTemplate from "@/lib/stage-gates/templates/ca_stage_gates_v0.
 
 export const DEFAULT_STAGE_GATE_TEMPLATE_ID = "ca_stage_gates_v0_1" as const;
 
+export type StageGateBindingMode = "workspace_bootstrap_interim" | "project_create_v0_2";
+
 export type StageGateTemplateBinding = {
   templateId: string;
   templateVersion: string;
   jurisdiction: string;
-  bindingMode: "workspace_bootstrap_interim";
+  bindingMode: StageGateBindingMode;
   lapmFormIdsStatus: "deferred_to_v0_2";
 };
 
@@ -44,7 +46,10 @@ const caTemplate = normalizeTemplateArtifact(caStageGatesTemplate as StageGateTe
 
 const templateRegistry = new Map<string, typeof caTemplate>([[caTemplate.templateId, caTemplate]]);
 
-export function resolveStageGateTemplateBinding(requestedTemplateId?: string): StageGateTemplateBinding {
+export function resolveStageGateTemplateBinding(
+  requestedTemplateId?: string,
+  options?: { bindingMode?: StageGateBindingMode }
+): StageGateTemplateBinding {
   const normalizedRequestedTemplateId = requestedTemplateId?.trim();
   const templateId = normalizedRequestedTemplateId?.length
     ? normalizedRequestedTemplateId
@@ -55,12 +60,13 @@ export function resolveStageGateTemplateBinding(requestedTemplateId?: string): S
     throw new Error(`Unsupported stage-gate template: ${templateId}`);
   }
 
-  // TODO(op-003-v0.2): migrate binding ownership from workspace bootstrap to canonical project creation API/UI.
+  const bindingMode = options?.bindingMode ?? "workspace_bootstrap_interim";
+
   return {
     templateId: template.templateId,
     templateVersion: template.templateVersion,
     jurisdiction: template.jurisdiction,
-    bindingMode: "workspace_bootstrap_interim",
+    bindingMode,
     lapmFormIdsStatus: "deferred_to_v0_2",
   };
 }

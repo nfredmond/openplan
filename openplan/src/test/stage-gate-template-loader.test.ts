@@ -17,6 +17,15 @@ describe("resolveStageGateTemplateBinding", () => {
     });
   });
 
+  it("supports canonical project-create binding mode", () => {
+    const result = resolveStageGateTemplateBinding(undefined, {
+      bindingMode: "project_create_v0_2",
+    });
+
+    expect(result.bindingMode).toBe("project_create_v0_2");
+    expect(result.templateId).toBe(DEFAULT_STAGE_GATE_TEMPLATE_ID);
+  });
+
   it("throws for unsupported template ids", () => {
     expect(() => resolveStageGateTemplateBinding("unknown-template")).toThrow(
       "Unsupported stage-gate template: unknown-template"
