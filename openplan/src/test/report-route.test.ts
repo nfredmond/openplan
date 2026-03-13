@@ -212,22 +212,51 @@ describe("POST /api/report", () => {
     expect(await response.json()).toMatchObject({ error: "Failed to persist stage-gate decision" });
   });
 
-  it("returns html for format=html", async () => {
-    const response = await postReport(jsonRequest({ runId, format: "html" }));
+  it("returns html for format=html and includes active map view when provided", async () => {
+    const response = await postReport(
+      jsonRequest({
+        runId,
+        format: "html",
+        mapViewState: {
+          crashSeverityFilter: "fatal",
+          crashUserFilter: "pedestrian",
+          showCrashes: true,
+          showTracts: true,
+          tractMetric: "poverty",
+          activeDatasetOverlayId: null,
+        },
+      })
+    );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
+    expect(await response.text()).toContain("Active Map View");
     expect(decisionInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         decision: "PASS",
         gate_id: "report_artifact_gate",
         run_id: runId,
+        metadata: expect.objectContaining({
+          mapViewState: expect.objectContaining({
+            crashSeverityFilter: "fatal",
+            crashUserFilter: "pedestrian",
+          }),
+        }),
       })
     );
   });
 
   it("returns pdf bytes for format=pdf", async () => {
-    const response = await postReport(jsonRequest({ runId, format: "pdf" }));
+    const response = await postReport(
+      jsonRequest({
+        runId,
+        format: "pdf",
+        mapViewState: {
+          crashSeverityFilter: "severe_injury",
+          crashUserFilter: "vru",
+        },
+      })
+    );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/pdf");

@@ -31,9 +31,9 @@ export function flattenMetricsForCsv(metrics: Record<string, unknown>): Record<s
   const rows: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(metrics)) {
-    if (key === "dataQuality" && isRecord(value)) {
+    if ((key === "dataQuality" || key === "mapViewState") && isRecord(value)) {
       for (const [nestedKey, nestedValue] of Object.entries(value)) {
-        rows[`dataQuality.${nestedKey}`] = stringifyMetricValue(nestedValue);
+        rows[`${key}.${nestedKey}`] = stringifyMetricValue(nestedValue);
       }
       continue;
     }

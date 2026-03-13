@@ -6,10 +6,20 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
+const mapViewStateSchema = z.object({
+  tractMetric: z.enum(["minority", "poverty", "income", "disadvantaged"]).optional(),
+  showTracts: z.boolean().optional(),
+  showCrashes: z.boolean().optional(),
+  crashSeverityFilter: z.enum(["all", "fatal", "severe_injury", "injury"]).optional(),
+  crashUserFilter: z.enum(["all", "pedestrian", "bicycle", "vru"]).optional(),
+  activeDatasetOverlayId: z.string().uuid().nullable().optional(),
+});
+
 const reportRequestSchema = z.object({
   runId: z.string().uuid(),
   format: z.enum(["html", "pdf"]).default("html"),
   template: z.enum(["atp", "ss4a"]).default("atp"),
+  mapViewState: mapViewStateSchema.optional(),
 });
 
 function esc(value: string): string {
@@ -125,18 +135,62 @@ function getTemplateMeta(template: "atp" | "ss4a") {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildPdf(run: any, template: "atp" | "ss4a"): Uint8Array {
+function titleize(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .replace(/[_-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatCrashUserFilterLabel(value: string | undefined): string {
+  if (value === "vru") return "Ped or bike";
+  if (value === "pedestrian") return "Ped only";
+  if (value === "bicycle") return "Bike only";
+  return "All users";
+}
+
+function buildMapViewSummary(
+  mapViewState: Record<string, unknown> | null | undefined
+): string[] {
+  if (!mapViewState) {
+    return [];
+  }
+
+  return [
+    `Tract theme: ${titleize(typeof mapViewState.tractMetric === "string" ? mapViewState.tractMetric : "unknown")}`,
+    `Census tracts: ${mapViewState.showTracts === false ? "Hidden" : "Visible"}`,
+    `SWITRS lane: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
+    `Crash severity filter: ${titleize(typeof mapViewState.crashSeverityFilter === "string" ? mapViewState.crashSeverityFilter : "all")}`,
+    `Crash user filter: ${formatCrashUserFilterLabel(typeof mapViewState.crashUserFilter === "string" ? mapViewState.crashUserFilter : "all")}`,
+    `Project-linked overlay: ${typeof mapViewState.activeDatasetOverlayId === "string" ? mapViewState.activeDatasetOverlayId : "None"}`,
+  ];
+}
+
+function buildPdf(
+  run: Record<string, unknown>,
+  template: "atp" | "ss4a",
+  mapViewState?: Record<string, unknown> | null
+): Uint8Array {
   const encoder = new TextEncoder();
   const metrics = (run.metrics ?? {}) as Record<string, unknown>;
   const templateMeta = getTemplateMeta(template);
-  const createdAt = run.created_at ? new Date(run.created_at).toISOString() : "Unknown";
-  const title = sanitizeText((run.title as string) ?? "Corridor Analysis Report");
+  const createdAtValue = typeof run.created_at === "string" ? run.created_at : null;
+  const createdAt = createdAtValue ? new Date(createdAtValue).toISOString() : "Unknown";
+  const title = sanitizeText(typeof run.title === "string" ? run.title : "Corridor Analysis Report");
   const queryText = sanitizeText(run.query_text);
-  const summaryText = sanitizeText(run.summary_text ?? "No summary available.");
+  const summaryValue = typeof run.summary_text === "string" ? run.summary_text : "No summary available.";
+  const summaryText = sanitizeText(summaryValue);
   const interpretation = sanitizeText(
-    run.ai_interpretation ?? run.summary_text ?? "No interpretation available."
+    typeof run.ai_interpretation === "string"
+      ? run.ai_interpretation
+      : typeof run.summary_text === "string"
+        ? run.summary_text
+        : "No interpretation available."
   );
+  const mapViewSummary = buildMapViewSummary(mapViewState);
 
   const selectedMetrics: Array<[string, unknown]> = [
     ["Overall Score", metrics.overallScore],
@@ -169,6 +223,7 @@ function buildPdf(run: any, template: "atp" | "ss4a"): Uint8Array {
     "",
     "Selected Metrics:",
     ...selectedMetrics.map(([label, value]) => `${label}: ${sanitizeText(value ?? "N/A") || "N/A"}`),
+    ...(mapViewSummary.length > 0 ? ["", "Active Map View:", ...mapViewSummary] : []),
   ];
 
   const wrappedLines = lines.flatMap((line) => wrapText(line));
@@ -222,14 +277,21 @@ function buildPdf(run: any, template: "atp" | "ss4a"): Uint8Array {
   return encoder.encode(pdfParts.join(""));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildHtml(run: any, template: "atp" | "ss4a"): string {
+function buildHtml(
+  run: Record<string, unknown>,
+  template: "atp" | "ss4a",
+  mapViewState?: Record<string, unknown> | null
+): string {
   const m = (run.metrics ?? {}) as Record<string, unknown>;
   const templateMeta = getTemplateMeta(template);
-  const timestamp = run.created_at ? new Date(run.created_at).toLocaleString() : "Unknown";
+  const createdAtValue = typeof run.created_at === "string" ? run.created_at : null;
+  const timestamp = createdAtValue ? new Date(createdAtValue).toLocaleString() : "Unknown";
   const generatedAt = new Date().toLocaleString();
-  const title = (run.title as string) ?? "Corridor Analysis Report";
-  const aiInterpretation = (run.ai_interpretation as string | null) ?? null;
+  const title = typeof run.title === "string" ? run.title : "Corridor Analysis Report";
+  const queryText = typeof run.query_text === "string" ? run.query_text : "";
+  const aiInterpretation = typeof run.ai_interpretation === "string" ? run.ai_interpretation : null;
+  const summaryText = typeof run.summary_text === "string" ? run.summary_text : "No summary available.";
+  const mapViewSummary = buildMapViewSummary(mapViewState);
 
   const confidence = (m.confidence as string) ?? "unknown";
   const title6Flags = (m.title6Flags ?? []) as string[];
@@ -320,11 +382,11 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 
 <!-- ANALYSIS SUMMARY -->
 <h2>Analysis Summary</h2>
-<div class="summary-box">${esc(run.summary_text ?? "No summary available.")}</div>
+<div class="summary-box">${esc(summaryText)}</div>
 
 <!-- AI INTERPRETATION -->
 <h2>AI Interpretation (${esc(templateMeta.label)} Narrative)</h2>
-<div class="summary-box">${esc(aiInterpretation ?? run.summary_text ?? "No interpretation available.")}</div>
+<div class="summary-box">${esc(aiInterpretation ?? summaryText ?? "No interpretation available.")}</div>
 
 <!-- DEMOGRAPHICS -->
 <h2>Demographics &amp; Commute Patterns</h2>
@@ -428,9 +490,22 @@ ${(m.justice40Eligible as boolean) ? `
 </table>
 <p class="muted">Analysis confidence: ${esc(confidence)}. Source transparency values are generated from run metadata and carried into both the UI and exported report.</p>
 
+${mapViewSummary.length > 0 ? `
+<h2>Active Map View</h2>
+<table>
+  <tr><th>View setting</th><th>Value</th></tr>
+  ${mapViewSummary
+    .map((line) => {
+      const [label, ...rest] = line.split(": ");
+      return `<tr><td>${esc(label)}</td><td>${esc(rest.join(": ") || "N/A")}</td></tr>`;
+    })
+    .join("\n")}
+</table>
+` : ""}
+
 <!-- QUERY -->
 <h2>Analysis Query</h2>
-<p>${esc(run.query_text ?? "")}</p>
+<p>${esc(queryText)}</p>
 
 <div class="footer">
   Generated by OpenPlan — AI-Powered Transportation Planning Intelligence<br/>
@@ -447,6 +522,7 @@ export async function POST(request: NextRequest) {
   let runId: string | undefined;
   let format: "html" | "pdf" = "html";
   let template: "atp" | "ss4a" = "atp";
+  let requestedMapViewState: Record<string, unknown> | null = null;
 
   try {
     const body = await request.json().catch(() => null);
@@ -468,6 +544,7 @@ export async function POST(request: NextRequest) {
     runId = parsed.data.runId;
     format = parsed.data.format;
     template = parsed.data.template;
+    requestedMapViewState = (parsed.data.mapViewState as Record<string, unknown> | undefined) ?? null;
 
     const supabase = await createClient();
     const {
@@ -544,6 +621,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    const runMetrics =
+      run.metrics && typeof run.metrics === "object" && !Array.isArray(run.metrics)
+        ? (run.metrics as Record<string, unknown>)
+        : {};
+    const resolvedMapViewState =
+      requestedMapViewState ??
+      (runMetrics.mapViewState && typeof runMetrics.mapViewState === "object" && !Array.isArray(runMetrics.mapViewState)
+        ? (runMetrics.mapViewState as Record<string, unknown>)
+        : null);
+
     const gateResult = evaluateReportArtifactGate(run);
     audit.info("report_gate_decision", {
       runId,
@@ -573,6 +660,7 @@ export async function POST(request: NextRequest) {
           source: "api.report",
           template,
           format,
+          mapViewState: resolvedMapViewState,
         },
         decided_by: user.id,
       });
@@ -646,7 +734,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (format === "pdf") {
-      const pdfBytes = buildPdf(run, template);
+      const pdfBytes = buildPdf(run, template, resolvedMapViewState);
       const pdfBuffer = pdfBytes.buffer.slice(
         pdfBytes.byteOffset,
         pdfBytes.byteOffset + pdfBytes.byteLength
@@ -661,7 +749,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return new NextResponse(buildHtml(run, template), {
+    return new NextResponse(buildHtml(run, template, resolvedMapViewState), {
       status: 200,
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });

@@ -88,6 +88,7 @@ type AnalysisResult = {
       crashes?: { source?: string; yearsQueried?: number[]; note?: string; fetchedAt?: string };
       equity?: { source?: string; note?: string; fetchedAt?: string };
     };
+    mapViewState?: Partial<MapViewState>;
     aiInterpretationSource?: string;
     [key: string]: unknown;
   };
@@ -176,6 +177,15 @@ type HoveredCrash = {
   injuryCount: number;
   pedestrianInvolved: boolean;
   bicyclistInvolved: boolean;
+};
+
+type MapViewState = {
+  tractMetric: "minority" | "poverty" | "income" | "disadvantaged";
+  showTracts: boolean;
+  showCrashes: boolean;
+  crashSeverityFilter: CrashSeverityFilter;
+  crashUserFilter: CrashUserFilter;
+  activeDatasetOverlayId: string | null;
 };
 
 type TractLegendItem = {
@@ -322,6 +332,33 @@ function buildCrashLayerFilter(
   }
 
   return filter;
+}
+
+function normalizeMapViewState(value: unknown): Partial<MapViewState> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const state: Partial<MapViewState> = {};
+
+  if (["minority", "poverty", "income", "disadvantaged"].includes(String(record.tractMetric))) {
+    state.tractMetric = record.tractMetric as MapViewState["tractMetric"];
+  }
+
+  if (typeof record.showTracts === "boolean") state.showTracts = record.showTracts;
+  if (typeof record.showCrashes === "boolean") state.showCrashes = record.showCrashes;
+  if (["all", "fatal", "severe_injury", "injury"].includes(String(record.crashSeverityFilter))) {
+    state.crashSeverityFilter = record.crashSeverityFilter as CrashSeverityFilter;
+  }
+  if (["all", "pedestrian", "bicycle", "vru"].includes(String(record.crashUserFilter))) {
+    state.crashUserFilter = record.crashUserFilter as CrashUserFilter;
+  }
+  if (record.activeDatasetOverlayId === null || typeof record.activeDatasetOverlayId === "string") {
+    state.activeDatasetOverlayId = record.activeDatasetOverlayId as string | null;
+  }
+
+  return Object.keys(state).length > 0 ? state : null;
 }
 
 export default function ExplorePage() {
@@ -1163,6 +1200,16 @@ export default function ExplorePage() {
 
       setError("");
       const runMetrics = run.metrics as AnalysisResult["metrics"];
+      const persistedMapViewState = normalizeMapViewState(runMetrics?.mapViewState);
+
+      if (persistedMapViewState?.tractMetric) setTractMetric(persistedMapViewState.tractMetric);
+      if (typeof persistedMapViewState?.showTracts === "boolean") setShowTracts(persistedMapViewState.showTracts);
+      if (typeof persistedMapViewState?.showCrashes === "boolean") setShowCrashes(persistedMapViewState.showCrashes);
+      if (persistedMapViewState?.crashSeverityFilter) setCrashSeverityFilter(persistedMapViewState.crashSeverityFilter);
+      if (persistedMapViewState?.crashUserFilter) setCrashUserFilter(persistedMapViewState.crashUserFilter);
+      if (persistedMapViewState?.activeDatasetOverlayId !== undefined) {
+        setActiveDatasetOverlayId(persistedMapViewState.activeDatasetOverlayId ?? null);
+      }
 
       setAnalysisResult({
         runId: run.id,
@@ -1194,7 +1241,11 @@ export default function ExplorePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ runId: analysisResult.runId, template: reportTemplate }),
+        body: JSON.stringify({
+          runId: analysisResult.runId,
+          template: reportTemplate,
+          mapViewState: currentMapViewState,
+        }),
       });
 
       if (!response.ok) {
@@ -1233,7 +1284,12 @@ export default function ExplorePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ runId: analysisResult.runId, format: "pdf", template: reportTemplate }),
+        body: JSON.stringify({
+          runId: analysisResult.runId,
+          format: "pdf",
+          template: reportTemplate,
+          mapViewState: currentMapViewState,
+        }),
       });
 
       if (!response.ok) {
@@ -1268,7 +1324,13 @@ export default function ExplorePage() {
     }
 
     try {
-      downloadMetricsCsv(analysisResult.metrics, `openplan-${analysisResult.runId}-metrics.csv`);
+      downloadMetricsCsv(
+        {
+          ...analysisResult.metrics,
+          mapViewState: currentMapViewState,
+        },
+        `openplan-${analysisResult.runId}-metrics.csv`
+      );
     } catch {
       setError("Failed to export metrics CSV.");
     }
@@ -1280,7 +1342,15 @@ export default function ExplorePage() {
     }
 
     try {
-      downloadGeojson(analysisResult.geojson, `openplan-${analysisResult.runId}-result.geojson`);
+      downloadGeojson(
+        {
+          ...analysisResult.geojson,
+          metadata: {
+            mapViewState: currentMapViewState,
+          },
+        } as GeoJSON.FeatureCollection,
+        `openplan-${analysisResult.runId}-result.geojson`
+      );
     } catch {
       setError("Failed to export result GeoJSON.");
     }
@@ -1462,6 +1532,18 @@ export default function ExplorePage() {
     [analysisContext, activeDatasetOverlayId]
   );
 
+  const currentMapViewState = useMemo<MapViewState>(
+    () => ({
+      tractMetric,
+      showTracts,
+      showCrashes,
+      crashSeverityFilter,
+      crashUserFilter,
+      activeDatasetOverlayId,
+    }),
+    [tractMetric, showTracts, showCrashes, crashSeverityFilter, crashUserFilter, activeDatasetOverlayId]
+  );
+
   const crashPointFeatures = useMemo(
     () =>
       analysisResult?.geojson.features.filter(
@@ -1496,6 +1578,49 @@ export default function ExplorePage() {
   );
 
   const switrsPointLayerAvailable = analysisResult?.metrics.sourceSnapshots?.crashes?.source === "switrs-local" && crashPointCount > 0;
+
+  useEffect(() => {
+    if (!analysisResult?.runId) {
+      return;
+    }
+
+    setAnalysisResult((current) => {
+      if (!current || current.runId !== analysisResult.runId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        metrics: {
+          ...current.metrics,
+          mapViewState: currentMapViewState,
+        },
+      };
+    });
+  }, [analysisResult?.runId, currentMapViewState]);
+
+  useEffect(() => {
+    if (!analysisResult?.runId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void fetch("/api/runs", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: analysisResult.runId,
+          mapViewState: currentMapViewState,
+        }),
+      }).catch(() => {
+        // Soft-fail: map view persistence should not interrupt active analysis work.
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [analysisResult?.runId, currentMapViewState]);
 
   useEffect(() => {
     if (!activeDatasetOverlayId) {

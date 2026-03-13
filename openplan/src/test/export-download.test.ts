@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { flattenMetricsForCsv, serializeMetricsToCsv } from "@/lib/export/download";
 
 describe("export download utilities", () => {
-  it("flattens top-level metrics and dataQuality keys", () => {
+  it("flattens top-level metrics plus nested dataQuality and mapViewState keys", () => {
     const flattened = flattenMetricsForCsv({
       accessibilityScore: 80,
       safetyScore: 76,
@@ -10,6 +10,10 @@ describe("export download utilities", () => {
         censusAvailable: true,
         crashDataAvailable: false,
         equitySource: "EPA EJScreen",
+      },
+      mapViewState: {
+        crashSeverityFilter: "fatal",
+        crashUserFilter: "pedestrian",
       },
     });
 
@@ -19,6 +23,8 @@ describe("export download utilities", () => {
       "dataQuality.censusAvailable": "true",
       "dataQuality.crashDataAvailable": "false",
       "dataQuality.equitySource": "EPA EJScreen",
+      "mapViewState.crashSeverityFilter": "fatal",
+      "mapViewState.crashUserFilter": "pedestrian",
     });
   });
 
