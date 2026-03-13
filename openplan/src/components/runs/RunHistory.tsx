@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { normalizeMapViewState, summarizeMapViewState } from "@/lib/analysis/map-view-state";
 
 export type Run = {
   id: string;
@@ -142,6 +144,7 @@ export function RunHistory({
         {runs.map((run) => {
           const isCurrent = run.id === currentRunId;
           const isComparison = run.id === comparisonRunId;
+          const mapViewSummary = summarizeMapViewState(normalizeMapViewState(run.metrics?.mapViewState));
 
           return (
             <article
@@ -166,6 +169,15 @@ export function RunHistory({
                   <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
                     {formatDate(run.created_at)}
                   </p>
+                  {mapViewSummary.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {mapViewSummary.map((item) => (
+                        <Badge key={`${run.id}-${item.label}`} variant="secondary" className="normal-case tracking-normal">
+                          {item.label}: {item.value}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-1.5">

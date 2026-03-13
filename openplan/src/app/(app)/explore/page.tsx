@@ -22,6 +22,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Layers3, Map as MapIcon, Sparkles } from "lucide-react";
 import { buildMetricDeltas, deltaTone, formatDelta } from "@/lib/analysis/compare";
+import {
+  formatCrashUserFilterLabel,
+  normalizeMapViewState,
+  summarizeMapViewState,
+  titleizeMapViewValue,
+  type CrashSeverityFilter,
+  type CrashUserFilter,
+  type MapViewState,
+} from "@/lib/analysis/map-view-state";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { downloadGeojson, downloadMetricsCsv } from "@/lib/export/download";
@@ -167,9 +176,6 @@ type HoveredTract = {
   isDisadvantaged: boolean;
 };
 
-type CrashSeverityFilter = "all" | "fatal" | "severe_injury" | "injury";
-type CrashUserFilter = "all" | "pedestrian" | "bicycle" | "vru";
-
 type HoveredCrash = {
   severityLabel: string;
   collisionYear: number | null;
@@ -177,15 +183,6 @@ type HoveredCrash = {
   injuryCount: number;
   pedestrianInvolved: boolean;
   bicyclistInvolved: boolean;
-};
-
-type MapViewState = {
-  tractMetric: "minority" | "poverty" | "income" | "disadvantaged";
-  showTracts: boolean;
-  showCrashes: boolean;
-  crashSeverityFilter: CrashSeverityFilter;
-  crashUserFilter: CrashUserFilter;
-  activeDatasetOverlayId: string | null;
 };
 
 type TractLegendItem = {
@@ -235,26 +232,7 @@ function formatRunTimestamp(value: string): string {
 }
 
 function titleize(value: string | null | undefined): string {
-  if (!value) return "Unknown";
-  return value
-    .replace(/[_-]+/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function formatCrashUserFilterLabel(value: CrashUserFilter): string {
-  if (value === "vru") {
-    return "Ped or bike";
-  }
-  if (value === "pedestrian") {
-    return "Ped only";
-  }
-  if (value === "bicycle") {
-    return "Bike only";
-  }
-  return "All users";
+  return titleizeMapViewValue(value);
 }
 
 function formatSourceToken(value: string | undefined): string {
@@ -332,33 +310,6 @@ function buildCrashLayerFilter(
   }
 
   return filter;
-}
-
-function normalizeMapViewState(value: unknown): Partial<MapViewState> | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  const record = value as Record<string, unknown>;
-  const state: Partial<MapViewState> = {};
-
-  if (["minority", "poverty", "income", "disadvantaged"].includes(String(record.tractMetric))) {
-    state.tractMetric = record.tractMetric as MapViewState["tractMetric"];
-  }
-
-  if (typeof record.showTracts === "boolean") state.showTracts = record.showTracts;
-  if (typeof record.showCrashes === "boolean") state.showCrashes = record.showCrashes;
-  if (["all", "fatal", "severe_injury", "injury"].includes(String(record.crashSeverityFilter))) {
-    state.crashSeverityFilter = record.crashSeverityFilter as CrashSeverityFilter;
-  }
-  if (["all", "pedestrian", "bicycle", "vru"].includes(String(record.crashUserFilter))) {
-    state.crashUserFilter = record.crashUserFilter as CrashUserFilter;
-  }
-  if (record.activeDatasetOverlayId === null || typeof record.activeDatasetOverlayId === "string") {
-    state.activeDatasetOverlayId = record.activeDatasetOverlayId as string | null;
-  }
-
-  return Object.keys(state).length > 0 ? state : null;
 }
 
 export default function ExplorePage() {
@@ -1387,6 +1338,50 @@ export default function ExplorePage() {
     return buildMetricDeltas(analysisResult.metrics, comparisonRun.metrics);
   }, [analysisResult, comparisonRun]);
 
+  const comparisonMapViewState = useMemo(
+    () => normalizeMapViewState(comparisonRun?.metrics?.mapViewState),
+    [comparisonRun]
+  );
+
+  const currentMapViewState = useMemo<MapViewState>(
+    () => ({
+      tractMetric,
+      showTracts,
+      showCrashes,
+      crashSeverityFilter,
+      crashUserFilter,
+      activeDatasetOverlayId,
+    }),
+    [tractMetric, showTracts, showCrashes, crashSeverityFilter, crashUserFilter, activeDatasetOverlayId]
+  );
+
+  const currentMapViewSummary = useMemo(
+    () => summarizeMapViewState(currentMapViewState),
+    [currentMapViewState]
+  );
+
+  const baselineMapViewSummary = useMemo(
+    () => summarizeMapViewState(comparisonMapViewState),
+    [comparisonMapViewState]
+  );
+
+  const mapViewComparisonRows = useMemo(() => {
+    const currentSummaryMap = new globalThis.Map(currentMapViewSummary.map((item) => [item.label, item.value]));
+    const baselineSummaryMap = new globalThis.Map(baselineMapViewSummary.map((item) => [item.label, item.value]));
+    const labels = Array.from(new Set([...currentSummaryMap.keys(), ...baselineSummaryMap.keys()]));
+
+    return labels.map((label) => {
+      const current = currentSummaryMap.get(label) ?? "N/A";
+      const baseline = baselineSummaryMap.get(label) ?? "N/A";
+      return {
+        label,
+        current,
+        baseline,
+        changed: current !== baseline,
+      };
+    });
+  }, [baselineMapViewSummary, currentMapViewSummary]);
+
   const sourceTransparency = useMemo(() => {
     if (!analysisResult) {
       return [];
@@ -1530,18 +1525,6 @@ export default function ExplorePage() {
   const activeDatasetOverlay = useMemo(
     () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
     [analysisContext, activeDatasetOverlayId]
-  );
-
-  const currentMapViewState = useMemo<MapViewState>(
-    () => ({
-      tractMetric,
-      showTracts,
-      showCrashes,
-      crashSeverityFilter,
-      crashUserFilter,
-      activeDatasetOverlayId,
-    }),
-    [tractMetric, showTracts, showCrashes, crashSeverityFilter, crashUserFilter, activeDatasetOverlayId]
   );
 
   const crashPointFeatures = useMemo(
@@ -2497,6 +2480,37 @@ export default function ExplorePage() {
                       </div>
                     );
                   })}
+
+                  {mapViewComparisonRows.length > 0 ? (
+                    <div className="rounded-2xl border border-border/80 bg-muted/20 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Map View Context</p>
+                          <p className="text-xs text-muted-foreground">
+                            Confirms whether the current run and baseline were reviewed under the same tract/crash/overlay posture.
+                          </p>
+                        </div>
+                        <StatusBadge tone={mapViewComparisonRows.some((row) => row.changed) ? "warning" : "success"}>
+                          {mapViewComparisonRows.some((row) => row.changed) ? "View differs" : "View aligned"}
+                        </StatusBadge>
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {mapViewComparisonRows.map((row) => (
+                          <div key={row.label} className="rounded-xl border border-border/80 bg-background px-3 py-2.5">
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-sm font-medium text-foreground">{row.label}</p>
+                              <StatusBadge tone={row.changed ? "warning" : "neutral"}>
+                                {row.changed ? "Different" : "Same"}
+                              </StatusBadge>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Current: {row.current} · Baseline: {row.baseline}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="flex justify-end">
                     <Button type="button" variant="ghost" onClick={() => setComparisonRun(null)}>
