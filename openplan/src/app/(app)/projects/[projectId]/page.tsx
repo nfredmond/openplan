@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ClipboardCheck,
   Clock3,
+  Database,
   FileClock,
   FolderKanban,
   MessagesSquare,
@@ -36,6 +37,16 @@ type TimelineItem = {
   at: string | null;
   badge: string;
   tone: "info" | "success" | "warning" | "danger" | "neutral";
+};
+
+type LinkedDatasetItem = {
+  datasetId: string;
+  name: string;
+  status: string;
+  relationshipType: string;
+  connectorLabel: string | null;
+  vintageLabel: string | null;
+  lastRefreshedAt: string | null;
 };
 
 function titleize(value: string | null | undefined): string {
@@ -82,6 +93,18 @@ function toneForRiskSeverity(severity: string): "info" | "success" | "warning" |
   if (severity === "medium") return "info";
   if (severity === "low") return "success";
   return "neutral";
+}
+
+function toneForDatasetStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "ready") return "success";
+  if (status === "refreshing") return "info";
+  if (status === "stale") return "warning";
+  if (status === "error") return "danger";
+  return "neutral";
+}
+
+function looksLikePendingSchema(message: string | null | undefined): boolean {
+  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
 
 export default async function ProjectDetailPage({
@@ -166,6 +189,77 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(6);
+
+  const datasetLinksResult = await supabase
+    .from("data_dataset_project_links")
+    .select("dataset_id, relationship_type, linked_at")
+    .eq("project_id", project.id)
+    .order("linked_at", { ascending: false });
+
+  const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
+    ? []
+    : ((datasetLinksResult.data ?? []) as Array<{
+        dataset_id: string;
+        relationship_type: string;
+        linked_at: string;
+      }>);
+
+  const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
+
+  const datasetsResult = linkedDatasetIds.length
+    ? await supabase
+        .from("data_datasets")
+        .select("id, connector_id, name, status, vintage_label, last_refreshed_at")
+        .in("id", linkedDatasetIds)
+    : { data: [], error: null };
+
+  const linkedDatasetRows = looksLikePendingSchema(datasetsResult.error?.message)
+    ? []
+    : ((datasetsResult.data ?? []) as Array<{
+        id: string;
+        connector_id: string | null;
+        name: string;
+        status: string;
+        vintage_label: string | null;
+        last_refreshed_at: string | null;
+      }>);
+
+  const linkedConnectorIds = linkedDatasetRows
+    .map((item) => item.connector_id)
+    .filter((value): value is string => Boolean(value));
+
+  const connectorsResult = linkedConnectorIds.length
+    ? await supabase.from("data_connectors").select("id, display_name").in("id", linkedConnectorIds)
+    : { data: [], error: null };
+
+  const connectorMap = new Map(
+    (looksLikePendingSchema(connectorsResult.error?.message)
+      ? []
+      : ((connectorsResult.data ?? []) as Array<{ id: string; display_name: string }>)).map((connector) => [
+      connector.id,
+      connector.display_name,
+    ])
+  );
+
+  const datasetMap = new Map(linkedDatasetRows.map((dataset) => [dataset.id, dataset]));
+  const linkedDatasets: LinkedDatasetItem[] = datasetLinkRows
+    .map((link) => {
+      const dataset = datasetMap.get(link.dataset_id);
+      if (!dataset) return null;
+      return {
+        datasetId: dataset.id,
+        name: dataset.name,
+        status: dataset.status,
+        relationshipType: link.relationship_type,
+        connectorLabel: dataset.connector_id ? connectorMap.get(dataset.connector_id) ?? null : null,
+        vintageLabel: dataset.vintage_label,
+        lastRefreshedAt: dataset.last_refreshed_at,
+      } satisfies LinkedDatasetItem;
+    })
+    .filter((item): item is LinkedDatasetItem => Boolean(item))
+    .slice(0, 6);
+
+  const dataHubMigrationPending = looksLikePendingSchema(datasetLinksResult.error?.message);
 
   const timelineItems: TimelineItem[] = [
     ...(deliverables ?? []).map((item) => ({
@@ -351,15 +445,20 @@ export default async function ProjectDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><Clock3 className="h-5 w-5" /></span><div><p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Recent analysis activity</p><h2 className="text-xl font-semibold tracking-tight">Latest runs in this project workspace</h2></div></div>
-          {!recentRuns || recentRuns.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">No runs yet. Use <Link href="/explore" className="font-semibold text-foreground underline">Analysis Studio</Link> to create the first project-linked run.</div> : <div className="mt-5 space-y-3">{recentRuns.map((run) => <div key={run.id} className="rounded-2xl border border-border/70 bg-background/75 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold tracking-tight text-foreground">{run.title}</h3><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{fmtDateTime(run.created_at)}</p></div><p className="mt-2 text-sm text-muted-foreground">{run.summary_text || "Run created with no summary yet."}</p></div>)}</div>}
+          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300"><Database className="h-5 w-5" /></span><div><p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Data dependencies</p><h2 className="text-xl font-semibold tracking-tight">Linked datasets</h2></div></div>
+          {dataHubMigrationPending ? <div className="mt-5 rounded-2xl border border-amber-300/50 bg-amber-50/80 p-5 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">Data Hub schema is pending in the current database, so project-linked datasets will appear here after the migration is applied.</div> : linkedDatasets.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">No datasets linked yet. Use <Link href="/data-hub" className="font-semibold text-foreground underline">Data Hub</Link> to register a source and connect it back to this project.</div> : <div className="mt-5 space-y-3">{linkedDatasets.map((dataset) => <div key={dataset.datasetId} className="rounded-2xl border border-border/70 bg-background/75 p-4"><div className="flex flex-wrap items-center gap-2"><StatusBadge tone={toneForDatasetStatus(dataset.status)}>{titleize(dataset.status)}</StatusBadge><StatusBadge tone="info">{titleize(dataset.relationshipType)}</StatusBadge>{dataset.connectorLabel ? <StatusBadge tone="neutral">{dataset.connectorLabel}</StatusBadge> : null}</div><h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">{dataset.name}</h3><p className="mt-1 text-sm text-muted-foreground">{dataset.vintageLabel ? `Vintage: ${dataset.vintageLabel}` : "Vintage not captured yet."}</p><p className="mt-2 text-xs text-muted-foreground">Last refreshed: {fmtDateTime(dataset.lastRefreshedAt)}</p></div>)}</div>}
         </article>
 
         <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300"><FileClock className="h-5 w-5" /></span><div><p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Activity timeline</p><h2 className="text-xl font-semibold tracking-tight">Everything happening in one feed</h2></div></div>
-          {timelineItems.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">No project activity yet.</div> : <div className="mt-5 space-y-3">{timelineItems.map((item) => <div key={item.id} className="rounded-2xl border border-border/70 bg-background/75 p-4"><div className="flex flex-wrap items-center gap-2"><StatusBadge tone={item.tone}>{item.badge}</StatusBadge><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{fmtDateTime(item.at)}</p></div><h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.description}</p></div>)}</div>}
+          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><Clock3 className="h-5 w-5" /></span><div><p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Recent analysis activity</p><h2 className="text-xl font-semibold tracking-tight">Latest runs in this project workspace</h2></div></div>
+          {!recentRuns || recentRuns.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">No runs yet. Use <Link href="/explore" className="font-semibold text-foreground underline">Analysis Studio</Link> to create the first project-linked run.</div> : <div className="mt-5 space-y-3">{recentRuns.map((run) => <div key={run.id} className="rounded-2xl border border-border/70 bg-background/75 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold tracking-tight text-foreground">{run.title}</h3><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{fmtDateTime(run.created_at)}</p></div><p className="mt-2 text-sm text-muted-foreground">{run.summary_text || "Run created with no summary yet."}</p></div>)}</div>}
         </article>
       </div>
+
+      <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+        <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300"><FileClock className="h-5 w-5" /></span><div><p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Activity timeline</p><h2 className="text-xl font-semibold tracking-tight">Everything happening in one feed</h2></div></div>
+        {timelineItems.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">No project activity yet.</div> : <div className="mt-5 grid gap-3 xl:grid-cols-2">{timelineItems.map((item) => <div key={item.id} className="rounded-2xl border border-border/70 bg-background/75 p-4"><div className="flex flex-wrap items-center gap-2"><StatusBadge tone={item.tone}>{item.badge}</StatusBadge><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{fmtDateTime(item.at)}</p></div><h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.description}</p></div>)}</div>}
+      </article>
     </section>
   );
 }

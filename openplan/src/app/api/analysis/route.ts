@@ -10,7 +10,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
-import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
+import { fetchCrashPointFeaturesForBbox, fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
@@ -326,12 +326,14 @@ export async function POST(request: NextRequest) {
     });
 
     const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
+    const crashPointFeatures = crashes.source === "switrs-local" ? await fetchCrashPointFeaturesForBbox(bbox) : [];
 
     // Build result GeoJSON
     const geojson = {
       type: "FeatureCollection" as const,
       features: [
         ...tractOverlayFeatures,
+        ...crashPointFeatures,
         {
           type: "Feature" as const,
           geometry: corridorGeojson,
@@ -403,6 +405,7 @@ export async function POST(request: NextRequest) {
       severeInjuryCrashes: crashes.severeInjuryCrashes,
       totalInjuryCrashes: crashes.totalInjuryCrashes,
       crashesPerSquareMile: crashes.crashesPerSquareMile,
+      crashPointCount: crashPointFeatures.length,
 
       // Equity
       disadvantagedTracts: equity.disadvantagedTracts,

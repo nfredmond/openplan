@@ -62,6 +62,7 @@ type AnalysisResult = {
     totalFatalCrashes?: number;
     totalFatalities?: number;
     crashesPerSquareMile?: number;
+    crashPointCount?: number;
     jobsPerResident?: number;
     stopsPerSquareMile?: number;
     walkBikeAccessTier?: string;
@@ -109,8 +110,78 @@ type WorkspaceBootstrapResponse = {
   onboardingChecklist: string[];
 };
 
+type AnalysisContextResponse = {
+  workspaceId: string;
+  project: {
+    id: string;
+    name: string;
+    summary: string | null;
+    status: string;
+    planType: string;
+    deliveryPhase: string;
+    updatedAt: string;
+  } | null;
+  linkedDatasets: Array<{
+    datasetId: string;
+    name: string;
+    status: string;
+    geographyScope: string;
+    relationshipType: string;
+    vintageLabel: string | null;
+    lastRefreshedAt: string | null;
+    connectorLabel: string | null;
+    overlayReady: boolean;
+  }>;
+  migrationPending: boolean;
+  counts: {
+    deliverables: number;
+    risks: number;
+    issues: number;
+    decisions: number;
+    meetings: number;
+    linkedDatasets: number;
+    overlayReadyDatasets: number;
+    recentRuns: number;
+  };
+  recentRuns: Array<{
+    id: string;
+    title: string;
+    created_at: string;
+  }>;
+};
+
 type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
+type AnalysisContextLoadState = "idle" | "loading" | "loaded" | "error";
 type ReportTemplate = "atp" | "ss4a";
+
+type HoveredTract = {
+  name: string;
+  geoid: string;
+  population: number | null;
+  medianIncome: number | null;
+  pctMinority: number | null;
+  pctBelowPoverty: number | null;
+  zeroVehiclePct: number | null;
+  transitCommutePct: number | null;
+  isDisadvantaged: boolean;
+};
+
+type CrashSeverityFilter = "all" | "fatal" | "severe_injury" | "injury";
+type CrashUserFilter = "all" | "pedestrian" | "bicycle" | "vru";
+
+type HoveredCrash = {
+  severityLabel: string;
+  collisionYear: number | null;
+  fatalCount: number;
+  injuryCount: number;
+  pedestrianInvolved: boolean;
+  bicyclistInvolved: boolean;
+};
+
+type TractLegendItem = {
+  label: string;
+  color: string;
+};
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
@@ -153,6 +224,29 @@ function formatRunTimestamp(value: string): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+function titleize(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .replace(/[_-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatCrashUserFilterLabel(value: CrashUserFilter): string {
+  if (value === "vru") {
+    return "Ped or bike";
+  }
+  if (value === "pedestrian") {
+    return "Ped only";
+  }
+  if (value === "bicycle") {
+    return "Bike only";
+  }
+  return "All users";
+}
+
 function formatSourceToken(value: string | undefined): string {
   if (!value) return "Unknown";
   return value
@@ -172,6 +266,62 @@ function formatCurrency(value: number | null | undefined): string {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function coerceNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
+function formatPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "N/A";
+  }
+
+  return `${value}%`;
+}
+
+function canRenderDatasetCoverageOverlay(
+  dataset: AnalysisContextResponse["linkedDatasets"][number] | null | undefined
+): boolean {
+  if (!dataset?.overlayReady) {
+    return false;
+  }
+
+  return ["tract", "corridor", "route"].includes(dataset.geographyScope);
+}
+
+function buildCrashLayerFilter(
+  crashSeverityFilter: CrashSeverityFilter,
+  crashUserFilter: CrashUserFilter
+): ExpressionSpecification {
+  const filter: ExpressionSpecification = ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "kind"], "crash_point"]];
+
+  if (crashSeverityFilter !== "all") {
+    (filter as unknown[]).push(["==", ["get", "severityBucket"], crashSeverityFilter]);
+  }
+
+  if (crashUserFilter === "pedestrian") {
+    (filter as unknown[]).push(["==", ["get", "pedestrianInvolved"], true]);
+  } else if (crashUserFilter === "bicycle") {
+    (filter as unknown[]).push(["==", ["get", "bicyclistInvolved"], true]);
+  } else if (crashUserFilter === "vru") {
+    (filter as unknown[]).push([
+      "any",
+      ["==", ["get", "pedestrianInvolved"], true],
+      ["==", ["get", "bicyclistInvolved"], true],
+    ]);
+  }
+
+  return filter;
 }
 
 export default function ExplorePage() {
@@ -194,12 +344,20 @@ export default function ExplorePage() {
   const [bootstrapWorkspaceName, setBootstrapWorkspaceName] = useState("");
   const [isBootstrappingWorkspace, setIsBootstrappingWorkspace] = useState(false);
   const [bootstrapChecklist, setBootstrapChecklist] = useState<string[]>([]);
+  const [analysisContext, setAnalysisContext] = useState<AnalysisContextResponse | null>(null);
+  const [analysisContextLoadState, setAnalysisContextLoadState] = useState<AnalysisContextLoadState>("idle");
+  const [activeDatasetOverlayId, setActiveDatasetOverlayId] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [showPolygonFill, setShowPolygonFill] = useState(true);
   const [showPoints, setShowPoints] = useState(true);
   const [showTracts, setShowTracts] = useState(true);
+  const [showCrashes, setShowCrashes] = useState(true);
   const [cameraMode, setCameraMode] = useState<"regional" | "cinematic">("regional");
   const [tractMetric, setTractMetric] = useState<"minority" | "poverty" | "income" | "disadvantaged">("minority");
+  const [crashSeverityFilter, setCrashSeverityFilter] = useState<CrashSeverityFilter>("all");
+  const [crashUserFilter, setCrashUserFilter] = useState<CrashUserFilter>("all");
+  const [hoveredTract, setHoveredTract] = useState<HoveredTract | null>(null);
+  const [hoveredCrash, setHoveredCrash] = useState<HoveredCrash | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) {
@@ -326,6 +484,90 @@ export default function ExplorePage() {
         });
       }
 
+      if (!map.getLayer("crash-points-glow")) {
+        map.addLayer({
+          id: "crash-points-glow",
+          type: "circle",
+          source: "analysis-result",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
+            "circle-color": [
+              "match",
+              ["get", "severityBucket"],
+              "fatal",
+              "#ef4444",
+              "severe_injury",
+              "#fb923c",
+              "#facc15",
+            ],
+            "circle-opacity": 0.18,
+            "circle-blur": 0.8,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "kind"], "crash_point"]],
+        });
+      }
+
+      if (!map.getLayer("crash-points-core")) {
+        map.addLayer({
+          id: "crash-points-core",
+          type: "circle",
+          source: "analysis-result",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
+            "circle-color": [
+              "match",
+              ["get", "severityBucket"],
+              "fatal",
+              "#ef4444",
+              "severe_injury",
+              "#fb923c",
+              "#facc15",
+            ],
+            "circle-stroke-color": "#fff7ed",
+            "circle-stroke-width": 1,
+            "circle-opacity": 0.95,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "kind"], "crash_point"]],
+        });
+      }
+
+      if (!map.getSource("dataset-overlay")) {
+        map.addSource("dataset-overlay", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
+        });
+      }
+
+      if (!map.getLayer("dataset-overlay-fill")) {
+        map.addLayer({
+          id: "dataset-overlay-fill",
+          type: "fill",
+          source: "dataset-overlay",
+          paint: {
+            "fill-color": "#f97316",
+            "fill-opacity": 0.12,
+          },
+          filter: ["==", ["geometry-type"], "Polygon"],
+        });
+      }
+
+      if (!map.getLayer("dataset-overlay-line")) {
+        map.addLayer({
+          id: "dataset-overlay-line",
+          type: "line",
+          source: "dataset-overlay",
+          paint: {
+            "line-color": "#fb923c",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.4, 11, 3.4],
+            "line-opacity": 0.95,
+            "line-dasharray": [1.2, 1],
+          },
+        });
+      }
+
       const labelLayerId = map
         .getStyle()
         ?.layers?.find((layer) => layer.type === "symbol" && String(layer.id).includes("label"))?.id;
@@ -416,6 +658,50 @@ export default function ExplorePage() {
   }, []);
 
   useEffect(() => {
+    let isCancelled = false;
+
+    async function loadAnalysisContext() {
+      if (!workspaceId) {
+        setAnalysisContext(null);
+        setAnalysisContextLoadState("idle");
+        setActiveDatasetOverlayId(null);
+        return;
+      }
+
+      setAnalysisContextLoadState("loading");
+
+      try {
+        const response = await fetch(`/api/analysis/context?workspaceId=${encodeURIComponent(workspaceId)}`, {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load project context.");
+        }
+
+        const payload = (await response.json()) as AnalysisContextResponse;
+        if (isCancelled) {
+          return;
+        }
+
+        setAnalysisContext(payload);
+        setAnalysisContextLoadState("loaded");
+      } catch {
+        if (!isCancelled) {
+          setAnalysisContext(null);
+          setAnalysisContextLoadState("error");
+        }
+      }
+    }
+
+    void loadAnalysisContext();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [workspaceId]);
+
+  useEffect(() => {
     if (!mapRef.current) {
       return;
     }
@@ -474,6 +760,10 @@ export default function ExplorePage() {
     if (mapRef.current.getLayer("tract-outline")) {
       mapRef.current.setLayoutProperty("tract-outline", "visibility", showTracts ? "visible" : "none");
     }
+
+    if (!showTracts) {
+      setHoveredTract(null);
+    }
   }, [showTracts]);
 
   useEffect(() => {
@@ -483,6 +773,160 @@ export default function ExplorePage() {
 
     mapRef.current.setLayoutProperty("analysis-points", "visibility", showPoints ? "visible" : "none");
   }, [showPoints]);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    const visibility = showCrashes ? "visible" : "none";
+    if (mapRef.current.getLayer("crash-points-glow")) {
+      mapRef.current.setLayoutProperty("crash-points-glow", "visibility", visibility);
+    }
+    if (mapRef.current.getLayer("crash-points-core")) {
+      mapRef.current.setLayoutProperty("crash-points-core", "visibility", visibility);
+    }
+
+    if (!showCrashes) {
+      setHoveredCrash(null);
+    }
+  }, [showCrashes]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapRef.current.getLayer("crash-points-core")) {
+      return;
+    }
+
+    const crashFilterExpression = buildCrashLayerFilter(crashSeverityFilter, crashUserFilter);
+
+    mapRef.current.setFilter("crash-points-core", crashFilterExpression);
+    if (mapRef.current.getLayer("crash-points-glow")) {
+      mapRef.current.setFilter("crash-points-glow", crashFilterExpression);
+    }
+
+    setHoveredCrash(null);
+  }, [crashSeverityFilter, crashUserFilter]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapReady || !mapRef.current.getLayer("crash-points-core")) {
+      return;
+    }
+
+    const map = mapRef.current;
+
+    const handleCrashEnter = () => {
+      map.getCanvas().style.cursor = "pointer";
+    };
+
+    const handleCrashLeave = () => {
+      map.getCanvas().style.cursor = "";
+      setHoveredCrash(null);
+    };
+
+    const handleCrashMove = (event: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      const properties = event.features?.[0]?.properties;
+      if (!properties) {
+        setHoveredCrash(null);
+        return;
+      }
+
+      setHoveredCrash({
+        severityLabel: String(properties.severityLabel ?? "Crash"),
+        collisionYear: coerceNumber(properties.collisionYear),
+        fatalCount: coerceNumber(properties.fatalCount) ?? 0,
+        injuryCount: coerceNumber(properties.injuryCount) ?? 0,
+        pedestrianInvolved: String(properties.pedestrianInvolved ?? "false") === "true",
+        bicyclistInvolved: String(properties.bicyclistInvolved ?? "false") === "true",
+      });
+    };
+
+    map.on("mouseenter", "crash-points-core", handleCrashEnter);
+    map.on("mousemove", "crash-points-core", handleCrashMove);
+    map.on("mouseleave", "crash-points-core", handleCrashLeave);
+
+    return () => {
+      if (!map.getLayer("crash-points-core")) {
+        return;
+      }
+
+      map.off("mouseenter", "crash-points-core", handleCrashEnter);
+      map.off("mousemove", "crash-points-core", handleCrashMove);
+      map.off("mouseleave", "crash-points-core", handleCrashLeave);
+      map.getCanvas().style.cursor = "";
+    };
+  }, [mapReady]);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    const source = mapRef.current.getSource("dataset-overlay") as mapboxgl.GeoJSONSource | undefined;
+    if (!source) {
+      return;
+    }
+
+    const selectedDataset =
+      analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null;
+
+    if (!selectedDataset || !canRenderDatasetCoverageOverlay(selectedDataset)) {
+      source.setData({
+        type: "FeatureCollection",
+        features: [],
+      });
+      return;
+    }
+
+    if (selectedDataset.geographyScope === "tract") {
+      const tractFeatures =
+        analysisResult?.geojson.features.filter(
+          (feature) =>
+            feature.geometry?.type !== "Point" &&
+            feature.properties &&
+            (feature.properties as Record<string, unknown>).kind === "census_tract"
+        ) ?? [];
+
+      source.setData({
+        type: "FeatureCollection",
+        features: tractFeatures.map((feature) => ({
+          ...feature,
+          properties: {
+            ...(feature.properties ?? {}),
+            overlayDatasetName: selectedDataset.name,
+            overlayDatasetId: selectedDataset.datasetId,
+            overlayMode: "coverage_footprint",
+          },
+        })),
+      });
+      return;
+    }
+
+    if (selectedDataset.geographyScope === "corridor" || selectedDataset.geographyScope === "route") {
+      source.setData({
+        type: "FeatureCollection",
+        features: corridorGeojson
+          ? [
+              {
+                type: "Feature",
+                geometry: corridorGeojson,
+                properties: {
+                  kind: "dataset_coverage_corridor",
+                  overlayDatasetName: selectedDataset.name,
+                  overlayDatasetId: selectedDataset.datasetId,
+                  overlayMode: "coverage_footprint",
+                },
+              },
+            ]
+          : [],
+      });
+      return;
+    }
+
+    source.setData({
+      type: "FeatureCollection",
+      features: [],
+    });
+  }, [activeDatasetOverlayId, analysisContext, analysisResult, corridorGeojson]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -557,6 +1001,58 @@ export default function ExplorePage() {
 
     mapRef.current.setPaintProperty("tract-fill", "fill-color", paintByMetric[tractMetric]);
   }, [tractMetric]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapReady || !mapRef.current.getLayer("tract-fill")) {
+      return;
+    }
+
+    const map = mapRef.current;
+
+    const handleTractEnter = () => {
+      map.getCanvas().style.cursor = "pointer";
+    };
+
+    const handleTractLeave = () => {
+      map.getCanvas().style.cursor = "";
+      setHoveredTract(null);
+    };
+
+    const handleTractMove = (event: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      const properties = event.features?.[0]?.properties;
+      if (!properties) {
+        setHoveredTract(null);
+        return;
+      }
+
+      setHoveredTract({
+        name: String(properties.name ?? properties.NAME ?? "Census tract"),
+        geoid: String(properties.geoid ?? properties.GEOID ?? "Unknown"),
+        population: coerceNumber(properties.population),
+        medianIncome: coerceNumber(properties.medianIncome),
+        pctMinority: coerceNumber(properties.pctMinority),
+        pctBelowPoverty: coerceNumber(properties.pctBelowPoverty),
+        zeroVehiclePct: coerceNumber(properties.zeroVehiclePct),
+        transitCommutePct: coerceNumber(properties.transitCommutePct),
+        isDisadvantaged: coerceNumber(properties.isDisadvantaged) === 1,
+      });
+    };
+
+    map.on("mouseenter", "tract-fill", handleTractEnter);
+    map.on("mousemove", "tract-fill", handleTractMove);
+    map.on("mouseleave", "tract-fill", handleTractLeave);
+
+    return () => {
+      if (!map.getLayer("tract-fill")) {
+        return;
+      }
+
+      map.off("mouseenter", "tract-fill", handleTractEnter);
+      map.off("mousemove", "tract-fill", handleTractMove);
+      map.off("mouseleave", "tract-fill", handleTractLeave);
+      map.getCanvas().style.cursor = "";
+    };
+  }, [mapReady]);
 
   const trimmedQueryText = queryText.trim();
   const queryCharacterCount = queryText.length;
@@ -961,6 +1457,134 @@ export default function ExplorePage() {
     return "Connection issue";
   }, [workspaceLoadState]);
 
+  const activeDatasetOverlay = useMemo(
+    () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
+    [analysisContext, activeDatasetOverlayId]
+  );
+
+  const crashPointFeatures = useMemo(
+    () =>
+      analysisResult?.geojson.features.filter(
+        (feature) => feature.geometry?.type === "Point" && (feature.properties as Record<string, unknown> | undefined)?.kind === "crash_point"
+      ) ?? [],
+    [analysisResult]
+  );
+
+  const crashPointCount = crashPointFeatures.length;
+
+  const filteredCrashPointCount = useMemo(
+    () =>
+      crashPointFeatures.filter((feature) => {
+        const properties = (feature.properties ?? {}) as Record<string, unknown>;
+        const severityBucket = String(properties.severityBucket ?? "");
+        const pedestrianInvolved = properties.pedestrianInvolved === true || properties.pedestrianInvolved === "true";
+        const bicyclistInvolved = properties.bicyclistInvolved === true || properties.bicyclistInvolved === "true";
+
+        const severityMatches = crashSeverityFilter === "all" || severityBucket === crashSeverityFilter;
+        const userMatches =
+          crashUserFilter === "all"
+            ? true
+            : crashUserFilter === "pedestrian"
+              ? pedestrianInvolved
+              : crashUserFilter === "bicycle"
+                ? bicyclistInvolved
+                : pedestrianInvolved || bicyclistInvolved;
+
+        return severityMatches && userMatches;
+      }).length,
+    [crashPointFeatures, crashSeverityFilter, crashUserFilter]
+  );
+
+  const switrsPointLayerAvailable = analysisResult?.metrics.sourceSnapshots?.crashes?.source === "switrs-local" && crashPointCount > 0;
+
+  useEffect(() => {
+    if (!activeDatasetOverlayId) {
+      return;
+    }
+
+    const stillExists = analysisContext?.linkedDatasets.some((dataset) => dataset.datasetId === activeDatasetOverlayId);
+    if (!stillExists) {
+      setActiveDatasetOverlayId(null);
+    }
+  }, [analysisContext, activeDatasetOverlayId]);
+
+  const tractLegend = useMemo<{
+    label: string;
+    note: string;
+    items: TractLegendItem[];
+  }>(() => {
+    if (tractMetric === "poverty") {
+      return {
+        label: "Poverty share",
+        note: "Share of residents below poverty threshold in corridor-context tracts.",
+        items: [
+          { label: "0–10%", color: "#0b3b2e" },
+          { label: "10–20%", color: "#15803d" },
+          { label: "20–30%", color: "#65a30d" },
+          { label: "30–45%", color: "#ca8a04" },
+          { label: "45%+", color: "#b91c1c" },
+        ],
+      };
+    }
+
+    if (tractMetric === "income") {
+      return {
+        label: "Median income",
+        note: "Weighted ACS median household income for each intersecting tract.",
+        items: [
+          { label: "<$45k", color: "#7f1d1d" },
+          { label: "$45k–$70k", color: "#b45309" },
+          { label: "$70k–$100k", color: "#0f766e" },
+          { label: "$100k–$150k", color: "#0ea5e9" },
+          { label: "$150k+", color: "#e0f2fe" },
+        ],
+      };
+    }
+
+    if (tractMetric === "disadvantaged") {
+      return {
+        label: "Disadvantaged flag",
+        note: "Binary flag based on lower income plus elevated poverty, minority share, zero-vehicle, or transit dependence.",
+        items: [
+          { label: "Flagged", color: "#ef4444" },
+          { label: "Not flagged", color: "#1f2937" },
+        ],
+      };
+    }
+
+    return {
+      label: "Minority share",
+      note: "Share of residents identified in the current equity-screening minority population field.",
+      items: [
+        { label: "0–30%", color: "#123047" },
+        { label: "30–55%", color: "#1d4ed8" },
+        { label: "55–75%", color: "#2563eb" },
+        { label: "75–100%", color: "#0f766e" },
+        { label: "Highest concentration", color: "#34d399" },
+      ],
+    };
+  }, [tractMetric]);
+
+  const hoveredTractMetricValue = useMemo(() => {
+    if (!hoveredTract) {
+      return "Hover a tract to inspect values";
+    }
+
+    if (tractMetric === "income") {
+      return formatCurrency(hoveredTract.medianIncome);
+    }
+
+    if (tractMetric === "poverty") {
+      return formatPercent(hoveredTract.pctBelowPoverty);
+    }
+
+    if (tractMetric === "disadvantaged") {
+      return hoveredTract.isDisadvantaged ? "Flagged" : "Not flagged";
+    }
+
+    return formatPercent(hoveredTract.pctMinority);
+  }, [hoveredTract, tractMetric]);
+
   const mapExperienceReady = MAPBOX_ACCESS_TOKEN.length > 0;
   const mapSummaryBadges = [
     `Map engine: ${mapExperienceReady ? (mapReady ? "Mapbox live" : "Mapbox booting") : "Awaiting Mapbox token"}`,
@@ -996,35 +1620,132 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute right-4 top-4 z-10 flex max-w-[min(88%,320px)] flex-wrap justify-end gap-2 sm:right-5 sm:top-5">
-          <button
-            type="button"
-            onClick={() => setShowPolygonFill((value) => !value)}
-            className="rounded-full border border-white/10 bg-[rgba(7,14,20,0.82)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-white/20"
-          >
-            {showPolygonFill ? "Hide polygon fill" : "Show polygon fill"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowPoints((value) => !value)}
-            className="rounded-full border border-white/10 bg-[rgba(7,14,20,0.82)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-white/20"
-          >
-            {showPoints ? "Hide points" : "Show points"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowTracts((value) => !value)}
-            className="rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-sky-200/30"
-          >
-            {showTracts ? "Hide tracts" : "Show tracts"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setCameraMode((mode) => (mode === "regional" ? "cinematic" : "regional"))}
-            className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100 shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-emerald-200/30"
-          >
-            Camera: {cameraMode === "regional" ? "Regional" : "Cinematic"}
-          </button>
+        <div className="absolute right-4 top-4 z-10 max-w-[min(90%,360px)] sm:right-5 sm:top-5">
+          <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">Overlay lanes</p>
+                <p className="mt-1 text-sm text-slate-200/88">Control the visible geometry and any project-linked coverage footprints.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCameraMode((mode) => (mode === "regional" ? "cinematic" : "regional"))}
+                className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-emerald-100 transition hover:border-emerald-200/30"
+              >
+                {cameraMode === "regional" ? "Regional" : "Cinematic"}
+              </button>
+            </div>
+
+            <div className="mt-3 grid gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPolygonFill((value) => !value)}
+                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5 text-left transition hover:border-white/15"
+              >
+                <span>
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300/78">Corridor footprint</span>
+                  <span className="mt-1 block text-xs text-slate-300/74">Primary analysis boundary and overall corridor score envelope.</span>
+                </span>
+                <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPoints((value) => !value)}
+                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5 text-left transition hover:border-white/15"
+              >
+                <span>
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300/78">Corridor centroid</span>
+                  <span className="mt-1 block text-xs text-slate-300/74">Reference anchor for the current corridor run.</span>
+                </span>
+                <StatusBadge tone={showPoints ? "success" : "neutral"}>{showPoints ? "Visible" : "Hidden"}</StatusBadge>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTracts((value) => !value)}
+                className="flex items-center justify-between rounded-2xl border border-sky-300/14 bg-sky-400/8 px-3 py-2.5 text-left transition hover:border-sky-200/24"
+              >
+                <span>
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">Census tract layer</span>
+                  <span className="mt-1 block text-xs text-slate-300/74">Base tract geometry used for choropleths and tract-scope coverage overlays.</span>
+                </span>
+                <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
+              </button>
+              <div className="rounded-2xl border border-rose-300/14 bg-rose-400/8 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">SWITRS collision lane</span>
+                    <span className="mt-1 block text-xs text-slate-300/74">
+                      Real crash points only when local SWITRS geometry is available for the current California run.
+                    </span>
+                  </div>
+                  <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
+                    {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
+                  </StatusBadge>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={showCrashes ? "secondary" : "outline"}
+                    disabled={!switrsPointLayerAvailable}
+                    onClick={() => setShowCrashes((value) => !value)}
+                  >
+                    {showCrashes ? "Hide collisions" : "Show collisions"}
+                  </Button>
+                  <select
+                    value={crashSeverityFilter}
+                    onChange={(event) => setCrashSeverityFilter(event.target.value as CrashSeverityFilter)}
+                    disabled={!switrsPointLayerAvailable}
+                    className="h-9 min-w-[150px] rounded-xl border border-white/10 bg-slate-950/70 px-3 text-xs text-slate-100 outline-none"
+                  >
+                    <option value="all">All severities</option>
+                    <option value="fatal">Fatal only</option>
+                    <option value="severe_injury">Severe injury</option>
+                    <option value="injury">Other injury</option>
+                  </select>
+                  <select
+                    value={crashUserFilter}
+                    onChange={(event) => setCrashUserFilter(event.target.value as CrashUserFilter)}
+                    disabled={!switrsPointLayerAvailable}
+                    className="h-9 min-w-[150px] rounded-xl border border-white/10 bg-slate-950/70 px-3 text-xs text-slate-100 outline-none"
+                  >
+                    <option value="all">All users</option>
+                    <option value="pedestrian">Ped only</option>
+                    <option value="bicycle">Bike only</option>
+                    <option value="vru">Ped or bike</option>
+                  </select>
+                </div>
+                <p className="mt-2 text-[0.72rem] text-slate-300/74">
+                  {switrsPointLayerAvailable
+                    ? `${filteredCrashPointCount} of ${crashPointCount} crash points match the current filter stack.`
+                    : "Current crash source does not include drawable local SWITRS points yet."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-orange-300/12 bg-orange-400/8 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">Project-linked coverage lane</span>
+                    <span className="mt-1 block text-xs text-slate-300/74">
+                      Uses real available geometry only: tract coverage for tract-scoped datasets, corridor footprint for corridor/route-scoped datasets.
+                    </span>
+                  </div>
+                  <StatusBadge tone={activeDatasetOverlay ? "warning" : "neutral"}>
+                    {activeDatasetOverlay ? "Active" : "None"}
+                  </StatusBadge>
+                </div>
+                {activeDatasetOverlay ? (
+                  <div className="mt-2 rounded-xl border border-white/8 bg-slate-950/30 px-2.5 py-2 text-xs text-slate-200/88">
+                    <p className="font-medium text-white">{activeDatasetOverlay.name}</p>
+                    <p className="mt-1 text-slate-300/76">
+                      {titleize(activeDatasetOverlay.geographyScope)} coverage footprint · {activeDatasetOverlay.connectorLabel ?? "Manual source"}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-slate-300/74">Choose a drawable linked dataset from the Project Context panel to display its coverage footprint.</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="absolute bottom-4 left-4 z-10 max-w-[min(88%,360px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
@@ -1044,6 +1765,19 @@ export default function ExplorePage() {
             <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
               <span>Census tracts</span>
               <StatusBadge tone={showTracts && analysisResult ? "success" : "neutral"}>{showTracts && analysisResult ? "Visible" : "Hidden / waiting"}</StatusBadge>
+            </div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <span>Crash lane</span>
+                <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
+                  {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
+                </StatusBadge>
+              </div>
+              <p className="mt-2 text-xs text-slate-300/80">
+                {switrsPointLayerAvailable
+                  ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)} · ${filteredCrashPointCount}/${crashPointCount} drawable points`
+                  : "Needs local SWITRS geometry in the current analysis result."}
+              </p>
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
               <div className="flex items-center justify-between gap-3">
@@ -1068,19 +1802,136 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 right-4 z-10 max-w-[min(88%,300px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
+        <div className="absolute bottom-4 right-4 z-10 max-w-[min(88%,320px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <MapIcon className="h-3.5 w-3.5" />
-            Planning signal
+            Tract legend & inspector
           </div>
           {!mapExperienceReady ? (
             <p className="mt-3 text-sm text-amber-100/88">
               Add <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.72rem]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to activate the production map experience.
             </p>
           ) : (
-            <div className="mt-3 space-y-2 text-sm text-slate-300/84">
-              <p>Mapbox foundation is active for a better desktop planning experience.</p>
-              <p>Next geospatial wave: project overlays, Census choropleths, engagement pins, and SWITRS-linked safety layers.</p>
+            <div className="mt-3 space-y-3 text-sm text-slate-300/84">
+              <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300/72">Active theme</span>
+                  <StatusBadge tone="info">{tractLegend.label}</StatusBadge>
+                </div>
+                <p className="mt-2 text-xs text-slate-300/80">{tractLegend.note}</p>
+                <div className="mt-3 space-y-2">
+                  {tractLegend.items.map((item) => (
+                    <div key={`${tractLegend.label}-${item.label}`} className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {activeDatasetOverlay ? (
+                <div className="rounded-2xl border border-orange-300/15 bg-orange-400/8 px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-100/90">Active coverage overlay</span>
+                    <StatusBadge tone="warning">Coverage footprint</StatusBadge>
+                  </div>
+                  <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
+                  <p className="mt-1 text-xs text-slate-200/78">
+                    {titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="rounded-2xl border border-rose-300/15 bg-rose-400/8 px-3 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-100/90">Crash inspector</span>
+                  <StatusBadge tone={switrsPointLayerAvailable ? "warning" : "neutral"}>
+                    {switrsPointLayerAvailable ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}` : "No point layer"}
+                  </StatusBadge>
+                </div>
+                {hoveredCrash ? (
+                  <div className="mt-3 space-y-2 text-xs text-slate-200/88">
+                    <p className="font-medium text-white">{hoveredCrash.severityLabel} collision</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Year</p>
+                        <p className="mt-1 font-medium text-white">{hoveredCrash.collisionYear ?? "Unknown"}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Fatalities</p>
+                        <p className="mt-1 font-medium text-white">{hoveredCrash.fatalCount}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Injured</p>
+                        <p className="mt-1 font-medium text-white">{hoveredCrash.injuryCount}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">VRU flags</p>
+                        <p className="mt-1 font-medium text-white">
+                          {hoveredCrash.pedestrianInvolved ? "Ped" : "—"}
+                          {hoveredCrash.pedestrianInvolved && hoveredCrash.bicyclistInvolved ? " · " : ""}
+                          {hoveredCrash.bicyclistInvolved ? "Bike" : hoveredCrash.pedestrianInvolved ? "" : "None"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-slate-300/80">
+                    {switrsPointLayerAvailable
+                      ? "Hover a SWITRS collision point to inspect its severity and vulnerable-road-user flags."
+                      : "Point-level crash inspection appears only when the run uses local SWITRS geometry."}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300/72">Hovered tract</span>
+                  <StatusBadge tone={hoveredTract?.isDisadvantaged ? "warning" : "neutral"}>
+                    {hoveredTract ? hoveredTractMetricValue : "Inspector idle"}
+                  </StatusBadge>
+                </div>
+                {hoveredTract ? (
+                  <div className="mt-3 space-y-2 text-xs text-slate-200/88">
+                    <div>
+                      <p className="font-semibold text-white">{hoveredTract.name}</p>
+                      <p className="text-slate-400">GEOID {hoveredTract.geoid}</p>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Population</p>
+                        <p className="mt-1 font-medium text-white">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Median income</p>
+                        <p className="mt-1 font-medium text-white">{formatCurrency(hoveredTract.medianIncome)}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Minority share</p>
+                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.pctMinority)}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Poverty share</p>
+                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.pctBelowPoverty)}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Zero-vehicle HH</p>
+                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.zeroVehiclePct)}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
+                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Transit commute</p>
+                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.transitCommutePct)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-slate-300/80">
+                    Hover over a visible census tract to inspect its current attributes and verify what the active theme is showing.
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -1148,6 +1999,139 @@ export default function ExplorePage() {
                 </ul>
               </div>
             ) : null}
+
+            <div className="rounded-2xl border border-border/80 bg-background p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project context</p>
+                  <p className="mt-1 text-sm text-foreground">
+                    {analysisContextLoadState === "loading"
+                      ? "Loading project and dataset context…"
+                      : analysisContext?.project
+                        ? "Projects and Data Hub are now visible from Analysis Studio."
+                        : analysisContextLoadState === "error"
+                          ? "Project context is temporarily unavailable."
+                          : "No project is attached to this workspace yet."}
+                  </p>
+                </div>
+                {analysisContext?.project ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/projects/${analysisContext.project.id}`}>Open Project</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <Link href="/data-hub">Open Data Hub</Link>
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
+              {analysisContext?.project ? (
+                <div className="mt-3 space-y-3">
+                  <div className="rounded-2xl border border-border/80 bg-card p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={resolveStatusTone(analysisContext.project.status)}>
+                        {titleize(analysisContext.project.status)}
+                      </StatusBadge>
+                      <StatusBadge tone="info">{titleize(analysisContext.project.planType)}</StatusBadge>
+                      <StatusBadge tone="neutral">{titleize(analysisContext.project.deliveryPhase)}</StatusBadge>
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-foreground">{analysisContext.project.name}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {analysisContext.project.summary || "Project record exists, but it still needs a richer summary."}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
+                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Project records</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        {analysisContext.counts.deliverables + analysisContext.counts.risks + analysisContext.counts.issues + analysisContext.counts.decisions + analysisContext.counts.meetings}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Deliverables, risks, issues, decisions, meetings</p>
+                    </div>
+                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
+                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Linked datasets</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{analysisContext.counts.linkedDatasets}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {analysisContext.migrationPending
+                          ? "Data Hub schema still pending in this database"
+                          : `${analysisContext.counts.overlayReadyDatasets} overlay-ready for map work`}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
+                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Recent runs</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{analysisContext.counts.recentRuns}</p>
+                      <p className="text-xs text-muted-foreground">Latest analysis history for this workspace</p>
+                    </div>
+                  </div>
+
+                  {analysisContext.migrationPending ? (
+                    <div className="rounded-xl border border-amber-300/50 bg-amber-50/80 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+                      Data Hub is wired into Analysis Studio, but the current database still needs the latest migration before linked datasets can fully appear here.
+                    </div>
+                  ) : analysisContext.linkedDatasets.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Map-linked dataset queue</p>
+                      <div className="space-y-2">
+                        {analysisContext.linkedDatasets.slice(0, 4).map((dataset) => {
+                          const canRenderCoverage = canRenderDatasetCoverageOverlay(dataset);
+                          const isActiveOverlay = activeDatasetOverlayId === dataset.datasetId;
+
+                          return (
+                            <div key={dataset.datasetId} className="rounded-xl border border-border/80 bg-card p-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <StatusBadge tone={resolveStatusTone(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
+                                <StatusBadge tone="info">{titleize(dataset.relationshipType)}</StatusBadge>
+                                <StatusBadge tone={dataset.overlayReady ? "success" : "neutral"}>
+                                  {dataset.overlayReady ? "Overlay-ready" : "Registry-only"}
+                                </StatusBadge>
+                              </div>
+                              <p className="mt-2 text-sm font-medium text-foreground">{dataset.name}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {titleize(dataset.geographyScope)}
+                                {dataset.connectorLabel ? ` · ${dataset.connectorLabel}` : " · Manual / unbound source"}
+                                {dataset.vintageLabel ? ` · ${dataset.vintageLabel}` : ""}
+                              </p>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={isActiveOverlay ? "secondary" : "outline"}
+                                  disabled={!canRenderCoverage}
+                                  onClick={() =>
+                                    setActiveDatasetOverlayId((current) =>
+                                      current === dataset.datasetId ? null : dataset.datasetId
+                                    )
+                                  }
+                                >
+                                  {isActiveOverlay ? "Hide coverage" : canRenderCoverage ? "Show coverage" : "Not drawable yet"}
+                                </Button>
+                                {dataset.overlayReady && !canRenderCoverage ? (
+                                  <p className="text-[0.72rem] text-muted-foreground">
+                                    Geometry attachment not yet published for this scope.
+                                  </p>
+                                ) : canRenderCoverage ? (
+                                  <p className="text-[0.72rem] text-muted-foreground">
+                                    Draws a coverage footprint only — not dataset values.
+                                  </p>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      No project-linked datasets yet. Register sources in Data Hub to start building real overlay lanes instead of hidden analysis assumptions.
+                    </p>
+                  )}
+                </div>
+              ) : analysisContextLoadState === "error" ? (
+                <p className="mt-3 text-xs text-muted-foreground">Could not load project context from the workspace right now.</p>
+              ) : null}
+            </div>
 
             <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
             <div className="space-y-1.5">

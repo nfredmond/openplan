@@ -4,6 +4,7 @@ export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
 
 export const WORKSPACE_ACTIONS = [
   "analysis.create",
+  "analysis.context.read",
   "runs.list",
   "runs.delete",
   "report.generate",
@@ -16,6 +17,7 @@ export type WorkspaceAction = (typeof WORKSPACE_ACTIONS)[number];
 
 export const WORKSPACE_ACTION_ROLE_MATRIX: Record<WorkspaceAction, readonly WorkspaceRole[]> = {
   "analysis.create": ["owner", "admin", "member"],
+  "analysis.context.read": ["owner", "admin", "member"],
   "runs.list": ["owner", "admin", "member"],
   "runs.delete": ["owner", "admin", "member"],
   "report.generate": ["owner", "admin", "member"],

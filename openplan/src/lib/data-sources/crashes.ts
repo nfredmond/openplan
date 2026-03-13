@@ -34,7 +34,33 @@ type FarsCrashRecord = {
   BICYCLISTS?: unknown;
 };
 
-const SWITRS_CSV_PATH = process.env.SWITRS_CSV_PATH;
+type SwitrsCrashRecord = {
+  lat: number;
+  lon: number;
+  year: number | null;
+  severityCode: number;
+  fatalCount: number;
+  injuryCount: number;
+  pedestrianInvolved: boolean;
+  bicyclistInvolved: boolean;
+};
+
+export type CrashPointSeverityBucket = "fatal" | "severe_injury" | "injury";
+
+export type CrashPointFeature = GeoJSON.Feature<
+  GeoJSON.Point,
+  {
+    kind: "crash_point";
+    source: "switrs-local";
+    severityBucket: CrashPointSeverityBucket;
+    severityLabel: string;
+    collisionYear: number | null;
+    fatalCount: number;
+    injuryCount: number;
+    pedestrianInvolved: boolean;
+    bicyclistInvolved: boolean;
+  }
+>;
 
 const FARS_TIMEOUT_MS = 10_000;
 
@@ -42,6 +68,10 @@ type TimeoutSignalResult = {
   signal: AbortSignal;
   cleanup: () => void;
 };
+
+function getSwitrsCsvPath(): string | undefined {
+  return process.env.SWITRS_CSV_PATH;
+}
 
 function buildTimeoutSignal(timeoutMs: number): TimeoutSignalResult {
   if (typeof AbortSignal.timeout === "function") {
@@ -138,7 +168,6 @@ function parseFarsCrashesResponse(data: unknown): {
 }
 
 function splitCsvLine(line: string): string[] {
-  // lightweight CSV split with quote handling
   const out: string[] = [];
   let cur = "";
   let inQuotes = false;
@@ -165,13 +194,46 @@ function splitCsvLine(line: string): string[] {
   return out;
 }
 
-async function fetchSwitrsFromCsv(bbox: BBox): Promise<CrashSummary | null> {
-  if (!SWITRS_CSV_PATH || !isCaliforniaBBox(bbox)) return null;
+function classifySwitrsSeverity(record: SwitrsCrashRecord): CrashPointSeverityBucket | null {
+  if (record.severityCode === 1 || record.fatalCount > 0) {
+    return "fatal";
+  }
+
+  if (record.severityCode === 2) {
+    return "severe_injury";
+  }
+
+  if (record.injuryCount > 0 || record.severityCode === 3 || record.severityCode === 4) {
+    return "injury";
+  }
+
+  return null;
+}
+
+function labelForSeverityBucket(severity: CrashPointSeverityBucket): string {
+  if (severity === "fatal") {
+    return "Fatal";
+  }
+
+  if (severity === "severe_injury") {
+    return "Severe injury";
+  }
+
+  return "Injury";
+}
+
+async function loadSwitrsRecordsForBbox(bbox: BBox): Promise<SwitrsCrashRecord[] | null> {
+  const switrsCsvPath = getSwitrsCsvPath();
+  if (!switrsCsvPath || !isCaliforniaBBox(bbox)) {
+    return null;
+  }
 
   try {
-    const text = await readFile(SWITRS_CSV_PATH, "utf8");
+    const text = await readFile(switrsCsvPath, "utf8");
     const lines = text.split(/\r?\n/).filter(Boolean);
-    if (lines.length < 2) return null;
+    if (lines.length < 2) {
+      return null;
+    }
 
     const header = splitCsvLine(lines[0]).map((h) => h.trim().toUpperCase());
     const idx = (name: string) => header.indexOf(name.toUpperCase());
@@ -185,15 +247,11 @@ async function fetchSwitrsFromCsv(bbox: BBox): Promise<CrashSummary | null> {
     const pedIdx = idx("PEDESTRIAN_ACCIDENT");
     const bikeIdx = idx("BICYCLE_ACCIDENT");
 
-    if (latIdx < 0 || lonIdx < 0) return null;
+    if (latIdx < 0 || lonIdx < 0) {
+      return null;
+    }
 
-    let totalFatalCrashes = 0;
-    let totalFatalities = 0;
-    let severeInjuryCrashes = 0;
-    let totalInjuryCrashes = 0;
-    let pedestrianFatalities = 0;
-    let bicyclistFatalities = 0;
-    const years = new Set<number>();
+    const records: SwitrsCrashRecord[] = [];
 
     for (let i = 1; i < lines.length; i += 1) {
       const cols = splitCsvLine(lines[i]);
@@ -202,45 +260,73 @@ async function fetchSwitrsFromCsv(bbox: BBox): Promise<CrashSummary | null> {
       if (!lat || !lon) continue;
       if (lat < bbox.minLat || lat > bbox.maxLat || lon < bbox.minLon || lon > bbox.maxLon) continue;
 
-      const year = parseNum(cols[yearIdx]);
-      if (year) years.add(year);
-
-      const severity = parseNum(cols[sevIdx]);
-      const fatalCount = parseNum(cols[fatalCntIdx]);
-      const injuryCount = parseNum(cols[injCntIdx]);
-      const isPed = (cols[pedIdx] ?? "").toUpperCase() === "Y";
-      const isBike = (cols[bikeIdx] ?? "").toUpperCase() === "Y";
-
-      if (severity === 1 || fatalCount > 0) {
-        totalFatalCrashes += 1;
-        totalFatalities += Math.max(1, fatalCount);
-        if (isPed) pedestrianFatalities += 1;
-        if (isBike) bicyclistFatalities += 1;
-      }
-
-      // SWITRS severity coding commonly uses 2 for severe injury
-      if (severity === 2) severeInjuryCrashes += 1;
-      if (injuryCount > 0 || severity === 2 || severity === 3) totalInjuryCrashes += 1;
+      records.push({
+        lat,
+        lon,
+        year: yearIdx >= 0 ? parseNum(cols[yearIdx]) || null : null,
+        severityCode: sevIdx >= 0 ? parseNum(cols[sevIdx]) : 0,
+        fatalCount: fatalCntIdx >= 0 ? parseNum(cols[fatalCntIdx]) : 0,
+        injuryCount: injCntIdx >= 0 ? parseNum(cols[injCntIdx]) : 0,
+        pedestrianInvolved: (cols[pedIdx] ?? "").toUpperCase() === "Y",
+        bicyclistInvolved: (cols[bikeIdx] ?? "").toUpperCase() === "Y",
+      });
     }
 
-    const yearsQueried = Array.from(years).sort();
-    const area = bboxArea(bbox);
-    const annualCrashBasis = yearsQueried.length > 0 ? yearsQueried.length : 1;
-
-    return {
-      totalFatalCrashes,
-      totalFatalities,
-      pedestrianFatalities,
-      bicyclistFatalities,
-      severeInjuryCrashes,
-      totalInjuryCrashes,
-      yearsQueried,
-      crashesPerSquareMile: Math.round((totalInjuryCrashes / annualCrashBasis / area) * 10) / 10,
-      source: "switrs-local",
-    };
+    return records;
   } catch {
     return null;
   }
+}
+
+function summarizeSwitrsRecords(records: SwitrsCrashRecord[], bbox: BBox): CrashSummary {
+  let totalFatalCrashes = 0;
+  let totalFatalities = 0;
+  let severeInjuryCrashes = 0;
+  let totalInjuryCrashes = 0;
+  let pedestrianFatalities = 0;
+  let bicyclistFatalities = 0;
+  const years = new Set<number>();
+
+  for (const record of records) {
+    if (record.year) years.add(record.year);
+
+    if (record.severityCode === 1 || record.fatalCount > 0) {
+      totalFatalCrashes += 1;
+      totalFatalities += Math.max(1, record.fatalCount);
+      if (record.pedestrianInvolved) pedestrianFatalities += 1;
+      if (record.bicyclistInvolved) bicyclistFatalities += 1;
+    }
+
+    if (record.severityCode === 2) severeInjuryCrashes += 1;
+    if (record.injuryCount > 0 || record.severityCode === 2 || record.severityCode === 3 || record.severityCode === 4) {
+      totalInjuryCrashes += 1;
+    }
+  }
+
+  const yearsQueried = Array.from(years).sort();
+  const area = bboxArea(bbox);
+  const annualCrashBasis = yearsQueried.length > 0 ? yearsQueried.length : 1;
+
+  return {
+    totalFatalCrashes,
+    totalFatalities,
+    pedestrianFatalities,
+    bicyclistFatalities,
+    severeInjuryCrashes,
+    totalInjuryCrashes,
+    yearsQueried,
+    crashesPerSquareMile: Math.round((totalInjuryCrashes / annualCrashBasis / area) * 10) / 10,
+    source: "switrs-local",
+  };
+}
+
+async function fetchSwitrsFromCsv(bbox: BBox): Promise<CrashSummary | null> {
+  const records = await loadSwitrsRecordsForBbox(bbox);
+  if (!records) {
+    return null;
+  }
+
+  return summarizeSwitrsRecords(records, bbox);
 }
 
 async function fetchFars(bbox: BBox): Promise<CrashSummary> {
@@ -322,4 +408,39 @@ export async function fetchCrashesForBbox(bbox: BBox): Promise<CrashSummary> {
   const switrs = await fetchSwitrsFromCsv(bbox);
   if (switrs) return switrs;
   return fetchFars(bbox);
+}
+
+export async function fetchCrashPointFeaturesForBbox(bbox: BBox): Promise<CrashPointFeature[]> {
+  const records = await loadSwitrsRecordsForBbox(bbox);
+  if (!records) {
+    return [];
+  }
+
+  return records
+    .map((record) => {
+      const severityBucket = classifySwitrsSeverity(record);
+      if (!severityBucket) {
+        return null;
+      }
+
+      return {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [record.lon, record.lat],
+        },
+        properties: {
+          kind: "crash_point",
+          source: "switrs-local",
+          severityBucket,
+          severityLabel: labelForSeverityBucket(severityBucket),
+          collisionYear: record.year,
+          fatalCount: record.fatalCount,
+          injuryCount: record.injuryCount,
+          pedestrianInvolved: record.pedestrianInvolved,
+          bicyclistInvolved: record.bicyclistInvolved,
+        },
+      } satisfies CrashPointFeature;
+    })
+    .filter((feature): feature is CrashPointFeature => Boolean(feature));
 }

@@ -8,3 +8,4 @@ openplan/supabase/.temp/
 
 # Local env snapshots
 *.env.local.backup
+.vercel
