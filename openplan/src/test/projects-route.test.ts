@@ -9,6 +9,9 @@ const workspaceInsertMock = vi.fn();
 const workspaceSelectMock = vi.fn();
 const workspaceSingleMock = vi.fn();
 const memberInsertMock = vi.fn();
+const projectInsertMock = vi.fn();
+const projectSelectMock = vi.fn();
+const projectSingleMock = vi.fn();
 const fromMock = vi.fn();
 
 const mockAudit = {
@@ -52,8 +55,21 @@ describe("POST /api/projects", () => {
       error: null,
     });
 
+    projectSingleMock.mockResolvedValue({
+      data: {
+        id: "33333333-3333-4333-8333-333333333333",
+        name: "CA Safety Delivery Pilot",
+        status: "active",
+        plan_type: "corridor_plan",
+        delivery_phase: "scoping",
+      },
+      error: null,
+    });
+
     workspaceSelectMock.mockReturnValue({ single: workspaceSingleMock });
     workspaceInsertMock.mockReturnValue({ select: workspaceSelectMock });
+    projectSelectMock.mockReturnValue({ single: projectSingleMock });
+    projectInsertMock.mockReturnValue({ select: projectSelectMock });
     memberInsertMock.mockResolvedValue({ error: null });
 
     fromMock.mockImplementation((table: string) => {
@@ -63,6 +79,10 @@ describe("POST /api/projects", () => {
 
       if (table === "workspace_members") {
         return { insert: memberInsertMock };
+      }
+
+      if (table === "projects") {
+        return { insert: projectInsertMock };
       }
 
       throw new Error(`Unexpected table: ${table}`);
@@ -113,8 +133,16 @@ describe("POST /api/projects", () => {
     const payload = (await response.json()) as {
       projectId: string;
       workspaceId: string;
+      projectRecordId: string;
       slug: string;
       plan: string;
+      projectRecord: {
+        id: string;
+        name: string;
+        status: string;
+        planType: string;
+        deliveryPhase: string;
+      };
       stageGateTemplate: {
         id: string;
         version: string;
@@ -126,6 +154,14 @@ describe("POST /api/projects", () => {
 
     expect(payload.projectId).toBeDefined();
     expect(payload.workspaceId).toBe(payload.projectId);
+    expect(payload.projectRecordId).toBe("33333333-3333-4333-8333-333333333333");
+    expect(payload.projectRecord).toMatchObject({
+      id: "33333333-3333-4333-8333-333333333333",
+      name: "CA Safety Delivery Pilot",
+      status: "active",
+      planType: "corridor_plan",
+      deliveryPhase: "scoping",
+    });
     expect(payload.slug).toBe("ca-safety-delivery-pilot");
     expect(payload.plan).toBe("pilot");
     expect(payload.stageGateTemplate).toMatchObject({
@@ -141,6 +177,17 @@ describe("POST /api/projects", () => {
         stage_gate_template_id: "ca_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
         stage_gate_binding_source: "project_create_v0_2",
+      })
+    );
+
+    expect(projectInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "11111111-1111-4111-8111-111111111111",
+        name: "CA Safety Delivery Pilot",
+        status: "active",
+        plan_type: "corridor_plan",
+        delivery_phase: "scoping",
+        created_by: "22222222-2222-4222-8222-222222222222",
       })
     );
   });

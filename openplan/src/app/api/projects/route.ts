@@ -7,6 +7,10 @@ import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-load
 const createProjectSchema = z.object({
   projectName: z.string().trim().min(1).max(120),
   plan: z.string().trim().min(1).max(40).optional(),
+  summary: z.string().trim().max(2000).optional(),
+  planType: z.string().trim().min(1).max(80).optional(),
+  deliveryPhase: z.string().trim().min(1).max(40).optional(),
+  status: z.string().trim().min(1).max(40).optional(),
   stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
 });
 
@@ -18,6 +22,14 @@ type InsertWorkspaceResult = {
   plan: string;
   stage_gate_template_id: string;
   stage_gate_template_version: string;
+};
+
+type InsertProjectRecordResult = {
+  id: string;
+  name: string;
+  status: string;
+  plan_type: string;
+  delivery_phase: string;
 };
 
 function normalizeSlug(value: string): string {
@@ -53,6 +65,53 @@ function isDuplicateSlugError(error: { code?: string | null; message?: string } 
   return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
 }
 
+export async function GET(request: NextRequest) {
+  const audit = createApiAuditLogger("projects.list", request);
+  const startedAt = Date.now();
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data, error } = await supabase
+      .from("projects")
+      .select(
+        "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, plan, created_at)"
+      )
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      audit.error("projects_list_failed", {
+        message: error.message,
+        code: error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load projects" }, { status: 500 });
+    }
+
+    audit.info("projects_list_loaded", {
+      userId: user.id,
+      count: data?.length ?? 0,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return NextResponse.json({ projects: data ?? [] }, { status: 200 });
+  } catch (error) {
+    audit.error("projects_list_unhandled_error", {
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+
+    return NextResponse.json({ error: "Unexpected error while loading projects" }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("projects.create", request);
   const startedAt = Date.now();
@@ -78,6 +137,10 @@ export async function POST(request: NextRequest) {
 
     const projectName = parsed.data.projectName.trim();
     const plan = parsed.data.plan ?? "pilot";
+    const summary = parsed.data.summary?.trim() || null;
+    const planType = parsed.data.planType?.trim() || "corridor_plan";
+    const deliveryPhase = parsed.data.deliveryPhase?.trim() || "scoping";
+    const status = parsed.data.status?.trim() || "active";
     const baseSlug = normalizeSlug(projectName);
 
     let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
@@ -158,8 +221,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: projectRecord, error: projectRecordError } = await supabase
+      .from("projects")
+      .insert({
+        workspace_id: workspace.id,
+        name: projectName,
+        summary,
+        status,
+        plan_type: planType,
+        delivery_phase: deliveryPhase,
+        created_by: user.id,
+      })
+      .select("id, name, status, plan_type, delivery_phase")
+      .single();
+
+    if (projectRecordError) {
+      audit.error("project_record_insert_failed", {
+        workspaceId: workspace.id,
+        message: projectRecordError.message,
+        code: projectRecordError.code ?? null,
+      });
+
+      return NextResponse.json(
+        {
+          error: "Failed to create project record",
+          details: projectRecordError.message,
+        },
+        { status: 500 }
+      );
+    }
+
     audit.info("project_created", {
       projectId: workspace.id,
+      projectRecordId: (projectRecord as InsertProjectRecordResult).id,
       userId: user.id,
       slug: workspace.slug,
       stageGateTemplateId: workspace.stage_gate_template_id,
@@ -171,6 +265,14 @@ export async function POST(request: NextRequest) {
       {
         projectId: workspace.id,
         workspaceId: workspace.id,
+        projectRecordId: (projectRecord as InsertProjectRecordResult).id,
+        projectRecord: {
+          id: (projectRecord as InsertProjectRecordResult).id,
+          name: (projectRecord as InsertProjectRecordResult).name,
+          status: (projectRecord as InsertProjectRecordResult).status,
+          planType: (projectRecord as InsertProjectRecordResult).plan_type,
+          deliveryPhase: (projectRecord as InsertProjectRecordResult).delivery_phase,
+        },
         slug: workspace.slug,
         plan: workspace.plan,
         stageGateTemplate: {

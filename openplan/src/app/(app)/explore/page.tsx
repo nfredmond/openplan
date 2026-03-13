@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import maplibregl, { LngLatBoundsLike, Map } from "maplibre-gl";
+import mapboxgl, {
+  FullscreenControl,
+  LngLatBoundsLike,
+  Map,
+  NavigationControl,
+  ScaleControl,
+  type ExpressionSpecification,
+} from "mapbox-gl";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import type { Run } from "@/components/runs/RunHistory";
 import { RunHistory } from "@/components/runs/RunHistory";
@@ -13,11 +20,12 @@ import { EmptyState, ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Layers3, Map as MapIcon, Sparkles } from "lucide-react";
 import { buildMetricDeltas, deltaTone, formatDelta } from "@/lib/analysis/compare";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { downloadGeojson, downloadMetricsCsv } from "@/lib/export/download";
-import { resolveStatusTone, toneFromDelta } from "@/lib/ui/status";
+import { resolveStatusTone, toneFromDelta, type StatusTone } from "@/lib/ui/status";
 
 type Position = [number, number] | [number, number, number];
 
@@ -43,12 +51,41 @@ type AnalysisResult = {
     confidence?: string;
     totalTransitStops?: number;
     transitAccessTier?: string;
+    totalPopulation?: number;
+    medianIncome?: number | null;
+    pctMinority?: number;
+    pctBelowPoverty?: number;
+    pctTransit?: number;
+    pctWalk?: number;
+    pctBike?: number;
+    pctZeroVehicle?: number;
+    totalFatalCrashes?: number;
+    totalFatalities?: number;
+    crashesPerSquareMile?: number;
+    jobsPerResident?: number;
+    stopsPerSquareMile?: number;
+    walkBikeAccessTier?: string;
     dataQuality?: {
       censusAvailable?: boolean;
       crashDataAvailable?: boolean;
       lodesSource?: string;
       equitySource?: string;
       aiInterpretationSource?: string;
+    };
+    sourceSnapshots?: {
+      census?: {
+        source?: string;
+        dataset?: string;
+        vintage?: string;
+        geography?: string;
+        tractCount?: number;
+        retrievalUrl?: string;
+        fetchedAt?: string;
+      };
+      lodes?: { source?: string; note?: string; fetchedAt?: string };
+      transit?: { source?: string; note?: string; fetchedAt?: string };
+      crashes?: { source?: string; yearsQueried?: number[]; note?: string; fetchedAt?: string };
+      equity?: { source?: string; note?: string; fetchedAt?: string };
     };
     aiInterpretationSource?: string;
     [key: string]: unknown;
@@ -74,6 +111,9 @@ type WorkspaceBootstrapResponse = {
 
 type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
 type ReportTemplate = "atp" | "ss4a";
+
+const MAPBOX_ACCESS_TOKEN =
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
 function collectPositions(geometry: CorridorGeometry): Position[] {
   if (geometry.type === "Polygon") {
@@ -113,6 +153,27 @@ function formatRunTimestamp(value: string): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+function formatSourceToken(value: string | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .replaceAll(/[-_]+/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "N/A";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export default function ExplorePage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
@@ -133,61 +194,166 @@ export default function ExplorePage() {
   const [bootstrapWorkspaceName, setBootstrapWorkspaceName] = useState("");
   const [isBootstrappingWorkspace, setIsBootstrappingWorkspace] = useState(false);
   const [bootstrapChecklist, setBootstrapChecklist] = useState<string[]>([]);
+  const [mapReady, setMapReady] = useState(false);
+  const [showPolygonFill, setShowPolygonFill] = useState(true);
+  const [showPoints, setShowPoints] = useState(true);
+  const [showTracts, setShowTracts] = useState(true);
+  const [cameraMode, setCameraMode] = useState<"regional" | "cinematic">("regional");
+  const [tractMetric, setTractMetric] = useState<"minority" | "poverty" | "income" | "disadvantaged">("minority");
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) {
+    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) {
       return;
     }
 
-    const map = new maplibregl.Map({
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
+    const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "https://demotiles.maplibre.org/style.json",
-      center: [-96, 38],
-      zoom: 3,
+      style: "mapbox://styles/mapbox/dark-v11",
+      center: [-121.5, 39.2],
+      zoom: 5.1,
+      pitch: 36,
+      bearing: -10,
+      antialias: true,
+      attributionControl: false,
     });
 
+    const installAnalysisLayers = () => {
+      if (!map.getSource("analysis-result")) {
+        map.addSource("analysis-result", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
+        });
+      }
+
+      if (!map.getLayer("tract-fill")) {
+        map.addLayer({
+          id: "tract-fill",
+          type: "fill",
+          source: "analysis-result",
+          paint: {
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+              0,
+              "#123047",
+              30,
+              "#1d4ed8",
+              55,
+              "#2563eb",
+              75,
+              "#0f766e",
+              100,
+              "#34d399",
+            ],
+            "fill-opacity": 0.28,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "kind"], "census_tract"]],
+        });
+      }
+
+      if (!map.getLayer("tract-outline")) {
+        map.addLayer({
+          id: "tract-outline",
+          type: "line",
+          source: "analysis-result",
+          paint: {
+            "line-color": "rgba(186, 230, 253, 0.55)",
+            "line-width": 0.8,
+            "line-opacity": 0.5,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "kind"], "census_tract"]],
+        });
+      }
+
+      if (!map.getLayer("analysis-fill")) {
+        map.addLayer({
+          id: "analysis-fill",
+          type: "fill",
+          source: "analysis-result",
+          paint: {
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["coalesce", ["to-number", ["get", "overallScore"]], 50],
+              0,
+              "#7f1d1d",
+              45,
+              "#be8e2f",
+              70,
+              "#0f766e",
+              100,
+              "#34d399",
+            ],
+            "fill-opacity": 0.22,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "kind"], "analysis_corridor"]],
+        });
+      }
+
+      if (!map.getLayer("analysis-outline")) {
+        map.addLayer({
+          id: "analysis-outline",
+          type: "line",
+          source: "analysis-result",
+          paint: {
+            "line-color": "#d8efe8",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.8, 10, 3.2],
+            "line-opacity": 0.95,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "kind"], "analysis_corridor"]],
+        });
+      }
+
+      if (!map.getLayer("analysis-points")) {
+        map.addLayer({
+          id: "analysis-points",
+          type: "circle",
+          source: "analysis-result",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 4, 11, 9],
+            "circle-color": "#f97316",
+            "circle-stroke-color": "#fff7ed",
+            "circle-stroke-width": 1.4,
+            "circle-opacity": 0.95,
+          },
+          filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "kind"], "corridor_centroid"]],
+        });
+      }
+
+      const labelLayerId = map
+        .getStyle()
+        ?.layers?.find((layer) => layer.type === "symbol" && String(layer.id).includes("label"))?.id;
+
+      if (labelLayerId && !map.getLayer("analysis-outline-highlight")) {
+        map.addLayer(
+          {
+            id: "analysis-outline-highlight",
+            type: "line",
+            source: "analysis-result",
+            paint: {
+              "line-color": "#5eead4",
+              "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 12, 2.4],
+              "line-opacity": 0.65,
+            },
+          },
+          labelLayerId
+        );
+      }
+    };
+
+    map.on("style.load", installAnalysisLayers);
     map.on("load", () => {
-      map.addSource("analysis-result", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [],
-        },
-      });
-
-      map.addLayer({
-        id: "analysis-fill",
-        type: "fill",
-        source: "analysis-result",
-        paint: {
-          "fill-color": "#0f766e",
-          "fill-opacity": 0.3,
-        },
-        filter: ["==", ["geometry-type"], "Polygon"],
-      });
-
-      map.addLayer({
-        id: "analysis-outline",
-        type: "line",
-        source: "analysis-result",
-        paint: {
-          "line-color": "#115e59",
-          "line-width": 2,
-        },
-      });
-
-      map.addLayer({
-        id: "analysis-points",
-        type: "circle",
-        source: "analysis-result",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#be123c",
-          "circle-stroke-color": "#fff",
-          "circle-stroke-width": 1.5,
-        },
-        filter: ["==", ["geometry-type"], "Point"],
-      });
+      installAnalysisLayers();
+      map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
+      map.addControl(new FullscreenControl(), "top-right");
+      map.addControl(new ScaleControl({ unit: "imperial" }), "bottom-left");
+      setMapReady(true);
     });
 
     mapRef.current = map;
@@ -195,6 +361,7 @@ export default function ExplorePage() {
     return () => {
       map.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
   }, []);
 
@@ -249,25 +416,147 @@ export default function ExplorePage() {
   }, []);
 
   useEffect(() => {
-    if (!analysisResult || !mapRef.current) {
+    if (!mapRef.current) {
       return;
     }
 
     const source = mapRef.current.getSource("analysis-result") as
-      | maplibregl.GeoJSONSource
+      | mapboxgl.GeoJSONSource
       | undefined;
 
     if (source) {
-      source.setData(analysisResult.geojson);
+      source.setData(
+        analysisResult?.geojson ||
+          (corridorGeojson
+            ? {
+                type: "FeatureCollection",
+                features: [{ type: "Feature", properties: { preview: true }, geometry: corridorGeojson }],
+              }
+            : { type: "FeatureCollection", features: [] })
+      );
     }
 
     if (corridorGeojson) {
       const bounds = getBoundsFromGeometry(corridorGeojson);
       if (bounds) {
-        mapRef.current.fitBounds(bounds, { padding: 40, duration: 450 });
+        mapRef.current.fitBounds(bounds, { padding: 56, duration: 650, pitch: cameraMode === "cinematic" ? 54 : 34 });
       }
     }
-  }, [analysisResult, corridorGeojson]);
+  }, [analysisResult, corridorGeojson, cameraMode]);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    if (mapRef.current.getLayer("analysis-fill")) {
+      mapRef.current.setLayoutProperty("analysis-fill", "visibility", showPolygonFill ? "visible" : "none");
+    }
+
+    if (mapRef.current.getLayer("analysis-outline")) {
+      mapRef.current.setLayoutProperty("analysis-outline", "visibility", showPolygonFill ? "visible" : "none");
+    }
+
+    if (mapRef.current.getLayer("analysis-outline-highlight")) {
+      mapRef.current.setLayoutProperty("analysis-outline-highlight", "visibility", showPolygonFill ? "visible" : "none");
+    }
+  }, [showPolygonFill]);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    if (mapRef.current.getLayer("tract-fill")) {
+      mapRef.current.setLayoutProperty("tract-fill", "visibility", showTracts ? "visible" : "none");
+    }
+
+    if (mapRef.current.getLayer("tract-outline")) {
+      mapRef.current.setLayoutProperty("tract-outline", "visibility", showTracts ? "visible" : "none");
+    }
+  }, [showTracts]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapRef.current.getLayer("analysis-points")) {
+      return;
+    }
+
+    mapRef.current.setLayoutProperty("analysis-points", "visibility", showPoints ? "visible" : "none");
+  }, [showPoints]);
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    mapRef.current.easeTo({
+      pitch: cameraMode === "cinematic" ? 54 : 34,
+      bearing: cameraMode === "cinematic" ? -18 : -10,
+      duration: 700,
+    });
+  }, [cameraMode]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapRef.current.getLayer("tract-fill")) {
+      return;
+    }
+
+    const paintByMetric: Record<typeof tractMetric, ExpressionSpecification> = {
+      minority: [
+        "interpolate",
+        ["linear"],
+        ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+        0,
+        "#123047",
+        30,
+        "#1d4ed8",
+        55,
+        "#2563eb",
+        75,
+        "#0f766e",
+        100,
+        "#34d399",
+      ],
+      poverty: [
+        "interpolate",
+        ["linear"],
+        ["coalesce", ["to-number", ["get", "pctBelowPoverty"]], 0],
+        0,
+        "#0b3b2e",
+        10,
+        "#15803d",
+        20,
+        "#65a30d",
+        30,
+        "#ca8a04",
+        45,
+        "#b91c1c",
+      ],
+      income: [
+        "interpolate",
+        ["linear"],
+        ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
+        0,
+        "#7f1d1d",
+        45000,
+        "#b45309",
+        70000,
+        "#0f766e",
+        100000,
+        "#0ea5e9",
+        150000,
+        "#e0f2fe",
+      ],
+      disadvantaged: [
+        "case",
+        ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],
+        "#ef4444",
+        "#1f2937",
+      ],
+    };
+
+    mapRef.current.setPaintProperty("tract-fill", "fill-color", paintByMetric[tractMetric]);
+  }, [tractMetric]);
 
   const trimmedQueryText = queryText.trim();
   const queryCharacterCount = queryText.length;
@@ -540,6 +829,96 @@ export default function ExplorePage() {
     return buildSourceTransparency(analysisResult.metrics, analysisResult.aiInterpretationSource);
   }, [analysisResult]);
 
+  const planningSignals = useMemo(() => {
+    if (!analysisResult) {
+      return [] as Array<{ label: string; value: string; note: string }>;
+    }
+
+    return [
+      {
+        label: "Population",
+        value: typeof analysisResult.metrics.totalPopulation === "number" ? analysisResult.metrics.totalPopulation.toLocaleString() : "N/A",
+        note: "Census tract population intersecting the corridor bounding area.",
+      },
+      {
+        label: "Median income",
+        value: formatCurrency(analysisResult.metrics.medianIncome as number | null | undefined),
+        note: "Weighted ACS household income for corridor-context tracts.",
+      },
+      {
+        label: "Transit mode share",
+        value: typeof analysisResult.metrics.pctTransit === "number" ? `${analysisResult.metrics.pctTransit}%` : "N/A",
+        note: "Transit share of commute trips from corridor-context tracts.",
+      },
+      {
+        label: "Zero-vehicle households",
+        value: typeof analysisResult.metrics.pctZeroVehicle === "number" ? `${analysisResult.metrics.pctZeroVehicle}%` : "N/A",
+        note: "Households with no vehicle access, used as an equity / accessibility signal.",
+      },
+      {
+        label: "Stops / sq mi",
+        value: typeof analysisResult.metrics.stopsPerSquareMile === "number" ? `${analysisResult.metrics.stopsPerSquareMile}` : "N/A",
+        note: "Transit stop density from current transit access proxy layer.",
+      },
+      {
+        label: "Crash intensity",
+        value: typeof analysisResult.metrics.crashesPerSquareMile === "number" ? `${analysisResult.metrics.crashesPerSquareMile}/sq mi` : "N/A",
+        note: "Crash density from the active crash source or fallback estimator.",
+      },
+    ];
+  }, [analysisResult]);
+
+  const sourceSnapshots = analysisResult?.metrics.sourceSnapshots;
+
+  const geospatialSourceCards = useMemo(() => {
+    if (!analysisResult) {
+      return [] as Array<{ label: string; status: string; detail: string; tone: StatusTone }>;
+    }
+
+    const cards: Array<{ label: string; status: string; detail: string; tone: StatusTone }> = [
+      {
+        label: "Census / ACS",
+        status: sourceSnapshots?.census?.dataset ? `${sourceSnapshots.census.dataset} ${sourceSnapshots.census.vintage ?? ""}`.trim() : "Configured",
+        detail:
+          sourceSnapshots?.census?.retrievalUrl
+            ? `Geography: ${sourceSnapshots.census.geography ?? "tract"} · ${sourceSnapshots.census.tractCount ?? 0} tracts · ${sourceSnapshots.census.retrievalUrl}`
+            : "Census connector is configured but retrieval metadata is missing.",
+        tone: analysisResult.metrics.dataQuality?.censusAvailable ? "success" : "warning",
+      },
+      {
+        label: "Transit access",
+        status: formatSourceToken(sourceSnapshots?.transit?.source),
+        detail: sourceSnapshots?.transit?.note ?? "Transit access proxy metadata not available.",
+        tone: sourceSnapshots?.transit?.source === "osm-overpass" ? "info" : "warning",
+      },
+      {
+        label: "Crash safety",
+        status: formatSourceToken(sourceSnapshots?.crashes?.source),
+        detail: sourceSnapshots?.crashes?.note ?? "Crash metadata not available.",
+        tone:
+          sourceSnapshots?.crashes?.source === "switrs-local"
+            ? "success"
+            : sourceSnapshots?.crashes?.source === "fars-api"
+              ? "info"
+              : "warning",
+      },
+      {
+        label: "Employment / LODES",
+        status: formatSourceToken(sourceSnapshots?.lodes?.source),
+        detail: sourceSnapshots?.lodes?.note ?? "Employment source metadata not available.",
+        tone: sourceSnapshots?.lodes?.source === "lodes-api" ? "success" : "info",
+      },
+      {
+        label: "Equity screening",
+        status: formatSourceToken(sourceSnapshots?.equity?.source),
+        detail: sourceSnapshots?.equity?.note ?? "Equity screening metadata not available.",
+        tone: "info",
+      },
+    ];
+
+    return cards;
+  }, [analysisResult, sourceSnapshots]);
+
   const workspaceHelperText = useMemo(() => {
     if (workspaceLoadState === "loading") {
       return "Checking your default workspace and permissions...";
@@ -582,17 +961,136 @@ export default function ExplorePage() {
     return "Connection issue";
   }, [workspaceLoadState]);
 
+  const mapExperienceReady = MAPBOX_ACCESS_TOKEN.length > 0;
+  const mapSummaryBadges = [
+    `Map engine: ${mapExperienceReady ? (mapReady ? "Mapbox live" : "Mapbox booting") : "Awaiting Mapbox token"}`,
+    `Data overlays: ${analysisResult ? "Live analysis result" : "Ready for upload"}`,
+    `Census connector: ${analysisResult?.metrics.dataQuality?.censusAvailable ? "Available" : "Configured path"}`,
+  ];
+
   return (
     <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-      <div className="overflow-hidden rounded-2xl border border-border/80 shadow-[0_10px_30px_rgba(20,33,43,0.08)]">
-        <div ref={mapContainerRef} className="h-[560px] w-full" />
+      <div className="relative overflow-hidden rounded-[30px] border border-slate-800/80 bg-[linear-gradient(180deg,#08111a_0%,#0d1722_100%)] shadow-[0_28px_80px_rgba(3,10,18,0.28)]">
+        <div ref={mapContainerRef} className="h-[620px] w-full" />
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(5,10,15,0.88),rgba(5,10,15,0))]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,rgba(5,10,15,0.94),rgba(5,10,15,0))]" />
+
+        <div className="absolute left-4 top-4 z-10 max-w-[min(88%,420px)] rounded-[26px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:left-5 sm:top-5 sm:p-5">
+          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
+            <Sparkles className="h-3.5 w-3.5" />
+            Geospatial Intelligence Surface
+          </div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-[1.7rem]">
+            Analysis Studio is moving onto a real planning map experience.
+          </h2>
+          <p className="mt-2 text-sm text-slate-300/86">
+            This pass replaces the old demo-tile feel with a Mapbox-first foundation, richer layer styling, better operator chrome, and a cleaner path toward public engagement, Census overlays, and safety data.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {mapSummaryBadges.map((badge) => (
+              <span key={badge} className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-200/88">
+                {badge}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="absolute right-4 top-4 z-10 flex max-w-[min(88%,320px)] flex-wrap justify-end gap-2 sm:right-5 sm:top-5">
+          <button
+            type="button"
+            onClick={() => setShowPolygonFill((value) => !value)}
+            className="rounded-full border border-white/10 bg-[rgba(7,14,20,0.82)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-white/20"
+          >
+            {showPolygonFill ? "Hide polygon fill" : "Show polygon fill"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPoints((value) => !value)}
+            className="rounded-full border border-white/10 bg-[rgba(7,14,20,0.82)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-white/20"
+          >
+            {showPoints ? "Hide points" : "Show points"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowTracts((value) => !value)}
+            className="rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-sky-200/30"
+          >
+            {showTracts ? "Hide tracts" : "Show tracts"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCameraMode((mode) => (mode === "regional" ? "cinematic" : "regional"))}
+            className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100 shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:border-emerald-200/30"
+          >
+            Camera: {cameraMode === "regional" ? "Regional" : "Cinematic"}
+          </button>
+        </div>
+
+        <div className="absolute bottom-4 left-4 z-10 max-w-[min(88%,360px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
+          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
+            <Layers3 className="h-3.5 w-3.5" />
+            Map layers and posture
+          </div>
+          <div className="mt-3 grid gap-2 text-sm text-slate-300/84">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <span>Corridor geometry</span>
+              <StatusBadge tone={corridorGeojson ? "success" : "neutral"}>{corridorGeojson ? "Loaded" : "Waiting"}</StatusBadge>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <span>Analysis result layer</span>
+              <StatusBadge tone={analysisResult ? "success" : "neutral"}>{analysisResult ? "Live" : "Idle"}</StatusBadge>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <span>Census tracts</span>
+              <StatusBadge tone={showTracts && analysisResult ? "success" : "neutral"}>{showTracts && analysisResult ? "Visible" : "Hidden / waiting"}</StatusBadge>
+            </div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <span>Tract theme</span>
+                <StatusBadge tone="info">{tractMetric}</StatusBadge>
+              </div>
+              <select
+                value={tractMetric}
+                onChange={(event) => setTractMetric(event.target.value as typeof tractMetric)}
+                className="mt-2 h-10 w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 text-sm text-slate-100 outline-none"
+              >
+                <option value="minority">Minority share</option>
+                <option value="poverty">Poverty share</option>
+                <option value="income">Median income</option>
+                <option value="disadvantaged">Disadvantaged flag</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+              <span>Map engine</span>
+              <StatusBadge tone={mapExperienceReady ? "success" : "warning"}>{mapExperienceReady ? "Mapbox" : "Token needed"}</StatusBadge>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-4 right-4 z-10 max-w-[min(88%,300px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
+          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
+            <MapIcon className="h-3.5 w-3.5" />
+            Planning signal
+          </div>
+          {!mapExperienceReady ? (
+            <p className="mt-3 text-sm text-amber-100/88">
+              Add <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.72rem]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to activate the production map experience.
+            </p>
+          ) : (
+            <div className="mt-3 space-y-2 text-sm text-slate-300/84">
+              <p>Mapbox foundation is active for a better desktop planning experience.</p>
+              <p>Next geospatial wave: project overlays, Census choropleths, engagement pins, and SWITRS-linked safety layers.</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-5">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Corridor Analysis Studio</CardTitle>
-            <CardDescription>Upload a corridor, frame the planning question, and generate grant-ready outputs.</CardDescription>
+            <CardTitle>Analysis Studio Control Panel</CardTitle>
+            <CardDescription>Upload a corridor, frame the planning question, and drive the map, metrics, and reporting workflow from one operator surface.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5">
             <Input
@@ -694,7 +1192,7 @@ export default function ExplorePage() {
 
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={() => void runAnalysis()} disabled={!canSubmit || isSubmitting}>
-                {isSubmitting ? "Running analysis..." : "Run Corridor Analysis"}
+                {isSubmitting ? "Running analysis..." : "Run Analysis + Refresh Map"}
               </Button>
               <Button
                 type="button"
@@ -785,6 +1283,76 @@ export default function ExplorePage() {
                 </div>
 
                 <p className="text-xs text-muted-foreground">Run ID: {analysisResult.runId}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle>Geospatial Intelligence Briefing</CardTitle>
+                <CardDescription>
+                  Real corridor-context signals and source posture for planning, grant, and engagement workflows.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {planningSignals.map((signal) => (
+                    <div key={signal.label} className="rounded-2xl border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{signal.label}</p>
+                      <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{signal.value}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">{signal.note}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 xl:grid-cols-2">
+                  <div className="rounded-[26px] border border-border/80 bg-[linear-gradient(180deg,rgba(11,19,27,0.98),rgba(15,24,33,0.94))] p-5 text-slate-100 shadow-[0_20px_48px_rgba(0,0,0,0.16)]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">Data fabric status</p>
+                    <div className="mt-4 space-y-3">
+                      {geospatialSourceCards.map((item) => (
+                        <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-white">{item.label}</p>
+                            <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
+                          </div>
+                          <p className="mt-2 text-xs text-slate-300/82">{item.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[26px] border border-border/80 bg-background p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Citations & next geospatial lanes</p>
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                        <p className="text-sm font-medium text-foreground">Census retrieval</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {sourceSnapshots?.census?.retrievalUrl ?? "Census retrieval URL not captured for this run."}
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Fetched: {sourceSnapshots?.census?.fetchedAt ? formatRunTimestamp(sourceSnapshots.census.fetchedAt) : "Unknown"}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                        <p className="text-sm font-medium text-foreground">Crash lane posture</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Current crash source: {formatSourceToken(sourceSnapshots?.crashes?.source)}.
+                          {sourceSnapshots?.crashes?.source !== "switrs-local"
+                            ? " SWITRS remains the preferred California-grade upgrade path for richer safety layers."
+                            : " SWITRS-backed safety coverage is active for this corridor run."}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                        <p className="text-sm font-medium text-foreground">Next layer buildout</p>
+                        <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-muted-foreground">
+                          <li>Census tract geometry + choropleth overlays</li>
+                          <li>SWITRS collision point layer + severity filters</li>
+                          <li>Project and engagement overlays tied into the Planning OS</li>
+                          <li>CARTO workflow lane for derived spatial products and scheduled refreshes</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

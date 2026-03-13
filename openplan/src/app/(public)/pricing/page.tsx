@@ -8,9 +8,9 @@ const plans = [
     badge: "Pilot-ready",
     features: [
       "1 workspace",
+      "Operator-grade app shell + Analysis Studio access",
       "Up to 100 corridor runs/month",
       "ATP + SS4A report templates",
-      "Run history and export telemetry",
       "Email support (2-business-day target)",
     ],
     cta: "Start Starter Pilot",
@@ -24,7 +24,7 @@ const plans = [
       "Up to 500 corridor runs/month",
       "Priority support + onboarding office hours",
       "Advanced reporting workflow and KPI review",
-      "Early access to new data connectors",
+      "Early access to new Planning OS modules and data connectors",
     ],
     cta: "Start Professional Pilot",
   },
@@ -35,11 +35,10 @@ export default function PricingPage() {
     <section className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pricing</p>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">OpenPlan Pricing for Pilot Agencies</h1>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">OpenPlan Pilot Pricing</h1>
         <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
-          Transparent pilot pricing for corridor analysis workflows. AI accelerates drafting, but final planning
-          recommendations must be reviewed and approved by a qualified human professional. OpenPlan can also be
-          customized for any profession, including law, science, education, engineering, and real estate.
+          Transparent pilot pricing for the current OpenPlan platform foundation, including the live Analysis Studio module.
+          AI accelerates drafting, but final planning recommendations must be reviewed and approved by a qualified human professional.
         </p>
       </header>
 
@@ -69,10 +68,10 @@ export default function PricingPage() {
       <article className="rounded-2xl border border-border/80 bg-card p-5 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
         <p className="font-medium text-foreground">Implementation notes</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
-          <li>Pricing shown is baseline pilot pricing and may vary by agency complexity and data requirements.</li>
+          <li>Pricing shown is baseline pilot pricing and may vary by agency complexity, data requirements, and implementation scope.</li>
+          <li>Current pilot scope includes the app shell foundation plus the live Analysis Studio module; broader Planning OS modules are phased in.</li>
           <li>Stripe checkout wiring is in progress; sign-up currently routes through pilot onboarding flow.</li>
           <li>No hidden fees, punitive change orders, or black-box scoring claims.</li>
-          <li>Customization programs are available for non-transportation domains (law, science, education, engineering, real estate, and more).</li>
         </ul>
       </article>
     </section>

@@ -8,6 +8,7 @@ import {
 } from "@/lib/billing/subscription";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
+import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
@@ -324,16 +325,31 @@ export async function POST(request: NextRequest) {
       transitStopsPerSqMile: transit.stopsPerSqMile,
     });
 
+    const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
+
     // Build result GeoJSON
     const geojson = {
       type: "FeatureCollection" as const,
       features: [
+        ...tractOverlayFeatures,
         {
           type: "Feature" as const,
           geometry: corridorGeojson,
-          properties: { kind: "analysis_corridor", runId },
+          properties: {
+            kind: "analysis_corridor",
+            runId,
+            overallScore: scores.overallScore,
+            accessibilityScore: scores.accessibilityScore,
+            safetyScore: scores.safetyScore,
+            equityScore: scores.equityScore,
+          },
         },
-        buildCentroidFeature(corridorGeojson),
+        {
+          ...buildCentroidFeature(corridorGeojson),
+          properties: {
+            kind: "corridor_centroid",
+          },
+        },
       ],
     };
 
@@ -411,24 +427,43 @@ export async function POST(request: NextRequest) {
       sourceSnapshots: {
         census: {
           source: "census-acs5-2023",
+          dataset: "ACS 5-Year",
+          vintage: "2023",
+          geography: "tract",
           tractCount: census.tracts.length,
+          retrievalUrl: "https://api.census.gov/data/2023/acs/acs5",
           fetchedAt: analysisGeneratedAt,
         },
         lodes: {
           source: lodes.source,
+          note:
+            lodes.source === "acs-estimate"
+              ? "LODES bulk ingestion is not yet active; employment values use ACS-based estimation."
+              : "Employment values derived from direct LODES workflow.",
           fetchedAt: analysisGeneratedAt,
         },
         transit: {
           source: transit.source,
+          note:
+            transit.source === "osm-overpass"
+              ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
+              : "Transit stop density is using estimated fallback values.",
           fetchedAt: analysisGeneratedAt,
         },
         crashes: {
           source: crashes.source,
           yearsQueried: crashes.yearsQueried,
+          note:
+            crashes.source === "switrs-local"
+              ? "Crash safety metrics are coming from local SWITRS CSV coverage for California." 
+              : crashes.source === "fars-api"
+                ? "Crash safety metrics are coming from FARS fatal crash API coverage."
+                : "Crash safety metrics are using estimated fallback values and require validation.",
           fetchedAt: analysisGeneratedAt,
         },
         equity: {
           source: equity.source,
+          note: "Equity screening is computed from census-derived tract indicators and proxy thresholds.",
           fetchedAt: analysisGeneratedAt,
         },
       },

@@ -11,14 +11,14 @@ export async function TopNav() {
 
   const navLinks = user
     ? [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/explore", label: "Explore" },
+        { href: "/dashboard", label: "Overview" },
+        { href: "/explore", label: "Analysis Studio" },
         { href: "/pricing", label: "Pricing" },
         { href: "/billing", label: "Billing" },
       ]
     : [
         { href: "/", label: "Home" },
-        { href: "/explore", label: "Explore" },
+        { href: "/explore", label: "App Preview" },
         { href: "/pricing", label: "Pricing" },
         { href: "/sign-in", label: "Sign in" },
         { href: "/sign-up", label: "Sign up" },
@@ -42,7 +42,7 @@ export async function TopNav() {
             className="h-2.5 w-2.5 rounded-full bg-[color:var(--pine)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--pine)_24%,transparent)]"
             aria-hidden
           />
-          <span className="text-sm font-semibold tracking-[0.08em] text-[color:var(--pine-deep)]">OpenPlan</span>
+          <span className="text-sm font-semibold tracking-[0.08em] text-[color:var(--pine-deep)]">OpenPlan · Planning OS</span>
         </Link>
 
         <nav
