@@ -52,6 +52,26 @@ export function serializeMetricsToCsv(metrics: Record<string, unknown>): string 
   return `${header}\n${values}\n`;
 }
 
+export function serializeRecordsToCsv(records: Array<Record<string, unknown>>): string {
+  if (records.length === 0) {
+    return "\n";
+  }
+
+  const keys = Array.from(
+    records.reduce((set, record) => {
+      Object.keys(record).forEach((key) => set.add(key));
+      return set;
+    }, new Set<string>())
+  ).sort((a, b) => a.localeCompare(b));
+
+  const header = keys.map(escapeCsvCell).join(",");
+  const rows = records.map((record) =>
+    keys.map((key) => escapeCsvCell(stringifyMetricValue(record[key]))).join(",")
+  );
+
+  return `${header}\n${rows.join("\n")}\n`;
+}
+
 export function downloadText(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -70,6 +90,14 @@ export function downloadMetricsCsv(
   filename = "openplan-metrics.csv"
 ) {
   const csv = serializeMetricsToCsv(metrics);
+  downloadText(csv, filename, "text/csv;charset=utf-8");
+}
+
+export function downloadRecordsCsv(
+  records: Array<Record<string, unknown>>,
+  filename = "openplan-records.csv"
+) {
+  const csv = serializeRecordsToCsv(records);
   downloadText(csv, filename, "text/csv;charset=utf-8");
 }
 

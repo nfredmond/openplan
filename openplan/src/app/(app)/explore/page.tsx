@@ -33,7 +33,7 @@ import {
 } from "@/lib/analysis/map-view-state";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
-import { downloadGeojson, downloadMetricsCsv } from "@/lib/export/download";
+import { downloadGeojson, downloadMetricsCsv, downloadRecordsCsv, downloadText } from "@/lib/export/download";
 import { resolveStatusTone, toneFromDelta, type StatusTone } from "@/lib/ui/status";
 
 type Position = [number, number] | [number, number, number];
@@ -1382,6 +1382,78 @@ export default function ExplorePage() {
     });
   }, [baselineMapViewSummary, currentMapViewSummary]);
 
+  const comparisonExportRows = useMemo(() => {
+    const metricRows = comparisonDeltas.map((delta) => ({
+      rowType: "metric_delta",
+      key: delta.key,
+      label: delta.label,
+      current: delta.current,
+      baseline: delta.baseline,
+      delta: delta.delta,
+      deltaPct: delta.deltaPct,
+    }));
+
+    const mapRows = mapViewComparisonRows.map((row) => ({
+      rowType: "map_view",
+      label: row.label,
+      current: row.current,
+      baseline: row.baseline,
+      changed: row.changed,
+    }));
+
+    return [...metricRows, ...mapRows];
+  }, [comparisonDeltas, mapViewComparisonRows]);
+
+  const exportComparisonCsv = () => {
+    if (!analysisResult || !comparisonRun?.metrics) {
+      setError("Load a baseline run before exporting a comparison artifact.");
+      return;
+    }
+
+    try {
+      downloadRecordsCsv(
+        comparisonExportRows,
+        `openplan-${analysisResult.runId}-vs-${comparisonRun.id}-comparison.csv`
+      );
+    } catch {
+      setError("Failed to export comparison CSV.");
+    }
+  };
+
+  const exportComparisonJson = () => {
+    if (!analysisResult || !comparisonRun?.metrics) {
+      setError("Load a baseline run before exporting a comparison artifact.");
+      return;
+    }
+
+    try {
+      const payload = {
+        generatedAt: new Date().toISOString(),
+        currentRun: {
+          id: analysisResult.runId,
+          title: "Current analysis run",
+          mapViewState: currentMapViewState,
+        },
+        baselineRun: {
+          id: comparisonRun.id,
+          title: comparisonRun.title,
+          createdAt: comparisonRun.created_at,
+          mapViewState: comparisonMapViewState,
+        },
+        metricDeltas: comparisonDeltas,
+        mapViewComparison: mapViewComparisonRows,
+      };
+
+      downloadText(
+        JSON.stringify(payload, null, 2),
+        `openplan-${analysisResult.runId}-vs-${comparisonRun.id}-comparison.json`,
+        "application/json;charset=utf-8"
+      );
+    } catch {
+      setError("Failed to export comparison JSON.");
+    }
+  };
+
   const sourceTransparency = useMemo(() => {
     if (!analysisResult) {
       return [];
@@ -2512,7 +2584,13 @@ export default function ExplorePage() {
                     </div>
                   ) : null}
 
-                  <div className="flex justify-end">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={exportComparisonCsv}>
+                      Export Comparison CSV
+                    </Button>
+                    <Button type="button" variant="outline" onClick={exportComparisonJson}>
+                      Export Comparison JSON
+                    </Button>
                     <Button type="button" variant="ghost" onClick={() => setComparisonRun(null)}>
                       Clear Comparison
                     </Button>
