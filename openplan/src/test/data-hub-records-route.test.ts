@@ -294,4 +294,29 @@ describe("POST /api/data-hub/records", () => {
       linked_by: "22222222-2222-4222-8222-222222222222",
     });
   });
+
+  it("accepts crash-point thematic attachments for point datasets", async () => {
+    const response = await postDataHubRecord(
+      jsonRequest({
+        recordType: "dataset",
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        name: "Nevada County SWITRS crash severity layer",
+        status: "ready",
+        geographyScope: "point",
+        geometryAttachment: "analysis_crash_points",
+        thematicMetricKey: "severityBucket",
+        thematicMetricLabel: "Crash severity bucket",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(datasetsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Nevada County SWITRS crash severity layer",
+        geography_scope: "point",
+        geometry_attachment: "analysis_crash_points",
+        thematic_metric_key: "severityBucket",
+      })
+    );
+  });
 });

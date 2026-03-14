@@ -37,7 +37,7 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     geographyScope: z
       .enum(["none", "point", "route", "corridor", "tract", "county", "region", "statewide", "national"])
       .optional(),
-    geometryAttachment: z.enum(["none", "analysis_tracts", "analysis_corridor"]).optional(),
+    geometryAttachment: z.enum(["none", "analysis_tracts", "analysis_corridor", "analysis_crash_points"]).optional(),
     thematicMetricKey: z
       .enum([
         "pctMinority",
@@ -50,6 +50,11 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
         "accessibilityScore",
         "safetyScore",
         "equityScore",
+        "severityBucket",
+        "pedestrianInvolved",
+        "bicyclistInvolved",
+        "fatalCount",
+        "injuryCount",
       ])
       .optional(),
     thematicMetricLabel: z.string().trim().max(120).optional(),
@@ -238,8 +243,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (parsed.data.geometryAttachment === "analysis_crash_points" && parsed.data.geographyScope !== "point") {
+        return NextResponse.json(
+          { error: "Crash-point geometry attachments require geography scope = point" },
+          { status: 400 }
+        );
+      }
+
       if (
-        (parsed.data.geometryAttachment === "analysis_tracts" || parsed.data.geometryAttachment === "analysis_corridor") &&
+        (parsed.data.geometryAttachment === "analysis_tracts" ||
+          parsed.data.geometryAttachment === "analysis_corridor" ||
+          parsed.data.geometryAttachment === "analysis_crash_points") &&
         !parsed.data.thematicMetricKey
       ) {
         return NextResponse.json(

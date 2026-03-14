@@ -296,7 +296,10 @@ function canRenderDatasetThematicOverlay(
 ): boolean {
   return Boolean(
     dataset?.thematicReady &&
-      (dataset.geographyScope === "tract" || dataset.geographyScope === "corridor" || dataset.geographyScope === "route")
+      (dataset.geographyScope === "tract" ||
+        dataset.geographyScope === "corridor" ||
+        dataset.geographyScope === "route" ||
+        dataset.geographyScope === "point")
   );
 }
 
@@ -414,6 +417,58 @@ function buildThematicOverlayPaintExpression(metricKey: string | null | undefine
     "#0f766e",
     100,
     "#34d399",
+  ];
+}
+
+function buildPointThematicOverlayColorExpression(metricKey: string | null | undefined): ExpressionSpecification {
+  if (metricKey === "pedestrianInvolved") {
+    return ["case", ["==", ["get", "pedestrianInvolved"], true], "#ec4899", "#334155"];
+  }
+
+  if (metricKey === "bicyclistInvolved") {
+    return ["case", ["==", ["get", "bicyclistInvolved"], true], "#22c55e", "#334155"];
+  }
+
+  if (metricKey === "fatalCount") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "fatalCount"]], 0],
+      0,
+      "#fbbf24",
+      1,
+      "#f97316",
+      2,
+      "#dc2626",
+    ];
+  }
+
+  if (metricKey === "injuryCount") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "injuryCount"]], 0],
+      0,
+      "#38bdf8",
+      1,
+      "#2563eb",
+      3,
+      "#1d4ed8",
+      5,
+      "#172554",
+    ];
+  }
+
+  return [
+    "match",
+    ["get", "severityBucket"],
+    "fatal",
+    "#ef4444",
+    "severe_injury",
+    "#fb923c",
+    "injury",
+    "#facc15",
+    "#94a3b8",
   ];
 }
 
@@ -683,6 +738,22 @@ export default function ExplorePage() {
             "line-opacity": 0.95,
             "line-dasharray": [1.2, 1],
           },
+        });
+      }
+
+      if (!map.getLayer("dataset-overlay-point")) {
+        map.addLayer({
+          id: "dataset-overlay-point",
+          type: "circle",
+          source: "dataset-overlay",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
+            "circle-color": "#f97316",
+            "circle-stroke-color": "#fff7ed",
+            "circle-stroke-width": 1,
+            "circle-opacity": 0.95,
+          },
+          filter: ["==", ["geometry-type"], "Point"],
         });
       }
 
@@ -995,6 +1066,11 @@ export default function ExplorePage() {
       mapRef.current.setPaintProperty("dataset-overlay-line", "line-color", "#fb923c");
       mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1.2, 1]);
     }
+    if (mapRef.current.getLayer("dataset-overlay-point")) {
+      mapRef.current.setPaintProperty("dataset-overlay-point", "circle-color", "#f97316");
+      mapRef.current.setPaintProperty("dataset-overlay-point", "circle-radius", ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7]);
+      mapRef.current.setPaintProperty("dataset-overlay-point", "circle-stroke-color", "#fff7ed");
+    }
 
     if (!selectedDataset || !canRenderDatasetCoverageOverlay(selectedDataset)) {
       source.setData({
@@ -1090,6 +1166,57 @@ export default function ExplorePage() {
           mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
           mapRef.current.setPaintProperty("dataset-overlay-line", "line-width", ["interpolate", ["linear"], ["zoom"], 4, 3, 11, 6]);
         }
+      }
+      return;
+    }
+
+    if (selectedDataset.geographyScope === "point") {
+      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
+      const crashPointFeatures =
+        analysisResult?.geojson.features.filter(
+          (feature) =>
+            feature.geometry?.type === "Point" &&
+            feature.properties &&
+            (feature.properties as Record<string, unknown>).kind === "crash_point"
+        ) ?? [];
+
+      source.setData({
+        type: "FeatureCollection",
+        features: crashPointFeatures.map((feature) => ({
+          ...feature,
+          properties: {
+            ...(feature.properties ?? {}),
+            overlayDatasetName: selectedDataset.name,
+            overlayDatasetId: selectedDataset.datasetId,
+            overlayMode,
+            overlayMetricKey: selectedDataset.thematicMetricKey,
+          },
+        })),
+      });
+
+      if (overlayMode === "thematic_overlay" && mapRef.current.getLayer("dataset-overlay-point")) {
+        mapRef.current.setPaintProperty(
+          "dataset-overlay-point",
+          "circle-color",
+          buildPointThematicOverlayColorExpression(selectedDataset.thematicMetricKey)
+        );
+        mapRef.current.setPaintProperty(
+          "dataset-overlay-point",
+          "circle-radius",
+          selectedDataset.thematicMetricKey === "fatalCount" || selectedDataset.thematicMetricKey === "injuryCount"
+            ? [
+                "interpolate",
+                ["linear"],
+                ["coalesce", ["to-number", ["get", selectedDataset.thematicMetricKey]], 0],
+                0,
+                3,
+                1,
+                5,
+                4,
+                9,
+              ]
+            : ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7]
+        );
       }
       return;
     }
@@ -2227,7 +2354,7 @@ export default function ExplorePage() {
                   <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
                   <p className="mt-1 text-xs text-slate-200/78">
                     {activeDatasetOverlay.thematicReady
-                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeDatasetOverlay.geometryAttachment === "analysis_corridor" ? "corridor" : "tract"} geometry.`
+                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeDatasetOverlay.geometryAttachment === "analysis_corridor" ? "corridor" : activeDatasetOverlay.geometryAttachment === "analysis_crash_points" ? "crash-point" : "tract"} geometry.`
                       : `${titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.`}
                   </p>
                 </div>
@@ -2513,7 +2640,7 @@ export default function ExplorePage() {
                                 ) : canRenderCoverage ? (
                                   <p className="text-[0.72rem] text-muted-foreground">
                                     {thematicReady
-                                      ? `Uses real ${dataset.geometryAttachment === "analysis_corridor" ? "corridor" : "tract"} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
+                                      ? `Uses real ${dataset.geometryAttachment === "analysis_corridor" ? "corridor" : dataset.geometryAttachment === "analysis_crash_points" ? "crash-point" : "tract"} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
                                       : "Draws a coverage footprint only — not dataset values."}
                                   </p>
                                 ) : null}

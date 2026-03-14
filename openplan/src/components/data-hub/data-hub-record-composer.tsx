@@ -168,11 +168,15 @@ export function DataHubRecordComposer({
         geographyScope: datasetGeographyScope,
         geometryAttachment: datasetGeometryAttachment,
         thematicMetricKey:
-          datasetGeometryAttachment === "analysis_tracts" || datasetGeometryAttachment === "analysis_corridor"
+          datasetGeometryAttachment === "analysis_tracts" ||
+          datasetGeometryAttachment === "analysis_corridor" ||
+          datasetGeometryAttachment === "analysis_crash_points"
             ? datasetThematicMetricKey || undefined
             : undefined,
         thematicMetricLabel:
-          datasetGeometryAttachment === "analysis_tracts" || datasetGeometryAttachment === "analysis_corridor"
+          datasetGeometryAttachment === "analysis_tracts" ||
+          datasetGeometryAttachment === "analysis_corridor" ||
+          datasetGeometryAttachment === "analysis_crash_points"
             ? datasetThematicMetricLabel || undefined
             : undefined,
         coverageSummary: datasetCoverageSummary,
@@ -570,6 +574,7 @@ export function DataHubRecordComposer({
                   <option value="none">Coverage only</option>
                   <option value="analysis_tracts">Bind to analysis tracts</option>
                   <option value="analysis_corridor">Bind to analysis corridor</option>
+                  <option value="analysis_crash_points">Bind to analysis crash points</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -590,6 +595,14 @@ export function DataHubRecordComposer({
                       <option value="accessibilityScore">Accessibility score</option>
                       <option value="safetyScore">Safety score</option>
                       <option value="equityScore">Equity score</option>
+                    </>
+                  ) : datasetGeometryAttachment === "analysis_crash_points" ? (
+                    <>
+                      <option value="severityBucket">Crash severity bucket</option>
+                      <option value="pedestrianInvolved">Pedestrian involvement</option>
+                      <option value="bicyclistInvolved">Bicyclist involvement</option>
+                      <option value="fatalCount">Fatality count</option>
+                      <option value="injuryCount">Injury count</option>
                     </>
                   ) : (
                     <>
@@ -613,7 +626,7 @@ export function DataHubRecordComposer({
                 id="dataset-thematic-label"
                 value={datasetThematicMetricLabel}
                 onChange={(event) => setDatasetThematicMetricLabel(event.target.value)}
-                placeholder={datasetGeometryAttachment === "analysis_corridor" ? "Safety score / Corridor equity score" : "Equity disadvantage screening / Transit dependence"}
+                placeholder={datasetGeometryAttachment === "analysis_corridor" ? "Safety score / Corridor equity score" : datasetGeometryAttachment === "analysis_crash_points" ? "Crash severity / VRU involvement" : "Equity disadvantage screening / Transit dependence"}
                 disabled={datasetGeometryAttachment === "none"}
               />
             </div>

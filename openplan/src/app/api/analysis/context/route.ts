@@ -335,7 +335,8 @@ export async function GET(request: NextRequest) {
               Boolean(dataset.thematic_metric_key) &&
               ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
                 ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
-                  dataset.geometry_attachment === "analysis_corridor"));
+                  dataset.geometry_attachment === "analysis_corridor") ||
+                (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
 
             return {
               datasetId: dataset.id,

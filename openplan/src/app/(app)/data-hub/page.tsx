@@ -274,7 +274,8 @@ export default async function DataHubPage() {
       Boolean(dataset.thematic_metric_key) &&
       ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
         ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
-          dataset.geometry_attachment === "analysis_corridor"))
+          dataset.geometry_attachment === "analysis_corridor") ||
+        (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"))
   ).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
@@ -487,7 +488,8 @@ export default async function DataHubPage() {
                   Boolean(dataset.thematic_metric_key) &&
                   ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
                     ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
-                      dataset.geometry_attachment === "analysis_corridor"));
+                      dataset.geometry_attachment === "analysis_corridor") ||
+                    (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
 
                 return (
                   <div key={dataset.id} className="rounded-[24px] border border-border/80 bg-background/80 p-5">
@@ -554,7 +556,9 @@ export default async function DataHubPage() {
                           {thematicReady
                             ? dataset.geometry_attachment === "analysis_corridor"
                               ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis corridor geometry.`
-                              : `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
+                              : dataset.geometry_attachment === "analysis_crash_points"
+                                ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis crash-point geometry.`
+                                : `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
                             : overlayReady
                               ? "Drawable in Analysis Studio as a coverage footprint."
                               : "Registry only for now; not drawable in Analysis Studio yet."}
