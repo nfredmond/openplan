@@ -1479,6 +1479,11 @@ export default function ExplorePage() {
     [comparisonRun]
   );
 
+  const activeDatasetOverlay = useMemo(
+    () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
+    [analysisContext, activeDatasetOverlayId]
+  );
+
   const currentMapViewState = useMemo<MapViewState>(
     () => ({
       tractMetric,
@@ -1487,8 +1492,27 @@ export default function ExplorePage() {
       crashSeverityFilter,
       crashUserFilter,
       activeDatasetOverlayId,
+      activeOverlayContext: activeDatasetOverlay
+        ? {
+            datasetId: activeDatasetOverlay.datasetId,
+            datasetName: activeDatasetOverlay.name,
+            overlayMode: activeDatasetOverlay.thematicReady ? "thematic_overlay" : "coverage_footprint",
+            geometryAttachment: activeDatasetOverlay.geometryAttachment,
+            thematicMetricKey: activeDatasetOverlay.thematicMetricKey,
+            thematicMetricLabel: activeDatasetOverlay.thematicMetricLabel,
+            connectorLabel: activeDatasetOverlay.connectorLabel,
+          }
+        : null,
     }),
-    [tractMetric, showTracts, showCrashes, crashSeverityFilter, crashUserFilter, activeDatasetOverlayId]
+    [
+      tractMetric,
+      showTracts,
+      showCrashes,
+      crashSeverityFilter,
+      crashUserFilter,
+      activeDatasetOverlayId,
+      activeDatasetOverlay,
+    ]
   );
 
   const currentMapViewSummary = useMemo(
@@ -1729,11 +1753,6 @@ export default function ExplorePage() {
 
     return "Connection issue";
   }, [workspaceLoadState]);
-
-  const activeDatasetOverlay = useMemo(
-    () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
-    [analysisContext, activeDatasetOverlayId]
-  );
 
   const crashPointFeatures = useMemo(
     () =>

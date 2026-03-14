@@ -13,6 +13,18 @@ const mapViewStateSchema = z.object({
   crashSeverityFilter: z.enum(["all", "fatal", "severe_injury", "injury"]).optional(),
   crashUserFilter: z.enum(["all", "pedestrian", "bicycle", "vru"]).optional(),
   activeDatasetOverlayId: z.string().uuid().nullable().optional(),
+  activeOverlayContext: z
+    .object({
+      datasetId: z.string().uuid(),
+      datasetName: z.string().min(1).max(160),
+      overlayMode: z.enum(["coverage_footprint", "thematic_overlay"]),
+      geometryAttachment: z.string().max(80).nullable().optional(),
+      thematicMetricKey: z.string().max(80).nullable().optional(),
+      thematicMetricLabel: z.string().max(120).nullable().optional(),
+      connectorLabel: z.string().max(160).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 
 const reportRequestSchema = z.object({
@@ -159,13 +171,29 @@ function buildMapViewSummary(
     return [];
   }
 
+  const overlayContext =
+    mapViewState.activeOverlayContext &&
+    typeof mapViewState.activeOverlayContext === "object" &&
+    !Array.isArray(mapViewState.activeOverlayContext)
+      ? (mapViewState.activeOverlayContext as Record<string, unknown>)
+      : null;
+
+  const overlayValue =
+    typeof overlayContext?.datasetName === "string"
+      ? overlayContext.overlayMode === "thematic_overlay"
+        ? `${overlayContext.datasetName} · ${typeof overlayContext.thematicMetricLabel === "string" && overlayContext.thematicMetricLabel.length > 0 ? overlayContext.thematicMetricLabel : titleize(typeof overlayContext.thematicMetricKey === "string" ? overlayContext.thematicMetricKey : undefined)}`
+        : overlayContext.datasetName
+      : typeof mapViewState.activeDatasetOverlayId === "string"
+        ? mapViewState.activeDatasetOverlayId
+        : "None";
+
   return [
     `Tract theme: ${titleize(typeof mapViewState.tractMetric === "string" ? mapViewState.tractMetric : "unknown")}`,
     `Census tracts: ${mapViewState.showTracts === false ? "Hidden" : "Visible"}`,
     `SWITRS lane: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
     `Crash severity filter: ${titleize(typeof mapViewState.crashSeverityFilter === "string" ? mapViewState.crashSeverityFilter : "all")}`,
     `Crash user filter: ${formatCrashUserFilterLabel(typeof mapViewState.crashUserFilter === "string" ? mapViewState.crashUserFilter : "all")}`,
-    `Project-linked overlay: ${typeof mapViewState.activeDatasetOverlayId === "string" ? mapViewState.activeDatasetOverlayId : "None"}`,
+    `Project-linked overlay: ${overlayValue}`,
   ];
 }
 

@@ -113,7 +113,16 @@ describe("PATCH /api/runs", () => {
             showCrashes: true,
             crashSeverityFilter: "fatal",
             crashUserFilter: "pedestrian",
-            activeDatasetOverlayId: null,
+            activeDatasetOverlayId: "44444444-4444-4444-8444-444444444444",
+            activeOverlayContext: {
+              datasetId: "44444444-4444-4444-8444-444444444444",
+              datasetName: "Nevada County Equity Indicators",
+              overlayMode: "thematic_overlay",
+              geometryAttachment: "analysis_tracts",
+              thematicMetricKey: "pctBelowPoverty",
+              thematicMetricLabel: "Poverty share",
+              connectorLabel: "Census ACS 5-Year",
+            },
           },
         }),
       })
@@ -127,6 +136,11 @@ describe("PATCH /api/runs", () => {
           crashSeverityFilter: "fatal",
           crashUserFilter: "pedestrian",
           tractMetric: "poverty",
+          activeDatasetOverlayId: "44444444-4444-4444-8444-444444444444",
+          activeOverlayContext: expect.objectContaining({
+            datasetName: "Nevada County Equity Indicators",
+            thematicMetricLabel: "Poverty share",
+          }),
         }),
       }),
     });

@@ -223,14 +223,26 @@ describe("POST /api/report", () => {
           showCrashes: true,
           showTracts: true,
           tractMetric: "poverty",
-          activeDatasetOverlayId: null,
+          activeDatasetOverlayId: "44444444-4444-4444-8444-444444444444",
+          activeOverlayContext: {
+            datasetId: "44444444-4444-4444-8444-444444444444",
+            datasetName: "Nevada County Equity Indicators",
+            overlayMode: "thematic_overlay",
+            geometryAttachment: "analysis_tracts",
+            thematicMetricKey: "pctBelowPoverty",
+            thematicMetricLabel: "Poverty share",
+            connectorLabel: "Census ACS 5-Year",
+          },
         },
       })
     );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
-    expect(await response.text()).toContain("Active Map View");
+    const html = await response.text();
+    expect(html).toContain("Active Map View");
+    expect(html).toContain("Nevada County Equity Indicators");
+    expect(html).toContain("Poverty share");
     expect(decisionInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         decision: "PASS",

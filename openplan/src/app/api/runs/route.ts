@@ -14,6 +14,18 @@ const mapViewStateSchema = z.object({
   crashSeverityFilter: z.enum(["all", "fatal", "severe_injury", "injury"]).optional(),
   crashUserFilter: z.enum(["all", "pedestrian", "bicycle", "vru"]).optional(),
   activeDatasetOverlayId: z.string().uuid().nullable().optional(),
+  activeOverlayContext: z
+    .object({
+      datasetId: z.string().uuid(),
+      datasetName: z.string().min(1).max(160),
+      overlayMode: z.enum(["coverage_footprint", "thematic_overlay"]),
+      geometryAttachment: z.string().max(80).nullable().optional(),
+      thematicMetricKey: z.string().max(80).nullable().optional(),
+      thematicMetricLabel: z.string().max(120).nullable().optional(),
+      connectorLabel: z.string().max(160).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 const runUpdateSchema = z.object({
   id: z.string().uuid(),
