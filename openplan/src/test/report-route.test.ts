@@ -243,6 +243,8 @@ describe("POST /api/report", () => {
     expect(html).toContain("Active Map View");
     expect(html).toContain("Nevada County Equity Indicators");
     expect(html).toContain("Poverty share");
+    expect(html).toContain("Overlay mode");
+    expect(html).toContain("Overlay geometry");
     expect(decisionInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         decision: "PASS",

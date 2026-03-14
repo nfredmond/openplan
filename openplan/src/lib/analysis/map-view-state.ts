@@ -44,6 +44,32 @@ export function formatCrashUserFilterLabel(value: CrashUserFilter | undefined): 
   return "All users";
 }
 
+export function formatGeometryAttachmentLabel(value: string | null | undefined): string {
+  if (value === "analysis_tracts") {
+    return "Analysis tracts";
+  }
+  if (value === "analysis_corridor") {
+    return "Analysis corridor";
+  }
+  if (value === "analysis_crash_points") {
+    return "Analysis crash points";
+  }
+  if (!value || value === "none") {
+    return "None";
+  }
+  return titleizeMapViewValue(value);
+}
+
+export function formatOverlayModeLabel(value: ActiveOverlayContext["overlayMode"] | null | undefined): string {
+  if (value === "thematic_overlay") {
+    return "Thematic overlay";
+  }
+  if (value === "coverage_footprint") {
+    return "Coverage footprint";
+  }
+  return "Unknown";
+}
+
 export function normalizeMapViewState(value: unknown): Partial<MapViewState> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -125,5 +151,17 @@ export function summarizeMapViewState(
             ? "Selected"
             : "None",
     },
+    ...(value.activeOverlayContext
+      ? [
+          {
+            label: "Overlay mode",
+            value: formatOverlayModeLabel(value.activeOverlayContext.overlayMode),
+          },
+          {
+            label: "Overlay geometry",
+            value: formatGeometryAttachmentLabel(value.activeOverlayContext.geometryAttachment),
+          },
+        ]
+      : []),
   ];
 }

@@ -147,54 +147,15 @@ function getTemplateMeta(template: "atp" | "ss4a") {
   };
 }
 
-function titleize(value: string | null | undefined): string {
-  if (!value) return "Unknown";
-  return value
-    .replace(/[_-]+/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function formatCrashUserFilterLabel(value: string | undefined): string {
-  if (value === "vru") return "Ped or bike";
-  if (value === "pedestrian") return "Ped only";
-  if (value === "bicycle") return "Bike only";
-  return "All users";
-}
-
 function buildMapViewSummary(
   mapViewState: Record<string, unknown> | null | undefined
 ): string[] {
-  if (!mapViewState) {
+  const normalized = normalizeMapViewState(mapViewState);
+  if (!normalized) {
     return [];
   }
 
-  const overlayContext =
-    mapViewState.activeOverlayContext &&
-    typeof mapViewState.activeOverlayContext === "object" &&
-    !Array.isArray(mapViewState.activeOverlayContext)
-      ? (mapViewState.activeOverlayContext as Record<string, unknown>)
-      : null;
-
-  const overlayValue =
-    typeof overlayContext?.datasetName === "string"
-      ? overlayContext.overlayMode === "thematic_overlay"
-        ? `${overlayContext.datasetName} · ${typeof overlayContext.thematicMetricLabel === "string" && overlayContext.thematicMetricLabel.length > 0 ? overlayContext.thematicMetricLabel : titleize(typeof overlayContext.thematicMetricKey === "string" ? overlayContext.thematicMetricKey : undefined)}`
-        : overlayContext.datasetName
-      : typeof mapViewState.activeDatasetOverlayId === "string"
-        ? mapViewState.activeDatasetOverlayId
-        : "None";
-
-  return [
-    `Tract theme: ${titleize(typeof mapViewState.tractMetric === "string" ? mapViewState.tractMetric : "unknown")}`,
-    `Census tracts: ${mapViewState.showTracts === false ? "Hidden" : "Visible"}`,
-    `SWITRS lane: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
-    `Crash severity filter: ${titleize(typeof mapViewState.crashSeverityFilter === "string" ? mapViewState.crashSeverityFilter : "all")}`,
-    `Crash user filter: ${formatCrashUserFilterLabel(typeof mapViewState.crashUserFilter === "string" ? mapViewState.crashUserFilter : "all")}`,
-    `Project-linked overlay: ${overlayValue}`,
-  ];
+  return summarizeMapViewState(normalized).map((item) => `${item.label}: ${item.value}`);
 }
 
 function buildPdf(
