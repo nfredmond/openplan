@@ -252,6 +252,76 @@ describe("GET /api/analysis/context", () => {
     });
   });
 
+  it("marks corridor-attached datasets as thematic-ready", async () => {
+    datasetsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          connector_id: "66666666-6666-4666-8666-666666666666",
+          name: "Nevada County Corridor Safety Composite",
+          status: "ready",
+          geography_scope: "corridor",
+          geometry_attachment: "analysis_corridor",
+          thematic_metric_key: "safetyScore",
+          thematic_metric_label: "Safety score",
+          vintage_label: "OpenPlan Live",
+          last_refreshed_at: "2026-03-13T15:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await getAnalysisContext(
+      new NextRequest("http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111")
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      linkedDatasets: Array<{ thematicReady: boolean; geometryAttachment: string; thematicMetricKey: string | null }>;
+    };
+
+    expect(payload.linkedDatasets[0]).toMatchObject({
+      thematicReady: true,
+      geometryAttachment: "analysis_corridor",
+      thematicMetricKey: "safetyScore",
+    });
+  });
+
+  it("marks crash-point-attached datasets as thematic-ready", async () => {
+    datasetsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          connector_id: "66666666-6666-4666-8666-666666666666",
+          name: "Nevada County SWITRS Severity Layer",
+          status: "ready",
+          geography_scope: "point",
+          geometry_attachment: "analysis_crash_points",
+          thematic_metric_key: "severityBucket",
+          thematic_metric_label: "Crash severity bucket",
+          vintage_label: "SWITRS Local",
+          last_refreshed_at: "2026-03-13T15:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await getAnalysisContext(
+      new NextRequest("http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111")
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      linkedDatasets: Array<{ thematicReady: boolean; geometryAttachment: string; thematicMetricKey: string | null }>;
+    };
+
+    expect(payload.linkedDatasets[0]).toMatchObject({
+      thematicReady: true,
+      geometryAttachment: "analysis_crash_points",
+      thematicMetricKey: "severityBucket",
+    });
+  });
+
   it("degrades cleanly when data hub schema is pending", async () => {
     datasetLinksOrderMock.mockResolvedValueOnce({
       data: null,
