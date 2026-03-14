@@ -263,6 +263,18 @@ export default async function DataHubPage() {
   const activeConnectors = connectors.filter((connector) => connector.status === "active").length;
   const monitoredConnectors = connectors.filter((connector) => connector.policy_monitor_enabled).length;
   const staleDatasets = datasets.filter((dataset) => dataset.status === "stale" || dataset.status === "error").length;
+  const overlayReadyDatasets = datasets.filter(
+    (dataset) =>
+      dataset.status === "ready" &&
+      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(dataset.geography_scope)
+  ).length;
+  const thematicReadyDatasets = datasets.filter(
+    (dataset) =>
+      dataset.status === "ready" &&
+      dataset.geography_scope === "tract" &&
+      dataset.geometry_attachment === "analysis_tracts" &&
+      Boolean(dataset.thematic_metric_key)
+  ).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
   const liveFoundations = [
@@ -311,7 +323,9 @@ export default async function DataHubPage() {
             <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
               <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Datasets</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">{datasets.length}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{staleDatasets} need attention</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {staleDatasets} need attention
+              </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
               <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Refresh jobs</p>
@@ -464,6 +478,14 @@ export default async function DataHubPage() {
               {datasets.map((dataset) => {
                 const connector = dataset.connector_id ? connectorMap.get(dataset.connector_id) : null;
                 const links = datasetLinksByDataset.get(dataset.id) ?? [];
+                const overlayReady =
+                  dataset.status === "ready" &&
+                  ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(dataset.geography_scope);
+                const thematicReady =
+                  dataset.status === "ready" &&
+                  dataset.geography_scope === "tract" &&
+                  dataset.geometry_attachment === "analysis_tracts" &&
+                  Boolean(dataset.thematic_metric_key);
 
                 return (
                   <div key={dataset.id} className="rounded-[24px] border border-border/80 bg-background/80 p-5">
@@ -473,6 +495,10 @@ export default async function DataHubPage() {
                           <StatusBadge tone={toneForDatasetStatus(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
                           <StatusBadge tone="info">{titleize(dataset.geography_scope)}</StatusBadge>
                           <StatusBadge tone="neutral">{titleize(dataset.refresh_cadence)}</StatusBadge>
+                          <StatusBadge tone={overlayReady ? "success" : "neutral"}>
+                            {overlayReady ? "Overlay-ready" : "Coverage-only"}
+                          </StatusBadge>
+                          {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold tracking-tight text-foreground">{dataset.name}</h3>
@@ -488,6 +514,14 @@ export default async function DataHubPage() {
                       {dataset.vintage_label ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Vintage: {dataset.vintage_label}</span> : null}
                       {dataset.license_label ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">License: {dataset.license_label}</span> : null}
                       {dataset.row_count !== null ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Rows: {dataset.row_count.toLocaleString()}</span> : null}
+                      {dataset.geometry_attachment !== "none" ? (
+                        <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Geometry: {titleize(dataset.geometry_attachment)}</span>
+                      ) : null}
+                      {dataset.thematic_metric_key ? (
+                        <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">
+                          Metric: {dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)}
+                        </span>
+                      ) : null}
                     </div>
 
                     {links.length > 0 ? (
@@ -511,7 +545,17 @@ export default async function DataHubPage() {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      <div className="rounded-2xl border border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground">Overlay posture</p>
+                        <p className="mt-2">
+                          {thematicReady
+                            ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
+                            : overlayReady
+                              ? "Drawable in Analysis Studio as a coverage footprint."
+                              : "Registry only for now; not drawable in Analysis Studio yet."}
+                        </p>
+                      </div>
                       <div className="rounded-2xl border border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">Provenance</p>
                         <p className="mt-2">{dataset.citation_text || dataset.source_url || "No provenance note captured yet."}</p>
