@@ -67,6 +67,9 @@ export function DataHubRecordComposer({
   const [datasetRelationshipType, setDatasetRelationshipType] = useState("reference");
   const [datasetStatus, setDatasetStatus] = useState("draft");
   const [datasetGeographyScope, setDatasetGeographyScope] = useState("corridor");
+  const [datasetGeometryAttachment, setDatasetGeometryAttachment] = useState("none");
+  const [datasetThematicMetricKey, setDatasetThematicMetricKey] = useState("");
+  const [datasetThematicMetricLabel, setDatasetThematicMetricLabel] = useState("");
   const [datasetCoverageSummary, setDatasetCoverageSummary] = useState("");
   const [datasetVintageLabel, setDatasetVintageLabel] = useState("");
   const [datasetSourceUrl, setDatasetSourceUrl] = useState("");
@@ -163,6 +166,9 @@ export function DataHubRecordComposer({
         relationshipType: datasetProjectId ? datasetRelationshipType : undefined,
         status: datasetStatus,
         geographyScope: datasetGeographyScope,
+        geometryAttachment: datasetGeometryAttachment,
+        thematicMetricKey: datasetGeometryAttachment === "analysis_tracts" ? datasetThematicMetricKey || undefined : undefined,
+        thematicMetricLabel: datasetGeometryAttachment === "analysis_tracts" ? datasetThematicMetricLabel || undefined : undefined,
         coverageSummary: datasetCoverageSummary,
         vintageLabel: datasetVintageLabel,
         sourceUrl: datasetSourceUrl,
@@ -181,6 +187,9 @@ export function DataHubRecordComposer({
       setDatasetRelationshipType("reference");
       setDatasetStatus("draft");
       setDatasetGeographyScope("corridor");
+      setDatasetGeometryAttachment("none");
+      setDatasetThematicMetricKey("");
+      setDatasetThematicMetricLabel("");
       setDatasetCoverageSummary("");
       setDatasetVintageLabel("");
       setDatasetSourceUrl("");
@@ -535,11 +544,60 @@ export function DataHubRecordComposer({
               </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label htmlFor="dataset-coverage" className="text-sm font-medium">
+                  Coverage summary
+                </label>
+                <Input id="dataset-coverage" value={datasetCoverageSummary} onChange={(event) => setDatasetCoverageSummary(event.target.value)} placeholder="Nevada County focus areas + comparator geographies" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="dataset-geometry-attachment" className="text-sm font-medium">
+                  Geometry attachment
+                </label>
+                <select
+                  id="dataset-geometry-attachment"
+                  className={selectClassName}
+                  value={datasetGeometryAttachment}
+                  onChange={(event) => setDatasetGeometryAttachment(event.target.value)}
+                >
+                  <option value="none">Coverage only</option>
+                  <option value="analysis_tracts">Bind to analysis tracts</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="dataset-thematic-metric" className="text-sm font-medium">
+                  Thematic metric
+                </label>
+                <select
+                  id="dataset-thematic-metric"
+                  className={selectClassName}
+                  value={datasetThematicMetricKey}
+                  onChange={(event) => setDatasetThematicMetricKey(event.target.value)}
+                  disabled={datasetGeometryAttachment !== "analysis_tracts"}
+                >
+                  <option value="">Select metric</option>
+                  <option value="pctMinority">Minority share</option>
+                  <option value="pctBelowPoverty">Poverty share</option>
+                  <option value="medianIncome">Median income</option>
+                  <option value="isDisadvantaged">Disadvantaged flag</option>
+                  <option value="zeroVehiclePct">Zero-vehicle households</option>
+                  <option value="transitCommutePct">Transit commute share</option>
+                </select>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <label htmlFor="dataset-coverage" className="text-sm font-medium">
-                Coverage summary
+              <label htmlFor="dataset-thematic-label" className="text-sm font-medium">
+                Thematic label (optional)
               </label>
-              <Input id="dataset-coverage" value={datasetCoverageSummary} onChange={(event) => setDatasetCoverageSummary(event.target.value)} placeholder="Nevada County focus areas + comparator geographies" />
+              <Input
+                id="dataset-thematic-label"
+                value={datasetThematicMetricLabel}
+                onChange={(event) => setDatasetThematicMetricLabel(event.target.value)}
+                placeholder="Equity disadvantage screening / Transit dependence"
+                disabled={datasetGeometryAttachment !== "analysis_tracts"}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">

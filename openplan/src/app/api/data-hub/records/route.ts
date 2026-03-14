@@ -37,6 +37,11 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     geographyScope: z
       .enum(["none", "point", "route", "corridor", "tract", "county", "region", "statewide", "national"])
       .optional(),
+    geometryAttachment: z.enum(["none", "analysis_tracts"]).optional(),
+    thematicMetricKey: z
+      .enum(["pctMinority", "pctBelowPoverty", "medianIncome", "isDisadvantaged", "zeroVehiclePct", "transitCommutePct"])
+      .optional(),
+    thematicMetricLabel: z.string().trim().max(120).optional(),
     coverageSummary: z.string().trim().max(500).optional(),
     vintageLabel: z.string().trim().max(120).optional(),
     sourceUrl: z.string().trim().max(500).optional(),
@@ -204,6 +209,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (parsed.data.recordType === "dataset") {
+      if (parsed.data.geometryAttachment === "analysis_tracts" && parsed.data.geographyScope !== "tract") {
+        return NextResponse.json(
+          { error: "Tract geometry attachments require geography scope = tract" },
+          { status: 400 }
+        );
+      }
+
+      if (parsed.data.geometryAttachment === "analysis_tracts" && !parsed.data.thematicMetricKey) {
+        return NextResponse.json(
+          { error: "Tract geometry attachments require a thematic metric key" },
+          { status: 400 }
+        );
+      }
+
       if (parsed.data.connectorId) {
         const { data: connectors, error: connectorError } = await supabase
           .from("data_connectors")
@@ -262,6 +281,9 @@ export async function POST(request: NextRequest) {
           name: parsed.data.name,
           status: parsed.data.status ?? "draft",
           geography_scope: parsed.data.geographyScope ?? "none",
+          geometry_attachment: parsed.data.geometryAttachment ?? "none",
+          thematic_metric_key: parsed.data.thematicMetricKey ?? null,
+          thematic_metric_label: parsed.data.thematicMetricLabel?.trim() || null,
           coverage_summary: parsed.data.coverageSummary?.trim() || null,
           vintage_label: parsed.data.vintageLabel?.trim() || null,
           source_url: parsed.data.sourceUrl?.trim() || null,
@@ -276,7 +298,7 @@ export async function POST(request: NextRequest) {
           created_by: user.id,
         })
         .select(
-          "id, workspace_id, connector_id, name, status, geography_scope, coverage_summary, vintage_label, source_url, license_label, citation_text, schema_version, checksum, row_count, refresh_cadence, last_refreshed_at, notes, created_at, updated_at"
+          "id, workspace_id, connector_id, name, status, geography_scope, geometry_attachment, thematic_metric_key, thematic_metric_label, coverage_summary, vintage_label, source_url, license_label, citation_text, schema_version, checksum, row_count, refresh_cadence, last_refreshed_at, notes, created_at, updated_at"
         )
         .single();
 

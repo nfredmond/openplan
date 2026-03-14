@@ -116,7 +116,10 @@ describe("POST /api/data-hub/records", () => {
         connector_id: "33333333-3333-4333-8333-333333333333",
         name: "Nevada County ACS equity indicators",
         status: "ready",
-        geography_scope: "corridor",
+        geography_scope: "tract",
+        geometry_attachment: "analysis_tracts",
+        thematic_metric_key: "pctBelowPoverty",
+        thematic_metric_label: "Poverty share",
         coverage_summary: "Nevada County corridors",
         vintage_label: "ACS 2023",
         source_url: "https://api.census.gov/data/2023/acs/acs5",
@@ -237,7 +240,10 @@ describe("POST /api/data-hub/records", () => {
         projectId: "55555555-5555-4555-8555-555555555555",
         relationshipType: "primary_input",
         status: "ready",
-        geographyScope: "corridor",
+        geographyScope: "tract",
+        geometryAttachment: "analysis_tracts",
+        thematicMetricKey: "pctBelowPoverty",
+        thematicMetricLabel: "Poverty share",
         coverageSummary: "Nevada County corridors",
         vintageLabel: "ACS 2023",
         sourceUrl: "https://api.census.gov/data/2023/acs/acs5",
@@ -275,6 +281,9 @@ describe("POST /api/data-hub/records", () => {
         connector_id: "33333333-3333-4333-8333-333333333333",
         name: "Nevada County ACS equity indicators",
         status: "ready",
+        geography_scope: "tract",
+        geometry_attachment: "analysis_tracts",
+        thematic_metric_key: "pctBelowPoverty",
       })
     );
 

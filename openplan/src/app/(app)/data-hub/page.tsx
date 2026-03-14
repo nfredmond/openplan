@@ -55,6 +55,9 @@ type DatasetRow = {
   name: string;
   status: string;
   geography_scope: string;
+  geometry_attachment: string;
+  thematic_metric_key: string | null;
+  thematic_metric_label: string | null;
   coverage_summary: string | null;
   vintage_label: string | null;
   source_url: string | null;
@@ -203,7 +206,7 @@ export default async function DataHubPage() {
     supabase
       .from("data_datasets")
       .select(
-        "id, connector_id, name, status, geography_scope, coverage_summary, vintage_label, source_url, license_label, citation_text, schema_version, checksum, row_count, refresh_cadence, last_refreshed_at, notes, updated_at"
+        "id, connector_id, name, status, geography_scope, geometry_attachment, thematic_metric_key, thematic_metric_label, coverage_summary, vintage_label, source_url, license_label, citation_text, schema_version, checksum, row_count, refresh_cadence, last_refreshed_at, notes, updated_at"
       )
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false }),

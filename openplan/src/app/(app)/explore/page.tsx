@@ -136,11 +136,15 @@ type AnalysisContextResponse = {
     name: string;
     status: string;
     geographyScope: string;
+    geometryAttachment: string;
+    thematicMetricKey: string | null;
+    thematicMetricLabel: string | null;
     relationshipType: string;
     vintageLabel: string | null;
     lastRefreshedAt: string | null;
     connectorLabel: string | null;
     overlayReady: boolean;
+    thematicReady: boolean;
   }>;
   migrationPending: boolean;
   counts: {
@@ -285,6 +289,111 @@ function canRenderDatasetCoverageOverlay(
   }
 
   return ["tract", "corridor", "route"].includes(dataset.geographyScope);
+}
+
+function canRenderDatasetThematicOverlay(
+  dataset: AnalysisContextResponse["linkedDatasets"][number] | null | undefined
+): boolean {
+  return Boolean(dataset?.thematicReady && dataset.geographyScope === "tract");
+}
+
+function buildThematicOverlayPaintExpression(metricKey: string | null | undefined): ExpressionSpecification {
+  if (metricKey === "pctBelowPoverty") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "pctBelowPoverty"]], 0],
+      0,
+      "#0b3b2e",
+      10,
+      "#15803d",
+      20,
+      "#65a30d",
+      30,
+      "#ca8a04",
+      45,
+      "#b91c1c",
+    ];
+  }
+
+  if (metricKey === "medianIncome") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
+      0,
+      "#7f1d1d",
+      45000,
+      "#b45309",
+      70000,
+      "#0f766e",
+      100000,
+      "#0ea5e9",
+      150000,
+      "#e0f2fe",
+    ];
+  }
+
+  if (metricKey === "isDisadvantaged") {
+    return [
+      "case",
+      ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],
+      "#ef4444",
+      "#1f2937",
+    ];
+  }
+
+  if (metricKey === "zeroVehiclePct") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "zeroVehiclePct"]], 0],
+      0,
+      "#172554",
+      4,
+      "#1d4ed8",
+      8,
+      "#0f766e",
+      12,
+      "#f59e0b",
+      18,
+      "#dc2626",
+    ];
+  }
+
+  if (metricKey === "transitCommutePct") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "transitCommutePct"]], 0],
+      0,
+      "#1f2937",
+      2,
+      "#2563eb",
+      5,
+      "#0ea5e9",
+      8,
+      "#10b981",
+      12,
+      "#f59e0b",
+    ];
+  }
+
+  return [
+    "interpolate",
+    ["linear"],
+    ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
+    0,
+    "#123047",
+    30,
+    "#1d4ed8",
+    55,
+    "#2563eb",
+    75,
+    "#0f766e",
+    100,
+    "#34d399",
+  ];
 }
 
 function buildCrashLayerFilter(
@@ -857,6 +966,15 @@ export default function ExplorePage() {
     const selectedDataset =
       analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null;
 
+    if (mapRef.current.getLayer("dataset-overlay-fill")) {
+      mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-color", "#f97316");
+      mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.12);
+    }
+    if (mapRef.current.getLayer("dataset-overlay-line")) {
+      mapRef.current.setPaintProperty("dataset-overlay-line", "line-color", "#fb923c");
+      mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1.2, 1]);
+    }
+
     if (!selectedDataset || !canRenderDatasetCoverageOverlay(selectedDataset)) {
       source.setData({
         type: "FeatureCollection",
@@ -874,6 +992,8 @@ export default function ExplorePage() {
             (feature.properties as Record<string, unknown>).kind === "census_tract"
         ) ?? [];
 
+      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
+
       source.setData({
         type: "FeatureCollection",
         features: tractFeatures.map((feature) => ({
@@ -882,10 +1002,26 @@ export default function ExplorePage() {
             ...(feature.properties ?? {}),
             overlayDatasetName: selectedDataset.name,
             overlayDatasetId: selectedDataset.datasetId,
-            overlayMode: "coverage_footprint",
+            overlayMode,
+            overlayMetricKey: selectedDataset.thematicMetricKey,
           },
         })),
       });
+
+      if (overlayMode === "thematic_overlay") {
+        if (mapRef.current.getLayer("dataset-overlay-fill")) {
+          mapRef.current.setPaintProperty(
+            "dataset-overlay-fill",
+            "fill-color",
+            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+          );
+          mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.42);
+        }
+        if (mapRef.current.getLayer("dataset-overlay-line")) {
+          mapRef.current.setPaintProperty("dataset-overlay-line", "line-color", "#f8fafc");
+          mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
+        }
+      }
       return;
     }
 
@@ -1917,7 +2053,11 @@ export default function ExplorePage() {
                   <div className="mt-2 rounded-xl border border-white/8 bg-slate-950/30 px-2.5 py-2 text-xs text-slate-200/88">
                     <p className="font-medium text-white">{activeDatasetOverlay.name}</p>
                     <p className="mt-1 text-slate-300/76">
-                      {titleize(activeDatasetOverlay.geographyScope)} coverage footprint · {activeDatasetOverlay.connectorLabel ?? "Manual source"}
+                      {titleize(activeDatasetOverlay.geographyScope)}
+                      {activeDatasetOverlay.thematicReady
+                        ? ` thematic overlay · ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)}`
+                        : " coverage footprint"}
+                      {` · ${activeDatasetOverlay.connectorLabel ?? "Manual source"}`}
                     </p>
                   </div>
                 ) : (
@@ -2019,7 +2159,9 @@ export default function ExplorePage() {
                   </div>
                   <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
                   <p className="mt-1 text-xs text-slate-200/78">
-                    {titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.
+                    {activeDatasetOverlay.thematicReady
+                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real tract geometry.`
+                      : `${titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.`}
                   </p>
                 </div>
               ) : null}
@@ -2257,6 +2399,7 @@ export default function ExplorePage() {
                         {analysisContext.linkedDatasets.slice(0, 4).map((dataset) => {
                           const canRenderCoverage = canRenderDatasetCoverageOverlay(dataset);
                           const isActiveOverlay = activeDatasetOverlayId === dataset.datasetId;
+                          const thematicReady = canRenderDatasetThematicOverlay(dataset);
 
                           return (
                             <div key={dataset.datasetId} className="rounded-xl border border-border/80 bg-card p-3">
@@ -2266,6 +2409,7 @@ export default function ExplorePage() {
                                 <StatusBadge tone={dataset.overlayReady ? "success" : "neutral"}>
                                   {dataset.overlayReady ? "Overlay-ready" : "Registry-only"}
                                 </StatusBadge>
+                                {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
                               </div>
                               <p className="mt-2 text-sm font-medium text-foreground">{dataset.name}</p>
                               <p className="mt-1 text-xs text-muted-foreground">
@@ -2285,7 +2429,15 @@ export default function ExplorePage() {
                                     )
                                   }
                                 >
-                                  {isActiveOverlay ? "Hide coverage" : canRenderCoverage ? "Show coverage" : "Not drawable yet"}
+                                  {isActiveOverlay
+                                    ? thematicReady
+                                      ? "Hide thematic overlay"
+                                      : "Hide coverage"
+                                    : canRenderCoverage
+                                      ? thematicReady
+                                        ? "Show thematic overlay"
+                                        : "Show coverage"
+                                      : "Not drawable yet"}
                                 </Button>
                                 {dataset.overlayReady && !canRenderCoverage ? (
                                   <p className="text-[0.72rem] text-muted-foreground">
@@ -2293,7 +2445,9 @@ export default function ExplorePage() {
                                   </p>
                                 ) : canRenderCoverage ? (
                                   <p className="text-[0.72rem] text-muted-foreground">
-                                    Draws a coverage footprint only — not dataset values.
+                                    {thematicReady
+                                      ? `Uses real tract geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
+                                      : "Draws a coverage footprint only — not dataset values."}
                                   </p>
                                 ) : null}
                               </div>

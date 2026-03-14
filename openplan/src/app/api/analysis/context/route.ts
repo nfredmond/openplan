@@ -32,6 +32,9 @@ type DatasetRow = {
   name: string;
   status: string;
   geography_scope: string;
+  geometry_attachment: string;
+  thematic_metric_key: string | null;
+  thematic_metric_label: string | null;
   vintage_label: string | null;
   last_refreshed_at: string | null;
 };
@@ -256,7 +259,7 @@ export async function GET(request: NextRequest) {
     const datasetsResult = linkedDatasetIds.length
       ? await supabase
           .from("data_datasets")
-          .select("id, connector_id, name, status, geography_scope, vintage_label, last_refreshed_at")
+          .select("id, connector_id, name, status, geography_scope, geometry_attachment, thematic_metric_key, thematic_metric_label, vintage_label, last_refreshed_at")
           .in("id", linkedDatasetIds)
       : { data: [], error: null };
 
@@ -327,11 +330,20 @@ export async function GET(request: NextRequest) {
             const dataset = datasetMap.get(link.dataset_id);
             if (!dataset) return null;
 
+            const thematicReady =
+              dataset.status === "ready" &&
+              dataset.geography_scope === "tract" &&
+              dataset.geometry_attachment === "analysis_tracts" &&
+              Boolean(dataset.thematic_metric_key);
+
             return {
               datasetId: dataset.id,
               name: dataset.name,
               status: dataset.status,
               geographyScope: dataset.geography_scope,
+              geometryAttachment: dataset.geometry_attachment,
+              thematicMetricKey: dataset.thematic_metric_key,
+              thematicMetricLabel: dataset.thematic_metric_label,
               relationshipType: link.relationship_type,
               vintageLabel: dataset.vintage_label,
               lastRefreshedAt: dataset.last_refreshed_at,
@@ -341,6 +353,7 @@ export async function GET(request: NextRequest) {
                 ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
                   dataset.geography_scope
                 ),
+              thematicReady,
             };
           })
           .filter((item): item is NonNullable<typeof item> => Boolean(item));

@@ -127,7 +127,10 @@ describe("GET /api/analysis/context", () => {
           connector_id: "66666666-6666-4666-8666-666666666666",
           name: "Nevada County Equity Indicators",
           status: "ready",
-          geography_scope: "corridor",
+          geography_scope: "tract",
+          geometry_attachment: "analysis_tracts",
+          thematic_metric_key: "pctBelowPoverty",
+          thematic_metric_label: "Poverty share",
           vintage_label: "ACS 2023",
           last_refreshed_at: "2026-03-13T15:00:00.000Z",
         },
@@ -219,7 +222,13 @@ describe("GET /api/analysis/context", () => {
     const payload = (await response.json()) as {
       project: { id: string; name: string; planType: string } | null;
       counts: { linkedDatasets: number; overlayReadyDatasets: number; recentRuns: number };
-      linkedDatasets: Array<{ name: string; connectorLabel: string | null; overlayReady: boolean }>;
+      linkedDatasets: Array<{
+        name: string;
+        connectorLabel: string | null;
+        overlayReady: boolean;
+        thematicReady: boolean;
+        thematicMetricKey: string | null;
+      }>;
     };
 
     expect(payload.project).toMatchObject({
@@ -238,6 +247,8 @@ describe("GET /api/analysis/context", () => {
       name: "Nevada County Equity Indicators",
       connectorLabel: "Census ACS 5-Year",
       overlayReady: true,
+      thematicReady: true,
+      thematicMetricKey: "pctBelowPoverty",
     });
   });
 
