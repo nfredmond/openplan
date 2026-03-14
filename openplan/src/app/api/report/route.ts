@@ -147,15 +147,75 @@ function getTemplateMeta(template: "atp" | "ss4a") {
   };
 }
 
+function titleize(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .replace(/[_-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatCrashUserFilterLabel(value: string | undefined): string {
+  if (value === "vru") return "Ped or bike";
+  if (value === "pedestrian") return "Ped only";
+  if (value === "bicycle") return "Bike only";
+  return "All users";
+}
+
+function formatGeometryAttachmentLabel(value: string | null | undefined): string {
+  if (value === "analysis_tracts") return "Analysis tracts";
+  if (value === "analysis_corridor") return "Analysis corridor";
+  if (value === "analysis_crash_points") return "Analysis crash points";
+  if (!value || value === "none") return "None";
+  return titleize(value);
+}
+
+function formatOverlayModeLabel(value: string | null | undefined): string {
+  if (value === "thematic_overlay") return "Thematic overlay";
+  if (value === "coverage_footprint") return "Coverage footprint";
+  return "Unknown";
+}
+
 function buildMapViewSummary(
   mapViewState: Record<string, unknown> | null | undefined
 ): string[] {
-  const normalized = normalizeMapViewState(mapViewState);
-  if (!normalized) {
+  if (!mapViewState) {
     return [];
   }
 
-  return summarizeMapViewState(normalized).map((item) => `${item.label}: ${item.value}`);
+  const overlayContext =
+    mapViewState.activeOverlayContext &&
+    typeof mapViewState.activeOverlayContext === "object" &&
+    !Array.isArray(mapViewState.activeOverlayContext)
+      ? (mapViewState.activeOverlayContext as Record<string, unknown>)
+      : null;
+
+  const overlayValue =
+    typeof overlayContext?.datasetName === "string"
+      ? overlayContext.overlayMode === "thematic_overlay"
+        ? `${overlayContext.datasetName} · ${typeof overlayContext.thematicMetricLabel === "string" && overlayContext.thematicMetricLabel.length > 0 ? overlayContext.thematicMetricLabel : titleize(typeof overlayContext.thematicMetricKey === "string" ? overlayContext.thematicMetricKey : undefined)}`
+        : overlayContext.datasetName
+      : typeof mapViewState.activeDatasetOverlayId === "string"
+        ? "Selected"
+        : "None";
+
+  const rows = [
+    `Tract theme: ${titleize(typeof mapViewState.tractMetric === "string" ? mapViewState.tractMetric : "unknown")}`,
+    `Census tracts: ${mapViewState.showTracts === false ? "Hidden" : "Visible"}`,
+    `SWITRS lane: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
+    `Crash severity filter: ${titleize(typeof mapViewState.crashSeverityFilter === "string" ? mapViewState.crashSeverityFilter : "all")}`,
+    `Crash user filter: ${formatCrashUserFilterLabel(typeof mapViewState.crashUserFilter === "string" ? mapViewState.crashUserFilter : "all")}`,
+    `Project overlay: ${overlayValue}`,
+  ];
+
+  if (overlayContext) {
+    rows.push(`Overlay mode: ${formatOverlayModeLabel(typeof overlayContext.overlayMode === "string" ? overlayContext.overlayMode : undefined)}`);
+    rows.push(`Overlay geometry: ${formatGeometryAttachmentLabel(typeof overlayContext.geometryAttachment === "string" ? overlayContext.geometryAttachment : null)}`);
+  }
+
+  return rows;
 }
 
 function buildPdf(
