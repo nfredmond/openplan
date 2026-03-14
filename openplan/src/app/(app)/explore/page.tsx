@@ -2018,6 +2018,97 @@ export default function ExplorePage() {
     }
   }, [analysisContext, activeDatasetOverlayId]);
 
+  const activeOverlayLegend = useMemo<{
+    label: string;
+    note: string;
+    items: TractLegendItem[];
+  } | null>(() => {
+    if (!activeDatasetOverlay?.thematicReady) {
+      return null;
+    }
+
+    if (activeDatasetOverlay.geometryAttachment === "analysis_crash_points") {
+      if (activeDatasetOverlay.thematicMetricKey === "pedestrianInvolved") {
+        return {
+          label: "Pedestrian involvement",
+          note: "Crash-point overlay colored by whether the collision involved a pedestrian.",
+          items: [
+            { label: "Pedestrian involved", color: "#ec4899" },
+            { label: "No pedestrian flag", color: "#334155" },
+          ],
+        };
+      }
+
+      if (activeDatasetOverlay.thematicMetricKey === "bicyclistInvolved") {
+        return {
+          label: "Bicyclist involvement",
+          note: "Crash-point overlay colored by whether the collision involved a bicyclist.",
+          items: [
+            { label: "Bicyclist involved", color: "#22c55e" },
+            { label: "No bicyclist flag", color: "#334155" },
+          ],
+        };
+      }
+
+      if (activeDatasetOverlay.thematicMetricKey === "fatalCount") {
+        return {
+          label: "Fatality count",
+          note: "Crash-point overlay scaled and colored by fatality count on the collision record.",
+          items: [
+            { label: "0", color: "#fbbf24" },
+            { label: "1", color: "#f97316" },
+            { label: "2+", color: "#dc2626" },
+          ],
+        };
+      }
+
+      if (activeDatasetOverlay.thematicMetricKey === "injuryCount") {
+        return {
+          label: "Injury count",
+          note: "Crash-point overlay scaled and colored by injury count on the collision record.",
+          items: [
+            { label: "0", color: "#38bdf8" },
+            { label: "1–2", color: "#2563eb" },
+            { label: "3+", color: "#172554" },
+          ],
+        };
+      }
+
+      return {
+        label: "Crash severity bucket",
+        note: "Crash-point overlay colored by SWITRS severity bucket.",
+        items: [
+          { label: "Fatal", color: "#ef4444" },
+          { label: "Severe injury", color: "#fb923c" },
+          { label: "Injury", color: "#facc15" },
+        ],
+      };
+    }
+
+    if (activeDatasetOverlay.geometryAttachment === "analysis_corridor") {
+      return {
+        label: activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey),
+        note: "Corridor overlay colored by real run-level corridor scoring already present in the current analysis.",
+        items: [
+          { label: "Low", color: "#7f1d1d" },
+          { label: "Moderate", color: "#f59e0b" },
+          { label: "High", color: "#10b981" },
+          { label: "Very high", color: "#0ea5e9" },
+        ],
+      };
+    }
+
+    return {
+      label: activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey),
+      note: "Tract overlay colored by the bound thematic metric on real census tract geometry.",
+      items: [
+        { label: "Low", color: "#123047" },
+        { label: "Mid", color: "#2563eb" },
+        { label: "High", color: "#34d399" },
+      ],
+    };
+  }, [activeDatasetOverlay]);
+
   const tractLegend = useMemo<{
     label: string;
     note: string;
@@ -2348,8 +2439,10 @@ export default function ExplorePage() {
               {activeDatasetOverlay ? (
                 <div className="rounded-2xl border border-orange-300/15 bg-orange-400/8 px-3 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-100/90">Active coverage overlay</span>
-                    <StatusBadge tone="warning">Coverage footprint</StatusBadge>
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-100/90">
+                      {activeDatasetOverlay.thematicReady ? "Active thematic overlay" : "Active coverage overlay"}
+                    </span>
+                    <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage footprint"}</StatusBadge>
                   </div>
                   <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
                   <p className="mt-1 text-xs text-slate-200/78">
@@ -2357,6 +2450,25 @@ export default function ExplorePage() {
                       ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeDatasetOverlay.geometryAttachment === "analysis_corridor" ? "corridor" : activeDatasetOverlay.geometryAttachment === "analysis_crash_points" ? "crash-point" : "tract"} geometry.`
                       : `${titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.`}
                   </p>
+                  {activeOverlayLegend ? (
+                    <div className="mt-3 rounded-xl border border-white/8 bg-slate-950/30 px-3 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82">{activeOverlayLegend.label}</span>
+                        <StatusBadge tone="warning">Legend</StatusBadge>
+                      </div>
+                      <p className="mt-2 text-xs text-slate-300/76">{activeOverlayLegend.note}</p>
+                      <div className="mt-3 space-y-2">
+                        {activeOverlayLegend.items.map((item) => (
+                          <div key={`${activeOverlayLegend.label}-${item.label}`} className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
+                            <span className="inline-flex items-center gap-2">
+                              <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
+                              {item.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
