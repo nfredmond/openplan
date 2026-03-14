@@ -167,8 +167,14 @@ export function DataHubRecordComposer({
         status: datasetStatus,
         geographyScope: datasetGeographyScope,
         geometryAttachment: datasetGeometryAttachment,
-        thematicMetricKey: datasetGeometryAttachment === "analysis_tracts" ? datasetThematicMetricKey || undefined : undefined,
-        thematicMetricLabel: datasetGeometryAttachment === "analysis_tracts" ? datasetThematicMetricLabel || undefined : undefined,
+        thematicMetricKey:
+          datasetGeometryAttachment === "analysis_tracts" || datasetGeometryAttachment === "analysis_corridor"
+            ? datasetThematicMetricKey || undefined
+            : undefined,
+        thematicMetricLabel:
+          datasetGeometryAttachment === "analysis_tracts" || datasetGeometryAttachment === "analysis_corridor"
+            ? datasetThematicMetricLabel || undefined
+            : undefined,
         coverageSummary: datasetCoverageSummary,
         vintageLabel: datasetVintageLabel,
         sourceUrl: datasetSourceUrl,
@@ -563,6 +569,7 @@ export function DataHubRecordComposer({
                 >
                   <option value="none">Coverage only</option>
                   <option value="analysis_tracts">Bind to analysis tracts</option>
+                  <option value="analysis_corridor">Bind to analysis corridor</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -574,15 +581,26 @@ export function DataHubRecordComposer({
                   className={selectClassName}
                   value={datasetThematicMetricKey}
                   onChange={(event) => setDatasetThematicMetricKey(event.target.value)}
-                  disabled={datasetGeometryAttachment !== "analysis_tracts"}
+                  disabled={datasetGeometryAttachment === "none"}
                 >
                   <option value="">Select metric</option>
-                  <option value="pctMinority">Minority share</option>
-                  <option value="pctBelowPoverty">Poverty share</option>
-                  <option value="medianIncome">Median income</option>
-                  <option value="isDisadvantaged">Disadvantaged flag</option>
-                  <option value="zeroVehiclePct">Zero-vehicle households</option>
-                  <option value="transitCommutePct">Transit commute share</option>
+                  {datasetGeometryAttachment === "analysis_corridor" ? (
+                    <>
+                      <option value="overallScore">Overall score</option>
+                      <option value="accessibilityScore">Accessibility score</option>
+                      <option value="safetyScore">Safety score</option>
+                      <option value="equityScore">Equity score</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="pctMinority">Minority share</option>
+                      <option value="pctBelowPoverty">Poverty share</option>
+                      <option value="medianIncome">Median income</option>
+                      <option value="isDisadvantaged">Disadvantaged flag</option>
+                      <option value="zeroVehiclePct">Zero-vehicle households</option>
+                      <option value="transitCommutePct">Transit commute share</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>
@@ -595,8 +613,8 @@ export function DataHubRecordComposer({
                 id="dataset-thematic-label"
                 value={datasetThematicMetricLabel}
                 onChange={(event) => setDatasetThematicMetricLabel(event.target.value)}
-                placeholder="Equity disadvantage screening / Transit dependence"
-                disabled={datasetGeometryAttachment !== "analysis_tracts"}
+                placeholder={datasetGeometryAttachment === "analysis_corridor" ? "Safety score / Corridor equity score" : "Equity disadvantage screening / Transit dependence"}
+                disabled={datasetGeometryAttachment === "none"}
               />
             </div>
 

@@ -294,7 +294,10 @@ function canRenderDatasetCoverageOverlay(
 function canRenderDatasetThematicOverlay(
   dataset: AnalysisContextResponse["linkedDatasets"][number] | null | undefined
 ): boolean {
-  return Boolean(dataset?.thematicReady && dataset.geographyScope === "tract");
+  return Boolean(
+    dataset?.thematicReady &&
+      (dataset.geographyScope === "tract" || dataset.geographyScope === "corridor" || dataset.geographyScope === "route")
+  );
 }
 
 function buildThematicOverlayPaintExpression(metricKey: string | null | undefined): ExpressionSpecification {
@@ -376,6 +379,24 @@ function buildThematicOverlayPaintExpression(metricKey: string | null | undefine
       "#10b981",
       12,
       "#f59e0b",
+    ];
+  }
+
+  if (metricKey === "overallScore" || metricKey === "accessibilityScore" || metricKey === "safetyScore" || metricKey === "equityScore") {
+    return [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", metricKey]], 0],
+      0,
+      "#7f1d1d",
+      40,
+      "#b45309",
+      60,
+      "#f59e0b",
+      75,
+      "#10b981",
+      90,
+      "#0ea5e9",
     ];
   }
 
@@ -1026,6 +1047,8 @@ export default function ExplorePage() {
     }
 
     if (selectedDataset.geographyScope === "corridor" || selectedDataset.geographyScope === "route") {
+      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
+
       source.setData({
         type: "FeatureCollection",
         features: corridorGeojson
@@ -1037,12 +1060,37 @@ export default function ExplorePage() {
                   kind: "dataset_coverage_corridor",
                   overlayDatasetName: selectedDataset.name,
                   overlayDatasetId: selectedDataset.datasetId,
-                  overlayMode: "coverage_footprint",
+                  overlayMode,
+                  overlayMetricKey: selectedDataset.thematicMetricKey,
+                  overallScore: analysisResult?.metrics.overallScore ?? null,
+                  accessibilityScore: analysisResult?.metrics.accessibilityScore ?? null,
+                  safetyScore: analysisResult?.metrics.safetyScore ?? null,
+                  equityScore: analysisResult?.metrics.equityScore ?? null,
                 },
               },
             ]
           : [],
       });
+
+      if (overlayMode === "thematic_overlay") {
+        if (mapRef.current.getLayer("dataset-overlay-fill")) {
+          mapRef.current.setPaintProperty(
+            "dataset-overlay-fill",
+            "fill-color",
+            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+          );
+          mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.24);
+        }
+        if (mapRef.current.getLayer("dataset-overlay-line")) {
+          mapRef.current.setPaintProperty(
+            "dataset-overlay-line",
+            "line-color",
+            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+          );
+          mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
+          mapRef.current.setPaintProperty("dataset-overlay-line", "line-width", ["interpolate", ["linear"], ["zoom"], 4, 3, 11, 6]);
+        }
+      }
       return;
     }
 
@@ -2080,7 +2128,7 @@ export default function ExplorePage() {
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-2 text-xs text-slate-300/74">Choose a drawable linked dataset from the Project Context panel to display its coverage footprint.</p>
+                  <p className="mt-2 text-xs text-slate-300/74">Choose a drawable linked dataset from the Project Context panel to display its coverage footprint or thematic overlay.</p>
                 )}
               </div>
             </div>
@@ -2179,7 +2227,7 @@ export default function ExplorePage() {
                   <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
                   <p className="mt-1 text-xs text-slate-200/78">
                     {activeDatasetOverlay.thematicReady
-                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real tract geometry.`
+                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeDatasetOverlay.geometryAttachment === "analysis_corridor" ? "corridor" : "tract"} geometry.`
                       : `${titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.`}
                   </p>
                 </div>
@@ -2465,7 +2513,7 @@ export default function ExplorePage() {
                                 ) : canRenderCoverage ? (
                                   <p className="text-[0.72rem] text-muted-foreground">
                                     {thematicReady
-                                      ? `Uses real tract geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
+                                      ? `Uses real ${dataset.geometryAttachment === "analysis_corridor" ? "corridor" : "tract"} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
                                       : "Draws a coverage footprint only — not dataset values."}
                                   </p>
                                 ) : null}

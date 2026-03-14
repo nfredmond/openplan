@@ -332,9 +332,10 @@ export async function GET(request: NextRequest) {
 
             const thematicReady =
               dataset.status === "ready" &&
-              dataset.geography_scope === "tract" &&
-              dataset.geometry_attachment === "analysis_tracts" &&
-              Boolean(dataset.thematic_metric_key);
+              Boolean(dataset.thematic_metric_key) &&
+              ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
+                ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
+                  dataset.geometry_attachment === "analysis_corridor"));
 
             return {
               datasetId: dataset.id,

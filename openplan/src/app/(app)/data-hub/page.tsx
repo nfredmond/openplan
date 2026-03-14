@@ -271,9 +271,10 @@ export default async function DataHubPage() {
   const thematicReadyDatasets = datasets.filter(
     (dataset) =>
       dataset.status === "ready" &&
-      dataset.geography_scope === "tract" &&
-      dataset.geometry_attachment === "analysis_tracts" &&
-      Boolean(dataset.thematic_metric_key)
+      Boolean(dataset.thematic_metric_key) &&
+      ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
+        ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
+          dataset.geometry_attachment === "analysis_corridor"))
   ).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
@@ -483,9 +484,10 @@ export default async function DataHubPage() {
                   ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(dataset.geography_scope);
                 const thematicReady =
                   dataset.status === "ready" &&
-                  dataset.geography_scope === "tract" &&
-                  dataset.geometry_attachment === "analysis_tracts" &&
-                  Boolean(dataset.thematic_metric_key);
+                  Boolean(dataset.thematic_metric_key) &&
+                  ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
+                    ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
+                      dataset.geometry_attachment === "analysis_corridor"));
 
                 return (
                   <div key={dataset.id} className="rounded-[24px] border border-border/80 bg-background/80 p-5">
@@ -550,7 +552,9 @@ export default async function DataHubPage() {
                         <p className="font-medium text-foreground">Overlay posture</p>
                         <p className="mt-2">
                           {thematicReady
-                            ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
+                            ? dataset.geometry_attachment === "analysis_corridor"
+                              ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis corridor geometry.`
+                              : `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
                             : overlayReady
                               ? "Drawable in Analysis Studio as a coverage footprint."
                               : "Registry only for now; not drawable in Analysis Studio yet."}

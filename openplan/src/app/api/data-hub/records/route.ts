@@ -37,9 +37,20 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     geographyScope: z
       .enum(["none", "point", "route", "corridor", "tract", "county", "region", "statewide", "national"])
       .optional(),
-    geometryAttachment: z.enum(["none", "analysis_tracts"]).optional(),
+    geometryAttachment: z.enum(["none", "analysis_tracts", "analysis_corridor"]).optional(),
     thematicMetricKey: z
-      .enum(["pctMinority", "pctBelowPoverty", "medianIncome", "isDisadvantaged", "zeroVehiclePct", "transitCommutePct"])
+      .enum([
+        "pctMinority",
+        "pctBelowPoverty",
+        "medianIncome",
+        "isDisadvantaged",
+        "zeroVehiclePct",
+        "transitCommutePct",
+        "overallScore",
+        "accessibilityScore",
+        "safetyScore",
+        "equityScore",
+      ])
       .optional(),
     thematicMetricLabel: z.string().trim().max(120).optional(),
     coverageSummary: z.string().trim().max(500).optional(),
@@ -216,9 +227,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (parsed.data.geometryAttachment === "analysis_tracts" && !parsed.data.thematicMetricKey) {
+      if (
+        parsed.data.geometryAttachment === "analysis_corridor" &&
+        parsed.data.geographyScope !== "corridor" &&
+        parsed.data.geographyScope !== "route"
+      ) {
         return NextResponse.json(
-          { error: "Tract geometry attachments require a thematic metric key" },
+          { error: "Corridor geometry attachments require geography scope = corridor or route" },
+          { status: 400 }
+        );
+      }
+
+      if (
+        (parsed.data.geometryAttachment === "analysis_tracts" || parsed.data.geometryAttachment === "analysis_corridor") &&
+        !parsed.data.thematicMetricKey
+      ) {
+        return NextResponse.json(
+          { error: "Geometry attachments require a thematic metric key" },
           { status: 400 }
         );
       }
