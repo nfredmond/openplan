@@ -7,11 +7,11 @@ describe('corridor geometry validator', () => {
       type: 'Polygon' as const,
       coordinates: [
         [
-          [-121.0812, 39.2019],
-          [-121.0478, 39.2019],
-          [-121.0478, 39.2197],
-          [-121.0812, 39.2197],
-          [-121.0812, 39.2019],
+          [-121.0812, 39.2019] as [number, number],
+          [-121.0478, 39.2019] as [number, number],
+          [-121.0478, 39.2197] as [number, number],
+          [-121.0812, 39.2197] as [number, number],
+          [-121.0812, 39.2019] as [number, number],
         ],
       ],
     }
@@ -26,11 +26,11 @@ describe('corridor geometry validator', () => {
       type: 'Polygon' as const,
       coordinates: [
         [
-          [630000, 4340000],
-          [631000, 4340000],
-          [631000, 4341000],
-          [630000, 4341000],
-          [630000, 4340000],
+          [630000, 4340000] as [number, number],
+          [631000, 4340000] as [number, number],
+          [631000, 4341000] as [number, number],
+          [630000, 4341000] as [number, number],
+          [630000, 4340000] as [number, number],
         ],
       ],
     }
@@ -45,11 +45,11 @@ describe('corridor geometry validator', () => {
       type: 'Polygon' as const,
       coordinates: [
         [
-          [-121.0812, 39.2019],
-          [-121.0478, 39.2019],
-          [-121.0478, 39.2197],
-          [-121.0812, 39.2197],
-          [-121.0812, 39.2020],
+          [-121.0812, 39.2019] as [number, number],
+          [-121.0478, 39.2019] as [number, number],
+          [-121.0478, 39.2197] as [number, number],
+          [-121.0812, 39.2197] as [number, number],
+          [-121.0812, 39.2020] as [number, number],
         ],
       ],
     }

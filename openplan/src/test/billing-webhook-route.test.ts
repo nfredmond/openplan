@@ -106,7 +106,7 @@ describe("POST /api/billing/webhook", () => {
 
   it("enforces strict mode in production when stripe verification is unavailable", async () => {
     const originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
 
     verifyStripeWebhookSignatureMock.mockResolvedValue({
       ok: false,
@@ -127,7 +127,7 @@ describe("POST /api/billing/webhook", () => {
       )
     );
 
-    process.env.NODE_ENV = originalNodeEnv;
+    vi.stubEnv("NODE_ENV", originalNodeEnv ?? "");
 
     expect(response.status).toBe(503);
     const payload = (await response.json()) as { error: string; fallbackAllowed: boolean };
