@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowRight, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileStack, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
 import { EngagementCampaignControls } from "@/components/engagement/engagement-campaign-controls";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 
 type CampaignRow = {
@@ -23,10 +24,24 @@ type CampaignRow = {
   updated_at: string;
 };
 
+type ReportRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  report_type: string;
+  status: string;
+  generated_at: string | null;
+  updated_at: string;
+};
+
 function fmtDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function fmtPercent(value: number): string {
+  return `${Math.round(value * 100)}%`;
 }
 
 export default async function EngagementCampaignDetailPage({
@@ -56,7 +71,7 @@ export default async function EngagementCampaignDetailPage({
 
   const campaign = campaignData as CampaignRow;
 
-  const [{ data: project }, { data: categories }, { data: items }, { data: projects }] = await Promise.all([
+  const [{ data: project }, { data: categories }, { data: items }, { data: projects }, { data: reports }] = await Promise.all([
     campaign.project_id
       ? supabase
           .from("projects")
@@ -76,14 +91,24 @@ export default async function EngagementCampaignDetailPage({
         "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, metadata_json, created_at, updated_at"
       )
       .eq("campaign_id", campaign.id)
-      .order("updated_at", { ascending: false })
-      .limit(20),
+      .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, name").eq("workspace_id", campaign.workspace_id).order("updated_at", { ascending: false }),
+    campaign.project_id
+      ? supabase
+          .from("reports")
+          .select("id, project_id, title, report_type, status, generated_at, updated_at")
+          .eq("project_id", campaign.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [] }),
   ]);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
+  const reportRecords = (reports ?? []) as ReportRow[];
+  const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
+  const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
+  const recentItems = (items ?? []).slice(0, 20);
 
   return (
     <section className="module-page">
@@ -125,17 +150,17 @@ export default async function EngagementCampaignDetailPage({
               <p className="module-summary-detail">Project context stays visible so engagement does not float free.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Categories</p>
-              <p className="module-summary-value">{categories?.length ?? 0}</p>
+              <p className="module-summary-label">Review queue</p>
+              <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
               <p className="module-summary-detail">
-                {counts.categorizedItems} items routed, {counts.uncategorizedItems} still uncategorized.
+                {counts.statusCounts.pending} pending, {counts.statusCounts.flagged} flagged for operator review.
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Items</p>
-              <p className="module-summary-value">{counts.totalItems}</p>
+              <p className="module-summary-label">Planning-ready</p>
+              <p className="module-summary-value">{counts.moderationQueue.readyForHandoffCount}</p>
               <p className="module-summary-detail">
-                {counts.geolocatedItems} geolocated, {counts.statusCounts.approved} approved.
+                {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.
               </p>
             </div>
           </div>
@@ -156,12 +181,12 @@ export default async function EngagementCampaignDetailPage({
             moderation status totals.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Pending: {counts.statusCounts.pending}</div>
-            <div className="module-operator-item">Approved: {counts.statusCounts.approved}</div>
-            <div className="module-operator-item">Rejected: {counts.statusCounts.rejected}</div>
-            <div className="module-operator-item">Flagged: {counts.statusCounts.flagged}</div>
+            <div className="module-operator-item">Pending: {counts.moderationQueue.pendingCount}</div>
+            <div className="module-operator-item">Flagged: {counts.moderationQueue.flaggedCount}</div>
+            <div className="module-operator-item">Triaged: {counts.moderationQueue.triagedCount} ({fmtPercent(counts.moderationQueue.triagedShare)})</div>
             <div className="module-operator-item">Recent activity: {counts.recentActivity.count} items in the last 7 days</div>
-            <div className="module-operator-item">Moderation notes present on {counts.itemsWithModerationNotes} items</div>
+            <div className="module-operator-item">Moderation notes present on {counts.moderationQueue.itemsWithNotesCount} items</div>
+            <div className="module-operator-item">Linked reports: {reportRecords.length}</div>
             <div className="module-operator-item">Last updated {fmtDateTime(campaign.updated_at)}</div>
           </div>
         </article>
@@ -186,9 +211,9 @@ export default async function EngagementCampaignDetailPage({
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Traceability</p>
-                <h2 className="module-section-title">Project linkage and intake coverage</h2>
+                <h2 className="module-section-title">Review posture and planning handoff</h2>
                 <p className="module-section-description">
-                  Campaigns stay explicitly tied to planning context, moderation state, and category coverage.
+                  Campaigns stay explicitly tied to planning context, moderation load, map coverage, and downstream report awareness.
                 </p>
               </div>
             </div>
@@ -212,11 +237,19 @@ export default async function EngagementCampaignDetailPage({
                 <div className="module-record-meta">
                   <span className="module-record-chip">Campaign status {titleizeEngagementValue(campaign.status)}</span>
                   <span className="module-record-chip">Recent activity {counts.recentActivity.count} items</span>
-                  <span className="module-record-chip">{counts.geolocatedItems} geolocated</span>
+                  <span className="module-record-chip">{counts.geographyCoverage.geolocatedItems} geolocated</span>
+                  <span className="module-record-chip">{reportRecords.length} linked reports</span>
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="module-summary-card">
+                  <p className="module-summary-label">Actionable review</p>
+                  <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
+                  <p className="module-summary-detail">
+                    {counts.moderationQueue.pendingCount} pending and {counts.moderationQueue.flaggedCount} flagged.
+                  </p>
+                </div>
                 <div className="module-summary-card">
                   <p className="module-summary-label">Categorized coverage</p>
                   <p className="module-summary-value">{counts.categorizedItems}</p>
@@ -225,14 +258,112 @@ export default async function EngagementCampaignDetailPage({
                   </p>
                 </div>
                 <div className="module-summary-card">
-                  <p className="module-summary-label">Source mix</p>
-                  <p className="module-summary-value">{counts.sourceCounts.public + counts.sourceCounts.meeting}</p>
+                  <p className="module-summary-label">Map coverage</p>
+                  <p className="module-summary-value">{fmtPercent(counts.geographyCoverage.geolocatedShare)}</p>
                   <p className="module-summary-detail">
-                    {counts.sourceCounts.public} public, {counts.sourceCounts.meeting} meeting, {counts.sourceCounts.email} email.
+                    {counts.geographyCoverage.geolocatedItems} geolocated, {counts.geographyCoverage.nonGeolocatedItems} non-geolocated.
                   </p>
                 </div>
               </div>
+
+              <div className="grid gap-3 xl:grid-cols-2">
+                <article className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
+                          {counts.moderationQueue.readyForHandoffCount} handoff-ready
+                        </StatusBadge>
+                        <StatusBadge tone={counts.moderationQueue.uncategorizedCount > 0 ? "warning" : "success"}>
+                          {counts.moderationQueue.uncategorizedCount} uncategorized
+                        </StatusBadge>
+                      </div>
+                      <h3 className="module-record-title text-[1rem]">Lightweight planning handoff cue</h3>
+                      <p className="module-record-summary">
+                        Approved items with category assignment are the cleanest candidates for report inclusion or planning review.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">{counts.statusCounts.approved} approved total</span>
+                    <span className="module-record-chip">{counts.moderationQueue.readyForHandoffCount} approved + categorized</span>
+                    <span className="module-record-chip">{counts.moderationQueue.itemsWithNotesCount} with audit notes</span>
+                  </div>
+                </article>
+
+                <article className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone="info">
+                          {primarySource ? `${titleizeEngagementValue(primarySource.sourceType)} lead source` : "No source mix yet"}
+                        </StatusBadge>
+                        <StatusBadge tone="neutral">{counts.recentActivity.count} recent items</StatusBadge>
+                      </div>
+                      <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
+                      <p className="module-record-summary">
+                        {primarySource
+                          ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest intake lane with ${primarySource.count} items.`
+                          : "No intake items yet."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">{counts.recentActivity.byStatus.pending} pending in window</span>
+                    <span className="module-record-chip">{counts.recentActivity.byStatus.flagged} flagged in window</span>
+                    <span className="module-record-chip">Last activity {fmtDateTime(counts.lastActivityAt)}</span>
+                  </div>
+                </article>
+              </div>
             </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Analytics</p>
+                <h2 className="module-section-title">Source and geography breakdown</h2>
+                <p className="module-section-description">
+                  Keep the summary lightweight but decision-useful: where intake came from, how much has map signal, and what still needs triage.
+                </p>
+              </div>
+            </div>
+
+            {sourceSummaries.every((source) => source.count === 0) ? (
+              <div className="mt-5">
+                <EmptyState title="No source mix yet" description="Register items to expose source, moderation, and map coverage patterns." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {sourceSummaries
+                  .filter((source) => source.count > 0)
+                  .map((source) => (
+                    <div key={source.sourceType} className="module-record-row">
+                      <div className="module-record-head">
+                        <div className="module-record-main">
+                          <div className="module-record-kicker">
+                            <StatusBadge tone="info">{titleizeEngagementValue(source.sourceType)}</StatusBadge>
+                            <StatusBadge tone={source.flaggedCount > 0 ? "warning" : "neutral"}>{source.count} items</StatusBadge>
+                            <StatusBadge tone={source.geolocatedCount > 0 ? "success" : "neutral"}>
+                              <MapPinned className="h-3 w-3" />
+                              {source.geolocatedCount} mapped
+                            </StatusBadge>
+                          </div>
+                          <p className="module-record-summary">
+                            {fmtPercent(source.shareOfItems)} of campaign intake. {source.pendingCount} pending, {source.approvedCount} approved, {source.rejectedCount} rejected.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">{source.categorizedCount} categorized</span>
+                        <span className="module-record-chip">{source.nonGeolocatedCount} non-geolocated</span>
+                        <span className="module-record-chip">{source.flaggedCount} flagged</span>
+                        <span className="module-record-chip">Last activity {fmtDateTime(source.lastActivityAt)}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </article>
 
           <article className="module-section-surface">
@@ -308,7 +439,7 @@ export default async function EngagementCampaignDetailPage({
 
         {items?.length ? (
           <EngagementItemRegistry
-            items={(items ?? []) as Array<{
+            items={recentItems as Array<{
               id: string;
               campaign_id: string;
               category_id: string | null;
@@ -326,6 +457,7 @@ export default async function EngagementCampaignDetailPage({
               id: category.id,
               label: category.label,
             }))}
+            counts={counts}
           />
         ) : (
           <article className="module-section-surface">
@@ -347,6 +479,61 @@ export default async function EngagementCampaignDetailPage({
           </article>
         )}
       </div>
+
+      <article className="mt-6 module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Reports</p>
+            <h2 className="module-section-title">Project-linked report awareness</h2>
+            <p className="module-section-description">
+              Engagement stays operator-first in V1, but linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
+            </p>
+          </div>
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+            <FileStack className="h-5 w-5" />
+          </span>
+        </div>
+
+        {!project ? (
+          <div className="mt-5">
+            <EmptyState
+              title="No linked project yet"
+              description="Attach this campaign to a project before expecting report-aware handoff cues."
+              compact
+            />
+          </div>
+        ) : reportRecords.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title="No reports linked through this project yet"
+              description="Project-linked reports will appear here once reporting catches up with the campaign."
+              compact
+            />
+          </div>
+        ) : (
+          <div className="mt-5 space-y-3">
+            {reportRecords.slice(0, 4).map((report) => (
+              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
+                      <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                      {report.generated_at ? <StatusBadge tone="success">Generated</StatusBadge> : null}
+                    </div>
+                    <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                    <p className="module-record-summary">
+                      Updated {fmtDateTime(report.updated_at)}
+                      {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
+                    </p>
+                  </div>
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }

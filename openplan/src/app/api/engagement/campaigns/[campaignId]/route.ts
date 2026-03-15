@@ -67,7 +67,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const [{ data: project, error: projectError }, { data: categories, error: categoriesError }, { data: items, error: itemsError }] =
+    const [
+      { data: project, error: projectError },
+      { data: categories, error: categoriesError },
+      { data: items, error: itemsError },
+      { data: reports, error: reportsError },
+    ] =
       await Promise.all([
         access.campaign.project_id
           ? supabase
@@ -89,6 +94,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
           )
           .eq("campaign_id", access.campaign.id)
           .order("updated_at", { ascending: false }),
+        access.campaign.project_id
+          ? supabase
+              .from("reports")
+              .select("id, project_id, title, report_type, status, generated_at, updated_at")
+              .eq("project_id", access.campaign.project_id)
+              .order("updated_at", { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
     if (projectError) {
@@ -118,6 +130,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
     }
 
+    if (reportsError) {
+      audit.error("campaign_reports_lookup_failed", {
+        campaignId: access.campaign.id,
+        projectId: access.campaign.project_id,
+        message: reportsError.message,
+        code: reportsError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load linked reports" }, { status: 500 });
+    }
+
     const categoryMap = new Map((categories ?? []).map((category) => [category.id, category]));
     const counts = summarizeEngagementItems(categories ?? [], items ?? []);
 
@@ -130,6 +152,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           ...item,
           category: item.category_id ? categoryMap.get(item.category_id) ?? null : null,
         })),
+        linkedReports: reports ?? [],
         counts,
       },
       { status: 200 }

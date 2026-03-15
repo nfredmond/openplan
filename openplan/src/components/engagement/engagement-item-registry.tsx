@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Search, ShieldAlert, Tags } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +32,19 @@ type ItemRecord = {
   latitude?: number | null;
   longitude?: number | null;
   updated_at: string;
+};
+
+type RegistryCounts = {
+  totalItems: number;
+  uncategorizedItems: number;
+  geographyCoverage: {
+    geolocatedItems: number;
+  };
+  moderationQueue: {
+    actionableCount: number;
+    pendingCount: number;
+    flaggedCount: number;
+  };
 };
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -66,9 +79,7 @@ function ItemRow({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSave() {
-    setError(null);
-
+  async function submitItem(nextStatus?: string) {
     const nextLatitude = parseCoordinateInput(latitude);
     const nextLongitude = parseCoordinateInput(longitude);
 
@@ -88,7 +99,7 @@ function ItemRow({
           body,
           submittedBy: submittedBy || null,
           sourceType,
-          status,
+          status: nextStatus ?? status,
           categoryId: categoryId || null,
           moderationNotes: moderationNotes || null,
           latitude: nextLatitude,
@@ -107,6 +118,17 @@ function ItemRow({
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleSave() {
+    setError(null);
+    await submitItem();
+  }
+
+  async function handleQuickStatus(nextStatus: string) {
+    setError(null);
+    setStatus(nextStatus);
+    await submitItem(nextStatus);
   }
 
   return (
@@ -266,11 +288,23 @@ function ItemRow({
       <div className="mt-3 module-record-meta">
         <span className="module-record-chip">Submitter {submittedBy || "Unknown"}</span>
         <span className="module-record-chip">Source {titleizeEngagementValue(sourceType)}</span>
+        <span className="module-record-chip">Category {categories.find((category) => category.id === categoryId)?.label ?? "Uncategorized"}</span>
       </div>
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant={status === "approved" ? "default" : "outline"} disabled={isSubmitting} onClick={() => handleQuickStatus("approved")}>
+          <CheckCircle2 className="h-4 w-4" />
+          Approve
+        </Button>
+        <Button type="button" size="sm" variant={status === "flagged" ? "secondary" : "outline"} disabled={isSubmitting} onClick={() => handleQuickStatus("flagged")}>
+          <ShieldAlert className="h-4 w-4" />
+          Flag
+        </Button>
+        <Button type="button" size="sm" variant={status === "pending" ? "ghost" : "outline"} disabled={isSubmitting} onClick={() => handleQuickStatus("pending")}>
+          Return to pending
+        </Button>
         <Button type="button" disabled={isSubmitting} onClick={handleSave}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Save item
@@ -283,10 +317,44 @@ function ItemRow({
 export function EngagementItemRegistry({
   items,
   categories,
+  counts,
 }: {
   items: ItemRecord[];
   categories: CategoryOption[];
+  counts: RegistryCounts;
 }) {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [reviewFilter, setReviewFilter] = useState("all");
+  const deferredQuery = useDeferredValue(query);
+
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+
+    return items.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (sourceFilter !== "all" && item.source_type !== sourceFilter) return false;
+      if (categoryFilter === "uncategorized" && item.category_id) return false;
+      if (categoryFilter !== "all" && categoryFilter !== "uncategorized" && item.category_id !== categoryFilter) return false;
+
+      if (reviewFilter === "needs_review" && !["pending", "flagged"].includes(item.status)) return false;
+      if (reviewFilter === "uncategorized" && item.category_id) return false;
+      if (reviewFilter === "geolocated" && !(typeof item.latitude === "number" && typeof item.longitude === "number")) return false;
+      if (reviewFilter === "with_notes" && !item.moderation_notes?.trim()) return false;
+
+      if (!normalizedQuery) return true;
+
+      const searchable = [item.title, item.body, item.submitted_by, item.status, item.source_type]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(normalizedQuery);
+    });
+  }, [categoryFilter, deferredQuery, items, reviewFilter, sourceFilter, statusFilter]);
+
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
@@ -299,10 +367,124 @@ export function EngagementItemRegistry({
         </div>
       </div>
 
+      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="module-summary-card">
+          <p className="module-summary-label">Loaded for review</p>
+          <p className="module-summary-value">{items.length}</p>
+          <p className="module-summary-detail">{counts.totalItems} total campaign items, newest first.</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Actionable</p>
+          <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
+          <p className="module-summary-detail">
+            {counts.moderationQueue.pendingCount} pending, {counts.moderationQueue.flaggedCount} flagged.
+          </p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Needs category</p>
+          <p className="module-summary-value">{counts.uncategorizedItems}</p>
+          <p className="module-summary-detail">Uncategorized items still weaken reporting readiness.</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Map signal</p>
+          <p className="module-summary-value">{counts.geographyCoverage.geolocatedItems}</p>
+          <p className="module-summary-detail">Items with latitude/longitude already attached.</p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 xl:grid-cols-[1.1fr_repeat(4,minmax(0,0.8fr))]">
+        <label className="space-y-1.5">
+          <span className="text-[0.78rem] font-semibold">Search</span>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input className="pl-9" placeholder="Title, body, submitter, source" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </div>
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-[0.78rem] font-semibold">Status</span>
+          <select
+            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="all">All statuses</option>
+            {ENGAGEMENT_ITEM_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {titleizeEngagementValue(value)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-[0.78rem] font-semibold">Source</span>
+          <select
+            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={sourceFilter}
+            onChange={(event) => setSourceFilter(event.target.value)}
+          >
+            <option value="all">All sources</option>
+            {ENGAGEMENT_ITEM_SOURCE_TYPES.map((value) => (
+              <option key={value} value={value}>
+                {titleizeEngagementValue(value)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-[0.78rem] font-semibold">Category</span>
+          <select
+            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+          >
+            <option value="all">All categories</option>
+            <option value="uncategorized">Uncategorized</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1.5">
+          <span className="text-[0.78rem] font-semibold">Review focus</span>
+          <select
+            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={reviewFilter}
+            onChange={(event) => setReviewFilter(event.target.value)}
+          >
+            <option value="all">Everything</option>
+            <option value="needs_review">Pending + flagged</option>
+            <option value="uncategorized">Needs category</option>
+            <option value="geolocated">Geolocated</option>
+            <option value="with_notes">Has moderation notes</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-4 module-record-meta">
+        <span className="module-record-chip">
+          <Tags className="h-3.5 w-3.5" />
+          {filteredItems.length} matching
+        </span>
+        {statusFilter !== "all" ? <span className="module-record-chip">Status {titleizeEngagementValue(statusFilter)}</span> : null}
+        {reviewFilter === "needs_review" ? <span className="module-record-chip">Focused on review queue</span> : null}
+        {categoryFilter === "uncategorized" ? <span className="module-record-chip">Needs category</span> : null}
+      </div>
+
       <div className="mt-5 space-y-4">
-        {items.map((item) => (
+        {filteredItems.map((item) => (
           <ItemRow key={item.id} item={item} categories={categories} />
         ))}
+        {filteredItems.length === 0 ? (
+          <div className="rounded-[22px] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
+            No items match the current moderation filters.
+          </div>
+        ) : null}
       </div>
     </article>
   );

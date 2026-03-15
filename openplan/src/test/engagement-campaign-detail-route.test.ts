@@ -26,6 +26,8 @@ const categoriesEqCampaignMock = vi.fn(() => ({ order: categoriesOrderSortMock }
 
 const itemsOrderMock = vi.fn();
 const itemsEqCampaignMock = vi.fn(() => ({ order: itemsOrderMock }));
+const reportsOrderMock = vi.fn();
+const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -62,6 +64,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_items") {
     return {
       select: () => ({ eq: itemsEqCampaignMock }),
+    };
+  }
+
+  if (table === "reports") {
+    return {
+      select: () => ({ eq: reportsEqProjectMock }),
     };
   }
 
@@ -165,6 +173,21 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       error: null,
     });
 
+    reportsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "88888888-8888-4888-8888-888888888888",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "Downtown Safety Packet",
+          report_type: "project_status",
+          status: "generated",
+          generated_at: "2026-03-13T16:00:00.000Z",
+          updated_at: "2026-03-13T16:05:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -190,14 +213,31 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       },
       categories: expect.arrayContaining([expect.objectContaining({ id: "55555555-5555-4555-8555-555555555555" })]),
       recentItems: expect.arrayContaining([expect.objectContaining({ id: "66666666-6666-4666-8666-666666666666" })]),
+      linkedReports: expect.arrayContaining([expect.objectContaining({ id: "88888888-8888-4888-8888-888888888888" })]),
       counts: {
         totalItems: 2,
         geolocatedItems: 1,
+        nonGeolocatedItems: 1,
         categorizedItems: 1,
         uncategorizedItems: 1,
         itemsWithModerationNotes: 1,
+        sourceSummaries: expect.arrayContaining([
+          expect.objectContaining({ sourceType: "meeting", count: 1, geolocatedCount: 1 }),
+          expect.objectContaining({ sourceType: "public", count: 1, nonGeolocatedCount: 1 }),
+        ]),
+        moderationQueue: expect.objectContaining({
+          actionableCount: 1,
+          flaggedCount: 1,
+          readyForHandoffCount: 0,
+        }),
+        geographyCoverage: expect.objectContaining({
+          geolocatedShare: 0.5,
+        }),
         recentActivity: expect.objectContaining({
           count: 1,
+          byStatus: expect.objectContaining({
+            flagged: 1,
+          }),
         }),
         statusCounts: expect.objectContaining({
           approved: 1,
