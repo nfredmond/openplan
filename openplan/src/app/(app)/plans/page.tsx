@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
 import {
+  buildPlanArtifactCoverage,
   buildPlanReadiness,
   formatPlanDateTime,
   formatPlanStatusLabel,
@@ -142,6 +143,11 @@ export default async function PlansPage({
           reportCount,
           geographyLabel: plan.geography_label,
           horizonYear: plan.horizon_year,
+        }),
+        artifactCoverage: buildPlanArtifactCoverage({
+          scenarioCount,
+          engagementCampaignCount,
+          reportCount,
         }),
         linkageCounts: {
           scenarios: scenarioCount,
@@ -326,10 +332,24 @@ export default async function PlansPage({
                     <span className="module-record-chip">
                       {plan.horizon_year ? `Horizon ${plan.horizon_year}` : "Horizon pending"}
                     </span>
+                    <span className="module-record-chip">{plan.artifactCoverage.label}</span>
+                    <span className="module-record-chip">
+                      {plan.readiness.missingCheckCount > 0
+                        ? `${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
+                        : "No readiness gaps"}
+                    </span>
                     <span className="module-record-chip">{plan.linkageCounts.scenarios} scenarios</span>
                     <span className="module-record-chip">{plan.linkageCounts.engagementCampaigns} campaigns</span>
                     <span className="module-record-chip">{plan.linkageCounts.reports} reports</span>
                   </div>
+
+                  {plan.readiness.missingCheckLabels.length > 0 ? (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">{plan.artifactCoverage.detail}</p>
+                  )}
                 </Link>
               ))}
             </div>

@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, FileStack, FolderKanban, MessagesSquare, Radar, ScrollText, ShieldCheck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
+  buildPlanArtifactCoverage,
   buildPlanReadiness,
   formatPlanDateTime,
   formatPlanLinkTypeLabel,
@@ -12,6 +14,8 @@ import {
   formatPlanTypeLabel,
   planStatusTone,
 } from "@/lib/plans/catalog";
+import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 
 type LinkedArtifactBase = {
   id: string;
@@ -21,18 +25,39 @@ type LinkedArtifactBase = {
   updated_at: string | null;
 };
 
-type LinkedArtifact = LinkedArtifactBase & {
-  linkBasis: "project" | "plan_link" | "both";
+type ScenarioArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  planning_question: string | null;
+  baseline_entry_id: string | null;
+  entryCount: number;
+  readyEntryCount: number;
+  attachedRunCount: number;
+};
+
+type CampaignArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  engagement_type: string | null;
+  categoryCount: number;
+  itemCount: number;
+  approvedItemCount: number;
+  pendingItemCount: number;
+  flaggedItemCount: number;
+};
+
+type ReportArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  report_type: string | null;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+  linkedRunCount: number;
+  enabledSectionCount: number;
+  artifactCount: number;
 };
 
 type LinkedProjectBase = LinkedArtifactBase & {
   summary?: string | null;
   plan_type?: string | null;
   delivery_phase?: string | null;
-};
-
-type LinkedProject = LinkedProjectBase & {
-  linkBasis: "project" | "plan_link" | "both";
 };
 
 function mergeArtifacts<T extends { id: string }>(
@@ -61,6 +86,10 @@ function linkBasisLabel(value: "project" | "plan_link" | "both"): string {
   if (value === "both") return "Project + plan link";
   if (value === "project") return "From primary project";
   return "Explicit plan link";
+}
+
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 export default async function PlanDetailPage({
@@ -106,21 +135,21 @@ export default async function PlanDetailPage({
       plan.project_id
         ? supabase
             .from("scenario_sets")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, summary, planning_question, status, baseline_entry_id, updated_at")
             .eq("project_id", plan.project_id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
       plan.project_id
         ? supabase
             .from("engagement_campaigns")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, summary, status, engagement_type, updated_at")
             .eq("project_id", plan.project_id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
       plan.project_id
         ? supabase
             .from("reports")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at")
             .eq("project_id", plan.project_id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
@@ -134,16 +163,22 @@ export default async function PlanDetailPage({
 
   const [explicitScenariosResult, explicitCampaignsResult, explicitReportsResult, explicitProjectsResult] = await Promise.all([
     scenarioLinkIds.length
-      ? supabase.from("scenario_sets").select("id, project_id, title, status, updated_at").in("id", scenarioLinkIds)
+      ? supabase
+          .from("scenario_sets")
+          .select("id, project_id, title, summary, planning_question, status, baseline_entry_id, updated_at")
+          .in("id", scenarioLinkIds)
       : Promise.resolve({ data: [], error: null }),
     campaignLinkIds.length
       ? supabase
           .from("engagement_campaigns")
-          .select("id, project_id, title, status, updated_at")
+          .select("id, project_id, title, summary, status, engagement_type, updated_at")
           .in("id", campaignLinkIds)
       : Promise.resolve({ data: [], error: null }),
     reportLinkIds.length
-      ? supabase.from("reports").select("id, project_id, title, status, updated_at").in("id", reportLinkIds)
+      ? supabase
+          .from("reports")
+          .select("id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at")
+          .in("id", reportLinkIds)
       : Promise.resolve({ data: [], error: null }),
     projectLinkIds.length
       ? supabase
@@ -153,54 +188,193 @@ export default async function PlanDetailPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const linkedScenarios = mergeArtifacts<LinkedArtifactBase>(
+  const scenarioIds = Array.from(
+    new Set([
+      ...(projectScenariosResult.data ?? []).map((item) => item.id),
+      ...(explicitScenariosResult.data ?? []).map((item) => item.id),
+    ])
+  );
+  const campaignIds = Array.from(
+    new Set([
+      ...(projectCampaignsResult.data ?? []).map((item) => item.id),
+      ...(explicitCampaignsResult.data ?? []).map((item) => item.id),
+    ])
+  );
+  const reportIds = Array.from(
+    new Set([
+      ...(projectReportsResult.data ?? []).map((item) => item.id),
+      ...(explicitReportsResult.data ?? []).map((item) => item.id),
+    ])
+  );
+
+  const [
+    scenarioEntriesResult,
+    engagementCategoriesResult,
+    engagementItemsResult,
+    reportRunsResult,
+    reportSectionsResult,
+    reportArtifactsResult,
+  ] = await Promise.all([
+    scenarioIds.length
+      ? supabase.from("scenario_entries").select("scenario_set_id, status, attached_run_id").in("scenario_set_id", scenarioIds)
+      : Promise.resolve({ data: [], error: null }),
+    campaignIds.length
+      ? supabase.from("engagement_categories").select("campaign_id").in("campaign_id", campaignIds)
+      : Promise.resolve({ data: [], error: null }),
+    campaignIds.length
+      ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
+      : Promise.resolve({ data: [], error: null }),
+    reportIds.length
+      ? supabase.from("report_runs").select("report_id").in("report_id", reportIds)
+      : Promise.resolve({ data: [], error: null }),
+    reportIds.length
+      ? supabase.from("report_sections").select("report_id, enabled").in("report_id", reportIds)
+      : Promise.resolve({ data: [], error: null }),
+    reportIds.length
+      ? supabase.from("report_artifacts").select("report_id").in("report_id", reportIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const scenarioStatsById = new Map<string, { entryCount: number; readyEntryCount: number; attachedRunCount: number }>();
+  for (const row of scenarioEntriesResult.data ?? []) {
+    const current = scenarioStatsById.get(row.scenario_set_id) ?? {
+      entryCount: 0,
+      readyEntryCount: 0,
+      attachedRunCount: 0,
+    };
+    current.entryCount += 1;
+    if (row.status === "ready") current.readyEntryCount += 1;
+    if (row.attached_run_id) current.attachedRunCount += 1;
+    scenarioStatsById.set(row.scenario_set_id, current);
+  }
+
+  const campaignCategoryCounts = new Map<string, number>();
+  for (const row of engagementCategoriesResult.data ?? []) {
+    campaignCategoryCounts.set(row.campaign_id, (campaignCategoryCounts.get(row.campaign_id) ?? 0) + 1);
+  }
+
+  const campaignItemStats = new Map<
+    string,
+    { itemCount: number; approvedItemCount: number; pendingItemCount: number; flaggedItemCount: number }
+  >();
+  for (const row of engagementItemsResult.data ?? []) {
+    const current = campaignItemStats.get(row.campaign_id) ?? {
+      itemCount: 0,
+      approvedItemCount: 0,
+      pendingItemCount: 0,
+      flaggedItemCount: 0,
+    };
+    current.itemCount += 1;
+    if (row.status === "approved") current.approvedItemCount += 1;
+    if (row.status === "pending") current.pendingItemCount += 1;
+    if (row.status === "flagged") current.flaggedItemCount += 1;
+    campaignItemStats.set(row.campaign_id, current);
+  }
+
+  const reportRunCounts = new Map<string, number>();
+  for (const row of reportRunsResult.data ?? []) {
+    reportRunCounts.set(row.report_id, (reportRunCounts.get(row.report_id) ?? 0) + 1);
+  }
+
+  const reportEnabledSectionCounts = new Map<string, number>();
+  for (const row of reportSectionsResult.data ?? []) {
+    if (!row.enabled) continue;
+    reportEnabledSectionCounts.set(row.report_id, (reportEnabledSectionCounts.get(row.report_id) ?? 0) + 1);
+  }
+
+  const reportArtifactCounts = new Map<string, number>();
+  for (const row of reportArtifactsResult.data ?? []) {
+    reportArtifactCounts.set(row.report_id, (reportArtifactCounts.get(row.report_id) ?? 0) + 1);
+  }
+
+  const linkedScenarios = mergeArtifacts<ScenarioArtifactBase>(
     (projectScenariosResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
+      planning_question: item.planning_question,
       status: item.status,
+      baseline_entry_id: item.baseline_entry_id,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      entryCount: scenarioStatsById.get(item.id)?.entryCount ?? 0,
+      readyEntryCount: scenarioStatsById.get(item.id)?.readyEntryCount ?? 0,
+      attachedRunCount: scenarioStatsById.get(item.id)?.attachedRunCount ?? 0,
     })),
     (explicitScenariosResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
+      planning_question: item.planning_question,
       status: item.status,
+      baseline_entry_id: item.baseline_entry_id,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      entryCount: scenarioStatsById.get(item.id)?.entryCount ?? 0,
+      readyEntryCount: scenarioStatsById.get(item.id)?.readyEntryCount ?? 0,
+      attachedRunCount: scenarioStatsById.get(item.id)?.attachedRunCount ?? 0,
     }))
   );
 
-  const linkedCampaigns = mergeArtifacts<LinkedArtifactBase>(
+  const linkedCampaigns = mergeArtifacts<CampaignArtifactBase>(
     (projectCampaignsResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
       status: item.status,
+      engagement_type: item.engagement_type,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      categoryCount: campaignCategoryCounts.get(item.id) ?? 0,
+      itemCount: campaignItemStats.get(item.id)?.itemCount ?? 0,
+      approvedItemCount: campaignItemStats.get(item.id)?.approvedItemCount ?? 0,
+      pendingItemCount: campaignItemStats.get(item.id)?.pendingItemCount ?? 0,
+      flaggedItemCount: campaignItemStats.get(item.id)?.flaggedItemCount ?? 0,
     })),
     (explicitCampaignsResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
       status: item.status,
+      engagement_type: item.engagement_type,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      categoryCount: campaignCategoryCounts.get(item.id) ?? 0,
+      itemCount: campaignItemStats.get(item.id)?.itemCount ?? 0,
+      approvedItemCount: campaignItemStats.get(item.id)?.approvedItemCount ?? 0,
+      pendingItemCount: campaignItemStats.get(item.id)?.pendingItemCount ?? 0,
+      flaggedItemCount: campaignItemStats.get(item.id)?.flaggedItemCount ?? 0,
     }))
   );
 
-  const linkedReports = mergeArtifacts<LinkedArtifactBase>(
+  const linkedReports = mergeArtifacts<ReportArtifactBase>(
     (projectReportsResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
       status: item.status,
+      report_type: item.report_type,
+      generated_at: item.generated_at,
+      latest_artifact_kind: item.latest_artifact_kind,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      linkedRunCount: reportRunCounts.get(item.id) ?? 0,
+      enabledSectionCount: reportEnabledSectionCounts.get(item.id) ?? 0,
+      artifactCount: reportArtifactCounts.get(item.id) ?? 0,
     })),
     (explicitReportsResult.data ?? []).map((item) => ({
       id: item.id,
       title: item.title,
+      summary: item.summary,
       status: item.status,
+      report_type: item.report_type,
+      generated_at: item.generated_at,
+      latest_artifact_kind: item.latest_artifact_kind,
       project_id: item.project_id,
       updated_at: item.updated_at,
+      linkedRunCount: reportRunCounts.get(item.id) ?? 0,
+      enabledSectionCount: reportEnabledSectionCounts.get(item.id) ?? 0,
+      artifactCount: reportArtifactCounts.get(item.id) ?? 0,
     }))
   );
 
@@ -239,6 +413,11 @@ export default async function PlanDetailPage({
     geographyLabel: plan.geography_label,
     horizonYear: plan.horizon_year,
   });
+  const artifactCoverage = buildPlanArtifactCoverage({
+    scenarioCount: linkedScenarios.length,
+    engagementCampaignCount: linkedCampaigns.length,
+    reportCount: linkedReports.length,
+  });
 
   return (
     <section className="module-page space-y-6">
@@ -267,6 +446,7 @@ export default async function PlanDetailPage({
             <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
             <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
             <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
+            <StatusBadge tone={artifactCoverage.tone}>{artifactCoverage.label}</StatusBadge>
           </div>
 
           <div className="module-summary-grid cols-3">
@@ -281,9 +461,13 @@ export default async function PlanDetailPage({
               <p className="module-summary-detail">Source campaigns feeding the planning record.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Reports</p>
-              <p className="module-summary-value">{linkedReports.length}</p>
-              <p className="module-summary-detail">Packets or outputs tied into this plan basis.</p>
+              <p className="module-summary-label">Readiness gaps</p>
+              <p className="module-summary-value">{readiness.missingCheckCount}</p>
+              <p className="module-summary-detail">
+                {readiness.missingCheckCount === 0
+                  ? "Core metadata and linked artifacts are visible."
+                  : readiness.missingCheckLabels.join(", ")}
+              </p>
             </div>
           </div>
         </article>
@@ -298,6 +482,7 @@ export default async function PlanDetailPage({
               <h2 className="module-operator-title">{readiness.reason}</h2>
             </div>
           </div>
+          <p className="module-operator-copy">{artifactCoverage.detail}</p>
           <div className="module-operator-list">
             {readiness.checks.map((check) => (
               <div key={check.key} className="module-operator-item">
@@ -305,6 +490,18 @@ export default async function PlanDetailPage({
               </div>
             ))}
           </div>
+          {readiness.nextSteps.length > 0 ? (
+            <div className="mt-5 rounded-[22px] border border-border/70 bg-background/30 p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Next actions
+              </p>
+              <div className="mt-3 space-y-2 text-sm">
+                {readiness.nextSteps.slice(0, 3).map((step) => (
+                  <p key={step}>{step}</p>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </article>
       </header>
 
@@ -398,9 +595,22 @@ export default async function PlanDetailPage({
                 <Link key={scenario.id} href={`/scenarios/${scenario.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
                     <StatusBadge tone="neutral">{linkBasisLabel(scenario.linkBasis)}</StatusBadge>
-                    {scenario.status ? <StatusBadge tone="info">{scenario.status}</StatusBadge> : null}
+                    {scenario.status ? (
+                      <StatusBadge tone={scenarioStatusTone(scenario.status)}>{titleizeScenarioValue(scenario.status)}</StatusBadge>
+                    ) : null}
+                    <StatusBadge tone={scenario.baseline_entry_id ? "success" : "warning"}>
+                      {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
+                    </StatusBadge>
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{scenario.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {scenario.summary || scenario.planning_question || "No scenario summary captured yet."}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>{pluralize(scenario.entryCount, "entry")}</span>
+                    <span>{pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")}</span>
+                    <span>{pluralize(scenario.attachedRunCount, "attached run")}</span>
+                  </div>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(scenario.updated_at)}</p>
                 </Link>
               ))}
@@ -427,9 +637,20 @@ export default async function PlanDetailPage({
                 <Link key={campaign.id} href={`/engagement/${campaign.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
                     <StatusBadge tone="neutral">{linkBasisLabel(campaign.linkBasis)}</StatusBadge>
-                    {campaign.status ? <StatusBadge tone="info">{campaign.status}</StatusBadge> : null}
+                    {campaign.status ? (
+                      <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                    ) : null}
+                    {campaign.engagement_type ? <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge> : null}
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{campaign.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>{pluralize(campaign.categoryCount, "category")}</span>
+                    <span>{pluralize(campaign.itemCount, "item")}</span>
+                    <span>{campaign.approvedItemCount} approved</span>
+                    <span>{campaign.pendingItemCount} pending</span>
+                    <span>{campaign.flaggedItemCount} flagged</span>
+                  </div>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(campaign.updated_at)}</p>
                 </Link>
               ))}
@@ -456,9 +677,20 @@ export default async function PlanDetailPage({
                 <Link key={report.id} href={`/reports/${report.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
                     <StatusBadge tone="neutral">{linkBasisLabel(report.linkBasis)}</StatusBadge>
-                    {report.status ? <StatusBadge tone="info">{report.status}</StatusBadge> : null}
+                    {report.status ? <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge> : null}
+                    {report.report_type ? <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge> : null}
+                    {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{report.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>{pluralize(report.linkedRunCount, "linked run")}</span>
+                    <span>{pluralize(report.enabledSectionCount, "enabled section")}</span>
+                    <span>{pluralize(report.artifactCount, "artifact")}</span>
+                    <span>
+                      {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
+                    </span>
+                  </div>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(report.updated_at)}</p>
                 </Link>
               ))}

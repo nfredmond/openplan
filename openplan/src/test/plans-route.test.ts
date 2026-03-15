@@ -251,6 +251,9 @@ describe("/api/plans", () => {
             reports: 1,
             relatedProjects: 1,
           },
+          artifactCoverage: expect.objectContaining({
+            label: "Inputs and outputs linked",
+          }),
           readiness: expect.objectContaining({
             ready: true,
             readyCheckCount: 6,

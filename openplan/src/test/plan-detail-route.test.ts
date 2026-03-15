@@ -68,6 +68,24 @@ const reportSelectMock = vi.fn((columns: string) => {
   return { eq: reportEqMock };
 });
 
+const scenarioEntriesInMock = vi.fn();
+const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
+
+const engagementCategoriesInMock = vi.fn();
+const engagementCategoriesSelectMock = vi.fn(() => ({ in: engagementCategoriesInMock }));
+
+const engagementItemsInMock = vi.fn();
+const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+
+const reportRunsInMock = vi.fn();
+const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
+
+const reportSectionsInMock = vi.fn();
+const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
+
+const reportArtifactsInMock = vi.fn();
+const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -117,6 +135,42 @@ const fromMock = vi.fn((table: string) => {
   if (table === "reports") {
     return {
       select: reportSelectMock,
+    };
+  }
+
+  if (table === "scenario_entries") {
+    return {
+      select: scenarioEntriesSelectMock,
+    };
+  }
+
+  if (table === "engagement_categories") {
+    return {
+      select: engagementCategoriesSelectMock,
+    };
+  }
+
+  if (table === "engagement_items") {
+    return {
+      select: engagementItemsSelectMock,
+    };
+  }
+
+  if (table === "report_runs") {
+    return {
+      select: reportRunsSelectMock,
+    };
+  }
+
+  if (table === "report_sections") {
+    return {
+      select: reportSectionsSelectMock,
+    };
+  }
+
+  if (table === "report_artifacts") {
+    return {
+      select: reportArtifactsSelectMock,
     };
   }
 
@@ -196,11 +250,33 @@ describe("/api/plans/[planId]", () => {
     });
 
     scenarioOrderMock.mockResolvedValue({
-      data: [{ id: SCENARIO_PROJECT_ID, project_id: PROJECT_ID, title: "Project scenario", status: "active", updated_at: "2026-03-15T09:00:00.000Z" }],
+      data: [
+        {
+          id: SCENARIO_PROJECT_ID,
+          project_id: PROJECT_ID,
+          title: "Project scenario",
+          summary: "Project-derived scenario summary",
+          planning_question: "What if the corridor is re-striped?",
+          status: "active",
+          baseline_entry_id: "baseline-project",
+          updated_at: "2026-03-15T09:00:00.000Z",
+        },
+      ],
       error: null,
     });
     scenarioInMock.mockResolvedValue({
-      data: [{ id: SCENARIO_EXPLICIT_ID, project_id: null, title: "Explicit scenario", status: "draft", updated_at: "2026-03-15T10:00:00.000Z" }],
+      data: [
+        {
+          id: SCENARIO_EXPLICIT_ID,
+          project_id: null,
+          title: "Explicit scenario",
+          summary: "Explicit scenario summary",
+          planning_question: "What if the plan adds protected lanes?",
+          status: "draft",
+          baseline_entry_id: null,
+          updated_at: "2026-03-15T10:00:00.000Z",
+        },
+      ],
       error: null,
     });
     scenarioWorkspaceInMock.mockResolvedValue({
@@ -213,6 +289,19 @@ describe("/api/plans/[planId]", () => {
     reportOrderMock.mockResolvedValue({ data: [], error: null });
     reportInMock.mockResolvedValue({ data: [], error: null });
     projectInMock.mockResolvedValue({ data: [], error: null });
+    scenarioEntriesInMock.mockResolvedValue({
+      data: [
+        { scenario_set_id: SCENARIO_PROJECT_ID, status: "ready", attached_run_id: "run-1" },
+        { scenario_set_id: SCENARIO_PROJECT_ID, status: "draft", attached_run_id: null },
+        { scenario_set_id: SCENARIO_EXPLICIT_ID, status: "draft", attached_run_id: null },
+      ],
+      error: null,
+    });
+    engagementCategoriesInMock.mockResolvedValue({ data: [], error: null });
+    engagementItemsInMock.mockResolvedValue({ data: [], error: null });
+    reportRunsInMock.mockResolvedValue({ data: [], error: null });
+    reportSectionsInMock.mockResolvedValue({ data: [], error: null });
+    reportArtifactsInMock.mockResolvedValue({ data: [], error: null });
 
     planLinksInsertMock.mockResolvedValue({ error: null });
 
@@ -231,12 +320,27 @@ describe("/api/plans/[planId]", () => {
     expect(await response.json()).toMatchObject({
       plan: expect.objectContaining({ id: PLAN_ID }),
       linkedScenarios: expect.arrayContaining([
-        expect.objectContaining({ id: SCENARIO_PROJECT_ID, linkBasis: "project" }),
-        expect.objectContaining({ id: SCENARIO_EXPLICIT_ID, linkBasis: "plan_link" }),
+        expect.objectContaining({
+          id: SCENARIO_PROJECT_ID,
+          linkBasis: "project",
+          entryCount: 2,
+          readyEntryCount: 1,
+          attachedRunCount: 1,
+        }),
+        expect.objectContaining({
+          id: SCENARIO_EXPLICIT_ID,
+          linkBasis: "plan_link",
+          entryCount: 1,
+          readyEntryCount: 0,
+          attachedRunCount: 0,
+        }),
       ]),
       readiness: expect.objectContaining({
         ready: false,
         readyCheckCount: 4,
+      }),
+      artifactCoverage: expect.objectContaining({
+        label: "Inputs linked, output pending",
       }),
     });
   });

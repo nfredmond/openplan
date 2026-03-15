@@ -18,6 +18,7 @@ describe("plan readiness helpers", () => {
       label: "Foundation ready",
       readyCheckCount: 6,
       missingCheckCount: 0,
+      missingCheckLabels: [],
     });
   });
 
@@ -38,6 +39,14 @@ describe("plan readiness helpers", () => {
       reason: "Attach a primary or related project record.",
       readyCheckCount: 0,
       missingCheckCount: 6,
+      missingCheckLabels: [
+        "Linked project",
+        "Scenario evidence",
+        "Engagement input",
+        "Report output",
+        "Geography label",
+        "Horizon year",
+      ],
     });
   });
 });

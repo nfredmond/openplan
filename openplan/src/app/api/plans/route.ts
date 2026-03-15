@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
+  buildPlanArtifactCoverage,
   buildPlanReadiness,
   PLAN_LINK_TYPE_OPTIONS,
   PLAN_STATUS_OPTIONS,
@@ -352,6 +353,11 @@ export async function GET(request: NextRequest) {
           reportCount,
           geographyLabel: plan.geography_label,
           horizonYear: plan.horizon_year,
+        }),
+        artifactCoverage: buildPlanArtifactCoverage({
+          scenarioCount,
+          engagementCampaignCount,
+          reportCount,
         }),
         linkageCounts: {
           scenarios: scenarioCount,

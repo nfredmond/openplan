@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadPlanAccess } from "@/lib/plans/api";
 import {
+  buildPlanArtifactCoverage,
   buildPlanReadiness,
   PLAN_LINK_TYPE_OPTIONS,
   PLAN_STATUS_OPTIONS,
@@ -77,8 +78,33 @@ type LinkedArtifactBase = {
   updated_at: string | null;
 };
 
-type LinkedArtifact = LinkedArtifactBase & {
-  linkBasis: "project" | "plan_link" | "both";
+type ScenarioArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  planning_question: string | null;
+  baseline_entry_id: string | null;
+  entryCount: number;
+  readyEntryCount: number;
+  attachedRunCount: number;
+};
+
+type CampaignArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  engagement_type: string | null;
+  categoryCount: number;
+  itemCount: number;
+  approvedItemCount: number;
+  pendingItemCount: number;
+  flaggedItemCount: number;
+};
+
+type ReportArtifactBase = LinkedArtifactBase & {
+  summary: string | null;
+  report_type: string | null;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+  linkedRunCount: number;
+  enabledSectionCount: number;
+  artifactCount: number;
 };
 
 const LINK_TARGET_CONFIG: Record<
@@ -254,21 +280,21 @@ export async function GET(request: NextRequest, context: RouteContext) {
         access.plan.project_id
           ? detailSupabase
               .from("scenario_sets")
-              .select("id, project_id, title, status, updated_at")
+              .select("id, project_id, title, summary, planning_question, status, baseline_entry_id, updated_at")
               .eq("project_id", access.plan.project_id)
               .order("updated_at", { ascending: false })
           : Promise.resolve({ data: [], error: null }),
         access.plan.project_id
           ? detailSupabase
               .from("engagement_campaigns")
-              .select("id, project_id, title, status, updated_at")
+              .select("id, project_id, title, summary, status, engagement_type, updated_at")
               .eq("project_id", access.plan.project_id)
               .order("updated_at", { ascending: false })
           : Promise.resolve({ data: [], error: null }),
         access.plan.project_id
           ? detailSupabase
               .from("reports")
-              .select("id, project_id, title, status, updated_at")
+              .select("id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at")
               .eq("project_id", access.plan.project_id)
               .order("updated_at", { ascending: false })
           : Promise.resolve({ data: [], error: null }),
@@ -302,19 +328,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
       scenarioLinkIds.length
         ? detailSupabase
             .from("scenario_sets")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, summary, planning_question, status, baseline_entry_id, updated_at")
             .in("id", scenarioLinkIds)
         : Promise.resolve({ data: [], error: null }),
       campaignLinkIds.length
         ? detailSupabase
             .from("engagement_campaigns")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, summary, status, engagement_type, updated_at")
             .in("id", campaignLinkIds)
         : Promise.resolve({ data: [], error: null }),
       reportLinkIds.length
         ? detailSupabase
             .from("reports")
-            .select("id, project_id, title, status, updated_at")
+            .select("id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at")
             .in("id", reportLinkIds)
         : Promise.resolve({ data: [], error: null }),
       projectLinkIds.length
@@ -342,54 +368,273 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const linkedScenarios = mergeArtifacts<LinkedArtifactBase>(
-      ((projectScenariosResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+    const scenarioIds = Array.from(
+      new Set([
+        ...((projectScenariosResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+        ...((explicitScenariosResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+      ])
+    );
+    const campaignIds = Array.from(
+      new Set([
+        ...((projectCampaignsResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+        ...((explicitCampaignsResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+      ])
+    );
+    const linkedReportIds = Array.from(
+      new Set([
+        ...((projectReportsResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+        ...((explicitReportsResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
+      ])
+    );
+
+    const [
+      scenarioEntriesResult,
+      engagementCategoriesResult,
+      engagementItemsResult,
+      reportRunsResult,
+      reportSectionsResult,
+      reportArtifactsResult,
+    ] = await Promise.all([
+      scenarioIds.length
+        ? detailSupabase
+            .from("scenario_entries")
+            .select("scenario_set_id, status, attached_run_id")
+            .in("scenario_set_id", scenarioIds)
+        : Promise.resolve({ data: [], error: null }),
+      campaignIds.length
+        ? detailSupabase.from("engagement_categories").select("campaign_id").in("campaign_id", campaignIds)
+        : Promise.resolve({ data: [], error: null }),
+      campaignIds.length
+        ? detailSupabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
+        : Promise.resolve({ data: [], error: null }),
+      linkedReportIds.length
+        ? detailSupabase.from("report_runs").select("report_id").in("report_id", linkedReportIds)
+        : Promise.resolve({ data: [], error: null }),
+      linkedReportIds.length
+        ? detailSupabase.from("report_sections").select("report_id, enabled").in("report_id", linkedReportIds)
+        : Promise.resolve({ data: [], error: null }),
+      linkedReportIds.length
+        ? detailSupabase.from("report_artifacts").select("report_id").in("report_id", linkedReportIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    for (const [name, result] of [
+      ["scenario_entries", scenarioEntriesResult],
+      ["engagement_categories", engagementCategoriesResult],
+      ["engagement_items", engagementItemsResult],
+      ["report_runs", reportRunsResult],
+      ["report_sections", reportSectionsResult],
+      ["report_artifacts", reportArtifactsResult],
+    ] as const) {
+      if (result.error) {
+        audit.error("plan_operational_summary_lookup_failed", {
+          source: name,
+          planId: access.plan.id,
+          message: result.error.message,
+          code: result.error.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load linked record summaries" }, { status: 500 });
+      }
+    }
+
+    const scenarioStatsById = new Map<string, { entryCount: number; readyEntryCount: number; attachedRunCount: number }>();
+    for (const row of (scenarioEntriesResult.data ?? []) as Array<{
+      scenario_set_id: string;
+      status: string | null;
+      attached_run_id: string | null;
+    }>) {
+      const current = scenarioStatsById.get(row.scenario_set_id) ?? {
+        entryCount: 0,
+        readyEntryCount: 0,
+        attachedRunCount: 0,
+      };
+      current.entryCount += 1;
+      if (row.status === "ready") current.readyEntryCount += 1;
+      if (row.attached_run_id) current.attachedRunCount += 1;
+      scenarioStatsById.set(row.scenario_set_id, current);
+    }
+
+    const campaignCategoryCounts = new Map<string, number>();
+    for (const row of (engagementCategoriesResult.data ?? []) as Array<{ campaign_id: string }>) {
+      campaignCategoryCounts.set(row.campaign_id, (campaignCategoryCounts.get(row.campaign_id) ?? 0) + 1);
+    }
+
+    const campaignItemStats = new Map<
+      string,
+      { itemCount: number; approvedItemCount: number; pendingItemCount: number; flaggedItemCount: number }
+    >();
+    for (const row of (engagementItemsResult.data ?? []) as Array<{ campaign_id: string; status: string | null }>) {
+      const current = campaignItemStats.get(row.campaign_id) ?? {
+        itemCount: 0,
+        approvedItemCount: 0,
+        pendingItemCount: 0,
+        flaggedItemCount: 0,
+      };
+      current.itemCount += 1;
+      if (row.status === "approved") current.approvedItemCount += 1;
+      if (row.status === "pending") current.pendingItemCount += 1;
+      if (row.status === "flagged") current.flaggedItemCount += 1;
+      campaignItemStats.set(row.campaign_id, current);
+    }
+
+    const reportRunCounts = new Map<string, number>();
+    for (const row of (reportRunsResult.data ?? []) as Array<{ report_id: string }>) {
+      reportRunCounts.set(row.report_id, (reportRunCounts.get(row.report_id) ?? 0) + 1);
+    }
+
+    const reportEnabledSectionCounts = new Map<string, number>();
+    for (const row of (reportSectionsResult.data ?? []) as Array<{ report_id: string; enabled: boolean }>) {
+      if (!row.enabled) continue;
+      reportEnabledSectionCounts.set(row.report_id, (reportEnabledSectionCounts.get(row.report_id) ?? 0) + 1);
+    }
+
+    const reportArtifactCounts = new Map<string, number>();
+    for (const row of (reportArtifactsResult.data ?? []) as Array<{ report_id: string }>) {
+      reportArtifactCounts.set(row.report_id, (reportArtifactCounts.get(row.report_id) ?? 0) + 1);
+    }
+
+    const linkedScenarios = mergeArtifacts<ScenarioArtifactBase>(
+      ((projectScenariosResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        summary: string | null;
+        planning_question: string | null;
+        status: string | null;
+        baseline_entry_id: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
+        planning_question: item.planning_question,
         status: item.status,
+        baseline_entry_id: item.baseline_entry_id,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        entryCount: scenarioStatsById.get(item.id)?.entryCount ?? 0,
+        readyEntryCount: scenarioStatsById.get(item.id)?.readyEntryCount ?? 0,
+        attachedRunCount: scenarioStatsById.get(item.id)?.attachedRunCount ?? 0,
       })),
-      ((explicitScenariosResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+      ((explicitScenariosResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        summary: string | null;
+        planning_question: string | null;
+        status: string | null;
+        baseline_entry_id: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
+        planning_question: item.planning_question,
         status: item.status,
+        baseline_entry_id: item.baseline_entry_id,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        entryCount: scenarioStatsById.get(item.id)?.entryCount ?? 0,
+        readyEntryCount: scenarioStatsById.get(item.id)?.readyEntryCount ?? 0,
+        attachedRunCount: scenarioStatsById.get(item.id)?.attachedRunCount ?? 0,
       }))
     );
 
-    const linkedCampaigns = mergeArtifacts<LinkedArtifactBase>(
-      ((projectCampaignsResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+    const linkedCampaigns = mergeArtifacts<CampaignArtifactBase>(
+      ((projectCampaignsResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        summary: string | null;
+        status: string | null;
+        engagement_type: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
         status: item.status,
+        engagement_type: item.engagement_type,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        categoryCount: campaignCategoryCounts.get(item.id) ?? 0,
+        itemCount: campaignItemStats.get(item.id)?.itemCount ?? 0,
+        approvedItemCount: campaignItemStats.get(item.id)?.approvedItemCount ?? 0,
+        pendingItemCount: campaignItemStats.get(item.id)?.pendingItemCount ?? 0,
+        flaggedItemCount: campaignItemStats.get(item.id)?.flaggedItemCount ?? 0,
       })),
-      ((explicitCampaignsResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+      ((explicitCampaignsResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        summary: string | null;
+        status: string | null;
+        engagement_type: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
         status: item.status,
+        engagement_type: item.engagement_type,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        categoryCount: campaignCategoryCounts.get(item.id) ?? 0,
+        itemCount: campaignItemStats.get(item.id)?.itemCount ?? 0,
+        approvedItemCount: campaignItemStats.get(item.id)?.approvedItemCount ?? 0,
+        pendingItemCount: campaignItemStats.get(item.id)?.pendingItemCount ?? 0,
+        flaggedItemCount: campaignItemStats.get(item.id)?.flaggedItemCount ?? 0,
       }))
     );
 
-    const linkedReports = mergeArtifacts<LinkedArtifactBase>(
-      ((projectReportsResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+    const linkedReports = mergeArtifacts<ReportArtifactBase>(
+      ((projectReportsResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        report_type: string | null;
+        status: string | null;
+        summary: string | null;
+        generated_at: string | null;
+        latest_artifact_kind: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
         status: item.status,
+        report_type: item.report_type,
+        generated_at: item.generated_at,
+        latest_artifact_kind: item.latest_artifact_kind,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        linkedRunCount: reportRunCounts.get(item.id) ?? 0,
+        enabledSectionCount: reportEnabledSectionCounts.get(item.id) ?? 0,
+        artifactCount: reportArtifactCounts.get(item.id) ?? 0,
       })),
-      ((explicitReportsResult.data ?? []) as Array<{ id: string; project_id: string | null; title: string | null; status: string | null; updated_at: string | null }>).map((item) => ({
+      ((explicitReportsResult.data ?? []) as Array<{
+        id: string;
+        project_id: string | null;
+        title: string | null;
+        report_type: string | null;
+        status: string | null;
+        summary: string | null;
+        generated_at: string | null;
+        latest_artifact_kind: string | null;
+        updated_at: string | null;
+      }>).map((item) => ({
         id: item.id,
         title: item.title,
+        summary: item.summary,
         status: item.status,
+        report_type: item.report_type,
+        generated_at: item.generated_at,
+        latest_artifact_kind: item.latest_artifact_kind,
         project_id: item.project_id,
         updated_at: item.updated_at,
+        linkedRunCount: reportRunCounts.get(item.id) ?? 0,
+        enabledSectionCount: reportEnabledSectionCounts.get(item.id) ?? 0,
+        artifactCount: reportArtifactCounts.get(item.id) ?? 0,
       }))
     );
 
@@ -447,6 +692,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       geographyLabel: access.plan.geography_label,
       horizonYear: access.plan.horizon_year,
     });
+    const artifactCoverage = buildPlanArtifactCoverage({
+      scenarioCount: linkedScenarios.length,
+      engagementCampaignCount: linkedCampaigns.length,
+      reportCount: linkedReports.length,
+    });
 
     return NextResponse.json(
       {
@@ -458,6 +708,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         linkedReports,
         planLinks,
         readiness,
+        artifactCoverage,
       },
       { status: 200 }
     );

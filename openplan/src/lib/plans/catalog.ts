@@ -47,7 +47,18 @@ export type PlanReadinessSummary = {
   readyCheckCount: number;
   totalCheckCount: number;
   missingCheckCount: number;
+  missingCheckLabels: string[];
+  nextSteps: string[];
   checks: PlanReadinessCheck[];
+};
+
+export type PlanArtifactCoverageSummary = {
+  label: string;
+  detail: string;
+  tone: "success" | "warning" | "neutral";
+  hasScenarioEvidence: boolean;
+  hasEngagementInput: boolean;
+  hasReportOutput: boolean;
 };
 
 export function titleizePlanValue(value: string | null | undefined): string {
@@ -153,6 +164,9 @@ export function buildPlanReadiness({
   const totalCheckCount = checks.length;
   const missingCheckCount = totalCheckCount - readyCheckCount;
   const ready = missingCheckCount === 0;
+  const missingChecks = checks.filter((check) => !check.ready);
+  const missingCheckLabels = missingChecks.map((check) => check.label);
+  const nextSteps = missingChecks.map((check) => check.detail);
 
   if (ready) {
     return {
@@ -164,6 +178,8 @@ export function buildPlanReadiness({
       readyCheckCount,
       totalCheckCount,
       missingCheckCount,
+      missingCheckLabels,
+      nextSteps,
       checks,
     };
   }
@@ -179,6 +195,75 @@ export function buildPlanReadiness({
     readyCheckCount,
     totalCheckCount,
     missingCheckCount,
+    missingCheckLabels,
+    nextSteps,
     checks,
+  };
+}
+
+export function buildPlanArtifactCoverage({
+  scenarioCount,
+  engagementCampaignCount,
+  reportCount,
+}: {
+  scenarioCount: number;
+  engagementCampaignCount: number;
+  reportCount: number;
+}): PlanArtifactCoverageSummary {
+  const hasScenarioEvidence = scenarioCount > 0;
+  const hasEngagementInput = engagementCampaignCount > 0;
+  const hasReportOutput = reportCount > 0;
+
+  if (hasScenarioEvidence && hasEngagementInput && hasReportOutput) {
+    return {
+      label: "Inputs and outputs linked",
+      detail: "Scenario evidence, engagement intake, and report output are all visible on this plan record.",
+      tone: "success",
+      hasScenarioEvidence,
+      hasEngagementInput,
+      hasReportOutput,
+    };
+  }
+
+  if ((hasScenarioEvidence || hasEngagementInput) && !hasReportOutput) {
+    return {
+      label: "Inputs linked, output pending",
+      detail: "The planning basis is connected, but no linked report output is visible yet.",
+      tone: "warning",
+      hasScenarioEvidence,
+      hasEngagementInput,
+      hasReportOutput,
+    };
+  }
+
+  if (!hasScenarioEvidence && !hasEngagementInput && hasReportOutput) {
+    return {
+      label: "Output linked, inputs thin",
+      detail: "A report exists, but supporting scenarios and engagement input are still missing from the plan basis.",
+      tone: "warning",
+      hasScenarioEvidence,
+      hasEngagementInput,
+      hasReportOutput,
+    };
+  }
+
+  if (hasScenarioEvidence || hasEngagementInput || hasReportOutput) {
+    return {
+      label: "Partial artifact coverage",
+      detail: "Some linked planning artifacts are present, but the basis is still uneven.",
+      tone: "warning",
+      hasScenarioEvidence,
+      hasEngagementInput,
+      hasReportOutput,
+    };
+  }
+
+  return {
+    label: "No linked artifacts yet",
+    detail: "Attach scenarios, engagement campaigns, or reports before treating this plan as operationally reviewable.",
+    tone: "neutral",
+    hasScenarioEvidence,
+    hasEngagementInput,
+    hasReportOutput,
   };
 }
