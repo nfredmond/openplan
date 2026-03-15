@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
+import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { createClient } from "@/lib/supabase/server";
-import { scenarioComparisonStatus, scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
+import { buildScenarioComparisonSummary, scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 
 type ScenarioSetRow = {
   id: string;
@@ -34,12 +35,6 @@ type ScenarioEntryRow = {
   created_at: string;
   updated_at: string;
 };
-
-function fmtDateTime(value: string | null | undefined): string {
-  if (!value) return "Unknown";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
-}
 
 export default async function ScenarioSetDetailPage({
   params,
@@ -108,6 +103,11 @@ export default async function ScenarioSetDetailPage({
     entries.find((entry) => entry.entry_type === "baseline") ??
     null;
   const alternativeEntries = entries.filter((entry) => entry.entry_type === "alternative");
+  const comparisonSummary = buildScenarioComparisonSummary({
+    baselineEntryId: baselineEntry?.id,
+    baselineRunId: baselineEntry?.attached_run_id ?? null,
+    candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
+  });
 
   return (
     <section className="module-page">
@@ -130,7 +130,9 @@ export default async function ScenarioSetDetailPage({
             <StatusBadge tone={baselineEntry ? "success" : "warning"}>
               {baselineEntry ? "Baseline registered" : "Baseline missing"}
             </StatusBadge>
-            <StatusBadge tone="info">{alternativeEntries.length} alternatives</StatusBadge>
+            <StatusBadge tone={comparisonSummary.readyAlternatives > 0 ? "success" : "info"}>
+              {comparisonSummary.readyAlternatives}/{comparisonSummary.totalAlternatives} ready
+            </StatusBadge>
           </div>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{scenarioSet.title}</h1>
@@ -152,9 +154,13 @@ export default async function ScenarioSetDetailPage({
               <p className="module-summary-detail">Exactly one baseline is allowed per scenario set.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Updated</p>
-              <p className="module-summary-value text-lg">{fmtDateTime(scenarioSet.updated_at)}</p>
-              <p className="module-summary-detail">Run IDs and assumptions remain visible in the detail view.</p>
+              <p className="module-summary-label">Comparison readiness</p>
+              <p className="module-summary-value text-lg">
+                {comparisonSummary.readyAlternatives} / {comparisonSummary.totalAlternatives}
+              </p>
+              <p className="module-summary-detail">
+                Ready alternatives have distinct runs attached on both the baseline and alternative entries.
+              </p>
             </div>
           </div>
         </article>
@@ -170,11 +176,11 @@ export default async function ScenarioSetDetailPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Comparison readiness is a lightweight first-pass signal. This page says whether the baseline and candidate
-            entries have the run attachments needed for a real comparison.
+            Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are
+            recorded, and why a baseline-versus-alternative comparison is or is not ready.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Missing-run means one side still lacks an attached analysis run.</div>
+            <div className="module-operator-item">Baseline and alternative entries show distinct run-attachment blockers.</div>
             <div className="module-operator-item">Assumptions stay attached to each entry, not hidden inside prose.</div>
             <div className="module-operator-item">Project linkage remains visible so this record does not float free from the planning container.</div>
           </div>
@@ -220,113 +226,12 @@ export default async function ScenarioSetDetailPage({
 
         <div className="space-y-6">
           <ScenarioEntryComposer scenarioSetId={scenarioSet.id} hasBaseline={Boolean(baselineEntry)} runs={runsData ?? []} />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Registry</p>
-                <h2 className="module-section-title">Baseline and alternatives</h2>
-                <p className="module-section-description">
-                  Entry cards show the minimum useful first-pass metadata: status, assumptions, run attachment, and
-                  comparison readiness.
-                </p>
-              </div>
-            </div>
-
-            {entries.length === 0 ? (
-              <div className="module-empty-state mt-5 text-sm">
-                No scenario entries yet. Start by registering the baseline, then add alternatives.
-              </div>
-            ) : (
-              <div className="mt-5 module-record-list">
-                {entries.map((entry) => {
-                  const comparisonState =
-                    entry.entry_type === "alternative"
-                      ? scenarioComparisonStatus(baselineEntry?.attached_run_id, entry.attached_run_id)
-                      : null;
-
-                  return (
-                    <div key={entry.id} className="module-record-row">
-                      <div className="module-record-head">
-                        <div className="module-record-main">
-                          <div className="module-record-kicker">
-                            <StatusBadge tone={entry.entry_type === "baseline" ? "success" : "info"}>
-                              {titleizeScenarioValue(entry.entry_type)}
-                            </StatusBadge>
-                            <StatusBadge tone={scenarioStatusTone(entry.status)}>
-                              {titleizeScenarioValue(entry.status)}
-                            </StatusBadge>
-                            {comparisonState ? (
-                              <StatusBadge tone={comparisonState === "ready" ? "success" : "warning"}>
-                                {comparisonState}
-                              </StatusBadge>
-                            ) : null}
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <h3 className="module-record-title text-[1.05rem]">{entry.label}</h3>
-                              <p className="module-record-stamp">Updated {fmtDateTime(entry.updated_at)}</p>
-                            </div>
-                            <p className="module-record-summary line-clamp-3">
-                              {entry.summary || "No summary yet. Add one to explain why this entry matters."}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">
-                          Run {entry.attachedRun ? entry.attachedRun.title : "Not attached"}
-                        </span>
-                        <span className="module-record-chip">
-                          Assumptions {Object.keys(entry.assumptions_json ?? {}).length}
-                        </span>
-                        <span className="module-record-chip">Sort {entry.sort_order}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </article>
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Comparison summary</p>
-                <h2 className="module-section-title">Baseline versus alternatives</h2>
-                <p className="module-section-description">
-                  This surface only reports readiness and linked evidence in pass 1. Materialized comparison products can
-                  follow once the registry foundation proves stable.
-                </p>
-              </div>
-            </div>
-
-            {alternativeEntries.length === 0 ? (
-              <div className="module-empty-state mt-5 text-sm">No alternatives yet.</div>
-            ) : (
-              <div className="mt-5 space-y-3">
-                {alternativeEntries.map((entry) => {
-                  const state = scenarioComparisonStatus(baselineEntry?.attached_run_id, entry.attached_run_id);
-                  return (
-                    <div key={entry.id} className="rounded-[20px] border border-border/70 bg-background/80 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold tracking-tight">{entry.label}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            Baseline: {baselineEntry?.label ?? "Missing"} · Candidate run:{" "}
-                            {entry.attachedRun?.title ?? "Missing"}
-                          </p>
-                        </div>
-                        <StatusBadge tone={state === "ready" ? "success" : "warning"}>{state}</StatusBadge>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </article>
+          <ScenarioEntryRegistry
+            scenarioSetId={scenarioSet.id}
+            entries={entries}
+            runs={runsData ?? []}
+            baselineEntryId={baselineEntry?.id ?? null}
+          />
         </div>
       </div>
     </section>

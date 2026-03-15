@@ -99,7 +99,7 @@ export function ScenarioEntryComposer({ scenarioSetId, hasBaseline, runs }: Scen
           <p className="module-section-label">Entries</p>
           <h2 className="module-section-title">Register baseline and alternatives</h2>
           <p className="module-section-description">
-            This first pass keeps entry capture simple: label, run attachment, assumptions, and readiness status.
+            Add the entry, attach the best available run, and keep assumptions structured so readiness is clear from the start.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
@@ -189,6 +189,9 @@ export function ScenarioEntryComposer({ scenarioSetId, hasBaseline, runs }: Scen
               </option>
             ))}
           </select>
+          <p className="text-xs text-muted-foreground">
+            A comparison becomes ready only after both the baseline and alternative entries have distinct runs attached.
+          </p>
         </div>
 
         <div className="space-y-1.5">

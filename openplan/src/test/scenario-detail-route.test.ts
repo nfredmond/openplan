@@ -186,7 +186,20 @@ describe("/api/scenarios/[scenarioSetId]", () => {
         id: "55555555-5555-4555-8555-555555555555",
       },
       alternativeEntries: [expect.objectContaining({ id: "77777777-7777-4777-8777-777777777777" })],
-      comparisons: [expect.objectContaining({ comparisonStatus: "ready" })],
+      comparisons: [
+        expect.objectContaining({
+          comparisonStatus: "ready",
+          comparisonLabel: "Ready to compare",
+          ready: true,
+        }),
+      ],
+      comparisonSummary: {
+        totalAlternatives: 1,
+        readyAlternatives: 1,
+        blockedAlternatives: 0,
+        baselineEntryPresent: true,
+        baselineRunPresent: true,
+      },
     });
   });
 

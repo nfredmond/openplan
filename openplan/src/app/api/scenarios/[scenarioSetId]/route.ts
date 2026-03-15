@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { SCENARIO_SET_STATUSES, scenarioComparisonStatus } from "@/lib/scenarios/catalog";
+import {
+  SCENARIO_SET_STATUSES,
+  buildScenarioComparisonSummary,
+  getScenarioComparisonReadiness,
+} from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess } from "@/lib/scenarios/api";
 
 const paramsSchema = z.object({
@@ -129,21 +133,47 @@ export async function GET(request: NextRequest, context: RouteContext) {
       hydratedEntries.find((entry) => entry.entry_type === "baseline") ??
       null;
     const alternativeEntries = hydratedEntries.filter((entry) => entry.entry_type !== "baseline");
+    const comparisonSummary = buildScenarioComparisonSummary({
+      baselineEntryId: baselineEntry?.id,
+      baselineRunId: baselineEntry?.attached_run_id ?? null,
+      candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
+    });
 
     return NextResponse.json(
       {
         scenarioSet: access.scenarioSet,
         project,
-        entries: hydratedEntries,
+        entries: hydratedEntries.map((entry) => ({
+          ...entry,
+          evidence: {
+            assumptionCount: Object.keys((entry.assumptions_json as Record<string, unknown>) ?? {}).length,
+            hasAttachedRun: Boolean(entry.attached_run_id),
+            attachedRunTitle: entry.attached_run?.title ?? null,
+          },
+        })),
         baselineEntry,
         alternativeEntries,
-        comparisons: alternativeEntries.map((entry) => ({
-          scenarioEntryId: entry.id,
-          baselineEntryId: baselineEntry?.id ?? null,
-          comparisonStatus: scenarioComparisonStatus(baselineEntry?.attached_run_id, entry.attached_run_id),
-          baselineRunId: baselineEntry?.attached_run_id ?? null,
-          candidateRunId: entry.attached_run_id ?? null,
-        })),
+        comparisons: alternativeEntries.map((entry) => {
+          const readiness = getScenarioComparisonReadiness({
+            baselineEntryId: baselineEntry?.id,
+            baselineRunId: baselineEntry?.attached_run_id ?? null,
+            candidateRunId: entry.attached_run_id,
+          });
+
+          return {
+            scenarioEntryId: entry.id,
+            baselineEntryId: baselineEntry?.id ?? null,
+            comparisonStatus: readiness.status,
+            comparisonLabel: readiness.label,
+            comparisonReason: readiness.reason,
+            ready: readiness.ready,
+            evidenceReady: readiness.evidenceReady,
+            sameRunAttached: readiness.sameRunAttached,
+            baselineRunId: baselineEntry?.attached_run_id ?? null,
+            candidateRunId: entry.attached_run_id ?? null,
+          };
+        }),
+        comparisonSummary,
       },
       { status: 200 }
     );
