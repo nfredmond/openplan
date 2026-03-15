@@ -6,8 +6,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
 import {
-  buildModelReadiness,
-  buildModelWorkflowSummary,
+  buildModelWorkspaceSummary,
   formatModelDateTime,
   formatModelFamilyLabel,
   formatModelStatusLabel,
@@ -119,31 +118,18 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         : Promise.resolve({ data: [], error: null }),
     ]);
 
-  const linkedScenarioCount = (linkedScenariosResult.data?.length ?? 0) + (model.scenario_set_id ? 1 : 0);
-  const linkedDatasetCount = linkedDatasetsResult.data?.length ?? 0;
-  const linkedReportCount = linkedReportsResult.data?.length ?? 0;
-  const linkedRunCount = linkedRunsResult.data?.length ?? 0;
-  const readiness = buildModelReadiness({
-    hasProject: Boolean(model.project_id),
-    hasScenario: linkedScenarioCount > 0,
+  const { readiness, workflow, linkageCounts } = buildModelWorkspaceSummary({
+    modelStatus: model.status,
+    projectId: model.project_id,
+    scenarioSetId: model.scenario_set_id,
     configVersion: model.config_version,
     ownerLabel: model.owner_label,
     assumptionsSummary: model.assumptions_summary,
-    inputDatasetCount: linkedDatasetCount,
     inputSummary: model.input_summary,
-    outputReportCount: linkedReportCount,
-    outputRunCount: linkedRunCount,
     outputSummary: model.output_summary,
     lastValidatedAt: model.last_validated_at,
-  });
-  const workflow = buildModelWorkflowSummary({
-    modelStatus: model.status,
-    readiness,
-    linkedScenarioCount,
-    linkedDatasetCount,
-    linkedRunCount,
-    linkedReportCount,
     lastRunRecordedAt: model.last_run_recorded_at,
+    links,
   });
 
   const linkedRecordSections: Array<{ title: string; count: number; records: LinkedRecordCard[]; emptyCopy: string }> = [
@@ -294,7 +280,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               </p>
             </div>
 
-            <div className="module-summary-grid cols-4">
+            <div className="module-summary-grid cols-5">
               <div className="module-summary-card">
                 <p className="module-summary-label">Checks passed</p>
                 <p className="module-summary-value">
@@ -303,18 +289,23 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                 <p className="module-summary-detail">{readiness.reason}</p>
               </div>
               <div className="module-summary-card">
+                <p className="module-summary-label">Linked plans</p>
+                <p className="module-summary-value">{linkageCounts.plans}</p>
+                <p className="module-summary-detail">Planning records that already depend on this model basis.</p>
+              </div>
+              <div className="module-summary-card">
                 <p className="module-summary-label">Datasets</p>
-                <p className="module-summary-value">{linkedDatasetCount}</p>
+                <p className="module-summary-value">{linkageCounts.datasets}</p>
                 <p className="module-summary-detail">Linked Data Hub provenance records.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Runs</p>
-                <p className="module-summary-value">{linkedRunCount}</p>
+                <p className="module-summary-value">{linkageCounts.runs}</p>
                 <p className="module-summary-detail">Recorded run references tied to this model.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Reports</p>
-                <p className="module-summary-value">{linkedReportCount}</p>
+                <p className="module-summary-value">{linkageCounts.reports}</p>
                 <p className="module-summary-detail">Linked report outputs carrying this model forward.</p>
               </div>
             </div>

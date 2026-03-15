@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
   ClipboardList,
+  Database,
   FileStack,
   FolderKanban,
   MessagesSquare,
@@ -22,6 +23,12 @@ import {
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
+import {
+  buildModelWorkspaceSummary,
+  formatModelFamilyLabel,
+  formatModelStatusLabel,
+  modelStatusTone,
+} from "@/lib/models/catalog";
 import { formatPlanStatusLabel, formatPlanTypeLabel, planStatusTone } from "@/lib/plans/catalog";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
@@ -52,6 +59,49 @@ function linkBasisLabel(value: "project" | "program_link" | "both"): string {
   if (value === "both") return "Project + program link";
   if (value === "project") return "From primary project";
   return "Explicit program link";
+}
+
+type SupportingProgramModelBase = {
+  id: string;
+  project_id: string | null;
+  scenario_set_id: string | null;
+  title: string | null;
+  model_family: string | null;
+  status: string | null;
+  config_version: string | null;
+  owner_label: string | null;
+  summary: string | null;
+  last_validated_at: string | null;
+  last_run_recorded_at: string | null;
+  updated_at: string | null;
+};
+
+function mergeSupportingProgramModels<T extends { id: string }>(
+  projectItems: T[],
+  planItems: T[]
+): Array<T & { supportBasis: "project" | "plan" | "both" }> {
+  const merged = new Map<string, T & { supportBasis: "project" | "plan" | "both" }>();
+
+  for (const item of projectItems) {
+    merged.set(item.id, { ...item, supportBasis: "project" });
+  }
+
+  for (const item of planItems) {
+    const current = merged.get(item.id);
+    if (current) {
+      merged.set(item.id, { ...current, ...item, supportBasis: "both" });
+      continue;
+    }
+    merged.set(item.id, { ...item, supportBasis: "plan" });
+  }
+
+  return [...merged.values()];
+}
+
+function modelSupportBasisLabel(value: "project" | "plan" | "both"): string {
+  if (value === "both") return "Project + linked plan";
+  if (value === "project") return "From project context";
+  return "From linked plan";
 }
 
 export default async function ProgramDetailPage({
@@ -290,6 +340,96 @@ export default async function ProgramDetailPage({
     }>
   );
 
+  const linkedPlanTitleById = new Map(
+    linkedPlans.map((plan) => [plan.id, plan.title ?? "Untitled plan"] as const)
+  );
+  const linkedPlanIds = [...linkedPlanTitleById.keys()];
+
+  const [projectModelsResult, planModelLinksResult] = await Promise.all([
+    program.project_id
+      ? supabase
+          .from("models")
+          .select(
+            "id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, summary, last_validated_at, last_run_recorded_at, updated_at"
+          )
+          .eq("project_id", program.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    linkedPlanIds.length
+      ? supabase.from("model_links").select("model_id, link_type, linked_id").eq("link_type", "plan").in("linked_id", linkedPlanIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const planBasedModelIds = Array.from(
+    new Set(((planModelLinksResult.data ?? []) as Array<{ model_id: string }>).map((link) => link.model_id))
+  );
+
+  const [planBasedModelsResult, supportingModelLinksResult] = await Promise.all([
+    planBasedModelIds.length
+      ? supabase
+          .from("models")
+          .select(
+            "id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, summary, last_validated_at, last_run_recorded_at, updated_at"
+          )
+          .in("id", planBasedModelIds)
+      : Promise.resolve({ data: [], error: null }),
+    (projectModelsResult.data ?? []).length || planBasedModelIds.length
+      ? supabase
+          .from("model_links")
+          .select("model_id, link_type, linked_id")
+          .in(
+            "model_id",
+            Array.from(
+              new Set([
+                ...((projectModelsResult.data ?? []) as Array<{ id: string }>).map((model) => model.id),
+                ...planBasedModelIds,
+              ])
+            )
+          )
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const supportingModelLinksByModel = new Map<string, Array<{ model_id: string; link_type: string; linked_id: string }>>();
+  for (const link of (supportingModelLinksResult.data ?? []) as Array<{ model_id: string; link_type: string; linked_id: string }>) {
+    const current = supportingModelLinksByModel.get(link.model_id) ?? [];
+    current.push(link);
+    supportingModelLinksByModel.set(link.model_id, current);
+  }
+
+  const planTitlesByModel = new Map<string, string[]>();
+  for (const link of (planModelLinksResult.data ?? []) as Array<{ model_id: string; linked_id: string }>) {
+    const title = linkedPlanTitleById.get(link.linked_id);
+    if (!title) continue;
+    const current = planTitlesByModel.get(link.model_id) ?? [];
+    if (!current.includes(title)) current.push(title);
+    planTitlesByModel.set(link.model_id, current);
+  }
+
+  const supportingModels = mergeSupportingProgramModels<SupportingProgramModelBase>(
+    (projectModelsResult.data ?? []) as SupportingProgramModelBase[],
+    (planBasedModelsResult.data ?? []) as SupportingProgramModelBase[]
+  ).map((model) => {
+    const workspaceSummary = buildModelWorkspaceSummary({
+      modelStatus: model.status,
+      projectId: model.project_id,
+      scenarioSetId: model.scenario_set_id,
+      configVersion: model.config_version,
+      ownerLabel: model.owner_label,
+      assumptionsSummary: null,
+      inputSummary: null,
+      outputSummary: null,
+      lastValidatedAt: model.last_validated_at,
+      lastRunRecordedAt: model.last_run_recorded_at,
+      links: supportingModelLinksByModel.get(model.id) ?? [],
+    });
+
+    return {
+      ...model,
+      ...workspaceSummary,
+      linkedPlanTitles: planTitlesByModel.get(model.id) ?? [],
+    };
+  });
+
   const readiness = buildProgramReadiness({
     cycleName: program.cycle_name,
     hasProject: linkedProjects.length > 0,
@@ -302,6 +442,11 @@ export default async function ProgramDetailPage({
     nominationDueAt: program.nomination_due_at,
     adoptionTargetAt: program.adoption_target_at,
   });
+
+  const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;
+  const projectBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "plan").length;
+  const planBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "project").length;
+  const linkedBasisCount = linkedPlans.length + linkedReports.length + linkedCampaigns.length + supportingModels.length;
 
   const workflow = buildProgramWorkflowSummary({
     programStatus: program.status,
@@ -349,8 +494,8 @@ export default async function ProgramDetailPage({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked basis</p>
-              <p className="module-summary-value">{linkedPlans.length + linkedReports.length + linkedCampaigns.length}</p>
-              <p className="module-summary-detail">Plans, reports, and engagement records tied into this package.</p>
+              <p className="module-summary-value">{linkedBasisCount}</p>
+              <p className="module-summary-detail">Plans, models, reports, and engagement records tied into this package.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Schedule</p>
@@ -472,9 +617,9 @@ export default async function ProgramDetailPage({
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Linked records</p>
-                <h2 className="module-section-title">Projects, plans, reports, and engagement evidence</h2>
+                <h2 className="module-section-title">Projects, plans, models, reports, and engagement evidence</h2>
                 <p className="module-section-description">
-                  Programs inherit context from the primary project and can also carry explicit cross-record links.
+                  Programs inherit context from the primary project and linked plans, so model support stays visible alongside the rest of the package evidence.
                 </p>
               </div>
             </div>
@@ -544,6 +689,78 @@ export default async function ProgramDetailPage({
                         </div>
                       </Link>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Models</h3>
+                </div>
+                {supportingModels.length === 0 ? (
+                  <EmptyState
+                    title="No supporting models visible"
+                    description="Anchor models to the primary project or linked plans so the package carries an explicit modeling basis."
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting models</p>
+                        <p className="mt-1 text-sm font-semibold text-foreground">{supportingModels.length}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{supportingModelReadyCount} fully ready.</p>
+                      </div>
+                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project context</p>
+                        <p className="mt-1 text-sm font-semibold text-foreground">{projectBasedModelCount}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Models anchored to the package project.</p>
+                      </div>
+                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Linked plan basis</p>
+                        <p className="mt-1 text-sm font-semibold text-foreground">{planBasedModelCount}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Models surfaced through linked plans.</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {supportingModels.map((model) => (
+                        <Link key={model.id} href={`/models/${model.id}`} className="module-record-row is-interactive group block">
+                          <div className="module-record-head">
+                            <div className="module-record-main">
+                              <div className="module-record-kicker">
+                                <StatusBadge tone="neutral">{modelSupportBasisLabel(model.supportBasis)}</StatusBadge>
+                                <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
+                                <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
+                                <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
+                              </div>
+                              <div className="space-y-1.5">
+                                <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">
+                                  {model.title ?? "Untitled model"}
+                                </h3>
+                                <p className="module-record-summary line-clamp-2">
+                                  {model.summary || "No summary on file for this supporting model record."}
+                                </p>
+                                <div className="module-record-meta">
+                                  <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config pending"}</span>
+                                  <span className="module-record-chip">{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</span>
+                                  <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
+                                  <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
+                                  {model.linkedPlanTitles.map((title) => (
+                                    <span key={`${model.id}-${title}`} className="module-record-chip">Plan {title}</span>
+                                  ))}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {model.readiness.missingCheckLabels.length > 0
+                                    ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
+                                    : model.workflow.reason}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

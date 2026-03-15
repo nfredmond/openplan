@@ -67,6 +67,21 @@ export type ModelWorkflowSummary = {
   reviewNotes: string[];
 };
 
+export type ModelLinkageCounts = {
+  scenarios: number;
+  datasets: number;
+  reports: number;
+  runs: number;
+  plans: number;
+  relatedProjects: number;
+};
+
+export type ModelWorkspaceSummary = {
+  readiness: ModelReadinessSummary;
+  workflow: ModelWorkflowSummary;
+  linkageCounts: ModelLinkageCounts;
+};
+
 export function titleizeModelValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
 
@@ -104,6 +119,94 @@ export function formatModelDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+export function buildModelLinkageCounts({
+  links,
+  projectId,
+  scenarioSetId,
+}: {
+  links: Array<{ link_type: string }>;
+  projectId: string | null | undefined;
+  scenarioSetId: string | null | undefined;
+}): ModelLinkageCounts {
+  const explicitScenarioCount = links.filter((link) => link.link_type === "scenario_set").length;
+  const explicitDatasetCount = links.filter((link) => link.link_type === "data_dataset").length;
+  const explicitReportCount = links.filter((link) => link.link_type === "report").length;
+  const explicitRunCount = links.filter((link) => link.link_type === "run").length;
+  const explicitPlanCount = links.filter((link) => link.link_type === "plan").length;
+  const explicitProjectCount = links.filter((link) => link.link_type === "project_record").length;
+
+  return {
+    scenarios: explicitScenarioCount + (scenarioSetId ? 1 : 0),
+    datasets: explicitDatasetCount,
+    reports: explicitReportCount,
+    runs: explicitRunCount,
+    plans: explicitPlanCount,
+    relatedProjects: explicitProjectCount + (projectId ? 1 : 0),
+  };
+}
+
+export function buildModelWorkspaceSummary({
+  modelStatus,
+  projectId,
+  scenarioSetId,
+  configVersion,
+  ownerLabel,
+  assumptionsSummary,
+  inputSummary,
+  outputSummary,
+  lastValidatedAt,
+  lastRunRecordedAt,
+  links,
+}: {
+  modelStatus: string | null | undefined;
+  projectId: string | null | undefined;
+  scenarioSetId: string | null | undefined;
+  configVersion: string | null | undefined;
+  ownerLabel: string | null | undefined;
+  assumptionsSummary: string | null | undefined;
+  inputSummary: string | null | undefined;
+  outputSummary: string | null | undefined;
+  lastValidatedAt: string | null | undefined;
+  lastRunRecordedAt: string | null | undefined;
+  links: Array<{ link_type: string }>;
+}): ModelWorkspaceSummary {
+  const linkageCounts = buildModelLinkageCounts({
+    links,
+    projectId,
+    scenarioSetId,
+  });
+
+  const readiness = buildModelReadiness({
+    hasProject: Boolean(projectId),
+    hasScenario: linkageCounts.scenarios > 0,
+    configVersion,
+    ownerLabel,
+    assumptionsSummary,
+    inputDatasetCount: linkageCounts.datasets,
+    inputSummary,
+    outputReportCount: linkageCounts.reports,
+    outputRunCount: linkageCounts.runs,
+    outputSummary,
+    lastValidatedAt,
+  });
+
+  const workflow = buildModelWorkflowSummary({
+    modelStatus,
+    readiness,
+    linkedScenarioCount: linkageCounts.scenarios,
+    linkedDatasetCount: linkageCounts.datasets,
+    linkedRunCount: linkageCounts.runs,
+    linkedReportCount: linkageCounts.reports,
+    lastRunRecordedAt,
+  });
+
+  return {
+    readiness,
+    workflow,
+    linkageCounts,
+  };
 }
 
 export function buildModelReadiness({

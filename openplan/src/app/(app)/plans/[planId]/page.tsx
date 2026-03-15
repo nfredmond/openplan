@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
+  Database,
   FileStack,
   FolderKanban,
   GitBranch,
@@ -25,6 +26,12 @@ import {
   formatPlanTypeLabel,
   planStatusTone,
 } from "@/lib/plans/catalog";
+import {
+  buildModelWorkspaceSummary,
+  formatModelFamilyLabel,
+  formatModelStatusLabel,
+  modelStatusTone,
+} from "@/lib/models/catalog";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 
@@ -70,6 +77,49 @@ type LinkedProjectBase = LinkedArtifactBase & {
   plan_type?: string | null;
   delivery_phase?: string | null;
 };
+
+type SupportingModelBase = {
+  id: string;
+  project_id: string | null;
+  scenario_set_id: string | null;
+  title: string | null;
+  model_family: string | null;
+  status: string | null;
+  config_version: string | null;
+  owner_label: string | null;
+  summary: string | null;
+  last_validated_at: string | null;
+  last_run_recorded_at: string | null;
+  updated_at: string | null;
+};
+
+function mergeSupportingModels<T extends { id: string }>(
+  projectItems: T[],
+  explicitItems: T[]
+): Array<T & { linkBasis: "project" | "plan_link" | "both" }> {
+  const merged = new Map<string, T & { linkBasis: "project" | "plan_link" | "both" }>();
+
+  for (const item of projectItems) {
+    merged.set(item.id, { ...item, linkBasis: "project" });
+  }
+
+  for (const item of explicitItems) {
+    const current = merged.get(item.id);
+    if (current) {
+      merged.set(item.id, { ...current, ...item, linkBasis: "both" });
+      continue;
+    }
+    merged.set(item.id, { ...item, linkBasis: "plan_link" });
+  }
+
+  return [...merged.values()];
+}
+
+function modelLinkBasisLabel(value: "project" | "plan_link" | "both"): string {
+  if (value === "both") return "Project + plan link";
+  if (value === "project") return "From primary project";
+  return "Explicit model link";
+}
 
 function mergeArtifacts<T extends { id: string }>(
   projectItems: T[],
@@ -197,6 +247,48 @@ export default async function PlanDetailPage({
           .from("projects")
           .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
           .in("id", projectLinkIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const [projectModelsResult, modelPlanLinksResult] = await Promise.all([
+    plan.project_id
+      ? supabase
+          .from("models")
+          .select(
+            "id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, summary, last_validated_at, last_run_recorded_at, updated_at"
+          )
+          .eq("project_id", plan.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    supabase.from("model_links").select("model_id, link_type, linked_id").eq("link_type", "plan").eq("linked_id", plan.id),
+  ]);
+
+  const explicitModelIds = Array.from(
+    new Set(((modelPlanLinksResult.data ?? []) as Array<{ model_id: string }>).map((link) => link.model_id))
+  );
+
+  const [explicitModelsResult, supportingModelLinksResult] = await Promise.all([
+    explicitModelIds.length
+      ? supabase
+          .from("models")
+          .select(
+            "id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, summary, last_validated_at, last_run_recorded_at, updated_at"
+          )
+          .in("id", explicitModelIds)
+      : Promise.resolve({ data: [], error: null }),
+    (projectModelsResult.data ?? []).length || explicitModelIds.length
+      ? supabase
+          .from("model_links")
+          .select("model_id, link_type, linked_id")
+          .in(
+            "model_id",
+            Array.from(
+              new Set([
+                ...((projectModelsResult.data ?? []) as Array<{ id: string }>).map((model) => model.id),
+                ...explicitModelIds,
+              ])
+            )
+          )
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -417,6 +509,37 @@ export default async function PlanDetailPage({
     }))
   );
 
+  const modelLinksByModel = new Map<string, Array<{ model_id: string; link_type: string; linked_id: string }>>();
+  for (const link of (supportingModelLinksResult.data ?? []) as Array<{ model_id: string; link_type: string; linked_id: string }>) {
+    const current = modelLinksByModel.get(link.model_id) ?? [];
+    current.push(link);
+    modelLinksByModel.set(link.model_id, current);
+  }
+
+  const supportingModels = mergeSupportingModels<SupportingModelBase>(
+    (projectModelsResult.data ?? []) as SupportingModelBase[],
+    (explicitModelsResult.data ?? []) as SupportingModelBase[]
+  ).map((model) => {
+    const workspaceSummary = buildModelWorkspaceSummary({
+      modelStatus: model.status,
+      projectId: model.project_id,
+      scenarioSetId: model.scenario_set_id,
+      configVersion: model.config_version,
+      ownerLabel: model.owner_label,
+      assumptionsSummary: null,
+      inputSummary: null,
+      outputSummary: null,
+      lastValidatedAt: model.last_validated_at,
+      lastRunRecordedAt: model.last_run_recorded_at,
+      links: modelLinksByModel.get(model.id) ?? [],
+    });
+
+    return {
+      ...model,
+      ...workspaceSummary,
+    };
+  });
+
   const readiness = buildPlanReadiness({
     hasProject: linkedProjects.length > 0,
     scenarioCount: linkedScenarios.length,
@@ -443,6 +566,9 @@ export default async function PlanDetailPage({
   const flaggedEngagementItemCount = linkedCampaigns.reduce((sum, item) => sum + item.flaggedItemCount, 0);
   const generatedReportCount = linkedReports.filter((item) => Boolean(item.generated_at)).length;
   const reportArtifactCount = linkedReports.reduce((sum, item) => sum + item.artifactCount, 0);
+  const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;
+  const projectBasedModelCount = supportingModels.filter((model) => model.linkBasis !== "plan_link").length;
+  const explicitModelCount = supportingModels.filter((model) => model.linkBasis !== "project").length;
   const workflow = buildPlanWorkflowSummary({
     planStatus: plan.status,
     readiness,
@@ -844,6 +970,98 @@ export default async function PlanDetailPage({
           )}
         </article>
       </div>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Models</p>
+            <h2 className="module-section-title">Supporting model basis</h2>
+            <p className="module-section-description">
+              Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <Database className="h-3.5 w-3.5" />
+            {supportingModels.length} supporting model{supportingModels.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        {supportingModels.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title="No model support linked yet"
+              description="Attach models to this plan or anchor them to the primary project so the planning record carries an explicit modeling basis."
+              compact
+            />
+          </div>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Supporting models</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{supportingModelReadyCount} currently pass every explicit readiness check.</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">With project basis</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{projectBasedModelCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">Models that arrive through or remain anchored to the primary project context.</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Explicit plan links</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitModelCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">Direct model references stored on or uniquely tied to this plan.</p>
+              </div>
+            </div>
+
+            <div className="module-record-list">
+              {supportingModels.map((model) => (
+                <Link key={model.id} href={`/models/${model.id}`} className="module-record-row is-interactive group block">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone="neutral">{modelLinkBasisLabel(model.linkBasis)}</StatusBadge>
+                        <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
+                        <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
+                        <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">{model.title ?? "Untitled model"}</h3>
+                          <p className="module-record-stamp">Updated {formatPlanDateTime(model.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {model.summary || "No model summary captured yet. Open the model record to review assumptions, provenance, and outputs."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config version pending"}</span>
+                    <span className="module-record-chip">{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</span>
+                    <span className="module-record-chip">{model.linkageCounts.datasets} datasets</span>
+                    <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
+                    <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
+                    <span className="module-record-chip">
+                      {model.readiness.missingCheckCount > 0
+                        ? `${model.readiness.missingCheckCount} readiness gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`
+                        : "No readiness gaps"}
+                    </span>
+                  </div>
+
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {model.readiness.missingCheckLabels.length > 0
+                      ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
+                      : model.workflow.reason}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">

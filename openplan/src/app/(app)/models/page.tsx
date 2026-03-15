@@ -6,13 +6,22 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
 import {
-  buildModelReadiness,
-  buildModelWorkflowSummary,
+  buildModelWorkspaceSummary,
   formatModelDateTime,
   formatModelFamilyLabel,
   formatModelStatusLabel,
+  MODEL_FAMILY_OPTIONS,
+  MODEL_STATUS_OPTIONS,
   modelStatusTone,
 } from "@/lib/models/catalog";
+
+type ModelsPageSearchParams = Promise<{
+  projectId?: string;
+  modelFamily?: string;
+  status?: string;
+  readiness?: string;
+  q?: string;
+}>;
 
 type ModelRow = {
   id: string;
@@ -61,7 +70,12 @@ type ModelLinkRow = {
   linked_id: string;
 };
 
-export default async function ModelsPage() {
+export default async function ModelsPage({
+  searchParams,
+}: {
+  searchParams: ModelsPageSearchParams;
+}) {
+  const filters = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -96,54 +110,66 @@ export default async function ModelsPage() {
     linksByModel.set(link.model_id, current);
   }
 
-  const models = ((modelsData ?? []) as ModelRow[]).map((model) => {
-    const project = Array.isArray(model.projects) ? model.projects[0] ?? null : model.projects ?? null;
-    const scenarioSet = Array.isArray(model.scenario_sets) ? model.scenario_sets[0] ?? null : model.scenario_sets ?? null;
-    const links = linksByModel.get(model.id) ?? [];
-    const linkedScenarioCount = links.filter((link) => link.link_type === "scenario_set").length + (model.scenario_set_id ? 1 : 0);
-    const linkedDatasetCount = links.filter((link) => link.link_type === "data_dataset").length;
-    const linkedReportCount = links.filter((link) => link.link_type === "report").length;
-    const linkedRunCount = links.filter((link) => link.link_type === "run").length;
-    const readiness = buildModelReadiness({
-      hasProject: Boolean(model.project_id),
-      hasScenario: linkedScenarioCount > 0,
-      configVersion: model.config_version,
-      ownerLabel: model.owner_label,
-      assumptionsSummary: model.assumptions_summary,
-      inputDatasetCount: linkedDatasetCount,
-      inputSummary: model.input_summary,
-      outputReportCount: linkedReportCount,
-      outputRunCount: linkedRunCount,
-      outputSummary: model.output_summary,
-      lastValidatedAt: model.last_validated_at,
-    });
+  const normalizedQuery = filters.q?.trim().toLowerCase() ?? "";
 
-    return {
-      ...model,
-      project,
-      scenarioSet,
-      readiness,
-      workflow: buildModelWorkflowSummary({
+  const models = ((modelsData ?? []) as ModelRow[])
+    .map((model) => {
+      const project = Array.isArray(model.projects) ? model.projects[0] ?? null : model.projects ?? null;
+      const scenarioSet = Array.isArray(model.scenario_sets) ? model.scenario_sets[0] ?? null : model.scenario_sets ?? null;
+      const links = linksByModel.get(model.id) ?? [];
+      const workspaceSummary = buildModelWorkspaceSummary({
         modelStatus: model.status,
-        readiness,
-        linkedScenarioCount,
-        linkedDatasetCount,
-        linkedRunCount,
-        linkedReportCount,
+        projectId: model.project_id,
+        scenarioSetId: model.scenario_set_id,
+        configVersion: model.config_version,
+        ownerLabel: model.owner_label,
+        assumptionsSummary: model.assumptions_summary,
+        inputSummary: model.input_summary,
+        outputSummary: model.output_summary,
+        lastValidatedAt: model.last_validated_at,
         lastRunRecordedAt: model.last_run_recorded_at,
-      }),
-      linkageCounts: {
-        scenarios: linkedScenarioCount,
-        datasets: linkedDatasetCount,
-        reports: linkedReportCount,
-        runs: linkedRunCount,
-      },
-    };
-  });
+        links,
+      });
+
+      return {
+        ...model,
+        project,
+        scenarioSet,
+        ...workspaceSummary,
+      };
+    })
+    .filter((model) => (filters.projectId ? model.project_id === filters.projectId : true))
+    .filter((model) => (filters.modelFamily ? model.model_family === filters.modelFamily : true))
+    .filter((model) => (filters.status ? model.status === filters.status : true))
+    .filter((model) => {
+      if (filters.readiness === "ready") return model.readiness.ready;
+      if (filters.readiness === "gaps") return !model.readiness.ready;
+      return true;
+    })
+    .filter((model) => {
+      if (!normalizedQuery) return true;
+
+      const searchableText = [
+        model.title,
+        model.summary,
+        model.owner_label,
+        model.config_version,
+        model.project?.name,
+        model.scenarioSet?.title,
+        model.readiness.reason,
+        model.workflow.label,
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(normalizedQuery);
+    });
 
   const reviewReadyCount = models.filter((model) => model.status === "ready_for_review" || model.status === "approved").length;
   const readinessGreenCount = models.filter((model) => model.readiness.ready).length;
   const traceableCount = models.filter((model) => model.linkageCounts.reports > 0 || model.linkageCounts.runs > 0).length;
+  const hasActiveFilters = Boolean(filters.projectId || filters.modelFamily || filters.status || filters.readiness || normalizedQuery);
 
   return (
     <section className="module-page">
@@ -165,7 +191,9 @@ export default async function ModelsPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Models</p>
               <p className="module-summary-value">{models.length}</p>
-              <p className="module-summary-detail">Managed model records in the current workspace.</p>
+              <p className="module-summary-detail">
+                {hasActiveFilters ? "Matching the current filters." : "Managed model records in the current workspace."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Review-ready</p>
@@ -197,7 +225,7 @@ export default async function ModelsPage() {
           <div className="module-operator-list">
             <div className="module-operator-item">Primary project and scenario anchors keep the modeling record tied to planning context.</div>
             <div className="module-operator-item">Data Hub datasets, plans, reports, and recorded runs can be linked without inventing duplicate concepts.</div>
-            <div className="module-operator-item">Missing config version, validation, or output chain remains visible as an explicit gap.</div>
+            <div className="module-operator-item">Filters expose which models are ready, which still have gaps, and which already support downstream planning records.</div>
           </div>
         </article>
       </header>
@@ -211,8 +239,7 @@ export default async function ModelsPage() {
               <p className="module-section-label">Catalog</p>
               <h2 className="module-section-title">Managed model records</h2>
               <p className="module-section-description">
-                Review which models are ready, which are still assembling provenance, and which already have output chains
-                connected into reports or recorded runs.
+                Filter by readiness, status, project, or model family to isolate the records that actually need attention.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -221,11 +248,91 @@ export default async function ModelsPage() {
             </span>
           </div>
 
+          <form className="mt-5 grid gap-3 rounded-[22px] border border-border/70 bg-background/70 p-4 md:grid-cols-2 xl:grid-cols-[1.3fr_repeat(4,minmax(0,1fr))]">
+            <input
+              type="search"
+              name="q"
+              defaultValue={filters.q ?? ""}
+              placeholder="Search title, owner, version, project, or scenario"
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none md:col-span-2 xl:col-span-1"
+            />
+
+            <select
+              name="projectId"
+              defaultValue={filters.projectId ?? ""}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+            >
+              <option value="">All projects</option>
+              {(projectsData ?? []).map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="modelFamily"
+              defaultValue={filters.modelFamily ?? ""}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+            >
+              <option value="">All model families</option>
+              {MODEL_FAMILY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="status"
+              defaultValue={filters.status ?? ""}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+            >
+              <option value="">All statuses</option>
+              {MODEL_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex gap-3">
+              <select
+                name="readiness"
+                defaultValue={filters.readiness ?? ""}
+                className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+              >
+                <option value="">All readiness states</option>
+                <option value="ready">Ready</option>
+                <option value="gaps">Has gaps</option>
+              </select>
+              <button
+                type="submit"
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium"
+              >
+                Apply
+              </button>
+            </div>
+
+            {hasActiveFilters ? (
+              <div className="md:col-span-2 xl:col-span-5 flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/70 bg-background/80 px-3 py-2 text-sm text-muted-foreground">
+                <span>Filters are narrowing the model catalog so you can focus on the records that still need operator attention.</span>
+                <Link href="/models" className="font-medium text-foreground transition hover:text-primary">
+                  Clear filters
+                </Link>
+              </div>
+            ) : null}
+          </form>
+
           {models.length === 0 ? (
             <div className="mt-5">
               <EmptyState
-                title="No models yet"
-                description="Create the first model record to establish config versioning, readiness checks, and traceability across scenarios, datasets, and reports."
+                title={hasActiveFilters ? "No models match these filters" : "No models yet"}
+                description={
+                  hasActiveFilters
+                    ? "Adjust the catalog filters or clear them to bring records back into view."
+                    : "Create the first model record to establish config versioning, readiness checks, and traceability across scenarios, datasets, reports, and linked plans."
+                }
               />
             </div>
           ) : (
@@ -238,6 +345,7 @@ export default async function ModelsPage() {
                         <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
                         <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
                         <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
+                        <StatusBadge tone={model.workflow.tone}>{model.workflow.label}</StatusBadge>
                       </div>
 
                       <div className="space-y-1.5">
@@ -258,10 +366,22 @@ export default async function ModelsPage() {
                     <span className="module-record-chip">Project {model.project?.name ?? "Pending"}</span>
                     <span className="module-record-chip">Scenario {model.scenarioSet?.title ?? "Pending"}</span>
                     <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config version pending"}</span>
+                    <span className="module-record-chip">{model.linkageCounts.plans} plans</span>
                     <span className="module-record-chip">{model.linkageCounts.datasets} datasets</span>
                     <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
                     <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
+                    <span className="module-record-chip">
+                      {model.readiness.missingCheckCount > 0
+                        ? `${model.readiness.missingCheckCount} readiness gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`
+                        : "No readiness gaps"}
+                    </span>
                   </div>
+
+                  {model.readiness.missingCheckLabels.length > 0 ? (
+                    <p className="mt-3 text-sm text-muted-foreground">Missing basis: {model.readiness.missingCheckLabels.join(", ")}.</p>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">{model.workflow.reason}</p>
+                  )}
                 </Link>
               ))}
             </div>

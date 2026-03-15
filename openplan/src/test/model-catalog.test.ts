@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildModelReadiness, buildModelWorkflowSummary } from "@/lib/models/catalog";
+import {
+  buildModelLinkageCounts,
+  buildModelReadiness,
+  buildModelWorkflowSummary,
+  buildModelWorkspaceSummary,
+} from "@/lib/models/catalog";
 
 describe("model readiness helpers", () => {
   it("marks a model record ready when config, provenance, and outputs are present", () => {
@@ -79,6 +84,62 @@ describe("model readiness helpers", () => {
       label: "Awaiting operator review",
       packageLabel: "Run evidence present",
       packageTone: "info",
+    });
+  });
+
+  it("counts linkage types with primary project and scenario anchors included", () => {
+    expect(
+      buildModelLinkageCounts({
+        projectId: "project-1",
+        scenarioSetId: "scenario-1",
+        links: [
+          { link_type: "data_dataset" },
+          { link_type: "data_dataset" },
+          { link_type: "report" },
+          { link_type: "run" },
+          { link_type: "plan" },
+          { link_type: "project_record" },
+          { link_type: "scenario_set" },
+        ],
+      })
+    ).toMatchObject({
+      scenarios: 2,
+      datasets: 2,
+      reports: 1,
+      runs: 1,
+      plans: 1,
+      relatedProjects: 2,
+    });
+  });
+
+  it("builds a reusable workspace summary for list and detail surfaces", () => {
+    expect(
+      buildModelWorkspaceSummary({
+        modelStatus: "configuring",
+        projectId: "project-1",
+        scenarioSetId: null,
+        configVersion: "tdm-v2",
+        ownerLabel: "Model Ops",
+        assumptionsSummary: "Calibration basis captured.",
+        inputSummary: null,
+        outputSummary: null,
+        lastValidatedAt: null,
+        lastRunRecordedAt: null,
+        links: [{ link_type: "scenario_set" }, { link_type: "data_dataset" }, { link_type: "plan" }],
+      })
+    ).toMatchObject({
+      readiness: {
+        ready: false,
+        readyCheckCount: 6,
+      },
+      workflow: {
+        label: "Configuration in progress",
+      },
+      linkageCounts: {
+        scenarios: 1,
+        datasets: 1,
+        plans: 1,
+      },
     });
   });
 });
