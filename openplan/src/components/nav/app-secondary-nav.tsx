@@ -74,7 +74,7 @@ const sectionMap: Array<{
       title: "Modeling & Data",
       items: [
         { href: "/scenarios", label: "Scenarios" },
-        { href: "/models", label: "Managed Runs" },
+        { href: "/models", label: "Models" },
         { href: "/data-hub", label: "Data Hub" },
       ],
     },
