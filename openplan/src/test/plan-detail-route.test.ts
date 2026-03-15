@@ -342,6 +342,10 @@ describe("/api/plans/[planId]", () => {
       artifactCoverage: expect.objectContaining({
         label: "Inputs linked, output pending",
       }),
+      workflow: expect.objectContaining({
+        label: "Assemble planning basis",
+        planningOutputLabel: "No planning outputs linked",
+      }),
     });
   });
 

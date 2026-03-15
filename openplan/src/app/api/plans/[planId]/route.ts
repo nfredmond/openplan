@@ -6,6 +6,7 @@ import { loadPlanAccess } from "@/lib/plans/api";
 import {
   buildPlanArtifactCoverage,
   buildPlanReadiness,
+  buildPlanWorkflowSummary,
   PLAN_LINK_TYPE_OPTIONS,
   PLAN_STATUS_OPTIONS,
   PLAN_TYPE_OPTIONS,
@@ -697,6 +698,21 @@ export async function GET(request: NextRequest, context: RouteContext) {
       engagementCampaignCount: linkedCampaigns.length,
       reportCount: linkedReports.length,
     });
+    const workflow = buildPlanWorkflowSummary({
+      planStatus: access.plan.status,
+      readiness,
+      linkedProjectCount: linkedProjects.length,
+      explicitLinkCount: planLinks.length,
+      relatedProjectCount: linkedProjects.length,
+      scenarioCount: linkedScenarios.length,
+      readyScenarioCount: linkedScenarios.filter((item) => item.readyEntryCount > 0).length,
+      engagementCampaignCount: linkedCampaigns.length,
+      pendingEngagementItemCount: linkedCampaigns.reduce((sum, item) => sum + item.pendingItemCount, 0),
+      flaggedEngagementItemCount: linkedCampaigns.reduce((sum, item) => sum + item.flaggedItemCount, 0),
+      reportCount: linkedReports.length,
+      generatedReportCount: linkedReports.filter((item) => Boolean(item.generated_at)).length,
+      reportArtifactCount: linkedReports.reduce((sum, item) => sum + item.artifactCount, 0),
+    });
 
     return NextResponse.json(
       {
@@ -709,6 +725,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         planLinks,
         readiness,
         artifactCoverage,
+        workflow,
       },
       { status: 200 }
     );

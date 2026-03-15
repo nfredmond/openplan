@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildPlanArtifactCoverage,
   buildPlanReadiness,
+  buildPlanWorkflowSummary,
   formatPlanDateTime,
   formatPlanStatusLabel,
   formatPlanTypeLabel,
@@ -156,6 +157,24 @@ export default async function PlansPage({
         },
       };
     })
+    .map((plan) => ({
+      ...plan,
+      workflow: buildPlanWorkflowSummary({
+        planStatus: plan.status,
+        readiness: plan.readiness,
+        linkedProjectCount: plan.project ? 1 : 0,
+        explicitLinkCount: (linksByPlan.get(plan.id) ?? []).length,
+        relatedProjectCount: plan.project ? 1 : 0,
+        scenarioCount: plan.linkageCounts.scenarios,
+        readyScenarioCount: 0,
+        engagementCampaignCount: plan.linkageCounts.engagementCampaigns,
+        pendingEngagementItemCount: 0,
+        flaggedEngagementItemCount: 0,
+        reportCount: plan.linkageCounts.reports,
+        generatedReportCount: 0,
+        reportArtifactCount: 0,
+      }),
+    }))
     .filter((plan) => (filters.projectId ? plan.project_id === filters.projectId : true))
     .filter((plan) => (filters.planType ? plan.plan_type === filters.planType : true))
     .filter((plan) => (filters.status ? plan.status === filters.status : true));
@@ -305,6 +324,7 @@ export default async function PlansPage({
                         <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
                         <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
                         <StatusBadge tone={plan.readiness.tone}>{plan.readiness.label}</StatusBadge>
+                        <StatusBadge tone={plan.workflow.tone}>{plan.workflow.label}</StatusBadge>
                       </div>
 
                       <div className="space-y-1.5">
@@ -333,6 +353,7 @@ export default async function PlansPage({
                       {plan.horizon_year ? `Horizon ${plan.horizon_year}` : "Horizon pending"}
                     </span>
                     <span className="module-record-chip">{plan.artifactCoverage.label}</span>
+                    <span className="module-record-chip">{plan.workflow.planningOutputLabel}</span>
                     <span className="module-record-chip">
                       {plan.readiness.missingCheckCount > 0
                         ? `${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
@@ -348,7 +369,7 @@ export default async function PlansPage({
                       Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm text-muted-foreground">{plan.artifactCoverage.detail}</p>
+                    <p className="mt-3 text-sm text-muted-foreground">{plan.workflow.reason}</p>
                   )}
                 </Link>
               ))}

@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, FileStack, FolderKanban, MessagesSquare, Radar, ScrollText, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  FileStack,
+  FolderKanban,
+  GitBranch,
+  MessagesSquare,
+  Radar,
+  ScrollText,
+  ShieldCheck,
+} from "lucide-react";
+import { PlanDetailControls } from "@/components/plans/plan-detail-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
@@ -8,6 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildPlanArtifactCoverage,
   buildPlanReadiness,
+  buildPlanWorkflowSummary,
   formatPlanDateTime,
   formatPlanLinkTypeLabel,
   formatPlanStatusLabel,
@@ -119,8 +130,9 @@ export default async function PlanDetailPage({
     notFound();
   }
 
-  const [projectResult, planLinksResult, projectScenariosResult, projectCampaignsResult, projectReportsResult] =
+  const [projectsResult, projectResult, planLinksResult, projectScenariosResult, projectCampaignsResult, projectReportsResult] =
     await Promise.all([
+      supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
       plan.project_id
         ? supabase
             .from("projects")
@@ -418,6 +430,34 @@ export default async function PlanDetailPage({
     engagementCampaignCount: linkedCampaigns.length,
     reportCount: linkedReports.length,
   });
+  const explicitScenarioCount = planLinks.filter((link) => link.link_type === "scenario_set").length;
+  const explicitCampaignCount = planLinks.filter((link) => link.link_type === "engagement_campaign").length;
+  const explicitReportCount = planLinks.filter((link) => link.link_type === "report").length;
+  const explicitProjectCount = planLinks.filter((link) => link.link_type === "project_record").length;
+  const inheritedScenarioCount = linkedScenarios.filter((item) => item.linkBasis === "project").length;
+  const inheritedCampaignCount = linkedCampaigns.filter((item) => item.linkBasis === "project").length;
+  const inheritedReportCount = linkedReports.filter((item) => item.linkBasis === "project").length;
+  const inheritedProjectCount = linkedProjects.filter((item) => item.linkBasis === "project").length;
+  const readyScenarioCount = linkedScenarios.filter((item) => item.readyEntryCount > 0).length;
+  const pendingEngagementItemCount = linkedCampaigns.reduce((sum, item) => sum + item.pendingItemCount, 0);
+  const flaggedEngagementItemCount = linkedCampaigns.reduce((sum, item) => sum + item.flaggedItemCount, 0);
+  const generatedReportCount = linkedReports.filter((item) => Boolean(item.generated_at)).length;
+  const reportArtifactCount = linkedReports.reduce((sum, item) => sum + item.artifactCount, 0);
+  const workflow = buildPlanWorkflowSummary({
+    planStatus: plan.status,
+    readiness,
+    linkedProjectCount: linkedProjects.length,
+    explicitLinkCount: planLinks.length,
+    relatedProjectCount: linkedProjects.length,
+    scenarioCount: linkedScenarios.length,
+    readyScenarioCount,
+    engagementCampaignCount: linkedCampaigns.length,
+    pendingEngagementItemCount,
+    flaggedEngagementItemCount,
+    reportCount: linkedReports.length,
+    generatedReportCount,
+    reportArtifactCount,
+  });
 
   return (
     <section className="module-page space-y-6">
@@ -447,6 +487,7 @@ export default async function PlanDetailPage({
             <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
             <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
             <StatusBadge tone={artifactCoverage.tone}>{artifactCoverage.label}</StatusBadge>
+            <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
           </div>
 
           <div className="module-summary-grid cols-3">
@@ -461,12 +502,12 @@ export default async function PlanDetailPage({
               <p className="module-summary-detail">Source campaigns feeding the planning record.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Readiness gaps</p>
-              <p className="module-summary-value">{readiness.missingCheckCount}</p>
+              <p className="module-summary-label">Linked outputs</p>
+              <p className="module-summary-value">{generatedReportCount}</p>
               <p className="module-summary-detail">
-                {readiness.missingCheckCount === 0
-                  ? "Core metadata and linked artifacts are visible."
-                  : readiness.missingCheckLabels.join(", ")}
+                {generatedReportCount > 0
+                  ? `${reportArtifactCount} stored artifact${reportArtifactCount === 1 ? "" : "s"} visible across linked reports.`
+                  : workflow.planningOutputDetail}
               </p>
             </div>
           </div>
@@ -482,7 +523,7 @@ export default async function PlanDetailPage({
               <h2 className="module-operator-title">{readiness.reason}</h2>
             </div>
           </div>
-          <p className="module-operator-copy">{artifactCoverage.detail}</p>
+          <p className="module-operator-copy">{workflow.reason}</p>
           <div className="module-operator-list">
             {readiness.checks.map((check) => (
               <div key={check.key} className="module-operator-item">
@@ -490,13 +531,22 @@ export default async function PlanDetailPage({
               </div>
             ))}
           </div>
-          {readiness.nextSteps.length > 0 ? (
+          <div className="mt-5 rounded-[22px] border border-border/70 bg-background/30 p-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Planning output cue
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
+          </div>
+          {workflow.actionItems.length > 0 ? (
             <div className="mt-5 rounded-[22px] border border-border/70 bg-background/30 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Next actions
               </p>
               <div className="mt-3 space-y-2 text-sm">
-                {readiness.nextSteps.slice(0, 3).map((step) => (
+                {workflow.actionItems.map((step) => (
                   <p key={step}>{step}</p>
                 ))}
               </div>
@@ -504,6 +554,73 @@ export default async function PlanDetailPage({
           ) : null}
         </article>
       </header>
+
+      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+        <PlanDetailControls
+          plan={plan}
+          projects={(projectsResult.data ?? []).map((project) => ({ id: project.id, name: project.name }))}
+        />
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Workflow</p>
+              <h2 className="module-section-title">Operator review posture</h2>
+              <p className="module-section-description">
+                Keep this page focused on the formal planning record: what is linked, what is ready, and what still needs operator action.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <GitBranch className="h-5 w-5" />
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
+                <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">{workflow.reason}</p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Readiness checklist</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
+                  {readiness.readyCheckCount}/{readiness.totalCheckCount}
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {readiness.missingCheckCount === 0
+                    ? "All explicit basis checks are visible."
+                    : `${readiness.missingCheckCount} checklist gap${readiness.missingCheckCount === 1 ? "" : "s"} remain.`}
+                </p>
+              </div>
+
+              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Linkage ledger</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{planLinks.length}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {planLinks.length === 0
+                    ? "No explicit links stored on the plan yet."
+                    : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
+                </p>
+              </div>
+            </div>
+
+            {workflow.reviewNotes.length > 0 ? (
+              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Review notes</p>
+                <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {workflow.reviewNotes.map((note) => (
+                    <p key={note}>{note}</p>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </article>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <article className="module-section-surface">
@@ -531,6 +648,12 @@ export default async function PlanDetailPage({
             <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Updated</p>
               <p className="mt-2 text-sm">{formatPlanDateTime(plan.updated_at)}</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/70 p-4 md:col-span-2">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Record posture</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Formal planning record only. Use linked scenarios, engagement, and reports to review basis and outputs; do not treat this surface as chapter authoring.
+              </p>
             </div>
           </div>
         </article>
@@ -564,7 +687,9 @@ export default async function PlanDetailPage({
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <StatusBadge tone="neutral">{linkBasisLabel(project.linkBasis)}</StatusBadge>
+                      <StatusBadge tone={project.linkBasis === "project" ? "success" : "neutral"}>
+                        {project.linkBasis === "project" ? "Primary project" : linkBasisLabel(project.linkBasis)}
+                      </StatusBadge>
                       {project.status ? <StatusBadge tone="info">{project.status}</StatusBadge> : null}
                     </div>
                   </div>
@@ -611,6 +736,13 @@ export default async function PlanDetailPage({
                     <span>{pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")}</span>
                     <span>{pluralize(scenario.attachedRunCount, "attached run")}</span>
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {scenario.linkBasis === "project"
+                      ? "Inherited from the primary project."
+                      : scenario.linkBasis === "both"
+                        ? "Visible through both the primary project and an explicit plan link."
+                        : "Stored as an explicit plan link on this record."}
+                  </p>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(scenario.updated_at)}</p>
                 </Link>
               ))}
@@ -651,6 +783,13 @@ export default async function PlanDetailPage({
                     <span>{campaign.pendingItemCount} pending</span>
                     <span>{campaign.flaggedItemCount} flagged</span>
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {campaign.linkBasis === "project"
+                      ? "Inherited from the primary project."
+                      : campaign.linkBasis === "both"
+                        ? "Visible through both the primary project and an explicit plan link."
+                        : "Stored as an explicit plan link on this record."}
+                  </p>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(campaign.updated_at)}</p>
                 </Link>
               ))}
@@ -691,6 +830,13 @@ export default async function PlanDetailPage({
                       {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
                     </span>
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {report.linkBasis === "project"
+                      ? "Inherited from the primary project."
+                      : report.linkBasis === "both"
+                        ? "Visible through both the primary project and an explicit plan link."
+                        : "Stored as an explicit plan link on this record."}
+                  </p>
                   <p className="mt-2 text-sm text-muted-foreground">Updated {formatPlanDateTime(report.updated_at)}</p>
                 </Link>
               ))}
@@ -714,7 +860,33 @@ export default async function PlanDetailPage({
             <EmptyState title="No explicit links yet" description="Pass 1 already shows project-derived context; explicit plan links can be added through the API." compact />
           </div>
         ) : (
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Projects</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitProjectCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {inheritedProjectCount > 0 ? `${inheritedProjectCount} more inherited from the primary project.` : "No inherited project context."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Scenarios</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitScenarioCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{inheritedScenarioCount} inherited from project linkage.</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Campaigns</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitCampaignCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{inheritedCampaignCount} inherited from project linkage.</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reports</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitReportCount}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{inheritedReportCount} inherited from project linkage.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {planLinks.map((link) => (
               <div key={link.id} className="rounded-2xl border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -724,6 +896,7 @@ export default async function PlanDetailPage({
                 <p className="mt-2 text-xs text-muted-foreground">Updated {formatPlanDateTime(link.updated_at)}</p>
               </div>
             ))}
+            </div>
           </div>
         )}
       </article>

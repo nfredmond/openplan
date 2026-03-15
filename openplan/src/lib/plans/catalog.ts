@@ -61,6 +61,17 @@ export type PlanArtifactCoverageSummary = {
   hasReportOutput: boolean;
 };
 
+export type PlanWorkflowSummary = {
+  label: string;
+  reason: string;
+  tone: "success" | "warning" | "neutral" | "info";
+  planningOutputLabel: string;
+  planningOutputDetail: string;
+  planningOutputTone: "success" | "warning" | "neutral" | "info";
+  actionItems: string[];
+  reviewNotes: string[];
+};
+
 export function titleizePlanValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
 
@@ -265,5 +276,158 @@ export function buildPlanArtifactCoverage({
     hasScenarioEvidence,
     hasEngagementInput,
     hasReportOutput,
+  };
+}
+
+export function buildPlanWorkflowSummary({
+  planStatus,
+  readiness,
+  linkedProjectCount,
+  explicitLinkCount,
+  relatedProjectCount,
+  scenarioCount,
+  readyScenarioCount,
+  engagementCampaignCount,
+  pendingEngagementItemCount,
+  flaggedEngagementItemCount,
+  reportCount,
+  generatedReportCount,
+  reportArtifactCount,
+}: {
+  planStatus: string | null | undefined;
+  readiness: PlanReadinessSummary;
+  linkedProjectCount: number;
+  explicitLinkCount: number;
+  relatedProjectCount: number;
+  scenarioCount: number;
+  readyScenarioCount: number;
+  engagementCampaignCount: number;
+  pendingEngagementItemCount: number;
+  flaggedEngagementItemCount: number;
+  reportCount: number;
+  generatedReportCount: number;
+  reportArtifactCount: number;
+}): PlanWorkflowSummary {
+  const hasGeneratedOutput = generatedReportCount > 0 || reportArtifactCount > 0;
+
+  const planningOutput = hasGeneratedOutput
+    ? {
+        label: "Planning outputs on record",
+        detail: `${generatedReportCount} generated report${generatedReportCount === 1 ? "" : "s"} and ${reportArtifactCount} stored artifact${reportArtifactCount === 1 ? "" : "s"} are traceable from this plan.`,
+        tone: "success" as const,
+      }
+    : reportCount > 0
+      ? {
+          label: "Report records linked",
+          detail: "Reports are linked, but no generated packet or stored artifact is visible yet.",
+          tone: "warning" as const,
+        }
+      : {
+          label: "No planning outputs linked",
+          detail: "This plan record is still missing a visible planning output trail.",
+          tone: "neutral" as const,
+        };
+
+  const actionItems = [
+    ...readiness.nextSteps,
+    !reportCount ? "Link a report record when packet drafting starts." : null,
+    reportCount > 0 && !hasGeneratedOutput ? "Generate or attach a report artifact so the planning output trail is explicit." : null,
+    scenarioCount > 0 && readyScenarioCount === 0 ? "Mark at least one scenario alternative ready before relying on scenario evidence." : null,
+    flaggedEngagementItemCount > 0
+      ? `Resolve ${flaggedEngagementItemCount} flagged engagement item${flaggedEngagementItemCount === 1 ? "" : "s"} before formal review.`
+      : null,
+  ].filter((item): item is string => Boolean(item));
+
+  const reviewNotes = [
+    linkedProjectCount > 0 && explicitLinkCount > 0
+      ? "This plan mixes primary-project inheritance with explicit plan links; review both sources during operator check."
+      : null,
+    relatedProjectCount > 1
+      ? `${relatedProjectCount} project records are attached, so confirm the primary project still represents the main planning anchor.`
+      : null,
+    engagementCampaignCount > 0 && pendingEngagementItemCount > 0
+      ? `${pendingEngagementItemCount} engagement item${pendingEngagementItemCount === 1 ? "" : "s"} are still pending review.`
+      : null,
+    scenarioCount > 0 && readyScenarioCount > 0
+      ? `${readyScenarioCount} scenario set${readyScenarioCount === 1 ? "" : "s"} show at least one ready alternative for review.`
+      : null,
+  ].filter((item): item is string => Boolean(item));
+
+  if (planStatus === "adopted") {
+    return {
+      label: "Formal record retained",
+      reason: hasGeneratedOutput
+        ? "Treat this plan as an adopted record with linked supporting outputs."
+        : "This plan is marked adopted, but the supporting output trail still looks thin.",
+      tone: hasGeneratedOutput ? "success" : "warning",
+      planningOutputLabel: planningOutput.label,
+      planningOutputDetail: planningOutput.detail,
+      planningOutputTone: planningOutput.tone,
+      actionItems: actionItems.slice(0, 4),
+      reviewNotes,
+    };
+  }
+
+  if (readiness.ready && hasGeneratedOutput) {
+    return {
+      label: "Ready for operator review",
+      reason: "Core record fields are present and linked planning outputs are traceable.",
+      tone: "success",
+      planningOutputLabel: planningOutput.label,
+      planningOutputDetail: planningOutput.detail,
+      planningOutputTone: planningOutput.tone,
+      actionItems: actionItems.slice(0, 4),
+      reviewNotes,
+    };
+  }
+
+  if (readiness.ready && reportCount > 0) {
+    return {
+      label: "Ready for output check",
+      reason: "The planning basis is in place; the next operator step is validating report generation and packet history.",
+      tone: "info",
+      planningOutputLabel: planningOutput.label,
+      planningOutputDetail: planningOutput.detail,
+      planningOutputTone: planningOutput.tone,
+      actionItems: actionItems.slice(0, 4),
+      reviewNotes,
+    };
+  }
+
+  if (readiness.ready) {
+    return {
+      label: "Ready for packet assembly",
+      reason: "The planning basis is visible, but output generation is still the next workflow step.",
+      tone: "info",
+      planningOutputLabel: planningOutput.label,
+      planningOutputDetail: planningOutput.detail,
+      planningOutputTone: planningOutput.tone,
+      actionItems: actionItems.slice(0, 4),
+      reviewNotes,
+    };
+  }
+
+  if (reportCount > 0) {
+    return {
+      label: "Backfill record basis",
+      reason: "Outputs are linked, but the formal plan record still has checklist gaps to close.",
+      tone: "warning",
+      planningOutputLabel: planningOutput.label,
+      planningOutputDetail: planningOutput.detail,
+      planningOutputTone: planningOutput.tone,
+      actionItems: actionItems.slice(0, 4),
+      reviewNotes,
+    };
+  }
+
+  return {
+    label: "Assemble planning basis",
+    reason: "This plan still needs explicit metadata and linked records before it is ready for review.",
+    tone: readiness.readyCheckCount === 0 ? "neutral" : "warning",
+    planningOutputLabel: planningOutput.label,
+    planningOutputDetail: planningOutput.detail,
+    planningOutputTone: planningOutput.tone,
+    actionItems: actionItems.slice(0, 4),
+    reviewNotes,
   };
 }

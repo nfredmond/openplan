@@ -6,6 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   buildPlanArtifactCoverage,
   buildPlanReadiness,
+  buildPlanWorkflowSummary,
   PLAN_LINK_TYPE_OPTIONS,
   PLAN_STATUS_OPTIONS,
   PLAN_TYPE_OPTIONS,
@@ -366,7 +367,27 @@ export async function GET(request: NextRequest) {
           relatedProjects: explicitProjectCount + (plan.project_id ? 1 : 0),
         },
       };
-    });
+    }).map((plan) => ({
+      ...plan,
+      workflow: buildPlanWorkflowSummary({
+        planStatus: plan.status,
+        readiness: plan.readiness,
+        linkedProjectCount: plan.linkageCounts.relatedProjects,
+        explicitLinkCount:
+          (linksByPlan.get(plan.id) ?? []).filter((link) =>
+            ["scenario_set", "engagement_campaign", "report", "project_record"].includes(link.link_type)
+          ).length,
+        relatedProjectCount: plan.linkageCounts.relatedProjects,
+        scenarioCount: plan.linkageCounts.scenarios,
+        readyScenarioCount: 0,
+        engagementCampaignCount: plan.linkageCounts.engagementCampaigns,
+        pendingEngagementItemCount: 0,
+        flaggedEngagementItemCount: 0,
+        reportCount: plan.linkageCounts.reports,
+        generatedReportCount: 0,
+        reportArtifactCount: 0,
+      }),
+    }));
 
     audit.info("plans_list_loaded", {
       userId: user.id,

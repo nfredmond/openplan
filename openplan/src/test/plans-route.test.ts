@@ -258,6 +258,10 @@ describe("/api/plans", () => {
             ready: true,
             readyCheckCount: 6,
           }),
+          workflow: expect.objectContaining({
+            label: "Ready for output check",
+            planningOutputLabel: "Report records linked",
+          }),
         }),
       ],
     });
