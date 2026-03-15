@@ -240,8 +240,31 @@
   }
 
   .module-page {
+    position: relative;
     display: grid;
     gap: 1.5rem;
+    isolation: isolate;
+  }
+
+  .module-page-backdrop {
+    pointer-events: none;
+    position: absolute;
+    inset: -1rem -1rem auto;
+    z-index: -1;
+    height: 13rem;
+    border-radius: 2.25rem;
+    background:
+      radial-gradient(520px 180px at 12% 10%, rgba(16, 185, 129, 0.12), transparent 70%),
+      radial-gradient(460px 180px at 88% 0%, rgba(59, 130, 246, 0.1), transparent 72%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0));
+    opacity: 0.92;
+  }
+
+  .dark .module-page-backdrop {
+    background:
+      radial-gradient(520px 180px at 12% 10%, rgba(16, 185, 129, 0.12), transparent 70%),
+      radial-gradient(460px 180px at 88% 0%, rgba(59, 130, 246, 0.12), transparent 72%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.32), rgba(15, 23, 42, 0));
   }
 
   .module-header-grid {

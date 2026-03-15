@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, Settings2 } from "lucide-react";
+import { Clock3, Link2, Loader2, Save, Settings2, ShieldCheck } from "lucide-react";
+import { ChipMultiSelect } from "@/components/ui/chip-multi-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { MODEL_FAMILY_OPTIONS, MODEL_STATUS_OPTIONS } from "@/lib/models/catalog";
 
@@ -53,6 +55,8 @@ type ModelDetailControlsProps = {
   };
 };
 
+const selectClassName = "module-select";
+
 function toLocalDateTimeValue(value: string | null | undefined): string {
   if (!value) return "";
   const parsed = new Date(value);
@@ -70,10 +74,6 @@ function fromLocalDateTimeValue(value: string): string | null {
   if (!value) return null;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-}
-
-function readSelectedIds(event: React.ChangeEvent<HTMLSelectElement>) {
-  return Array.from(event.target.selectedOptions).map((option) => option.value);
 }
 
 export function ModelDetailControls({
@@ -102,14 +102,49 @@ export function ModelDetailControls({
   const [configJsonText, setConfigJsonText] = useState(JSON.stringify(model.config_json ?? {}, null, 2));
   const [lastValidatedAt, setLastValidatedAt] = useState(toLocalDateTimeValue(model.last_validated_at));
   const [lastRunRecordedAt, setLastRunRecordedAt] = useState(toLocalDateTimeValue(model.last_run_recorded_at));
-  const [linkedScenarioIds, setLinkedScenarioIds] = useState<string[]>(selectedLinks.scenarios);
+  const [linkedScenarioIds, setLinkedScenarioIds] = useState<string[]>(() =>
+    selectedLinks.scenarios.filter((linkedId) => linkedId !== (model.scenario_set_id ?? ""))
+  );
   const [linkedPlanIds, setLinkedPlanIds] = useState<string[]>(selectedLinks.plans);
   const [linkedReportIds, setLinkedReportIds] = useState<string[]>(selectedLinks.reports);
   const [linkedDatasetIds, setLinkedDatasetIds] = useState<string[]>(selectedLinks.datasets);
   const [linkedRunIds, setLinkedRunIds] = useState<string[]>(selectedLinks.runs);
-  const [linkedProjectIds, setLinkedProjectIds] = useState<string[]>(selectedLinks.relatedProjects);
+  const [linkedProjectIds, setLinkedProjectIds] = useState<string[]>(() =>
+    selectedLinks.relatedProjects.filter((linkedId) => linkedId !== (model.project_id ?? ""))
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!scenarioSetId) return;
+    setLinkedScenarioIds((current) => current.filter((linkedId) => linkedId !== scenarioSetId));
+  }, [scenarioSetId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    setLinkedProjectIds((current) => current.filter((linkedId) => linkedId !== projectId));
+  }, [projectId]);
+
+  const linkCount =
+    linkedScenarioIds.length +
+    linkedPlanIds.length +
+    linkedReportIds.length +
+    linkedDatasetIds.length +
+    linkedRunIds.length +
+    linkedProjectIds.length;
+
+  const timestampsCount = [lastValidatedAt, lastRunRecordedAt].filter(Boolean).length;
+  const anchorsCount = [projectId, scenarioSetId].filter(Boolean).length;
+
+  const projectOptions = useMemo(() => projects.map((project) => ({ id: project.id, label: project.name })), [projects]);
+  const scenarioOptions = useMemo(
+    () => scenarioSets.map((scenarioSet) => ({ id: scenarioSet.id, label: scenarioSet.title })),
+    [scenarioSets]
+  );
+  const planOptions = useMemo(() => plans.map((plan) => ({ id: plan.id, label: plan.title })), [plans]);
+  const reportOptions = useMemo(() => reports.map((report) => ({ id: report.id, label: report.title })), [reports]);
+  const datasetOptions = useMemo(() => datasets.map((dataset) => ({ id: dataset.id, label: dataset.title })), [datasets]);
+  const runOptions = useMemo(() => runs.map((run) => ({ id: run.id, label: run.title })), [runs]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -148,16 +183,12 @@ export function ModelDetailControls({
           lastValidatedAt: fromLocalDateTimeValue(lastValidatedAt),
           lastRunRecordedAt: fromLocalDateTimeValue(lastRunRecordedAt),
           links: [
-            ...linkedScenarioIds
-              .filter((linkedId) => linkedId !== scenarioSetId)
-              .map((linkedId) => ({ linkType: "scenario_set", linkedId })),
+            ...linkedScenarioIds.map((linkedId) => ({ linkType: "scenario_set", linkedId })),
             ...linkedPlanIds.map((linkedId) => ({ linkType: "plan", linkedId })),
             ...linkedReportIds.map((linkedId) => ({ linkType: "report", linkedId })),
             ...linkedDatasetIds.map((linkedId) => ({ linkType: "data_dataset", linkedId })),
             ...linkedRunIds.map((linkedId) => ({ linkType: "run", linkedId })),
-            ...linkedProjectIds
-              .filter((linkedId) => linkedId !== projectId)
-              .map((linkedId) => ({ linkType: "project_record", linkedId })),
+            ...linkedProjectIds.map((linkedId) => ({ linkType: "project_record", linkedId })),
           ],
         }),
       });
@@ -191,316 +222,368 @@ export function ModelDetailControls({
         </span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label htmlFor="model-control-title" className="text-[0.82rem] font-semibold">
-            Title
-          </label>
-          <Input id="model-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-project" className="text-[0.82rem] font-semibold">
-              Primary project
-            </label>
-            <select
-              id="model-control-project"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={projectId}
-              onChange={(event) => setProjectId(event.target.value)}
-            >
-              <option value="">No primary project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
+      <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Anchors</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{anchorsCount}/2</p>
+            <p className="mt-1 text-sm text-muted-foreground">Primary project and scenario context.</p>
           </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-scenario" className="text-[0.82rem] font-semibold">
-              Primary scenario set
-            </label>
-            <select
-              id="model-control-scenario"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={scenarioSetId}
-              onChange={(event) => setScenarioSetId(event.target.value)}
-            >
-              <option value="">No primary scenario set</option>
-              {scenarioSets.map((scenarioSet) => (
-                <option key={scenarioSet.id} value={scenarioSet.id}>
-                  {scenarioSet.title}
-                </option>
-              ))}
-            </select>
+          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Explicit links</p>
+            <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Link2 className="h-4 w-4 text-muted-foreground" />
+              {linkCount}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Attached provenance, outputs, and related records.</p>
+          </div>
+          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Timestamps</p>
+            <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Clock3 className="h-4 w-4 text-muted-foreground" />
+              {timestampsCount}/2
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">Validation and latest recorded execution evidence.</p>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-family" className="text-[0.82rem] font-semibold">
-              Model family
-            </label>
-            <select
-              id="model-control-family"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={modelFamily}
-              onChange={(event) => setModelFamily(event.target.value)}
-            >
-              {MODEL_FAMILY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <Tabs defaultValue="core">
+          <TabsList variant="line" className="module-tabs-list">
+            <TabsTrigger value="core" className="module-tab-trigger">
+              Core
+            </TabsTrigger>
+            <TabsTrigger value="provenance" className="module-tab-trigger">
+              Provenance
+            </TabsTrigger>
+            <TabsTrigger value="links" className="module-tab-trigger">
+              Links
+            </TabsTrigger>
+            <TabsTrigger value="timestamps" className="module-tab-trigger">
+              Timestamps
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-status" className="text-[0.82rem] font-semibold">
-              Status
-            </label>
-            <select
-              id="model-control-status"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              {MODEL_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+          <TabsContent value="core" className="pt-4 space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="model-control-title" className="text-[0.82rem] font-semibold">
+                Title
+              </label>
+              <Input id="model-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-config-version" className="text-[0.82rem] font-semibold">
-              Config version
-            </label>
-            <Input
-              id="model-control-config-version"
-              value={configVersion}
-              onChange={(event) => setConfigVersion(event.target.value)}
-              placeholder="Versioned config or template label"
-            />
-          </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-project" className="text-[0.82rem] font-semibold">
+                  Primary project
+                </label>
+                <select
+                  id="model-control-project"
+                  className={selectClassName}
+                  value={projectId}
+                  onChange={(event) => setProjectId(event.target.value)}
+                >
+                  <option value="">No primary project</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-owner" className="text-[0.82rem] font-semibold">
-              Operator
-            </label>
-            <Input
-              id="model-control-owner"
-              value={ownerLabel}
-              onChange={(event) => setOwnerLabel(event.target.value)}
-              placeholder="Owner or operator"
-            />
-          </div>
-        </div>
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-scenario" className="text-[0.82rem] font-semibold">
+                  Primary scenario set
+                </label>
+                <select
+                  id="model-control-scenario"
+                  className={selectClassName}
+                  value={scenarioSetId}
+                  onChange={(event) => setScenarioSetId(event.target.value)}
+                >
+                  <option value="">No primary scenario set</option>
+                  {scenarioSets.map((scenarioSet) => (
+                    <option key={scenarioSet.id} value={scenarioSet.id}>
+                      {scenarioSet.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="model-control-horizon" className="text-[0.82rem] font-semibold">
-            Horizon / window
-          </label>
-          <Input
-            id="model-control-horizon"
-            value={horizonLabel}
-            onChange={(event) => setHorizonLabel(event.target.value)}
-            placeholder="2045 RTP / 2035 transit buildout"
-          />
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-family" className="text-[0.82rem] font-semibold">
+                  Model family
+                </label>
+                <select
+                  id="model-control-family"
+                  className={selectClassName}
+                  value={modelFamily}
+                  onChange={(event) => setModelFamily(event.target.value)}
+                >
+                  {MODEL_FAMILY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="model-control-summary" className="text-[0.82rem] font-semibold">
-            Summary
-          </label>
-          <Textarea id="model-control-summary" value={summary} onChange={(event) => setSummary(event.target.value)} />
-        </div>
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-status" className="text-[0.82rem] font-semibold">
+                  Status
+                </label>
+                <select
+                  id="model-control-status"
+                  className={selectClassName}
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value)}
+                >
+                  {MODEL_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="model-control-assumptions" className="text-[0.82rem] font-semibold">
-            Assumptions posture
-          </label>
-          <Textarea
-            id="model-control-assumptions"
-            value={assumptionsSummary}
-            onChange={(event) => setAssumptionsSummary(event.target.value)}
-          />
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-config-version" className="text-[0.82rem] font-semibold">
+                  Config version
+                </label>
+                <Input
+                  id="model-control-config-version"
+                  value={configVersion}
+                  onChange={(event) => setConfigVersion(event.target.value)}
+                  placeholder="Versioned config or template label"
+                />
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-inputs" className="text-[0.82rem] font-semibold">
-              Input posture
-            </label>
-            <Textarea id="model-control-inputs" value={inputSummary} onChange={(event) => setInputSummary(event.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-outputs" className="text-[0.82rem] font-semibold">
-              Output posture
-            </label>
-            <Textarea id="model-control-outputs" value={outputSummary} onChange={(event) => setOutputSummary(event.target.value)} />
-          </div>
-        </div>
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-owner" className="text-[0.82rem] font-semibold">
+                  Operator
+                </label>
+                <Input
+                  id="model-control-owner"
+                  value={ownerLabel}
+                  onChange={(event) => setOwnerLabel(event.target.value)}
+                  placeholder="Owner or operator"
+                />
+              </div>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-validated" className="text-[0.82rem] font-semibold">
-              Last validated
-            </label>
-            <Input
-              id="model-control-validated"
-              type="datetime-local"
-              value={lastValidatedAt}
-              onChange={(event) => setLastValidatedAt(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-last-run" className="text-[0.82rem] font-semibold">
-              Last run recorded
-            </label>
-            <Input
-              id="model-control-last-run"
-              type="datetime-local"
-              value={lastRunRecordedAt}
-              onChange={(event) => setLastRunRecordedAt(event.target.value)}
-            />
-          </div>
-        </div>
+            <div className="space-y-1.5">
+              <label htmlFor="model-control-horizon" className="text-[0.82rem] font-semibold">
+                Horizon / window
+              </label>
+              <Input
+                id="model-control-horizon"
+                value={horizonLabel}
+                onChange={(event) => setHorizonLabel(event.target.value)}
+                placeholder="2045 RTP / 2035 transit buildout"
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="model-control-config-json" className="text-[0.82rem] font-semibold">
-            Config JSON
-          </label>
-          <Textarea
-            id="model-control-config-json"
-            value={configJsonText}
-            onChange={(event) => setConfigJsonText(event.target.value)}
-            className="min-h-44 font-mono text-xs"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <label htmlFor="model-control-summary" className="text-[0.82rem] font-semibold">
+                Summary
+              </label>
+              <Textarea id="model-control-summary" value={summary} onChange={(event) => setSummary(event.target.value)} />
+            </div>
+          </TabsContent>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-scenario-links" className="text-[0.82rem] font-semibold">
-              Additional scenario links
-            </label>
-            <select
-              id="model-control-scenario-links"
-              multiple
-              value={linkedScenarioIds}
-              onChange={(event) => setLinkedScenarioIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {scenarioSets.map((scenarioSet) => (
-                <option key={scenarioSet.id} value={scenarioSet.id}>
-                  {scenarioSet.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-plan-links" className="text-[0.82rem] font-semibold">
-              Plan links
-            </label>
-            <select
-              id="model-control-plan-links"
-              multiple
-              value={linkedPlanIds}
-              onChange={(event) => setLinkedPlanIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {plans.map((plan) => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.title}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+          <TabsContent value="provenance" className="pt-4 space-y-4">
+            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/70 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Capture the evidence chain, not just the title card.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Keep assumptions, input basis, outputs, and config JSON aligned so downstream reports can trust the record.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-report-links" className="text-[0.82rem] font-semibold">
-              Report links
-            </label>
-            <select
-              id="model-control-report-links"
-              multiple
-              value={linkedReportIds}
-              onChange={(event) => setLinkedReportIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {reports.map((report) => (
-                <option key={report.id} value={report.id}>
-                  {report.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-dataset-links" className="text-[0.82rem] font-semibold">
-              Dataset links
-            </label>
-            <select
-              id="model-control-dataset-links"
-              multiple
-              value={linkedDatasetIds}
-              onChange={(event) => setLinkedDatasetIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {datasets.map((dataset) => (
-                <option key={dataset.id} value={dataset.id}>
-                  {dataset.title}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+            <div className="space-y-1.5">
+              <label htmlFor="model-control-assumptions" className="text-[0.82rem] font-semibold">
+                Assumptions posture
+              </label>
+              <Textarea
+                id="model-control-assumptions"
+                value={assumptionsSummary}
+                onChange={(event) => setAssumptionsSummary(event.target.value)}
+              />
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-run-links" className="text-[0.82rem] font-semibold">
-              Recorded run links
-            </label>
-            <select
-              id="model-control-run-links"
-              multiple
-              value={linkedRunIds}
-              onChange={(event) => setLinkedRunIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {runs.map((run) => (
-                <option key={run.id} value={run.id}>
-                  {run.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="model-control-project-links" className="text-[0.82rem] font-semibold">
-              Related project links
-            </label>
-            <select
-              id="model-control-project-links"
-              multiple
-              value={linkedProjectIds}
-              onChange={(event) => setLinkedProjectIds(readSelectedIds(event))}
-              className="min-h-36 w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs outline-none"
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-inputs" className="text-[0.82rem] font-semibold">
+                  Input posture
+                </label>
+                <Textarea id="model-control-inputs" value={inputSummary} onChange={(event) => setInputSummary(event.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-outputs" className="text-[0.82rem] font-semibold">
+                  Output posture
+                </label>
+                <Textarea id="model-control-outputs" value={outputSummary} onChange={(event) => setOutputSummary(event.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="model-control-config-json" className="text-[0.82rem] font-semibold">
+                Config JSON
+              </label>
+              <Textarea
+                id="model-control-config-json"
+                value={configJsonText}
+                onChange={(event) => setConfigJsonText(event.target.value)}
+                className="min-h-52 font-mono text-xs"
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="links" className="pt-4 space-y-4">
+            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">Link supporting records with chips instead of platform-native multi-select.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Primary project and primary scenario anchors stay out of this additional link stack automatically.
+              </p>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-scenario-links-search" className="text-[0.82rem] font-semibold">
+                  Additional scenario links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-scenario-links"
+                  options={scenarioOptions}
+                  selectedIds={linkedScenarioIds}
+                  onChange={setLinkedScenarioIds}
+                  reservedIds={scenarioSetId ? [scenarioSetId] : []}
+                  searchPlaceholder="Search scenario sets to add…"
+                  emptySelectionLabel="No additional scenario links yet."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-plan-links-search" className="text-[0.82rem] font-semibold">
+                  Plan links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-plan-links"
+                  options={planOptions}
+                  selectedIds={linkedPlanIds}
+                  onChange={setLinkedPlanIds}
+                  searchPlaceholder="Search plans to add…"
+                  emptySelectionLabel="No linked plans yet."
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-report-links-search" className="text-[0.82rem] font-semibold">
+                  Report links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-report-links"
+                  options={reportOptions}
+                  selectedIds={linkedReportIds}
+                  onChange={setLinkedReportIds}
+                  searchPlaceholder="Search reports to add…"
+                  emptySelectionLabel="No linked reports yet."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-dataset-links-search" className="text-[0.82rem] font-semibold">
+                  Dataset links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-dataset-links"
+                  options={datasetOptions}
+                  selectedIds={linkedDatasetIds}
+                  onChange={setLinkedDatasetIds}
+                  searchPlaceholder="Search datasets to add…"
+                  emptySelectionLabel="No linked datasets yet."
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-run-links-search" className="text-[0.82rem] font-semibold">
+                  Recorded run links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-run-links"
+                  options={runOptions}
+                  selectedIds={linkedRunIds}
+                  onChange={setLinkedRunIds}
+                  searchPlaceholder="Search run records to add…"
+                  emptySelectionLabel="No linked runs yet."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-project-links-search" className="text-[0.82rem] font-semibold">
+                  Related project links
+                </label>
+                <ChipMultiSelect
+                  id="model-control-project-links"
+                  options={projectOptions}
+                  selectedIds={linkedProjectIds}
+                  onChange={setLinkedProjectIds}
+                  reservedIds={projectId ? [projectId] : []}
+                  searchPlaceholder="Search projects to add…"
+                  emptySelectionLabel="No related projects yet."
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="timestamps" className="pt-4 space-y-4">
+            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">Timebox the evidence trail.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Record when the model was last validated and when the latest run evidence was captured.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-validated" className="text-[0.82rem] font-semibold">
+                  Last validated
+                </label>
+                <Input
+                  id="model-control-validated"
+                  type="datetime-local"
+                  value={lastValidatedAt}
+                  onChange={(event) => setLastValidatedAt(event.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="model-control-last-run" className="text-[0.82rem] font-semibold">
+                  Last run recorded
+                </label>
+                <Input
+                  id="model-control-last-run"
+                  type="datetime-local"
+                  value={lastRunRecordedAt}
+                  onChange={(event) => setLastRunRecordedAt(event.target.value)}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {error ? (
           <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
@@ -508,7 +591,7 @@ export function ModelDetailControls({
           </p>
         ) : null}
 
-        <Button type="submit" disabled={isSaving} className="w-full">
+        <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
           {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Save model record
         </Button>

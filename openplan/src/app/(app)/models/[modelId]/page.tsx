@@ -24,6 +24,15 @@ type ModelLinkRow = {
   label: string | null;
 };
 
+type LinkedRecordCard = {
+  id: string;
+  title: string;
+  href: string | null;
+  statusLabel: string;
+  timestampLabel: string;
+  meta: string[];
+};
+
 function titleForRecord(record: { title?: string | null; name?: string | null }) {
   return record.title ?? record.name ?? "Untitled";
 }
@@ -67,7 +76,11 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         : Promise.resolve({ data: null, error: null }),
       supabase.from("plans").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("reports").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
-      supabase.from("data_datasets").select("id, name, status, vintage_label, geometry_scope, updated_at").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
+      supabase
+        .from("data_datasets")
+        .select("id, name, status, vintage_label, geometry_scope, updated_at")
+        .eq("workspace_id", model.workspace_id)
+        .order("updated_at", { ascending: false }),
       supabase.from("runs").select("id, title, created_at").eq("workspace_id", model.workspace_id).order("created_at", { ascending: false }).limit(60),
       supabase.from("model_links").select("id, model_id, link_type, linked_id, label").eq("model_id", model.id),
     ]);
@@ -133,8 +146,127 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     lastRunRecordedAt: model.last_run_recorded_at,
   });
 
+  const linkedRecordSections: Array<{ title: string; count: number; records: LinkedRecordCard[]; emptyCopy: string }> = [
+    {
+      title: "Scenario links",
+      count: linkedScenariosResult.data?.length ?? 0,
+      emptyCopy: "Use the Links tab to attach additional scenario variants or parallel scenario sets.",
+      records: ((linkedScenariosResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        status: string | null;
+        planning_question: string | null;
+        updated_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: `/scenarios/${record.id}`,
+        statusLabel: record.status || "Scenario record",
+        timestampLabel: formatModelDateTime(record.updated_at),
+        meta: record.planning_question ? [record.planning_question] : [],
+      })),
+    },
+    {
+      title: "Plan links",
+      count: linkedPlansResult.data?.length ?? 0,
+      emptyCopy: "Attach plans when the model supports a specific planning package or corridor strategy.",
+      records: ((linkedPlansResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        status: string | null;
+        plan_type: string | null;
+        updated_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: `/plans/${record.id}`,
+        statusLabel: record.status || "Plan record",
+        timestampLabel: formatModelDateTime(record.updated_at),
+        meta: record.plan_type ? [record.plan_type] : [],
+      })),
+    },
+    {
+      title: "Report links",
+      count: linkedReportsResult.data?.length ?? 0,
+      emptyCopy: "Attach reports when outputs have been cited or published downstream.",
+      records: ((linkedReportsResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        status: string | null;
+        report_type: string | null;
+        generated_at: string | null;
+        updated_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: `/reports/${record.id}`,
+        statusLabel: record.status || "Report record",
+        timestampLabel: formatModelDateTime(record.generated_at ?? record.updated_at),
+        meta: record.report_type ? [record.report_type] : [],
+      })),
+    },
+    {
+      title: "Dataset links",
+      count: linkedDatasetsResult.data?.length ?? 0,
+      emptyCopy: "Attach datasets to make the model input basis traceable from Data Hub forward.",
+      records: ((linkedDatasetsResult.data ?? []) as Array<{
+        id: string;
+        name: string | null;
+        status: string | null;
+        vintage_label: string | null;
+        geometry_scope: string | null;
+        updated_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: "/data-hub",
+        statusLabel: record.status || "Dataset record",
+        timestampLabel: formatModelDateTime(record.updated_at),
+        meta: [record.vintage_label, record.geometry_scope].filter((value): value is string => Boolean(value)),
+      })),
+    },
+    {
+      title: "Recorded runs",
+      count: linkedRunsResult.data?.length ?? 0,
+      emptyCopy: "Attach run records when execution evidence exists and should remain auditable.",
+      records: ((linkedRunsResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        created_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: null,
+        statusLabel: "Recorded run",
+        timestampLabel: formatModelDateTime(record.created_at),
+        meta: [],
+      })),
+    },
+    {
+      title: "Related projects",
+      count: linkedProjectsResult.data?.length ?? 0,
+      emptyCopy: "Attach adjacent projects when the model informs work outside the primary anchor.",
+      records: ((linkedProjectsResult.data ?? []) as Array<{
+        id: string;
+        name: string | null;
+        status: string | null;
+        delivery_phase: string | null;
+        updated_at: string | null;
+      }>).map((record) => ({
+        id: record.id,
+        title: titleForRecord(record),
+        href: `/projects/${record.id}`,
+        statusLabel: record.status || "Project record",
+        timestampLabel: formatModelDateTime(record.updated_at),
+        meta: record.delivery_phase ? [record.delivery_phase] : [],
+      })),
+    },
+  ];
+
+  const hasAnyLinkedRecords = linkedRecordSections.some((section) => section.count > 0);
+
   return (
-    <section className="module-page">
+    <section className="module-page relative">
       <div className="module-page-backdrop" />
 
       <div className="space-y-6">
@@ -200,7 +332,9 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
             </div>
             <p className="module-operator-copy">{workflow.reason}</p>
             <div className="module-operator-list">
-              <div className="module-operator-item">{workflow.packageLabel}: {workflow.packageDetail}</div>
+              <div className="module-operator-item">
+                {workflow.packageLabel}: {workflow.packageDetail}
+              </div>
               {workflow.actionItems.length > 0 ? <div className="module-operator-item">{workflow.actionItems[0]}</div> : null}
               {workflow.reviewNotes[0] ? <div className="module-operator-item">{workflow.reviewNotes[0]}</div> : null}
             </div>
@@ -275,7 +409,9 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                       <Link href={`/scenarios/${primaryScenarioResult.data.id}`} className="text-base font-semibold text-foreground hover:text-primary">
                         {primaryScenarioResult.data.title}
                       </Link>
-                      <p className="text-sm text-muted-foreground">{primaryScenarioResult.data.planning_question || primaryScenarioResult.data.summary || "No planning question captured yet."}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {primaryScenarioResult.data.planning_question || primaryScenarioResult.data.summary || "No planning question captured yet."}
+                      </p>
                     </div>
                   ) : (
                     <p className="mt-2 text-sm text-muted-foreground">No primary scenario set attached yet.</p>
@@ -314,6 +450,9 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                 <div className="module-section-heading">
                   <p className="module-section-label">Linked records</p>
                   <h2 className="module-section-title">Explicit provenance and outputs</h2>
+                  <p className="module-section-description">
+                    Review the linked evidence chain without wading through repetitive empty-state blocks.
+                  </p>
                 </div>
                 <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   <FolderKanban className="h-3.5 w-3.5" />
@@ -321,79 +460,59 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                 </span>
               </div>
 
-              <div className="mt-5 space-y-5">
-                {[
-                  {
-                    title: "Scenario links",
-                    records: (linkedScenariosResult.data ?? []) as Array<{ id: string; title: string | null; status: string | null; updated_at: string | null }>,
-                    hrefBase: "/scenarios",
-                  },
-                  {
-                    title: "Plan links",
-                    records: (linkedPlansResult.data ?? []) as Array<{ id: string; title: string | null; status: string | null; updated_at: string | null }>,
-                    hrefBase: "/plans",
-                  },
-                  {
-                    title: "Report links",
-                    records: (linkedReportsResult.data ?? []) as Array<{ id: string; title: string | null; status: string | null; updated_at: string | null }>,
-                    hrefBase: "/reports",
-                  },
-                  {
-                    title: "Dataset links",
-                    records: (linkedDatasetsResult.data ?? []) as Array<{ id: string; name: string | null; status: string | null; updated_at: string | null }>,
-                    hrefBase: "/data-hub",
-                  },
-                  {
-                    title: "Recorded run links",
-                    records: (linkedRunsResult.data ?? []) as Array<{ id: string; title: string | null; created_at: string | null }>,
-                    hrefBase: "/runs",
-                  },
-                  {
-                    title: "Related projects",
-                    records: (linkedProjectsResult.data ?? []) as Array<{ id: string; name: string | null; status: string | null; updated_at: string | null }>,
-                    hrefBase: "/projects",
-                  },
-                ].map((section) => (
-                  <div key={section.title} className="space-y-3">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">{section.title}</h3>
-                    {section.records.length === 0 ? (
-                      <EmptyState title={`No ${section.title.toLowerCase()} yet`} description="Use the controls to attach explicit provenance or downstream records." />
-                    ) : (
-                      <div className="grid gap-3">
-                        {section.records.map((record) => {
-                          const href =
-                            section.hrefBase === "/data-hub"
-                              ? "/data-hub"
-                              : section.hrefBase === "/runs"
-                                ? null
-                                : `${section.hrefBase}/${record.id}`;
+              {!hasAnyLinkedRecords ? (
+                <div className="mt-5">
+                  <EmptyState
+                    title="No explicit links yet"
+                    description="Use the Links tab in the control panel to attach supporting scenarios, plans, datasets, reports, recorded runs, or related projects."
+                  />
+                </div>
+              ) : (
+                <div className="mt-5 grid gap-4 xl:grid-cols-2">
+                  {linkedRecordSections.map((section) => (
+                    <div key={section.title} className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{section.title}</p>
+                          <p className="mt-2 text-base font-semibold text-foreground">{section.count} linked</p>
+                        </div>
+                        <StatusBadge tone={section.count > 0 ? "info" : "neutral"}>{section.count > 0 ? "Active" : "Empty"}</StatusBadge>
+                      </div>
 
-                          return (
-                            <div key={record.id} className="rounded-[20px] border border-border/70 bg-background/70 p-4">
+                      {section.records.length === 0 ? (
+                        <p className="mt-4 text-sm text-muted-foreground">{section.emptyCopy}</p>
+                      ) : (
+                        <div className="mt-4 space-y-3">
+                          {section.records.map((record) => (
+                            <div key={record.id} className="rounded-[18px] border border-border/65 bg-background/85 p-3.5">
                               <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  {href ? (
-                                    <Link href={href} className="text-sm font-semibold text-foreground hover:text-primary">
-                                      {titleForRecord(record)}
+                                <div className="min-w-0">
+                                  {record.href ? (
+                                    <Link href={record.href} className="text-sm font-semibold text-foreground hover:text-primary">
+                                      {record.title}
                                     </Link>
                                   ) : (
-                                    <p className="text-sm font-semibold text-foreground">{titleForRecord(record)}</p>
+                                    <p className="text-sm font-semibold text-foreground">{record.title}</p>
                                   )}
-                                  <p className="mt-1 text-sm text-muted-foreground">
-                                    {"status" in record && record.status ? record.status : "Recorded"} ·{" "}
-                                    {formatModelDateTime(("updated_at" in record ? record.updated_at : record.created_at) ?? null)}
-                                  </p>
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    <StatusBadge tone="neutral">{record.statusLabel}</StatusBadge>
+                                    {record.meta.map((item) => (
+                                      <span key={`${record.id}-${item}`} className="module-record-chip">
+                                        {item}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
-                                <StatusBadge tone="info">Linked</StatusBadge>
+                                <p className="shrink-0 text-xs text-muted-foreground">{record.timestampLabel}</p>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </article>
           </div>
         </div>
