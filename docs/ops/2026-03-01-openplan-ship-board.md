@@ -35,6 +35,7 @@
 - 17:30 — Ship gate review + blocker decisions
 
 ## Evidence Links
+- Live command board (current state): `openplan/docs/ops/2026-03-15-openplan-v1-command-board.md`
 - Ship sprint plan: `openplan/docs/ops/2026-03-01-openplan-7-day-ship-sprint.md`
 - QA/QC rhythm: `openplan/docs/ops/2026-03-01-openplan-qa-qc-rhythm.md`
 - Day 1 ship evidence index: `openplan/docs/ops/2026-03-01-ship-evidence-index.md`
