@@ -4,6 +4,7 @@ import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-re
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 
@@ -23,6 +24,30 @@ type CampaignRow = {
   created_at: string;
   updated_at: string;
   projects: { id: string; name: string } | Array<{ id: string; name: string }> | null;
+};
+
+type CampaignItemSummaryRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string;
+  source_type: string;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+type CampaignCategoryRow = {
+  id: string;
+  campaign_id: string;
+  label: string;
+  slug: string | null;
+  description: string | null;
+  sort_order: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -46,36 +71,46 @@ export default async function EngagementPage({
     redirect("/sign-in");
   }
 
-  const [{ data: campaignsData }, { data: projectsData }, { data: itemsData }] = await Promise.all([
+  const [{ data: campaignsData }, { data: projectsData }, { data: itemsData }, { data: categoriesData }] = await Promise.all([
     supabase
       .from("engagement_campaigns")
       .select("id, workspace_id, project_id, title, summary, status, engagement_type, created_at, updated_at, projects(id, name)")
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
-    supabase.from("engagement_items").select("campaign_id, status, latitude, longitude"),
+    supabase.from("engagement_items").select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"),
+    supabase.from("engagement_categories").select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at"),
   ]);
 
-  const counts = new Map<string, { total: number; approved: number; geolocated: number }>();
-  for (const item of itemsData ?? []) {
-    const current = counts.get(item.campaign_id) ?? { total: 0, approved: 0, geolocated: 0 };
-    current.total += 1;
-    if (item.status === "approved") current.approved += 1;
-    if (typeof item.latitude === "number" && typeof item.longitude === "number") current.geolocated += 1;
-    counts.set(item.campaign_id, current);
+  const itemsByCampaign = new Map<string, CampaignItemSummaryRow[]>();
+  for (const item of (itemsData ?? []) as CampaignItemSummaryRow[]) {
+    const current = itemsByCampaign.get(item.campaign_id) ?? [];
+    current.push(item);
+    itemsByCampaign.set(item.campaign_id, current);
+  }
+
+  const categoriesByCampaign = new Map<string, CampaignCategoryRow[]>();
+  for (const category of (categoriesData ?? []) as CampaignCategoryRow[]) {
+    const current = categoriesByCampaign.get(category.campaign_id) ?? [];
+    current.push(category);
+    categoriesByCampaign.set(category.campaign_id, current);
   }
 
   const campaigns = ((campaignsData ?? []) as CampaignRow[])
     .map((campaign) => ({
       ...campaign,
       project: Array.isArray(campaign.projects) ? campaign.projects[0] ?? null : campaign.projects ?? null,
-      counts: counts.get(campaign.id) ?? { total: 0, approved: 0, geolocated: 0 },
+      categoryCount: (categoriesByCampaign.get(campaign.id) ?? []).length,
+      counts: summarizeEngagementItems(categoriesByCampaign.get(campaign.id) ?? [], itemsByCampaign.get(campaign.id) ?? []),
     }))
     .filter((campaign) => (filters.projectId ? campaign.project_id === filters.projectId : true))
     .filter((campaign) => (filters.status ? campaign.status === filters.status : true));
 
   const activeCount = campaigns.filter((campaign) => campaign.status === "active").length;
   const closedCount = campaigns.filter((campaign) => campaign.status === "closed").length;
-  const totalItems = campaigns.reduce((sum, campaign) => sum + campaign.counts.total, 0);
+  const draftCount = campaigns.filter((campaign) => campaign.status === "draft").length;
+  const totalItems = campaigns.reduce((sum, campaign) => sum + campaign.counts.totalItems, 0);
+  const totalCategories = campaigns.reduce((sum, campaign) => sum + campaign.categoryCount, 0);
+  const recentActivityItems = campaigns.reduce((sum, campaign) => sum + campaign.counts.recentActivity.count, 0);
 
   return (
     <section className="module-page">
@@ -100,14 +135,18 @@ export default async function EngagementPage({
               <p className="module-summary-detail">Workspace-scoped engagement containers with auditable ownership.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Active</p>
+              <p className="module-summary-label">Status mix</p>
               <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">{closedCount} already closed or archived.</p>
+              <p className="module-summary-detail">
+                {draftCount} draft, {closedCount} closed, {campaigns.filter((campaign) => campaign.status === "archived").length} archived.
+              </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Feedback items</p>
+              <p className="module-summary-label">Operational load</p>
               <p className="module-summary-value">{totalItems}</p>
-              <p className="module-summary-detail">Structured intake records across all listed campaigns.</p>
+              <p className="module-summary-detail">
+                {totalCategories} categories and {recentActivityItems} recently active items across listed campaigns.
+              </p>
             </div>
           </div>
         </article>
@@ -175,8 +214,8 @@ export default async function EngagementPage({
                           {titleizeEngagementValue(campaign.status)}
                         </StatusBadge>
                         <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                        <StatusBadge tone={campaign.counts.total > 0 ? "success" : "neutral"}>
-                          {campaign.counts.total} items
+                        <StatusBadge tone={campaign.counts.totalItems > 0 ? "success" : "neutral"}>
+                          {campaign.counts.totalItems} items
                         </StatusBadge>
                       </div>
 
@@ -199,8 +238,11 @@ export default async function EngagementPage({
 
                   <div className="module-record-meta">
                     <span className="module-record-chip">Project {campaign.project?.name ?? "Unlinked"}</span>
-                    <span className="module-record-chip">{campaign.counts.approved} approved</span>
-                    <span className="module-record-chip">{campaign.counts.geolocated} geolocated</span>
+                    <span className="module-record-chip">{campaign.categoryCount} categories</span>
+                    <span className="module-record-chip">{campaign.counts.statusCounts.approved} approved</span>
+                    <span className="module-record-chip">{campaign.counts.statusCounts.flagged} flagged</span>
+                    <span className="module-record-chip">{campaign.counts.recentActivity.count} recent</span>
+                    <span className="module-record-chip">{campaign.counts.geolocatedItems} geolocated</span>
                   </div>
                 </Link>
               ))}

@@ -174,14 +174,14 @@ describe("/api/engagement/campaigns", () => {
       campaigns: [
         expect.objectContaining({
           id: "11111111-1111-4111-8111-111111111111",
-          counts: {
+          counts: expect.objectContaining({
             totalItems: 2,
             geolocatedItems: 1,
             statusCounts: expect.objectContaining({
               approved: 1,
               pending: 1,
             }),
-          },
+          }),
         }),
       ],
     });
@@ -209,7 +209,7 @@ describe("/api/engagement/campaigns", () => {
   });
 
   it("POST returns 403 when direct workspace membership role is unsupported", async () => {
-    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock });
+    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock } as never);
 
     const response = await postCampaigns(
       jsonRequest({
@@ -227,7 +227,7 @@ describe("/api/engagement/campaigns", () => {
       error: null,
     });
 
-    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock });
+    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock } as never);
 
     const deniedResponse = await postCampaigns(
       jsonRequest({

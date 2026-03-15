@@ -32,12 +32,23 @@ export function EngagementItemComposer({
   const [sourceType, setSourceType] = useState<(typeof ENGAGEMENT_ITEM_SOURCE_TYPES)[number]>("internal");
   const [status, setStatus] = useState<(typeof ENGAGEMENT_ITEM_STATUSES)[number]>("pending");
   const [moderationNotes, setModerationNotes] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    const parsedLatitude = latitude.trim() ? Number(latitude) : undefined;
+    const parsedLongitude = longitude.trim() ? Number(longitude) : undefined;
+
+    if ((latitude.trim() && Number.isNaN(parsedLatitude)) || (longitude.trim() && Number.isNaN(parsedLongitude))) {
+      setError("Latitude and longitude must be valid numbers when provided.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -52,6 +63,8 @@ export function EngagementItemComposer({
           sourceType,
           status,
           moderationNotes,
+          latitude: parsedLatitude,
+          longitude: parsedLongitude,
         }),
       });
 
@@ -67,6 +80,8 @@ export function EngagementItemComposer({
       setSourceType("internal");
       setStatus("pending");
       setModerationNotes("");
+      setLatitude("");
+      setLongitude("");
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create engagement item");
@@ -201,6 +216,36 @@ export function EngagementItemComposer({
             value={moderationNotes}
             onChange={(event) => setModerationNotes(event.target.value)}
           />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="engagement-item-latitude" className="text-[0.82rem] font-semibold">
+              Latitude
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="engagement-item-latitude"
+              inputMode="decimal"
+              placeholder="34.1234"
+              value={latitude}
+              onChange={(event) => setLatitude(event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="engagement-item-longitude" className="text-[0.82rem] font-semibold">
+              Longitude
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="engagement-item-longitude"
+              inputMode="decimal"
+              placeholder="-118.1234"
+              value={longitude}
+              onChange={(event) => setLongitude(event.target.value)}
+            />
+          </div>
         </div>
 
         {error ? (

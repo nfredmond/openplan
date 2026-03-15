@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -80,6 +80,8 @@ import { GET as getCampaignDetail, PATCH as patchCampaignDetail } from "@/app/ap
 
 describe("/api/engagement/campaigns/[campaignId]", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-15T12:00:00.000Z"));
     vi.clearAllMocks();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
@@ -125,6 +127,7 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
           id: "55555555-5555-4555-8555-555555555555",
           campaign_id: "11111111-1111-4111-8111-111111111111",
           label: "Safety",
+          description: "Crossings and speeding",
         },
       ],
       error: null,
@@ -142,6 +145,8 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
           source_type: "meeting",
           latitude: 34.1,
           longitude: -118.3,
+          moderation_notes: "Needs follow-up",
+          updated_at: "2026-03-14T16:00:00.000Z",
         },
         {
           id: "77777777-7777-4777-8777-777777777777",
@@ -153,6 +158,8 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
           source_type: "public",
           latitude: null,
           longitude: null,
+          moderation_notes: null,
+          updated_at: "2026-03-01T16:00:00.000Z",
         },
       ],
       error: null,
@@ -162,6 +169,10 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("GET returns campaign detail with categories and moderation counts", async () => {
@@ -182,12 +193,19 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       counts: {
         totalItems: 2,
         geolocatedItems: 1,
+        categorizedItems: 1,
+        uncategorizedItems: 1,
+        itemsWithModerationNotes: 1,
+        recentActivity: expect.objectContaining({
+          count: 1,
+        }),
         statusCounts: expect.objectContaining({
           approved: 1,
           flagged: 1,
         }),
         categoryCounts: expect.arrayContaining([
           expect.objectContaining({ categoryId: "55555555-5555-4555-8555-555555555555", count: 1 }),
+          expect.objectContaining({ categoryId: null, count: 1 }),
         ]),
       },
     });

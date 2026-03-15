@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 const listCampaignsSchema = z.object({
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
     const itemsResult = campaignIds.length
       ? await supabase
           .from("engagement_items")
-          .select("id, campaign_id, status, category_id, latitude, longitude")
+          .select("id, campaign_id, status, category_id, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
           .in("campaign_id", campaignIds)
       : { data: [], error: null };
 
@@ -82,28 +83,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to summarize engagement items" }, { status: 500 });
     }
 
-    const itemCounts = new Map<
-      string,
-      {
-        totalItems: number;
-        geolocatedItems: number;
-        statusCounts: Record<string, number>;
-      }
-    >();
-
+    const itemsByCampaign = new Map<string, Array<(typeof itemsResult.data)[number]>>();
     for (const item of itemsResult.data ?? []) {
-      const current = itemCounts.get(item.campaign_id) ?? {
-        totalItems: 0,
-        geolocatedItems: 0,
-        statusCounts: { pending: 0, approved: 0, rejected: 0, flagged: 0 },
-      };
-
-      current.totalItems += 1;
-      if (typeof item.latitude === "number" && typeof item.longitude === "number") {
-        current.geolocatedItems += 1;
-      }
-      current.statusCounts[item.status] = (current.statusCounts[item.status] ?? 0) + 1;
-      itemCounts.set(item.campaign_id, current);
+      const current = itemsByCampaign.get(item.campaign_id) ?? [];
+      current.push(item);
+      itemsByCampaign.set(item.campaign_id, current);
     }
 
     audit.info("campaign_list_loaded", {
@@ -116,11 +100,7 @@ export async function GET(request: NextRequest) {
       {
         campaigns: campaigns.map((campaign) => ({
           ...campaign,
-          counts: itemCounts.get(campaign.id) ?? {
-            totalItems: 0,
-            geolocatedItems: 0,
-            statusCounts: { pending: 0, approved: 0, rejected: 0, flagged: 0 },
-          },
+          counts: summarizeEngagementItems([], itemsByCampaign.get(campaign.id) ?? []),
         })),
       },
       { status: 200 }

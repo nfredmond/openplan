@@ -7,8 +7,9 @@ import { EngagementItemComposer } from "@/components/engagement/engagement-item-
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
-import { createClient } from "@/lib/supabase/server";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { createClient } from "@/lib/supabase/server";
 
 type CampaignRow = {
   id: string;
@@ -80,12 +81,9 @@ export default async function EngagementCampaignDetailPage({
     supabase.from("projects").select("id, name").eq("workspace_id", campaign.workspace_id).order("updated_at", { ascending: false }),
   ]);
 
-  const statusCounts = { pending: 0, approved: 0, rejected: 0, flagged: 0 } as Record<string, number>;
-  let geolocatedItems = 0;
-  for (const item of items ?? []) {
-    statusCounts[item.status] = (statusCounts[item.status] ?? 0) + 1;
-    if (typeof item.latitude === "number" && typeof item.longitude === "number") geolocatedItems += 1;
-  }
+  const counts = summarizeEngagementItems(categories ?? [], items ?? []);
+  const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
+  const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
 
   return (
     <section className="module-page">
@@ -108,8 +106,8 @@ export default async function EngagementCampaignDetailPage({
               {titleizeEngagementValue(campaign.status)}
             </StatusBadge>
             <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-            <StatusBadge tone={statusCounts.flagged > 0 ? "warning" : "success"}>
-              {statusCounts.flagged > 0 ? `${statusCounts.flagged} flagged` : "No flagged items"}
+            <StatusBadge tone={counts.statusCounts.flagged > 0 ? "warning" : "success"}>
+              {counts.statusCounts.flagged > 0 ? `${counts.statusCounts.flagged} flagged` : "No flagged items"}
             </StatusBadge>
           </div>
           <div className="module-intro-body">
@@ -129,12 +127,16 @@ export default async function EngagementCampaignDetailPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Categories</p>
               <p className="module-summary-value">{categories?.length ?? 0}</p>
-              <p className="module-summary-detail">Lightweight intake structure for moderation and later reporting.</p>
+              <p className="module-summary-detail">
+                {counts.categorizedItems} items routed, {counts.uncategorizedItems} still uncategorized.
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Items</p>
-              <p className="module-summary-value">{items?.length ?? 0}</p>
-              <p className="module-summary-detail">{geolocatedItems} geolocated, {statusCounts.approved} approved.</p>
+              <p className="module-summary-value">{counts.totalItems}</p>
+              <p className="module-summary-detail">
+                {counts.geolocatedItems} geolocated, {counts.statusCounts.approved} approved.
+              </p>
             </div>
           </div>
         </article>
@@ -154,10 +156,12 @@ export default async function EngagementCampaignDetailPage({
             moderation status totals.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Pending: {statusCounts.pending}</div>
-            <div className="module-operator-item">Approved: {statusCounts.approved}</div>
-            <div className="module-operator-item">Rejected: {statusCounts.rejected}</div>
-            <div className="module-operator-item">Flagged: {statusCounts.flagged}</div>
+            <div className="module-operator-item">Pending: {counts.statusCounts.pending}</div>
+            <div className="module-operator-item">Approved: {counts.statusCounts.approved}</div>
+            <div className="module-operator-item">Rejected: {counts.statusCounts.rejected}</div>
+            <div className="module-operator-item">Flagged: {counts.statusCounts.flagged}</div>
+            <div className="module-operator-item">Recent activity: {counts.recentActivity.count} items in the last 7 days</div>
+            <div className="module-operator-item">Moderation notes present on {counts.itemsWithModerationNotes} items</div>
             <div className="module-operator-item">Last updated {fmtDateTime(campaign.updated_at)}</div>
           </div>
         </article>
@@ -181,10 +185,63 @@ export default async function EngagementCampaignDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
+                <p className="module-section-label">Traceability</p>
+                <h2 className="module-section-title">Project linkage and intake coverage</h2>
+                <p className="module-section-description">
+                  Campaigns stay explicitly tied to planning context, moderation state, and category coverage.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              <div className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={project ? "success" : "neutral"}>{project ? "Linked project" : "Unlinked project"}</StatusBadge>
+                      {project?.status ? <StatusBadge tone="neutral">{titleizeEngagementValue(project.status)}</StatusBadge> : null}
+                    </div>
+                    <h3 className="module-record-title text-[1rem]">{project?.name ?? "No project linked yet"}</h3>
+                    <p className="module-record-summary">
+                      {project
+                        ? project.summary || "Project context is present even when campaign reporting stays lightweight."
+                        : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
+                    </p>
+                  </div>
+                </div>
+                <div className="module-record-meta">
+                  <span className="module-record-chip">Campaign status {titleizeEngagementValue(campaign.status)}</span>
+                  <span className="module-record-chip">Recent activity {counts.recentActivity.count} items</span>
+                  <span className="module-record-chip">{counts.geolocatedItems} geolocated</span>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="module-summary-card">
+                  <p className="module-summary-label">Categorized coverage</p>
+                  <p className="module-summary-value">{counts.categorizedItems}</p>
+                  <p className="module-summary-detail">
+                    {counts.uncategorizedItems} items still need classification before reporting is reliable.
+                  </p>
+                </div>
+                <div className="module-summary-card">
+                  <p className="module-summary-label">Source mix</p>
+                  <p className="module-summary-value">{counts.sourceCounts.public + counts.sourceCounts.meeting}</p>
+                  <p className="module-summary-detail">
+                    {counts.sourceCounts.public} public, {counts.sourceCounts.meeting} meeting, {counts.sourceCounts.email} email.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
                 <p className="module-section-label">Registry</p>
                 <h2 className="module-section-title">Current categories</h2>
                 <p className="module-section-description">
-                  Category structure stays intentionally light in this pass.
+                  Category structure stays intentionally light, but each lane now exposes item volume and moderation load.
                 </p>
               </div>
             </div>
@@ -199,20 +256,51 @@ export default async function EngagementCampaignDetailPage({
               </div>
             ) : (
               <div className="mt-5 space-y-3">
-                {categories?.map((category) => (
-                  <div key={category.id} className="module-record-row">
+                {categorySummaries.map((category) => (
+                  <div key={category.categoryId} className="module-record-row">
                     <div className="module-record-head">
                       <div className="module-record-main">
                         <div className="module-record-kicker">
                           <StatusBadge tone="info">{category.label}</StatusBadge>
+                          <StatusBadge tone={category.flaggedCount > 0 ? "warning" : "neutral"}>
+                            {category.count} items
+                          </StatusBadge>
+                          {category.flaggedCount > 0 ? (
+                            <StatusBadge tone="warning">{category.flaggedCount} flagged</StatusBadge>
+                          ) : null}
                         </div>
                         <p className="module-record-summary">
                           {category.description || "No description yet. This category is available for classification."}
                         </p>
                       </div>
                     </div>
+                    <div className="module-record-meta">
+                      <span className="module-record-chip">{Math.round(category.shareOfItems * 100)}% of campaign items</span>
+                      <span className="module-record-chip">{category.pendingCount} pending</span>
+                      <span className="module-record-chip">{category.approvedCount} approved</span>
+                      <span className="module-record-chip">Last activity {fmtDateTime(category.lastActivityAt)}</span>
+                    </div>
                   </div>
                 ))}
+
+                {uncategorizedSummary && uncategorizedSummary.count > 0 ? (
+                  <div className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone="warning">{uncategorizedSummary.label}</StatusBadge>
+                          <StatusBadge tone="warning">{uncategorizedSummary.count} items</StatusBadge>
+                        </div>
+                        <p className="module-record-summary">{uncategorizedSummary.description}</p>
+                      </div>
+                    </div>
+                    <div className="module-record-meta">
+                      <span className="module-record-chip">{uncategorizedSummary.pendingCount} pending</span>
+                      <span className="module-record-chip">{uncategorizedSummary.flaggedCount} flagged</span>
+                      <span className="module-record-chip">Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</span>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
           </article>
@@ -230,6 +318,8 @@ export default async function EngagementCampaignDetailPage({
               status: string;
               source_type: string;
               moderation_notes: string | null;
+              latitude: number | null;
+              longitude: number | null;
               updated_at: string;
             }>}
             categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({

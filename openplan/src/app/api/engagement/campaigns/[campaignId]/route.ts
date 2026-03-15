@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -118,19 +119,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const categoryMap = new Map((categories ?? []).map((category) => [category.id, category]));
-    const statusCounts = { pending: 0, approved: 0, rejected: 0, flagged: 0 } as Record<string, number>;
-    const categoryCounts = new Map<string, number>();
-    let geolocatedCount = 0;
-
-    for (const item of items ?? []) {
-      statusCounts[item.status] = (statusCounts[item.status] ?? 0) + 1;
-      if (item.category_id) {
-        categoryCounts.set(item.category_id, (categoryCounts.get(item.category_id) ?? 0) + 1);
-      }
-      if (typeof item.latitude === "number" && typeof item.longitude === "number") {
-        geolocatedCount += 1;
-      }
-    }
+    const counts = summarizeEngagementItems(categories ?? [], items ?? []);
 
     return NextResponse.json(
       {
@@ -141,16 +130,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           ...item,
           category: item.category_id ? categoryMap.get(item.category_id) ?? null : null,
         })),
-        counts: {
-          totalItems: (items ?? []).length,
-          geolocatedItems: geolocatedCount,
-          statusCounts,
-          categoryCounts: (categories ?? []).map((category) => ({
-            categoryId: category.id,
-            label: category.label,
-            count: categoryCounts.get(category.id) ?? 0,
-          })),
-        },
+        counts,
       },
       { status: 200 }
     );

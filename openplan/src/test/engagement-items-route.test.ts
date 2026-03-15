@@ -207,9 +207,15 @@ describe("engagement category and item routes", () => {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          title: "Reclassified crossing issue",
+          body: "Drivers roll the stop line and block the school crosswalk.",
+          submittedBy: "Workshop attendee",
           status: "approved",
+          sourceType: "public",
           categoryId: "55555555-5555-4555-8555-555555555555",
           moderationNotes: "Reviewed against workshop notes.",
+          latitude: 34.1234,
+          longitude: -118.3333,
         }),
       }),
       {
@@ -223,9 +229,15 @@ describe("engagement category and item routes", () => {
     expect(response.status).toBe(200);
     expect(itemUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        title: "Reclassified crossing issue",
+        body: "Drivers roll the stop line and block the school crosswalk.",
+        submitted_by: "Workshop attendee",
         status: "approved",
+        source_type: "public",
         category_id: "55555555-5555-4555-8555-555555555555",
         moderation_notes: "Reviewed against workshop notes.",
+        latitude: 34.1234,
+        longitude: -118.3333,
       })
     );
   });
