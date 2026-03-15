@@ -11,15 +11,15 @@ export default function AuthLayout({
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--line)_70%,var(--pine)_30%)] bg-white/90 px-3.5 py-1.5 shadow-[0_6px_18px_rgba(20,33,43,0.08)] transition hover:border-[color:var(--pine)]"
+            className="inline-flex items-center gap-2.5 rounded-full border border-border/70 bg-card/95 px-3.5 py-1.5 shadow-[0_4px_14px_rgba(20,33,43,0.06)] transition-all duration-200 hover:border-[color:var(--pine)]/50"
           >
             <span
-              className="h-2.5 w-2.5 rounded-full bg-[color:var(--pine)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--pine)_24%,transparent)]"
+              className="h-2.5 w-2.5 rounded-full bg-[color:var(--pine)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--pine)_18%,transparent)]"
               aria-hidden
             />
-            <span className="text-sm font-semibold tracking-[0.08em] text-[color:var(--pine-deep)]">OpenPlan</span>
+            <span className="text-sm font-semibold tracking-[0.06em] text-foreground/90">OpenPlan</span>
           </Link>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Planning OS Access</p>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Planning OS Access</p>
         </div>
         <div className="flex flex-1 items-center justify-center">{children}</div>
       </div>

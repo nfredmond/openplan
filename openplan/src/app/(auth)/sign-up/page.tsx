@@ -40,9 +40,9 @@ export default function SignUpPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-md space-y-6 rounded-xl border border-border bg-card p-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Create account</h1>
+    <section className="mx-auto w-full max-w-md space-y-6 rounded-2xl border border-border/80 bg-card p-6 shadow-[0_16px_48px_rgba(20,33,43,0.08)] sm:p-8">
+      <header className="space-y-1.5">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">Create account</h1>
         <p className="text-sm text-muted-foreground">
           Start your agency planning workspace in OpenPlan.
         </p>

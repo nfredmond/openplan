@@ -21,7 +21,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Layers3, Map as MapIcon, Sparkles } from "lucide-react";
-import { buildMetricDeltas, deltaTone, formatDelta } from "@/lib/analysis/compare";
+import { buildMetricDeltas, deltaTone, formatDelta, type MetricDelta } from "@/lib/analysis/compare";
 import {
   formatCrashUserFilterLabel,
   normalizeMapViewState,
@@ -52,6 +52,8 @@ type CorridorGeometry = Polygon | MultiPolygon;
 
 type AnalysisResult = {
   runId: string;
+  title?: string;
+  createdAt?: string | null;
   metrics: {
     accessibilityScore: number;
     safetyScore: number;
@@ -246,6 +248,79 @@ function formatSourceToken(value: string | undefined): string {
     .replaceAll(/\s+/g, " ")
     .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+const COMPARISON_HEADLINE_KEYS = new Set(["overallScore", "accessibilityScore", "safetyScore", "equityScore"]);
+const MAP_CONTEXT_PRIORITY = [
+  "Project overlay",
+  "Crash filter",
+  "Tract theme",
+  "Overlay mode",
+  "Overlay geometry",
+  "Census tracts",
+  "SWITRS lane",
+] as const;
+
+function buildRunTitle(value: string): string {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "Untitled corridor analysis";
+  }
+
+  return trimmed.length > 60 ? `${trimmed.slice(0, 57)}...` : trimmed;
+}
+
+function prioritizeMapComparisonRows(
+  rows: Array<{ label: string; current: string; baseline: string; changed: boolean }>
+): Array<{ label: string; current: string; baseline: string; changed: boolean }> {
+  const priority = new globalThis.Map<string, number>(MAP_CONTEXT_PRIORITY.map((label, index) => [label, index]));
+
+  return [...rows].sort((left, right) => {
+    if (left.changed !== right.changed) {
+      return left.changed ? -1 : 1;
+    }
+
+    const leftPriority = priority.get(left.label) ?? Number.MAX_SAFE_INTEGER;
+    const rightPriority = priority.get(right.label) ?? Number.MAX_SAFE_INTEGER;
+
+    return leftPriority - rightPriority || left.label.localeCompare(right.label);
+  });
+}
+
+function getComparisonNarrativeLead(
+  metricChangeCount: number,
+  viewDifferenceCount: number
+): { title: string; detail: string; tone: StatusTone } {
+  if (metricChangeCount > 0 && viewDifferenceCount === 0) {
+    return {
+      title: "Metric movement is supported by aligned map posture.",
+      detail: "Read the score shifts first — the current run and baseline were reviewed under the same tract, crash, and overlay context.",
+      tone: "success",
+    };
+  }
+
+  if (metricChangeCount > 0 && viewDifferenceCount > 0) {
+    return {
+      title: "Metric movement is present, but the evidence frame changed.",
+      detail: "Use the map-context evidence directly beneath the delta board before treating every score shift as a like-for-like comparison.",
+      tone: "warning",
+    };
+  }
+
+  if (metricChangeCount === 0 && viewDifferenceCount > 0) {
+    return {
+      title: "Scores are flat, but the evidence frame is not.",
+      detail: "The delta board reads as stable, yet the underlying tract / crash / overlay posture differs between current and baseline.",
+      tone: "warning",
+    };
+  }
+
+  return {
+    title: "Both score movement and map posture are stable.",
+    detail: "The current run and baseline are reading as materially aligned across both headline metrics and visible map context.",
+    tone: "neutral",
+  };
 }
 
 function formatCurrency(value: number | null | undefined): string {
@@ -1394,7 +1469,11 @@ export default function ExplorePage() {
       }
 
       const payload = (await response.json()) as AnalysisResult;
-      setAnalysisResult(payload);
+      setAnalysisResult({
+        ...payload,
+        title: buildRunTitle(trimmedQueryText),
+        createdAt: new Date().toISOString(),
+      });
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : "Analysis request failed.";
       setError(message);
@@ -1475,6 +1554,8 @@ export default function ExplorePage() {
 
       setAnalysisResult({
         runId: run.id,
+        title: run.title,
+        createdAt: run.created_at,
         metrics: runMetrics,
         geojson: run.result_geojson,
         summary: run.summary_text,
@@ -1640,6 +1721,11 @@ export default function ExplorePage() {
     },
     [analysisResult]
   );
+
+  const clearComparison = useCallback(() => {
+    setError("");
+    setComparisonRun(null);
+  }, []);
 
   const comparisonDeltas = useMemo(() => {
     if (!analysisResult || !comparisonRun?.metrics) {
@@ -1886,6 +1972,102 @@ export default function ExplorePage() {
 
     return cards;
   }, [analysisResult, sourceSnapshots]);
+
+  const resultScoreTiles: Array<{ label: string; value: string; note: string; emphasis?: boolean }> = [];
+
+  if (analysisResult) {
+    if (typeof analysisResult.metrics.overallScore === "number") {
+      resultScoreTiles.push({
+        label: "Overall",
+        value: `${analysisResult.metrics.overallScore}`,
+        note: "Composite corridor score across the current analysis run.",
+        emphasis: true,
+      });
+    }
+
+    resultScoreTiles.push(
+      {
+        label: "Accessibility",
+        value: `${analysisResult.metrics.accessibilityScore}`,
+        note: "Transit reach, service availability, and jobs-access posture.",
+      },
+      {
+        label: "Safety",
+        value: `${analysisResult.metrics.safetyScore}`,
+        note: "Crash-risk lane informed by the active safety source and filters.",
+      },
+      {
+        label: "Equity",
+        value: `${analysisResult.metrics.equityScore}`,
+        note: "Corridor equity screening signal from the current demographic layer.",
+      }
+    );
+  }
+
+  const resultStatusBadges: Array<{ label: string; tone: StatusTone }> = [];
+
+  if (analysisResult?.metrics.transitAccessTier) {
+    resultStatusBadges.push({
+      label: `Transit access: ${String(analysisResult.metrics.transitAccessTier)}`,
+      tone: resolveStatusTone(String(analysisResult.metrics.transitAccessTier)),
+    });
+  }
+
+  if (analysisResult?.metrics.confidence) {
+    resultStatusBadges.push({
+      label: `Confidence: ${String(analysisResult.metrics.confidence)}`,
+      tone: resolveStatusTone(String(analysisResult.metrics.confidence)),
+    });
+  }
+
+  const sourceReviewCount = sourceTransparency.filter((item) => item.tone === "warning" || item.tone === "danger").length;
+  const comparisonMetricChangeCount = comparisonDeltas.filter((delta) => delta.delta !== null && delta.delta !== 0).length;
+  const comparisonViewDifferenceCount = mapViewComparisonRows.filter((row) => row.changed).length;
+  const comparisonHeadlineDeltas = comparisonDeltas.filter((delta) => COMPARISON_HEADLINE_KEYS.has(delta.key));
+  const comparisonSupportingDeltas = comparisonDeltas.filter((delta) => !COMPARISON_HEADLINE_KEYS.has(delta.key));
+  const comparisonChangedDeltas = comparisonDeltas.filter((delta) => delta.delta !== null && delta.delta !== 0);
+  const comparisonNarrativeLead = getComparisonNarrativeLead(comparisonMetricChangeCount, comparisonViewDifferenceCount);
+  const prioritizedMapViewComparisonRows = prioritizeMapComparisonRows(mapViewComparisonRows);
+  const changedMapViewRows = prioritizedMapViewComparisonRows.filter((row) => row.changed);
+  const alignedMapViewRows = prioritizedMapViewComparisonRows.filter((row) => !row.changed);
+  const currentRunTitle = analysisResult?.title ?? buildRunTitle(queryText);
+  const currentRunTimestampLabel = analysisResult?.createdAt ? formatRunTimestamp(analysisResult.createdAt) : "Active in current session";
+  const currentRunNarrativeLabel = analysisResult?.aiInterpretationSource === "ai" ? "AI-assisted" : "Deterministic";
+  const currentRunMapContextLabel = currentMapViewSummary.length > 0 ? `${currentMapViewSummary.length} saved checks` : "Pending";
+  const currentRunOverallScore = typeof analysisResult?.metrics.overallScore === "number" ? `${analysisResult.metrics.overallScore}` : "Not scored";
+  const baselineRunMetrics = comparisonRun?.metrics as AnalysisResult["metrics"] | null | undefined;
+  const baselineRunNarrativeLabel =
+    (typeof baselineRunMetrics?.aiInterpretationSource === "string" && baselineRunMetrics.aiInterpretationSource === "ai") ||
+    (typeof baselineRunMetrics?.dataQuality?.aiInterpretationSource === "string" && baselineRunMetrics.dataQuality.aiInterpretationSource === "ai") ||
+    Boolean(comparisonRun?.ai_interpretation)
+      ? "AI-assisted"
+      : "Deterministic";
+  const baselineRunMapContextLabel = baselineMapViewSummary.length > 0 ? `${baselineMapViewSummary.length} saved checks` : "Not captured";
+  const baselineRunOverallScore = typeof baselineRunMetrics?.overallScore === "number" ? `${baselineRunMetrics.overallScore}` : "Not scored";
+  const currentHistoryHref = analysisResult?.runId ? "#analysis-run-history-current" : "#analysis-run-history";
+  const baselineHistoryHref = comparisonRun?.id ? "#analysis-run-history-baseline" : "#analysis-run-history";
+  const disclosureItems = [
+    {
+      title: "AI acceleration",
+      detail: "AI is used to accelerate drafting and interpretation; final analysis and conclusions still require human review and approval.",
+      tone: "info" as const,
+    },
+    {
+      title: "Verification gate",
+      detail: "Regulatory and policy-sensitive claims should be citation-backed or explicitly marked for verification before release.",
+      tone: "warning" as const,
+    },
+    {
+      title: "Source limitations",
+      detail: "This run relies on available source data and proxy methods where direct sources are unavailable or incomplete.",
+      tone: "neutral" as const,
+    },
+    {
+      title: "Equity safeguard",
+      detail: "Recommendations should be checked for equity impacts and must not shift disproportionate burden onto disadvantaged communities.",
+      tone: "warning" as const,
+    },
+  ];
 
   const workspaceHelperText = useMemo(() => {
     if (workspaceLoadState === "loading") {
@@ -2193,6 +2375,13 @@ export default function ExplorePage() {
     `Census connector: ${analysisResult?.metrics.dataQuality?.censusAvailable ? "Available" : "Configured path"}`,
   ];
 
+  const linkedDatasetPreview = analysisContext?.linkedDatasets.slice(0, 4) ?? [];
+  const activeOverlayGeometryLabel = activeDatasetOverlay?.geometryAttachment === "analysis_corridor"
+    ? "corridor"
+    : activeDatasetOverlay?.geometryAttachment === "analysis_crash_points"
+      ? "crash-point"
+      : "tract";
+
   return (
     <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
       <div className="relative overflow-hidden rounded-[30px] border border-slate-800/80 bg-[linear-gradient(180deg,#08111a_0%,#0d1722_100%)] shadow-[0_28px_80px_rgba(3,10,18,0.28)]">
@@ -2223,7 +2412,7 @@ export default function ExplorePage() {
 
         <div className="absolute right-4 top-4 z-10 max-w-[min(90%,360px)] sm:right-5 sm:top-5">
           <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">Overlay lanes</p>
                 <p className="mt-1 text-sm text-slate-200/88">Control the visible geometry and any project-linked coverage footprints.</p>
@@ -2237,53 +2426,88 @@ export default function ExplorePage() {
               </button>
             </div>
 
-            <div className="mt-3 grid gap-2">
+            <div className="mt-4 analysis-sidepanel-stack">
               <button
                 type="button"
                 onClick={() => setShowPolygonFill((value) => !value)}
-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5 text-left transition hover:border-white/15"
+                className={["analysis-sidepanel-row", "is-interactive", showPolygonFill ? "is-active" : "is-muted"].join(" ")}
               >
-                <span>
-                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300/78">Corridor footprint</span>
-                  <span className="mt-1 block text-xs text-slate-300/74">Primary analysis boundary and overall corridor score envelope.</span>
-                </span>
-                <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Base geometry</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">Corridor footprint</p>
+                    <p className="analysis-sidepanel-body">Primary analysis boundary and overall corridor score envelope.</p>
+                    <div className="analysis-sidepanel-meta">
+                      <span className="analysis-sidepanel-chip">Operator base layer</span>
+                    </div>
+                  </div>
+                  <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
+                </div>
               </button>
+
               <button
                 type="button"
                 onClick={() => setShowPoints((value) => !value)}
-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5 text-left transition hover:border-white/15"
+                className={["analysis-sidepanel-row", "is-interactive", showPoints ? "is-active" : "is-muted"].join(" ")}
               >
-                <span>
-                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300/78">Corridor centroid</span>
-                  <span className="mt-1 block text-xs text-slate-300/74">Reference anchor for the current corridor run.</span>
-                </span>
-                <StatusBadge tone={showPoints ? "success" : "neutral"}>{showPoints ? "Visible" : "Hidden"}</StatusBadge>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Reference anchor</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">Corridor centroid</p>
+                    <p className="analysis-sidepanel-body">Reference anchor for the current corridor run.</p>
+                    <div className="analysis-sidepanel-meta">
+                      <span className="analysis-sidepanel-chip">Map orientation</span>
+                    </div>
+                  </div>
+                  <StatusBadge tone={showPoints ? "success" : "neutral"}>{showPoints ? "Visible" : "Hidden"}</StatusBadge>
+                </div>
               </button>
+
               <button
                 type="button"
                 onClick={() => setShowTracts((value) => !value)}
-                className="flex items-center justify-between rounded-2xl border border-sky-300/14 bg-sky-400/8 px-3 py-2.5 text-left transition hover:border-sky-200/24"
+                className={["analysis-sidepanel-row", "is-interactive", showTracts ? "is-active" : "is-muted"].join(" ")}
               >
-                <span>
-                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">Census tract layer</span>
-                  <span className="mt-1 block text-xs text-slate-300/74">Base tract geometry used for choropleths and tract-scope coverage overlays.</span>
-                </span>
-                <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Context geometry</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">Census tract layer</p>
+                    <p className="analysis-sidepanel-body">Base tract geometry used for choropleths and tract-scope coverage overlays.</p>
+                    <div className="analysis-sidepanel-meta">
+                      <span className="analysis-sidepanel-chip">Supports tract theming</span>
+                    </div>
+                  </div>
+                  <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
+                </div>
               </button>
-              <div className="rounded-2xl border border-rose-300/14 bg-rose-400/8 px-3 py-2.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">SWITRS collision lane</span>
-                    <span className="mt-1 block text-xs text-slate-300/74">
+
+              <div className={["analysis-sidepanel-row", switrsPointLayerAvailable && showCrashes ? "is-warning" : switrsPointLayerAvailable ? "is-active" : "is-muted"].join(" ")}>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Safety lane</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">SWITRS collision lane</p>
+                    <p className="analysis-sidepanel-body">
                       Real crash points only when local SWITRS geometry is available for the current California run.
-                    </span>
+                    </p>
+                    <div className="analysis-sidepanel-meta">
+                      <span className="analysis-sidepanel-chip">
+                        {switrsPointLayerAvailable ? `${filteredCrashPointCount}/${crashPointCount} points in current filter` : "Drawable points unavailable"}
+                      </span>
+                    </div>
                   </div>
                   <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
                     {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
                   </StatusBadge>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="analysis-sidepanel-actions">
                   <Button
                     type="button"
                     size="sm"
@@ -2293,11 +2517,13 @@ export default function ExplorePage() {
                   >
                     {showCrashes ? "Hide collisions" : "Show collisions"}
                   </Button>
+                </div>
+                <div className="analysis-sidepanel-field-grid cols-2">
                   <select
                     value={crashSeverityFilter}
                     onChange={(event) => setCrashSeverityFilter(event.target.value as CrashSeverityFilter)}
                     disabled={!switrsPointLayerAvailable}
-                    className="h-9 min-w-[150px] rounded-xl border border-white/10 bg-slate-950/70 px-3 text-xs text-slate-100 outline-none"
+                    className="analysis-sidepanel-select"
                   >
                     <option value="all">All severities</option>
                     <option value="fatal">Fatal only</option>
@@ -2308,7 +2534,7 @@ export default function ExplorePage() {
                     value={crashUserFilter}
                     onChange={(event) => setCrashUserFilter(event.target.value as CrashUserFilter)}
                     disabled={!switrsPointLayerAvailable}
-                    className="h-9 min-w-[150px] rounded-xl border border-white/10 bg-slate-950/70 px-3 text-xs text-slate-100 outline-none"
+                    className="analysis-sidepanel-select"
                   >
                     <option value="all">All users</option>
                     <option value="pedestrian">Ped only</option>
@@ -2316,37 +2542,49 @@ export default function ExplorePage() {
                     <option value="vru">Ped or bike</option>
                   </select>
                 </div>
-                <p className="mt-2 text-[0.72rem] text-slate-300/74">
+                <p className="analysis-sidepanel-body">
                   {switrsPointLayerAvailable
                     ? `${filteredCrashPointCount} of ${crashPointCount} crash points match the current filter stack.`
                     : "Current crash source does not include drawable local SWITRS points yet."}
                 </p>
               </div>
-              <div className="rounded-2xl border border-orange-300/12 bg-orange-400/8 px-3 py-2.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-100">Project-linked coverage lane</span>
-                    <span className="mt-1 block text-xs text-slate-300/74">
+
+              <div className={["analysis-sidepanel-row", activeDatasetOverlay ? "is-warning" : "is-muted"].join(" ")}>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Project overlay</span>
+                      <span className="analysis-sidepanel-chip">{analysisContext?.counts.overlayReadyDatasets ?? 0} ready</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">Project-linked coverage lane</p>
+                    <p className="analysis-sidepanel-body">
                       Uses real available geometry only: tract coverage for tract-scoped datasets, corridor footprint for corridor/route-scoped datasets.
-                    </span>
-                  </div>
-                  <StatusBadge tone={activeDatasetOverlay ? "warning" : "neutral"}>
-                    {activeDatasetOverlay ? "Active" : "None"}
-                  </StatusBadge>
-                </div>
-                {activeDatasetOverlay ? (
-                  <div className="mt-2 rounded-xl border border-white/8 bg-slate-950/30 px-2.5 py-2 text-xs text-slate-200/88">
-                    <p className="font-medium text-white">{activeDatasetOverlay.name}</p>
-                    <p className="mt-1 text-slate-300/76">
-                      {titleize(activeDatasetOverlay.geographyScope)}
-                      {activeDatasetOverlay.thematicReady
-                        ? ` thematic overlay · ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)}`
-                        : " coverage footprint"}
-                      {` · ${activeDatasetOverlay.connectorLabel ?? "Manual source"}`}
                     </p>
                   </div>
+                  <StatusBadge tone={activeDatasetOverlay ? "warning" : "neutral"}>{activeDatasetOverlay ? "Active" : "None"}</StatusBadge>
+                </div>
+                {activeDatasetOverlay ? (
+                  <div className="analysis-sidepanel-row is-active">
+                    <div className="analysis-sidepanel-head">
+                      <div className="analysis-sidepanel-main">
+                        <div className="analysis-sidepanel-kicker">
+                          <span className="analysis-sidepanel-chip">{titleize(activeDatasetOverlay.geographyScope)} scope</span>
+                          <span className="analysis-sidepanel-chip">{activeDatasetOverlay.connectorLabel ?? "Manual source"}</span>
+                        </div>
+                        <p className="analysis-sidepanel-title">{activeDatasetOverlay.name}</p>
+                        <p className="analysis-sidepanel-body">
+                          {activeDatasetOverlay.thematicReady
+                            ? `Thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeOverlayGeometryLabel} geometry.`
+                            : "Coverage footprint only — dataset-specific values are not fabricated."}
+                        </p>
+                      </div>
+                      <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage"}</StatusBadge>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="mt-2 text-xs text-slate-300/74">Choose a drawable linked dataset from the Project Context panel to display its coverage footprint or thematic overlay.</p>
+                  <p className="analysis-sidepanel-body">
+                    Choose a drawable linked dataset from the Project Context panel to display its coverage footprint or thematic overlay.
+                  </p>
                 )}
               </div>
             </div>
@@ -2358,41 +2596,61 @@ export default function ExplorePage() {
             <Layers3 className="h-3.5 w-3.5" />
             Map layers and posture
           </div>
-          <div className="mt-3 grid gap-2 text-sm text-slate-300/84">
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <span>Corridor geometry</span>
-              <StatusBadge tone={corridorGeojson ? "success" : "neutral"}>{corridorGeojson ? "Loaded" : "Waiting"}</StatusBadge>
+          <div className="mt-3 analysis-sidepanel-stack">
+            <div className={["analysis-sidepanel-row", corridorGeojson ? "is-active" : "is-muted"].join(" ")}>
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Corridor geometry</p>
+                  <p className="analysis-sidepanel-body">Uploaded corridor boundary currently driving the studio map.</p>
+                </div>
+                <StatusBadge tone={corridorGeojson ? "success" : "neutral"}>{corridorGeojson ? "Loaded" : "Waiting"}</StatusBadge>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <span>Analysis result layer</span>
-              <StatusBadge tone={analysisResult ? "success" : "neutral"}>{analysisResult ? "Live" : "Idle"}</StatusBadge>
+            <div className={["analysis-sidepanel-row", analysisResult ? "is-active" : "is-muted"].join(" ")}>
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Analysis result layer</p>
+                  <p className="analysis-sidepanel-body">Live corridor intelligence result currently loaded into the scene.</p>
+                </div>
+                <StatusBadge tone={analysisResult ? "success" : "neutral"}>{analysisResult ? "Live" : "Idle"}</StatusBadge>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <span>Census tracts</span>
-              <StatusBadge tone={showTracts && analysisResult ? "success" : "neutral"}>{showTracts && analysisResult ? "Visible" : "Hidden / waiting"}</StatusBadge>
+            <div className={["analysis-sidepanel-row", showTracts && analysisResult ? "is-active" : "is-muted"].join(" ")}>
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Census tracts</p>
+                  <p className="analysis-sidepanel-body">Tract layer visibility for contextual equity and demographic theming.</p>
+                </div>
+                <StatusBadge tone={showTracts && analysisResult ? "success" : "neutral"}>{showTracts && analysisResult ? "Visible" : "Hidden / waiting"}</StatusBadge>
+              </div>
             </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <span>Crash lane</span>
+            <div className={["analysis-sidepanel-row", switrsPointLayerAvailable && showCrashes ? "is-warning" : "is-muted"].join(" ")}>
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Crash lane</p>
+                  <p className="analysis-sidepanel-body">
+                    {switrsPointLayerAvailable
+                      ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)} · ${filteredCrashPointCount}/${crashPointCount} drawable points`
+                      : "Needs local SWITRS geometry in the current analysis result."}
+                  </p>
+                </div>
                 <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
                   {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
                 </StatusBadge>
               </div>
-              <p className="mt-2 text-xs text-slate-300/80">
-                {switrsPointLayerAvailable
-                  ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)} · ${filteredCrashPointCount}/${crashPointCount} drawable points`
-                  : "Needs local SWITRS geometry in the current analysis result."}
-              </p>
             </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <span>Tract theme</span>
+            <div className="analysis-sidepanel-row">
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Tract theme</p>
+                  <p className="analysis-sidepanel-body">Switch the live tract metric without leaving the map context.</p>
+                </div>
                 <StatusBadge tone="info">{tractMetric}</StatusBadge>
               </div>
               <select
                 value={tractMetric}
                 onChange={(event) => setTractMetric(event.target.value as typeof tractMetric)}
-                className="mt-2 h-10 w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 text-sm text-slate-100 outline-none"
+                className="analysis-sidepanel-select"
               >
                 <option value="minority">Minority share</option>
                 <option value="poverty">Poverty share</option>
@@ -2400,9 +2658,14 @@ export default function ExplorePage() {
                 <option value="disadvantaged">Disadvantaged flag</option>
               </select>
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
-              <span>Map engine</span>
-              <StatusBadge tone={mapExperienceReady ? "success" : "warning"}>{mapExperienceReady ? "Mapbox" : "Token needed"}</StatusBadge>
+            <div className={["analysis-sidepanel-row", mapExperienceReady ? "is-active" : "is-warning"].join(" ")}>
+              <div className="analysis-sidepanel-head">
+                <div className="analysis-sidepanel-main">
+                  <p className="analysis-sidepanel-title">Map engine</p>
+                  <p className="analysis-sidepanel-body">Production map runtime posture for the current environment.</p>
+                </div>
+                <StatusBadge tone={mapExperienceReady ? "success" : "warning"}>{mapExperienceReady ? "Mapbox" : "Token needed"}</StatusBadge>
+              </div>
             </div>
           </div>
         </div>
@@ -2413,100 +2676,119 @@ export default function ExplorePage() {
             Tract legend & inspector
           </div>
           {!mapExperienceReady ? (
-            <p className="mt-3 text-sm text-amber-100/88">
-              Add <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.72rem]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to activate the production map experience.
-            </p>
+            <div className="mt-3 analysis-sidepanel-row is-warning">
+              <p className="analysis-sidepanel-body">
+                Add <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.72rem]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to activate the production map experience.
+              </p>
+            </div>
           ) : (
-            <div className="mt-3 space-y-3 text-sm text-slate-300/84">
-              <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300/72">Active theme</span>
-                  <StatusBadge tone="info">{tractLegend.label}</StatusBadge>
+            <div className="mt-3 analysis-sidepanel-stack">
+              <div className="analysis-sidepanel-row">
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Tract theme</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">{tractLegend.label}</p>
+                    <p className="analysis-sidepanel-body">{tractLegend.note}</p>
+                  </div>
+                  <StatusBadge tone="info">Active</StatusBadge>
                 </div>
-                <p className="mt-2 text-xs text-slate-300/80">{tractLegend.note}</p>
-                <div className="mt-3 space-y-2">
+                <div className="analysis-sidepanel-stack">
                   {tractLegend.items.map((item) => (
-                    <div key={`${tractLegend.label}-${item.label}`} className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
-                      <span className="inline-flex items-center gap-2">
+                    <div key={`${tractLegend.label}-${item.label}`} className="analysis-sidepanel-field">
+                      <div className="flex items-center gap-2 text-xs text-slate-200/88">
                         <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
                         {item.label}
-                      </span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {activeDatasetOverlay ? (
-                <div className="rounded-2xl border border-orange-300/15 bg-orange-400/8 px-3 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-100/90">
-                      {activeDatasetOverlay.thematicReady ? "Active thematic overlay" : "Active coverage overlay"}
-                    </span>
-                    <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage footprint"}</StatusBadge>
+                <div className="analysis-sidepanel-row is-warning">
+                  <div className="analysis-sidepanel-head">
+                    <div className="analysis-sidepanel-main">
+                      <div className="analysis-sidepanel-kicker">
+                        <span className="analysis-sidepanel-chip">{activeDatasetOverlay.thematicReady ? "Thematic overlay" : "Coverage overlay"}</span>
+                        <span className="analysis-sidepanel-chip">{titleize(activeDatasetOverlay.geographyScope)} scope</span>
+                      </div>
+                      <p className="analysis-sidepanel-title">{activeDatasetOverlay.name}</p>
+                      <p className="analysis-sidepanel-body">
+                        {activeDatasetOverlay.thematicReady
+                          ? `Bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeOverlayGeometryLabel} geometry.`
+                          : "Only existing geometry is drawn; dataset-specific values are not fabricated."}
+                      </p>
+                    </div>
+                    <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage"}</StatusBadge>
                   </div>
-                  <p className="mt-2 text-sm text-white">{activeDatasetOverlay.name}</p>
-                  <p className="mt-1 text-xs text-slate-200/78">
-                    {activeDatasetOverlay.thematicReady
-                      ? `${titleize(activeDatasetOverlay.geographyScope)} scope · thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeDatasetOverlay.geometryAttachment === "analysis_corridor" ? "corridor" : activeDatasetOverlay.geometryAttachment === "analysis_crash_points" ? "crash-point" : "tract"} geometry.`
-                      : `${titleize(activeDatasetOverlay.geographyScope)} scope · only existing geometry is drawn; dataset-specific values are not fabricated.`}
-                  </p>
                   {activeOverlayLegend ? (
-                    <div className="mt-3 rounded-xl border border-white/8 bg-slate-950/30 px-3 py-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82">{activeOverlayLegend.label}</span>
+                    <div className="analysis-sidepanel-stack">
+                      <div className="analysis-sidepanel-head">
+                        <div className="analysis-sidepanel-main">
+                          <p className="analysis-sidepanel-title">{activeOverlayLegend.label}</p>
+                          <p className="analysis-sidepanel-body">{activeOverlayLegend.note}</p>
+                        </div>
                         <StatusBadge tone="warning">Legend</StatusBadge>
                       </div>
-                      <p className="mt-2 text-xs text-slate-300/76">{activeOverlayLegend.note}</p>
-                      <div className="mt-3 space-y-2">
-                        {activeOverlayLegend.items.map((item) => (
-                          <div key={`${activeOverlayLegend.label}-${item.label}`} className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
-                            <span className="inline-flex items-center gap-2">
-                              <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
-                              {item.label}
-                            </span>
+                      {activeOverlayLegend.items.map((item) => (
+                        <div key={`${activeOverlayLegend.label}-${item.label}`} className="analysis-sidepanel-field">
+                          <div className="flex items-center gap-2 text-xs text-slate-200/88">
+                            <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
+                            {item.label}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   ) : null}
                 </div>
               ) : null}
 
-              <div className="rounded-2xl border border-rose-300/15 bg-rose-400/8 px-3 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-100/90">Crash inspector</span>
-                  <StatusBadge tone={switrsPointLayerAvailable ? "warning" : "neutral"}>
-                    {switrsPointLayerAvailable ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}` : "No point layer"}
-                  </StatusBadge>
+              <div className={["analysis-sidepanel-row", switrsPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Crash inspector</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">SWITRS point inspection</p>
+                    <p className="analysis-sidepanel-body">
+                      {switrsPointLayerAvailable
+                        ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}`
+                        : "Point-level crash inspection appears only when the run uses local SWITRS geometry."}
+                    </p>
+                  </div>
+                  <StatusBadge tone={switrsPointLayerAvailable ? "warning" : "neutral"}>{switrsPointLayerAvailable ? "Live" : "No point layer"}</StatusBadge>
                 </div>
                 {hoveredCrash ? (
-                  <div className="mt-3 space-y-2 text-xs text-slate-200/88">
-                    <p className="font-medium text-white">{hoveredCrash.severityLabel} collision</p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Year</p>
-                        <p className="mt-1 font-medium text-white">{hoveredCrash.collisionYear ?? "Unknown"}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Fatalities</p>
-                        <p className="mt-1 font-medium text-white">{hoveredCrash.fatalCount}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Injured</p>
-                        <p className="mt-1 font-medium text-white">{hoveredCrash.injuryCount}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">VRU flags</p>
-                        <p className="mt-1 font-medium text-white">
-                          {hoveredCrash.pedestrianInvolved ? "Ped" : "—"}
-                          {hoveredCrash.pedestrianInvolved && hoveredCrash.bicyclistInvolved ? " · " : ""}
-                          {hoveredCrash.bicyclistInvolved ? "Bike" : hoveredCrash.pedestrianInvolved ? "" : "None"}
-                        </p>
-                      </div>
+                  <div className="analysis-sidepanel-stat-grid cols-2">
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Collision</p>
+                      <p className="analysis-sidepanel-value">{hoveredCrash.severityLabel}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Year</p>
+                      <p className="analysis-sidepanel-value">{hoveredCrash.collisionYear ?? "Unknown"}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Fatalities</p>
+                      <p className="analysis-sidepanel-value">{hoveredCrash.fatalCount}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Injured</p>
+                      <p className="analysis-sidepanel-value">{hoveredCrash.injuryCount}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat sm:col-span-2">
+                      <p className="analysis-sidepanel-label">VRU flags</p>
+                      <p className="analysis-sidepanel-value">
+                        {hoveredCrash.pedestrianInvolved ? "Ped" : "—"}
+                        {hoveredCrash.pedestrianInvolved && hoveredCrash.bicyclistInvolved ? " · " : ""}
+                        {hoveredCrash.bicyclistInvolved ? "Bike" : hoveredCrash.pedestrianInvolved ? "" : "None"}
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <p className="mt-3 text-xs text-slate-300/80">
+                  <p className="analysis-sidepanel-body">
                     {switrsPointLayerAvailable
                       ? "Hover a SWITRS collision point to inspect its severity and vulnerable-road-user flags."
                       : "Point-level crash inspection appears only when the run uses local SWITRS geometry."}
@@ -2514,51 +2796,49 @@ export default function ExplorePage() {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300/72">Hovered tract</span>
-                  <StatusBadge tone={hoveredTract?.isDisadvantaged ? "warning" : "neutral"}>
-                    {hoveredTract ? hoveredTractMetricValue : "Inspector idle"}
-                  </StatusBadge>
+              <div className={["analysis-sidepanel-row", hoveredTract ? "is-active" : "is-muted"].join(" ")}>
+                <div className="analysis-sidepanel-head">
+                  <div className="analysis-sidepanel-main">
+                    <div className="analysis-sidepanel-kicker">
+                      <span className="analysis-sidepanel-chip">Hovered tract</span>
+                    </div>
+                    <p className="analysis-sidepanel-title">{hoveredTract ? hoveredTract.name : "Tract inspector idle"}</p>
+                    <p className="analysis-sidepanel-body">
+                      {hoveredTract
+                        ? `GEOID ${hoveredTract.geoid}`
+                        : "Hover over a visible census tract to inspect its current attributes and verify what the active theme is showing."}
+                    </p>
+                  </div>
+                  <StatusBadge tone={hoveredTract?.isDisadvantaged ? "warning" : "neutral"}>{hoveredTract ? hoveredTractMetricValue : "Waiting"}</StatusBadge>
                 </div>
                 {hoveredTract ? (
-                  <div className="mt-3 space-y-2 text-xs text-slate-200/88">
-                    <div>
-                      <p className="font-semibold text-white">{hoveredTract.name}</p>
-                      <p className="text-slate-400">GEOID {hoveredTract.geoid}</p>
+                  <div className="analysis-sidepanel-stat-grid cols-2">
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Population</p>
+                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Population</p>
-                        <p className="mt-1 font-medium text-white">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Median income</p>
-                        <p className="mt-1 font-medium text-white">{formatCurrency(hoveredTract.medianIncome)}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Minority share</p>
-                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.pctMinority)}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Poverty share</p>
-                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.pctBelowPoverty)}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Zero-vehicle HH</p>
-                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.zeroVehiclePct)}</p>
-                      </div>
-                      <div className="rounded-xl border border-white/8 bg-slate-950/35 px-2.5 py-2">
-                        <p className="text-[0.64rem] uppercase tracking-[0.14em] text-slate-400">Transit commute</p>
-                        <p className="mt-1 font-medium text-white">{formatPercent(hoveredTract.transitCommutePct)}</p>
-                      </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Median income</p>
+                      <p className="analysis-sidepanel-value">{formatCurrency(hoveredTract.medianIncome)}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Minority share</p>
+                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctMinority)}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Poverty share</p>
+                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctBelowPoverty)}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Zero-vehicle HH</p>
+                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.zeroVehiclePct)}</p>
+                    </div>
+                    <div className="analysis-sidepanel-stat">
+                      <p className="analysis-sidepanel-label">Transit commute</p>
+                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.transitCommutePct)}</p>
                     </div>
                   </div>
-                ) : (
-                  <p className="mt-3 text-xs text-slate-300/80">
-                    Hover over a visible census tract to inspect its current attributes and verify what the active theme is showing.
-                  </p>
-                )}
+                ) : null}
               </div>
             </div>
           )}
@@ -2628,11 +2908,11 @@ export default function ExplorePage() {
               </div>
             ) : null}
 
-            <div className="rounded-2xl border border-border/80 bg-background p-3.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project context</p>
-                  <p className="mt-1 text-sm text-foreground">
+            <div className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Project context</p>
+                  <p className="module-section-description">
                     {analysisContextLoadState === "loading"
                       ? "Loading project and dataset context…"
                       : analysisContext?.project
@@ -2643,7 +2923,7 @@ export default function ExplorePage() {
                   </p>
                 </div>
                 {analysisContext?.project ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="module-record-actions">
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/projects/${analysisContext.project.id}`}>Open Project</Link>
                     </Button>
@@ -2655,124 +2935,154 @@ export default function ExplorePage() {
               </div>
 
               {analysisContext?.project ? (
-                <div className="mt-3 space-y-3">
-                  <div className="rounded-2xl border border-border/80 bg-card p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={resolveStatusTone(analysisContext.project.status)}>
-                        {titleize(analysisContext.project.status)}
-                      </StatusBadge>
-                      <StatusBadge tone="info">{titleize(analysisContext.project.planType)}</StatusBadge>
-                      <StatusBadge tone="neutral">{titleize(analysisContext.project.deliveryPhase)}</StatusBadge>
+                <div className="mt-5 space-y-4">
+                  <article className="module-record-row is-selected">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={resolveStatusTone(analysisContext.project.status)}>
+                            {titleize(analysisContext.project.status)}
+                          </StatusBadge>
+                          <StatusBadge tone="info">{titleize(analysisContext.project.planType)}</StatusBadge>
+                          <StatusBadge tone="neutral">{titleize(analysisContext.project.deliveryPhase)}</StatusBadge>
+                        </div>
+                        <p className="module-record-title">{analysisContext.project.name}</p>
+                        <p className="module-record-summary">
+                          {analysisContext.project.summary || "Project record exists, but it still needs a richer summary."}
+                        </p>
+                      </div>
                     </div>
-                    <p className="mt-2 text-sm font-medium text-foreground">{analysisContext.project.name}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {analysisContext.project.summary || "Project record exists, but it still needs a richer summary."}
-                    </p>
-                  </div>
+                  </article>
 
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
-                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Project records</p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">
+                  <div className="module-record-detail-grid cols-3">
+                    <div className="module-subpanel">
+                      <p className="module-section-label">Project records</p>
+                      <p className="module-summary-value">
                         {analysisContext.counts.deliverables + analysisContext.counts.risks + analysisContext.counts.issues + analysisContext.counts.decisions + analysisContext.counts.meetings}
                       </p>
-                      <p className="text-xs text-muted-foreground">Deliverables, risks, issues, decisions, meetings</p>
+                      <p className="module-summary-detail">Deliverables, risks, issues, decisions, meetings</p>
                     </div>
-                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
-                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Linked datasets</p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">{analysisContext.counts.linkedDatasets}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="module-subpanel">
+                      <p className="module-section-label">Linked datasets</p>
+                      <p className="module-summary-value">{analysisContext.counts.linkedDatasets}</p>
+                      <p className="module-summary-detail">
                         {analysisContext.migrationPending
                           ? "Data Hub schema still pending in this database"
                           : `${analysisContext.counts.overlayReadyDatasets} overlay-ready for map work`}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
-                      <p className="text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">Recent runs</p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">{analysisContext.counts.recentRuns}</p>
-                      <p className="text-xs text-muted-foreground">Latest analysis history for this workspace</p>
+                    <div className="module-subpanel">
+                      <p className="module-section-label">Recent runs</p>
+                      <p className="module-summary-value">{analysisContext.counts.recentRuns}</p>
+                      <p className="module-summary-detail">Latest analysis history for this workspace</p>
                     </div>
                   </div>
 
                   {analysisContext.migrationPending ? (
-                    <div className="rounded-xl border border-amber-300/50 bg-amber-50/80 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+                    <div className="module-alert text-xs">
                       Data Hub is wired into Analysis Studio, but the current database still needs the latest migration before linked datasets can fully appear here.
                     </div>
-                  ) : analysisContext.linkedDatasets.length > 0 ? (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Map-linked dataset queue</p>
-                      <div className="space-y-2">
-                        {analysisContext.linkedDatasets.slice(0, 4).map((dataset) => {
+                  ) : linkedDatasetPreview.length > 0 ? (
+                    <div className="space-y-3">
+                      <div>
+                        <p className="module-section-label">Map-linked dataset queue</p>
+                        <p className="module-summary-detail mt-1">
+                          Select a dataset to compare coverage vs thematic states without leaving the analysis panel.
+                        </p>
+                      </div>
+                      <div className="module-record-list">
+                        {linkedDatasetPreview.map((dataset) => {
                           const canRenderCoverage = canRenderDatasetCoverageOverlay(dataset);
                           const isActiveOverlay = activeDatasetOverlayId === dataset.datasetId;
                           const thematicReady = canRenderDatasetThematicOverlay(dataset);
+                          const geometryLabel =
+                            dataset.geometryAttachment === "analysis_corridor"
+                              ? "corridor"
+                              : dataset.geometryAttachment === "analysis_crash_points"
+                                ? "crash-point"
+                                : "tract";
 
                           return (
-                            <div key={dataset.datasetId} className="rounded-xl border border-border/80 bg-card p-3">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <StatusBadge tone={resolveStatusTone(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
-                                <StatusBadge tone="info">{titleize(dataset.relationshipType)}</StatusBadge>
-                                <StatusBadge tone={dataset.overlayReady ? "success" : "neutral"}>
-                                  {dataset.overlayReady ? "Overlay-ready" : "Registry-only"}
-                                </StatusBadge>
-                                {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
-                              </div>
-                              <p className="mt-2 text-sm font-medium text-foreground">{dataset.name}</p>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {titleize(dataset.geographyScope)}
-                                {dataset.connectorLabel ? ` · ${dataset.connectorLabel}` : " · Manual / unbound source"}
-                                {dataset.vintageLabel ? ` · ${dataset.vintageLabel}` : ""}
-                              </p>
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant={isActiveOverlay ? "secondary" : "outline"}
-                                  disabled={!canRenderCoverage}
-                                  onClick={() =>
-                                    setActiveDatasetOverlayId((current) =>
-                                      current === dataset.datasetId ? null : dataset.datasetId
-                                    )
-                                  }
-                                >
-                                  {isActiveOverlay
-                                    ? thematicReady
-                                      ? "Hide thematic overlay"
-                                      : "Hide coverage"
-                                    : canRenderCoverage
-                                      ? thematicReady
-                                        ? "Show thematic overlay"
-                                        : "Show coverage"
-                                      : "Not drawable yet"}
-                                </Button>
-                                {dataset.overlayReady && !canRenderCoverage ? (
-                                  <p className="text-[0.72rem] text-muted-foreground">
-                                    Geometry attachment not yet published for this scope.
-                                  </p>
-                                ) : canRenderCoverage ? (
-                                  <p className="text-[0.72rem] text-muted-foreground">
+                            <article
+                              key={dataset.datasetId}
+                              className={[
+                                "module-record-row",
+                                canRenderCoverage ? "is-interactive" : "",
+                                isActiveOverlay ? "is-selected" : thematicReady ? "is-comparison" : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              <div className="module-record-head">
+                                <div className="module-record-main">
+                                  <div className="module-record-kicker">
+                                    <StatusBadge tone={resolveStatusTone(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
+                                    <StatusBadge tone="info">{titleize(dataset.relationshipType)}</StatusBadge>
+                                    <StatusBadge tone={dataset.overlayReady ? "success" : "neutral"}>
+                                      {dataset.overlayReady ? "Overlay-ready" : "Registry-only"}
+                                    </StatusBadge>
+                                    {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
+                                  </div>
+                                  <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <p className="module-record-title">{dataset.name}</p>
+                                    <p className="module-record-stamp">
+                                      {dataset.lastRefreshedAt ? `Refreshed ${formatRunTimestamp(dataset.lastRefreshedAt)}` : "Refresh pending"}
+                                    </p>
+                                  </div>
+                                  <p className="module-record-summary">
                                     {thematicReady
-                                      ? `Uses real ${dataset.geometryAttachment === "analysis_corridor" ? "corridor" : dataset.geometryAttachment === "analysis_crash_points" ? "crash-point" : "tract"} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
-                                      : "Draws a coverage footprint only — not dataset values."}
+                                      ? `Uses real ${geometryLabel} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
+                                      : dataset.overlayReady
+                                        ? "Coverage footprint only — dataset values stay honest until a thematic binding exists."
+                                        : "Registry record only for now; geometry attachment is not drawable yet."}
                                   </p>
-                                ) : null}
+                                  <div className="module-record-meta">
+                                    <span className="module-record-chip">{titleize(dataset.geographyScope)}</span>
+                                    <span className="module-record-chip">{dataset.connectorLabel ?? "Manual source"}</span>
+                                    {dataset.vintageLabel ? <span className="module-record-chip">Vintage {dataset.vintageLabel}</span> : null}
+                                    {dataset.thematicMetricLabel ? <span className="module-record-chip">Metric {dataset.thematicMetricLabel}</span> : null}
+                                  </div>
+                                </div>
+
+                                <div className="module-record-actions">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={isActiveOverlay ? "secondary" : "outline"}
+                                    disabled={!canRenderCoverage}
+                                    onClick={() =>
+                                      setActiveDatasetOverlayId((current) =>
+                                        current === dataset.datasetId ? null : dataset.datasetId
+                                      )
+                                    }
+                                  >
+                                    {isActiveOverlay
+                                      ? thematicReady
+                                        ? "Hide thematic"
+                                        : "Hide coverage"
+                                      : canRenderCoverage
+                                        ? thematicReady
+                                          ? "Show thematic"
+                                          : "Show coverage"
+                                        : "Not drawable"}
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
+                            </article>
                           );
                         })}
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground">
+                    <div className="module-empty-state text-xs">
                       No project-linked datasets yet. Register sources in Data Hub to start building real overlay lanes instead of hidden analysis assumptions.
-                    </p>
+                    </div>
                   )}
                 </div>
               ) : analysisContextLoadState === "error" ? (
                 <p className="mt-3 text-xs text-muted-foreground">Could not load project context from the workspace right now.</p>
               ) : null}
             </div>
-
             <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
             <div className="space-y-1.5">
               <Textarea
@@ -2841,83 +3151,624 @@ export default function ExplorePage() {
 
         {analysisResult ? (
           <>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Latest Analysis Result</CardTitle>
-                <CardDescription>
-                  {analysisResult.aiInterpretationSource === "ai"
-                    ? "Interpretation includes AI-assisted narrative support (human review required)."
-                    : "Interpretation generated from deterministic fallback logic."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">Accessibility: {analysisResult.metrics.accessibilityScore}</Badge>
-                  <Badge variant="outline">Safety: {analysisResult.metrics.safetyScore}</Badge>
-                  <Badge variant="outline">Equity: {analysisResult.metrics.equityScore}</Badge>
-                  {typeof analysisResult.metrics.overallScore === "number" ? (
-                    <Badge variant="outline">Overall: {analysisResult.metrics.overallScore}</Badge>
-                  ) : null}
-                  {analysisResult.metrics.transitAccessTier ? (
-                    <StatusBadge tone={resolveStatusTone(String(analysisResult.metrics.transitAccessTier))}>
-                      Transit Access: {String(analysisResult.metrics.transitAccessTier)}
+            <div className="analysis-run-pair-stack">
+              <Card
+                className={[
+                  "gap-0 overflow-hidden rounded-[28px] py-0 text-slate-100 shadow-[0_24px_64px_rgba(3,10,18,0.24)]",
+                  comparisonRun?.metrics
+                    ? "border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(8,19,28,0.98),rgba(11,24,35,0.96))]"
+                    : "border border-slate-800/88 bg-[linear-gradient(180deg,#0a141d_0%,#0f1c28_100%)]",
+                ].join(" ")}
+              >
+                <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone="info">Current result</StatusBadge>
+                    <StatusBadge tone={comparisonRun?.metrics ? "warning" : "neutral"}>
+                      {comparisonRun?.metrics ? "Paired with baseline" : "Standalone review"}
                     </StatusBadge>
-                  ) : null}
-                  {analysisResult.metrics.confidence ? (
-                    <StatusBadge tone={resolveStatusTone(String(analysisResult.metrics.confidence))}>
-                      Confidence: {String(analysisResult.metrics.confidence)}
+                    <StatusBadge tone={analysisResult.aiInterpretationSource === "ai" ? "info" : "warning"}>
+                      {analysisResult.aiInterpretationSource === "ai" ? "AI-assisted narrative" : "Deterministic narrative"}
                     </StatusBadge>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" onClick={exportMetrics}>
-                    Export Metrics CSV
-                  </Button>
-                  <Button type="button" variant="outline" onClick={exportGeojson}>
-                    Export Result GeoJSON
-                  </Button>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Summary</p>
-                  <p className="text-sm text-foreground">{analysisResult.summary}</p>
-                </div>
-
-                {analysisResult.aiInterpretation ? (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Interpretation</p>
-                    <p className="text-sm text-foreground">{analysisResult.aiInterpretation}</p>
+                    <StatusBadge tone={currentMapViewSummary.length > 0 ? "success" : "neutral"}>
+                      {currentMapViewSummary.length > 0 ? "Map context captured" : "Map context pending"}
+                    </StatusBadge>
                   </div>
-                ) : null}
-
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Source Transparency</p>
-                  <div className="space-y-2">
-                    {sourceTransparency.map((item) => (
-                      <div key={item.key} className="rounded-xl border border-border/80 bg-background p-2.5">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground">{item.label}</p>
-                          <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
-                        </div>
-                        <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <CardTitle className="text-[1.05rem] font-semibold tracking-[-0.02em] text-white">Current Result</CardTitle>
+                      <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/76">
+                        {comparisonRun?.metrics
+                          ? "The live run remains the primary operator surface, now explicitly paired with the pinned baseline directly below before the delta board begins."
+                          : analysisResult.aiInterpretationSource === "ai"
+                            ? "Operator-facing summary of the current run with AI-assisted narrative support. Human review remains mandatory before release."
+                            : "Operator-facing summary of the current run using deterministic fallback logic rather than AI narrative output."}
+                      </CardDescription>
+                    </div>
+                    <div className="analysis-run-identity-panel is-current">
+                      <p className="analysis-run-identity-eyebrow">Active run</p>
+                      <p className="analysis-run-identity-title">{currentRunTitle}</p>
+                      <p className="analysis-run-identity-meta">{currentRunTimestampLabel}</p>
+                      <p className="analysis-run-identity-record">{analysisResult.runId}</p>
+                      <div className="analysis-run-identity-chip-row">
+                        <span className="analysis-run-identity-chip">{currentRunNarrativeLabel} narrative</span>
+                        <span className="analysis-run-identity-chip">{currentRunMapContextLabel} map context</span>
                       </div>
-                    ))}
+                    </div>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-4 px-6 py-5">
+                  {comparisonRun?.metrics ? (
+                    <div className="analysis-run-pair-bridge">
+                      <div>
+                        <p className="analysis-run-pair-bridge-label">Current ↔ baseline bridge</p>
+                        <p className="analysis-run-pair-bridge-copy">
+                          Review identity, capture timing, and map posture in one pass before reading the comparison board. The current result stays live; the baseline stays pinned.
+                        </p>
+                      </div>
+                      <div className="analysis-run-pair-bridge-badges">
+                        <StatusBadge tone={comparisonMetricChangeCount > 0 ? "info" : "neutral"}>
+                          {comparisonMetricChangeCount > 0 ? `${comparisonMetricChangeCount} metric shifts pending review` : "Metrics currently flat"}
+                        </StatusBadge>
+                        <StatusBadge tone={comparisonViewDifferenceCount > 0 ? "warning" : "success"}>
+                          {comparisonViewDifferenceCount > 0 ? `${comparisonViewDifferenceCount} view posture differences` : "View posture aligned"}
+                        </StatusBadge>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="max-w-[16rem]">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/76">Current run posture</p>
+                        <p className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-white">
+                          {typeof analysisResult.metrics.overallScore === "number" ? analysisResult.metrics.overallScore : "—"}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-300/76">
+                          {typeof analysisResult.metrics.overallScore === "number"
+                            ? "Composite corridor score for the currently loaded analysis result."
+                            : "Composite overall score is not available for this run, but the underlying domain scores are captured below."}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {resultStatusBadges.map((item) => (
+                          <StatusBadge key={item.label} tone={item.tone}>
+                            {item.label}
+                          </StatusBadge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {resultScoreTiles.map((item) => (
+                        <div
+                          key={item.label}
+                          className={[
+                            "rounded-[20px] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+                            item.emphasis ? "sm:col-span-2 bg-[linear-gradient(180deg,rgba(34,197,94,0.12),rgba(255,255,255,0.035))]" : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+                          <p className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-white">{item.value}</p>
+                          <p className="mt-2 text-xs leading-5 text-slate-300/72">{item.note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-white/8 bg-black/15 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Output actions</p>
+                        <p className="mt-2 text-sm text-slate-300/74">
+                          Export the numeric record or geometry package for audit, sharing, or downstream reporting.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" onClick={exportMetrics}>
+                          Export Metrics CSV
+                        </Button>
+                        <Button type="button" variant="outline" onClick={exportGeojson}>
+                          Export Result GeoJSON
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Map review context</p>
+                        <p className="mt-2 text-sm text-slate-300/74">
+                          Captures the current tract, crash, and overlay posture that shaped this visible result surface.
+                        </p>
+                      </div>
+                      <StatusBadge tone={currentMapViewSummary.length > 0 ? "success" : "neutral"}>
+                        {currentMapViewSummary.length > 0 ? `${currentMapViewSummary.length} context checks saved` : "No saved context"}
+                      </StatusBadge>
+                    </div>
+                    {currentMapViewSummary.length > 0 ? (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {currentMapViewSummary.map((item) => (
+                          <Badge
+                            key={`${item.label}-${item.value}`}
+                            variant="secondary"
+                            className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-slate-200/82"
+                          >
+                            {item.label}: {item.value}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-xs text-slate-400">
+                        OpenPlan will preserve the active map-view context once those settings are saved on the run record.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Summary brief</p>
+                      <p className="mt-3 text-sm leading-6 text-slate-100/90">{analysisResult.summary}</p>
+                    </div>
+
+                    {analysisResult.aiInterpretation ? (
+                      <div className="rounded-[22px] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(14,35,48,0.88),rgba(11,20,29,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-cyan-200/78">AI interpretation</p>
+                          <StatusBadge tone="info">Human review required</StatusBadge>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-slate-100/88">{analysisResult.aiInterpretation}</p>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Source transparency</p>
+                        <p className="mt-2 text-sm text-slate-300/74">Audit the data posture, fallback logic, and narrative source before sharing beyond the operator surface.</p>
+                      </div>
+                      <StatusBadge tone={sourceReviewCount > 0 ? "warning" : "success"}>
+                        {sourceReviewCount > 0 ? `${sourceReviewCount} review flags` : "Audit posture stable"}
+                      </StatusBadge>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {sourceTransparency.map((item) => (
+                        <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/18 px-4 py-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-white">{item.label}</p>
+                            <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-slate-300/74">{item.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {comparisonRun && comparisonRun.metrics ? (
+                <Card className="gap-0 overflow-hidden rounded-[28px] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(8,18,29,0.99),rgba(10,20,31,0.97))] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+                  <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone="warning">Baseline pinned</StatusBadge>
+                      <StatusBadge tone={comparisonMetricChangeCount > 0 ? "info" : "neutral"}>
+                        {comparisonMetricChangeCount > 0 ? `${comparisonMetricChangeCount} metric shifts` : "No material metric shift"}
+                      </StatusBadge>
+                      <StatusBadge tone={comparisonViewDifferenceCount > 0 ? "warning" : "success"}>
+                        {comparisonViewDifferenceCount > 0 ? `${comparisonViewDifferenceCount} view differences` : "Map view aligned"}
+                      </StatusBadge>
+                      <StatusBadge tone={comparisonNarrativeLead.tone}>
+                        {comparisonViewDifferenceCount > 0
+                          ? "Evidence caution"
+                          : comparisonMetricChangeCount > 0
+                            ? "Like-for-like read"
+                            : "Stable comparison"}
+                      </StatusBadge>
+                    </div>
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Comparison narrative</CardTitle>
+                        <CardDescription className="max-w-2xl text-sm leading-6 text-slate-300/76">
+                          Identity → Run History handoff → delta board → map-context evidence. The active pair stays audit-ready all the way down, rather than breaking into disconnected cards.
+                        </CardDescription>
+                      </div>
+                      <div className="analysis-run-identity-panel is-baseline">
+                        <p className="analysis-run-identity-eyebrow">Baseline run</p>
+                        <p className="analysis-run-identity-title">{comparisonRun.title}</p>
+                        <p className="analysis-run-identity-meta">{formatRunTimestamp(comparisonRun.created_at)}</p>
+                        <p className="analysis-run-identity-record">{comparisonRun.id}</p>
+                        <div className="analysis-run-identity-chip-row">
+                          <span className="analysis-run-identity-chip">{baselineRunNarrativeLabel} narrative</span>
+                          <span className="analysis-run-identity-chip">{baselineRunMapContextLabel} map context</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4 px-6 py-5">
+                    <div className="analysis-comparison-story">
+                      <div className="analysis-comparison-story-step">
+                        <div className="analysis-run-pair-board">
+                          <div className="analysis-run-pair-board-header">
+                            <div>
+                              <p className="analysis-run-pair-board-label">Step 1 · paired identity</p>
+                              <p className="analysis-run-pair-board-copy">
+                                Lock the current result and pinned baseline as one coordinated review surface before interpreting score movement or narrative shifts.
+                              </p>
+                            </div>
+                            <div className="analysis-run-pair-board-badges">
+                              <StatusBadge tone="info">Current live</StatusBadge>
+                              <StatusBadge tone="warning">Baseline pinned</StatusBadge>
+                            </div>
+                          </div>
+
+                          <div className="analysis-run-pair-board-grid">
+                            <section className="analysis-run-pair-surface is-current">
+                              <div className="analysis-run-pair-surface-header">
+                                <div>
+                                  <p className="analysis-run-pair-surface-eyebrow">Current result</p>
+                                  <p className="analysis-run-pair-surface-title">{currentRunTitle}</p>
+                                </div>
+                                <StatusBadge tone="info">Driving result stack</StatusBadge>
+                              </div>
+                              <p className="analysis-run-pair-surface-body">
+                                This run remains live in Analysis Studio and continues to drive the visible result stack, exports, and release framing.
+                              </p>
+                              <div className="analysis-run-pair-field-grid">
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Run record</p>
+                                  <p className="analysis-run-pair-field-value break-all">{analysisResult.runId}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Captured</p>
+                                  <p className="analysis-run-pair-field-value">{currentRunTimestampLabel}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Narrative mode</p>
+                                  <p className="analysis-run-pair-field-value">{currentRunNarrativeLabel}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Map posture</p>
+                                  <p className="analysis-run-pair-field-value">{currentRunMapContextLabel}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Overall score</p>
+                                  <p className="analysis-run-pair-field-value">{currentRunOverallScore}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Primary action</p>
+                                  <p className="analysis-run-pair-field-value">Export current metrics / geometry</p>
+                                </div>
+                              </div>
+                            </section>
+
+                            <section className="analysis-run-pair-surface is-baseline">
+                              <div className="analysis-run-pair-surface-header">
+                                <div>
+                                  <p className="analysis-run-pair-surface-eyebrow">Baseline reference</p>
+                                  <p className="analysis-run-pair-surface-title">{comparisonRun.title}</p>
+                                </div>
+                                <StatusBadge tone="warning">Pinned for comparison</StatusBadge>
+                              </div>
+                              <p className="analysis-run-pair-surface-body">
+                                The baseline remains anchored in the pinned Run History row below for replacement, reload, or clearance without breaking the current review posture.
+                              </p>
+                              <div className="analysis-run-pair-field-grid">
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Run record</p>
+                                  <p className="analysis-run-pair-field-value break-all">{comparisonRun.id}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Captured</p>
+                                  <p className="analysis-run-pair-field-value">{formatRunTimestamp(comparisonRun.created_at)}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Narrative mode</p>
+                                  <p className="analysis-run-pair-field-value">{baselineRunNarrativeLabel}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Map posture</p>
+                                  <p className="analysis-run-pair-field-value">{baselineRunMapContextLabel}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Overall score</p>
+                                  <p className="analysis-run-pair-field-value">{baselineRunOverallScore}</p>
+                                </div>
+                                <div className="analysis-run-pair-field">
+                                  <p className="analysis-run-pair-field-label">Primary action</p>
+                                  <p className="analysis-run-pair-field-value">Replace / clear in pinned history row</p>
+                                </div>
+                              </div>
+                            </section>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="analysis-comparison-story-step">
+                        <div className="analysis-run-history-handoff">
+                          <div className="analysis-run-history-handoff-header">
+                            <div>
+                              <p className="analysis-run-history-handoff-label">Step 2 · Run History handoff</p>
+                              <p className="analysis-run-history-handoff-copy">
+                                The active pair above stays synced to the exact current row and pinned baseline row below. Use Run History for the control handoff: reload current, replace baseline, or clear baseline without leaving this review cycle.
+                              </p>
+                            </div>
+                            <div className="analysis-run-history-handoff-badges">
+                              <StatusBadge tone="info">Current row linked</StatusBadge>
+                              <StatusBadge tone="warning">Baseline row linked</StatusBadge>
+                            </div>
+                          </div>
+
+                          <div className="analysis-run-history-handoff-grid">
+                            <div className="analysis-run-history-handoff-card is-current">
+                              <p className="analysis-run-history-handoff-card-label">Current row below</p>
+                              <p className="analysis-run-history-handoff-card-title">{currentRunTitle}</p>
+                              <p className="analysis-run-history-handoff-card-copy">
+                                Driving result stack · {currentRunTimestampLabel}. Reload another run there only if you intend to replace the current side of this pair.
+                              </p>
+                            </div>
+                            <div className="analysis-run-history-handoff-card is-baseline">
+                              <p className="analysis-run-history-handoff-card-label">Pinned baseline row below</p>
+                              <p className="analysis-run-history-handoff-card-title">{comparisonRun.title}</p>
+                              <p className="analysis-run-history-handoff-card-copy">
+                                Baseline pinned · {formatRunTimestamp(comparisonRun.created_at)}. Replace or clear that exact row to change the baseline side of this pair.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="analysis-run-history-handoff-actions">
+                            <Button asChild type="button" variant="ghost">
+                              <a href={currentHistoryHref}>Jump to current row</a>
+                            </Button>
+                            <Button asChild type="button" variant="ghost">
+                              <a href={baselineHistoryHref}>Jump to pinned baseline row</a>
+                            </Button>
+                            <Button type="button" variant="ghost" onClick={clearComparison}>
+                              Clear baseline
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <section className="analysis-comparison-story-step analysis-comparison-narrative">
+                        <div className="analysis-comparison-narrative-header">
+                          <div>
+                            <p className="analysis-comparison-narrative-label">Step 3 · delta board + map-context evidence</p>
+                            <h3 className="analysis-comparison-narrative-title">{comparisonNarrativeLead.title}</h3>
+                            <p className="analysis-comparison-narrative-copy">{comparisonNarrativeLead.detail}</p>
+                          </div>
+                          <div className="analysis-comparison-narrative-badges">
+                            <StatusBadge tone={comparisonMetricChangeCount > 0 ? "info" : "neutral"}>
+                              {comparisonMetricChangeCount > 0 ? `${comparisonMetricChangeCount} score or count shifts` : "Headline metrics flat"}
+                            </StatusBadge>
+                            <StatusBadge tone={comparisonViewDifferenceCount > 0 ? "warning" : "success"}>
+                              {comparisonViewDifferenceCount > 0 ? `${comparisonViewDifferenceCount} evidence differences` : "Evidence posture aligned"}
+                            </StatusBadge>
+                          </div>
+                        </div>
+
+                        <div className="analysis-comparison-narrative-section">
+                          <div className="analysis-comparison-section-header">
+                            <div>
+                              <p className="analysis-comparison-section-label">Headline deltas</p>
+                              <p className="analysis-comparison-section-copy">
+                                The four score lanes carry the first read. Treat them as the top-line story before moving into supporting counts and context evidence.
+                              </p>
+                            </div>
+                            <StatusBadge tone={comparisonChangedDeltas.length > 0 ? "info" : "neutral"}>
+                              {comparisonChangedDeltas.length > 0 ? `${comparisonChangedDeltas.length} metrics moved` : "No metric movement"}
+                            </StatusBadge>
+                          </div>
+
+                          <div className="analysis-comparison-headline-grid">
+                            {comparisonHeadlineDeltas.map((delta) => {
+                              const normalizedDelta = delta.delta ?? 0;
+                              const directionTone = delta.delta === null ? "flat" : deltaTone(normalizedDelta);
+                              const statusTone = delta.delta === null ? "neutral" : toneFromDelta(normalizedDelta);
+
+                              return (
+                                <article
+                                  key={delta.key}
+                                  className={[
+                                    "analysis-comparison-headline-card",
+                                    directionTone === "up" ? "is-up" : "",
+                                    directionTone === "down" ? "is-down" : "",
+                                    directionTone === "flat" ? "is-flat" : "",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                >
+                                  <div className="analysis-comparison-headline-card-head">
+                                    <div>
+                                      <p className="analysis-comparison-headline-label">{delta.label}</p>
+                                      <p className="analysis-comparison-headline-value">
+                                        {formatDelta(delta.delta)}
+                                        {delta.deltaPct !== null ? <span> ({formatDelta(delta.deltaPct)}%)</span> : null}
+                                      </p>
+                                    </div>
+                                    <StatusBadge tone={statusTone}>
+                                      {directionTone === "flat" ? "No change" : directionTone === "up" ? "Up" : "Down"}
+                                    </StatusBadge>
+                                  </div>
+                                  <p className="analysis-comparison-headline-detail">Current: {delta.current ?? "N/A"}</p>
+                                  <p className="analysis-comparison-headline-detail">Baseline: {delta.baseline ?? "N/A"}</p>
+                                </article>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="analysis-comparison-narrative-section">
+                          <div className="analysis-comparison-section-header">
+                            <div>
+                              <p className="analysis-comparison-section-label">Supporting evidence</p>
+                              <p className="analysis-comparison-section-copy">
+                                Secondary counts help explain why the headline score movement matters operationally or why it should be treated cautiously.
+                              </p>
+                            </div>
+                            <StatusBadge tone="neutral">Audit trail kept visible</StatusBadge>
+                          </div>
+
+                          <div className="analysis-comparison-support-list">
+                            {comparisonSupportingDeltas.map((delta: MetricDelta) => {
+                              const normalizedDelta = delta.delta ?? 0;
+                              const directionTone = delta.delta === null ? "flat" : deltaTone(normalizedDelta);
+                              const statusTone = delta.delta === null ? "neutral" : toneFromDelta(normalizedDelta);
+
+                              return (
+                                <div key={delta.key} className="analysis-comparison-support-row">
+                                  <div>
+                                    <p className="analysis-comparison-support-label">{delta.label}</p>
+                                    <p className="analysis-comparison-support-copy">
+                                      Current {delta.current ?? "N/A"} · Baseline {delta.baseline ?? "N/A"}
+                                    </p>
+                                  </div>
+                                  <div className="analysis-comparison-support-value">
+                                    <p>
+                                      {formatDelta(delta.delta)}
+                                      {delta.deltaPct !== null ? ` (${formatDelta(delta.deltaPct)}%)` : ""}
+                                    </p>
+                                    <StatusBadge tone={statusTone}>
+                                      {directionTone === "flat" ? "No change" : directionTone === "up" ? "Up" : "Down"}
+                                    </StatusBadge>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="analysis-comparison-narrative-section is-context-evidence">
+                          <div className="analysis-comparison-section-header">
+                            <div>
+                              <p className="analysis-comparison-section-label">Map-context evidence</p>
+                              <p className="analysis-comparison-section-copy">
+                                Read these checks as the evidentiary frame beneath the delta board — they confirm whether both runs were reviewed under the same tract, crash, and overlay posture.
+                              </p>
+                            </div>
+                            <StatusBadge tone={comparisonViewDifferenceCount > 0 ? "warning" : "success"}>
+                              {comparisonViewDifferenceCount > 0 ? `${comparisonViewDifferenceCount} context conflicts` : "All context checks aligned"}
+                            </StatusBadge>
+                          </div>
+
+                          {prioritizedMapViewComparisonRows.length > 0 ? (
+                            <div className="analysis-comparison-evidence-stack">
+                              <div className="analysis-comparison-evidence-group">
+                                <div className="analysis-comparison-evidence-group-head">
+                                  <p className="analysis-comparison-evidence-group-label">Differences requiring interpretation</p>
+                                  <p className="analysis-comparison-evidence-group-copy">
+                                    {changedMapViewRows.length > 0
+                                      ? "These differences may explain part of the delta board above or may indicate the two runs were reviewed under a materially different evidence frame."
+                                      : "No tract, crash, or overlay posture conflicts were detected between current and baseline."}
+                                  </p>
+                                </div>
+                                <div className="analysis-comparison-evidence-list">
+                                  {changedMapViewRows.length > 0 ? (
+                                    changedMapViewRows.map((row) => (
+                                      <article key={row.label} className="analysis-comparison-evidence-row is-changed">
+                                        <div className="analysis-comparison-evidence-row-head">
+                                          <p className="analysis-comparison-evidence-row-label">{row.label}</p>
+                                          <StatusBadge tone="warning">Different</StatusBadge>
+                                        </div>
+                                        <div className="analysis-comparison-evidence-values">
+                                          <p>
+                                            <span>Current</span>
+                                            <strong>{row.current}</strong>
+                                          </p>
+                                          <p>
+                                            <span>Baseline</span>
+                                            <strong>{row.baseline}</strong>
+                                          </p>
+                                        </div>
+                                      </article>
+                                    ))
+                                  ) : (
+                                    <div className="analysis-comparison-evidence-empty">
+                                      <p>All saved map-context checks are aligned across the active pair.</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {alignedMapViewRows.length > 0 ? (
+                                <div className="analysis-comparison-evidence-group is-secondary">
+                                  <div className="analysis-comparison-evidence-group-head">
+                                    <p className="analysis-comparison-evidence-group-label">Aligned context checks</p>
+                                    <p className="analysis-comparison-evidence-group-copy">
+                                      These matching checks support a like-for-like reading of the comparison where the evidence frame stayed constant.
+                                    </p>
+                                  </div>
+                                  <div className="analysis-comparison-evidence-list">
+                                    {alignedMapViewRows.map((row) => (
+                                      <article key={row.label} className="analysis-comparison-evidence-row is-aligned">
+                                        <div className="analysis-comparison-evidence-row-head">
+                                          <p className="analysis-comparison-evidence-row-label">{row.label}</p>
+                                          <StatusBadge tone="neutral">Aligned</StatusBadge>
+                                        </div>
+                                        <div className="analysis-comparison-evidence-values is-single">
+                                          <p>
+                                            <span>Current / baseline</span>
+                                            <strong>{row.current}</strong>
+                                          </p>
+                                        </div>
+                                      </article>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div className="analysis-comparison-evidence-empty">
+                              <p>No saved map context is attached to the baseline yet, so the delta board above should be interpreted without a captured evidence-frame check.</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="analysis-comparison-actions">
+                          <div>
+                            <p className="analysis-comparison-section-label">Controls & exports</p>
+                            <p className="analysis-comparison-section-copy">
+                              Export the comparison artifact, jump straight into the pinned baseline record, or clear the baseline to return the studio to a single-run posture.
+                            </p>
+                          </div>
+                          <div className="analysis-comparison-action-buttons">
+                            <Button asChild type="button" variant="ghost">
+                              <a href={baselineHistoryHref}>Jump to pinned baseline row</a>
+                            </Button>
+                            <Button type="button" variant="outline" onClick={exportComparisonCsv}>
+                              Export Comparison CSV
+                            </Button>
+                            <Button type="button" variant="outline" onClick={exportComparisonJson}>
+                              Export Comparison JSON
+                            </Button>
+                            <Button type="button" variant="ghost" onClick={clearComparison}>
+                              Clear baseline
+                            </Button>
+                          </div>
+                        </div>
+                      </section>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
+
+            <Card className="gap-0 overflow-hidden rounded-[28px] border border-slate-800/84 bg-[linear-gradient(180deg,#0a141d_0%,#0f1c28_100%)] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+              <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge tone="neutral">Supporting briefing</StatusBadge>
+                  <StatusBadge tone="info">Corridor context</StatusBadge>
                 </div>
-
-                <p className="text-xs text-muted-foreground">Run ID: {analysisResult.runId}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Geospatial Intelligence Briefing</CardTitle>
-                <CardDescription>
-                  Real corridor-context signals and source posture for planning, grant, and engagement workflows.
-                </CardDescription>
+                <div className="space-y-2">
+                  <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Geospatial Intelligence Briefing</CardTitle>
+                  <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/76">
+                    Real corridor-context signals and source posture for planning, grant, and engagement workflows.
+                  </CardDescription>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-6 py-5">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {planningSignals.map((signal) => (
                     <div key={signal.label} className="rounded-2xl border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
@@ -2980,107 +3831,39 @@ export default function ExplorePage() {
               </CardContent>
             </Card>
 
-            {comparisonRun && comparisonRun.metrics ? (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Run Comparison</CardTitle>
-                  <CardDescription>
-                    Current run vs baseline: {comparisonRun.title} ({formatRunTimestamp(comparisonRun.created_at)})
+            <Card className="gap-0 overflow-hidden rounded-[28px] border border-amber-500/18 bg-[linear-gradient(180deg,rgba(36,24,13,0.84),rgba(12,20,29,0.96))] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+              <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge tone="warning">Release guardrail</StatusBadge>
+                  <StatusBadge tone="neutral">Client-safe disclosure</StatusBadge>
+                  <StatusBadge tone="info">Human approval required</StatusBadge>
+                </div>
+                <div className="space-y-2">
+                  <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Methods, Assumptions &amp; AI Disclosure</CardTitle>
+                  <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/78">
+                    Audit notes that should travel with this result before it becomes a client memo, grant attachment, or public-facing narrative.
                   </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {comparisonDeltas.map((delta) => {
-                    const normalizedDelta = delta.delta ?? 0;
-                    const directionTone = delta.delta === null ? "flat" : deltaTone(normalizedDelta);
-                    const statusTone = delta.delta === null ? "neutral" : toneFromDelta(normalizedDelta);
-
-                    return (
-                      <div key={delta.key} className="rounded-xl border border-border/80 bg-background p-2.5">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-medium">{delta.label}</p>
-                          <div className="flex items-center gap-2">
-                            <StatusBadge tone={statusTone}>{directionTone === "flat" ? "No change" : directionTone === "up" ? "Up" : "Down"}</StatusBadge>
-                            <p className="text-sm font-semibold text-foreground">
-                              {formatDelta(delta.delta)}
-                              {delta.deltaPct !== null ? ` (${formatDelta(delta.deltaPct)}%)` : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Current: {delta.current ?? "N/A"} · Baseline: {delta.baseline ?? "N/A"}
-                        </p>
-                      </div>
-                    );
-                  })}
-
-                  {mapViewComparisonRows.length > 0 ? (
-                    <div className="rounded-2xl border border-border/80 bg-muted/20 p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">Map View Context</p>
-                          <p className="text-xs text-muted-foreground">
-                            Confirms whether the current run and baseline were reviewed under the same tract/crash/overlay posture.
-                          </p>
-                        </div>
-                        <StatusBadge tone={mapViewComparisonRows.some((row) => row.changed) ? "warning" : "success"}>
-                          {mapViewComparisonRows.some((row) => row.changed) ? "View differs" : "View aligned"}
-                        </StatusBadge>
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        {mapViewComparisonRows.map((row) => (
-                          <div key={row.label} className="rounded-xl border border-border/80 bg-background px-3 py-2.5">
-                            <div className="flex items-center justify-between gap-3">
-                              <p className="text-sm font-medium text-foreground">{row.label}</p>
-                              <StatusBadge tone={row.changed ? "warning" : "neutral"}>
-                                {row.changed ? "Different" : "Same"}
-                              </StatusBadge>
-                            </div>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              Current: {row.current} · Baseline: {row.baseline}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={exportComparisonCsv}>
-                      Export Comparison CSV
-                    </Button>
-                    <Button type="button" variant="outline" onClick={exportComparisonJson}>
-                      Export Comparison JSON
-                    </Button>
-                    <Button type="button" variant="ghost" onClick={() => setComparisonRun(null)}>
-                      Clear Comparison
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Methods, Assumptions &amp; AI Disclosure</CardTitle>
-                <CardDescription>
-                  Client-safe methodology notes for grant and planning workflows.
-                </CardDescription>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <ul className="list-disc space-y-2 pl-5">
-                  <li>
-                    AI is used to accelerate drafting and interpretation; final analysis and conclusions require human review and approval.
-                  </li>
-                  <li>
-                    Regulatory and policy-sensitive claims should be citation-backed or explicitly marked for verification.
-                  </li>
-                  <li>
-                    This run is based on available source data and proxy methods where direct sources are unavailable.
-                  </li>
-                  <li>
-                    Recommendations should be checked for equity impacts and must not shift disproportionate burden onto disadvantaged communities.
-                  </li>
-                </ul>
+              <CardContent className="space-y-4 px-6 py-5">
+                <div className="rounded-[22px] border border-amber-400/18 bg-amber-400/8 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">Operator release note</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-100/88">
+                    Treat the cards above as working analysis surfaces, not self-certifying deliverables. Before external use, verify citations, source posture, and equity implications.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {disclosureItems.map((item) => (
+                    <div key={item.title} className="rounded-[18px] border border-white/8 bg-black/18 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-white">{item.title}</p>
+                        <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Review" : item.tone === "info" ? "Disclosure" : "Assumption"}</StatusBadge>
+                      </div>
+                      <p className="mt-3 text-xs leading-5 text-slate-300/74">{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </>
@@ -3103,8 +3886,13 @@ export default function ExplorePage() {
           workspaceId={workspaceId}
           onLoadRun={loadRun}
           onCompareRun={compareRun}
+          onClearComparison={clearComparison}
           currentRunId={analysisResult?.runId}
+          currentRunTitle={analysisResult?.title ?? buildRunTitle(queryText)}
+          currentRunCreatedAt={analysisResult?.createdAt ?? null}
           comparisonRunId={comparisonRun?.id}
+          comparisonRunTitle={comparisonRun?.title ?? null}
+          comparisonRunCreatedAt={comparisonRun?.created_at ?? null}
         />
       </div>
     </section>

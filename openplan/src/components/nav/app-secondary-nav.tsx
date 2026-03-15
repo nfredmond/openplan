@@ -94,16 +94,18 @@ const sectionMap: Array<{
 
 export function AppSecondaryNav() {
   const pathname = usePathname();
-  const section = sectionMap.find((entry) => entry.match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)))?.section;
+  const section = sectionMap.find((entry) =>
+    entry.match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  )?.section;
 
   if (!section) {
     return null;
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">{section.title}</p>
-      <ul className="mt-3 space-y-1.5">
+    <div className="rounded-[22px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.032),rgba(255,255,255,0.018))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
+      <p className="text-[0.64rem] font-semibold uppercase tracking-[0.24em] text-slate-400">{section.title}</p>
+      <ul className="mt-2.5 space-y-1">
         {section.items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -111,8 +113,10 @@ export function AppSecondaryNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center rounded-xl px-3 py-2 text-sm transition-colors",
-                  active ? "bg-white/10 text-white" : "text-slate-300/80 hover:bg-white/[0.05] hover:text-white"
+                  "flex items-center rounded-xl px-2.5 py-2 text-[0.82rem] transition-all duration-200",
+                  active
+                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.05))] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    : "text-slate-300/70 hover:bg-white/[0.04] hover:text-white"
                 )}
               >
                 {item.label}

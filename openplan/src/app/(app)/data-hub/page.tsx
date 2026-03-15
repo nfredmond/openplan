@@ -170,21 +170,30 @@ export default async function DataHubPage() {
 
   if (!membership) {
     return (
-      <section className="space-y-6">
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-amber-300">
+      <section className="module-page">
+        <article className="module-intro-card">
+          <div className="module-intro-kicker">
             <ShieldAlert className="h-3.5 w-3.5" />
             Workspace access required
           </div>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Data Hub needs an authenticated workspace membership</h1>
-          <p className="mt-3 max-w-3xl text-sm text-muted-foreground sm:text-base">
-            Sign into a workspace or create a project workspace first. Data Hub records are scoped to authenticated Planning OS workspaces and are not available in preview mode.
-          </p>
+          <div className="module-intro-body">
+            <h1 className="module-intro-title">Data Hub needs an authenticated workspace membership</h1>
+            <p className="module-intro-description">
+              Sign into a workspace or create a project workspace first. Data Hub records are scoped to authenticated
+              Planning OS workspaces and are not available in preview mode.
+            </p>
+          </div>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/projects" className="inline-flex items-center gap-2 rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm font-semibold transition hover:border-primary/35 hover:text-primary">
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/85 px-4 py-2.5 text-sm font-semibold transition hover:border-primary/35 hover:text-primary"
+            >
               Open Projects
             </Link>
-            <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-primary/35 hover:text-primary">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition hover:border-primary/35 hover:text-primary"
+            >
               Back to Overview
             </Link>
           </div>
@@ -266,7 +275,9 @@ export default async function DataHubPage() {
   const overlayReadyDatasets = datasets.filter(
     (dataset) =>
       dataset.status === "ready" &&
-      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(dataset.geography_scope)
+      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
+        dataset.geography_scope
+      )
   ).length;
   const thematicReadyDatasets = datasets.filter(
     (dataset) =>
@@ -303,71 +314,78 @@ export default async function DataHubPage() {
   ];
 
   return (
-    <section className="space-y-6">
-      <header className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-emerald-700 dark:text-emerald-300">
+    <section className="module-page">
+      <header className="module-header-grid">
+        <article className="module-intro-card">
+          <div className="module-intro-kicker">
             <Sparkles className="h-3.5 w-3.5" />
             Data Hub module live
           </div>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Data Hub is now a real authenticated module</h1>
-          <p className="mt-3 max-w-3xl text-sm text-muted-foreground sm:text-base">
-            OpenPlan now has a first credible data-fabric operator surface inside the Planning OS shell: connector registry,
-            dataset records, refresh jobs, provenance notes, and project-linked source visibility for the active workspace.
-          </p>
+          <div className="module-intro-body">
+            <h1 className="module-intro-title">Data Hub now uses the same internal hierarchy as the rest of OpenPlan</h1>
+            <p className="module-intro-description">
+              This page now reads less like a stack of unrelated cards and more like a governed data-fabric module:
+              summary signal first, operator posture second, record-making lane third, and denser registries after that.
+            </p>
+          </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Connectors</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{connectors.length}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{activeConnectors} active</p>
+          <div className="module-summary-grid cols-4">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Connectors</p>
+              <p className="module-summary-value">{connectors.length}</p>
+              <p className="module-summary-detail">{activeConnectors} active in the current workspace.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Datasets</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{datasets.length}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {staleDatasets} need attention
+            <div className="module-summary-card">
+              <p className="module-summary-label">Datasets</p>
+              <p className="module-summary-value">{datasets.length}</p>
+              <p className="module-summary-detail">
+                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready.
               </p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Refresh jobs</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{refreshJobs.length}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{runningJobs} queued or running</p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Refresh jobs</p>
+              <p className="module-summary-value">{refreshJobs.length}</p>
+              <p className="module-summary-detail">{runningJobs} queued or running right now.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Policy monitors</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{monitoredConnectors}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Bulletin-aware connectors</p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Policy monitors</p>
+              <p className="module-summary-value">{monitoredConnectors}</p>
+              <p className="module-summary-detail">{staleDatasets} datasets currently need attention.</p>
             </div>
           </div>
         </article>
 
-        <article className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(13,24,34,0.96),rgba(8,15,21,0.94))] p-6 text-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.24)]">
+        <article className="module-operator-card">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Workspace posture</p>
-              <h2 className="text-xl font-semibold tracking-tight">Governed data fabric for {workspace?.name ?? "Planning Workspace"}</h2>
+              <p className="module-operator-eyebrow">Workspace posture</p>
+              <h2 className="module-operator-title">Governed data fabric for {workspace?.name ?? "Planning Workspace"}</h2>
             </div>
           </div>
-          <ul className="mt-4 space-y-3 text-sm text-slate-300/82">
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Workspace plan: {titleize(workspace?.plan ?? "pilot")}</li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Authenticated records scoped to workspace membership</li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Projects can now expose linked datasets instead of treating sources as hidden context</li>
-          </ul>
+          <p className="module-operator-copy">
+            Light surfaces now hold the operator record work. Dark treatment is reserved for top-level posture and
+            module-wide governance signal.
+          </p>
+          <div className="module-operator-list">
+            <div className="module-operator-item">Workspace plan: {titleize(workspace?.plan ?? "pilot")}</div>
+            <div className="module-operator-item">Authenticated records stay scoped to workspace membership instead of hidden shared state.</div>
+            <div className="module-operator-item">Projects can now expose linked datasets directly, which closes the loop between project control rooms and the data fabric below them.</div>
+          </div>
         </article>
       </header>
 
       {migrationPending ? (
-        <article className="rounded-[24px] border border-amber-300/50 bg-amber-50/80 p-5 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
-          <div className="flex items-start gap-3">
-            <ShieldAlert className="mt-0.5 h-4.5 w-4.5" />
+        <article className="module-alert">
+          <div className="flex items-start gap-3 text-sm">
+            <ShieldAlert className="mt-0.5 h-4.5 w-4.5 shrink-0" />
             <div>
               <p className="font-semibold">Data Hub migration has not been applied to the current database yet.</p>
-              <p className="mt-1 text-amber-800/90 dark:text-amber-200/85">
-                The UI is wired and build-safe, but live records will remain empty until the latest Supabase migration is applied. This guardrail keeps the module from crashing before the schema lands.
+              <p className="mt-1 opacity-90">
+                The UI is wired and build-safe, but live records will remain empty until the latest Supabase migration is
+                applied. This guardrail keeps the module from crashing before the schema lands.
               </p>
             </div>
           </div>
@@ -386,13 +404,16 @@ export default async function DataHubPage() {
           }))}
         />
 
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Foundation sources</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight">Analysis Studio inputs now have a governance lane</h2>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Foundation sources</p>
+              <h2 className="module-section-title">Analysis inputs now have a governance lane</h2>
+              <p className="module-section-description">
+                This clarifies what lives as a source registry object versus what stays as downstream interpretation.
+              </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <Database className="h-3.5 w-3.5" />
               Planning OS fabric
             </span>
@@ -400,7 +421,7 @@ export default async function DataHubPage() {
 
           <div className="mt-5 space-y-3">
             {liveFoundations.map((item) => (
-              <div key={item.label} className="rounded-[24px] border border-border/80 bg-background/80 p-4">
+              <div key={item.label} className="module-subpanel">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
                   <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Visible system component</p>
@@ -410,60 +431,80 @@ export default async function DataHubPage() {
             ))}
           </div>
 
-          <div className="mt-5 rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
-            First version deliberately favors traceability over automation theater: operators can now register what exists, what changed, who owns it, and which projects rely on it.
+          <div className="module-note mt-5 text-sm">
+            First version deliberately favors traceability over automation theater: operators can now register what exists,
+            what changed, who owns it, and which projects rely on it.
           </div>
         </article>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-              <Link2 className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Connector registry</p>
-              <h2 className="text-xl font-semibold tracking-tight">Governed source endpoints</h2>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                <Link2 className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Connector registry</p>
+                <h2 className="module-section-title">Governed source endpoints</h2>
+              </div>
             </div>
           </div>
 
           {connectors.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">
+            <div className="module-empty-state mt-5 text-sm">
               No connectors registered yet. Use the creation panel to document the first live source.
             </div>
           ) : (
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 module-record-list">
               {connectors.map((connector) => (
-                <div key={connector.id} className="rounded-2xl border border-border/70 bg-background/75 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge tone={toneForConnectorStatus(connector.status)}>{titleize(connector.status)}</StatusBadge>
-                    <StatusBadge tone="info">{titleize(connector.source_type)}</StatusBadge>
-                    <StatusBadge tone="neutral">{titleize(connector.cadence)}</StatusBadge>
+                <div key={connector.id} className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={toneForConnectorStatus(connector.status)}>{titleize(connector.status)}</StatusBadge>
+                        <StatusBadge tone="info">{titleize(connector.source_type)}</StatusBadge>
+                        <StatusBadge tone="neutral">{titleize(connector.cadence)}</StatusBadge>
+                        {connector.policy_monitor_enabled ? <StatusBadge tone="warning">Policy monitor</StatusBadge> : null}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{connector.display_name}</h3>
+                          <p className="module-record-stamp">Updated {fmtDateTime(connector.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {connector.description || "No description yet."}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">{connector.display_name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{connector.description || "No description yet."}</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                    <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Key: {connector.key}</span>
-                    {connector.owner_label ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Owner: {connector.owner_label}</span> : null}
-                    <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Auth: {titleize(connector.auth_mode)}</span>
-                    {connector.policy_monitor_enabled ? <span className="rounded-full border border-amber-300/50 bg-amber-50 px-2.5 py-1 text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">Policy monitor</span> : null}
+
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">Key {connector.key}</span>
+                    {connector.owner_label ? <span className="module-record-chip">Owner {connector.owner_label}</span> : null}
+                    <span className="module-record-chip">Auth {titleize(connector.auth_mode)}</span>
+                    <span className="module-record-chip">Last sync {fmtDateTime(connector.last_sync_at)}</span>
                   </div>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Last sync: {fmtDateTime(connector.last_sync_at)}
-                    {connector.endpoint_url ? ` · ${connector.endpoint_url}` : ""}
-                  </p>
+
+                  {connector.endpoint_url ? (
+                    <p className="text-xs text-muted-foreground/85">Endpoint: {connector.endpoint_url}</p>
+                  ) : null}
                 </div>
               ))}
             </div>
           )}
         </article>
 
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] xl:col-span-2">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Dataset registry</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight">Provenance-bearing datasets</h2>
+        <article className="module-section-surface xl:col-span-2">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Dataset registry</p>
+              <h2 className="module-section-title">Provenance-bearing datasets</h2>
+              <p className="module-section-description">
+                Summary cards above define the page signal. This lane stays denser because it carries the real record stack.
+              </p>
             </div>
             <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition hover:text-primary">
               Project control rooms
@@ -472,17 +513,20 @@ export default async function DataHubPage() {
           </div>
 
           {datasets.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">
-              No datasets registered yet. Once records land here, they can expose vintage, license, checksum, cadence, and linked projects in one place.
+            <div className="module-empty-state mt-5 text-sm">
+              No datasets registered yet. Once records land here, they can expose vintage, license, checksum, cadence,
+              and linked projects in one place.
             </div>
           ) : (
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 module-record-list">
               {datasets.map((dataset) => {
                 const connector = dataset.connector_id ? connectorMap.get(dataset.connector_id) : null;
                 const links = datasetLinksByDataset.get(dataset.id) ?? [];
                 const overlayReady =
                   dataset.status === "ready" &&
-                  ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(dataset.geography_scope);
+                  ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
+                    dataset.geography_scope
+                  );
                 const thematicReady =
                   dataset.status === "ready" &&
                   Boolean(dataset.thematic_metric_key) &&
@@ -492,44 +536,54 @@ export default async function DataHubPage() {
                     (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
 
                 return (
-                  <div key={dataset.id} className="rounded-[24px] border border-border/80 bg-background/80 p-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
+                  <div key={dataset.id} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
                           <StatusBadge tone={toneForDatasetStatus(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
                           <StatusBadge tone="info">{titleize(dataset.geography_scope)}</StatusBadge>
-                          <StatusBadge tone="neutral">{titleize(dataset.refresh_cadence)}</StatusBadge>
                           <StatusBadge tone={overlayReady ? "success" : "neutral"}>
                             {overlayReady ? "Overlay-ready" : "Coverage-only"}
                           </StatusBadge>
                           {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
                         </div>
-                        <div>
-                          <h3 className="text-lg font-semibold tracking-tight text-foreground">{dataset.name}</h3>
-                          <p className="mt-1 text-sm text-muted-foreground">
+
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title text-[1.04rem]">{dataset.name}</h3>
+                            <p className="module-record-stamp">Updated {fmtDateTime(dataset.updated_at)}</p>
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
                             {dataset.coverage_summary || dataset.notes || "Dataset registered without an operator note yet."}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                      {connector ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Connector: {connector.display_name}</span> : <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Manual / unbound dataset</span>}
-                      {dataset.vintage_label ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Vintage: {dataset.vintage_label}</span> : null}
-                      {dataset.license_label ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">License: {dataset.license_label}</span> : null}
-                      {dataset.row_count !== null ? <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Rows: {dataset.row_count.toLocaleString()}</span> : null}
+                    <div className="module-record-meta">
+                      {connector ? (
+                        <span className="module-record-chip">Connector {connector.display_name}</span>
+                      ) : (
+                        <span className="module-record-chip">Manual dataset</span>
+                      )}
+                      <span className="module-record-chip">Refresh {titleize(dataset.refresh_cadence)}</span>
+                      {dataset.vintage_label ? <span className="module-record-chip">Vintage {dataset.vintage_label}</span> : null}
+                      {dataset.license_label ? <span className="module-record-chip">License {dataset.license_label}</span> : null}
+                      {dataset.row_count !== null ? (
+                        <span className="module-record-chip">Rows {dataset.row_count.toLocaleString()}</span>
+                      ) : null}
                       {dataset.geometry_attachment !== "none" ? (
-                        <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">Geometry: {titleize(dataset.geometry_attachment)}</span>
+                        <span className="module-record-chip">Geometry {titleize(dataset.geometry_attachment)}</span>
                       ) : null}
                       {dataset.thematic_metric_key ? (
-                        <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">
-                          Metric: {dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)}
+                        <span className="module-record-chip">
+                          Metric {dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)}
                         </span>
                       ) : null}
                     </div>
 
                     {links.length > 0 ? (
-                      <div className="mt-4 rounded-2xl border border-border/70 bg-card/80 p-4">
+                      <div className="module-note">
                         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                           <FolderKanban className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
                           Linked projects
@@ -549,8 +603,8 @@ export default async function DataHubPage() {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 grid gap-3 md:grid-cols-3">
-                      <div className="rounded-2xl border border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
+                    <div className="module-record-detail-grid cols-3">
+                      <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Overlay posture</p>
                         <p className="mt-2">
                           {thematicReady
@@ -564,14 +618,17 @@ export default async function DataHubPage() {
                               : "Registry only for now; not drawable in Analysis Studio yet."}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
+                      <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Provenance</p>
                         <p className="mt-2">{dataset.citation_text || dataset.source_url || "No provenance note captured yet."}</p>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-card/70 p-4 text-sm text-muted-foreground">
+                      <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Refresh posture</p>
                         <p className="mt-2">Last refreshed: {fmtDateTime(dataset.last_refreshed_at)}</p>
-                        <p className="mt-1">Schema: {dataset.schema_version || "Unknown"}{dataset.checksum ? ` · ${dataset.checksum}` : ""}</p>
+                        <p className="mt-1 break-all">
+                          Schema: {dataset.schema_version || "Unknown"}
+                          {dataset.checksum ? ` · ${dataset.checksum}` : ""}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -583,45 +640,68 @@ export default async function DataHubPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
-              <RefreshCw className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Refresh activity</p>
-              <h2 className="text-xl font-semibold tracking-tight">Recent refresh jobs</h2>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+                <RefreshCw className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Refresh activity</p>
+                <h2 className="module-section-title">Recent refresh jobs</h2>
+              </div>
             </div>
           </div>
 
           {refreshJobs.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-5 text-sm text-muted-foreground">
+            <div className="module-empty-state mt-5 text-sm">
               No refresh jobs logged yet. Use the job lane to make ingestion, validation, and backfill activity visible.
             </div>
           ) : (
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 module-record-list">
               {refreshJobs.map((job) => {
                 const connector = job.connector_id ? connectorMap.get(job.connector_id) : null;
                 const dataset = job.dataset_id ? datasets.find((item) => item.id === job.dataset_id) : null;
 
                 return (
-                  <div key={job.id} className="rounded-2xl border border-border/70 bg-background/75 p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={toneForRefreshStatus(job.status)}>{titleize(job.status)}</StatusBadge>
-                      <StatusBadge tone="neutral">{titleize(job.job_type)}</StatusBadge>
-                      <StatusBadge tone="info">{titleize(job.refresh_mode)}</StatusBadge>
+                  <div key={job.id} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={toneForRefreshStatus(job.status)}>{titleize(job.status)}</StatusBadge>
+                          <StatusBadge tone="neutral">{titleize(job.job_type)}</StatusBadge>
+                          <StatusBadge tone="info">{titleize(job.refresh_mode)}</StatusBadge>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title">{job.job_name}</h3>
+                            <p className="module-record-stamp">Started {fmtDateTime(job.started_at || job.created_at)}</p>
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
+                            {dataset
+                              ? `Dataset: ${dataset.name}`
+                              : connector
+                                ? `Connector: ${connector.display_name}`
+                                : "Connector or dataset not attached."}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">{job.job_name}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {dataset ? `Dataset: ${dataset.name}` : connector ? `Connector: ${connector.display_name}` : "Connector or dataset not attached."}
-                    </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Started {fmtDateTime(job.started_at || job.created_at)}
-                      {job.completed_at ? ` · Completed ${fmtDateTime(job.completed_at)}` : ""}
-                      {typeof job.records_written === "number" ? ` · ${job.records_written.toLocaleString()} records` : ""}
-                    </p>
-                    {job.triggered_by_label ? <p className="mt-1 text-xs text-muted-foreground">Triggered by: {job.triggered_by_label}</p> : null}
-                    {job.error_summary ? <p className="mt-2 text-sm text-amber-800 dark:text-amber-200">{job.error_summary}</p> : null}
+
+                    <div className="module-record-meta">
+                      {job.completed_at ? (
+                        <span className="module-record-chip">Completed {fmtDateTime(job.completed_at)}</span>
+                      ) : null}
+                      {typeof job.records_written === "number" ? (
+                        <span className="module-record-chip">{job.records_written.toLocaleString()} records</span>
+                      ) : null}
+                      {job.triggered_by_label ? <span className="module-record-chip">Triggered by {job.triggered_by_label}</span> : null}
+                    </div>
+
+                    {job.error_summary ? (
+                      <p className="text-sm text-amber-800 dark:text-amber-200">{job.error_summary}</p>
+                    ) : null}
                   </div>
                 );
               })}
@@ -629,29 +709,35 @@ export default async function DataHubPage() {
           )}
         </article>
 
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-300">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Operating note</p>
-              <h2 className="text-xl font-semibold tracking-tight">Why this slice matters</h2>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-300">
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Operating note</p>
+                <h2 className="module-section-title">Why this slice matters</h2>
+              </div>
             </div>
           </div>
 
           <div className="mt-5 space-y-3 text-sm text-muted-foreground">
-            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
-              Connectors, datasets, and jobs now exist as first-class workspace records instead of scattered assumptions inside analysis code paths.
+            <div className="module-subpanel">
+              Connectors, datasets, and jobs now exist as first-class workspace records instead of scattered assumptions
+              inside analysis code paths.
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
-              Provenance fields are visible where operators actually need them: source URL, license posture, schema version, checksum, cadence, and last refresh timing.
+            <div className="module-subpanel">
+              Provenance fields are visible where operators actually need them: source URL, license posture, schema
+              version, checksum, cadence, and last refresh timing.
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
-              Projects can now surface linked datasets, which closes the gap between the new Planning OS shell and the geospatial / data-fabric layer under it.
+            <div className="module-subpanel">
+              Projects can now surface linked datasets, which closes the gap between the new Planning OS shell and the
+              geospatial / data-fabric layer under it.
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
-              Next logical wave: automated connector runners, evidence-pack exports, and richer Analysis Studio run-to-dataset lineage.
+            <div className="module-subpanel">
+              Next logical wave: automated connector runners, evidence-pack exports, and richer Analysis Studio
+              run-to-dataset lineage.
             </div>
           </div>
         </article>

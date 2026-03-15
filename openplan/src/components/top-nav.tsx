@@ -32,22 +32,24 @@ export async function TopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/92 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-lg">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        {/* ── Logo pill ── */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--line)_70%,var(--pine)_30%)] bg-white/95 px-3.5 py-1.5 shadow-[0_6px_18px_rgba(20,33,43,0.08)] transition hover:border-[color:var(--pine)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/40 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-2.5 rounded-full border border-border/70 bg-card/95 px-3.5 py-1.5 shadow-[0_4px_14px_rgba(20,33,43,0.06)] transition-all duration-200 hover:border-[color:var(--pine)]/50 hover:shadow-[0_6px_18px_rgba(20,33,43,0.10)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
         >
           <span
-            className="h-2.5 w-2.5 rounded-full bg-[color:var(--pine)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--pine)_24%,transparent)]"
+            className="h-2.5 w-2.5 rounded-full bg-[color:var(--pine)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--pine)_18%,transparent)]"
             aria-hidden
           />
-          <span className="text-sm font-semibold tracking-[0.08em] text-[color:var(--pine-deep)]">OpenPlan · Planning OS</span>
+          <span className="text-sm font-semibold tracking-[0.06em] text-foreground/90">OpenPlan<span className="hidden sm:inline"> · Planning OS</span></span>
         </Link>
 
+        {/* ── Navigation pills ── */}
         <nav
           aria-label="Primary"
-          className="flex items-center gap-1.5 rounded-full border border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-white/88 p-1 shadow-[0_6px_16px_rgba(20,33,43,0.06)]"
+          className="flex items-center gap-1 rounded-full border border-border/60 bg-card/85 p-1 shadow-[0_4px_14px_rgba(20,33,43,0.05)] backdrop-blur-sm"
         >
           {navLinks.map((link) => (
             <NavLinkPill key={link.href} href={link.href} label={link.label} />
@@ -57,7 +59,7 @@ export async function TopNav() {
             <form action={handleSignOut}>
               <button
                 type="submit"
-                className="rounded-full border border-transparent px-3 py-1.5 text-sm font-semibold text-[color:var(--ink)]/85 transition-colors duration-200 hover:border-[color:var(--line)] hover:bg-muted hover:text-[color:var(--pine-deep)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/40 focus-visible:ring-offset-2"
+                className="rounded-full border border-transparent px-3 py-1.5 text-sm font-semibold text-foreground/75 transition-colors duration-200 hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
               >
                 Sign out
               </button>

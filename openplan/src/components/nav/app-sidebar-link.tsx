@@ -52,23 +52,30 @@ export function AppSidebarLink({ href, label, icon }: AppSidebarLinkProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all duration-200",
+        "group relative flex items-center gap-3 overflow-hidden rounded-[18px] border px-3 py-2.5 text-[0.84rem] font-medium transition-all duration-200",
         isActive
-          ? "border-white/15 bg-white/10 text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
-          : "border-transparent text-slate-300/82 hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
+          ? "border-white/[0.1] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.048))] text-white shadow-[0_12px_28px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.04)]"
+          : "border-transparent text-slate-300/75 hover:border-white/[0.08] hover:bg-white/[0.03] hover:text-white"
       )}
     >
       <span
+        aria-hidden
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl border transition-colors",
+          "absolute inset-y-2 left-1.5 w-px rounded-full bg-gradient-to-b from-emerald-200/0 via-emerald-200/90 to-emerald-200/0 transition-opacity duration-200",
+          isActive ? "opacity-100" : "opacity-0"
+        )}
+      />
+      <span
+        className={cn(
+          "relative flex h-8 w-8 items-center justify-center rounded-xl border transition-colors duration-200",
           isActive
-            ? "border-emerald-300/25 bg-emerald-300/12 text-emerald-100"
-            : "border-white/10 bg-white/[0.03] text-slate-300 group-hover:border-white/15 group-hover:text-white"
+            ? "border-emerald-300/20 bg-[linear-gradient(180deg,rgba(110,231,183,0.14),rgba(110,231,183,0.08))] text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            : "border-white/[0.08] bg-white/[0.02] text-slate-400 group-hover:border-white/[0.12] group-hover:text-slate-200"
         )}
       >
-        <Icon className="h-4.5 w-4.5" strokeWidth={1.8} />
+        <Icon className="h-4 w-4" strokeWidth={1.8} />
       </span>
-      <span className="min-w-0 truncate tracking-[0.01em]">{label}</span>
+      <span className="relative min-w-0 truncate tracking-[0.01em]">{label}</span>
     </Link>
   );
 }

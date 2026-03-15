@@ -34,8 +34,8 @@ export default function PricingPage() {
   return (
     <section className="space-y-8">
       <header className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pricing</p>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">OpenPlan Pilot Pricing</h1>
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Pricing</p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">OpenPlan Pilot Pricing</h1>
         <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
           Transparent pilot pricing for the current OpenPlan platform foundation, including the live Analysis Studio module.
           AI accelerates drafting, but final planning recommendations must be reviewed and approved by a qualified human professional.

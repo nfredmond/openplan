@@ -77,109 +77,126 @@ export default async function ProjectsPage() {
 
   const activeCount = projects.filter((project) => project.status === "active").length;
   const planningTypes = new Set(projects.map((project) => project.plan_type)).size;
+  const scopingCount = projects.filter((project) => project.delivery_phase === "scoping").length;
 
   return (
-    <section className="space-y-6">
-      <header className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-emerald-700 dark:text-emerald-300">
+    <section className="module-page">
+      <header className="module-header-grid">
+        <article className="module-intro-card">
+          <div className="module-intro-kicker">
             <Sparkles className="h-3.5 w-3.5" />
             Projects module live
           </div>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Projects are now a real data-backed module</h1>
-          <p className="mt-3 max-w-3xl text-sm text-muted-foreground sm:text-base">
-            This first pass gives OpenPlan a genuine project layer: project records, creation flow, workspace attachment,
-            module detail pages, and a more credible operating-system center of gravity.
-          </p>
+          <div className="module-intro-body">
+            <h1 className="module-intro-title">Projects now read like a coherent portfolio layer</h1>
+            <p className="module-intro-description">
+              The projects surface is now aligned to the same hierarchy as the rest of OpenPlan: one clear page intro,
+              one operator callout, one creation lane, and one portfolio lane with tighter record cards.
+            </p>
+          </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Projects</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{projects.length}</p>
+          <div className="module-summary-grid cols-3">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Projects</p>
+              <p className="module-summary-value">{projects.length}</p>
+              <p className="module-summary-detail">First-class project records inside the Planning OS shell.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Active</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{activeCount}</p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Active</p>
+              <p className="module-summary-value">{activeCount}</p>
+              <p className="module-summary-detail">Currently in motion across the workspace portfolio.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground">Plan types</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">{planningTypes}</p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Plan types</p>
+              <p className="module-summary-value">{planningTypes}</p>
+              <p className="module-summary-detail">Including {scopingCount} projects still in scoping posture.</p>
             </div>
           </div>
         </article>
 
-        <article className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(13,24,34,0.96),rgba(8,15,21,0.94))] p-6 text-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.24)]">
+        <article className="module-operator-card">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
               <Layers3 className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Transition state</p>
-              <h2 className="text-xl font-semibold tracking-tight">Projects now anchor the Planning OS</h2>
+              <p className="module-operator-eyebrow">Portfolio posture</p>
+              <h2 className="module-operator-title">Projects are the stable center of gravity</h2>
             </div>
           </div>
-          <ul className="mt-4 space-y-3 text-sm text-slate-300/82">
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Each new project creates a real project record plus attached workspace shell.</li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Project details can now host runs, stage-gate activity, deliverables, risks, and decisions over time.</li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">Next wave: add deliverables, issue/risk tracking, and richer project timelines.</li>
-          </ul>
+          <p className="module-operator-copy">
+            This module should now feel like the administrative hinge between overview and deep project work—not a one-off
+            special page with its own panel logic.
+          </p>
+          <div className="module-operator-list">
+            <div className="module-operator-item">
+              Each new project creates a real project record plus its attached workspace shell.
+            </div>
+            <div className="module-operator-item">
+              Project detail pages now host deliverables, risks, issues, decisions, meetings, runs, and linked datasets.
+            </div>
+            <div className="module-operator-item">
+              Best next layer after this surface pass: portfolio filters, saved views, and owner-based workload lenses.
+            </div>
+          </div>
         </article>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
         <ProjectWorkspaceCreator />
 
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Portfolio</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight">Current project records</h2>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Portfolio</p>
+              <h2 className="module-section-title">Current project records</h2>
+              <p className="module-section-description">
+                Summary cards above give the module signal. The list below stays denser and operational.
+              </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
               {projects.length} total
             </span>
           </div>
 
           {projects.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border/80 bg-background/70 p-6 text-sm text-muted-foreground">
-              No project records yet. Use the creation panel to establish the first Planning OS project container.
+            <div className="module-empty-state mt-5 text-sm">
+              No project records yet. Use the creation lane to establish the first Planning OS project container.
             </div>
           ) : (
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 module-record-list">
               {projects.map((project) => (
-                <Link
-                  key={project.id}
-                  href={`/projects/${project.id}`}
-                  className="group block rounded-[24px] border border-border/80 bg-background/80 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
+                <Link key={project.id} href={`/projects/${project.id}`} className="module-record-row is-interactive group block">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
                         <StatusBadge tone={toneForStatus(project.status)}>{titleize(project.status)}</StatusBadge>
                         <StatusBadge tone="info">{titleize(project.plan_type)}</StatusBadge>
                         <StatusBadge tone="neutral">{titleize(project.delivery_phase)}</StatusBadge>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold tracking-tight text-foreground group-hover:text-primary">{project.name}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {project.summary || "No summary yet — this project workspace is ready for planning, reporting, and analysis activity."}
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
+                            {project.name}
+                          </h3>
+                          <p className="module-record-stamp">Updated {fmtDate(project.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {project.summary ||
+                            "No summary yet — this project workspace is ready for planning, reporting, and analysis activity."}
                         </p>
                       </div>
                     </div>
-                    <ArrowRight className="mt-1 h-5 w-5 text-muted-foreground transition group-hover:text-primary" />
+
+                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                    <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">
-                      Workspace: {project.workspace?.name ?? "Unknown"}
-                    </span>
-                    <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">
-                      Tier: {titleize(project.workspace?.plan ?? "pilot")}
-                    </span>
-                    <span className="rounded-full border border-border/70 bg-card px-2.5 py-1">
-                      Updated: {fmtDate(project.updated_at)}
-                    </span>
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">Workspace {project.workspace?.name ?? "Unknown"}</span>
+                    <span className="module-record-chip">Tier {titleize(project.workspace?.plan ?? "pilot")}</span>
+                    <span className="module-record-chip">Created {fmtDate(project.created_at)}</span>
                   </div>
                 </Link>
               ))}

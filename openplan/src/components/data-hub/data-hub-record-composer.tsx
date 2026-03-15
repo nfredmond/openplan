@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 
-const selectClassName =
-  "flex h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm text-foreground";
+const selectClassName = "module-select";
 
 type SelectOption = {
   id: string;
@@ -260,29 +259,26 @@ export function DataHubRecordComposer({
   const datasetSelectOptions = datasets.length > 0 ? datasets : [{ id: "", label: "No datasets yet", connectorId: null }];
 
   return (
-    <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-      <div className="space-y-2">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Create records</p>
-        <h2 className="text-xl font-semibold tracking-tight">Register connectors, datasets, and refresh jobs</h2>
-        <p className="text-sm text-muted-foreground">
+    <article className="module-section-surface">
+      <div className="module-section-heading">
+        <p className="module-section-label">Create records</p>
+        <h2 className="module-section-title">Register connectors, datasets, and refresh jobs</h2>
+        <p className="module-section-description">
           This is the first real operator surface for OpenPlan&apos;s data fabric: not just hidden helpers, but governed source records tied back to projects and refresh activity.
         </p>
       </div>
 
       <Tabs defaultValue="connector" className="mt-5">
-        <TabsList
-          variant="line"
-          className="w-full justify-start gap-2 overflow-x-auto rounded-2xl border border-border/70 bg-background/70 p-2"
-        >
-          <TabsTrigger value="connector" className="gap-2 rounded-xl px-3 py-2 data-[state=active]:bg-card">
+        <TabsList variant="line" className="module-tabs-list">
+          <TabsTrigger value="connector" className="module-tab-trigger">
             <Link2 className="h-4 w-4" />
             Connector
           </TabsTrigger>
-          <TabsTrigger value="dataset" className="gap-2 rounded-xl px-3 py-2 data-[state=active]:bg-card">
+          <TabsTrigger value="dataset" className="module-tab-trigger">
             <Database className="h-4 w-4" />
             Dataset
           </TabsTrigger>
-          <TabsTrigger value="refresh-job" className="gap-2 rounded-xl px-3 py-2 data-[state=active]:bg-card">
+          <TabsTrigger value="refresh-job" className="module-tab-trigger">
             <RefreshCw className="h-4 w-4" />
             Refresh Job
           </TabsTrigger>
@@ -410,7 +406,7 @@ export function DataHubRecordComposer({
                   placeholder="Priya / Data Ops"
                 />
               </div>
-              <label className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-foreground">
+              <label className="module-note flex items-center gap-3 text-sm text-foreground">
                 <input
                   type="checkbox"
                   className="h-4 w-4 rounded border-input"
@@ -835,7 +831,7 @@ export function DataHubRecordComposer({
         </TabsContent>
       </Tabs>
 
-      <div className="mt-5 rounded-2xl border border-amber-300/40 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/25 dark:text-amber-200">
+      <div className="module-alert mt-5 text-sm">
         <div className="flex items-start gap-3">
           <ShieldAlert className="mt-0.5 h-4.5 w-4.5" />
           <p>

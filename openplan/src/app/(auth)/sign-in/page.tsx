@@ -39,14 +39,13 @@ function SignInForm() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-md space-y-6 rounded-xl border border-border bg-card p-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+    <section className="mx-auto w-full max-w-md space-y-6 rounded-2xl border border-border/80 bg-card p-6 shadow-[0_16px_48px_rgba(20,33,43,0.08)] sm:p-8">
+      <header className="space-y-1.5">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">Sign in</h1>
         <p className="text-sm text-muted-foreground">
           Access your OpenPlan workspace.
         </p>
       </header>
-
 
       {checkoutState === "success" ? (
         <article className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
@@ -125,7 +124,7 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <section className="mx-auto w-full max-w-md rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        <section className="mx-auto w-full max-w-md rounded-2xl border border-border/80 bg-card p-6 text-sm text-muted-foreground shadow-[0_16px_48px_rgba(20,33,43,0.08)]">
           Loading sign-in…
         </section>
       }

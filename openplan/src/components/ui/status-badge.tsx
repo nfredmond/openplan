@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import type { StatusTone } from "@/lib/ui/status";
 
 const toneClasses: Record<StatusTone, string> = {
-  neutral: "border-border bg-background text-foreground/80",
-  info: "border-[color:var(--accent)]/35 bg-[color:var(--accent)]/12 text-[color:var(--accent)]",
-  success: "border-[color:var(--pine)]/35 bg-[color:var(--pine)]/12 text-[color:var(--pine)]",
-  warning: "border-[color:var(--copper)]/45 bg-[color:var(--copper)]/16 text-[color:var(--copper)]",
-  danger: "border-destructive/45 bg-destructive/10 text-destructive",
+  neutral: "border-border/85 bg-background/88 text-foreground/72",
+  info: "border-[color:var(--accent)]/30 bg-[color:var(--accent)]/10 text-[color:var(--accent)]",
+  success: "border-[color:var(--pine)]/32 bg-[color:var(--pine)]/10 text-[color:var(--pine)]",
+  warning: "border-[color:var(--copper)]/38 bg-[color:var(--copper)]/12 text-[color:var(--copper)]",
+  danger: "border-destructive/38 bg-destructive/8 text-destructive",
 };
 
 type StatusBadgeProps = React.ComponentProps<typeof Badge> & {
@@ -21,7 +21,7 @@ export function StatusBadge({ tone = "neutral", className, children, ...props }:
     <Badge
       variant="outline"
       className={cn(
-        "px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.1em]",
+        "min-h-7 rounded-full px-2.25 py-[0.3rem] text-[0.64rem] font-semibold uppercase tracking-[0.13em] shadow-none",
         toneClasses[tone],
         className
       )}

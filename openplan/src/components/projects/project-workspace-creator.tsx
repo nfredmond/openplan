@@ -75,19 +75,22 @@ export function ProjectWorkspaceCreator() {
   }
 
   return (
-    <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-          <Plus className="h-5 w-5" />
-        </span>
-        <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Create</p>
-          <h2 className="text-xl font-semibold tracking-tight">Start a project workspace</h2>
+    <article className="module-section-surface">
+      <div className="module-section-header">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+            <Plus className="h-5 w-5" />
+          </span>
+          <div className="module-section-heading">
+            <p className="module-section-label">Create</p>
+            <h2 className="module-section-title">Start a project workspace</h2>
+          </div>
         </div>
       </div>
 
-      <p className="mt-3 text-sm text-muted-foreground">
-        This first Projects module pass creates a real project record and its attached workspace shell so planning, reporting, and analysis can evolve inside a stable container.
+      <p className="module-section-description">
+        This lane creates a real project record and its attached workspace shell so planning, reporting, and analysis can
+        evolve inside a stable container.
       </p>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
@@ -124,7 +127,7 @@ export function ProjectWorkspaceCreator() {
             </label>
             <select
               id="project-type"
-              className="flex h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              className="module-select"
               value={planType}
               onChange={(event) => setPlanType(event.target.value)}
             >
@@ -142,7 +145,7 @@ export function ProjectWorkspaceCreator() {
             </label>
             <select
               id="project-phase"
-              className="flex h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              className="module-select"
               value={deliveryPhase}
               onChange={(event) => setDeliveryPhase(event.target.value)}
             >
@@ -161,7 +164,7 @@ export function ProjectWorkspaceCreator() {
             </label>
             <select
               id="project-status"
-              className="flex h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              className="module-select"
               value={status}
               onChange={(event) => setStatus(event.target.value)}
             >
@@ -171,6 +174,10 @@ export function ProjectWorkspaceCreator() {
               <option value="complete">Complete</option>
             </select>
           </div>
+        </div>
+
+        <div className="module-note text-sm">
+          New project workspaces should be treated as stable operating containers, not temporary wizard output.
         </div>
 
         {error ? (
