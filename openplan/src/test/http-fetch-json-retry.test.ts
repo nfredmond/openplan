@@ -1081,14 +1081,14 @@ describe("fetchJsonWithRetry", () => {
       await Promise.resolve();
       const activeRequestSignal: AbortSignal | null = requestSignal;
       expect(activeRequestSignal).not.toBeNull();
-      expect((activeRequestSignal as AbortSignal).aborted).toBe(false);
+      expect((activeRequestSignal as unknown as AbortSignal).aborted).toBe(false);
 
       controller.abort("caller_cancelled");
 
       const result = await resultPromise;
 
       expect(result).toBeNull();
-      expect((activeRequestSignal as AbortSignal).aborted).toBe(true);
+      expect((activeRequestSignal as unknown as AbortSignal).aborted).toBe(true);
       expect(fetchMock).toHaveBeenCalledTimes(1);
     } finally {
       Object.defineProperty(AbortSignal, "any", {
@@ -1142,7 +1142,7 @@ describe("fetchJsonWithRetry", () => {
       await Promise.resolve();
       const activeRequestSignal: AbortSignal | null = requestSignal;
       expect(activeRequestSignal).not.toBeNull();
-      expect((activeRequestSignal as AbortSignal).aborted).toBe(false);
+      expect((activeRequestSignal as unknown as AbortSignal).aborted).toBe(false);
 
       vi.advanceTimersByTime(50);
       await Promise.resolve();
@@ -1151,7 +1151,7 @@ describe("fetchJsonWithRetry", () => {
 
       expect(result).toBeNull();
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect((activeRequestSignal as AbortSignal).aborted).toBe(true);
+      expect((activeRequestSignal as unknown as AbortSignal).aborted).toBe(true);
     } finally {
       Object.defineProperty(AbortSignal, "timeout", {
         configurable: true,
