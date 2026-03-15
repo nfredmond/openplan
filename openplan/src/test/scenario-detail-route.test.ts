@@ -32,6 +32,13 @@ const entriesEqIdMock = vi.fn(() => ({
 const runsInMock = vi.fn();
 const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
 
+const reportsOrderMock = vi.fn();
+const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
+const reportsSelectMock = vi.fn(() => ({ eq: reportsEqProjectMock }));
+
+const reportRunsInMock = vi.fn();
+const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
+
 const baselineMaybeSingleMock = vi.fn();
 
 const mockAudit = {
@@ -69,6 +76,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "reports") {
+    return {
+      select: reportsSelectMock,
+    };
+  }
+
+  if (table === "report_runs") {
+    return {
+      select: reportRunsSelectMock,
     };
   }
 
@@ -157,6 +176,28 @@ describe("/api/scenarios/[scenarioSetId]", () => {
       error: null,
     });
 
+    reportsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "99999999-9999-4999-8999-999999999999",
+          title: "Protected bike packet",
+          status: "generated",
+          report_type: "analysis_summary",
+          generated_at: "2026-03-14T11:00:00.000Z",
+          updated_at: "2026-03-14T11:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    reportRunsInMock.mockResolvedValue({
+      data: [
+        { report_id: "99999999-9999-4999-8999-999999999999", run_id: "66666666-6666-4666-8666-666666666666" },
+        { report_id: "99999999-9999-4999-8999-999999999999", run_id: "88888888-8888-4888-8888-888888888888" },
+      ],
+      error: null,
+    });
+
     baselineMaybeSingleMock.mockResolvedValue({
       data: {
         id: "55555555-5555-4555-8555-555555555555",
@@ -191,6 +232,8 @@ describe("/api/scenarios/[scenarioSetId]", () => {
           comparisonStatus: "ready",
           comparisonLabel: "Ready to compare",
           ready: true,
+          analysisHref:
+            "/explore?runId=88888888-8888-4888-8888-888888888888&baselineRunId=66666666-6666-4666-8666-666666666666&scenarioSetId=11111111-1111-4111-8111-111111111111&entryId=77777777-7777-4777-8777-777777777777#analysis-run-history",
         }),
       ],
       comparisonSummary: {
@@ -200,6 +243,13 @@ describe("/api/scenarios/[scenarioSetId]", () => {
         baselineEntryPresent: true,
         baselineRunPresent: true,
       },
+      linkedReports: [
+        expect.objectContaining({
+          id: "99999999-9999-4999-8999-999999999999",
+          comparisonReady: true,
+          matchedEntryLabels: expect.arrayContaining(["Existing conditions", "Protected bike package"]),
+        }),
+      ],
     });
   });
 

@@ -34,6 +34,33 @@ export type ScenarioComparisonSummary = {
   baselineRunPresent: boolean;
 };
 
+export type ScenarioLinkedReportRecord = {
+  id: string;
+  title: string | null;
+  status: string | null;
+  report_type: string | null;
+  generated_at: string | null;
+  updated_at: string | null;
+};
+
+export type ScenarioLinkedReportRun = {
+  report_id: string;
+  run_id: string;
+};
+
+export type ScenarioLinkedReport = ScenarioLinkedReportRecord & {
+  matchedRunIds: string[];
+  matchedEntryIds: string[];
+  matchedEntryLabels: string[];
+  comparisonReady: boolean;
+};
+
+export type ScenarioEntryReportSummary = {
+  totalLinkedReports: number;
+  generatedLinkedReports: number;
+  latestReportId: string | null;
+};
+
 export function titleizeScenarioValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
 
@@ -206,5 +233,133 @@ export function buildScenarioComparisonSummary({
     blockedAlternatives: totalAlternatives - readyAlternatives,
     baselineEntryPresent: Boolean(baselineEntryId),
     baselineRunPresent: Boolean(baselineRunId),
+  };
+}
+
+export function buildScenarioStudioHref({
+  runId,
+  baselineRunId,
+  scenarioSetId,
+  entryId,
+}: {
+  runId: string | null | undefined;
+  baselineRunId?: string | null | undefined;
+  scenarioSetId?: string | null | undefined;
+  entryId?: string | null | undefined;
+}): string {
+  const params = new URLSearchParams();
+
+  if (runId) {
+    params.set("runId", runId);
+  }
+
+  if (baselineRunId && baselineRunId !== runId) {
+    params.set("baselineRunId", baselineRunId);
+  }
+
+  if (scenarioSetId) {
+    params.set("scenarioSetId", scenarioSetId);
+  }
+
+  if (entryId) {
+    params.set("entryId", entryId);
+  }
+
+  const query = params.toString();
+  return query ? `/explore?${query}#analysis-run-history` : "/explore#analysis-run-history";
+}
+
+export function buildScenarioReportDraft({
+  scenarioSetTitle,
+  planningQuestion,
+  baselineLabel,
+  candidateLabel,
+}: {
+  scenarioSetTitle: string;
+  planningQuestion?: string | null | undefined;
+  baselineLabel: string;
+  candidateLabel: string;
+}) {
+  const title = `${scenarioSetTitle}: ${candidateLabel} vs ${baselineLabel}`;
+  const summary = [
+    `Scenario evidence packet for ${candidateLabel} compared against ${baselineLabel}.`,
+    planningQuestion ? `Planning question: ${planningQuestion}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return { title, summary };
+}
+
+export function buildScenarioLinkedReports({
+  reports,
+  reportRuns,
+  entries,
+  baselineEntryId,
+}: {
+  reports: ScenarioLinkedReportRecord[];
+  reportRuns: ScenarioLinkedReportRun[];
+  entries: Array<{ id: string; label: string; attached_run_id: string | null }>;
+  baselineEntryId?: string | null | undefined;
+}) {
+  const entryIdsByRunId = new Map<string, string[]>();
+  const entryLabelsById = new Map(entries.map((entry) => [entry.id, entry.label]));
+  const baselineEntry = entries.find((entry) => entry.id === baselineEntryId) ?? null;
+  const baselineRunId = baselineEntry?.attached_run_id ?? null;
+
+  for (const entry of entries) {
+    if (!entry.attached_run_id) continue;
+    const current = entryIdsByRunId.get(entry.attached_run_id) ?? [];
+    current.push(entry.id);
+    entryIdsByRunId.set(entry.attached_run_id, current);
+  }
+
+  const runsByReportId = new Map<string, string[]>();
+  for (const link of reportRuns) {
+    if (!entryIdsByRunId.has(link.run_id)) continue;
+    const current = runsByReportId.get(link.report_id) ?? [];
+    current.push(link.run_id);
+    runsByReportId.set(link.report_id, current);
+  }
+
+  const linkedReports: ScenarioLinkedReport[] = reports
+    .map((report) => {
+      const matchedRunIds = Array.from(new Set(runsByReportId.get(report.id) ?? []));
+      const matchedEntryIds = Array.from(
+        new Set(matchedRunIds.flatMap((runId) => entryIdsByRunId.get(runId) ?? []))
+      );
+
+      return {
+        ...report,
+        matchedRunIds,
+        matchedEntryIds,
+        matchedEntryLabels: matchedEntryIds.map((entryId) => entryLabelsById.get(entryId) ?? entryId),
+        comparisonReady:
+          Boolean(baselineRunId) &&
+          (baselineRunId ? matchedRunIds.includes(baselineRunId) : false) &&
+          matchedEntryIds.some((entryId) => entryId !== baselineEntryId),
+      };
+    })
+    .filter((report) => report.matchedRunIds.length > 0)
+    .sort((left, right) => {
+      const leftStamp = left.generated_at ?? left.updated_at ?? "";
+      const rightStamp = right.generated_at ?? right.updated_at ?? "";
+      return rightStamp.localeCompare(leftStamp);
+    });
+
+  const entryReportSummary = new Map<string, ScenarioEntryReportSummary>();
+
+  for (const entry of entries) {
+    const entryReports = linkedReports.filter((report) => report.matchedEntryIds.includes(entry.id));
+    entryReportSummary.set(entry.id, {
+      totalLinkedReports: entryReports.length,
+      generatedLinkedReports: entryReports.filter((report) => report.status === "generated").length,
+      latestReportId: entryReports[0]?.id ?? null,
+    });
+  }
+
+  return {
+    linkedReports,
+    entryReportSummary,
   };
 }

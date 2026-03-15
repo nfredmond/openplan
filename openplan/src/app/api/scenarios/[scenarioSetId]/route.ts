@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   SCENARIO_SET_STATUSES,
+  buildScenarioLinkedReports,
+  buildScenarioReportDraft,
   buildScenarioComparisonSummary,
+  buildScenarioStudioHref,
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess } from "@/lib/scenarios/api";
@@ -138,6 +141,45 @@ export async function GET(request: NextRequest, context: RouteContext) {
       baselineRunId: baselineEntry?.attached_run_id ?? null,
       candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
     });
+    const reportQuery = await supabase
+      .from("reports")
+      .select("id, title, status, report_type, generated_at, updated_at")
+      .eq("project_id", access.scenarioSet.project_id)
+      .order("updated_at", { ascending: false });
+
+    if (reportQuery.error) {
+      audit.error("scenario_reports_lookup_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        message: reportQuery.error.message,
+        code: reportQuery.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load linked reports" }, { status: 500 });
+    }
+
+    const reportIds = (reportQuery.data ?? []).map((report) => report.id);
+    const reportRunsQuery = reportIds.length
+      ? await supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds)
+      : { data: [], error: null };
+
+    if (reportRunsQuery.error) {
+      audit.error("scenario_report_runs_lookup_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        message: reportRunsQuery.error.message,
+        code: reportRunsQuery.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load report run links" }, { status: 500 });
+    }
+
+    const reportLinkage = buildScenarioLinkedReports({
+      reports: reportQuery.data ?? [],
+      reportRuns: reportRunsQuery.data ?? [],
+      entries: hydratedEntries.map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        attached_run_id: entry.attached_run_id,
+      })),
+      baselineEntryId: baselineEntry?.id ?? null,
+    });
 
     return NextResponse.json(
       {
@@ -149,6 +191,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
             assumptionCount: Object.keys((entry.assumptions_json as Record<string, unknown>) ?? {}).length,
             hasAttachedRun: Boolean(entry.attached_run_id),
             attachedRunTitle: entry.attached_run?.title ?? null,
+          },
+          actions: {
+            analysisHref: buildScenarioStudioHref({
+              runId: entry.attached_run_id,
+              baselineRunId:
+                entry.entry_type === "alternative" ? baselineEntry?.attached_run_id ?? null : undefined,
+              scenarioSetId: access.scenarioSet.id,
+              entryId: entry.id,
+            }),
+            reportSummary: reportLinkage.entryReportSummary.get(entry.id) ?? {
+              totalLinkedReports: 0,
+              generatedLinkedReports: 0,
+              latestReportId: null,
+            },
           },
         })),
         baselineEntry,
@@ -162,6 +218,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
           return {
             scenarioEntryId: entry.id,
+            scenarioEntryLabel: entry.label,
             baselineEntryId: baselineEntry?.id ?? null,
             comparisonStatus: readiness.status,
             comparisonLabel: readiness.label,
@@ -171,9 +228,25 @@ export async function GET(request: NextRequest, context: RouteContext) {
             sameRunAttached: readiness.sameRunAttached,
             baselineRunId: baselineEntry?.attached_run_id ?? null,
             candidateRunId: entry.attached_run_id ?? null,
+            analysisHref: buildScenarioStudioHref({
+              runId: entry.attached_run_id,
+              baselineRunId: baselineEntry?.attached_run_id ?? null,
+              scenarioSetId: access.scenarioSet.id,
+              entryId: entry.id,
+            }),
+            reportDraft:
+              baselineEntry && entry.attached_run_id
+                ? buildScenarioReportDraft({
+                    scenarioSetTitle: access.scenarioSet.title ?? "Scenario set",
+                    planningQuestion: access.scenarioSet.planning_question ?? null,
+                    baselineLabel: baselineEntry.label,
+                    candidateLabel: entry.label,
+                  })
+                : null,
           };
         }),
         comparisonSummary,
+        linkedReports: reportLinkage.linkedReports,
       },
       { status: 200 }
     );

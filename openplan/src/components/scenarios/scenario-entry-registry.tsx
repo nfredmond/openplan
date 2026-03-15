@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save } from "lucide-react";
+import { ArrowRight, FileStack, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -10,10 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   SCENARIO_ENTRY_STATUSES,
   SCENARIO_ENTRY_TYPES,
+  buildScenarioReportDraft,
+  buildScenarioStudioHref,
   buildScenarioComparisonSummary,
   getScenarioComparisonReadiness,
   scenarioStatusTone,
   titleizeScenarioValue,
+  type ScenarioLinkedReport,
   type ScenarioEntryStatus,
   type ScenarioEntryType,
 } from "@/lib/scenarios/catalog";
@@ -44,9 +48,13 @@ type ScenarioEntry = {
 
 type ScenarioEntryRegistryProps = {
   scenarioSetId: string;
+  scenarioSetTitle: string;
+  planningQuestion: string | null;
+  projectId: string;
   entries: ScenarioEntry[];
   runs: RunOption[];
   baselineEntryId: string | null;
+  linkedReports: ScenarioLinkedReport[];
 };
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -65,18 +73,85 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
+function ScenarioReportCreateButton({
+  projectId,
+  runIds,
+  title,
+  summary,
+}: {
+  projectId: string;
+  runIds: string[];
+  title: string;
+  summary: string;
+}) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCreateReport() {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          reportType: "analysis_summary",
+          title,
+          summary,
+          runIds,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string; reportId?: string };
+      if (!response.ok || !payload.reportId) {
+        throw new Error(payload.error || "Failed to create report");
+      }
+
+      router.push(`/reports/${payload.reportId}`);
+      router.refresh();
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to create report");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <Button type="button" variant="outline" size="sm" onClick={() => void handleCreateReport()} disabled={isSubmitting}>
+        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileStack className="h-4 w-4" />}
+        Create report
+      </Button>
+      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+    </div>
+  );
+}
+
 function ScenarioEntryCard({
   scenarioSetId,
+  scenarioSetTitle,
+  planningQuestion,
+  projectId,
   entry,
   runs,
   baselineEntryId,
   baselineRunId,
+  baselineLabel,
+  linkedReports,
 }: {
   scenarioSetId: string;
+  scenarioSetTitle: string;
+  planningQuestion: string | null;
+  projectId: string;
   entry: ScenarioEntry;
   runs: RunOption[];
   baselineEntryId: string | null;
   baselineRunId: string | null;
+  baselineLabel: string | null;
+  linkedReports: ScenarioLinkedReport[];
 }) {
   const router = useRouter();
   const [entryType, setEntryType] = useState<ScenarioEntryType>(entry.entry_type as ScenarioEntryType);
@@ -96,6 +171,23 @@ function ScenarioEntryCard({
           baselineEntryId,
           baselineRunId,
           candidateRunId: entry.attached_run_id,
+        })
+      : null;
+  const analysisHref = buildScenarioStudioHref({
+    runId: entry.attached_run_id,
+    baselineRunId: entry.entry_type === "alternative" ? baselineRunId : undefined,
+    scenarioSetId,
+    entryId: entry.id,
+  });
+  const entryLinkedReports = linkedReports.filter((report) => report.matchedEntryIds.includes(entry.id));
+  const latestLinkedReport = entryLinkedReports[0] ?? null;
+  const reportDraft =
+    comparisonReadiness && baselineRunId && entry.attached_run_id
+      ? buildScenarioReportDraft({
+          scenarioSetTitle,
+          planningQuestion,
+          baselineLabel: baselineLabel ?? "Baseline",
+          candidateLabel: entry.label,
         })
       : null;
 
@@ -180,6 +272,7 @@ function ScenarioEntryCard({
         <span className="module-record-chip">Run {entry.attachedRun?.title ?? "Not attached"}</span>
         <span className="module-record-chip">Assumptions {assumptions.length}</span>
         <span className="module-record-chip">Sort {entry.sort_order}</span>
+        <span className="module-record-chip">Reports {entryLinkedReports.length}</span>
       </div>
 
       <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/75 p-4 lg:grid-cols-3">
@@ -212,6 +305,61 @@ function ScenarioEntryCard({
           <p className="mt-1 text-sm text-muted-foreground">
             {comparisonReadiness?.reason || "Baseline entries still need an attached run if alternatives are going to compare against them."}
           </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/60 p-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Operator actions</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Use the attached evidence in Analysis Studio or move directly into a linked report workflow when the comparison is ready.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href={analysisHref} className="inline-flex">
+              <Button type="button" size="sm" disabled={!entry.attached_run_id}>
+                Review in Studio
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            {latestLinkedReport ? (
+              <Link href={`/reports/${latestLinkedReport.id}`} className="inline-flex">
+                <Button type="button" variant="outline" size="sm">
+                  Open report
+                </Button>
+              </Link>
+            ) : null}
+            {entry.entry_type === "alternative" && comparisonReadiness?.ready && reportDraft ? (
+              <ScenarioReportCreateButton
+                projectId={projectId}
+                runIds={[baselineRunId ?? "", entry.attached_run_id ?? ""].filter(Boolean)}
+                title={reportDraft.title}
+                summary={reportDraft.summary}
+              />
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Report linkage</p>
+          {latestLinkedReport ? (
+            <>
+              <p className="text-sm font-medium">{latestLinkedReport.title ?? "Untitled report"}</p>
+              <p className="text-sm text-muted-foreground">
+                {latestLinkedReport.generated_at ? `Generated from linked evidence.` : "Draft report linked to this entry evidence."}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium">No linked reports yet</p>
+              <p className="text-sm text-muted-foreground">
+                {comparisonReadiness?.ready
+                  ? "Create an analysis summary report from this ready comparison."
+                  : "Reports will appear here after they reference this entry's attached run."}
+              </p>
+            </>
+          )}
         </div>
       </div>
 
@@ -341,9 +489,13 @@ function ScenarioEntryCard({
 
 export function ScenarioEntryRegistry({
   scenarioSetId,
+  scenarioSetTitle,
+  planningQuestion,
+  projectId,
   entries,
   runs,
   baselineEntryId,
+  linkedReports,
 }: ScenarioEntryRegistryProps) {
   const baselineEntry =
     entries.find((entry) => entry.id === baselineEntryId) ?? entries.find((entry) => entry.entry_type === "baseline") ?? null;
@@ -375,10 +527,15 @@ export function ScenarioEntryRegistry({
           <div className="mt-5">
             <ScenarioEntryCard
               scenarioSetId={scenarioSetId}
+              scenarioSetTitle={scenarioSetTitle}
+              planningQuestion={planningQuestion}
+              projectId={projectId}
               entry={baselineEntry}
               runs={runs}
               baselineEntryId={baselineEntry.id}
               baselineRunId={baselineEntry.attached_run_id}
+              baselineLabel={baselineEntry.label}
+              linkedReports={linkedReports}
             />
           </div>
         )}
@@ -403,10 +560,15 @@ export function ScenarioEntryRegistry({
               <ScenarioEntryCard
                 key={entry.id}
                 scenarioSetId={scenarioSetId}
+                scenarioSetTitle={scenarioSetTitle}
+                planningQuestion={planningQuestion}
+                projectId={projectId}
                 entry={entry}
                 runs={runs}
                 baselineEntryId={baselineEntry?.id ?? null}
                 baselineRunId={baselineEntry?.attached_run_id ?? null}
+                baselineLabel={baselineEntry?.label ?? null}
+                linkedReports={linkedReports}
               />
             ))}
           </div>

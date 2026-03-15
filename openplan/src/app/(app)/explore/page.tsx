@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import mapboxgl, {
   FullscreenControl,
   LngLatBoundsLike,
@@ -573,8 +574,10 @@ function buildCrashLayerFilter(
 }
 
 export default function ExplorePage() {
+  const searchParams = useSearchParams();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
+  const scenarioDeepLinkAppliedRef = useRef(false);
 
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
@@ -1568,6 +1571,57 @@ export default function ExplorePage() {
     },
     [comparisonRun?.id]
   );
+
+  useEffect(() => {
+    if (!workspaceId || scenarioDeepLinkAppliedRef.current) {
+      return;
+    }
+
+    const requestedRunId = searchParams.get("runId");
+    const requestedBaselineRunId = searchParams.get("baselineRunId");
+
+    if (!requestedRunId && !requestedBaselineRunId) {
+      scenarioDeepLinkAppliedRef.current = true;
+      return;
+    }
+
+    scenarioDeepLinkAppliedRef.current = true;
+
+    const applyScenarioDeepLink = async () => {
+      try {
+        const response = await fetch(
+          `/api/runs?workspaceId=${encodeURIComponent(workspaceId)}&limit=200`,
+          { method: "GET" }
+        );
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => ({}))) as { error?: string };
+          throw new Error(payload.error ?? "Failed to load linked scenario runs.");
+        }
+
+        const payload = (await response.json()) as { runs?: Run[] };
+        const runs = payload.runs ?? [];
+        const currentRun = requestedRunId ? runs.find((run) => run.id === requestedRunId) ?? null : null;
+        const baseline = requestedBaselineRunId ? runs.find((run) => run.id === requestedBaselineRunId) ?? null : null;
+
+        if (requestedRunId) {
+          if (!currentRun) {
+            throw new Error("Linked scenario run was not found in this workspace.");
+          }
+
+          loadRun(currentRun);
+        }
+
+        if (baseline && baseline.id !== requestedRunId) {
+          setComparisonRun(baseline);
+        }
+      } catch (deepLinkError) {
+        setError(deepLinkError instanceof Error ? deepLinkError.message : "Failed to open the scenario-linked review.");
+      }
+    };
+
+    void applyScenarioDeepLink();
+  }, [loadRun, searchParams, workspaceId]);
 
   const generateReport = async () => {
     if (!analysisResult?.runId) {

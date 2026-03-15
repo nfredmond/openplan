@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowRight, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileStack, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { createClient } from "@/lib/supabase/server";
-import { buildScenarioComparisonSummary, scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
+import {
+  buildScenarioComparisonSummary,
+  buildScenarioLinkedReports,
+  buildScenarioStudioHref,
+  scenarioStatusTone,
+  titleizeScenarioValue,
+} from "@/lib/scenarios/catalog";
 
 type ScenarioSetRow = {
   id: string;
@@ -108,6 +114,34 @@ export default async function ScenarioSetDetailPage({
     baselineRunId: baselineEntry?.attached_run_id ?? null,
     candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
   });
+  const { data: reportsData } = await supabase
+    .from("reports")
+    .select("id, title, status, report_type, generated_at, updated_at")
+    .eq("project_id", scenarioSet.project_id)
+    .order("updated_at", { ascending: false });
+  const reportIds = (reportsData ?? []).map((report) => report.id);
+  const { data: reportRunsData } = reportIds.length
+    ? await supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds)
+    : { data: [] };
+  const reportLinkage = buildScenarioLinkedReports({
+    reports: (reportsData ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      report_type: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+    }>,
+    reportRuns: ((reportRunsData ?? []) as Array<{ report_id: string; run_id: string }>).filter((link) =>
+      (reportsData ?? []).some((report) => report.id === link.report_id)
+    ),
+    entries: entries.map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+      attached_run_id: entry.attached_run_id,
+    })),
+    baselineEntryId: baselineEntry?.id ?? null,
+  });
 
   return (
     <section className="module-page">
@@ -199,6 +233,60 @@ export default async function ScenarioSetDetailPage({
 
           <article className="module-section-surface">
             <div className="module-section-heading">
+              <p className="module-section-label">Workflow</p>
+              <h2 className="module-section-title">Comparison and reporting runway</h2>
+              <p className="module-section-description">
+                Move from registered entries into Analysis Studio review or report assembly without losing the explicit evidence trail.
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[22px] border border-border/70 bg-background/80 p-5">
+                <p className="text-sm font-semibold tracking-tight">Analysis Studio handoff</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Ready alternatives open with the attached run as current and the baseline pinned for direct review in Analysis Studio.
+                </p>
+                <div className="mt-4 space-y-2">
+                  {alternativeEntries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No alternatives registered yet.</p>
+                  ) : (
+                    alternativeEntries.slice(0, 3).map((entry) => (
+                      <Link
+                        key={entry.id}
+                        href={buildScenarioStudioHref({
+                          runId: entry.attached_run_id,
+                          baselineRunId: baselineEntry?.attached_run_id ?? null,
+                          scenarioSetId: scenarioSet.id,
+                          entryId: entry.id,
+                        })}
+                        className="module-record-chip transition hover:border-primary/40 hover:text-primary"
+                      >
+                        Review {entry.label}
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-[22px] border border-border/70 bg-background/80 p-5">
+                <p className="text-sm font-semibold tracking-tight">Report linkage</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Reports are surfaced when they already use this scenario set&apos;s attached runs. New comparison packets can be drafted from ready evidence.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <StatusBadge tone={reportLinkage.linkedReports.length > 0 ? "success" : "neutral"}>
+                    {reportLinkage.linkedReports.length} linked reports
+                  </StatusBadge>
+                  <StatusBadge tone={reportLinkage.linkedReports.some((report) => report.comparisonReady) ? "success" : "info"}>
+                    {reportLinkage.linkedReports.filter((report) => report.comparisonReady).length} comparison-ready
+                  </StatusBadge>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-heading">
               <p className="module-section-label">Project linkage</p>
               <h2 className="module-section-title">Source planning container</h2>
               <p className="module-section-description">
@@ -228,12 +316,70 @@ export default async function ScenarioSetDetailPage({
           <ScenarioEntryComposer scenarioSetId={scenarioSet.id} hasBaseline={Boolean(baselineEntry)} runs={runsData ?? []} />
           <ScenarioEntryRegistry
             scenarioSetId={scenarioSet.id}
+            scenarioSetTitle={scenarioSet.title}
+            planningQuestion={scenarioSet.planning_question}
+            projectId={scenarioSet.project_id}
             entries={entries}
             runs={runsData ?? []}
             baselineEntryId={baselineEntry?.id ?? null}
+            linkedReports={reportLinkage.linkedReports}
           />
         </div>
       </div>
+
+      <article className="module-section-surface mt-6">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Reports</p>
+            <h2 className="module-section-title">Scenario-linked report records</h2>
+            <p className="module-section-description">
+              Lightweight linkage only: reports are shown when they already reference this scenario set&apos;s attached runs.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <FileStack className="h-3.5 w-3.5" />
+            {reportLinkage.linkedReports.length} linked
+          </span>
+        </div>
+
+        {reportLinkage.linkedReports.length === 0 ? (
+          <div className="module-empty-state mt-5 text-sm">
+            No linked reports yet. When comparison-ready evidence exists, create an analysis summary report from an alternative card.
+          </div>
+        ) : (
+          <div className="mt-5 module-record-list">
+            {reportLinkage.linkedReports.map((report) => (
+              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={scenarioStatusTone(report.status ?? "draft")}>{titleizeScenarioValue(report.status)}</StatusBadge>
+                      <StatusBadge tone="info">{titleizeScenarioValue(report.report_type)}</StatusBadge>
+                      {report.comparisonReady ? <StatusBadge tone="success">Comparison-ready</StatusBadge> : null}
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title ?? "Untitled report"}</h3>
+                        <p className="module-record-stamp">Updated {report.updated_at ?? report.generated_at ?? "Unknown"}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        Uses {report.matchedEntryLabels.join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+                <div className="module-record-meta">
+                  <span className="module-record-chip">{report.matchedRunIds.length} matching runs</span>
+                  <span className="module-record-chip">
+                    {report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }
