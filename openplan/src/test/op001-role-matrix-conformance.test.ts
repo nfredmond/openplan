@@ -13,6 +13,8 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
       expect.arrayContaining([
         { action: "analysis.create", allowedRoles: ["owner", "admin", "member"] },
         { action: "analysis.context.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "plans.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "plans.write", allowedRoles: ["owner", "admin", "member"] },
         { action: "runs.list", allowedRoles: ["owner", "admin", "member"] },
         { action: "runs.update", allowedRoles: ["owner", "admin", "member"] },
         { action: "runs.delete", allowedRoles: ["owner", "admin", "member"] },
