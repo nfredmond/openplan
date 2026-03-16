@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
 
@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
     const deliveryPhase = parsed.data.deliveryPhase?.trim() || "scoping";
     const status = parsed.data.status?.trim() || "active";
     const baseSlug = normalizeSlug(projectName);
+    const serviceSupabase = createServiceRoleClient();
 
     let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
     try {
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
     for (let attempt = 0; attempt <= 3; attempt += 1) {
       const slug = slugWithSuffix(baseSlug, attempt);
 
-      const { data, error } = await supabase
+      const { data, error } = await serviceSupabase
         .from("workspaces")
         .insert({
           name: projectName,
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
     }
 
-    const { error: memberError } = await supabase
+    const { error: memberError } = await serviceSupabase
       .from("workspace_members")
       .insert({ workspace_id: workspace.id, user_id: user.id, role: "owner" });
 
