@@ -1,0 +1,25 @@
+OpenPlan preview smoke blocker log — 2026-03-16
+
+Context:
+- Goal was to refresh live authenticated smoke against the newest deployed artifact after commits 7a8c9a9, 518b342, and cdd2404.
+- Public stable alias used by existing smoke harness: https://openplan-zeta.vercel.app
+- Latest Vercel deployments observed via `vercel ls` were previews from the last ~45 minutes.
+
+Observed deployment state:
+- `vercel ls` in linked project showed multiple fresh preview deployments (`openplan-3302qac77-natford.vercel.app`, `openplan-qe4pib129-natford.vercel.app`, `openplan-6inxkr6ed-natford.vercel.app`, `openplan-8z2jsc3oq-natford.vercel.app`) and only older production deployments (~12h old).
+- `vercel inspect openplan-zeta.vercel.app` resolved the stable alias to production deployment `openplan-pzm9wu6e0-natford.vercel.app`.
+
+Live route check:
+- `curl -I https://openplan-zeta.vercel.app/models`
+- Result: HTTP 307 with `location: /sign-in?redirect=%2Fmodels`
+
+Preview smoke attempt:
+- A one-off Playwright smoke run was attempted against `https://openplan-3302qac77-natford.vercel.app`.
+- The request to `/models` never reached OpenPlan sign-in. It redirected to Vercel authentication instead.
+
+Exact blocker:
+Error: Expected redirect continuity, got https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fopenplan-3302qac77-natford.vercel.app%252Fmodels%26nonce%3D972e0e71ea363b1c6fbe37a4e005a6d4423ec2390728f45a178d1ceea22fa1d9
+
+Implication:
+- Current public production evidence remains the 2026-03-16 smoke on the stable alias.
+- The latest shipped billing hardening cannot be truthfully called live-on-production yet from browser evidence alone, because the public alias appears behind and the newer preview is Vercel-auth gated.
