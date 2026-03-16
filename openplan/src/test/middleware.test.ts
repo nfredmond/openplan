@@ -23,6 +23,34 @@ describe('proxy auth/session guard', () => {
     expect(response.headers.get('location')).toContain('redirect=%2Fdashboard')
   })
 
+  it('redirects unauthenticated planning routes and preserves the full target path', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: null,
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/projects?tab=active')
+    const response = await proxy(request)
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toContain('/sign-in')
+    expect(response.headers.get('location')).toContain('redirect=%2Fprojects%3Ftab%3Dactive')
+  })
+
+  it('allows public routes through for unauthenticated visitors', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: null,
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/pricing')
+    const response = await proxy(request)
+
+    expect(response.status).toBe(200)
+  })
+
   it('allows authenticated dashboard requests through', async () => {
     updateSessionMock.mockResolvedValueOnce({
       response: NextResponse.next(),

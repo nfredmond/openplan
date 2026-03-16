@@ -12,6 +12,7 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const checkoutState = searchParams.get("checkout");
   const activationState = searchParams.get("activation");
+  const redirectTarget = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,8 @@ function SignInForm() {
       return;
     }
 
-    router.push("/dashboard");
+    const nextPath = redirectTarget && redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
+    router.push(nextPath);
     router.refresh();
   }
 

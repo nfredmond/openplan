@@ -1,15 +1,34 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
+const PROTECTED_ROUTE_PREFIXES = [
+  '/dashboard',
+  '/workspace',
+  '/projects',
+  '/plans',
+  '/programs',
+  '/models',
+  '/scenarios',
+  '/explore',
+  '/data-hub',
+  '/reports',
+  '/engagement',
+  '/billing',
+  '/admin',
+] as const
+
+function isProtectedRoute(pathname: string) {
+  return PROTECTED_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+}
+
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request)
 
-  // Redirect unauthenticated users away from workspace routes
   const pathname = request.nextUrl.pathname
-  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/workspace'))) {
+  if (!user && isProtectedRoute(pathname)) {
     const signInUrl = request.nextUrl.clone()
     signInUrl.pathname = '/sign-in'
-    signInUrl.searchParams.set('redirect', pathname)
+    signInUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`)
     return NextResponse.redirect(signInUrl)
   }
 
