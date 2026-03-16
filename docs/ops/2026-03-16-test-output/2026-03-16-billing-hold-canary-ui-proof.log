@@ -1,0 +1,9 @@
+locator.waitFor: Error: strict mode violation: getByText('openplan-billing-hold-2026-03-16t22-20-48-494z@natfordplanning.com') resolved to 3 elements:
+    1) <p class="font-medium text-white">openplan-billing-hold-2026-03-16t22-20-48-494z@na…</p> aka getByRole('banner').getByText('openplan-billing-hold-2026-03')
+    2) <strong>openplan-billing-hold-2026-03-16t22-20-48-494z@na…</strong> aka getByRole('strong').filter({ hasText: 'openplan-billing-hold-2026-03' })
+    3) <p class="mt-1 text-xs text-muted-foreground break-all">{"plan":"starter","reason":"purchaser_email_misma…</p> aka getByText('{"plan":"starter","reason":"')
+
+Call log:
+  - waiting for getByText('openplan-billing-hold-2026-03-16t22-20-48-494z@natfordplanning.com') to be visible
+
+    at [stdin]:62:49

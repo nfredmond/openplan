@@ -1,0 +1,7 @@
+locator.waitFor: Timeout 20000ms exceeded.
+Call log:
+  - waiting for getByText('Activation is paused for billing identity review.') to be visible
+
+    at [stdin]:378:97 {
+  name: 'TimeoutError'
+}

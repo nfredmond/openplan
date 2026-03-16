@@ -1,0 +1,20 @@
+OpenPlan live billing UI confirmation — 2026-03-16
+
+Route: https://openplan-zeta.vercel.app/billing
+Workspace rendered: af78623f-e25e-4903-9092-ddc824feece9
+Initiator email: openplan-billing-hold-2026-03-16t22-20-48-494z@natfordplanning.com
+Purchaser email: openplan-purchaser-ui-proof-2026-03-16t22-24-05-647z@natfordplanning.com
+
+Observed body-text excerpt from the live production billing page after the signed mismatch event:
+
+Activation is paused for billing identity review.
+
+OpenPlan detected a purchaser-email mismatch during checkout, so this workspace stayed in Checkout Pending instead of auto-activating access.
+
+Workspace checkout was initiated by: openplan-billing-hold-2026-03-16t22-20-48-494z@natfordplanning.com
+Stripe checkout completed with: openplan-purchaser-ui-proof-2026-03-16t22-24-05-647z@natfordplanning.com
+Next step: sign in with the purchaser email used at checkout, or complete a manual ownership review before activation.
+
+Recent billing events visible on the same page included:
+- BILLING UPDATE BLOCKED PENDING IDENTITY REVIEW
+- CHECKOUT IDENTITY REVIEW REQUIRED

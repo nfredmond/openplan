@@ -1,0 +1,74 @@
+{
+  "success": true,
+  "reportPath": "/home/nathaniel/.openclaw/workspace/openplan/docs/ops/2026-03-16-openplan-production-edit-update-smoke.md",
+  "artifacts": [
+    "2026-03-16-prod-edit-smoke-01-plan-detail-persisted.png",
+    "2026-03-16-prod-edit-smoke-02-model-detail-persisted.png",
+    "2026-03-16-prod-edit-smoke-03-program-detail-persisted.png"
+  ],
+  "notes": [
+    "Created QA auth user openplan-edit-qa-2026-03-16t22-39-14-596z@natfordplanning.com.",
+    "Authenticated on the live public alias and landed on /models.",
+    "Created production QA records: project a7d5edb9-077e-4dd2-aa1f-f8966477e560, plan a74019cb-4c30-4e4d-8835-569d4d0c74d5, model 57ce3c23-6332-4769-b0df-c630d3d8bf11, program c1b9ccfa-bebd-43dc-88dd-3382c993fbf2.",
+    "Plan detail save returned 200 and the edited geography/summary values persisted after full reload.",
+    "Model detail save returned 200 and the edited operator/horizon/summary values persisted after full reload.",
+    "Program detail save returned 200 and the edited cycle/sponsor/summary values persisted after full reload."
+  ],
+  "verification": [
+    {
+      "module": "plan",
+      "route": "/plans/a74019cb-4c30-4e4d-8835-569d4d0c74d5",
+      "recordId": "a74019cb-4c30-4e4d-8835-569d4d0c74d5",
+      "title": "QA Edit Plan 2026-03-16T22-39-14-596Z",
+      "fields": [
+        "geography_label",
+        "summary"
+      ],
+      "persisted": {
+        "geography_label": "QA edit corridor 223914",
+        "summary": "Production plan edit smoke persisted on reload at 2026-03-16T22-39-14-596Z."
+      }
+    },
+    {
+      "module": "model",
+      "route": "/models/57ce3c23-6332-4769-b0df-c630d3d8bf11",
+      "recordId": "57ce3c23-6332-4769-b0df-c630d3d8bf11",
+      "title": "QA Edit Model 2026-03-16T22-39-14-596Z",
+      "fields": [
+        "owner_label",
+        "horizon_label",
+        "summary"
+      ],
+      "persisted": {
+        "owner_label": "QA operator 223914",
+        "horizon_label": "2045 edit window 223914",
+        "summary": "Production model edit smoke persisted on reload at 2026-03-16T22-39-14-596Z."
+      }
+    },
+    {
+      "module": "program",
+      "route": "/programs/c1b9ccfa-bebd-43dc-88dd-3382c993fbf2",
+      "recordId": "c1b9ccfa-bebd-43dc-88dd-3382c993fbf2",
+      "title": "QA Edit Program 2026-03-16T22-39-14-596Z",
+      "fields": [
+        "cycle_name",
+        "sponsor_agency",
+        "summary"
+      ],
+      "persisted": {
+        "cycle_name": "QA 2028 RTIP cycle 223914",
+        "sponsor_agency": "Nat Ford QA 223914",
+        "summary": "Production program edit smoke persisted on reload at 2026-03-16T22-39-14-596Z."
+      }
+    }
+  ],
+  "ids": {
+    "userId": null,
+    "workspaceId": "2f497e37-efb3-45a7-a7bd-e8fd4ed10215",
+    "projectId": "a7d5edb9-077e-4dd2-aa1f-f8966477e560",
+    "planId": "a74019cb-4c30-4e4d-8835-569d4d0c74d5",
+    "modelId": "57ce3c23-6332-4769-b0df-c630d3d8bf11",
+    "programId": "c1b9ccfa-bebd-43dc-88dd-3382c993fbf2"
+  },
+  "email": "openplan-edit-qa-2026-03-16t22-39-14-596z@natfordplanning.com"
+}

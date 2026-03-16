@@ -7,14 +7,24 @@
 
 ## Executive Status
 
+**Last refreshed:** 2026-03-16
+
 ### Current scorecard
-- **Pilot-ready v1 confidence:** ~60%
-- **Original-plan coverage:** ~30%
-- **Product posture:** real product, no longer prototype theater
-- **Ship posture:** improving, but not yet honest to call fully v1-complete
+- **Pilot-ready v1 confidence:** ~75%
+- **Original-plan coverage:** ~35%
+- **Product posture:** evidence-backed planning-domain v1 candidate, no longer prototype theater
+- **Ship posture:** strong internal pre-close packet assembled; **external v1 declaration still HOLD**
 
 ### Plain-English read
-OpenPlan now has a real Planning OS spine with meaningful domain modules and real geospatial/analysis capability. The main remaining gap is no longer “does the product exist?” It is whether the critical workflows, auth/billing controls, QA evidence, and production verification are strong enough to justify a v1 claim.
+OpenPlan now has real current-production proof for the planning-domain core, not just local confidence. The biggest uncertainty has narrowed from “does the product work?” to “is the final ship gate honestly closed?”
+
+The answer today is:
+- **technical/product evidence:** materially stronger
+- **governance/commercial closure:** not final yet
+
+### Current packet links
+- Proof packet: `docs/ops/2026-03-16-openplan-v1-proof-packet.md`
+- Internal ship gate: `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md`
 
 ---
 
@@ -41,52 +51,50 @@ OpenPlan now has a real Planning OS spine with meaningful domain modules and rea
 - Models catalog now supports real filtering/search.
 
 ### Recent shipping evidence
-- `1c95d22` — `Add Models v1 foundation module`
-- `f20af36` — `Refine OpenPlan model controls UX`
-- `64f8269` — `Integrate models into plans and programs`
+- `7a8c9a9` — provisioning cleanup hardening
+- `518b342` — planning save rollback hardening
+- `cdd2404` — billing purchaser-identity review hardening
+- `6a4f6b5` — docs: close production alias promotion lane
+- current proof notes:
+  - `docs/ops/2026-03-16-openplan-production-authenticated-smoke.md`
+  - `docs/ops/2026-03-16-openplan-production-edit-update-smoke.md`
+  - `docs/ops/2026-03-16-openplan-live-billing-hold-canary.md`
 
 ---
 
-## YELLOW — real progress, but still incomplete or insufficiently verified
+## YELLOW — real progress, but still incomplete or not fully closed
 
 ### Cross-module workflow continuity
-- Project → Plan → Program → Model relationships are now visible, but the end-to-end operator workflow still needs more deterministic testing and polish.
-- Some modules are now connected, but the full “planner works inside one coherent operating system” experience is still maturing.
+- Current production now proves create/list/detail continuity and safe edit/update persistence across Project / Plan / Model / Program.
+- The remaining question is less about whether these surfaces work at all and more about whether every critical operator path is supportable enough for external v1 language.
 
-### Production verification depth
-- Route-level production smoke is passing for key authenticated module entry points (`/models`, `/plans`, `/programs` redirecting correctly to `/sign-in`).
-- Full post-login production smoke on real records is still missing for the newest authenticated interiors.
+### Billing/commercial closure depth
+- The purchaser-identity mismatch hold branch is production-proven on the live app/webhook/UI/DB path.
+- However, that proof still stops short of a real paid charge and does not freshly close cancel/refund posture in the same packet.
 
 ### Auth/access confidence
-- The platform has working auth and protected routes, but a current explicit v1 confidence claim still requires stronger end-to-end verification of signup/login/reset/session expiry and role/membership enforcement across critical routes.
-
-### Core workflow determinism
-- Planning-domain module creation/edit/save/reload paths are becoming real.
-- We still need cleaner proof that the primary planner workflow and core output workflow are deterministic, resilient, and supportable under normal use.
+- Auth/proxy closure and protected-route continuity are now strong.
+- A broader current-cycle auth evidence pass for every historical auth scenario (for example reset/session-expiry edge cases) is still lighter than the planning-domain proof lane.
 
 ### Launch readiness artifacts
-- Strong ship-week planning and QA docs exist.
-- Formal closeout evidence, final QA/QC gate status, and a crisp current ship packet still need refresh against the rebuilt Option C product posture.
+- The current proof packet and internal ship-gate memo now exist.
+- The last major artifact missing is fresh Principal Planner adjudication against this exact packet.
 
 ---
 
-## RED — must close before we can honestly call it v1
-
-### Billing / commerce proof
-- Billing and subscription sync still need current, explicit live verification against the rebuilt app posture.
-- Checkout, webhook, cancellation/refund, and in-app subscription-state evidence must be refreshed and assembled into a current v1 evidence packet.
-
-### Primary workflow E2E proof
-- The sprint definition requires a complete, deterministic primary planner workflow and a stable grant/plan generation workflow.
-- That evidence is not yet fully assembled and current.
-
-### Reliability / error / support posture
-- Critical-route error handling, logging, abuse/rate controls, rollback docs, and support/triage readiness still need a tighter current pass.
-- The product is shipping, but the “safe to launch and support” layer is not fully closed.
+## RED — still blocking an honest external v1 PASS
 
 ### Formal internal ship gate
-- Principal Planner review and COO verification pass are not yet closed against the present product state.
-- No honest v1 declaration should bypass that gate unless Nathaniel explicitly overrides it in writing for release timing.
+- Principal Planner review is **not yet refreshed** for the present 2026-03-16 v1 packet.
+- No honest external ship declaration should bypass that gate unless Nathaniel explicitly overrides it in writing.
+
+### Final commercial release decision
+- Current billing evidence is strong, but a decision is still required on whether “production-proven short of a real paid charge” is sufficient for pilot release.
+- If not, a supervised paid canary and refreshed cancel/refund closeout remain blocking work.
+
+### Operational support caveat
+- Multi-workspace billing selection is still ambiguous enough to create operator confusion during billing review states.
+- That is narrow, but it should be fixed or explicitly documented before strong external confidence language.
 
 ---
 
@@ -113,36 +121,30 @@ Do **not** try to finish the entire original vision in one reckless wave. Instea
 
 ## Immediate Next Actions
 
-### 1. Authenticated production smoke
-Verify the live deployed app with a real session for:
-- `/models`
-- `/plans`
-- `/programs`
-- representative detail pages with real records
+### 1. Principal Planner re-adjudication
+Have Elena review the current packet:
+- `docs/ops/2026-03-16-openplan-v1-proof-packet.md`
+- `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md`
 
-### 2. Workflow proof pack
-Assemble a current evidence packet for:
-- create/edit/save/reload flows
-- cross-link continuity between Project / Plan / Program / Model
-- output/report posture
-- failure-state handling
+### 2. Commercial decision on billing sufficiency
+Decide whether the current live billing proof posture is enough for pilot release or whether OpenPlan still requires:
+- a supervised paid canary, and/or
+- refreshed cancel/refund closeout documentation
 
-### 3. Billing + auth closure pass
-Refresh live evidence for:
-- signup/login/reset/session behavior
-- workspace/role enforcement
-- checkout/webhook/subscription-state behavior
-- cancel/refund operational procedure
+### 3. Billing workspace-selection disposition
+Either:
+- tighten `/billing` workspace targeting for multi-workspace users, or
+- explicitly document the current behavior as an operational caveat
 
 ### 4. Original-plan-aligned next module foundations
-Prioritize the next slice that most improves the original platform thesis without destabilizing v1. Current likely candidates:
+Once the gate posture is settled, prioritize the next slice that most improves the original platform thesis without destabilizing v1. Current likely candidates:
 - engagement foundation tightening
 - planning/report orchestration
 - compliance/readiness scaffolding
 - assistant workflow surface
 
 ### 5. Active execution queue
-The immediate working queue for tonight / tomorrow is maintained at:
+The immediate working queue remains at:
 - `openplan/docs/ops/2026-03-15-openplan-v1-execution-queue.md`
 
 ---
