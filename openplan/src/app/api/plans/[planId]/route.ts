@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadPlanAccess } from "@/lib/plans/api";
+import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
 import {
   buildPlanArtifactCoverage,
   buildPlanReadiness,
@@ -853,48 +854,76 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       planUpdate.summary = parsed.data.summary;
     }
 
+    const linkReplacement =
+      preparedLinks !== null
+        ? await replaceLinkSet({
+            supabase,
+            table: "plan_links",
+            ownerColumn: "plan_id",
+            ownerId: access.plan.id,
+            createdBy: user.id,
+            nextLinks: preparedLinks,
+          })
+        : null;
+
+    if (linkReplacement && !linkReplacement.ok) {
+      audit.error(`plan_links_${linkReplacement.stage}_failed`, {
+        planId: access.plan.id,
+        message: linkReplacement.error.message,
+        code: linkReplacement.error.code ?? null,
+        rollbackRestored: linkReplacement.rollback?.ok ?? null,
+        rollbackDeleteCode: linkReplacement.rollback?.deleteError?.code ?? null,
+        rollbackInsertCode: linkReplacement.rollback?.insertError?.code ?? null,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            linkReplacement.stage === "snapshot"
+              ? "Failed to load the current plan links"
+              : linkReplacement.stage === "delete"
+                ? "Failed to refresh linked plan records"
+                : linkReplacement.rollback?.ok
+                  ? "Failed to save plan links. Previous links were restored."
+                  : "Failed to save plan links and restore the previous link set.",
+        },
+        { status: 500 }
+      );
+    }
+
     if (Object.keys(planUpdate).length > 0) {
       const { error: updateError } = await supabase.from("plans").update(planUpdate).eq("id", access.plan.id);
 
       if (updateError) {
+        const rollback = linkReplacement?.ok
+          ? await restoreLinkSet({
+              supabase,
+              table: "plan_links",
+              ownerColumn: "plan_id",
+              ownerId: access.plan.id,
+              createdBy: user.id,
+              links: linkReplacement.previousLinks,
+            })
+          : null;
+
         audit.error("plan_update_failed", {
           planId: access.plan.id,
           message: updateError.message,
           code: updateError.code ?? null,
+          linksRestored: rollback?.ok ?? null,
+          rollbackDeleteCode: rollback?.deleteError?.code ?? null,
+          rollbackInsertCode: rollback?.insertError?.code ?? null,
         });
-        return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
-      }
-    }
-
-    if (preparedLinks !== null) {
-      const { error: deleteError } = await supabase.from("plan_links").delete().eq("plan_id", access.plan.id);
-
-      if (deleteError) {
-        audit.error("plan_links_delete_failed", {
-          planId: access.plan.id,
-          message: deleteError.message,
-          code: deleteError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to update plan links" }, { status: 500 });
-      }
-
-      if (preparedLinks.length > 0) {
-        const { error: insertError } = await supabase.from("plan_links").insert(
-          preparedLinks.map((link) => ({
-            plan_id: access.plan.id,
-            ...link,
-            created_by: user.id,
-          }))
+        return NextResponse.json(
+          {
+            error: rollback
+              ? rollback.ok
+                ? "Failed to update plan metadata. Previous links were restored."
+                : "Failed to update plan after links changed."
+              : "Failed to update plan",
+          },
+          { status: 500 }
         );
-
-        if (insertError) {
-          audit.error("plan_links_insert_failed", {
-            planId: access.plan.id,
-            message: insertError.message,
-            code: insertError.code ?? null,
-          });
-          return NextResponse.json({ error: "Failed to update plan links" }, { status: 500 });
-        }
       }
     }
 

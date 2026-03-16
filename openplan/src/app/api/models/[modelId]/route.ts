@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
 import {
   buildModelReadiness,
   buildModelWorkflowSummary,
@@ -508,6 +509,42 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.lastValidatedAt !== undefined) updatePayload.last_validated_at = parsed.data.lastValidatedAt;
     if (parsed.data.lastRunRecordedAt !== undefined) updatePayload.last_run_recorded_at = parsed.data.lastRunRecordedAt;
 
+    const linkReplacement =
+      preparedLinks !== undefined
+        ? await replaceLinkSet({
+            supabase,
+            table: "model_links",
+            ownerColumn: "model_id",
+            ownerId: access.model.id,
+            createdBy: user.id,
+            nextLinks: preparedLinks,
+          })
+        : null;
+
+    if (linkReplacement && !linkReplacement.ok) {
+      audit.error(`model_links_${linkReplacement.stage}_failed`, {
+        modelId: access.model.id,
+        message: linkReplacement.error.message,
+        code: linkReplacement.error.code ?? null,
+        rollbackRestored: linkReplacement.rollback?.ok ?? null,
+        rollbackDeleteCode: linkReplacement.rollback?.deleteError?.code ?? null,
+        rollbackInsertCode: linkReplacement.rollback?.insertError?.code ?? null,
+      });
+      return NextResponse.json(
+        {
+          error:
+            linkReplacement.stage === "snapshot"
+              ? "Failed to load the current model links"
+              : linkReplacement.stage === "delete"
+                ? "Failed to refresh model links"
+                : linkReplacement.rollback?.ok
+                  ? "Failed to save model links. Previous links were restored."
+                  : "Failed to save model links and restore the previous link set.",
+        },
+        { status: 500 }
+      );
+    }
+
     const { data: model, error: updateError } = await supabase
       .from("models")
       .update(updatePayload)
@@ -518,44 +555,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .single();
 
     if (updateError || !model) {
+      const rollback = linkReplacement?.ok
+        ? await restoreLinkSet({
+            supabase,
+            table: "model_links",
+            ownerColumn: "model_id",
+            ownerId: access.model.id,
+            createdBy: user.id,
+            links: linkReplacement.previousLinks,
+          })
+        : null;
+
       audit.error("model_update_failed", {
         modelId: access.model.id,
         message: updateError?.message ?? "unknown",
         code: updateError?.code ?? null,
+        linksRestored: rollback?.ok ?? null,
+        rollbackDeleteCode: rollback?.deleteError?.code ?? null,
+        rollbackInsertCode: rollback?.insertError?.code ?? null,
       });
-      return NextResponse.json({ error: "Failed to update model" }, { status: 500 });
-    }
-
-    if (preparedLinks !== undefined) {
-      const { error: deleteLinksError } = await supabase.from("model_links").delete().eq("model_id", access.model.id);
-
-      if (deleteLinksError) {
-        audit.error("model_links_delete_failed", {
-          modelId: access.model.id,
-          message: deleteLinksError.message,
-          code: deleteLinksError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to replace model links" }, { status: 500 });
-      }
-
-      if (preparedLinks.length > 0) {
-        const { error: insertLinksError } = await supabase.from("model_links").insert(
-          preparedLinks.map((link) => ({
-            model_id: access.model.id,
-            ...link,
-            created_by: user.id,
-          }))
-        );
-
-        if (insertLinksError) {
-          audit.error("model_links_insert_failed", {
-            modelId: access.model.id,
-            message: insertLinksError.message,
-            code: insertLinksError.code ?? null,
-          });
-          return NextResponse.json({ error: "Failed to save model links" }, { status: 500 });
-        }
-      }
+      return NextResponse.json(
+        {
+          error: rollback
+            ? rollback.ok
+              ? "Failed to update model metadata. Previous links were restored."
+              : "Failed to update model after links changed."
+            : "Failed to update model",
+        },
+        { status: 500 }
+      );
     }
 
     audit.info("model_updated", {

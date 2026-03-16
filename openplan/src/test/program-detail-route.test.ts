@@ -336,4 +336,43 @@ describe("/api/programs/[programId]", () => {
       }),
     ]);
   });
+
+  it("PATCH restores prior program links when metadata update fails after link replacement", async () => {
+    programUpdateEqMock.mockResolvedValueOnce({ error: { message: "write failed", code: "23505" } });
+
+    const response = await patchProgramDetail(
+      new NextRequest(`http://localhost/api/programs/${PROGRAM_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          status: "submitted",
+          links: [{ linkType: "plan", linkedId: PLAN_ID }],
+        }),
+      }),
+      {
+        params: Promise.resolve({ programId: PROGRAM_ID }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to update program. Previous links were restored.",
+    });
+    expect(programLinksDeleteMock).toHaveBeenCalledTimes(2);
+    expect(programLinksInsertMock).toHaveBeenNthCalledWith(1, [
+      expect.objectContaining({
+        program_id: PROGRAM_ID,
+        link_type: "plan",
+        linked_id: PLAN_ID,
+      }),
+    ]);
+    expect(programLinksInsertMock).toHaveBeenNthCalledWith(2, [
+      expect.objectContaining({
+        program_id: PROGRAM_ID,
+        link_type: "report",
+        linked_id: REPORT_ID,
+        label: "Packet",
+      }),
+    ]);
+  });
 });

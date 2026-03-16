@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProgramAccess } from "@/lib/programs/api";
+import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -651,47 +652,76 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.adoptionTargetAt !== undefined) updatePayload.adoption_target_at = parsed.data.adoptionTargetAt;
     if (parsed.data.summary !== undefined) updatePayload.summary = parsed.data.summary?.trim() || null;
 
+    const linkReplacement =
+      preparedLinks !== undefined
+        ? await replaceLinkSet({
+            supabase: detailSupabase,
+            table: "program_links",
+            ownerColumn: "program_id",
+            ownerId: access.program.id,
+            createdBy: user.id,
+            nextLinks: preparedLinks,
+          })
+        : null;
+
+    if (linkReplacement && !linkReplacement.ok) {
+      audit.error(`program_links_${linkReplacement.stage}_failed`, {
+        programId: access.program.id,
+        message: linkReplacement.error.message,
+        code: linkReplacement.error.code ?? null,
+        rollbackRestored: linkReplacement.rollback?.ok ?? null,
+        rollbackDeleteCode: linkReplacement.rollback?.deleteError?.code ?? null,
+        rollbackInsertCode: linkReplacement.rollback?.insertError?.code ?? null,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            linkReplacement.stage === "snapshot"
+              ? "Failed to load the current program links"
+              : linkReplacement.stage === "delete"
+                ? "Failed to refresh linked records"
+                : linkReplacement.rollback?.ok
+                  ? "Failed to save linked records. Previous links were restored."
+                  : "Failed to save linked records and restore the previous link set.",
+        },
+        { status: 500 }
+      );
+    }
+
     if (Object.keys(updatePayload).length > 0) {
       const { error: updateError } = await detailSupabase.from("programs").update(updatePayload).eq("id", access.program.id);
 
       if (updateError) {
+        const rollback = linkReplacement?.ok
+          ? await restoreLinkSet({
+              supabase: detailSupabase,
+              table: "program_links",
+              ownerColumn: "program_id",
+              ownerId: access.program.id,
+              createdBy: user.id,
+              links: linkReplacement.previousLinks,
+            })
+          : null;
+
         audit.error("program_update_failed", {
           programId: access.program.id,
           message: updateError.message,
           code: updateError.code ?? null,
+          linksRestored: rollback?.ok ?? null,
+          rollbackDeleteCode: rollback?.deleteError?.code ?? null,
+          rollbackInsertCode: rollback?.insertError?.code ?? null,
         });
-        return NextResponse.json({ error: "Failed to update program" }, { status: 500 });
-      }
-    }
-
-    if (preparedLinks !== undefined) {
-      const { error: deleteError } = await detailSupabase.from("program_links").delete().eq("program_id", access.program.id);
-      if (deleteError) {
-        audit.error("program_links_delete_failed", {
-          programId: access.program.id,
-          message: deleteError.message,
-          code: deleteError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to refresh linked records" }, { status: 500 });
-      }
-
-      if (preparedLinks.length > 0) {
-        const { error: insertError } = await detailSupabase.from("program_links").insert(
-          preparedLinks.map((link) => ({
-            program_id: access.program.id,
-            ...link,
-            created_by: user.id,
-          }))
+        return NextResponse.json(
+          {
+            error: rollback
+              ? rollback.ok
+                ? "Failed to update program. Previous links were restored."
+                : "Failed to update program after linked records changed."
+              : "Failed to update program",
+          },
+          { status: 500 }
         );
-
-        if (insertError) {
-          audit.error("program_links_insert_failed", {
-            programId: access.program.id,
-            message: insertError.message,
-            code: insertError.code ?? null,
-          });
-          return NextResponse.json({ error: "Failed to save linked records" }, { status: 500 });
-        }
       }
     }
 

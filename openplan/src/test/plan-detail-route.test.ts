@@ -417,4 +417,44 @@ describe("/api/plans/[planId]", () => {
       },
     ]);
   });
+
+  it("PATCH restores prior plan links when metadata update fails after link replacement", async () => {
+    planUpdateEqMock.mockResolvedValueOnce({ error: { message: "write failed", code: "23505" } });
+
+    const response = await patchPlanDetail(
+      new NextRequest("http://localhost/api/plans/plan-1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Updated ATP",
+          links: [{ linkType: "scenario_set", linkedId: SCENARIO_EXPLICIT_ID }],
+        }),
+      }),
+      {
+        params: Promise.resolve({ planId: PLAN_ID }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to update plan metadata. Previous links were restored.",
+    });
+    expect(planLinksDeleteMock).toHaveBeenCalledTimes(2);
+    expect(planLinksInsertMock).toHaveBeenNthCalledWith(1, [
+      {
+        plan_id: PLAN_ID,
+        link_type: "scenario_set",
+        linked_id: SCENARIO_EXPLICIT_ID,
+        label: "Explicit scenario",
+        created_by: "22222222-2222-4222-8222-222222222222",
+      },
+    ]);
+    expect(planLinksInsertMock).toHaveBeenNthCalledWith(2, [
+      expect.objectContaining({
+        plan_id: PLAN_ID,
+        link_type: "scenario_set",
+        linked_id: SCENARIO_EXPLICIT_ID,
+      }),
+    ]);
+  });
 });

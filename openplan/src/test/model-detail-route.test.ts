@@ -9,6 +9,7 @@ const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 const SCENARIO_SET_ID = "55555555-5555-4555-8555-555555555555";
+const PLAN_ID = "66666666-6666-4666-8666-666666666666";
 
 const modelMaybeSingleMock = vi.fn();
 const modelEqMock = vi.fn(() => ({ maybeSingle: modelMaybeSingleMock }));
@@ -32,6 +33,16 @@ const scenarioMaybeSingleMock = vi.fn();
 const scenarioEqIdMock = vi.fn(() => ({ maybeSingle: scenarioMaybeSingleMock }));
 const scenarioEqWorkspaceMock = vi.fn(() => ({ eq: scenarioEqIdMock }));
 const scenarioSelectMock = vi.fn(() => ({ eq: scenarioEqWorkspaceMock }));
+
+const plansWorkspaceInMock = vi.fn();
+const plansEqWorkspaceMock = vi.fn(() => ({ in: plansWorkspaceInMock }));
+const plansSelectMock = vi.fn(() => ({ eq: plansEqWorkspaceMock }));
+
+const modelLinksEqMock = vi.fn();
+const modelLinksSelectMock = vi.fn(() => ({ eq: modelLinksEqMock }));
+const modelLinksDeleteEqMock = vi.fn().mockResolvedValue({ error: null });
+const modelLinksDeleteMock = vi.fn(() => ({ eq: modelLinksDeleteEqMock }));
+const modelLinksInsertMock = vi.fn().mockResolvedValue({ error: null });
 
 const mockAudit = {
   info: vi.fn(),
@@ -59,6 +70,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "scenario_sets") {
     return {
       select: scenarioSelectMock,
+    };
+  }
+  if (table === "plans") {
+    return {
+      select: plansSelectMock,
+    };
+  }
+  if (table === "model_links") {
+    return {
+      select: modelLinksSelectMock,
+      delete: modelLinksDeleteMock,
+      insert: modelLinksInsertMock,
     };
   }
 
@@ -142,6 +165,16 @@ describe("/api/models/[modelId]", () => {
       error: null,
     });
 
+    plansWorkspaceInMock.mockResolvedValue({
+      data: [{ id: PLAN_ID, workspace_id: WORKSPACE_ID, title: "Countywide plan basis" }],
+      error: null,
+    });
+
+    modelLinksEqMock.mockResolvedValue({
+      data: [{ link_type: "plan", linked_id: PLAN_ID, label: "Previous link" }],
+      error: null,
+    });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -174,5 +207,46 @@ describe("/api/models/[modelId]", () => {
         status: "configuring",
       })
     );
+  });
+
+  it("PATCH restores prior model links when metadata update fails after link replacement", async () => {
+    modelUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "write failed", code: "23505" },
+    });
+
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Countywide ABM setup v2",
+          links: [{ linkType: "plan", linkedId: PLAN_ID, label: "Updated link" }],
+        }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to update model metadata. Previous links were restored.",
+    });
+    expect(modelLinksDeleteMock).toHaveBeenCalledTimes(2);
+    expect(modelLinksInsertMock).toHaveBeenNthCalledWith(1, [
+      expect.objectContaining({
+        model_id: MODEL_ID,
+        link_type: "plan",
+        linked_id: PLAN_ID,
+        label: "Updated link",
+      }),
+    ]);
+    expect(modelLinksInsertMock).toHaveBeenNthCalledWith(2, [
+      expect.objectContaining({
+        model_id: MODEL_ID,
+        link_type: "plan",
+        linked_id: PLAN_ID,
+        label: "Previous link",
+      }),
+    ]);
   });
 });
