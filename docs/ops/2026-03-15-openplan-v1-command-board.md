@@ -141,6 +141,10 @@ Prioritize the next slice that most improves the original platform thesis withou
 - compliance/readiness scaffolding
 - assistant workflow surface
 
+### 5. Active execution queue
+The immediate working queue for tonight / tomorrow is maintained at:
+- `openplan/docs/ops/2026-03-15-openplan-v1-execution-queue.md`
+
 ---
 
 ## Decision Rule
