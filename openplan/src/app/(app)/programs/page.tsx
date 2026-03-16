@@ -4,7 +4,13 @@ import { ArrowRight, ClipboardList, FolderKanban, ShieldCheck } from "lucide-rea
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -68,6 +74,25 @@ export default async function ProgramsPage({
 
   if (!user) {
     redirect("/sign-in");
+  }
+
+  const { data: memberships } = await supabase
+    .from("workspace_members")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Programs"
+        title="Programs need a provisioned workspace"
+        description="Programming-cycle records are workspace-scoped. This account is authenticated but not provisioned into a workspace yet, so showing an empty catalog here would be misleading."
+      />
+    );
   }
 
   const [{ data: programsData }, { data: projectsData }] = await Promise.all([

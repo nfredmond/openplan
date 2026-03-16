@@ -3,25 +3,14 @@ import { redirect } from "next/navigation";
 import { ArrowRight, FileText, FolderKanban, Radar, ShieldCheck } from "lucide-react";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import { createClient } from "@/lib/supabase/server";
-
-type MembershipRow = {
-  workspace_id: string;
-  role: string;
-  workspaces:
-    | {
-        name: string | null;
-        plan: string | null;
-        created_at: string | null;
-      }
-    | Array<{
-        name: string | null;
-        plan: string | null;
-        created_at: string | null;
-      }>
-    | null;
-};
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 
 function fmtPct(value: number | null): string {
   return value === null ? "N/A" : `${value}%`;
@@ -53,15 +42,24 @@ export default async function DashboardPage() {
 
   const { data: memberships } = await supabase
     .from("workspace_members")
-    .select("workspace_id, role, workspaces(name, plan, created_at)")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
     .eq("user_id", user.id)
     .limit(1);
 
-  const membership = memberships?.[0] as MembershipRow | undefined;
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
 
-  const workspace = Array.isArray(membership?.workspaces)
-    ? membership?.workspaces[0] ?? null
-    : membership?.workspaces ?? null;
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Overview"
+        title="Overview needs a provisioned workspace"
+        description="Dashboard metrics, run history, and workspace KPIs are only available after this account is attached to a workspace. Create a project workspace first or ask an owner/admin to add you to the correct workspace."
+        primaryHref="/projects"
+        primaryLabel="Create or open project workspace"
+      />
+    );
+  }
 
   const workspaceName = workspace?.name ?? "Your workspace";
   const workspacePlan = workspace?.plan ?? "pilot";

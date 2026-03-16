@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
 import { createClient } from "@/lib/supabase/server";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 
 function titleCase(input: string | null | undefined): string {
   if (!input) {
@@ -53,39 +59,23 @@ export default async function BillingPage({
 
   const { data: memberships } = await supabase
     .from("workspace_members")
-    .select("workspace_id, role, workspaces(name, plan, subscription_plan, subscription_status, billing_updated_at)")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
     .eq("user_id", user.id)
     .limit(1);
 
-  const membership = memberships?.[0] as
-    | {
-        workspace_id: string;
-        role: string;
-        workspaces:
-          | {
-              name: string | null;
-              plan: string | null;
-              subscription_plan: string | null;
-              subscription_status: string | null;
-              billing_updated_at: string | null;
-            }
-          | Array<{
-              name: string | null;
-              plan: string | null;
-              subscription_plan: string | null;
-              subscription_status: string | null;
-              billing_updated_at: string | null;
-            }>
-          | null;
-      }
-    | undefined;
-
-  const workspace = Array.isArray(membership?.workspaces)
-    ? membership?.workspaces[0] ?? null
-    : membership?.workspaces ?? null;
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
 
   if (!membership || !workspace) {
-    redirect("/explore");
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Billing"
+        title="Billing needs a provisioned workspace"
+        description="Billing state is tied to a real workspace record. You are signed in, but no workspace membership was found for this account, so there is no subscription context to manage yet."
+        primaryHref="/projects"
+        primaryLabel="Create or open project workspace"
+      />
+    );
   }
 
   const workspaceId = membership.workspace_id;

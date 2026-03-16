@@ -4,8 +4,14 @@ import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-re
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 
 type EngagementPageSearchParams = Promise<{
@@ -69,6 +75,25 @@ export default async function EngagementPage({
 
   if (!user) {
     redirect("/sign-in");
+  }
+
+  const { data: memberships } = await supabase
+    .from("workspace_members")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Engagement"
+        title="Engagement needs a provisioned workspace"
+        description="Campaigns, moderation queues, and intake categories only exist inside a real workspace. You are signed in, but this account has not been provisioned into one yet."
+      />
+    );
   }
 
   const [{ data: campaignsData }, { data: projectsData }, { data: itemsData }, { data: categoriesData }] = await Promise.all([

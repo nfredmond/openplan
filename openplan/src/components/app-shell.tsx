@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  AlertTriangle,
   Bell,
   Command,
   Search,
@@ -9,21 +10,12 @@ import {
 import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
 import { AppSidebarLink } from "@/components/nav/app-sidebar-link";
 import { createClient } from "@/lib/supabase/server";
-
-type MembershipRow = {
-  workspace_id: string;
-  role: string;
-  workspaces:
-    | {
-        name: string | null;
-        plan: string | null;
-      }
-    | Array<{
-        name: string | null;
-        plan: string | null;
-      }>
-    | null;
-};
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  resolveWorkspaceShellState,
+  unwrapWorkspaceRecord,
+  type WorkspaceMembershipRow,
+} from "@/lib/workspaces/current";
 
 const primaryNav = [
   { href: "/dashboard", label: "Overview", icon: "overview" as const },
@@ -48,19 +40,24 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const { data: memberships } = user
     ? await supabase
         .from("workspace_members")
-        .select("workspace_id, role, workspaces(name, plan)")
+        .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
         .eq("user_id", user.id)
         .limit(1)
     : { data: [] };
 
-  const membership = memberships?.[0] as MembershipRow | undefined;
-  const workspace = Array.isArray(membership?.workspaces)
-    ? membership?.workspaces[0] ?? null
-    : membership?.workspaces ?? null;
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
 
-  const workspaceName = workspace?.name ?? "Planning Workspace";
-  const workspacePlan = workspace?.plan ?? "pilot";
-  const workspaceRole = membership?.role ?? (user ? "member" : "guest");
+  const shellState = resolveWorkspaceShellState({
+    membership,
+    workspace,
+    isAuthenticated: Boolean(user),
+  });
+
+  const workspaceName = shellState.workspaceName;
+  const workspacePlan = shellState.workspacePlan;
+  const workspaceRole = shellState.workspaceRole;
+  const membershipPending = shellState.membershipStatus === "not_provisioned";
 
   async function handleSignOut() {
     "use server";
@@ -137,6 +134,26 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 Multi-module shell is active. Modules are binding to live Planning OS objects and workflows.
               </p>
             </div>
+
+            {membershipPending ? (
+              <div className="rounded-2xl border border-amber-300/15 bg-amber-400/10 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="flex items-center gap-2 text-[0.82rem] font-semibold text-amber-100">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-200" />
+                  Workspace membership pending
+                </div>
+                <p className="mt-1.5 text-[0.78rem] leading-relaxed text-amber-50/80">
+                  You are signed in, but this account is not attached to a workspace yet. Create one from Projects or ask an owner/admin to add you.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-amber-100/85">
+                  <Link href="/projects" className="rounded-full border border-amber-200/20 px-2.5 py-1 transition hover:border-amber-100/35 hover:text-white">
+                    Open Projects
+                  </Link>
+                  <Link href="/dashboard" className="rounded-full border border-amber-200/15 px-2.5 py-1 text-amber-100/75 transition hover:border-amber-100/35 hover:text-white">
+                    Overview
+                  </Link>
+                </div>
+              </div>
+            ) : null}
 
             {user ? (
               <form action={handleSignOut}>

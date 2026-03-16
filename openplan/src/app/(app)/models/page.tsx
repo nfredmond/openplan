@@ -4,7 +4,13 @@ import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
 import { ModelCreator } from "@/components/models/model-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 import {
   buildModelWorkspaceSummary,
   formatModelDateTime,
@@ -83,6 +89,25 @@ export default async function ModelsPage({
 
   if (!user) {
     redirect("/sign-in");
+  }
+
+  const { data: memberships } = await supabase
+    .from("workspace_members")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Models"
+        title="Models need a provisioned workspace"
+        description="Model records, scenario anchors, and downstream traceability are workspace-scoped. Without a provisioned workspace, this surface should explain the gap instead of pretending nothing exists."
+      />
+    );
   }
 
   const [{ data: modelsData }, { data: projectsData }, { data: scenarioSetsData }] = await Promise.all([

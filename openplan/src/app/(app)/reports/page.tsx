@@ -11,7 +11,13 @@ import {
 import { ReportCreator } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  type WorkspaceMembershipRow,
+  unwrapWorkspaceRecord,
+} from "@/lib/workspaces/current";
 import {
   formatDateTime,
   formatReportStatusLabel,
@@ -51,6 +57,25 @@ export default async function ReportsPage() {
 
   if (!user) {
     redirect("/sign-in");
+  }
+
+  const { data: memberships } = await supabase
+    .from("workspace_members")
+    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
+  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Reports"
+        title="Reports need a provisioned workspace"
+        description="Report packets, run attachments, and artifact history only exist inside a provisioned workspace. This account is authenticated, but it is not yet attached to one."
+      />
+    );
   }
 
   const [{ data: reportsData }, { data: projectsData }, { data: runsData }] =
