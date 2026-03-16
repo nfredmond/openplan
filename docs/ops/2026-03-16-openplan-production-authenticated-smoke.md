@@ -46,3 +46,4 @@
 - This smoke used a dedicated QA auth user and created production QA records/workspace for continuity verification.
 - No destructive mutations were performed beyond creating QA data needed for verification.
 - Follow-up cleanup/archival of QA records can be done later if desired.
+- See also: `docs/ops/2026-03-16-openplan-auth-proxy-closure-bundle.md` for the combined fix + evidence + harness trail.
