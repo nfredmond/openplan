@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   buildWebhookPayloadHash,
+  detectStripeCheckoutIdentityReview,
   mapStripeEventToBillingMutation,
   parseLegacyWebhookPayload,
   resolveLegacyWebhookEventId,
@@ -71,6 +72,54 @@ async function applyBillingMutation(mutation: BillingWebhookMutation) {
     .eq("id", mutation.workspaceId);
 }
 
+async function workspaceSubscriptionStatus(workspaceId: string): Promise<string | null> {
+  const serviceSupabase = createServiceRoleClient();
+  const { data, error } = await serviceSupabase
+    .from("workspaces")
+    .select("subscription_status")
+    .eq("id", workspaceId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data?.subscription_status ?? null;
+}
+
+async function hasPendingCheckoutIdentityReview(workspaceId: string, stripeCustomerId?: string) {
+  const currentStatus = await workspaceSubscriptionStatus(workspaceId);
+  if (currentStatus !== "checkout_pending") {
+    return null;
+  }
+
+  const serviceSupabase = createServiceRoleClient();
+  const { data, error } = await serviceSupabase
+    .from("billing_events")
+    .select("id, payload, created_at")
+    .eq("workspace_id", workspaceId)
+    .eq("event_type", "checkout_identity_review_required")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (
+    data?.find((event) => {
+      const payload =
+        event && typeof event.payload === "object" && event.payload !== null
+          ? (event.payload as Record<string, unknown>)
+          : {};
+      const eventStripeCustomerId =
+        typeof payload.stripeCustomerId === "string" ? payload.stripeCustomerId : undefined;
+
+      return !stripeCustomerId || !eventStripeCustomerId || eventStripeCustomerId === stripeCustomerId;
+    }) ?? null
+  );
+}
+
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("billing.webhook", request);
   const startedAt = Date.now();
@@ -117,6 +166,58 @@ export async function POST(request: NextRequest) {
       }
 
       receiptId = claim.receiptId;
+
+      const identityReview = detectStripeCheckoutIdentityReview(stripeEvent);
+      if (identityReview) {
+        try {
+          await logBillingEvent({
+            workspaceId: identityReview.workspaceId,
+            eventType: "checkout_identity_review_required",
+            source: "stripe.checkout.session.completed",
+            payload: {
+              checkoutSessionId: identityReview.checkoutSessionId,
+              stripeCustomerId: identityReview.stripeCustomerId ?? null,
+              initiatedByUserEmail: identityReview.initiatedByUserEmail ?? null,
+              purchaserEmail: identityReview.purchaserEmail ?? null,
+              plan: identityReview.plan ?? null,
+              reason: identityReview.reason,
+            },
+          });
+        } catch (eventError) {
+          audit.warn("billing_event_log_failed", {
+            workspaceId: identityReview.workspaceId,
+            message: eventError instanceof Error ? eventError.message : "unknown",
+            providerEventId: stripeEvent.id,
+          });
+        }
+
+        if (receiptId) {
+          await completeWebhookEvent({
+            receiptId,
+            status: "ignored",
+            workspaceId: identityReview.workspaceId,
+            eventType: stripeEvent.type,
+            failureReason: identityReview.reason,
+          }).catch((error) => {
+            audit.warn("webhook_receipt_complete_failed", {
+              provider: "stripe",
+              eventId: stripeEvent.id,
+              message: error instanceof Error ? error.message : "unknown",
+            });
+          });
+        }
+
+        audit.warn("checkout_identity_review_required", {
+          workspaceId: identityReview.workspaceId,
+          checkoutSessionId: identityReview.checkoutSessionId,
+          stripeCustomerId: identityReview.stripeCustomerId ?? null,
+          initiatedByUserEmail: identityReview.initiatedByUserEmail ?? null,
+          purchaserEmail: identityReview.purchaserEmail ?? null,
+          durationMs: Date.now() - startedAt,
+        });
+
+        return NextResponse.json({ ok: true, manualReview: true }, { status: 200 });
+      }
 
       const mapped = mapStripeEventToBillingMutation(stripeEvent);
       if (!mapped.handled) {
@@ -264,6 +365,72 @@ export async function POST(request: NextRequest) {
     }
 
     receiptId = claim.receiptId;
+  }
+
+  if (envelope.provider === "stripe") {
+    try {
+      const pendingIdentityReview = await hasPendingCheckoutIdentityReview(
+        envelope.mutation.workspaceId,
+        envelope.mutation.stripeCustomerId
+      );
+
+      if (pendingIdentityReview) {
+        try {
+          await logBillingEvent({
+            workspaceId: envelope.mutation.workspaceId,
+            eventType: "billing_update_blocked_pending_identity_review",
+            source: envelope.mutation.source ?? envelope.provider,
+            payload: {
+              providerEventId: envelope.eventId,
+              providerEventType: envelope.eventType,
+              stripeCustomerId: envelope.mutation.stripeCustomerId ?? null,
+              pendingReviewEventId: pendingIdentityReview.id,
+            },
+          });
+        } catch (eventError) {
+          audit.warn("billing_event_log_failed", {
+            workspaceId: envelope.mutation.workspaceId,
+            message: eventError instanceof Error ? eventError.message : "unknown",
+            providerEventId: envelope.eventId,
+          });
+        }
+
+        if (receiptId) {
+          await completeWebhookEvent({
+            receiptId,
+            status: "ignored",
+            workspaceId: envelope.mutation.workspaceId,
+            eventType: envelope.eventType,
+            failureReason: "checkout_identity_review_pending",
+          }).catch((receiptError) => {
+            audit.warn("webhook_receipt_complete_failed", {
+              eventId: envelope.eventId,
+              message: receiptError instanceof Error ? receiptError.message : "unknown",
+            });
+          });
+        }
+
+        audit.warn("billing_update_blocked_pending_identity_review", {
+          workspaceId: envelope.mutation.workspaceId,
+          providerEventId: envelope.eventId,
+          providerEventType: envelope.eventType,
+          stripeCustomerId: envelope.mutation.stripeCustomerId ?? null,
+          pendingReviewEventId: pendingIdentityReview.id,
+          durationMs: Date.now() - startedAt,
+        });
+
+        return NextResponse.json({ ok: true, manualReview: true, blocked: true }, { status: 200 });
+      }
+    } catch (reviewError) {
+      audit.error("checkout_identity_review_lookup_failed", {
+        workspaceId: envelope.mutation.workspaceId,
+        providerEventId: envelope.eventId,
+        providerEventType: envelope.eventType,
+        message: reviewError instanceof Error ? reviewError.message : "unknown",
+      });
+
+      return NextResponse.json({ error: "Failed to apply billing update" }, { status: 500 });
+    }
   }
 
   const { error } = await applyBillingMutation(envelope.mutation);

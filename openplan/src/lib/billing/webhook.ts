@@ -29,6 +29,16 @@ export type BillingWebhookMutation = {
   source?: string;
 };
 
+export type StripeCheckoutIdentityReview = {
+  workspaceId: string;
+  checkoutSessionId: string;
+  plan?: BillingPlan;
+  initiatedByUserEmail?: string;
+  purchaserEmail?: string;
+  stripeCustomerId?: string;
+  reason: "purchaser_email_mismatch";
+};
+
 export const legacyWebhookSchema = z.object({
   eventId: z.string().min(1).optional(),
   eventType: z.string().min(1).optional(),
@@ -146,6 +156,11 @@ function extractWorkspaceId(metadata: unknown): string | undefined {
   return asNonEmptyString(metadataRecord.workspaceId) ?? asNonEmptyString(metadataRecord.workspace_id);
 }
 
+function normalizeEmail(value: unknown): string | undefined {
+  const normalized = asNonEmptyString(value)?.toLowerCase();
+  return normalized && normalized.length > 0 ? normalized : undefined;
+}
+
 function asIsoDatetime(value: unknown): string | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return new Date(value * 1000).toISOString();
@@ -237,6 +252,37 @@ export async function verifyStripeWebhookSignature({
   }
 
   return { ok: true, event: parsed.data };
+}
+
+export function detectStripeCheckoutIdentityReview(event: StripeEventSchema): StripeCheckoutIdentityReview | null {
+  if (event.type !== "checkout.session.completed") {
+    return null;
+  }
+
+  const object = asRecord(event.data.object);
+  const metadata = asRecord(object.metadata);
+  const workspaceId = extractWorkspaceId(metadata);
+  if (!workspaceId) {
+    return null;
+  }
+
+  const initiatedByUserEmail = normalizeEmail(metadata.initiatedByUserEmail);
+  const purchaserEmail =
+    normalizeEmail(asRecord(object.customer_details).email) ?? normalizeEmail(object.customer_email);
+
+  if (!initiatedByUserEmail || !purchaserEmail || initiatedByUserEmail === purchaserEmail) {
+    return null;
+  }
+
+  return {
+    workspaceId,
+    checkoutSessionId: asNonEmptyString(object.id) ?? event.id,
+    plan: normalizePlan(asNonEmptyString(metadata.plan)),
+    initiatedByUserEmail,
+    purchaserEmail,
+    stripeCustomerId: asNonEmptyString(object.customer),
+    reason: "purchaser_email_mismatch",
+  };
 }
 
 export function mapStripeEventToBillingMutation(

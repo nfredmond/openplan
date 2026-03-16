@@ -86,6 +86,17 @@ describe('createStripeCheckoutSession', () => {
         client_reference_id: 'workspace-123',
         customer: undefined,
         customer_email: 'owner@example.com',
+        metadata: expect.objectContaining({
+          workspaceId: 'workspace-123',
+          plan: 'starter',
+          initiatedByUserId: 'user-123',
+          initiatedByUserEmail: 'owner@example.com',
+        }),
+        subscription_data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            initiatedByUserEmail: 'owner@example.com',
+          }),
+        }),
       })
     )
     expect(session).toEqual({

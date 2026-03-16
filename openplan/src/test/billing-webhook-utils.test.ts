@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildWebhookPayloadHash,
+  detectStripeCheckoutIdentityReview,
   mapStripeEventToBillingMutation,
   parseLegacyWebhookPayload,
   resolveLegacyWebhookEventId,
@@ -54,6 +55,36 @@ describe("billing webhook helpers", () => {
     });
 
     expect(result).toMatchObject({ ok: false, reason: "missing_sdk" });
+  });
+
+  it("detects purchaser-email mismatch for checkout manual review", () => {
+    const review = detectStripeCheckoutIdentityReview({
+      id: "evt_checkout_123",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_test_123",
+          customer: "cus_123",
+          customer_details: {
+            email: "billing@example.com",
+          },
+          metadata: {
+            workspaceId: "11111111-1111-4111-8111-111111111111",
+            plan: "starter",
+            initiatedByUserEmail: "owner@example.com",
+          },
+        },
+      },
+    });
+
+    expect(review).toMatchObject({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      checkoutSessionId: "cs_test_123",
+      stripeCustomerId: "cus_123",
+      initiatedByUserEmail: "owner@example.com",
+      purchaserEmail: "billing@example.com",
+      reason: "purchaser_email_mismatch",
+    });
   });
 
   it("maps customer.subscription.updated into billing mutation", () => {

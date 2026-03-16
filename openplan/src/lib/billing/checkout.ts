@@ -46,6 +46,15 @@ function defaultCancelUrl(origin: string, plan: CheckoutPlan): string {
   return `${origin}/dashboard/billing?checkout=cancel&plan=${plan}`;
 }
 
+function normalizeEmail(value: string | null | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
 export async function createStripeCheckoutSession({
   workspaceId,
   plan,
@@ -57,11 +66,16 @@ export async function createStripeCheckoutSession({
   const stripe = new Stripe(stripeSecretKey());
   const priceId = stripePriceIdForPlan(plan);
 
-  const metadata = {
+  const metadata: Record<string, string> = {
     workspaceId,
     plan,
     initiatedByUserId,
   };
+
+  const normalizedInitiatedByUserEmail = normalizeEmail(initiatedByUserEmail);
+  if (normalizedInitiatedByUserEmail) {
+    metadata.initiatedByUserEmail = normalizedInitiatedByUserEmail;
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",

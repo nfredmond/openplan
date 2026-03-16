@@ -89,6 +89,20 @@ export default async function BillingPage({
     .order("created_at", { ascending: false })
     .limit(10);
 
+  const identityReviewEvent = billingEvents?.find((event) => event.event_type === "checkout_identity_review_required");
+  const identityReviewPayload =
+    identityReviewEvent && typeof identityReviewEvent.payload === "object" && identityReviewEvent.payload !== null
+      ? (identityReviewEvent.payload as Record<string, unknown>)
+      : null;
+  const initiatedByUserEmail =
+    identityReviewPayload && typeof identityReviewPayload.initiatedByUserEmail === "string"
+      ? identityReviewPayload.initiatedByUserEmail
+      : null;
+  const purchaserEmail =
+    identityReviewPayload && typeof identityReviewPayload.purchaserEmail === "string"
+      ? identityReviewPayload.purchaserEmail
+      : null;
+
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -103,6 +117,21 @@ export default async function BillingPage({
         <article className="rounded-2xl border border-border/80 bg-card p-4 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
           Mock checkout completed for plan <span className="font-semibold text-foreground">{titleCase(checkoutPlan)}</span>. Configure
           `OPENPLAN_STRIPE_SECRET_KEY` and Stripe price IDs to route to live Checkout Sessions.
+        </article>
+      ) : null}
+
+      {status === "checkout_pending" && identityReviewEvent ? (
+        <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="font-semibold tracking-tight">Activation is paused for billing identity review.</p>
+          <p className="mt-2 text-sm text-amber-900/90 dark:text-amber-100/90">
+            OpenPlan detected a purchaser-email mismatch during checkout, so this workspace stayed in <strong>Checkout Pending</strong>
+            instead of auto-activating access.
+          </p>
+          <ul className="mt-3 space-y-1.5 text-sm text-amber-900/90 dark:text-amber-100/90">
+            {initiatedByUserEmail ? <li>Workspace checkout was initiated by: <strong>{initiatedByUserEmail}</strong></li> : null}
+            {purchaserEmail ? <li>Stripe checkout completed with: <strong>{purchaserEmail}</strong></li> : null}
+            <li>Next step: sign in with the purchaser email used at checkout, or complete a manual ownership review before activation.</li>
+          </ul>
         </article>
       ) : null}
 
