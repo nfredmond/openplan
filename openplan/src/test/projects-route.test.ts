@@ -2,13 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 
 const authGetUserMock = vi.fn();
 const workspaceInsertMock = vi.fn();
 const workspaceSelectMock = vi.fn();
 const workspaceSingleMock = vi.fn();
+const workspaceDeleteEqMock = vi.fn();
+const workspaceDeleteMock = vi.fn();
 const memberInsertMock = vi.fn();
+const memberDeleteEqMock = vi.fn();
+const memberDeleteMock = vi.fn();
 const projectInsertMock = vi.fn();
 const projectSelectMock = vi.fn();
 const projectSingleMock = vi.fn();
@@ -22,6 +27,7 @@ const mockAudit = {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -68,17 +74,21 @@ describe("POST /api/projects", () => {
 
     workspaceSelectMock.mockReturnValue({ single: workspaceSingleMock });
     workspaceInsertMock.mockReturnValue({ select: workspaceSelectMock });
+    workspaceDeleteEqMock.mockResolvedValue({ error: null });
+    workspaceDeleteMock.mockReturnValue({ eq: workspaceDeleteEqMock });
     projectSelectMock.mockReturnValue({ single: projectSingleMock });
     projectInsertMock.mockReturnValue({ select: projectSelectMock });
     memberInsertMock.mockResolvedValue({ error: null });
+    memberDeleteEqMock.mockResolvedValue({ error: null });
+    memberDeleteMock.mockReturnValue({ eq: memberDeleteEqMock });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "workspaces") {
-        return { insert: workspaceInsertMock };
+        return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
       }
 
       if (table === "workspace_members") {
-        return { insert: memberInsertMock };
+        return { insert: memberInsertMock, delete: memberDeleteMock };
       }
 
       if (table === "projects") {
@@ -98,6 +108,10 @@ describe("POST /api/projects", () => {
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
+      from: fromMock,
+    });
+
+    createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
     });
   });
@@ -203,5 +217,32 @@ describe("POST /api/projects", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Unsupported stage-gate template" });
     expect(workspaceInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("cleans up the provisioned workspace when project-record creation fails", async () => {
+    projectSingleMock.mockResolvedValue({
+      data: null,
+      error: {
+        message: "project insert failed",
+        code: "XX002",
+      },
+    });
+
+    const response = await postProject(
+      jsonRequest({
+        projectName: "CA Safety Delivery Pilot",
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to create project record" });
+    expect(memberDeleteEqMock).toHaveBeenCalledWith(
+      "workspace_id",
+      "11111111-1111-4111-8111-111111111111"
+    );
+    expect(workspaceDeleteEqMock).toHaveBeenCalledWith(
+      "id",
+      "11111111-1111-4111-8111-111111111111"
+    );
   });
 });

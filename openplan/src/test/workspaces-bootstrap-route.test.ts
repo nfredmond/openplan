@@ -2,13 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 
 const authGetUserMock = vi.fn();
 const workspaceInsertMock = vi.fn();
 const workspaceSelectMock = vi.fn();
 const workspaceSingleMock = vi.fn();
+const workspaceDeleteEqMock = vi.fn();
+const workspaceDeleteMock = vi.fn();
 const memberInsertMock = vi.fn();
+const memberDeleteEqMock = vi.fn();
+const memberDeleteMock = vi.fn();
 const fromMock = vi.fn();
 
 const mockAudit = {
@@ -19,6 +24,7 @@ const mockAudit = {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -54,15 +60,19 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     workspaceSelectMock.mockReturnValue({ single: workspaceSingleMock });
     workspaceInsertMock.mockReturnValue({ select: workspaceSelectMock });
+    workspaceDeleteEqMock.mockResolvedValue({ error: null });
+    workspaceDeleteMock.mockReturnValue({ eq: workspaceDeleteEqMock });
     memberInsertMock.mockResolvedValue({ error: null });
+    memberDeleteEqMock.mockResolvedValue({ error: null });
+    memberDeleteMock.mockReturnValue({ eq: memberDeleteEqMock });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "workspaces") {
-        return { insert: workspaceInsertMock };
+        return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
       }
 
       if (table === "workspace_members") {
-        return { insert: memberInsertMock };
+        return { insert: memberInsertMock, delete: memberDeleteMock };
       }
 
       throw new Error(`Unexpected table: ${table}`);
@@ -78,6 +88,10 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
+      from: fromMock,
+    });
+
+    createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
     });
   });
@@ -197,5 +211,31 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ error: "Failed to bootstrap workspace" });
+  });
+
+  it("cleans up the partially created workspace when owner membership insert fails", async () => {
+    memberInsertMock.mockResolvedValue({
+      error: {
+        message: "membership insert failed",
+        code: "XX001",
+      },
+    });
+
+    const response = await postBootstrap(
+      jsonRequest({
+        workspaceName: "Regional Planning Commission",
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to bootstrap workspace" });
+    expect(memberDeleteEqMock).toHaveBeenCalledWith(
+      "workspace_id",
+      "11111111-1111-4111-8111-111111111111"
+    );
+    expect(workspaceDeleteEqMock).toHaveBeenCalledWith(
+      "id",
+      "11111111-1111-4111-8111-111111111111"
+    );
   });
 });

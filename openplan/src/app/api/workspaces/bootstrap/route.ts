@@ -62,6 +62,38 @@ function isDuplicateSlugError(error: { code?: string | null; message?: string } 
   return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
 }
 
+async function cleanupProvisionedWorkspace(
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>,
+  workspaceId: string,
+  audit: ReturnType<typeof createApiAuditLogger>
+) {
+  const { error: memberCleanupError } = await serviceSupabase
+    .from("workspace_members")
+    .delete()
+    .eq("workspace_id", workspaceId);
+
+  if (memberCleanupError) {
+    audit.warn("workspace_bootstrap_cleanup_members_failed", {
+      workspaceId,
+      message: memberCleanupError.message,
+      code: memberCleanupError.code ?? null,
+    });
+  }
+
+  const { error: workspaceCleanupError } = await serviceSupabase
+    .from("workspaces")
+    .delete()
+    .eq("id", workspaceId);
+
+  if (workspaceCleanupError) {
+    audit.warn("workspace_bootstrap_cleanup_workspace_failed", {
+      workspaceId,
+      message: workspaceCleanupError.message,
+      code: workspaceCleanupError.code ?? null,
+    });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("workspaces.bootstrap", request);
   const startedAt = Date.now();
@@ -156,6 +188,8 @@ export async function POST(request: NextRequest) {
         message: memberError.message,
         code: memberError.code ?? null,
       });
+
+      await cleanupProvisionedWorkspace(serviceSupabase, workspace.id, audit);
 
       return NextResponse.json(
         {

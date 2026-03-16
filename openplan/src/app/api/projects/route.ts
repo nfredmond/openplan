@@ -65,6 +65,38 @@ function isDuplicateSlugError(error: { code?: string | null; message?: string } 
   return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
 }
 
+async function cleanupProvisionedProjectWorkspace(
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>,
+  workspaceId: string,
+  audit: ReturnType<typeof createApiAuditLogger>
+) {
+  const { error: memberCleanupError } = await serviceSupabase
+    .from("workspace_members")
+    .delete()
+    .eq("workspace_id", workspaceId);
+
+  if (memberCleanupError) {
+    audit.warn("project_cleanup_members_failed", {
+      workspaceId,
+      message: memberCleanupError.message,
+      code: memberCleanupError.code ?? null,
+    });
+  }
+
+  const { error: workspaceCleanupError } = await serviceSupabase
+    .from("workspaces")
+    .delete()
+    .eq("id", workspaceId);
+
+  if (workspaceCleanupError) {
+    audit.warn("project_cleanup_workspace_failed", {
+      workspaceId,
+      message: workspaceCleanupError.message,
+      code: workspaceCleanupError.code ?? null,
+    });
+  }
+}
+
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("projects.list", request);
   const startedAt = Date.now();
@@ -213,6 +245,8 @@ export async function POST(request: NextRequest) {
         code: memberError.code ?? null,
       });
 
+      await cleanupProvisionedProjectWorkspace(serviceSupabase, workspace.id, audit);
+
       return NextResponse.json(
         {
           error: "Failed to create project",
@@ -242,6 +276,8 @@ export async function POST(request: NextRequest) {
         message: projectRecordError.message,
         code: projectRecordError.code ?? null,
       });
+
+      await cleanupProvisionedProjectWorkspace(serviceSupabase, workspace.id, audit);
 
       return NextResponse.json(
         {

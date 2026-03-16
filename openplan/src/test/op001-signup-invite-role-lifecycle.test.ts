@@ -248,44 +248,105 @@ describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
     createClientMock.mockImplementation(async () => buildClient());
     createServiceRoleClientMock.mockImplementation(() => ({
       from: (table: string) => {
-        if (table !== "workspaces") {
-          throw new Error(`Unexpected table: ${table}`);
+        if (table === "workspaces") {
+          return {
+            insert: (payload: {
+              name: string;
+              slug: string;
+              plan: string;
+              stage_gate_template_id: string;
+              stage_gate_template_version: string;
+              stage_gate_binding_source: string;
+            }) => {
+              const workspace: WorkspaceRecord = {
+                id: `00000000-0000-4000-8000-${String(state.workspaceSequence + 1).padStart(12, "0")}`,
+                name: payload.name,
+                slug: payload.slug,
+                plan: payload.plan,
+                stage_gate_template_id: payload.stage_gate_template_id,
+                stage_gate_template_version: payload.stage_gate_template_version,
+                stage_gate_binding_source: payload.stage_gate_binding_source,
+                stripe_customer_id: null,
+              };
+
+              state.workspaceSequence += 1;
+              state.workspaces.push(workspace);
+
+              return {
+                select: () => ({
+                  single: async () => ({
+                    data: {
+                      id: workspace.id,
+                      slug: workspace.slug,
+                      plan: workspace.plan,
+                      stage_gate_template_id: workspace.stage_gate_template_id,
+                      stage_gate_template_version: workspace.stage_gate_template_version,
+                    },
+                    error: null,
+                  }),
+                }),
+              };
+            },
+            select: () => {
+              const filters: Record<string, string> = {};
+              return {
+                eq: (column: string, value: string) => {
+                  filters[column] = value;
+                  return {
+                    maybeSingle: async () => {
+                      const workspace = state.workspaces.find((item) => item.id === filters.id);
+                      return {
+                        data: workspace ? { stripe_customer_id: workspace.stripe_customer_id } : null,
+                        error: null,
+                      };
+                    },
+                  };
+                },
+              };
+            },
+            update: (payload: Partial<WorkspaceRecord>) => ({
+              eq: async (_column: string, value: string) => {
+                const workspace = state.workspaces.find((item) => item.id === value);
+                if (!workspace) {
+                  return { error: { message: "workspace not found" } };
+                }
+
+                Object.assign(workspace, payload);
+                return { error: null };
+              },
+            }),
+            delete: () => ({
+              eq: async (_column: string, value: string) => {
+                const index = state.workspaces.findIndex((item) => item.id === value);
+                if (index >= 0) {
+                  state.workspaces.splice(index, 1);
+                }
+                return { error: null };
+              },
+            }),
+          };
         }
 
-        return {
-          select: () => {
-            const filters: Record<string, string> = {};
-            return {
-              eq: (column: string, value: string) => {
-                filters[column] = value;
-                return {
-                  maybeSingle: async () => {
-                    const workspace = state.workspaces.find(
-                      (item) => item.id === filters.id
-                    );
-                    return {
-                      data: workspace
-                        ? { stripe_customer_id: workspace.stripe_customer_id }
-                        : null,
-                      error: null,
-                    };
-                  },
-                };
-              },
-            };
-          },
-          update: (payload: Partial<WorkspaceRecord>) => ({
-            eq: async (_column: string, value: string) => {
-              const workspace = state.workspaces.find((item) => item.id === value);
-              if (!workspace) {
-                return { error: { message: "workspace not found" } };
-              }
-
-              Object.assign(workspace, payload);
+        if (table === "workspace_members") {
+          return {
+            insert: async (payload: WorkspaceMemberRecord) => {
+              state.workspaceMembers.push(payload);
               return { error: null };
             },
-          }),
-        };
+            delete: () => ({
+              eq: async (_column: string, value: string) => {
+                for (let index = state.workspaceMembers.length - 1; index >= 0; index -= 1) {
+                  if (state.workspaceMembers[index]?.workspace_id === value) {
+                    state.workspaceMembers.splice(index, 1);
+                  }
+                }
+                return { error: null };
+              },
+            }),
+          };
+        }
+
+        throw new Error(`Unexpected table: ${table}`);
       },
     }));
 
