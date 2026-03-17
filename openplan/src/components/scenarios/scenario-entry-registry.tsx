@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, FileStack, Loader2, Save } from "lucide-react";
+import { ArrowRight, FileStack, Loader2, Play, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -46,6 +46,13 @@ type ScenarioEntry = {
   } | null;
 };
 
+type ModelOption = {
+  id: string;
+  title: string;
+  status: string;
+  lastRunRecordedAt: string | null;
+};
+
 type ScenarioEntryRegistryProps = {
   scenarioSetId: string;
   scenarioSetTitle: string;
@@ -53,6 +60,7 @@ type ScenarioEntryRegistryProps = {
   projectId: string;
   entries: ScenarioEntry[];
   runs: RunOption[];
+  models: ModelOption[];
   baselineEntryId: string | null;
   linkedReports: ScenarioLinkedReport[];
 };
@@ -130,6 +138,84 @@ function ScenarioReportCreateButton({
   );
 }
 
+function ScenarioEntryLaunchButton({
+  entry,
+  models,
+}: {
+  entry: ScenarioEntry;
+  models: ModelOption[];
+}) {
+  const router = useRouter();
+  const [selectedModelId, setSelectedModelId] = useState(models[0]?.id ?? "");
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleLaunch() {
+    if (!selectedModelId) {
+      setError("Select a model before launching.");
+      return;
+    }
+
+    setError(null);
+    setIsLaunching(true);
+
+    try {
+      const response = await fetch(`/api/models/${selectedModelId}/runs`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          scenarioEntryId: entry.id,
+          title: `${entry.label} managed run`,
+          attachToScenarioEntry: true,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to launch managed run");
+      }
+
+      router.refresh();
+    } catch (launchError) {
+      setError(launchError instanceof Error ? launchError.message : "Failed to launch managed run");
+    } finally {
+      setIsLaunching(false);
+    }
+  }
+
+  if (models.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No model is anchored to this scenario set yet. Attach a model on the Models side before launching managed execution.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {models.length > 1 ? (
+        <select
+          className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+          value={selectedModelId}
+          onChange={(event) => setSelectedModelId(event.target.value)}
+          disabled={isLaunching}
+        >
+          {models.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.title}
+            </option>
+          ))}
+        </select>
+      ) : null}
+      <Button type="button" variant="outline" size="sm" onClick={() => void handleLaunch()} disabled={isLaunching || !selectedModelId}>
+        {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+        Launch managed run
+      </Button>
+      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+    </div>
+  );
+}
+
 function ScenarioEntryCard({
   scenarioSetId,
   scenarioSetTitle,
@@ -137,6 +223,7 @@ function ScenarioEntryCard({
   projectId,
   entry,
   runs,
+  models,
   baselineEntryId,
   baselineRunId,
   baselineLabel,
@@ -148,6 +235,7 @@ function ScenarioEntryCard({
   projectId: string;
   entry: ScenarioEntry;
   runs: RunOption[];
+  models: ModelOption[];
   baselineEntryId: string | null;
   baselineRunId: string | null;
   baselineLabel: string | null;
@@ -308,12 +396,12 @@ function ScenarioEntryCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/60 p-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/60 p-4 lg:grid-cols-3">
         <div className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Operator actions</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Use the attached evidence in Analysis Studio or move directly into a linked report workflow when the comparison is ready.
+              Use the attached evidence in Analysis Studio, launch a new managed run from the linked model lane, or move directly into a report workflow when the comparison is ready.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -339,6 +427,16 @@ function ScenarioEntryCard({
               />
             ) : null}
           </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Managed execution</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Launch a fresh run using a model already anchored to this scenario set. The completed run is promoted back into this entry automatically.
+            </p>
+          </div>
+          <ScenarioEntryLaunchButton entry={entry} models={models} />
         </div>
 
         <div className="space-y-2">
@@ -494,6 +592,7 @@ export function ScenarioEntryRegistry({
   projectId,
   entries,
   runs,
+  models,
   baselineEntryId,
   linkedReports,
 }: ScenarioEntryRegistryProps) {
@@ -532,6 +631,7 @@ export function ScenarioEntryRegistry({
               projectId={projectId}
               entry={baselineEntry}
               runs={runs}
+              models={models}
               baselineEntryId={baselineEntry.id}
               baselineRunId={baselineEntry.attached_run_id}
               baselineLabel={baselineEntry.label}
@@ -565,6 +665,7 @@ export function ScenarioEntryRegistry({
                 projectId={projectId}
                 entry={entry}
                 runs={runs}
+                models={models}
                 baselineEntryId={baselineEntry?.id ?? null}
                 baselineRunId={baselineEntry?.attached_run_id ?? null}
                 baselineLabel={baselineEntry?.label ?? null}

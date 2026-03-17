@@ -1,0 +1,312 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+
+type ScenarioEntryOption = {
+  id: string;
+  label: string;
+  entryType: string;
+  status: string;
+  assumptionCount: number;
+};
+
+type ManagedModelRun = {
+  id: string;
+  status: string;
+  run_title: string;
+  source_analysis_run_id: string | null;
+  scenario_entry_id: string | null;
+  result_summary_json: Record<string, unknown> | null;
+  error_message: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+};
+
+type ModelRunManagerProps = {
+  modelId: string;
+  modelTitle: string;
+  defaultQueryText: string;
+  defaultCorridorText: string;
+  scenarioEntries: ScenarioEntryOption[];
+  modelRuns: ManagedModelRun[];
+  schemaPending: boolean;
+};
+
+function fmtDateTime(value: string | null | undefined) {
+  if (!value) return "Unknown";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function toneForRunStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "succeeded") return "success";
+  if (status === "running" || status === "queued") return "info";
+  if (status === "failed" || status === "cancelled") return "warning";
+  return "neutral";
+}
+
+export function ModelRunManager({
+  modelId,
+  modelTitle,
+  defaultQueryText,
+  defaultCorridorText,
+  scenarioEntries,
+  modelRuns,
+  schemaPending,
+}: ModelRunManagerProps) {
+  const router = useRouter();
+  const [title, setTitle] = useState(`${modelTitle} managed run`);
+  const [queryText, setQueryText] = useState(defaultQueryText);
+  const [corridorText, setCorridorText] = useState(defaultCorridorText);
+  const [scenarioEntryId, setScenarioEntryId] = useState("");
+  const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const selectedScenarioEntry = useMemo(
+    () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
+    [scenarioEntries, scenarioEntryId]
+  );
+
+  async function handleLaunch() {
+    setError(null);
+    setIsLaunching(true);
+
+    try {
+      let parsedCorridorGeojson: unknown;
+      try {
+        parsedCorridorGeojson = corridorText.trim() ? JSON.parse(corridorText) : null;
+      } catch {
+        throw new Error("Corridor GeoJSON must be valid JSON");
+      }
+
+      const response = await fetch(`/api/models/${modelId}/runs`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim() || undefined,
+          queryText: queryText.trim() || undefined,
+          corridorGeojson: parsedCorridorGeojson || undefined,
+          scenarioEntryId: scenarioEntryId || undefined,
+          attachToScenarioEntry: attachToScenarioEntry && Boolean(scenarioEntryId),
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to launch managed model run");
+      }
+
+      router.refresh();
+    } catch (launchError) {
+      setError(launchError instanceof Error ? launchError.message : "Failed to launch managed model run");
+    } finally {
+      setIsLaunching(false);
+    }
+  }
+
+  const latestRun = modelRuns[0] ?? null;
+
+  return (
+    <article className="module-section-surface">
+      <div className="module-section-header">
+        <div className="module-section-heading">
+          <p className="module-section-label">Execution</p>
+          <h2 className="module-section-title">Managed scenario → run execution</h2>
+          <p className="module-section-description">
+            Launch a managed run with immutable input snapshots, then optionally promote the resulting analysis run into a scenario entry.
+          </p>
+        </div>
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+          <Play className="h-5 w-5" />
+        </span>
+      </div>
+
+      <div className="module-summary-grid cols-4 mt-5">
+        <div className="module-summary-card">
+          <p className="module-summary-label">Managed runs</p>
+          <p className="module-summary-value">{modelRuns.length}</p>
+          <p className="module-summary-detail">Execution records tied to this model.</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Latest status</p>
+          <p className="module-summary-value text-base">{latestRun ? latestRun.status : "None"}</p>
+          <p className="module-summary-detail">{latestRun ? latestRun.run_title : "No managed runs launched yet."}</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Scenario attach</p>
+          <p className="module-summary-value">{scenarioEntries.length}</p>
+          <p className="module-summary-detail">Scenario entries available for direct evidence promotion.</p>
+        </div>
+        <div className="module-summary-card">
+          <p className="module-summary-label">Engine</p>
+          <p className="module-summary-value text-base">deterministic_corridor_v1</p>
+          <p className="module-summary-detail">First orchestration backend built on the current analysis stack.</p>
+        </div>
+      </div>
+
+      {schemaPending ? (
+        <div className="module-empty-state mt-5 text-sm">
+          The `model_runs` table is not live yet. Apply the newest database migration to activate managed execution.
+        </div>
+      ) : null}
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="rounded-[24px] border border-border/70 bg-background/75 p-5 space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Launch run</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Use model defaults, then optionally bind the result back into a specific scenario entry.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="managed-run-title" className="text-[0.82rem] font-semibold">
+              Run title
+            </label>
+            <Input id="managed-run-title" value={title} onChange={(event) => setTitle(event.target.value)} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="managed-run-scenario" className="text-[0.82rem] font-semibold">
+              Scenario entry (optional)
+            </label>
+            <select
+              id="managed-run-scenario"
+              className="module-select"
+              value={scenarioEntryId}
+              onChange={(event) => setScenarioEntryId(event.target.value)}
+            >
+              <option value="">No direct scenario attach</option>
+              {scenarioEntries.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.label} · {entry.entryType} · {entry.assumptionCount} assumptions
+                </option>
+              ))}
+            </select>
+            {selectedScenarioEntry ? (
+              <p className="text-xs text-muted-foreground">
+                Selected entry is currently {selectedScenarioEntry.status}. If attach is enabled, the completed run will become its attached evidence.
+              </p>
+            ) : null}
+          </div>
+
+          <label className="module-note flex items-center gap-3 text-sm text-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border"
+              checked={attachToScenarioEntry}
+              onChange={(event) => setAttachToScenarioEntry(event.target.checked)}
+              disabled={!scenarioEntryId}
+            />
+            Attach completed run to selected scenario entry
+          </label>
+
+          <div className="space-y-1.5">
+            <label htmlFor="managed-run-query" className="text-[0.82rem] font-semibold">
+              Query text
+            </label>
+            <Textarea
+              id="managed-run-query"
+              value={queryText}
+              onChange={(event) => setQueryText(event.target.value)}
+              rows={5}
+              placeholder="Describe what this managed run is analyzing."
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="managed-run-corridor" className="text-[0.82rem] font-semibold">
+              Corridor GeoJSON
+            </label>
+            <Textarea
+              id="managed-run-corridor"
+              value={corridorText}
+              onChange={(event) => setCorridorText(event.target.value)}
+              rows={10}
+              placeholder='{"type":"Polygon","coordinates":[...]}'
+              className="font-mono text-xs"
+            />
+          </div>
+
+          {error ? (
+            <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              {error}
+            </p>
+          ) : null}
+
+          <Button type="button" onClick={() => void handleLaunch()} disabled={isLaunching || schemaPending}>
+            {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            Launch managed run
+          </Button>
+        </div>
+
+        <div className="rounded-[24px] border border-border/70 bg-background/75 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Run history</p>
+              <p className="mt-1 text-sm text-muted-foreground">Latest orchestrated executions tied to this model.</p>
+            </div>
+            <StatusBadge tone={modelRuns.length > 0 ? "info" : "neutral"}>{modelRuns.length} stored</StatusBadge>
+          </div>
+
+          {modelRuns.length === 0 ? (
+            <div className="module-empty-state mt-5 text-sm">
+              No managed runs yet. The first successful launch will persist an orchestration record and point to the resulting analysis run.
+            </div>
+          ) : (
+            <div className="mt-5 module-record-list">
+              {modelRuns.map((run) => {
+                const resultSummary = run.result_summary_json ?? {};
+                const overallScore = typeof resultSummary.overallScore === "number" ? resultSummary.overallScore : null;
+                const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
+
+                return (
+                  <div key={run.id} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={toneForRunStatus(run.status)}>{run.status}</StatusBadge>
+                        {run.scenario_entry_id ? <StatusBadge tone="neutral">Scenario attached</StatusBadge> : null}
+                        {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{run.run_title}</h3>
+                          <p className="module-record-stamp">{fmtDateTime(run.completed_at ?? run.started_at ?? run.created_at)}</p>
+                        </div>
+                        <p className="module-record-summary">
+                          {run.error_message ||
+                            (run.source_analysis_run_id
+                              ? `Backed by analysis run ${run.source_analysis_run_id}.`
+                              : "Managed execution record created without a linked analysis run yet.")}
+                        </p>
+                      </div>
+                      {runLink ? (
+                        <div className="mt-3">
+                          <Link href={runLink} className="inline-flex">
+                            <Button type="button" variant="outline" size="sm">
+                              Open in Studio
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}

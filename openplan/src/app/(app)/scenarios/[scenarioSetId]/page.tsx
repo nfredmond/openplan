@@ -69,7 +69,7 @@ export default async function ScenarioSetDetailPage({
 
   const scenarioSet = scenarioSetData as ScenarioSetRow;
 
-  const [{ data: project }, { data: entriesData }, { data: runsData }] = await Promise.all([
+  const [{ data: project }, { data: entriesData }, { data: runsData }, { data: modelsData }] = await Promise.all([
     supabase
       .from("projects")
       .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
@@ -89,6 +89,12 @@ export default async function ScenarioSetDetailPage({
       .eq("workspace_id", scenarioSet.workspace_id)
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase
+      .from("models")
+      .select("id, title, status, last_run_recorded_at")
+      .eq("workspace_id", scenarioSet.workspace_id)
+      .eq("scenario_set_id", scenarioSet.id)
+      .order("updated_at", { ascending: false }),
   ]);
 
   const runIds = (entriesData ?? [])
@@ -321,6 +327,12 @@ export default async function ScenarioSetDetailPage({
             projectId={scenarioSet.project_id}
             entries={entries}
             runs={runsData ?? []}
+            models={((modelsData ?? []) as Array<{ id: string; title: string | null; status: string | null; last_run_recorded_at: string | null }>).map((model) => ({
+              id: model.id,
+              title: model.title ?? "Untitled model",
+              status: model.status ?? "draft",
+              lastRunRecordedAt: model.last_run_recorded_at,
+            }))}
             baselineEntryId={baselineEntry?.id ?? null}
             linkedReports={reportLinkage.linkedReports}
           />

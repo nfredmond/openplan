@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Database, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
+import { ModelRunManager } from "@/components/models/model-run-manager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildModelWorkspaceSummary,
@@ -59,7 +61,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     notFound();
   }
 
-  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult] =
+  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("scenario_sets").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
@@ -82,6 +84,22 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         .order("updated_at", { ascending: false }),
       supabase.from("runs").select("id, title, created_at").eq("workspace_id", model.workspace_id).order("created_at", { ascending: false }).limit(60),
       supabase.from("model_links").select("id, model_id, link_type, linked_id, label").eq("model_id", model.id),
+      model.scenario_set_id
+        ? supabase
+            .from("scenario_entries")
+            .select("id, label, entry_type, status, assumptions_json, sort_order, created_at")
+            .eq("scenario_set_id", model.scenario_set_id)
+            .order("sort_order", { ascending: true })
+            .order("created_at", { ascending: true })
+        : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("model_runs")
+        .select(
+          "id, model_id, scenario_entry_id, source_analysis_run_id, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at"
+        )
+        .eq("model_id", model.id)
+        .order("created_at", { ascending: false })
+        .limit(12),
     ]);
 
   const links = (linksResult.data ?? []) as ModelLinkRow[];
@@ -250,6 +268,36 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   ];
 
   const hasAnyLinkedRecords = linkedRecordSections.some((section) => section.count > 0);
+  const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
+  const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
+  const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as Array<{
+    id: string;
+    status: string;
+    run_title: string;
+    scenario_entry_id: string | null;
+    source_analysis_run_id: string | null;
+    result_summary_json: Record<string, unknown> | null;
+    error_message: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    created_at: string | null;
+  }>);
+  const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
+    id: string;
+    label: string;
+    entry_type: string;
+    status: string;
+    assumptions_json: Record<string, unknown> | null;
+  }>).map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    entryType: entry.entry_type,
+    status: entry.status,
+    assumptionCount: Object.keys(entry.assumptions_json ?? {}).length,
+  }));
+  const defaultCorridorText = launchTemplate.corridorGeojson
+    ? JSON.stringify(launchTemplate.corridorGeojson, null, 2)
+    : "";
 
   return (
     <section className="module-page relative">
@@ -364,6 +412,16 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
           />
 
           <div className="space-y-6">
+            <ModelRunManager
+              modelId={model.id}
+              modelTitle={model.title}
+              defaultQueryText={launchTemplate.queryText ?? ""}
+              defaultCorridorText={defaultCorridorText}
+              scenarioEntries={scenarioEntryOptions}
+              modelRuns={modelRuns}
+              schemaPending={modelRunsSchemaPending}
+            />
+
             <article className="module-section-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
