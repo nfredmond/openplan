@@ -4,7 +4,8 @@
   "description": "Reusable production QA harness for OpenPlan evidence-backed smoke checks.",
   "main": "index.js",
   "scripts": {
-    "prod-auth-smoke": "node openplan-prod-auth-smoke.js"
+    "prod-auth-smoke": "node openplan-prod-auth-smoke.js",
+    "prod-engagement-smoke": "node openplan-prod-engagement-smoke.js"
   },
   "keywords": [],
   "author": "Bartholomew Hale",
