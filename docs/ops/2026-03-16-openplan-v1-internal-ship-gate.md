@@ -13,6 +13,10 @@ The technical/product evidence is materially stronger today. The remaining hold 
 - **governance** (no current-cycle Principal Planner sign-off on this exact packet), and
 - **commercial closure** (billing proof is strong, but still stops short of a real paid live canary / refreshed cancel-refund closure).
 
+Important same-day clarification:
+- the earlier multi-workspace billing-selection ambiguity exposed by the hold canary is **no longer an active hold basis**,
+- because the explicit chooser fix was later verified live on the public alias in `docs/ops/2026-03-16-openplan-billing-chooser-production-promotion-proof.md`.
+
 ---
 
 ## Why This Is Not A PASS Yet
@@ -42,11 +46,18 @@ What is **not** proven in this packet:
 
 That may or may not be acceptable for pilot release depending on Nathaniel’s risk tolerance, but it is not honest to ignore the distinction.
 
-### 3) There is still one operational billing caveat
-The live canary surfaced a real supportability caveat:
-- in multi-workspace contexts, `/billing` may render a different workspace than the one the operator expects.
+### 3) The remaining billing question is now sufficiency, not workspace targeting
+The live canary correctly surfaced a real supportability caveat earlier in the day:
+- in multi-workspace contexts, `/billing` could render a different workspace than the one the operator expected.
 
-The billing hold still proved correctly once the rendered workspace matched the held workspace, but the selection ambiguity should either be fixed or explicitly documented before an external confidence claim.
+That specific issue is now materially closed:
+- the billing-only chooser fix was implemented,
+- promoted to production,
+- and verified live on the public alias in `docs/ops/2026-03-16-openplan-billing-chooser-production-promotion-proof.md`.
+
+So the honest remaining billing question is narrower:
+- whether the current non-money-moving production proof is sufficient, or
+- whether a real paid live canary / refreshed cancel-refund closeout is still required before external PASS language.
 
 ---
 
@@ -67,6 +78,11 @@ The billing hold still proved correctly once the rendered workspace matched the 
 - provisioning cleanup hardening: `docs/ops/2026-03-16-v1-provisioning-hardening.md`
 - planning save rollback hardening: `openplan/docs/ops/2026-03-16-planning-save-rollback-hardening.md`
 - billing identity-review hardening: `docs/ops/2026-03-16-billing-identity-review-hardening.md`
+
+### Billing workspace chooser / targeting
+**PASS**
+- code + review handoff: `docs/ops/2026-03-16-openplan-billing-workspace-selection-elena-handoff.md`
+- live production promotion proof: `docs/ops/2026-03-16-openplan-billing-chooser-production-promotion-proof.md`
 
 ### Billing identity-review hold branch
 **PARTIAL PASS**
@@ -99,17 +115,12 @@ Meaning:
 1. **Principal Planner review against this packet**  
    Elena reviews the current proof packet and issues a fresh PASS/HOLD for the real 2026-03-16 v1 bundle.
 
-2. **Commercial proof decision**  
-   Nathaniel decides one of two honest paths:
+2. **Commercial sufficiency decision**  
+   Nathaniel and Elena explicitly decide one of two honest paths:
    - accept current billing proof as sufficient for pilot/pre-close, or
    - require a supervised paid canary and refreshed cancel/refund note before external PASS.
 
-3. **Billing workspace-selection disposition**  
-   Either:
-   - fix the multi-workspace billing selection ambiguity, or
-   - document it explicitly as a known operational caveat with support instructions.
-
-4. **Final dated gate memo**  
+3. **Final dated gate memo**  
    After the above, issue the final current-cycle PASS/HOLD artifact so old phase approvals are not mistaken for this bundle.
 
 ---
