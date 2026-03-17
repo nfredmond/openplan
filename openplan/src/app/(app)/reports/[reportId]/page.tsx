@@ -20,6 +20,7 @@ import {
   reportStatusTone,
   titleize,
 } from "@/lib/reports/catalog";
+import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 
 type RouteParams = {
   params: Promise<{ reportId: string }>;
@@ -37,6 +38,13 @@ type LinkedRunRow = {
   title: string;
   summary_text: string | null;
   created_at: string;
+};
+
+type EngagementCampaignLinkRow = {
+  id: string;
+  title: string;
+  status: string;
+  updated_at: string;
 };
 
 function asHtmlContent(
@@ -131,7 +139,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       .maybeSingle(),
     supabase
       .from("report_sections")
-      .select("id, section_key, title, enabled, sort_order")
+      .select("id, section_key, title, enabled, sort_order, config_json")
       .eq("report_id", report.id)
       .order("sort_order", { ascending: true }),
     supabase
@@ -154,6 +162,17 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         .in("id", runIds)
     : { data: [], error: null };
 
+  const sectionList = sections ?? [];
+  const engagementCampaignId = extractEngagementCampaignId(sectionList);
+  const engagementCampaignResult = engagementCampaignId
+    ? await supabase
+        .from("engagement_campaigns")
+        .select("id, title, status, updated_at")
+        .eq("workspace_id", report.workspace_id)
+        .eq("id", engagementCampaignId)
+        .maybeSingle()
+    : { data: null, error: null };
+
   const runMap = new Map(
     (runsResult.data ?? []).map((run) => [run.id, run])
   );
@@ -165,7 +184,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
   const runAudit = asRunAudit(latestArtifact?.metadata_json);
   const sourceContext = asSourceContext(latestArtifact?.metadata_json);
-  const sectionList = sections ?? [];
+  const engagementCampaign =
+    (engagementCampaignResult.data as EngagementCampaignLinkRow | null) ?? null;
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
@@ -486,16 +506,16 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 ))
               )}
             </div>
-            {sourceContext ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {sourceContext || engagementCampaign ? (
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Linked evidence
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
-                    {String(sourceContext.linkedRunCount ?? runs.length)} runs,{" "}
-                    {String(sourceContext.deliverableCount ?? 0)} deliverables,{" "}
-                    {String(sourceContext.decisionCount ?? 0)} decisions
+                    {String(sourceContext?.linkedRunCount ?? runs.length)} runs,{" "}
+                    {String(sourceContext?.deliverableCount ?? 0)} deliverables,{" "}
+                    {String(sourceContext?.decisionCount ?? 0)} decisions
                   </p>
                 </div>
                 <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
@@ -504,12 +524,25 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
                     {formatDateTime(
-                      typeof sourceContext.projectUpdatedAt === "string"
+                      typeof sourceContext?.projectUpdatedAt === "string"
                         ? sourceContext.projectUpdatedAt
                         : project?.updated_at ?? null
                     )}
                   </p>
                 </div>
+                {engagementCampaign ? (
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Engagement source
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {engagementCampaign.title}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {titleize(engagementCampaign.status)} · {String(sourceContext?.engagementReadyForHandoffCount ?? 0)} ready for handoff · {String(sourceContext?.engagementItemCount ?? 0)} items
+                    </p>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </article>
@@ -537,6 +570,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 >
                   <FileOutput className="h-4 w-4" />
                   Open project
+                </Link>
+              ) : null}
+              {engagementCampaign ? (
+                <Link
+                  href={`/engagement/${engagementCampaign.id}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                >
+                  <Link2 className="h-4 w-4" />
+                  Open engagement campaign
                 </Link>
               ) : null}
               <Link
