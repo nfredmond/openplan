@@ -16,7 +16,7 @@ The strongest honest claim now supported by evidence is:
 
 The strongest remaining honest caveat is also clear:
 
-- this packet is strong enough for **internal pre-close review**, but **not yet honest to mark externally shipped/final** because the current-cycle **Principal Planner QA approval is missing** and the billing/commercial lane still stops short of a supervised real paid live canary on the happy path.
+- this packet is strong enough for **internal pre-close review**, but **not yet honest to mark externally shipped/final** because the current-cycle principal artifact is still **HOLD / unsigned pending Elena review** and the billing/commercial lane still stops short of a supervised real paid live canary on the happy path.
 
 ---
 
@@ -91,25 +91,26 @@ Those are real launch-safety improvements, not cosmetic polish.
 
 ## What Is Not Yet Proven Enough To Call Final External Ship
 
-1. **No refreshed Principal Planner QA approval exists for this exact 2026-03-16 v1 packet.**  
-   The existing `docs/ops/PRINCIPAL_QA_APPROVAL.md` is from 2026-03-05 and a different branch/scope.
+1. **The current-cycle Principal Planner artifact is now posted, but it remains intentionally HOLD / unsigned for this exact 2026-03-16 packet.**
+   See `docs/ops/PRINCIPAL_QA_APPROVAL.md`. It now truthfully represents the current review cycle and explicitly states that Elena has not yet completed same-cycle adjudication. The older 2026-03-05 PASS is preserved only as historical context in `docs/ops/2026-03-05-principal-qa-approval-ship-phase1-core.md`.
 
-2. **No supervised real paid live happy-path billing canary was completed in this cycle.**  
-   The billing hold branch is production-proven, and the cancel/refund operational lane is now documented and narrowed, but a live Stripe-generated paid completion event from an intentionally supervised checkout is still outside this packet.
+2. **No supervised real paid live happy-path billing canary was completed in this cycle.**
+   The billing hold branch is production-proven, the cancel/refund operational lane is documented and narrowed, and the canary-prep lane is now operationally ready via `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md`; but a live Stripe-generated paid completion event from an intentionally supervised checkout is still outside this packet.
 
-3. **The remaining billing question is sufficiency, not workspace targeting.**  
+3. **The remaining billing question is sufficiency, not workspace targeting.**
    The earlier multi-workspace ambiguity exposed by the first hold-canary pass was later closed by the production billing chooser fix in `docs/ops/2026-03-16-openplan-billing-chooser-production-promotion-proof.md`. The honest remaining decision is whether current non-money-moving proof is enough, or whether to run the prepared supervised paid canary package.
 
-4. **This packet is strongest on the planning-domain v1 spine, not every historical OpenPlan claim.**  
+4. **This packet is strongest on the planning-domain v1 spine, not every historical OpenPlan claim.**
    It should be used as the current v1 pre-close bundle, not as a blanket statement that every prior scope item is freshly re-certified today.
 
 ---
 
 ## Recommended Use Of This Packet
-Use this packet for three immediate decisions:
-1. **Elena review:** Principal Planner re-adjudication against the current 2026-03-16 bundle.
-2. **Nathaniel commercial decision:** accept the current billing proof posture as sufficient for pilot readiness, or require the prepared supervised paid canary package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` before external release language.
-3. **Final internal gate:** issue a dated PASS/HOLD based on this exact packet, not on older phase artifacts.
+Use this packet for four immediate decisions:
+1. **Elena review:** finalize `docs/ops/PRINCIPAL_QA_APPROVAL.md` against the current 2026-03-16 bundle.
+2. **COO secondary verification:** use `docs/ops/2026-03-16-openplan-v1-coo-verification.md` as the current-cycle completeness and truth-state memo.
+3. **Nathaniel commercial decision:** accept the current billing proof posture as sufficient for pilot readiness, or require the prepared supervised paid canary package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` before external release language.
+4. **Final internal gate:** issue a dated PASS/HOLD based on this exact packet, not on older phase artifacts.
 
 ## Bottom Line
 OpenPlan now has a substantially tighter v1 proof posture than it did this morning.

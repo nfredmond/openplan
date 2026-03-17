@@ -10,7 +10,7 @@
 OpenPlan now has enough current evidence to justify a serious internal pre-close packet, but it is **not yet honest to mark fully shipped externally**.
 
 The technical/product evidence is materially stronger today. The remaining hold is mainly about:
-- **governance** (no current-cycle Principal Planner sign-off on this exact packet), and
+- **governance** (the current-cycle Principal Planner artifact is now posted, but it remains HOLD / unsigned on this exact packet), and
 - **commercial closure** (billing proof is strong, but still stops short of a supervised real paid live happy-path canary).
 
 Important same-day clarification:
@@ -21,15 +21,16 @@ Important same-day clarification:
 
 ## Why This Is Not A PASS Yet
 
-### 1) Principal Planner approval for the current v1 packet is still missing
+### 1) Principal Planner approval for the current v1 packet is not yet signed
 The standing governance rule is explicit: no external-ready claim without Principal Planner review.
 
 Current state:
-- existing file: `docs/ops/PRINCIPAL_QA_APPROVAL.md`
-- scope/date: **2026-03-05**, branch `ship/phase1-core`
-- problem: that approval is real, but it is **not** a fresh review of the 2026-03-16 OpenPlan v1 packet now in front of us.
+- current canonical file: `docs/ops/PRINCIPAL_QA_APPROVAL.md`
+- current status: **HOLD — review pending, unsigned**
+- meaning: the file now truthfully matches the 2026-03-16 OpenPlan v1 packet, but Elena has **not yet** completed same-cycle adjudication.
+- historical prior-cycle PASS: `docs/ops/2026-03-05-principal-qa-approval-ship-phase1-core.md`
 
-Therefore, external PASS language would overstate reality.
+Therefore, external PASS language would still overstate reality.
 
 ### 2) Billing/commercial proof is strong but still not final-final
 What is proven:
@@ -45,6 +46,7 @@ What is **not** proven in this packet:
 
 What **is** now narrowed in this packet:
 - cancel/refund operational posture is documented and tightened in `docs/ops/2026-03-16-openplan-cancel-refund-operational-closeout.md`,
+- supervised canary prep is operationally ready in `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md`,
 - but that is still not the same thing as a fresh paid live happy-path completion.
 
 That may or may not be acceptable for pilot release depending on Nathaniel’s risk tolerance, but it is not honest to ignore the distinction.
@@ -105,6 +107,7 @@ So the honest remaining billing question is narrower:
 Meaning:
 - Nathaniel now has a coherent packet to review,
 - Elena can do a current-cycle adjudication on real evidence instead of scattered notes,
+- `docs/ops/PRINCIPAL_QA_APPROVAL.md` and `docs/ops/2026-03-16-openplan-v1-coo-verification.md` now give the governance lane a current-cycle decision surface,
 - the remaining gaps are narrow and explicit rather than vague.
 
 ### External/public release interpretation
@@ -120,15 +123,18 @@ Meaning:
 ## Exact Actions Required To Clear This Hold
 
 1. **Principal Planner review against this packet**  
-   Elena reviews the current proof packet and issues a fresh PASS/HOLD for the real 2026-03-16 v1 bundle.
+   Elena reviews the current proof packet and finalizes `docs/ops/PRINCIPAL_QA_APPROVAL.md` with an explicit same-cycle PASS or HOLD for the real 2026-03-16 v1 bundle.
 
 2. **Commercial sufficiency decision**  
    Nathaniel and Elena explicitly decide one of two honest paths:
    - accept current billing proof as sufficient for pilot/pre-close, or
    - require the prepared supervised paid canary package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` before external PASS.
 
-3. **Final dated gate memo**  
-   After the above, issue the final current-cycle PASS/HOLD artifact so old phase approvals are not mistaken for this bundle.
+3. **If the canary path is chosen, execute the already-prepared run**
+   Use `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md` as the live-preflight closeout proving the canary lane is operationally ready rather than speculative.
+
+4. **Final dated gate memo**
+   After the above, rely on the finalized current-cycle PASS/HOLD artifact so old phase approvals are not mistaken for this bundle.
 
 ---
 

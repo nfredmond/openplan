@@ -6,7 +6,7 @@
 
 ## Executive Summary
 This was the highest-leverage compact slice because OpenPlan’s remaining honest v1 HOLD basis is now narrow:
-- **governance** — current-cycle Principal Planner sign-off is still missing, and
+- **governance** — the current-cycle Principal Planner artifact is posted but still HOLD / unsigned pending Elena review, and
 - **commercial sufficiency** — current production billing proof is strong, but it still stops short of a real paid live happy-path canary.
 
 I cannot honestly clear governance inside this lane, and I should not casually create a real recurring charge without explicit supervised approval. So the right next move was to make the **shortest safe path to that decision executable**:

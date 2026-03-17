@@ -78,7 +78,7 @@ The answer today is:
 
 ### Launch readiness artifacts
 - The current proof packet and internal ship-gate memo now exist.
-- The last major artifact missing is fresh Principal Planner adjudication against this exact packet.
+- The canonical current-cycle principal artifact now exists as `docs/ops/PRINCIPAL_QA_APPROVAL.md`, but it remains HOLD / unsigned pending fresh Principal Planner adjudication against this exact packet.
 
 ---
 

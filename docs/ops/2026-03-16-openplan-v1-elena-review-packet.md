@@ -30,7 +30,7 @@ The strongest honest current statement is:
 6. **Trust-critical hardening has shipped** for provisioning cleanup, planning save rollback, and billing identity review.
 
 The strongest honest remaining caveats are:
-- **There is no fresh current-cycle Principal Planner approval yet for this exact 2026-03-16 packet.**
+- **The current-cycle principal artifact now exists, but it is intentionally HOLD / unsigned pending your review of this exact 2026-03-16 packet.**
 - **No real paid live checkout was completed in this cycle.** Billing proof is strong, but it remains intentionally non-money-moving.
 - **Therefore the official overall v1 disposition remains HOLD until you adjudicate the packet and Nathaniel decides whether current billing proof is commercially sufficient.**
 
@@ -54,8 +54,16 @@ You do **not** need to keep treating workspace-targeting ambiguity as an unresol
 
 ---
 
+## Decision Surface You Are Being Asked To Finalize
+Before or alongside the evidence read, use these two governance artifacts as the current decision surface:
+
+1. `docs/ops/PRINCIPAL_QA_APPROVAL.md`
+   - canonical current-cycle HOLD artifact to finalize after review
+2. `docs/ops/2026-03-16-openplan-v1-coo-verification.md`
+   - COO completeness/truth-state verification memo for the same packet
+
 ## Minimum Read Set For Principal Review
-If you read only six documents, read these in this order:
+If you read only six evidence documents, read these in this order:
 
 1. `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md`
    - current COO gate framing and remaining HOLD basis
@@ -170,7 +178,7 @@ If you want visual/log spot checks instead of reading every narrative note, thes
 ---
 
 ## Explicit Principal Planner Review Questions
-Please answer these directly in your approval memo.
+Please answer these directly in your approval memo and use them to finalize `docs/ops/PRINCIPAL_QA_APPROVAL.md`.
 
 1. **Does the current 2026-03-16 evidence bundle prove that OpenPlan v1 is technically review-ready on live production?**
    - Yes / No

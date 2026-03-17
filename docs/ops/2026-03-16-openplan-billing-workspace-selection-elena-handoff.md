@@ -49,7 +49,7 @@ Primary packet documents for this review:
 - Provisioning cleanup, planning save rollback, and billing identity-review hardening are implemented and locally validated.
 
 ### Still-true packet caveats
-- No current-cycle Principal Planner approval exists yet for this exact 2026-03-16 packet.
+- The current-cycle principal artifact now exists, but it remains HOLD / unsigned pending Elena review of this exact 2026-03-16 packet.
 - No real paid live canary was completed; the live billing hold proof remains strong but intentionally non-money-moving.
 - Prior to this lane, multi-workspace billing selection remained ambiguous enough to muddy operator confidence.
 
@@ -165,7 +165,7 @@ Recommended follow-through after deploy:
 ## Recommended status: HOLD
 
 ### Basis for HOLD
-1. **Governance hold remains real** — no fresh Principal Planner approval exists yet for this exact 2026-03-16 v1 packet.
+1. **Governance hold remains real** — the current-cycle principal artifact is now posted, but it remains HOLD / unsigned for this exact 2026-03-16 v1 packet until Elena adjudicates it.
 2. **Commercial caveat remains real** — no real paid live canary / refreshed cancel-refund closeout in this cycle.
 3. **But the specific multi-workspace billing ambiguity is now materially reduced** — it is fixed in code and no longer needs to remain an undefined or fuzzy blocker.
 
