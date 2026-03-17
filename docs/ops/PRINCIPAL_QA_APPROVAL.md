@@ -4,7 +4,9 @@
 **Reviewer:** Elena Marquez (Principal Planner)  
 **Decision cycle:** OpenPlan v1 same-cycle adjudication after production proof consolidation, billing chooser promotion proof, supervised canary-prep closeout, and 2026-03-17 engagement/report follow-through  
 **Status:** **PASS — internal pre-close / pilot-readiness only**  
-**External commercial release posture:** **HOLD pending supervised paid canary or explicit written waiver of that requirement for external PASS**
+**External commercial release posture at time of signature:** **HOLD pending supervised paid canary or explicit written waiver of that requirement for external PASS**
+
+**Later same-day addendum:** the report traceability backlink slice was subsequently deployed and re-smoked on production (`docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md`), and Nathaniel later issued an explicit current-cycle payment-proof waiver (`docs/ops/2026-03-17-openplan-commercial-proof-waiver.md`). Use `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md` for the canonical current truth-state after those updates.
 
 ---
 

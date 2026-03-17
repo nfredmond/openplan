@@ -58,9 +58,10 @@ What remains true even after the CEO waiver:
    - Do not say or imply that a fresh same-cycle paid happy path was re-proven.
    - Do not collapse historical live payment evidence plus current non-money-moving proof into a stronger claim than the record supports.
 
-3. **The 2026-03-17 report traceability backlink slice is not yet part of live-production proof.**
-   - It is locally validated.
-   - If it matters for external scope, it should be deployed and re-smoked before being cited as production-ready evidence.
+3. **The 2026-03-17 report traceability backlink slice has now been added to live-production proof.**
+   - It was originally only locally validated.
+   - It has since been deployed to the public alias and re-smoked successfully.
+   - Canonical proof: `docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md`.
 
 ---
 
@@ -98,6 +99,10 @@ What remains true even after the CEO waiver:
 **PASS FOR INTERNAL PILOT / PRE-CLOSE SCOPE**
 - production engagement report handoff smoke: `docs/ops/2026-03-17-openplan-production-engagement-report-handoff-smoke.md`
 
+### Report traceability backlink production proof
+**PASS**
+- production report traceability smoke: `docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md`
+
 ---
 
 ## Gate Interpretation
@@ -115,7 +120,7 @@ Meaning:
 Meaning:
 - do **not** describe OpenPlan as having freshly re-proven the paid happy path in this cycle,
 - do **not** collapse “historical live payment evidence + current production billing proof + CEO waiver” into a stronger claim than the record supports,
-- do **not** cite the report traceability backlink slice as live-production proof until it is deployed and re-smoked.
+- do **not** overstate the paid happy-path billing lane, even though the report traceability backlink slice is now live-production proven.
 
 ---
 
@@ -123,8 +128,8 @@ Meaning:
 1. **Record the CEO waiver as the governing commercial-proof decision for this cycle**  
    Reference `docs/ops/2026-03-17-openplan-commercial-proof-waiver.md` instead of continuing to treat the fresh paid canary as an active blocker.
 
-2. **If needed for external scope, deploy and re-smoke the report traceability backlink slice**  
-   Do not rely on local-only validation if that slice is part of the external-ready story.
+2. **Use the new production traceability proof when describing report-to-engagement reversibility**  
+   Reference `docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md` instead of the earlier local-only slice note.
 
 3. **If a stronger future commercial proof packet becomes necessary, re-open the paid canary lane intentionally**  
    Use the prepared package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` and the preflight in `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md` when budget and need justify it.

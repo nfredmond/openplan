@@ -9,6 +9,13 @@
 
 This memo closes the governance hold for a **limited internal scope**. It does **not** authorize blanket external-ready language or imply that the commercial happy path has been fully proven with a real paid live transaction.
 
+## Later same-day addendum
+After this principal decision was recorded:
+1. the `2026-03-17` report traceability backlink slice was promoted to the public alias and re-smoked successfully on production (`docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md`);
+2. Nathaniel explicitly waived the fresh supervised paid-canary requirement for the current cycle (`docs/ops/2026-03-17-openplan-commercial-proof-waiver.md`).
+
+Use `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md` as the canonical current truth-state after those later same-day updates.
+
 ## Exact approved scope
 Approved now:
 1. Current live-production planning-domain create/list/detail continuity.

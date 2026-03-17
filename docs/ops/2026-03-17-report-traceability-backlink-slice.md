@@ -1,7 +1,7 @@
 # OpenPlan V1 Slice — Report Engagement Traceability Backlink
 
 **Date:** 2026-03-17  
-**Status:** shipped locally  
+**Status:** shipped locally, then promoted and production-proven on `openplan-zeta.vercel.app`  
 **Chosen lane:** planning/report orchestration follow-through
 
 ## What shipped
@@ -17,6 +17,15 @@ The first handoff slice proved campaign → report generation. This follow-on sl
 
 ## Validation
 
+Local validation before promotion:
 - `pnpm test`
 - `pnpm lint`
 - `pnpm build`
+
+Production validation after alias refresh:
+- live production smoke recorded at `docs/ops/2026-03-17-openplan-production-report-traceability-smoke.md`
+- public alias updated to current deployment before re-smoke
+- production proof confirms:
+  - report detail renders the engagement source provenance card,
+  - report detail renders `Open engagement campaign`, and
+  - the backlink returns to the originating engagement detail surface on production.
