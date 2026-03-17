@@ -1,7 +1,7 @@
 # OpenPlan V1 Internal Ship Gate — 2026-03-16
 
 **Owner / Reviewer:** Bartholomew Hale (COO)  
-**Current status after 2026-03-17 principal adjudication:** **PASS — internal pre-close / pilot-readiness approved; HOLD — broader external/commercial ship**  
+**Current status after 2026-03-17 principal adjudication + CEO waiver:** **PASS — internal pre-close / pilot-readiness approved; fresh paid-canary requirement waived for the current cycle; external claims must remain evidence-accurate**  
 **Decision type:** current truth-state gate for OpenPlan v1
 
 ## Executive Decision
@@ -14,11 +14,15 @@ This file is now updated to reflect the narrowed truth-state after same-cycle pr
 Important current-state clarification:
 - the earlier governance hold is now closed for a limited internal scope,
 - the earlier multi-workspace billing-selection ambiguity is no longer an active hold basis,
-- the remaining hold is now **commercial/external**, not packet-assembly or principal-signoff ambiguity.
+- the previously remaining supervised paid canary requirement has now been **explicitly waived by Nathaniel in writing for this cycle** due to budget/cash constraints and the existence of prior live payment evidence,
+- the current caution is no longer "run the canary before moving"; it is "do not overclaim what was and was not freshly proven this cycle."
 
 Principal decision reference:
 - `docs/ops/PRINCIPAL_QA_APPROVAL.md`
 - `docs/ops/2026-03-17-openplan-principal-gate-decision.md`
+
+CEO waiver reference:
+- `docs/ops/2026-03-17-openplan-commercial-proof-waiver.md`
 
 ---
 
@@ -39,19 +43,20 @@ This means the packet is no longer honestly blocked on governance for that limit
 ---
 
 ## What Is Still Not Approved
-### Broader external/commercial ship posture
-**HOLD**
+### Blanket or overstated external/commercial claims
+**CAUTION / NOT APPROVED**
 
-Why this remains a hold:
+What remains true even after the CEO waiver:
 1. **No supervised real paid happy-path checkout has been completed in this cycle.**
    - The billing hold branch is production-proven.
    - The billing chooser fix is production-proven.
    - The cancel/refund lane is operationally documented and historically re-verified.
-   - But none of that equals a same-cycle real paid live completion event on the happy path.
+   - Nathaniel has now explicitly waived the requirement to re-run a fresh paid canary in this cycle.
+   - Therefore the correct posture is not "unproven chaos"; it is "known evidence boundary accepted by executive waiver."
 
-2. **External-ready language would still overstate the commercial proof boundary.**
-   - Internal pilot/pre-close approval is now real.
-   - Blanket external commercial release approval is not.
+2. **External-ready language must still avoid overstatement.**
+   - Do not say or imply that a fresh same-cycle paid happy path was re-proven.
+   - Do not collapse historical live payment evidence plus current non-money-moving proof into a stronger claim than the record supports.
 
 3. **The 2026-03-17 report traceability backlink slice is not yet part of live-production proof.**
    - It is locally validated.
@@ -105,27 +110,24 @@ Meaning:
 - the remaining caveats are explicit and commercial rather than diffuse.
 
 ### External/public release interpretation
-**HOLD.**
+**Proceed only with evidence-accurate language.**
 
 Meaning:
-- do **not** describe OpenPlan as fully shipped/final externally,
-- do **not** collapse “production branch proven short of payment” into “commercial lane fully closed,”
+- do **not** describe OpenPlan as having freshly re-proven the paid happy path in this cycle,
+- do **not** collapse “historical live payment evidence + current production billing proof + CEO waiver” into a stronger claim than the record supports,
 - do **not** cite the report traceability backlink slice as live-production proof until it is deployed and re-smoked.
 
 ---
 
-## Exact Actions Required To Clear The Remaining Hold
-1. **Run one supervised paid happy-path canary**  
-   Execute the prepared package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` using the preflight in `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md`.
+## Exact Actions Required To Maintain Honest Forward Motion
+1. **Record the CEO waiver as the governing commercial-proof decision for this cycle**  
+   Reference `docs/ops/2026-03-17-openplan-commercial-proof-waiver.md` instead of continuing to treat the fresh paid canary as an active blocker.
 
-2. **Reconcile the commercial result cleanly**  
-   Capture the paid checkout session, Stripe events, webhook receipts, workspace billing state, and any cancel/refund follow-through required by the chosen path.
-
-3. **If needed for external scope, deploy and re-smoke the report traceability backlink slice**  
+2. **If needed for external scope, deploy and re-smoke the report traceability backlink slice**  
    Do not rely on local-only validation if that slice is part of the external-ready story.
 
-4. **Refresh the gate memo after the canary**  
-   Use the principal decision memo as the governing baseline so the next update changes only the remaining commercial hold basis.
+3. **If a stronger future commercial proof packet becomes necessary, re-open the paid canary lane intentionally**  
+   Use the prepared package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` and the preflight in `docs/ops/2026-03-16-openplan-supervised-paid-canary-preflight-closeout.md` when budget and need justify it.
 
 ---
 
