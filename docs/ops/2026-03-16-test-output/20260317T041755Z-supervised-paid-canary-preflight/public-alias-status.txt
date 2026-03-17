@@ -1,0 +1,3 @@
+status=307
+final_url=https://openplan-zeta.vercel.app/billing
+redirect_url=https://openplan-zeta.vercel.app/sign-in?redirect=%2Fbilling

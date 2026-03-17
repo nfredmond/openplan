@@ -83,24 +83,42 @@ Prove the **happy-path commercial activation** on current production with one re
    - **Path A:** keep subscription live after proof, or
    - **Path B:** immediately cancel and optionally refund after proof.
 
-## Recommended Preflight Commands
-### Pull current production env snapshot
+## Recommended Preflight Command
+### One-command prep wrapper (preferred)
+```bash
+cd /home/nathaniel/.openclaw/workspace/openplan/openplan
+./scripts/openplan-supervised-paid-canary-preflight.sh \
+  --workspace-id <workspace-uuid> \
+  --billing-email <approved-operator-email>
+```
+
+What this now does in one pass:
+- pulls/loads the current production env snapshot,
+- confirms the public alias is responding,
+- confirms the live Starter price posture,
+- confirms the production Stripe webhook endpoint + required events,
+- confirms the target workspace exists and captures its current production snapshot,
+- captures a monitor snapshot into a dated evidence folder,
+- emits the exact `/billing?workspaceId=...` route and live monitor command to use during the supervised session.
+
+### Manual equivalents (if the wrapper is unavailable)
+#### Pull current production env snapshot
 ```bash
 vercel env pull /tmp/openplan.vercel.env --environment=production -y
 ```
 
-### Confirm live price posture
+#### Confirm live price posture
 ```bash
 source /tmp/openplan.vercel.env
 curl -sS https://api.stripe.com/v1/prices/$OPENPLAN_STRIPE_PRICE_ID_STARTER -u "$OPENPLAN_STRIPE_SECRET_KEY:" | jq '{id, livemode, active, currency, unit_amount, type, recurring}'
 ```
 
-### Confirm production webhook endpoint
+#### Confirm production webhook endpoint
 ```bash
 curl -sS https://api.stripe.com/v1/webhook_endpoints -u "$OPENPLAN_STRIPE_SECRET_KEY:" | jq '[.data[] | {id, status, url, enabled_events}]'
 ```
 
-### Start the evidence monitor before checkout completion
+#### Start the evidence monitor before checkout completion
 ```bash
 cd /home/nathaniel/.openclaw/workspace/openplan/openplan
 ./scripts/openplan-starter-canary-monitor.sh \

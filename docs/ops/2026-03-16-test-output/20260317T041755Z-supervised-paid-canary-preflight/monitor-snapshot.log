@@ -1,0 +1,14 @@
+========================================
+OpenPlan Starter Canary Monitor
+Time: 2026-03-17 04:17:13 UTC
+Since: last 180 minutes (epoch >= 1773710233)
+Workspace filter: 819138b9-37dd-4643-8825-419742d6b407
+Email filter: <none>
+Env file: /tmp/openplan.vercel.env
+========================================
+\n[Stripe events]
+  (no matching Stripe events found yet)
+\n[Supabase billing evidence]
+  workspace 819138b9-37dd-4643-8825-419742d6b407 name=Proof Beta Post Promotion 2026-03-17T01-01-22-830Z sub_status=checkout_pending sub_plan=starter stripe_sub=n/a billing_updated=2026-03-17T01:01:45.325+00:00
+  billing_events: no matching rows
+  webhook_receipts: no matching rows
