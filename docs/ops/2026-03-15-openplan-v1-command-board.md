@@ -28,6 +28,7 @@ The answer today is:
 - Internal ship gate: `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md`
 - Current status memo: `docs/ops/2026-03-17-openplan-v1-status-memo.md`
 - QA cleanup note: `docs/ops/2026-03-17-openplan-production-qa-cleanup.md`
+- Client-safe/public-safe positioning note: `docs/ops/2026-03-17-openplan-client-safe-positioning-note.md`
 
 ---
 
