@@ -16,6 +16,7 @@ import Link from "next/link";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { createClient } from "@/lib/supabase/server";
+import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
 type ProjectRow = {
   id: string;
@@ -150,10 +151,10 @@ export default async function ProjectDetailPage({
 
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
-    .select("id, gate_id, decision, rationale, decided_at")
+    .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
     .eq("workspace_id", project.workspace_id)
     .order("decided_at", { ascending: false })
-    .limit(5);
+    .limit(200);
 
   const { data: deliverables } = await supabase
     .from("project_deliverables")
@@ -260,6 +261,14 @@ export default async function ProjectDetailPage({
     .slice(0, 6);
 
   const dataHubMigrationPending = looksLikePendingSchema(datasetLinksResult.error?.message);
+
+  const stageGateSummary = buildProjectStageGateSummary(recentGateDecisions as Array<{
+    gate_id: string;
+    decision: string;
+    rationale: string | null;
+    decided_at: string | null;
+    missing_artifacts?: string[] | null;
+  }>);
 
   const timelineItems: TimelineItem[] = [
     ...(deliverables ?? []).map((item) => ({
@@ -426,43 +435,143 @@ export default async function ProjectDetailPage({
               </span>
               <div className="module-section-heading">
                 <p className="module-section-label">Governance</p>
-                <h2 className="module-section-title">Stage-gate decisions</h2>
+                <h2 className="module-section-title">Stage-gate compliance cockpit</h2>
                 <p className="module-section-description">
-                  Governance remains prominent, but no longer visually competes with the page intro or dense record lanes.
+                  This is the project-delivery control layer: where LAPM, CEQA/VMT, outreach, and programming readiness stop being abstract and start becoming an explicit workflow.
                 </p>
               </div>
             </div>
           </div>
 
-          {!recentGateDecisions || recentGateDecisions.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">
-              No stage-gate decisions recorded yet for this project workspace.
+          <div className="module-summary-grid cols-4 mt-5">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Pass gates</p>
+              <p className="module-summary-value">{stageGateSummary.passCount}</p>
+              <p className="module-summary-detail">Recorded passes against the active California gate scaffold.</p>
             </div>
-          ) : (
-            <div className="mt-5 module-record-list">
-              {recentGateDecisions.map((decision) => (
-                <div key={decision.id} className="module-record-row">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone={toneForDecision(decision.decision)}>{decision.decision}</StatusBadge>
-                      <StatusBadge tone="neutral">{decision.gate_id}</StatusBadge>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <h3 className="module-record-title">{decision.gate_id}</h3>
-                        <p className="module-record-stamp">{fmtDateTime(decision.decided_at)}</p>
-                      </div>
-                      <p className="module-record-summary">{decision.rationale}</p>
-                    </div>
-                  </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Hold gates</p>
+              <p className="module-summary-value">{stageGateSummary.holdCount}</p>
+              <p className="module-summary-detail">Gates currently blocked by missing evidence or unresolved rationale.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Not started</p>
+              <p className="module-summary-value">{stageGateSummary.notStartedCount}</p>
+              <p className="module-summary-detail">Template-defined gates with no recorded decision yet.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Next gate</p>
+              <p className="module-summary-value text-base leading-tight">
+                {stageGateSummary.nextGate ? `G${String(stageGateSummary.nextGate.sequence).padStart(2, "0")}` : "None"}
+              </p>
+              <p className="module-summary-detail">
+                {stageGateSummary.nextGate?.name ?? "All gates currently pass."}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 mt-5">
+            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="flex items-center gap-3">
+                <FileClock className="h-5 w-5 text-amber-500" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Blocking condition</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {stageGateSummary.blockedGate?.name ?? "No gate currently on formal hold"}
+                  </h3>
                 </div>
-              ))}
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {stageGateSummary.blockedGate?.rationale ?? "Record the first HOLD decision to surface the exact compliance blockage here."}
+              </p>
+              {stageGateSummary.blockedGate?.missingArtifacts.length ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {stageGateSummary.blockedGate.missingArtifacts.map((artifact) => (
+                    <StatusBadge key={artifact} tone="warning">Missing {artifact}</StatusBadge>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          )}
+            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="flex items-center gap-3">
+                <Clock3 className="h-5 w-5 text-sky-500" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Readiness cue</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {stageGateSummary.nextGate ? `${stageGateSummary.nextGate.gateId} · ${stageGateSummary.nextGate.name}` : "Gate sequence complete"}
+                  </h3>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {stageGateSummary.nextGate
+                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. Build the evidence pack before expecting a PASS decision.`
+                  : "Every stage gate in the active template currently has a recorded PASS decision."}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 module-record-list">
+            {stageGateSummary.gates.map((gate) => (
+              <div key={gate.gateId} className="module-record-row">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={gate.workflowState === "pass" ? "success" : gate.workflowState === "hold" ? "warning" : "neutral"}>
+                      {gate.decisionLabel}
+                    </StatusBadge>
+                    <StatusBadge tone="neutral">{gate.gateId}</StatusBadge>
+                    <StatusBadge tone="info">{gate.requiredEvidenceCount} required evidence</StatusBadge>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <h3 className="module-record-title">{gate.sequence}. {gate.name}</h3>
+                      <p className="module-record-stamp">{gate.decidedAt ? fmtDateTime(gate.decidedAt) : "No decision yet"}</p>
+                    </div>
+                    <p className="module-record-summary">{gate.rationale}</p>
+                  </div>
+
+                  <div className="module-record-meta">
+                    {gate.lapmMappings.slice(0, 2).map((item) => (
+                      <span key={`${gate.gateId}-lapm-${item}`} className="module-record-chip">LAPM {item}</span>
+                    ))}
+                    {gate.ceqaVmtMappings.slice(0, 2).map((item) => (
+                      <span key={`${gate.gateId}-ceqa-${item}`} className="module-record-chip">CEQA/VMT {item}</span>
+                    ))}
+                    {gate.outreachMappings.slice(0, 1).map((item) => (
+                      <span key={`${gate.gateId}-outreach-${item}`} className="module-record-chip">Outreach {item}</span>
+                    ))}
+                    {gate.stipRtipMappings.slice(0, 1).map((item) => (
+                      <span key={`${gate.gateId}-stip-${item}`} className="module-record-chip">Programming {item}</span>
+                    ))}
+                  </div>
+
+                  {gate.evidencePreview.length > 0 ? (
+                    <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                      <p className="font-medium text-foreground">Evidence preview</p>
+                      <ul className="list-disc space-y-1 pl-5">
+                        {gate.evidencePreview.map((evidence) => (
+                          <li key={evidence.evidence_id}>
+                            {evidence.title}
+                            {evidence.conditional_required_when ? ` (${evidence.conditional_required_when})` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  {gate.missingArtifacts.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {gate.missingArtifacts.map((artifact) => (
+                        <StatusBadge key={`${gate.gateId}-${artifact}`} tone="warning">Missing {artifact}</StatusBadge>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div className="module-note mt-5 text-sm">
-            Project-level records are now active below this layer. The next goal is to bind them into evidence packs,
-            reporting, and project lifecycle governance.
+            The project already had stage-gate data. This cockpit makes it actionable: explicit workflow state, next gate cue, blocked evidence, and compliance-domain mappings in one place.
           </div>
         </article>
       </div>
