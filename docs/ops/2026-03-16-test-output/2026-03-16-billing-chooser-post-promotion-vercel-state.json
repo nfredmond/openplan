@@ -1,0 +1,22 @@
+{
+  "productionAlias": "openplan-zeta.vercel.app",
+  "beforeStateEvidence": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-vercel-state.json",
+  "beforeProductionDeployment": "openplan-h62835emk-natford.vercel.app",
+  "readyPreviewDeployment": "openplan-k6vgpbyy4-natford.vercel.app",
+  "readyPreviewCommitSha": "09d2eaed5c0b365a77ca27bd0482315699ae64fc",
+  "readyPreviewCommitMessage": "fix: require explicit billing workspace selection",
+  "promote": {
+    "attemptedCommand": "vercel promote openplan-k6vgpbyy4-natford.vercel.app --yes",
+    "attemptedScope": "nat-ford-planning",
+    "attemptedError": "Deployment doesn't belong to current team nat-ford-planning",
+    "successfulCommand": "vercel promote openplan-k6vgpbyy4-natford.vercel.app --scope natford --yes",
+    "result": "Successfully created new deployment of openplan at https://vercel.com/natford/openplan/2iSpRZjanhTuXQhGwv4FH6H6a3ed",
+    "resultingProductionDeployment": "openplan-myhpkatuv-natford.vercel.app"
+  },
+  "afterState": {
+    "currentTopProductionDeployment": "openplan-myhpkatuv-natford.vercel.app",
+    "verificationBaseUrl": "https://openplan-zeta.vercel.app",
+    "liveProof": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-proof.json",
+    "commandLog": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-post-promotion-command.log"
+  }
+}

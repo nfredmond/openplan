@@ -1,0 +1,41 @@
+{
+  "productionAlias": "openplan-zeta.vercel.app",
+  "productionInspect": {
+    "id": "dpl_3cPfy9xJuNjXDow1Gg9p1Mr8qXvb",
+    "url": "openplan-h62835emk-natford.vercel.app",
+    "target": "production",
+    "readyState": "READY",
+    "createdAt": 1773695651536,
+    "createdAtIso": "2026-03-16T21:14:11.536Z",
+    "aliases": [
+      "openplan-zeta.vercel.app",
+      "openplan-natford.vercel.app",
+      "openplan-nfredmond-natford.vercel.app"
+    ],
+    "contextName": "natford"
+  },
+  "latestReadyDeployment": {
+    "url": "openplan-k6vgpbyy4-natford.vercel.app",
+    "target": null,
+    "state": "READY",
+    "createdAt": 1773706253036,
+    "createdAtIso": "2026-03-17T00:10:53.036Z",
+    "readyAt": 1773706320361,
+    "readyAtIso": "2026-03-17T00:12:00.361Z",
+    "commitSha": "09d2eaed5c0b365a77ca27bd0482315699ae64fc",
+    "commitMessage": "fix: require explicit billing workspace selection",
+    "branchAlias": "openplan-git-main-natford.vercel.app"
+  },
+  "fixDeployment": {
+    "url": "openplan-k6vgpbyy4-natford.vercel.app",
+    "target": null,
+    "state": "READY",
+    "createdAt": 1773706253036,
+    "createdAtIso": "2026-03-17T00:10:53.036Z",
+    "readyAt": 1773706320361,
+    "readyAtIso": "2026-03-17T00:12:00.361Z",
+    "commitSha": "09d2eaed5c0b365a77ca27bd0482315699ae64fc",
+    "commitMessage": "fix: require explicit billing workspace selection",
+    "branchAlias": "openplan-git-main-natford.vercel.app"
+  }
+}

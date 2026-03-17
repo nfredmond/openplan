@@ -1,0 +1,45 @@
+# OpenPlan billing chooser production promotion log — 2026-03-16
+
+## Initial promote attempt (failed due to wrong default scope)
+Command:
+vercel promote openplan-k6vgpbyy4-natford.vercel.app --yes
+
+Output:
+Fetching deployment "openplan-k6vgpbyy4-natford.vercel.app" in nat-ford-planning…
+> Fetching deployment "openplan-k6vgpbyy4-natford.vercel.app" in nat-ford-planning…
+Error: Deployment doesn't belong to current team nat-ford-planning
+
+## Successful promote command
+Command:
+vercel promote openplan-k6vgpbyy4-natford.vercel.app --scope natford --yes
+
+Output:
+Fetching deployment "openplan-k6vgpbyy4-natford.vercel.app" in natford…
+> Fetching deployment "openplan-k6vgpbyy4-natford.vercel.app" in natford…
+> Successfully created new deployment of openplan at https://vercel.com/natford/openplan/2iSpRZjanhTuXQhGwv4FH6H6a3ed
+
+## Post-promotion deployment list snapshot
+
+https://openplan-myhpkatuv-natford.vercel.app
+https://openplan-k6vgpbyy4-natford.vercel.app
+https://openplan-ktmq4chiq-natford.vercel.app
+https://openplan-pjwpov65a-natford.vercel.app
+https://openplan-h62835emk-natford.vercel.app
+https://openplan-8xjmeeqf8-natford.vercel.app
+https://openplan-3302qac77-natford.vercel.app
+https://openplan-qe4pib129-natford.vercel.app
+https://openplan-6inxkr6ed-natford.vercel.app
+https://openplan-8z2jsc3oq-natford.vercel.app
+https://openplan-pec10o9eo-natford.vercel.app
+https://openplan-pzm9wu6e0-natford.vercel.app
+
+## Public alias header snapshot
+HTTP/2 307 
+cache-control: public, max-age=0, must-revalidate
+content-type: text/plain
+date: Tue, 17 Mar 2026 01:02:56 GMT
+location: /sign-in?redirect=%2Fbilling
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-vercel-id: sfo1::tmrgs-1773709376853-76c069811dd1
+

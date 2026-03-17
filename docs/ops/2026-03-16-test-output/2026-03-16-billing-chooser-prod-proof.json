@@ -1,0 +1,81 @@
+{
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "stamp": "2026-03-17T00-29-50-259Z",
+  "email": "openplan-billing-proof-2026-03-17T00-29-50-259Z@natfordplanning.com",
+  "workspaces": [
+    {
+      "name": "Proof Alpha 2026-03-17T00-29-50-259Z",
+      "workspaceId": "3ccf71b8-63ff-4eeb-97cf-421e5b4e092e",
+      "projectRecordId": "bfa2833d-77a1-497e-b3b0-58dc1e263a21"
+    },
+    {
+      "name": "Proof Beta 2026-03-17T00-29-50-259Z",
+      "workspaceId": "531855e8-1e87-4dce-b89e-d6462008326f",
+      "projectRecordId": "1f6c92b6-4712-4be5-8b20-36f32bd8094d"
+    }
+  ],
+  "routeResults": [
+    {
+      "label": "plain-billing",
+      "route": "/billing",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing",
+      "h1": [
+        "openplan-billing-proof-2026-03-17t00-29-50-259z Billing"
+      ],
+      "containsChooser": false,
+      "containsAlphaName": false,
+      "containsBetaName": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": false,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z\nFREE\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nPILOT\nPLAN: FREE\n\nUPDATED: 3/17/2026, 12:29:50 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace."
+    },
+    {
+      "label": "alpha-target",
+      "route": "/billing?workspaceId=3ccf71b8-63ff-4eeb-97cf-421e5b4e092e",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=3ccf71b8-63ff-4eeb-97cf-421e5b4e092e",
+      "h1": [
+        "openplan-billing-proof-2026-03-17t00-29-50-259z Billing"
+      ],
+      "containsChooser": false,
+      "containsAlphaName": false,
+      "containsBetaName": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": false,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z\nFREE\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nPILOT\nPLAN: FREE\n\nUPDATED: 3/17/2026, 12:29:50 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace."
+    },
+    {
+      "label": "beta-target",
+      "route": "/billing?workspaceId=531855e8-1e87-4dce-b89e-d6462008326f",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=531855e8-1e87-4dce-b89e-d6462008326f",
+      "h1": [
+        "openplan-billing-proof-2026-03-17t00-29-50-259z Billing"
+      ],
+      "containsChooser": false,
+      "containsAlphaName": false,
+      "containsBetaName": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": false,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z\nFREE\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nPILOT\nPLAN: FREE\n\nUPDATED: 3/17/2026, 12:29:50 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace."
+    },
+    {
+      "label": "inaccessible-target",
+      "route": "/billing?workspaceId=b2f70e11-84c1-4a97-80d5-2fcfb898138c",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=b2f70e11-84c1-4a97-80d5-2fcfb898138c",
+      "h1": [
+        "openplan-billing-proof-2026-03-17t00-29-50-259z Billing"
+      ],
+      "containsChooser": false,
+      "containsAlphaName": false,
+      "containsBetaName": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": false,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z\nFREE\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nopenplan-billing-proof-2026-03-17t00-29-50-259z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nPILOT\nPLAN: FREE\n\nUPDATED: 3/17/2026, 12:29:50 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace."
+    }
+  ],
+  "screenshots": [
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-plain-billing.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-alpha-target.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-beta-target.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-inaccessible-target.png"
+  ]
+}

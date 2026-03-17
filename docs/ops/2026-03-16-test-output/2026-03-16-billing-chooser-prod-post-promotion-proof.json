@@ -1,0 +1,94 @@
+{
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "stamp": "2026-03-17T01-01-22-830Z",
+  "email": "openplan-billing-proof-post-promo-2026-03-17T01-01-22-830Z@natfordplanning.com",
+  "invalidWorkspaceId": "11111111-2222-4333-8444-555555555555",
+  "workspaces": [
+    {
+      "name": "Proof Alpha Post Promotion 2026-03-17T01-01-22-830Z",
+      "workspaceId": "e8dde6b2-f296-4099-9f62-0f79552858e0",
+      "projectRecordId": "bca715cf-8a6a-4907-8331-fedf73713852"
+    },
+    {
+      "name": "Proof Beta Post Promotion 2026-03-17T01-01-22-830Z",
+      "workspaceId": "819138b9-37dd-4643-8825-419742d6b407",
+      "projectRecordId": "0e390ded-c5a7-452a-9d03-73c55c79defc"
+    }
+  ],
+  "routeResults": [
+    {
+      "label": "plain-billing",
+      "route": "/billing",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing",
+      "h1": [
+        "Choose a workspace for billing"
+      ],
+      "currentWorkspaceLinks": [],
+      "containsChooser": true,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": false,
+      "containsAlphaName": true,
+      "containsBetaName": true,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nSTARTER\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nChoose a workspace for billing\n\nBilling state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or starting checkout.\n\nAvailable workspaces\n\nOpen the exact billing surface you intend to review. This prevents accidental checkout or status review against the wrong workspace.\n\nProof Beta Post Promotion 2026-03-17T01-01-22-830Z\nPILOT\nPLAN: PILOT\n\nWORKSPACE ID 819138B9 · ROLE OWNER\n\nOpen billing\nProof Alpha Post Promotion 2026-03-17T01-01-22-830Z\nPILOT\nPLAN: PILOT\n\nWORKSPACE ID E8DDE6B2 · ROLE OWNER\n\nOpen billing\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nCHECKOUT PENDING\nPLAN: STARTER\n\nWORKSPACE ID 24A697C7 · ROLE OWNER\n\nOpen billing",
+      "screenshot": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-plain-billing.png"
+    },
+    {
+      "label": "alpha-target",
+      "route": "/billing?workspaceId=e8dde6b2-f296-4099-9f62-0f79552858e0",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=e8dde6b2-f296-4099-9f62-0f79552858e0",
+      "h1": [
+        "Proof Alpha Post Promotion 2026-03-17T01-01-22-830Z Billing"
+      ],
+      "currentWorkspaceLinks": [
+        "Proof Alpha Post Promotion 2026-03-17T01-01-22-830Z"
+      ],
+      "containsChooser": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": true,
+      "containsAlphaName": true,
+      "containsBetaName": true,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nSTARTER\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nProof Alpha Post Promotion 2026-03-17T01-01-22-830Z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nViewing workspace-specific billing\n\nThis account has access to multiple workspaces. You are currently viewing billing for Proof Alpha Post Promotion 2026-03-17T01-01-22-830Z.\n\nProof Beta Post Promotion 2026-03-17T01-01-22-830Z\nProof Alpha Post Promotion 2026-03-17T01-01-22-830Z\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nPILOT\nPLAN: PILOT\n\nUPDATED: 3/17/2026, 1:01:30 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace.",
+      "screenshot": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-alpha-target.png"
+    },
+    {
+      "label": "beta-target",
+      "route": "/billing?workspaceId=819138b9-37dd-4643-8825-419742d6b407",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=819138b9-37dd-4643-8825-419742d6b407",
+      "h1": [
+        "Proof Beta Post Promotion 2026-03-17T01-01-22-830Z Billing"
+      ],
+      "currentWorkspaceLinks": [
+        "Proof Beta Post Promotion 2026-03-17T01-01-22-830Z"
+      ],
+      "containsChooser": false,
+      "containsInvalidWarning": false,
+      "containsWorkspaceSpecificBanner": true,
+      "containsAlphaName": true,
+      "containsBetaName": true,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nSTARTER\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nProof Beta Post Promotion 2026-03-17T01-01-22-830Z Billing\n\nManage subscription state for this workspace. Owner/admin role is required to initialize checkout.\n\nViewing workspace-specific billing\n\nThis account has access to multiple workspaces. You are currently viewing billing for Proof Beta Post Promotion 2026-03-17T01-01-22-830Z.\n\nProof Beta Post Promotion 2026-03-17T01-01-22-830Z\nProof Alpha Post Promotion 2026-03-17T01-01-22-830Z\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nPILOT\nPLAN: PILOT\n\nUPDATED: 3/17/2026, 1:01:31 AM\n\nCheckout initialization sets billing state to Checkout Pending and records selected plan on the workspace.\n\nStart Starter Checkout\nStart Professional Checkout\nRecent Billing Events\n\nNo billing events recorded yet for this workspace.",
+      "screenshot": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-beta-target.png"
+    },
+    {
+      "label": "inaccessible-target",
+      "route": "/billing?workspaceId=11111111-2222-4333-8444-555555555555",
+      "finalUrl": "https://openplan-zeta.vercel.app/billing?workspaceId=11111111-2222-4333-8444-555555555555",
+      "h1": [
+        "Choose a workspace for billing"
+      ],
+      "currentWorkspaceLinks": [],
+      "containsChooser": true,
+      "containsInvalidWarning": true,
+      "containsWorkspaceSpecificBanner": false,
+      "containsAlphaName": true,
+      "containsBetaName": true,
+      "bodySnippet": "OPENPLAN\nPlanning OS\n\nWORKSPACE\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nSTARTER\nOWNER\nOverview\nProjects\nPlans\nPrograms\nEngagement\nAnalysis Studio\nScenarios\nModels\nData Hub\nReports\nAdmin\n\nOPERATIONS\n\nReports\nBilling\nAdmin\nPlatform status\n\nMulti-module shell is active. Modules are binding to live Planning OS objects and workflows.\n\nSign out\nSearch projects, plans, reports…\n\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z@natfordplanning.com\n\nAuthenticated\n\nBILLING\n\nChoose a workspace for billing\n\nBilling state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or starting checkout.\n\nThe requested billing workspace was not found for this account. Choose one of your accessible workspaces below.\nAvailable workspaces\n\nOpen the exact billing surface you intend to review. This prevents accidental checkout or status review against the wrong workspace.\n\nProof Beta Post Promotion 2026-03-17T01-01-22-830Z\nCHECKOUT PENDING\nPLAN: STARTER\n\nWORKSPACE ID 819138B9 · ROLE OWNER\n\nOpen billing\nProof Alpha Post Promotion 2026-03-17T01-01-22-830Z\nCHECKOUT PENDING\nPLAN: PROFESSIONAL\n\nWORKSPACE ID E8DDE6B2 · ROLE OWNER\n\nOpen billing\nopenplan-billing-proof-post-promo-2026-03-17t01-01-22-830z\nCHECKOUT PENDING\nPLAN: STARTER\n\nWORKSPACE ID 24A697C7 · ROLE OWNER\n\nOpen bi",
+      "screenshot": "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-inaccessible-target.png"
+    }
+  ],
+  "screenshots": [
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-plain-billing.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-alpha-target.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-beta-target.png",
+    "docs/ops/2026-03-16-test-output/2026-03-16-billing-chooser-prod-post-promotion-inaccessible-target.png"
+  ]
+}
