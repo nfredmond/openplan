@@ -86,6 +86,9 @@ describe('createStripeCheckoutSession', () => {
         client_reference_id: 'workspace-123',
         customer: undefined,
         customer_email: 'owner@example.com',
+        success_url:
+          'https://openplan.example.com/billing?workspaceId=workspace-123&checkout=success&plan=starter&session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'https://openplan.example.com/billing?workspaceId=workspace-123&checkout=cancel&plan=starter',
         metadata: expect.objectContaining({
           workspaceId: 'workspace-123',
           plan: 'starter',

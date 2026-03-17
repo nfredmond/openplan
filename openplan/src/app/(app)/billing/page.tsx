@@ -222,6 +222,20 @@ export default async function BillingPage({
         </article>
       ) : null}
 
+      {checkoutState === "success" ? (
+        <article className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-4 text-sm text-emerald-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-emerald-700/60 dark:bg-emerald-950/30 dark:text-emerald-100">
+          Stripe checkout returned successfully for plan <strong>{titleCase(checkoutPlan)}</strong>. OpenPlan still relies on webhook processing to
+          finalize workspace access, so confirm the status card and recent billing events below before treating activation as complete.
+        </article>
+      ) : null}
+
+      {checkoutState === "cancel" ? (
+        <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+          Stripe checkout was canceled before payment completion for plan <strong>{titleCase(checkoutPlan)}</strong>. The workspace may still show
+          <strong> Checkout Pending</strong> until a new checkout is completed or operations clears the abandoned pending state.
+        </article>
+      ) : null}
+
       {status === "checkout_pending" && identityReviewEvent ? (
         <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
           <p className="font-semibold tracking-tight">Activation is paused for billing identity review.</p>

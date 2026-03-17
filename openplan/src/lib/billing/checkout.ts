@@ -38,12 +38,12 @@ function stripePriceIdForPlan(plan: CheckoutPlan): string {
   return priceId.trim();
 }
 
-function defaultSuccessUrl(origin: string, plan: CheckoutPlan): string {
-  return `${origin}/dashboard/billing?checkout=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
+function defaultSuccessUrl(origin: string, workspaceId: string, plan: CheckoutPlan): string {
+  return `${origin}/billing?workspaceId=${workspaceId}&checkout=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
 }
 
-function defaultCancelUrl(origin: string, plan: CheckoutPlan): string {
-  return `${origin}/dashboard/billing?checkout=cancel&plan=${plan}`;
+function defaultCancelUrl(origin: string, workspaceId: string, plan: CheckoutPlan): string {
+  return `${origin}/billing?workspaceId=${workspaceId}&checkout=cancel&plan=${plan}`;
 }
 
 function normalizeEmail(value: string | null | undefined): string | undefined {
@@ -80,8 +80,8 @@ export async function createStripeCheckoutSession({
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: defaultSuccessUrl(origin, plan),
-    cancel_url: defaultCancelUrl(origin, plan),
+    success_url: defaultSuccessUrl(origin, workspaceId, plan),
+    cancel_url: defaultCancelUrl(origin, workspaceId, plan),
     client_reference_id: workspaceId,
     metadata,
     subscription_data: { metadata },
