@@ -60,6 +60,20 @@ const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 const runsInMock = vi.fn();
 const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
 
+const engagementCampaignMaybeSingleMock = vi.fn();
+const engagementCampaignEqIdMock = vi.fn(() => ({ maybeSingle: engagementCampaignMaybeSingleMock }));
+const engagementCampaignEqWorkspaceMock = vi.fn(() => ({ eq: engagementCampaignEqIdMock }));
+const engagementCampaignSelectMock = vi.fn(() => ({ eq: engagementCampaignEqWorkspaceMock }));
+
+const engagementCategoriesOrderCreatedMock = vi.fn();
+const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCategoriesOrderCreatedMock }));
+const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
+const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
+
+const engagementItemsOrderMock = vi.fn();
+const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
+const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMock }));
+
 const artifactsSingleMock = vi.fn();
 const artifactsInsertSelectMock = vi.fn(() => ({ single: artifactsSingleMock }));
 const artifactsInsertMock = vi.fn(() => ({ select: artifactsInsertSelectMock }));
@@ -141,6 +155,24 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "engagement_campaigns") {
+    return {
+      select: engagementCampaignSelectMock,
+    };
+  }
+
+  if (table === "engagement_categories") {
+    return {
+      select: engagementCategoriesSelectMock,
+    };
+  }
+
+  if (table === "engagement_items") {
+    return {
+      select: engagementItemsSelectMock,
     };
   }
 
@@ -267,6 +299,51 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
+    engagementCampaignMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "99999999-9999-4999-8999-999999999999",
+        title: "Downtown listening campaign",
+        summary: "Capture walking and crossing feedback.",
+        status: "active",
+        engagement_type: "comment_collection",
+        updated_at: "2026-03-14T02:30:00.000Z",
+      },
+      error: null,
+    });
+
+    engagementCategoriesOrderCreatedMock.mockResolvedValue({
+      data: [
+        {
+          id: "category-1",
+          label: "Safety",
+          slug: "safety",
+          description: "Crossings and vehicle behavior",
+          sort_order: 0,
+          created_at: "2026-03-12T00:00:00.000Z",
+          updated_at: "2026-03-13T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    engagementItemsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "item-1",
+          campaign_id: "99999999-9999-4999-8999-999999999999",
+          category_id: "category-1",
+          status: "approved",
+          source_type: "public",
+          latitude: 34.1,
+          longitude: -118.3,
+          moderation_notes: "Verified in workshop.",
+          created_at: "2026-03-12T00:00:00.000Z",
+          updated_at: "2026-03-14T03:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
     artifactsSingleMock.mockResolvedValue({
       data: {
         id: "artifact-1",
@@ -358,6 +435,49 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.objectContaining({
         status: "generated",
         latest_artifact_kind: "html",
+      })
+    );
+  });
+
+  it("includes configured engagement handoff context when the section is enabled", async () => {
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "section-1",
+          section_key: "engagement_summary",
+          title: "Engagement campaign summary",
+          enabled: true,
+          sort_order: 0,
+          config_json: {
+            campaignId: "99999999-9999-4999-8999-999999999999",
+          },
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({
+          htmlContent: expect.stringContaining("Downtown listening campaign"),
+          sourceContext: expect.objectContaining({
+            engagementCampaignId: "99999999-9999-4999-8999-999999999999",
+            engagementItemCount: 1,
+            engagementReadyForHandoffCount: 1,
+          }),
+        }),
       })
     );
   });

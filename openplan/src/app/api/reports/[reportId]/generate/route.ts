@@ -5,6 +5,10 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
+import {
+  buildReportEngagementSummary,
+  extractEngagementCampaignId,
+} from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
 
 const paramsSchema = z.object({
@@ -175,6 +179,57 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
     }
 
+    const engagementCampaignId = extractEngagementCampaignId(sectionsResult.data ?? []);
+    const [engagementCampaignResult, engagementCategoriesResult, engagementItemsResult] =
+      engagementCampaignId
+        ? await Promise.all([
+            supabase
+              .from("engagement_campaigns")
+              .select("id, title, summary, status, engagement_type, updated_at")
+              .eq("workspace_id", report.workspace_id)
+              .eq("id", engagementCampaignId)
+              .maybeSingle(),
+            supabase
+              .from("engagement_categories")
+              .select("id, label, slug, description, sort_order, created_at, updated_at")
+              .eq("campaign_id", engagementCampaignId)
+              .order("sort_order", { ascending: true })
+              .order("created_at", { ascending: true }),
+            supabase
+              .from("engagement_items")
+              .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
+              .eq("campaign_id", engagementCampaignId)
+              .order("updated_at", { ascending: false }),
+          ])
+        : [
+            { data: null, error: null },
+            { data: [], error: null },
+            { data: [], error: null },
+          ];
+
+    const engagementLoadErrors = [
+      engagementCampaignResult.error,
+      engagementCategoriesResult.error,
+      engagementItemsResult.error,
+    ].filter(Boolean);
+
+    if (engagementLoadErrors.length > 0) {
+      const firstError = engagementLoadErrors[0];
+      audit.error("report_engagement_load_failed", {
+        reportId: report.id,
+        campaignId: engagementCampaignId,
+        message: firstError?.message ?? "unknown",
+        code: firstError?.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load engagement handoff context" }, { status: 500 });
+    }
+
+    const engagement = buildReportEngagementSummary({
+      campaign: engagementCampaignResult.data,
+      categories: engagementCategoriesResult.data ?? [],
+      items: engagementItemsResult.data ?? [],
+    });
+
     const runIds = (reportRunsResult.data ?? []).map((item) => item.run_id);
     const runsResult = runIds.length
       ? await supabase
@@ -243,6 +298,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         detail: item.notes,
         at: item.meeting_at ?? item.created_at,
       })),
+      engagement,
     });
 
     const generatedAt = new Date().toISOString();
@@ -261,6 +317,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         issueCount: issuesResult.data?.length ?? 0,
         decisionCount: decisionsResult.data?.length ?? 0,
         meetingCount: meetingsResult.data?.length ?? 0,
+        engagementCampaignId: engagement?.campaign.id ?? null,
+        engagementItemCount: engagement?.counts.totalItems ?? 0,
+        engagementReadyForHandoffCount:
+          engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
         auditWarningCount: runAudit.reduce(
           (count, item) => count + item.gate.missingArtifacts.length,
           0

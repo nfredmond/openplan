@@ -1,6 +1,7 @@
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
+import type { ReportEngagementSummary } from "@/lib/reports/engagement";
 
 type ProjectRecord = {
   id: string;
@@ -61,6 +62,7 @@ export type ReportGenerationData = {
   issues: ProjectItem[];
   decisions: ProjectItem[];
   meetings: ProjectItem[];
+  engagement: ReportEngagementSummary | null;
 };
 
 function esc(value: string): string {
@@ -263,6 +265,85 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <strong>Auditability posture</strong>
       <p>This report is a structured packet assembled from current OpenPlan project records and linked analysis runs. Reviewers should treat it as evidence-backed output, not freeform narrative copy.</p>
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
+    </div>`;
+  }
+
+  if (sectionKey === "engagement_summary") {
+    if (!data.engagement) {
+      return `<p class="empty">No engagement campaign is configured for this report section.</p>`;
+    }
+
+    const { campaign, counts } = data.engagement;
+    const topCategories = counts.categoryCounts
+      .filter((category) => category.categoryId !== null && category.count > 0)
+      .slice(0, 4);
+    const topSources = [...counts.sourceSummaries]
+      .filter((source) => source.count > 0)
+      .sort((left, right) => right.count - left.count)
+      .slice(0, 4);
+
+    return `<div class="two-col">
+      <div>
+        <h3>${esc(campaign.title)}</h3>
+        <p>${esc(campaign.summary || "No campaign summary recorded yet.")}</p>
+        <div class="metrics-grid" style="margin-top: 14px;">
+          <div><span class="metric-label">Campaign status</span><strong>${esc(titleize(campaign.status))}</strong></div>
+          <div><span class="metric-label">Engagement type</span><strong>${esc(titleize(campaign.engagement_type))}</strong></div>
+          <div><span class="metric-label">Total items</span><strong>${counts.totalItems}</strong></div>
+          <div><span class="metric-label">Handoff-ready</span><strong>${counts.moderationQueue.readyForHandoffCount}</strong></div>
+        </div>
+      </div>
+      <div>
+        <h3>Moderation and coverage</h3>
+        <div class="metrics-grid">
+          <div><span class="metric-label">Actionable review</span><strong>${counts.moderationQueue.actionableCount}</strong></div>
+          <div><span class="metric-label">Uncategorized</span><strong>${counts.uncategorizedItems}</strong></div>
+          <div><span class="metric-label">Geolocated share</span><strong>${Math.round(
+            counts.geographyCoverage.geolocatedShare * 100
+          )}%</strong></div>
+          <div><span class="metric-label">Recent activity</span><strong>${counts.recentActivity.count}</strong></div>
+        </div>
+        <p>${
+          counts.moderationQueue.readyForHandoffCount > 0
+            ? esc(
+                `${counts.moderationQueue.readyForHandoffCount} approved and categorized items are ready for planning review.`
+              )
+            : "No items are currently both approved and categorized."
+        }</p>
+      </div>
+    </div>
+    <div class="two-col" style="margin-top: 18px;">
+      <div>
+        <h3>Top categories</h3>
+        ${
+          topCategories.length > 0
+            ? `<ul class="record-list">${topCategories
+                .map(
+                  (category) => `<li>
+                    <strong>${esc(category.label)}</strong>
+                    <p>${category.description ? esc(category.description) : "No description recorded."}</p>
+                    <span class="meta">${category.count} items • ${category.flaggedCount} flagged • ${category.pendingCount} pending</span>
+                  </li>`
+                )
+                .join("")}</ul>`
+            : `<p class="empty">No categorized engagement items are attached yet.</p>`
+        }
+      </div>
+      <div>
+        <h3>Source mix</h3>
+        ${
+          topSources.length > 0
+            ? `<ul class="record-list">${topSources
+                .map(
+                  (source) => `<li>
+                    <strong>${esc(titleize(source.sourceType))}</strong>
+                    <span class="meta">${source.count} items • ${source.geolocatedCount} geolocated • ${source.flaggedCount} flagged</span>
+                  </li>`
+                )
+                .join("")}</ul>`
+            : `<p class="empty">No engagement items are attached yet.</p>`
+        }
+      </div>
     </div>`;
   }
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight, FileStack, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
 import { EngagementCampaignControls } from "@/components/engagement/engagement-campaign-controls";
+import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
@@ -315,6 +316,33 @@ export default async function EngagementCampaignDetailPage({
                   </div>
                 </article>
               </div>
+
+              <article className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={campaign.project_id ? "success" : "warning"}>
+                        {campaign.project_id ? "Project-linked" : "Project link required"}
+                      </StatusBadge>
+                      <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
+                        {counts.moderationQueue.readyForHandoffCount} handoff-ready
+                      </StatusBadge>
+                    </div>
+                    <h3 className="module-record-title text-[1rem]">Create an engagement handoff packet</h3>
+                    <p className="module-record-summary">
+                      Seed a project-linked report with this campaign as an explicit source section so planning review does not rely on manual copy-paste.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">{counts.totalItems} total items</span>
+                    <span className="module-record-chip">{counts.moderationQueue.actionableCount} actionable review items</span>
+                    <span className="module-record-chip">{reportRecords.length} existing project reports</span>
+                  </div>
+                  <EngagementReportCreateButton campaign={campaign} counts={counts} />
+                </div>
+              </article>
             </div>
           </article>
 
