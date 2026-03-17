@@ -44,6 +44,100 @@ export type WorkspaceMembershipClient = {
   };
 };
 
+export type WorkspaceMembershipSelection = {
+  memberships: WorkspaceMembershipRow[];
+  membership: WorkspaceMembershipRow | undefined;
+  workspace: WorkspaceRecord | null;
+  hasMultipleMemberships: boolean;
+  requiresExplicitSelection: boolean;
+  invalidWorkspaceId: boolean;
+};
+
+function compareWorkspaceMemberships(a: WorkspaceMembershipRow, b: WorkspaceMembershipRow): number {
+  const workspaceA = unwrapWorkspaceRecord(a.workspaces);
+  const workspaceB = unwrapWorkspaceRecord(b.workspaces);
+
+  const createdAtA = workspaceA?.created_at ? Date.parse(workspaceA.created_at) : Number.NaN;
+  const createdAtB = workspaceB?.created_at ? Date.parse(workspaceB.created_at) : Number.NaN;
+
+  if (Number.isFinite(createdAtA) && Number.isFinite(createdAtB) && createdAtA !== createdAtB) {
+    return createdAtB - createdAtA;
+  }
+
+  if (Number.isFinite(createdAtA) && !Number.isFinite(createdAtB)) {
+    return -1;
+  }
+
+  if (!Number.isFinite(createdAtA) && Number.isFinite(createdAtB)) {
+    return 1;
+  }
+
+  const nameA = workspaceA?.name ?? "";
+  const nameB = workspaceB?.name ?? "";
+  const nameCompare = nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+  if (nameCompare !== 0) {
+    return nameCompare;
+  }
+
+  return a.workspace_id.localeCompare(b.workspace_id);
+}
+
+export function resolveWorkspaceMembershipSelection(
+  memberships: WorkspaceMembershipRow[] | null | undefined,
+  options?: {
+    requestedWorkspaceId?: string | null;
+    requireExplicitSelectionForMultiWorkspace?: boolean;
+  }
+): WorkspaceMembershipSelection {
+  const normalizedMemberships = [...(memberships ?? [])].sort(compareWorkspaceMemberships);
+  const requestedWorkspaceId = options?.requestedWorkspaceId ?? null;
+  const requireExplicitSelectionForMultiWorkspace = options?.requireExplicitSelectionForMultiWorkspace ?? false;
+
+  if (normalizedMemberships.length === 0) {
+    return {
+      memberships: [],
+      membership: undefined,
+      workspace: null,
+      hasMultipleMemberships: false,
+      requiresExplicitSelection: false,
+      invalidWorkspaceId: false,
+    };
+  }
+
+  if (requestedWorkspaceId) {
+    const selectedMembership = normalizedMemberships.find((membership) => membership.workspace_id === requestedWorkspaceId);
+    return {
+      memberships: normalizedMemberships,
+      membership: selectedMembership,
+      workspace: unwrapWorkspaceRecord(selectedMembership?.workspaces),
+      hasMultipleMemberships: normalizedMemberships.length > 1,
+      requiresExplicitSelection: false,
+      invalidWorkspaceId: !selectedMembership,
+    };
+  }
+
+  if (requireExplicitSelectionForMultiWorkspace && normalizedMemberships.length > 1) {
+    return {
+      memberships: normalizedMemberships,
+      membership: undefined,
+      workspace: null,
+      hasMultipleMemberships: true,
+      requiresExplicitSelection: true,
+      invalidWorkspaceId: false,
+    };
+  }
+
+  const membership = normalizedMemberships[0];
+  return {
+    memberships: normalizedMemberships,
+    membership,
+    workspace: unwrapWorkspaceRecord(membership?.workspaces),
+    hasMultipleMemberships: normalizedMemberships.length > 1,
+    requiresExplicitSelection: false,
+    invalidWorkspaceId: false,
+  };
+}
+
 export async function loadCurrentWorkspaceMembership(
   supabase: WorkspaceMembershipClient,
   userId: string

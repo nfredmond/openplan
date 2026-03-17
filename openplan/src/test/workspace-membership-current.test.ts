@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
   loadCurrentWorkspaceMembership,
+  resolveWorkspaceMembershipSelection,
   resolveWorkspaceShellState,
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
@@ -46,6 +47,70 @@ describe("workspace membership helpers", () => {
       workspaceRole: "owner",
       membershipStatus: "provisioned",
     });
+  });
+
+  it("requires explicit selection for multi-workspace billing contexts", () => {
+    const result = resolveWorkspaceMembershipSelection(
+      [
+        {
+          workspace_id: "workspace-b",
+          role: "admin",
+          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" },
+        },
+        {
+          workspace_id: "workspace-a",
+          role: "owner",
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+        },
+      ],
+      { requireExplicitSelectionForMultiWorkspace: true }
+    );
+
+    expect(result.memberships.map((membership) => membership.workspace_id)).toEqual(["workspace-a", "workspace-b"]);
+    expect(result.hasMultipleMemberships).toBe(true);
+    expect(result.requiresExplicitSelection).toBe(true);
+    expect(result.membership).toBeUndefined();
+    expect(result.workspace).toBeNull();
+  });
+
+  it("selects the requested workspace when an explicit workspace id is provided", () => {
+    const result = resolveWorkspaceMembershipSelection(
+      [
+        {
+          workspace_id: "workspace-a",
+          role: "owner",
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+        },
+        {
+          workspace_id: "workspace-b",
+          role: "admin",
+          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" },
+        },
+      ],
+      { requestedWorkspaceId: "workspace-b", requireExplicitSelectionForMultiWorkspace: true }
+    );
+
+    expect(result.invalidWorkspaceId).toBe(false);
+    expect(result.requiresExplicitSelection).toBe(false);
+    expect(result.membership?.workspace_id).toBe("workspace-b");
+    expect(result.workspace).toEqual({ name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" });
+  });
+
+  it("flags an invalid requested workspace id instead of silently falling back", () => {
+    const result = resolveWorkspaceMembershipSelection(
+      [
+        {
+          workspace_id: "workspace-a",
+          role: "owner",
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+        },
+      ],
+      { requestedWorkspaceId: "workspace-missing", requireExplicitSelectionForMultiWorkspace: true }
+    );
+
+    expect(result.invalidWorkspaceId).toBe(true);
+    expect(result.membership).toBeUndefined();
+    expect(result.workspace).toBeNull();
   });
 
   it("loads and unwraps the current workspace membership from Supabase", async () => {
