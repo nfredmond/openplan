@@ -16,7 +16,7 @@ The strongest honest claim now supported by evidence is:
 
 The strongest remaining honest caveat is also clear:
 
-- this packet is strong enough for **internal pre-close review**, but **not yet honest to mark externally shipped/final** because the current-cycle **Principal Planner QA approval is missing** and the billing/commercial lane still stops short of a real paid live canary / refreshed cancel-refund closeout.
+- this packet is strong enough for **internal pre-close review**, but **not yet honest to mark externally shipped/final** because the current-cycle **Principal Planner QA approval is missing** and the billing/commercial lane still stops short of a supervised real paid live canary on the happy path.
 
 ---
 
@@ -31,7 +31,8 @@ The strongest remaining honest caveat is also clear:
 | Provisioning cleanup hardening | **PASS** | `docs/ops/2026-03-16-v1-provisioning-hardening.md` | Workspace bootstrap and project-create flows now clean up partial artifacts on downstream failure. | Local validation, not a separate live failure-injection canary. |
 | Planning save rollback hardening | **PASS** | `openplan/docs/ops/2026-03-16-planning-save-rollback-hardening.md` | Plan / Program / Model PATCH paths restore prior links if the trailing metadata write fails after link replacement. | Local validation; no deliberate live fault injection in production. |
 | Billing identity-review hardening | **PASS** | `docs/ops/2026-03-16-billing-identity-review-hardening.md` | Checkout metadata now carries initiator identity; mismatch cases pause activation and block follow-on mutations while review is pending. | Local validation alone would not be enough without the live canary below. |
-| Live billing purchaser-identity hold canary | **PARTIAL PASS** | `docs/ops/2026-03-16-openplan-live-billing-hold-canary.md` | Current public production proved the hold branch through live checkout init, signed webhook handling, DB state, and billing UI warning. | No real-money completed charge was performed; cancel/refund was not refreshed in this cycle. |
+| Live billing purchaser-identity hold canary | **PARTIAL PASS** | `docs/ops/2026-03-16-openplan-live-billing-hold-canary.md` | Current public production proved the hold branch through live checkout init, signed webhook handling, DB state, and billing UI warning. | No real-money completed charge was performed. |
+| Cancel / refund operational closeout | **PASS FOR HOLD NARROWING** | `docs/ops/2026-03-16-openplan-cancel-refund-operational-closeout.md` | Historical live cancel/refund evidence was re-verified, checkout return-path drift was fixed, and the operational runbook is now explicit. | No fresh current-cycle real-money cancel/refund cycle was executed. |
 
 ---
 
@@ -93,11 +94,11 @@ Those are real launch-safety improvements, not cosmetic polish.
 1. **No refreshed Principal Planner QA approval exists for this exact 2026-03-16 v1 packet.**  
    The existing `docs/ops/PRINCIPAL_QA_APPROVAL.md` is from 2026-03-05 and a different branch/scope.
 
-2. **No real paid live billing canary was completed in this cycle.**  
-   The billing hold branch is production-proven, but a live Stripe-generated paid completion event and a refreshed cancel/refund closeout are still outside this packet.
+2. **No supervised real paid live happy-path billing canary was completed in this cycle.**  
+   The billing hold branch is production-proven, and the cancel/refund operational lane is now documented and narrowed, but a live Stripe-generated paid completion event from an intentionally supervised checkout is still outside this packet.
 
-3. **Multi-workspace billing-page selection is still operationally ambiguous.**  
-   The first hold-canary UI check missed because `/billing` rendered a different workspace than the one initially targeted.
+3. **The remaining billing question is sufficiency, not workspace targeting.**  
+   The earlier multi-workspace ambiguity exposed by the first hold-canary pass was later closed by the production billing chooser fix in `docs/ops/2026-03-16-openplan-billing-chooser-production-promotion-proof.md`. The honest remaining decision is whether current non-money-moving proof is enough, or whether to run the prepared supervised paid canary package.
 
 4. **This packet is strongest on the planning-domain v1 spine, not every historical OpenPlan claim.**  
    It should be used as the current v1 pre-close bundle, not as a blanket statement that every prior scope item is freshly re-certified today.
@@ -107,7 +108,7 @@ Those are real launch-safety improvements, not cosmetic polish.
 ## Recommended Use Of This Packet
 Use this packet for three immediate decisions:
 1. **Elena review:** Principal Planner re-adjudication against the current 2026-03-16 bundle.
-2. **Nathaniel commercial decision:** accept the current billing proof posture as sufficient for pilot readiness, or require a supervised paid canary / explicit commercial runbook closure before external release language.
+2. **Nathaniel commercial decision:** accept the current billing proof posture as sufficient for pilot readiness, or require the prepared supervised paid canary package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` before external release language.
 3. **Final internal gate:** issue a dated PASS/HOLD based on this exact packet, not on older phase artifacts.
 
 ## Bottom Line

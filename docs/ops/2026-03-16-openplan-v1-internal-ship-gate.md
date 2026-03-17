@@ -11,7 +11,7 @@ OpenPlan now has enough current evidence to justify a serious internal pre-close
 
 The technical/product evidence is materially stronger today. The remaining hold is mainly about:
 - **governance** (no current-cycle Principal Planner sign-off on this exact packet), and
-- **commercial closure** (billing proof is strong, but still stops short of a real paid live canary / refreshed cancel-refund closure).
+- **commercial closure** (billing proof is strong, but still stops short of a supervised real paid live happy-path canary).
 
 Important same-day clarification:
 - the earlier multi-workspace billing-selection ambiguity exposed by the hold canary is **no longer an active hold basis**,
@@ -40,9 +40,12 @@ What is proven:
 - live billing UI warning state.
 
 What is **not** proven in this packet:
-- a real paid live checkout completion using a real payment method,
-- a Stripe-generated live `checkout.session.completed` event from an actual charge,
-- refreshed cancel/refund closeout in the current-cycle packet.
+- a supervised real paid live checkout completion using a real payment method,
+- a Stripe-generated live `checkout.session.completed` event from an actual charge on the happy path.
+
+What **is** now narrowed in this packet:
+- cancel/refund operational posture is documented and tightened in `docs/ops/2026-03-16-openplan-cancel-refund-operational-closeout.md`,
+- but that is still not the same thing as a fresh paid live happy-path completion.
 
 That may or may not be acceptable for pilot release depending on Nathaniel’s risk tolerance, but it is not honest to ignore the distinction.
 
@@ -88,6 +91,10 @@ So the honest remaining billing question is narrower:
 **PARTIAL PASS**
 - live production hold branch proven without making a real charge: `docs/ops/2026-03-16-openplan-live-billing-hold-canary.md`
 
+### Cancel / refund operational posture
+**PASS FOR HOLD NARROWING**
+- current-cycle closeout + return-path correction + runbook: `docs/ops/2026-03-16-openplan-cancel-refund-operational-closeout.md`
+
 ---
 
 ## Gate Interpretation
@@ -118,7 +125,7 @@ Meaning:
 2. **Commercial sufficiency decision**  
    Nathaniel and Elena explicitly decide one of two honest paths:
    - accept current billing proof as sufficient for pilot/pre-close, or
-   - require a supervised paid canary and refreshed cancel/refund note before external PASS.
+   - require the prepared supervised paid canary package in `docs/ops/2026-03-16-openplan-supervised-paid-commercial-canary-package.md` before external PASS.
 
 3. **Final dated gate memo**  
    After the above, issue the final current-cycle PASS/HOLD artifact so old phase approvals are not mistaken for this bundle.
