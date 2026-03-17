@@ -7,24 +7,27 @@
 
 ## Executive Status
 
-**Last refreshed:** 2026-03-16
+**Last refreshed:** 2026-03-17
 
 ### Current scorecard
-- **Pilot-ready v1 confidence:** ~75%
+- **Pilot-ready v1 confidence:** ~85%
 - **Original-plan coverage:** ~35%
-- **Product posture:** evidence-backed planning-domain v1 candidate, no longer prototype theater
-- **Ship posture:** strong internal pre-close packet assembled; **external v1 declaration still HOLD**
+- **Product posture:** evidence-backed planning-domain v1 candidate with production-proven report traceability and cleaned QA residue
+- **Ship posture:** principal-approved for internal pre-close / pilot-readiness; external language must remain evidence-accurate because the fresh paid canary was waived rather than re-run
 
 ### Plain-English read
-OpenPlan now has real current-production proof for the planning-domain core, not just local confidence. The biggest uncertainty has narrowed from “does the product work?” to “is the final ship gate honestly closed?”
+OpenPlan now has real current-production proof for the planning-domain core, real same-cycle principal adjudication, real production proof for the report-traceability backlink lane, and a cleaned production QA surface after today’s proof work.
 
 The answer today is:
-- **technical/product evidence:** materially stronger
-- **governance/commercial closure:** not final yet
+- **technical/product evidence:** strong and materially real
+- **governance closure:** sufficient for internal pre-close / pilot-readiness
+- **commercial closure:** accepted for now under CEO waiver, but not freshly re-proven with a same-cycle paid canary
 
 ### Current packet links
 - Proof packet: `docs/ops/2026-03-16-openplan-v1-proof-packet.md`
 - Internal ship gate: `docs/ops/2026-03-16-openplan-v1-internal-ship-gate.md`
+- Current status memo: `docs/ops/2026-03-17-openplan-v1-status-memo.md`
+- QA cleanup note: `docs/ops/2026-03-17-openplan-production-qa-cleanup.md`
 
 ---
 

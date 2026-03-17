@@ -1,0 +1,725 @@
+{
+  "startedAt": "2026-03-17T20:15:04.176Z",
+  "createdAfter": "2026-03-17",
+  "qaPattern": "/qa|proof|trace|canary|debug/i",
+  "stripeSessionResults": [
+    {
+      "sessionId": "cs_live_a1KfVA9Q4Kxm4f5hfmmjPRmn2ICVgeKwdN0hz3GXWenzTOaR8I80avEyO8",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1HZ9DWXk8WEkDLBxEX5i7FIg3VSo2mK77MWy8M9qS7LGvKJbngppAE3h3",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1TxNZCl2eC0ct8RrTNhzGf3N7qVq6ry5GEnvEvWprAPfuVJXJJ94ahveC",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1NEGyjSMwUPwCFEo76NSh89bmkhf8AUyx1b4jNum1GIY7WBGTXZ0ToG7w",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a18GKjRBlU30SVIx5EoujwqzLCvzU1ItWYmodvH4dg3b5d6BIx5CYFy5ZE",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1ocM6c8vFbFohRTxyouPEKO348ME7i7ETz6yP1233eMxX0jxVo5RI72GH",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a13F2duh9y71yDF3xSAWo4nsDJ03Xk36MaXRSijfBNbqJImMg0uhwe59jK",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a14V61Flb8wtcCFbcfPjPdDkAQMXmzLo68D9ZqXlPhSQYLCRj8nzxNSctn",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1jtzwb2mXij5G2HYlQxkO9Gs0R1R8l9QRjfuBd5TQzqPoaz2dQRVf1C4X",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1kazlsAMoFnjXGqHNBCEetQ3ODCeqWRmuimGdy5teDDVAQoTVGf8yIIpq",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1RUMI9m97mMcYRIvvPA0NmKT0xC5l1t1VCD84NLXJ3cOHvaMHf19EZchM",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1pultmScjOQs3CDElEfpoXVdUmRhjIFyFegwrWfD2fzDVKSUvrUy5lvJs",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a15mrHuL0ZdANWUnKsBPfVy81DpZdK4ogj3r2kiJNFvAMNXce8jgPUbjdk",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1nn4SCijqDOYYh3Hr50a2QLyI0aem2vA31D08Tk03y117iW1FGaSty3CD",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a14AjeFR69vAcz3pY6vcMRTerNLMDn77BK33Jv10qrfBnzhN3DG1QCeB7T",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1QPPgkxjB04RYwzVRz6l5kkuALlPAwnJLCVj8yEqyd906CGqb962T5SpC",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1r0hSU38AJ561PYDeWKL1m8w4p6lrARIm9UCyPaHniaSyE5EZz2X1tW1z",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1Qw9qwN0eFPKOW8YKeq6bL0bE3HF2pjK8XSHCAl5clJzAqjy4GsN0pYmU",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1MI9tmvXOp0LQg2uK1frxVswjr0Fh0TFEM9lluftpGfJF6MsJ5LZo7edF",
+      "status": "expired"
+    },
+    {
+      "sessionId": "cs_live_a1ovUzYUKS9Gx0BJJgIBp9OM81EtZgFLHOiha4X28LdpxitxPzW6Gq9Dw5",
+      "status": "expired"
+    }
+  ],
+  "deleteResults": [
+    {
+      "table": "report_artifacts",
+      "column": "id",
+      "countPlanned": 1,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 1,
+      "error": null
+    },
+    {
+      "table": "report_sections",
+      "column": "id",
+      "countPlanned": 16,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 16,
+      "error": null
+    },
+    {
+      "table": "engagement_items",
+      "column": "id",
+      "countPlanned": 9,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 9,
+      "error": null
+    },
+    {
+      "table": "engagement_categories",
+      "column": "id",
+      "countPlanned": 10,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 10,
+      "error": null
+    },
+    {
+      "table": "plans",
+      "column": "id",
+      "countPlanned": 1,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 1,
+      "error": null
+    },
+    {
+      "table": "models",
+      "column": "id",
+      "countPlanned": 1,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 1,
+      "error": null
+    },
+    {
+      "table": "programs",
+      "column": "id",
+      "countPlanned": 1,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 1,
+      "error": null
+    },
+    {
+      "table": "billing_events",
+      "column": "workspace_id",
+      "countPlanned": 41,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 20,
+      "error": null
+    },
+    {
+      "table": "engagement_campaigns",
+      "column": "id",
+      "countPlanned": 10,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 10,
+      "error": null
+    },
+    {
+      "table": "reports",
+      "column": "id",
+      "countPlanned": 4,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 4,
+      "error": null
+    },
+    {
+      "table": "projects",
+      "column": "id",
+      "countPlanned": 22,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 22,
+      "error": null
+    },
+    {
+      "table": "workspace_members",
+      "column": "workspace_id",
+      "countPlanned": 41,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 41,
+      "error": null
+    },
+    {
+      "table": "workspaces",
+      "column": "id",
+      "countPlanned": 41,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 41,
+      "error": null
+    }
+  ],
+  "verification": {
+    "remainingWorkspaceCount": 0,
+    "remainingUserCount": 0,
+    "remainingWorkspaces": [],
+    "remainingUsers": []
+  },
+  "targets": {
+    "workspaceCount": 41,
+    "projectCount": 22,
+    "reportCount": 4,
+    "campaignCount": 10,
+    "usersPlanned": 19,
+    "workspaces": [
+      {
+        "id": "d16970c3-a95a-4717-9f22-7e85dc9a8d34",
+        "name": "QA Billing Alpha 2026-03-17T00-25-21-355Z",
+        "slug": "qa-billing-alpha-2026-03-17t00-25-21-355z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:25:27.361051+00:00"
+      },
+      {
+        "id": "5ff95b03-b719-4ea4-9c76-cf41147a6bcc",
+        "name": "QA Billing Beta 2026-03-17T00-25-21-355Z",
+        "slug": "qa-billing-beta-2026-03-17t00-25-21-355z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:25:28.41845+00:00"
+      },
+      {
+        "id": "eeec85f6-0fe0-4af6-b779-a9bea9a4d51c",
+        "name": "openplan-billing-debug-2026-03-17t00-26-27-657z",
+        "slug": "openplan-billing-debug-2026-03-17t00-26-27-657z-1808f57b",
+        "plan": "starter",
+        "subscription_plan": "starter",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T00:26:28.642827+00:00"
+      },
+      {
+        "id": "4ace5091-a348-49ad-9ac0-7837378377c0",
+        "name": "Debug Alpha 2026-03-17T00-26-27-657Z",
+        "slug": "debug-alpha-2026-03-17t00-26-27-657z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:26:33.054328+00:00"
+      },
+      {
+        "id": "008bd0b9-8e2f-4079-9bec-4fe3e722774b",
+        "name": "Debug Beta 2026-03-17T00-26-27-657Z",
+        "slug": "debug-beta-2026-03-17t00-26-27-657z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:26:34.300481+00:00"
+      },
+      {
+        "id": "da52cc89-943a-4057-bdd1-53d18db43872",
+        "name": "openplan-billing-debug2-2026-03-17t00-27-15-080z",
+        "slug": "openplan-billing-debug2-2026-03-17t00-27-15-080z-b096d08a",
+        "plan": "professional",
+        "subscription_plan": "professional",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T00:27:16.695021+00:00"
+      },
+      {
+        "id": "5b44f793-e20d-4d46-aa54-19f4b272e8c3",
+        "name": "Debug2 Alpha 2026-03-17T00-27-15-080Z",
+        "slug": "debug2-alpha-2026-03-17t00-27-15-080z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:27:20.227071+00:00"
+      },
+      {
+        "id": "cc04b7c8-3db6-45c0-9adb-6bb0474ee057",
+        "name": "Debug2 Beta 2026-03-17T00-27-15-080Z",
+        "slug": "debug2-beta-2026-03-17t00-27-15-080z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:27:21.218325+00:00"
+      },
+      {
+        "id": "7b6a7d07-d1f1-48fd-8e3d-ddc4fee3933d",
+        "name": "openplan-billing-proof-2026-03-17t00-29-50-259z",
+        "slug": "openplan-billing-proof-2026-03-17t00-29-50-259z-e4ac5247",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:29:50.709381+00:00"
+      },
+      {
+        "id": "3ccf71b8-63ff-4eeb-97cf-421e5b4e092e",
+        "name": "Proof Alpha 2026-03-17T00-29-50-259Z",
+        "slug": "proof-alpha-2026-03-17t00-29-50-259z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:29:54.124939+00:00"
+      },
+      {
+        "id": "531855e8-1e87-4dce-b89e-d6462008326f",
+        "name": "Proof Beta 2026-03-17T00-29-50-259Z",
+        "slug": "proof-beta-2026-03-17t00-29-50-259z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T00:29:54.881584+00:00"
+      },
+      {
+        "id": "24a697c7-62be-4221-984e-2443243cb643",
+        "name": "openplan-billing-proof-post-promo-2026-03-17t01-01-22-830z",
+        "slug": "openplan-billing-proof-post-promo-2026-03-17t01-01-22-830z-9311d272",
+        "plan": "starter",
+        "subscription_plan": "starter",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T01:01:24.015487+00:00"
+      },
+      {
+        "id": "e8dde6b2-f296-4099-9f62-0f79552858e0",
+        "name": "Proof Alpha Post Promotion 2026-03-17T01-01-22-830Z",
+        "slug": "proof-alpha-post-promotion-2026-03-17t01-01-22-8",
+        "plan": "professional",
+        "subscription_plan": "professional",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T01:01:30.105073+00:00"
+      },
+      {
+        "id": "819138b9-37dd-4643-8825-419742d6b407",
+        "name": "Proof Beta Post Promotion 2026-03-17T01-01-22-830Z",
+        "slug": "proof-beta-post-promotion-2026-03-17t01-01-22-83",
+        "plan": "starter",
+        "subscription_plan": "starter",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T01:01:31.126626+00:00"
+      },
+      {
+        "id": "7ccb1c39-c2a7-4f41-8c23-006f3e64f13d",
+        "name": "openplan-qa-2026-03-17t05-19-38-902z",
+        "slug": "openplan-qa-2026-03-17t05-19-38-902z-c83005f1",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T05:19:40.231021+00:00"
+      },
+      {
+        "id": "559ba598-851d-4f14-b34f-917b38f9711a",
+        "name": "QA Continuity Project 2026-03-17T05-19-38-902Z",
+        "slug": "qa-continuity-project-2026-03-17t05-19-38-902z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T05:19:46.477923+00:00"
+      },
+      {
+        "id": "af23cfae-b734-4acd-8d00-7e642a70e179",
+        "name": "openplan-engagement-qa-2026-03-17t05-24-22-098z",
+        "slug": "openplan-engagement-qa-2026-03-17t05-24-22-098z-7f827fba",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T05:24:24.503963+00:00"
+      },
+      {
+        "id": "eae2ee5a-6cdb-47cd-8f56-1f1924fc004e",
+        "name": "openplan-engagement-qa-2026-03-17t05-25-23-948z",
+        "slug": "openplan-engagement-qa-2026-03-17t05-25-23-948z-eaea8705",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T05:25:25.238132+00:00"
+      },
+      {
+        "id": "592c8c28-67c6-4a7d-a809-8b7ccf3069f4",
+        "name": "QA Engagement Project 2026-03-17T05-25-23-948Z",
+        "slug": "qa-engagement-project-2026-03-17t05-25-23-948z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T05:25:30.877986+00:00"
+      },
+      {
+        "id": "64440f59-812e-4f00-bb9f-86674f05170e",
+        "name": "openplan-engagement-qa-2026-03-17t06-53-09-375z",
+        "slug": "openplan-engagement-qa-2026-03-17t06-53-09-375z-eebf1ed1",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:53:12.102706+00:00"
+      },
+      {
+        "id": "5c363510-6fac-47a6-a290-9f17494846c3",
+        "name": "QA Engagement Project 2026-03-17T06-53-09-375Z",
+        "slug": "qa-engagement-project-2026-03-17t06-53-09-375z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:53:20.224826+00:00"
+      },
+      {
+        "id": "5c8f752d-75d4-447b-b192-a657177b6f0d",
+        "name": "openplan-engagement-qa-2026-03-17t06-54-32-173z",
+        "slug": "openplan-engagement-qa-2026-03-17t06-54-32-173z-3108ca8a",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:54:33.591338+00:00"
+      },
+      {
+        "id": "3185418d-bc6f-42d1-ba41-f024ffe2c382",
+        "name": "QA Engagement Project 2026-03-17T06-54-32-173Z",
+        "slug": "qa-engagement-project-2026-03-17t06-54-32-173z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:54:39.192104+00:00"
+      },
+      {
+        "id": "e4139cef-487a-41cb-b201-af64a116a309",
+        "name": "openplan-engagement-qa-2026-03-17t06-55-20-394z",
+        "slug": "openplan-engagement-qa-2026-03-17t06-55-20-394z-2b27dd96",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:55:21.894652+00:00"
+      },
+      {
+        "id": "1c20e430-bcd7-459d-9778-98630e5eae46",
+        "name": "QA Engagement Project 2026-03-17T06-55-20-394Z",
+        "slug": "qa-engagement-project-2026-03-17t06-55-20-394z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T06:55:29.827073+00:00"
+      },
+      {
+        "id": "a2121177-4ae0-442b-95c1-217a13456cde",
+        "name": "openplan-engagement-report-qa-2026-03-17t07-10-49-421z",
+        "slug": "openplan-engagement-report-qa-2026-03-17t07-10-49-421z-fac09bd7",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:10:52.493928+00:00"
+      },
+      {
+        "id": "23ea5e12-8795-48d0-a97f-3dc62d2ea26d",
+        "name": "QA Engagement Report Project 2026-03-17T07-10-49-421Z",
+        "slug": "qa-engagement-report-project-2026-03-17t07-10-49",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:11:00.220637+00:00"
+      },
+      {
+        "id": "dfe50565-ea18-402c-b2c9-d49f9a4290f2",
+        "name": "openplan-engagement-report-qa-2026-03-17t07-39-40-211z",
+        "slug": "openplan-engagement-report-qa-2026-03-17t07-39-40-211z-38dde184",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:39:42.795672+00:00"
+      },
+      {
+        "id": "7a59e2b0-72e8-4b8a-89a5-57bce496799e",
+        "name": "QA Engagement Report Project 2026-03-17T07-39-40-211Z",
+        "slug": "qa-engagement-report-project-2026-03-17t07-39-40",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:39:49.735247+00:00"
+      },
+      {
+        "id": "52df9bd3-2b6a-4c37-8d40-2c5eaca2a1bd",
+        "name": "openplan-engagement-report-qa-2026-03-17t07-44-20-138z",
+        "slug": "openplan-engagement-report-qa-2026-03-17t07-44-20-138z-51d20fdb",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:44:23.12143+00:00"
+      },
+      {
+        "id": "7e90b452-6346-4ec5-a6fa-2d7d19942a18",
+        "name": "openplan-engagement-report-qa-2026-03-17t07-49-10-692z",
+        "slug": "openplan-engagement-report-qa-2026-03-17t07-49-10-692z-08029a78",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:49:11.847879+00:00"
+      },
+      {
+        "id": "0e17a505-7825-43b2-8ecb-6ce55218774b",
+        "name": "QA Engagement Report Project 2026-03-17T07-49-10-692Z",
+        "slug": "qa-engagement-report-project-2026-03-17t07-49-10",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T07:49:18.325461+00:00"
+      },
+      {
+        "id": "4d7db63e-c80c-4565-8b12-47db1196de74",
+        "name": "openplan-paid-canary-2026-03-17t19-35-49-934z",
+        "slug": "openplan-paid-canary-2026-03-17t19-35-49-934z-23e786fc",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T19:35:51.230061+00:00"
+      },
+      {
+        "id": "e7345560-2532-4fb3-b9cd-e3c438577a4d",
+        "name": "Paid Canary Project 2026-03-17T19-35-49-934Z",
+        "slug": "paid-canary-project-2026-03-17t19-35-49-934z",
+        "plan": "starter",
+        "subscription_plan": "starter",
+        "subscription_status": "checkout_pending",
+        "created_at": "2026-03-17T19:35:57.160201+00:00"
+      },
+      {
+        "id": "71a919b7-339f-4450-b1b5-94e2440a20a0",
+        "name": "openplan-report-traceability-qa-2026-03-17t19-55-06-681z",
+        "slug": "openplan-report-traceability-qa-2026-03-17t19-55-06-681z-68ea7a0f",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T19:55:07.500311+00:00"
+      },
+      {
+        "id": "1f946ee9-89ff-465d-9210-1d17eb6778df",
+        "name": "QA Report Traceability Project 2026-03-17T19-55-06-681Z",
+        "slug": "qa-report-traceability-project-2026-03-17t19-55-",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T19:55:13.98083+00:00"
+      },
+      {
+        "id": "a0025610-ec11-4e46-ba13-e907eb936d11",
+        "name": "openplan-report-debug-2026-03-17t20-02-24-286z",
+        "slug": "openplan-report-debug-2026-03-17t20-02-24-286z-abac4293",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T20:02:24.962722+00:00"
+      },
+      {
+        "id": "691d452a-33c6-458e-9142-7786594559f5",
+        "name": "Trace Debug Project 2026-03-17T20-02-24-286Z",
+        "slug": "trace-debug-project-2026-03-17t20-02-24-286z",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T20:02:28.976304+00:00"
+      },
+      {
+        "id": "449ead19-e670-4da0-a01c-afd58cd01f9c",
+        "name": "openplan-preview-trace-2026-03-17t20-03-57-570z",
+        "slug": "openplan-preview-trace-2026-03-17t20-03-57-570z-01ff2cae",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T20:03:58.164786+00:00"
+      },
+      {
+        "id": "69e1caf6-adfd-491f-bc69-62767fda3372",
+        "name": "openplan-report-traceability-qa-2026-03-17t20-07-28-979z",
+        "slug": "openplan-report-traceability-qa-2026-03-17t20-07-28-979z-925c72b7",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T20:07:29.935786+00:00"
+      },
+      {
+        "id": "058d668b-9963-47a2-bfd8-fdabbde89c3b",
+        "name": "QA Report Traceability Project 2026-03-17T20-07-28-979Z",
+        "slug": "qa-report-traceability-project-2026-03-17t20-07-",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-03-17T20:07:34.842529+00:00"
+      }
+    ]
+  },
+  "authDeletes": [
+    {
+      "userId": "925c72b7-b601-43cb-ab85-62a247e5b3f6",
+      "email": "openplan-report-traceability-qa-2026-03-17t20-07-28-979z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "01ff2cae-cf5f-4e13-aaf8-b400a6e9b0fc",
+      "email": "openplan-preview-trace-2026-03-17t20-03-57-570z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "abac4293-2c80-408f-9165-ba311eeafb4a",
+      "email": "openplan-report-debug-2026-03-17t20-02-24-286z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "68ea7a0f-2c96-4bf2-ab33-1a0dba8aee97",
+      "email": "openplan-report-traceability-qa-2026-03-17t19-55-06-681z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "23e786fc-1279-4caa-862e-9d27ade7f995",
+      "email": "openplan-paid-canary-2026-03-17t19-35-49-934z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "08029a78-1844-43f3-b888-a05ed20c44fe",
+      "email": "openplan-engagement-report-qa-2026-03-17t07-49-10-692z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "51d20fdb-f27b-43f3-a924-d0d0a0087db1",
+      "email": "openplan-engagement-report-qa-2026-03-17t07-44-20-138z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "38dde184-a8b6-49bb-9a3d-dbe3dd648331",
+      "email": "openplan-engagement-report-qa-2026-03-17t07-39-40-211z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "fac09bd7-e207-43a1-9825-1bd529b5def4",
+      "email": "openplan-engagement-report-qa-2026-03-17t07-10-49-421z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "2b27dd96-9f5a-4be9-a730-4fea3037be37",
+      "email": "openplan-engagement-qa-2026-03-17t06-55-20-394z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "3108ca8a-e7f3-47e9-9ffe-abb42af5adbd",
+      "email": "openplan-engagement-qa-2026-03-17t06-54-32-173z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "eebf1ed1-99e4-411c-9dac-b5d88e93ae00",
+      "email": "openplan-engagement-qa-2026-03-17t06-53-09-375z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "eaea8705-17ce-49f8-9be5-0b0da237e621",
+      "email": "openplan-engagement-qa-2026-03-17t05-25-23-948z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "7f827fba-f418-428b-a644-19673461e33f",
+      "email": "openplan-engagement-qa-2026-03-17t05-24-22-098z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "c83005f1-84de-45bd-b655-ec4d1fedca32",
+      "email": "openplan-qa-2026-03-17t05-19-38-902z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "9311d272-cf24-4d41-baf0-39fb99f84a6a",
+      "email": "openplan-billing-proof-post-promo-2026-03-17t01-01-22-830z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "e4ac5247-e03a-43ec-968b-2207eeba7b59",
+      "email": "openplan-billing-proof-2026-03-17t00-29-50-259z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "b096d08a-fca3-40b7-a17a-6f3fbf59a330",
+      "email": "openplan-billing-debug2-2026-03-17t00-27-15-080z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "1808f57b-4189-4c06-91eb-07b947542fd8",
+      "email": "openplan-billing-debug-2026-03-17t00-26-27-657z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    }
+  ]
+}
