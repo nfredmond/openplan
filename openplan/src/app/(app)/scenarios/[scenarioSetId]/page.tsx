@@ -5,6 +5,7 @@ import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-com
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildScenarioComparisonSummary,
@@ -101,7 +102,7 @@ export default async function ScenarioSetDetailPage({
     .map((entry) => entry.attached_run_id)
     .filter((value): value is string => Boolean(value));
   const attachedRunsResult = runIds.length
-    ? await supabase.from("runs").select("id, title, summary_text, created_at").in("id", runIds)
+    ? await supabase.from("runs").select("id, title, summary_text, metrics, created_at").in("id", runIds)
     : { data: [], error: null };
 
   const runMap = new Map((attachedRunsResult.data ?? []).map((run) => [run.id, run]));
@@ -129,6 +130,11 @@ export default async function ScenarioSetDetailPage({
   const { data: reportRunsData } = reportIds.length
     ? await supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds)
     : { data: [] };
+  const comparisonBoard = buildScenarioComparisonBoard({
+    scenarioSetId: scenarioSet.id,
+    baselineEntry,
+    alternativeEntries,
+  });
   const reportLinkage = buildScenarioLinkedReports({
     reports: (reportsData ?? []) as Array<{
       id: string;
@@ -289,6 +295,63 @@ export default async function ScenarioSetDetailPage({
                 </div>
               </div>
             </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-heading">
+              <p className="module-section-label">Decision surface</p>
+              <h2 className="module-section-title">Alternative vs baseline comparison board</h2>
+              <p className="module-section-description">
+                Attached runs now roll up into a decision-useful comparison surface so planners can see where each alternative actually moves the scorecard before opening Studio.
+              </p>
+            </div>
+
+            {comparisonBoard.length === 0 ? (
+              <div className="module-empty-state mt-5 text-sm">
+                No comparison cards yet. Attach distinct runs to the baseline and at least one alternative to light up the board.
+              </div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {comparisonBoard.map((card) => (
+                  <div key={card.entryId} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone="success">Ready to compare</StatusBadge>
+                          <StatusBadge tone="info">{card.changedMetricCount} metrics moved</StatusBadge>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title text-[1.05rem]">{card.candidateLabel} vs {card.baselineLabel}</h3>
+                            <Link href={card.analysisHref} className="module-record-chip transition hover:border-primary/40 hover:text-primary">
+                              Open in Studio
+                            </Link>
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
+                            Alternative run: {card.candidateRunTitle} · Baseline run: {card.baselineRunTitle}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      {card.headlineMetrics.map((metric) => (
+                        <div key={`${card.entryId}-${metric.key}`} className="rounded-[20px] border border-border/70 bg-background/75 p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{metric.label}</p>
+                            <StatusBadge tone={metric.tone}>{metric.deltaLabel}</StatusBadge>
+                          </div>
+                          <div className="mt-3 space-y-1">
+                            <p className="text-2xl font-semibold tracking-tight text-foreground">{metric.current ?? "N/A"}</p>
+                            <p className="text-sm text-muted-foreground">Baseline {metric.baseline ?? "N/A"}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </article>
 
           <article className="module-section-surface">
