@@ -17,6 +17,21 @@ type ScenarioEntryOption = {
   assumptionCount: number;
 };
 
+export type ModelRunStage = {
+  id: string;
+  stage_name: string;
+  status: string;
+  started_at: string | null;
+  completed_at: string | null;
+};
+
+export type ModelRunArtifact = {
+  id: string;
+  artifact_type: string;
+  file_url: string;
+  file_size_bytes: number | null;
+};
+
 type ManagedModelRun = {
   id: string;
   status: string;
@@ -28,6 +43,8 @@ type ManagedModelRun = {
   started_at: string | null;
   completed_at: string | null;
   created_at: string | null;
+  stages: ModelRunStage[];
+  artifacts: ModelRunArtifact[];
 };
 
 type ModelRunManagerProps = {
@@ -393,6 +410,7 @@ export function ModelRunManager({
                           </Link>
                         </div>
                       ) : null}
+                      <ModelRunStagingAndArtifacts stages={run.stages} artifacts={run.artifacts} />
                       <ManagedRunPromotionControl modelId={modelId} run={run} scenarioEntries={scenarioEntries} />
                     </div>
                   </div>
@@ -403,5 +421,42 @@ export function ModelRunManager({
         </div>
       </div>
     </article>
+  );
+}
+
+function ModelRunStagingAndArtifacts({ stages, artifacts }: { stages: ModelRunStage[]; artifacts: ModelRunArtifact[] }) {
+  if (!stages?.length && !artifacts?.length) return null;
+
+  return (
+    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-4">
+      {stages?.length > 0 && (
+        <div>
+          <h4 className="font-semibold mb-2">Execution Stages</h4>
+          <ul className="space-y-2">
+            {stages.map((stage) => (
+              <li key={stage.id} className="flex items-center justify-between">
+                <span className="capitalize">{stage.stage_name}</span>
+                <StatusBadge tone={toneForRunStatus(stage.status)}>{stage.status}</StatusBadge>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {artifacts?.length > 0 && (
+        <div>
+          <h4 className="font-semibold mb-2">Run Artifacts</h4>
+          <ul className="space-y-2">
+            {artifacts.map((art) => (
+              <li key={art.id} className="flex items-center justify-between text-muted-foreground">
+                <span>{art.artifact_type}</span>
+                <a href={art.file_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  View / Download
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
