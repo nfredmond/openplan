@@ -21,6 +21,7 @@ const launchModelRunSchema = z.object({
   queryText: z.string().trim().min(1).max(5000).optional(),
   corridorGeojson: corridorGeojsonSchema.optional(),
   attachToScenarioEntry: z.boolean().optional(),
+  engineKey: z.enum(['deterministic_corridor_v1', 'aequilibrae']).optional().default('deterministic_corridor_v1'),
 });
 
 type RouteContext = {
@@ -185,6 +186,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       overrideQueryText: parsed.data.queryText,
       overrideCorridorGeojson: parsed.data.corridorGeojson,
     });
+    launchPayload.engineKey = parsed.data.engineKey;
 
     if (!launchPayload.queryText || !launchPayload.corridorGeojson) {
       return NextResponse.json(
@@ -209,9 +211,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       model_id: access.model.id,
       scenario_set_id: access.model.scenario_set_id,
       scenario_entry_id: scenarioEntry?.id ?? null,
-      engine_key: "deterministic_corridor_v1",
+      engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
       launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
-      status: "running",
+      status: (launchPayload.engineKey === "aequilibrae") ? "queued" : "running",
       run_title: launchTitle,
       query_text: launchPayload.queryText,
       corridor_geojson: launchPayload.corridorGeojson,
@@ -227,6 +229,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       created_by: user.id,
     });
 
+    
     if (createModelRunError) {
       if (looksLikePendingSchema(createModelRunError.message)) {
         return NextResponse.json(
@@ -242,6 +245,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: createModelRunError.code ?? null,
       });
       return NextResponse.json({ error: "Failed to create model run" }, { status: 500 });
+    }
+
+    if (launchPayload.engineKey === "aequilibrae") {
+      // Async run. Create stages and return immediately.
+      await supabase.from("model_run_stages").insert([
+        { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+        { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" }
+      ]);
+      return NextResponse.json(
+        { modelRunId, status: "queued" },
+        { status: 201 }
+      );
     }
 
     const analysisResponse = await fetch(new URL("/api/analysis", request.nextUrl.origin), {

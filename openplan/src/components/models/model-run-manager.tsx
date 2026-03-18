@@ -36,6 +36,7 @@ type ManagedModelRun = {
   id: string;
   status: string;
   run_title: string;
+  engine_key: string;
   source_analysis_run_id: string | null;
   scenario_entry_id: string | null;
   result_summary_json: Record<string, unknown> | null;
@@ -178,6 +179,7 @@ export function ModelRunManager({
   const [corridorText, setCorridorText] = useState(defaultCorridorText);
   const [scenarioEntryId, setScenarioEntryId] = useState("");
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
+  const [engineKey, setEngineKey] = useState("deterministic_corridor_v1");
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -207,6 +209,7 @@ export function ModelRunManager({
           corridorGeojson: parsedCorridorGeojson || undefined,
           scenarioEntryId: scenarioEntryId || undefined,
           attachToScenarioEntry: attachToScenarioEntry && Boolean(scenarioEntryId),
+          engineKey,
         }),
       });
 
@@ -276,6 +279,21 @@ export function ModelRunManager({
             <p className="mt-1 text-sm text-muted-foreground">
               Use model defaults, then optionally bind the result back into a specific scenario entry.
             </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="managed-run-engine" className="text-[0.82rem] font-semibold">
+              Execution Engine
+            </label>
+            <select
+              id="managed-run-engine"
+              className="module-select"
+              value={engineKey}
+              onChange={(event) => setEngineKey(event.target.value)}
+            >
+              <option value="deterministic_corridor_v1">Deterministic Corridor (Synchronous)</option>
+              <option value="aequilibrae">AequilibraE (Asynchronous Worker Prototype)</option>
+            </select>
           </div>
 
           <div className="space-y-1.5">
@@ -385,6 +403,7 @@ export function ModelRunManager({
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={toneForRunStatus(run.status)}>{run.status}</StatusBadge>
+                        <StatusBadge tone="neutral">{run.engine_key === "aequilibrae" ? "AequilibraE" : "Deterministic"}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
                       </div>
