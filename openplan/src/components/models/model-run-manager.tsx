@@ -53,6 +53,99 @@ function toneForRunStatus(status: string): "info" | "success" | "warning" | "dan
   return "neutral";
 }
 
+function findScenarioEntryLabel(entries: ScenarioEntryOption[], scenarioEntryId: string | null) {
+  if (!scenarioEntryId) return null;
+  return entries.find((entry) => entry.id === scenarioEntryId)?.label ?? null;
+}
+
+function ManagedRunPromotionControl({
+  modelId,
+  run,
+  scenarioEntries,
+}: {
+  modelId: string;
+  run: ManagedModelRun;
+  scenarioEntries: ScenarioEntryOption[];
+}) {
+  const router = useRouter();
+  const [scenarioEntryId, setScenarioEntryId] = useState(run.scenario_entry_id ?? "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const currentLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
+
+  if (run.status !== "succeeded" || !run.source_analysis_run_id || scenarioEntries.length === 0) {
+    return null;
+  }
+
+  async function handlePromote() {
+    if (!scenarioEntryId) {
+      setError("Select a scenario entry first.");
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/models/${modelId}/runs/${run.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ scenarioEntryId }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to promote managed run");
+      }
+
+      router.refresh();
+    } catch (promotionError) {
+      setError(promotionError instanceof Error ? promotionError.message : "Failed to promote managed run");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const unchanged = scenarioEntryId === (run.scenario_entry_id ?? "");
+
+  return (
+    <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Promotion / reassignment</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {currentLabel
+              ? `Currently attached to ${currentLabel}. Reassign if the evidence belongs to a different scenario entry.`
+              : "This succeeded run is not attached to a scenario entry yet. Promote it into one now."}
+          </p>
+        </div>
+        {currentLabel ? <StatusBadge tone="neutral">Attached: {currentLabel}</StatusBadge> : null}
+      </div>
+
+      <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center">
+        <select
+          className="module-select md:max-w-sm"
+          value={scenarioEntryId}
+          onChange={(event) => setScenarioEntryId(event.target.value)}
+          disabled={isSubmitting}
+        >
+          <option value="">Select scenario entry</option>
+          {scenarioEntries.map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              {entry.label} · {entry.entryType} · {entry.status}
+            </option>
+          ))}
+        </select>
+        <Button type="button" variant="outline" size="sm" onClick={() => void handlePromote()} disabled={isSubmitting || !scenarioEntryId || unchanged}>
+          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {currentLabel ? "Reassign to scenario" : "Promote to scenario"}
+        </Button>
+      </div>
+
+      {error ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+    </div>
+  );
+}
+
 export function ModelRunManager({
   modelId,
   modelTitle,
@@ -122,7 +215,7 @@ export function ModelRunManager({
           <p className="module-section-label">Execution</p>
           <h2 className="module-section-title">Managed scenario → run execution</h2>
           <p className="module-section-description">
-            Launch a managed run with immutable input snapshots, then optionally promote the resulting analysis run into a scenario entry.
+            Launch a managed run with immutable input snapshots, then promote or reassign the resulting analysis run into the right scenario entry.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -268,13 +361,14 @@ export function ModelRunManager({
                 const resultSummary = run.result_summary_json ?? {};
                 const overallScore = typeof resultSummary.overallScore === "number" ? resultSummary.overallScore : null;
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
+                const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
 
                 return (
                   <div key={run.id} className="module-record-row">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={toneForRunStatus(run.status)}>{run.status}</StatusBadge>
-                        {run.scenario_entry_id ? <StatusBadge tone="neutral">Scenario attached</StatusBadge> : null}
+                        {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
                       </div>
                       <div className="space-y-1.5">
@@ -290,7 +384,7 @@ export function ModelRunManager({
                         </p>
                       </div>
                       {runLink ? (
-                        <div className="mt-3">
+                        <div className="mt-3 flex flex-wrap gap-2">
                           <Link href={runLink} className="inline-flex">
                             <Button type="button" variant="outline" size="sm">
                               Open in Studio
@@ -299,6 +393,7 @@ export function ModelRunManager({
                           </Link>
                         </div>
                       ) : null}
+                      <ManagedRunPromotionControl modelId={modelId} run={run} scenarioEntries={scenarioEntries} />
                     </div>
                   </div>
                 );
