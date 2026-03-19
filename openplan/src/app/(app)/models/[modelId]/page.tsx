@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Database, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
-import { ModelRunManager } from "@/components/models/model-run-manager";
+import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
@@ -282,8 +282,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     started_at: string | null;
     completed_at: string | null;
     created_at: string | null;
-    stages: Record<string, unknown>[];
-    artifacts: Record<string, unknown>[];
+    stages: ModelRunStage[];
+    artifacts: ModelRunArtifact[];
   }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic" }));
   const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
     id: string;
