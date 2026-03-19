@@ -95,6 +95,7 @@ export function mergeScenarioLaunchPayload({
     queryText,
     corridorGeojson,
     assumptionSnapshot: assumptions,
+    engineKey: "deterministic" as string,
   };
 }
 

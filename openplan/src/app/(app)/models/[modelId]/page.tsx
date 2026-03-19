@@ -270,10 +270,11 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   const hasAnyLinkedRecords = linkedRecordSections.some((section) => section.count > 0);
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
   const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
-  const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as Array<{
+  const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as unknown as Array<{
     id: string;
     status: string;
     run_title: string;
+    engine_key?: string;
     scenario_entry_id: string | null;
     source_analysis_run_id: string | null;
     result_summary_json: Record<string, unknown> | null;
@@ -283,7 +284,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     created_at: string | null;
     stages: any[];
     artifacts: any[];
-  }>);
+  }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic" }));
   const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
     id: string;
     label: string;
