@@ -15,3 +15,4 @@ data/pilot-nevada-county/.venv/
 data/pilot-nevada-county/*.zip
 data/pilot-nevada-county/roads/
 data/pilot-nevada-county/tracts/
+data/pilot-nevada-county/*.csv.gz
