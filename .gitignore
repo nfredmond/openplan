@@ -11,3 +11,7 @@ openplan/supabase/.temp/
 .vercel
 .venv
 __pycache__
+data/pilot-nevada-county/.venv/
+data/pilot-nevada-county/*.zip
+data/pilot-nevada-county/roads/
+data/pilot-nevada-county/tracts/
