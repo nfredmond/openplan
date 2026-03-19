@@ -260,9 +260,9 @@ export function ModelRunManager({
           <p className="module-summary-detail">Scenario entries available for direct evidence promotion.</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Engine</p>
-          <p className="module-summary-value text-base">deterministic_corridor_v1</p>
-          <p className="module-summary-detail">First orchestration backend built on the current analysis stack.</p>
+          <p className="module-summary-label">Engines available</p>
+          <p className="module-summary-value text-base">2</p>
+          <p className="module-summary-detail">Deterministic Corridor (sync) · AequilibraE (async worker)</p>
         </div>
       </div>
 
@@ -385,6 +385,13 @@ export function ModelRunManager({
             </div>
             <StatusBadge tone={modelRuns.length > 0 ? "info" : "neutral"}>{modelRuns.length} stored</StatusBadge>
           </div>
+
+          {modelRuns.some((r) => r.status === "queued" || r.status === "running") ? (
+            <div className="mt-3 flex items-center gap-2 rounded-2xl border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
+              <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+              <span>One or more runs are in progress. Refresh the page to check for updates.</span>
+            </div>
+          ) : null}
 
           {modelRuns.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
