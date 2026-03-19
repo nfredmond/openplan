@@ -1,0 +1,346 @@
+OPENPLAN
+Planning OS
+
+WORKSPACE
+
+openplan-scenario-compare-2026-03-18t03-19-54-859z
+FREE
+OWNER
+Overview
+Projects
+Plans
+Programs
+Engagement
+Analysis Studio
+Scenarios
+Models
+Data Hub
+Reports
+Admin
+
+MODELING & DATA
+
+Scenarios
+Models
+Data Hub
+Platform status
+
+Multi-module shell is active. Modules are binding to live Planning OS objects and workflows.
+
+Sign out
+Search projects, plans, reports…
+
+openplan-scenario-compare-2026-03-18t03-19-54-859z@natfordplanning.com
+
+Authenticated
+
+Scenarios
+Scenario Compare 2026-03-18T03-19-54-859Z
+SCENARIO SET DETAIL
+ACTIVE
+BASELINE REGISTERED
+1/1 READY
+Scenario Compare 2026-03-18T03-19-54-859Z
+
+Production scenario comparison board smoke.
+
+PROJECT
+
+Scenario Comparison Smoke 2026-03-18T03-19-54-859Z
+
+Project-linked scenario registry with durable reopening.
+
+BASELINE
+
+Baseline Existing Conditions
+
+Exactly one baseline is allowed per scenario set.
+
+COMPARISON READINESS
+
+1 / 1
+
+Ready alternatives have distinct runs attached on both the baseline and alternative entries.
+
+EVIDENCE POSTURE
+
+Run attachment stays explicit
+
+Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are recorded, and why a baseline-versus-alternative comparison is or is not ready.
+
+Baseline and alternative entries show distinct run-attachment blockers.
+Assumptions stay attached to each entry, not hidden inside prose.
+Project linkage remains visible so this record does not float free from the planning container.
+
+SCENARIO SET
+
+Metadata and framing
+
+Keep the planning question explicit. The scenario set stays useful later only if its framing remains legible.
+
+Title
+Status
+draft
+active
+archived
+Summary
+Planning question
+Save scenario set
+
+WORKFLOW
+
+Comparison and reporting runway
+
+Move from registered entries into Analysis Studio review or report assembly without losing the explicit evidence trail.
+
+Analysis Studio handoff
+
+Ready alternatives open with the attached run as current and the baseline pinned for direct review in Analysis Studio.
+
+REVIEW ALTERNATIVE TRANSIT + BIKE UPGRADE
+
+Report linkage
+
+Reports are surfaced when they already use this scenario set's attached runs. New comparison packets can be drafted from ready evidence.
+
+0 LINKED REPORTS
+0 COMPARISON-READY
+
+DECISION SURFACE
+
+Alternative vs baseline comparison board
+
+Attached runs now roll up into a decision-useful comparison surface so planners can see where each alternative actually moves the scorecard before opening Studio.
+
+READY TO COMPARE
+0 METRICS MOVED
+Alternative Transit + Bike Upgrade vs Baseline Existing Conditions
+OPEN IN STUDIO
+
+Alternative run: Evaluate safer crossings and protected bike lane with bet... · Baseline run: Baseline multimodal corridor conditions.
+
+OVERALL SCORE
+
+0
+
+43
+
+Baseline 43
+
+ACCESSIBILITY SCORE
+
+0
+
+22
+
+Baseline 22
+
+SAFETY SCORE
+
+0
+
+95
+
+Baseline 95
+
+EQUITY SCORE
+
+0
+
+8
+
+Baseline 8
+
+PROJECT LINKAGE
+
+Source planning container
+
+Scenario sets stay subordinate to projects so the registry does not split from the main OpenPlan record.
+
+Scenario Comparison Smoke 2026-03-18T03-19-54-859Z
+
+Production smoke project for scenario comparison board.
+
+OPEN PROJECT
+
+ENTRIES
+
+Register baseline and alternatives
+
+Add the entry, attach the best available run, and keep assumptions structured so readiness is clear from the start.
+
+Entry type
+alternative
+Entry status
+draft
+ready
+superseded
+Label
+Summary
+Attached run
+No run attached yet
+Evaluate safer crossings and protected bike lane with bet...
+Baseline multimodal corridor conditions.
+
+A comparison becomes ready only after both the baseline and alternative entries have distinct runs attached.
+
+Assumptions JSON
+Add scenario entry
+
+BASELINE
+
+Anchor scenario
+
+The baseline stays visually separate so reviewers can see what every alternative is being compared against.
+
+BASELINE
+READY
+RUN ATTACHED
+Baseline Existing Conditions
+
+UPDATED 3/17/2026, 8:20:06 PM
+
+Baseline for comparison board smoke.
+
+RUN BASELINE MULTIMODAL CORRIDOR CONDITIONS.
+ASSUMPTIONS 1
+SORT 0
+REPORTS 0
+
+EVIDENCE
+
+Baseline multimodal corridor conditions.
+
+Run saved 3/17/2026, 8:20:05 PM
+
+ASSUMPTIONS
+
+1 explicit assumptions
+
+analysisQueryText: Baseline multimodal corridor conditions.
+
+AUDIT NOTE
+
+Evidence attached
+
+Baseline entries still need an attached run if alternatives are going to compare against them.
+
+OPERATOR ACTIONS
+
+Use the attached evidence in Analysis Studio, launch a new managed run from the linked model lane, or move directly into a report workflow when the comparison is ready.
+
+Review in Studio
+
+MANAGED EXECUTION
+
+Launch a fresh run using a model already anchored to this scenario set. The completed run is promoted back into this entry automatically.
+
+Launch managed run
+
+REPORT LINKAGE
+
+No linked reports yet
+
+Reports will appear here after they reference this entry's attached run.
+
+Manage entry
+
+REGISTRY
+
+Alternatives and attachments
+
+Alternative cards make the attachment state, assumptions, and comparison blockers explicit instead of hiding them in notes.
+
+ALTERNATIVE
+READY
+READY TO COMPARE
+Alternative Transit + Bike Upgrade
+
+UPDATED 3/17/2026, 8:20:08 PM
+
+Alternative for comparison board smoke.
+
+RUN EVALUATE SAFER CROSSINGS AND PROTECTED BIKE LANE WITH BET...
+ASSUMPTIONS 2
+SORT 1
+REPORTS 0
+
+EVIDENCE
+
+Evaluate safer crossings and protected bike lane with bet...
+
+Run saved 3/17/2026, 8:20:08 PM
+
+ASSUMPTIONS
+
+2 explicit assumptions
+
+analysisQueryText: Evaluate safer crossings and protected bike lane with better transit access. · analysisQuerySuffix: Focus on equity and accessibility gains.
+
+AUDIT NOTE
+
+Ready to compare
+
+Baseline and alternative both have attached runs.
+
+OPERATOR ACTIONS
+
+Use the attached evidence in Analysis Studio, launch a new managed run from the linked model lane, or move directly into a report workflow when the comparison is ready.
+
+Review in Studio
+Create report
+
+MANAGED EXECUTION
+
+Launch a fresh run using a model already anchored to this scenario set. The completed run is promoted back into this entry automatically.
+
+Launch managed run
+
+REPORT LINKAGE
+
+No linked reports yet
+
+Create an analysis summary report from this ready comparison.
+
+Manage entry
+
+COMPARISON SUMMARY
+
+Readiness and blockers
+
+This stays lightweight in V1: enough structure to explain readiness, evidence posture, and why a comparison is blocked.
+
+Ready alternatives
+
+1
+
+1 of 1 alternatives have distinct runs attached on both sides.
+
+Baseline posture
+
+Baseline run attached
+
+The baseline has the evidence needed for alternative comparison.
+
+Blocked alternatives
+
+0
+
+Entries stay blocked when a baseline is missing, one side lacks a run, or both entries point at the same run.
+
+Alternative Transit + Bike Upgrade
+
+Baseline run: Baseline multimodal corridor conditions. · Candidate run: Evaluate safer crossings and protected bike lane with bet...
+
+Baseline and alternative both have attached runs.
+
+READY TO COMPARE
+
+REPORTS
+
+Scenario-linked report records
+
+Lightweight linkage only: reports are shown when they already reference this scenario set's attached runs.
+
+0 LINKED
+No linked reports yet. When comparison-ready evidence exists, create an analysis summary report from an alternative card.

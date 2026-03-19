@@ -282,8 +282,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     started_at: string | null;
     completed_at: string | null;
     created_at: string | null;
-    stages: any[];
-    artifacts: any[];
+    stages: Record<string, unknown>[];
+    artifacts: Record<string, unknown>[];
   }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic" }));
   const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
     id: string;
