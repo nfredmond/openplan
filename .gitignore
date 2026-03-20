@@ -16,3 +16,6 @@ data/pilot-nevada-county/*.zip
 data/pilot-nevada-county/roads/
 data/pilot-nevada-county/tracts/
 data/pilot-nevada-county/*.csv.gz
+data/pilot-nevada-county/aeq_project/
+data/pilot-nevada-county/run_output/*.omx
+data/pilot-nevada-county/run_output/state_*.json

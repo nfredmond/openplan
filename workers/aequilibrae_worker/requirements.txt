@@ -1,2 +1,6 @@
-supabase>=2.3.0
+aequilibrae>=1.6.0
+numpy>=1.26
+pandas>=2.0
+shapely>=2.0
+requests>=2.31
 python-dotenv>=1.0.0

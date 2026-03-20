@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Map as MapIcon, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import dynamic from "next/dynamic";
+
+const TrafficVolumeMap = dynamic(
+  () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
+  { ssr: false, loading: () => <div className="h-[520px] w-full animate-pulse rounded-2xl bg-zinc-800/50" /> }
+);
 
 type ScenarioEntryOption = {
   id: string;
@@ -385,6 +391,15 @@ export function ModelRunManager({
             </div>
             <StatusBadge tone={modelRuns.length > 0 ? "info" : "neutral"}>{modelRuns.length} stored</StatusBadge>
           </div>
+
+          {/* Show map for the latest succeeded AequilibraE run */}
+          {modelRuns.some((r) => r.status === "succeeded" && r.engine_key === "aequilibrae") && (
+            <div className="mt-4">
+              <TrafficVolumeMap
+                modelRunId={modelRuns.find((r) => r.status === "succeeded" && r.engine_key === "aequilibrae")!.id}
+              />
+            </div>
+          )}
 
           {modelRuns.some((r) => r.status === "queued" || r.status === "running") ? (
             <div className="mt-3 flex items-center gap-2 rounded-2xl border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
