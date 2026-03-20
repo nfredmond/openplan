@@ -1,5 +1,5 @@
 {
-  "run_id": "9b48c5ee-25f0-4ca8-b24a-3f8bfe21a1fd",
+  "run_id": "1de72401-4bb7-4377-a1c0-bbb7381a8f95",
   "engine": "AequilibraE 1.6.1",
   "network_source": "OpenStreetMap",
   "algorithm": "BFW",
@@ -31,6 +31,6 @@
     "Closed boundary",
     "Screening-grade"
   ],
-  "created_at": "2026-03-20T04:33:18.527438+00:00",
+  "created_at": "2026-03-20T05:20:45.355863+00:00",
   "model_area": "Nevada County (-121.30,39.00 to -120.00,39.50)"
 }
