@@ -59,7 +59,7 @@ if os.path.exists(PROJ_DIR):
 
 project = Project()
 project.new(PROJ_DIR)
-model_area = box(-121.15, 39.15, -120.90, 39.30)
+model_area = box(-121.30, 39.00, -120.00, 39.50)
 project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
 
 import sqlite3

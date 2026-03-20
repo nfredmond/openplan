@@ -71,8 +71,8 @@ if not existing:
 
 zones = pd.read_csv(os.path.join(PKG_DIR, "zone_attributes.csv"))
 active_zones = zones[
-    (zones["centroid_lon"] >= -121.15) & (zones["centroid_lon"] <= -120.90) &
-    (zones["centroid_lat"] >= 39.15) & (zones["centroid_lat"] <= 39.30)
+    (zones["centroid_lon"] >= -121.30) & (zones["centroid_lon"] <= -120.00) &
+    (zones["centroid_lat"] >= 39.00) & (zones["centroid_lat"] <= 39.50)
 ].copy().reset_index(drop=True)
 
 max_node = max(nodes_all)
@@ -286,7 +286,7 @@ evidence = {
     "run_id": "nevada-county-pilot-final",
     "engine": "AequilibraE 1.6.1",
     "network_source": "OpenStreetMap",
-    "model_area": "GV/NC core (-121.15,39.15 to -120.90,39.30)",
+    "model_area": "Nevada County (-121.30,39.00 to -120.00,39.50)",
     "algorithm": "BFW",
     "vdf": "BPR (α=0.15, β=4.0)",
     "convergence": {"final_gap": float(rgap) if np.isfinite(rgap) else None, "iterations": int(iters)},

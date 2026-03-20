@@ -1,35 +1,36 @@
 {
-  "run_id": "48864e98-4f2b-46bf-b04c-7abf9634a32f",
+  "run_id": "9b48c5ee-25f0-4ca8-b24a-3f8bfe21a1fd",
   "engine": "AequilibraE 1.6.1",
   "network_source": "OpenStreetMap",
   "algorithm": "BFW",
   "vdf": "BPR (\u03b1=0.15, \u03b2=4.0)",
   "convergence": {
-    "final_gap": 0.006781151730058109,
+    "final_gap": 0.013372032595148657,
     "iterations": 50
   },
   "network": {
-    "links": 12274,
-    "nodes": 5468,
-    "zones": 9
+    "links": 49005,
+    "nodes": 19460,
+    "zones": 26
   },
   "demand": {
-    "total_trips": 20668.0,
-    "routable_trips": 20668.0
+    "total_trips": 66572.0,
+    "routable_trips": 34840.0
   },
   "skims": {
-    "reachable_pairs": 72,
-    "total_pairs": 72,
-    "avg_time_min": 9.99870489682712,
-    "max_time_min": 22.705527432796067
+    "reachable_pairs": 380,
+    "total_pairs": 650,
+    "avg_time_min": 3.3741819540166094,
+    "max_time_min": 7.427019740071362
   },
-  "loaded_links": 1241,
-  "largest_component_pct": 96.5,
+  "loaded_links": 2412,
+  "largest_component_pct": 95.3,
   "caveats": [
     "Uncalibrated",
     "OSM default speeds/capacities",
     "Closed boundary",
     "Screening-grade"
   ],
-  "created_at": "2026-03-20T00:27:04.745225+00:00"
+  "created_at": "2026-03-20T04:33:18.527438+00:00",
+  "model_area": "Nevada County (-121.30,39.00 to -120.00,39.50)"
 }

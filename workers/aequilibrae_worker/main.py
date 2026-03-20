@@ -432,6 +432,7 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
         "largest_component_pct": setup_result.get("largest_component_pct"),
         "caveats": ["Uncalibrated", "OSM default speeds/capacities", "Closed boundary", "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "model_area": "Nevada County (-121.30,39.00 to -120.00,39.50)"
     }
 
     evidence_path = os.path.join(out_dir, "evidence_packet.json")
@@ -462,18 +463,18 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
 
     # Register KPIs
     kpis = [
-        ("network", "total_links", "Total Links", assign_result["network"]["links"], "count"),
-        ("network", "total_nodes", "Total Nodes", assign_result["network"]["nodes"], "count"),
-        ("network", "zones", "Zones", assign_result["network"]["zones"], "count"),
-        ("demand", "total_trips", "Total Trips", assign_result["demand"]["total_trips"], "trips/day"),
-        ("demand", "routable_trips", "Routable Trips", assign_result["demand"]["routable_trips"], "trips/day"),
-        ("convergence", "rgap", "Relative Gap", assign_result["convergence"]["final_gap"], "ratio"),
-        ("convergence", "iterations", "Iterations", assign_result["convergence"]["iterations"], "count"),
-        ("results", "loaded_links", "Loaded Links", assign_result["loaded_links"], "count"),
+        ("assignment", "total_links", "Total Links", assign_result["network"]["links"], "count"),
+        ("assignment", "total_nodes", "Total Nodes", assign_result["network"]["nodes"], "count"),
+        ("assignment", "zones", "Zones", assign_result["network"]["zones"], "count"),
+        ("general", "total_trips", "Total Trips", assign_result["demand"]["total_trips"], "trips/day"),
+        ("general", "routable_trips", "Routable Trips", assign_result["demand"]["routable_trips"], "trips/day"),
+        ("assignment", "rgap", "Relative Gap", assign_result["convergence"]["final_gap"], "ratio"),
+        ("assignment", "iterations", "Iterations", assign_result["convergence"]["iterations"], "count"),
+        ("assignment", "loaded_links", "Loaded Links", assign_result["loaded_links"], "count"),
     ]
     if assign_result["skims"]["avg_time_min"] is not None:
-        kpis.append(("skims", "avg_travel_time", "Avg Travel Time", round(assign_result["skims"]["avg_time_min"], 1), "min"))
-        kpis.append(("skims", "max_travel_time", "Max Travel Time", round(assign_result["skims"]["max_time_min"], 1), "min"))
+        kpis.append(("assignment", "avg_travel_time", "Avg Travel Time", round(assign_result["skims"]["avg_time_min"], 1), "min"))
+        kpis.append(("assignment", "max_travel_time", "Max Travel Time", round(assign_result["skims"]["max_time_min"], 1), "min"))
 
     for cat, name, label, value, unit in kpis:
         sb_post_kpi({
@@ -491,7 +492,7 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
 
 # ─── Main poll loop ────────────────────────────────────────────────────
 PILOT_WORK_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county")
-PILOT_BBOX = (-121.15, 39.15, -120.90, 39.30)
+PILOT_BBOX = (-121.30, 39.00, -120.00, 39.50)
 
 
 def process_stage(stage: dict):
