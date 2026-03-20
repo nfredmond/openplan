@@ -1,0 +1,37 @@
+[
+  {
+    "corridor_id": "C01",
+    "name": "SR-49 (North-South)",
+    "description": "Primary N-S corridor connecting Auburn to Downieville through Grass Valley and Nevada City",
+    "segment_count": 8,
+    "total_miles": 42.72
+  },
+  {
+    "corridor_id": "C02",
+    "name": "SR-20 (East-West)",
+    "description": "E-W corridor connecting Marysville to I-80 via Grass Valley/Nevada City",
+    "segment_count": 10,
+    "total_miles": 47.58
+  },
+  {
+    "corridor_id": "C03",
+    "name": "SR-174",
+    "description": "Connector from Grass Valley south to Colfax/I-80",
+    "segment_count": 1,
+    "total_miles": 10.12
+  },
+  {
+    "corridor_id": "C04",
+    "name": "I-80 (Truckee Segment)",
+    "description": "Interstate corridor through eastern Nevada County / Truckee area",
+    "segment_count": 9,
+    "total_miles": 83.81
+  },
+  {
+    "corridor_id": "C05",
+    "name": "Brunswick Road",
+    "description": "Key local arterial in Grass Valley connecting SR-49 to SR-174/south county",
+    "segment_count": 7,
+    "total_miles": 4.47
+  }
+]

@@ -27,10 +27,11 @@ import pandas as pd
 from shapely.geometry import box
 from dotenv import load_dotenv
 
-# Load Supabase creds from the Next.js env
-load_dotenv("../../openplan/.env.local")
+# Load env: locally from .env, in Docker from environment variables
+load_dotenv()  # will read .env if present
+load_dotenv("../../openplan/.env.local", override=False)  # local dev fallback
 
-SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
@@ -43,7 +44,7 @@ HEADERS = {
     "Prefer": "return=representation",
 }
 
-SPATIALITE_PATH = "/home/linuxbrew/.linuxbrew/lib/mod_spatialite"
+SPATIALITE_PATH = os.getenv("SPATIALITE_LIBRARY_PATH", "/usr/lib/x86_64-linux-gnu/mod_spatialite.so")
 os.environ["SPATIALITE_LIBRARY_PATH"] = SPATIALITE_PATH
 
 # ─── OSM Builder patch (link-type ID collision fix for AequilibraE 1.6.x) ──
@@ -140,7 +141,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple) -> dict:
     from aequilibrae import Project
 
     proj_dir = os.path.join(work_dir, "aeq_project")
-    pkg_dir = os.path.join(work_dir, "package")
+    pkg_dir = SEED_DATA_DIR
 
     log = "Creating AequilibraE project from OSM...\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -305,7 +306,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
     proj_dir = os.path.join(work_dir, "aeq_project")
-    pkg_dir = os.path.join(work_dir, "package")
+    pkg_dir = SEED_DATA_DIR
     out_dir = os.path.join(work_dir, "run_output")
     os.makedirs(out_dir, exist_ok=True)
 
@@ -486,12 +487,97 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
             "unit": unit,
         })
 
-    log = "Evidence packet + artifacts + KPIs written.\n"
+    # Generate GeoJSON for the map and upload to Supabase Storage
+    try:
+        import csv as csv_mod
+        db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            conn.enable_load_extension(True)
+            conn.load_extension(SPATIALITE_PATH)
+
+            volumes = {}
+            vol_path = os.path.join(out_dir, "link_volumes.csv")
+            with open(vol_path) as f:
+                for row in csv_mod.DictReader(f):
+                    lid = int(float(row.get("link_id", row.get("", 0))))
+                    pce = float(row.get("PCE_tot", 0))
+                    if pce > 0:
+                        volumes[lid] = {
+                            "pce_tot": round(pce),
+                            "pce_ab": round(float(row.get("PCE_AB", 0))),
+                            "pce_ba": round(float(row.get("PCE_BA", 0))),
+                            "voc_max": round(float(row.get("VOC_max", 0)), 3),
+                            "delay_factor": round(float(row.get("Delay_factor_Max", 0)), 3),
+                        }
+
+            features = []
+            for lid, vol in volumes.items():
+                row = conn.execute(
+                    "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links WHERE link_id=?", (lid,)
+                ).fetchone()
+                if row and row[3]:
+                    features.append({
+                        "type": "Feature",
+                        "properties": {"link_id": row[0], "name": row[2] or "", "link_type": row[1], **vol},
+                        "geometry": json.loads(row[3]),
+                    })
+            conn.close()
+
+            max_vol = max((v["pce_tot"] for v in volumes.values()), default=0)
+            fc = {
+                "type": "FeatureCollection",
+                "features": features,
+                "metadata": {
+                    "totalLinks": len(features),
+                    "maxVolume": max_vol,
+                    "engine": "AequilibraE 1.6.1",
+                    "modelRunId": run_id,
+                },
+            }
+
+            geojson_path = os.path.join(out_dir, "volumes.geojson")
+            with open(geojson_path, "w") as f:
+                json.dump(fc, f)
+
+            # Upload to Supabase Storage
+            storage_path = f"model-runs/{run_id}/volumes.geojson"
+            upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{storage_path}"
+            with open(geojson_path, "rb") as f:
+                upload_headers = {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/geo+json",
+                    "x-upsert": "true",
+                }
+                upload_res = requests.post(upload_url, headers=upload_headers, data=f.read())
+
+            if upload_res.status_code in (200, 201):
+                public_url = f"{SUPABASE_URL}/storage/v1/object/public/run-artifacts/{storage_path}"
+                sb_post_artifact({
+                    "run_id": run_id,
+                    "stage_id": stage_id,
+                    "artifact_type": "volumes_geojson",
+                    "file_url": public_url,
+                    "file_size_bytes": os.path.getsize(geojson_path),
+                    "content_hash": hashlib.sha256(open(geojson_path, "rb").read()).hexdigest()[:16],
+                    "metadata_json": {"format": "geojson", "features": len(features), "maxVolume": max_vol},
+                })
+                log += f"Uploaded volumes GeoJSON ({len(features)} features) to Supabase Storage.\n"
+            else:
+                log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
+    except Exception as e:
+        log += f"GeoJSON generation warning: {e}\n"
+
+    log += "Artifact extraction complete.\n"
     return log
 
 
 # ─── Main poll loop ────────────────────────────────────────────────────
-PILOT_WORK_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county")
+# Work directory: use /tmp/aeq_runs in cloud, or local data dir for dev
+PILOT_WORK_DIR = os.getenv("AEQ_WORK_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county"))
+# Seed data (zone_attributes.csv, od_trip_matrix.csv) bundled with the worker
+SEED_DATA_DIR = os.getenv("AEQ_SEED_DIR", os.path.join(os.path.dirname(__file__), "data", "package"))
 PILOT_BBOX = (-121.30, 39.00, -120.00, 39.50)
 
 
@@ -507,8 +593,10 @@ def process_stage(stage: dict):
     sb_patch_stage(stage_id, {"status": "running", "started_at": now_iso, "log_tail": f"Starting {stage_name}..."})
     sb_patch_run(run_id, {"status": "running"})
 
-    work_dir = PILOT_WORK_DIR  # For now, use the pilot data dir
-    state_file = os.path.join(work_dir, "run_output", f"state_{run_id[:8]}.json")
+    # Each run gets its own working directory
+    work_dir = os.path.join(PILOT_WORK_DIR, "runs", run_id[:12])
+    os.makedirs(work_dir, exist_ok=True)
+    state_file = os.path.join(work_dir, f"state.json")
 
     try:
         if stage_name == "AequilibraE Setup":

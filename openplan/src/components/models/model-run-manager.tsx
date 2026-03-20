@@ -393,13 +393,16 @@ export function ModelRunManager({
           </div>
 
           {/* Show map for the latest succeeded AequilibraE run */}
-          {modelRuns.some((r) => r.status === "succeeded" && r.engine_key === "aequilibrae") && (
-            <div className="mt-4">
-              <TrafficVolumeMap
-                modelRunId={modelRuns.find((r) => r.status === "succeeded" && r.engine_key === "aequilibrae")!.id}
-              />
-            </div>
-          )}
+          {modelRuns.some((r) => r.status === "succeeded" && r.engine_key === "aequilibrae") && (() => {
+            const latestAeqRun = modelRuns.find((r) => r.status === "succeeded" && r.engine_key === "aequilibrae")!;
+            const volumesArt = latestAeqRun.artifacts?.find((a) => a.artifact_type === "volumes_geojson");
+            const geojsonUrl = volumesArt?.file_url || "/data/pilot-volumes.geojson";
+            return (
+              <div className="mt-4">
+                <TrafficVolumeMap modelRunId={latestAeqRun.id} geojsonUrl={geojsonUrl} />
+              </div>
+            );
+          })()}
 
           {modelRuns.some((r) => r.status === "queued" || r.status === "running") ? (
             <div className="mt-3 flex items-center gap-2 rounded-2xl border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">

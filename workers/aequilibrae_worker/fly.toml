@@ -1,0 +1,24 @@
+# Fly.io configuration for the OpenPlan AequilibraE Worker
+# Deploy: fly launch --copy-config --yes
+# Then set secrets: fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+
+app = "openplan-aeq-worker"
+primary_region = "sjc"  # San Jose — closest to Nevada County
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  AEQ_WORK_DIR = "/tmp/aeq_runs"
+  AEQ_SEED_DIR = "/app/data/package"
+  SPATIALITE_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  auto_stop = false     # Worker must stay running to poll
+  auto_start = true
+
+# No HTTP service — this is a background worker
+[processes]
+  worker = "python main.py"

@@ -1,0 +1,53 @@
+{
+  "package_name": "nevada-county-accessibility-v1",
+  "version": "1.0.0-draft",
+  "geography": {
+    "name": "Nevada County, California",
+    "fips": "06057",
+    "state_fips": "06",
+    "county_fips": "057",
+    "bbox": {
+      "west": -121.279784,
+      "south": 39.006807,
+      "east": -120.005903,
+      "north": 39.522242
+    }
+  },
+  "network": {
+    "source": "TIGER/Line 2023 Roads (tl_2023_06057_roads)",
+    "total_links": 9111,
+    "total_miles": 3984.6,
+    "classification": {
+      "collector": 196,
+      "interstate": 12,
+      "local": 8669,
+      "local_unpaved": 65,
+      "ramp_service": 142,
+      "state_highway": 27
+    },
+    "crs": "EPSG:4326",
+    "file": "network_links.geojson"
+  },
+  "zones": {
+    "source": "TIGER/Line 2023 Census Tracts (tl_2023_06_tract)",
+    "count": 26,
+    "type": "Census Tracts",
+    "crs": "EPSG:4326",
+    "file": "zones.geojson",
+    "centroids_file": "zone_centroids.geojson"
+  },
+  "corridors": {
+    "count": 5,
+    "file": "corridors.json"
+  },
+  "calibration_status": "uncalibrated",
+  "caveats": [
+    "Network attributes (speed, capacity, lanes) are default estimates, not field-verified",
+    "Zone boundaries are Census tracts, not custom TAZs",
+    "No transit network included in v1",
+    "Trip generation will be synthetic (gravity model from Census/LODES data)",
+    "All outputs carry 'uncalibrated screening' label until validated against observed counts"
+  ],
+  "created_at": "2026-03-19",
+  "created_by": "Bartholomew Hale (COO), Nat Ford"
+}
