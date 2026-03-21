@@ -13,26 +13,47 @@ import {
   summarizeEvidenceCategories,
   type NormalizedEvidencePacket,
 } from "@/lib/models/evidence-packet";
+import {
+  buildModelRunKpiComparisonSummary,
+  formatModelRunKpiDelta,
+  formatModelRunKpiPercentDelta,
+  formatModelRunKpiValue,
+} from "@/lib/models/kpi-comparison";
+
+type ModelRunComparisonCandidate = {
+  id: string;
+  runTitle: string;
+  completedAt: string | null;
+  scenarioLabel: string | null;
+};
 
 type ModelRunEvidencePanelProps = {
   modelId: string;
   modelRunId: string;
+  runTitle: string;
   runStatus: string;
   engineKey: string;
+  comparisonCandidates: ModelRunComparisonCandidate[];
 };
 
 export function ModelRunEvidencePanel({
   modelId,
   modelRunId,
+  runTitle,
   runStatus,
   engineKey,
+  comparisonCandidates,
 }: ModelRunEvidencePanelProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRelaunching, setIsRelaunching] = useState(false);
+  const [isComparisonLoading, setIsComparisonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [comparisonError, setComparisonError] = useState<string | null>(null);
+  const [selectedBaselineRunId, setSelectedBaselineRunId] = useState("");
   const [evidence, setEvidence] = useState<NormalizedEvidencePacket | null>(null);
+  const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
 
   const canInspect = runStatus === "succeeded";
   const canRelaunch = engineKey === "aequilibrae" && runStatus !== "running" && runStatus !== "succeeded";
@@ -40,6 +61,14 @@ export function ModelRunEvidencePanel({
 
   const highlights = useMemo(() => (evidence ? buildEvidenceHighlights(evidence) : []), [evidence]);
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
+  const comparisonSummary = useMemo(
+    () => (comparisonRows ? buildModelRunKpiComparisonSummary(comparisonRows) : null),
+    [comparisonRows]
+  );
+  const selectedBaselineRun = useMemo(
+    () => comparisonCandidates.find((candidate) => candidate.id === selectedBaselineRunId) ?? null,
+    [comparisonCandidates, selectedBaselineRunId]
+  );
 
   async function loadEvidence(force = false) {
     if (!canInspect) {
@@ -78,6 +107,36 @@ export function ModelRunEvidencePanel({
       setError(loadError instanceof Error ? loadError.message : "Failed to load evidence packet");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function loadComparison(baselineRunId: string) {
+    if (!baselineRunId) {
+      setComparisonRows(null);
+      setComparisonError(null);
+      return;
+    }
+
+    setComparisonError(null);
+    setIsComparisonLoading(true);
+    try {
+      const response = await fetch(
+        `/api/models/${modelId}/runs/${modelRunId}/kpis?baseline_run_id=${baselineRunId}`,
+        { cache: "no-store" }
+      );
+      const payload = (await response.json()) as { comparison?: Array<Record<string, unknown>>; error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to load KPI comparison");
+      }
+
+      setComparisonRows(payload.comparison ?? []);
+    } catch (comparisonLoadError) {
+      setComparisonRows(null);
+      setComparisonError(
+        comparisonLoadError instanceof Error ? comparisonLoadError.message : "Failed to load KPI comparison"
+      );
+    } finally {
+      setIsComparisonLoading(false);
     }
   }
 
@@ -253,6 +312,166 @@ export function ModelRunEvidencePanel({
                           </div>
                         ))}
                       </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Run-to-run KPI comparison</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Pick another completed managed run as the baseline and review KPI deltas without leaving the model page.
+                        </p>
+                      </div>
+                      {comparisonSummary ? (
+                        <StatusBadge tone={comparisonSummary.changedCount > 0 ? "info" : "neutral"}>
+                          {comparisonSummary.changedCount > 0
+                            ? `${comparisonSummary.changedCount} KPI shifts`
+                            : comparisonSummary.comparableCount > 0
+                              ? "All compared KPIs flat"
+                              : "Awaiting comparable KPIs"}
+                        </StatusBadge>
+                      ) : null}
+                    </div>
+
+                    {comparisonCandidates.length === 0 ? (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Launch or retain at least one other succeeded managed run to unlock direct KPI comparison here.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center">
+                          <select
+                            className="module-select md:max-w-sm"
+                            value={selectedBaselineRunId}
+                            onChange={(event) => {
+                              const nextBaselineRunId = event.target.value;
+                              setSelectedBaselineRunId(nextBaselineRunId);
+                              void loadComparison(nextBaselineRunId);
+                            }}
+                          >
+                            <option value="">Select baseline run</option>
+                            {comparisonCandidates.map((candidate) => (
+                              <option key={candidate.id} value={candidate.id}>
+                                {candidate.runTitle}
+                                {candidate.scenarioLabel ? ` · ${candidate.scenarioLabel}` : ""}
+                              </option>
+                            ))}
+                          </select>
+
+                          {selectedBaselineRun ? (
+                            <StatusBadge tone="warning">Baseline: {selectedBaselineRun.runTitle}</StatusBadge>
+                          ) : null}
+                        </div>
+
+                        {selectedBaselineRun?.completedAt ? (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Comparing <span className="text-foreground">{runTitle}</span> against baseline run from{" "}
+                            <span className="text-foreground">{new Date(selectedBaselineRun.completedAt).toLocaleString()}</span>.
+                          </p>
+                        ) : null}
+
+                        {comparisonError ? <p className="mt-3 text-xs text-red-600 dark:text-red-300">{comparisonError}</p> : null}
+
+                        {isComparisonLoading ? (
+                          <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading KPI comparison…
+                          </div>
+                        ) : comparisonSummary ? (
+                          <div className="mt-4 space-y-4">
+                            <div className="module-summary-grid cols-4 mt-1">
+                              <div className="module-summary-card">
+                                <p className="module-summary-label">Comparable KPIs</p>
+                                <p className="module-summary-value text-base">{comparisonSummary.comparableCount}</p>
+                                <p className="module-summary-detail">Metrics with values on both the current and baseline runs.</p>
+                              </div>
+                              <div className="module-summary-card">
+                                <p className="module-summary-label">Changed KPIs</p>
+                                <p className="module-summary-value text-base">{comparisonSummary.changedCount}</p>
+                                <p className="module-summary-detail">Rows where the absolute delta is non-zero.</p>
+                              </div>
+                              <div className="module-summary-card">
+                                <p className="module-summary-label">Flat KPIs</p>
+                                <p className="module-summary-value text-base">{comparisonSummary.flatCount}</p>
+                                <p className="module-summary-detail">Comparable rows with no measured movement.</p>
+                              </div>
+                              <div className="module-summary-card">
+                                <p className="module-summary-label">Missing baseline match</p>
+                                <p className="module-summary-value text-base">{comparisonSummary.missingBaselineCount}</p>
+                                <p className="module-summary-detail">Current-run KPIs that did not find a matching baseline row.</p>
+                              </div>
+                            </div>
+
+                            {comparisonSummary.highlights.length > 0 ? (
+                              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                                {comparisonSummary.highlights.map((item) => (
+                                  <div key={item.key} className="rounded-[16px] border border-border/60 bg-background/90 p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{item.label}</p>
+                                      <StatusBadge tone="info">{formatModelRunKpiDelta(item.absoluteDelta, item.unit)}</StatusBadge>
+                                    </div>
+                                    <div className="mt-3 space-y-1 text-sm">
+                                      <p className="font-semibold text-foreground">{formatModelRunKpiValue(item.currentValue, item.unit)}</p>
+                                      <p className="text-muted-foreground">Baseline {formatModelRunKpiValue(item.baselineValue, item.unit)}</p>
+                                      {item.percentDelta !== null ? (
+                                        <p className="text-muted-foreground">Percent change {formatModelRunKpiPercentDelta(item.percentDelta)}</p>
+                                      ) : null}
+                                      {item.geometryRef ? <p className="text-xs text-muted-foreground">Ref {item.geometryRef}</p> : null}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="rounded-[16px] border border-border/60 bg-background/90 px-3 py-2.5 text-sm text-muted-foreground">
+                                {comparisonSummary.comparableCount > 0
+                                  ? "Compared KPI rows are currently flat versus the selected baseline."
+                                  : "No comparable KPI rows were available for this run pair yet."}
+                              </div>
+                            )}
+
+                            <div className="space-y-3">
+                              {comparisonSummary.categories
+                                .filter((category) => category.changedCount > 0)
+                                .map((category) => (
+                                  <div key={category.category} className="rounded-[16px] border border-border/60 bg-background/90 p-3">
+                                    <div className="flex items-center justify-between gap-3">
+                                      <p className="text-sm font-semibold text-foreground capitalize">{category.category}</p>
+                                      <StatusBadge tone="neutral">
+                                        {category.changedCount}/{category.comparableCount || category.totalCount} moved
+                                      </StatusBadge>
+                                    </div>
+                                    <div className="mt-3 space-y-2 text-sm">
+                                      {category.topChanges.map((item) => (
+                                        <div key={item.key} className="rounded-[14px] border border-border/50 bg-background/80 px-3 py-2.5">
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                              <p className="font-medium text-foreground">{item.label}</p>
+                                              <p className="text-muted-foreground">
+                                                Current {formatModelRunKpiValue(item.currentValue, item.unit)} · Baseline{" "}
+                                                {formatModelRunKpiValue(item.baselineValue, item.unit)}
+                                              </p>
+                                            </div>
+                                            <div className="text-right">
+                                              <p className="font-medium text-foreground">{formatModelRunKpiDelta(item.absoluteDelta, item.unit)}</p>
+                                              {item.percentDelta !== null ? (
+                                                <p className="text-xs text-muted-foreground">{formatModelRunKpiPercentDelta(item.percentDelta)}</p>
+                                              ) : null}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm text-muted-foreground">
+                            Select a baseline run above to load the model-run KPI comparison board.
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
 

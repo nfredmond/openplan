@@ -58,6 +58,13 @@ type ManagedModelRun = {
   artifacts: ModelRunArtifact[];
 };
 
+export type ModelRunComparisonCandidate = {
+  id: string;
+  runTitle: string;
+  completedAt: string | null;
+  scenarioLabel: string | null;
+};
+
 type ModelRunManagerProps = {
   modelId: string;
   modelTitle: string;
@@ -425,6 +432,14 @@ export function ModelRunManager({
                 const overallScore = typeof resultSummary.overallScore === "number" ? resultSummary.overallScore : null;
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
+                const comparisonCandidates = modelRuns
+                  .filter((candidate) => candidate.id !== run.id && candidate.status === "succeeded")
+                  .map((candidate) => ({
+                    id: candidate.id,
+                    runTitle: candidate.run_title,
+                    completedAt: candidate.completed_at ?? candidate.started_at ?? candidate.created_at,
+                    scenarioLabel: findScenarioEntryLabel(scenarioEntries, candidate.scenario_entry_id),
+                  }));
 
                 return (
                   <div key={run.id} className="module-record-row">
@@ -457,7 +472,13 @@ export function ModelRunManager({
                           </Link>
                         </div>
                       ) : null}
-                      <ModelRunStagingAndArtifacts modelId={modelId} run={run} stages={run.stages} artifacts={run.artifacts} />
+                      <ModelRunStagingAndArtifacts
+                        modelId={modelId}
+                        run={run}
+                        stages={run.stages}
+                        artifacts={run.artifacts}
+                        comparisonCandidates={comparisonCandidates}
+                      />
                       <ManagedRunPromotionControl modelId={modelId} run={run} scenarioEntries={scenarioEntries} />
                     </div>
                   </div>
@@ -476,11 +497,13 @@ function ModelRunStagingAndArtifacts({
   run,
   stages,
   artifacts,
+  comparisonCandidates,
 }: {
   modelId: string;
   run: ManagedModelRun;
   stages: ModelRunStage[];
   artifacts: ModelRunArtifact[];
+  comparisonCandidates: ModelRunComparisonCandidate[];
 }) {
   if (!stages?.length && !artifacts?.length && run.status !== "succeeded" && run.engine_key !== "aequilibrae") {
     return null;
@@ -537,7 +560,14 @@ function ModelRunStagingAndArtifacts({
       ) : null}
 
       {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (
-        <ModelRunEvidencePanel modelId={modelId} modelRunId={run.id} runStatus={run.status} engineKey={run.engine_key} />
+        <ModelRunEvidencePanel
+          modelId={modelId}
+          modelRunId={run.id}
+          runTitle={run.run_title}
+          runStatus={run.status}
+          engineKey={run.engine_key}
+          comparisonCandidates={comparisonCandidates}
+        />
       ) : null}
     </div>
   );
