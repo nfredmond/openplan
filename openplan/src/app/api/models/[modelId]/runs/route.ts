@@ -204,6 +204,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenarioEntry?.label?.trim() ||
       `${access.model.title} run`;
     const launchedAt = new Date().toISOString();
+    const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
 
     const { error: createModelRunError } = await supabase.from("model_runs").insert({
       id: modelRunId,
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenario_entry_id: scenarioEntry?.id ?? null,
       engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
       launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
-      status: (launchPayload.engineKey === "aequilibrae") ? "queued" : "running",
+      status: isAequilibraeRun ? "queued" : "running",
       run_title: launchTitle,
       query_text: launchPayload.queryText,
       corridor_geojson: launchPayload.corridorGeojson,
@@ -225,7 +226,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         launchedAt,
       },
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
-      started_at: launchedAt,
+      started_at: isAequilibraeRun ? null : launchedAt,
       created_by: user.id,
     });
 
@@ -247,13 +248,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to create model run" }, { status: 500 });
     }
 
-    if (launchPayload.engineKey === "aequilibrae") {
+    if (isAequilibraeRun) {
       // Async run. Create stages and return immediately.
-      await supabase.from("model_run_stages").insert([
+      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
         { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
         { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" }
+        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
       ]);
+
+      if (stageInsertError) {
+        await supabase
+          .from("model_runs")
+          .update({
+            status: "failed",
+            error_message: "Failed to initialize AequilibraE run stages",
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", modelRunId);
+
+        audit.error("model_run_stage_insert_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          message: stageInsertError.message,
+          code: stageInsertError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+      }
+
       return NextResponse.json(
         { modelRunId, status: "queued" },
         { status: 201 }

@@ -7,7 +7,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
 
 type TrafficVolumeMapProps = {
-  modelRunId: string;
   geojsonUrl?: string;
 };
 
@@ -18,8 +17,7 @@ type TrafficVolumeMapProps = {
  * Color ramp: green (low) → yellow (mid) → red (high)
  */
 export function TrafficVolumeMap({
-  modelRunId,
-  geojsonUrl = "/data/pilot-volumes.geojson",
+  geojsonUrl,
 }: TrafficVolumeMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -31,7 +29,17 @@ export function TrafficVolumeMap({
   } | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !MAPBOX_TOKEN) {
+    if (!containerRef.current) {
+      return;
+    }
+
+    if (!geojsonUrl) {
+      setError("Traffic volume data URL not configured");
+      setLoading(false);
+      return;
+    }
+
+    if (!MAPBOX_TOKEN) {
       setError("Mapbox token not configured");
       setLoading(false);
       return;

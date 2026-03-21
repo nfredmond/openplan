@@ -54,10 +54,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Cannot launch a run that is already running or succeeded" }, { status: 400 });
     }
 
-    // Update run to queued
+    const nowIso = new Date().toISOString();
+
+    // Update run to queued and clear stale prior-run residue
     const { error: updateError } = await supabase
       .from("model_runs")
-      .update({ status: "queued", updated_at: new Date().toISOString() })
+      .update({
+        status: "queued",
+        updated_at: nowIso,
+        started_at: null,
+        completed_at: null,
+        error_message: null,
+        result_summary_json: null,
+        source_analysis_run_id: null,
+      })
       .eq("id", modelRun.id);
 
     if (updateError) {
@@ -72,17 +82,54 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!existingStages || existingStages.length === 0) {
       // Create initial stages
-      await supabase.from("model_run_stages").insert([
+      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
         { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
         { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" }
+        { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
       ]);
+
+      if (stageInsertError) {
+        audit.error("model_run_stage_insert_failed", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          message: stageInsertError.message,
+          code: stageInsertError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+      }
     } else {
       // Reset stages to queued
-      await supabase
+      const { error: stageResetError } = await supabase
         .from("model_run_stages")
         .update({ status: "queued", error_message: null, log_tail: null, started_at: null, completed_at: null })
         .eq("run_id", modelRun.id);
+
+      if (stageResetError) {
+        audit.error("model_run_stage_reset_failed", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          message: stageResetError.message,
+          code: stageResetError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to reset model run stages" }, { status: 500 });
+      }
+    }
+
+    const [{ error: artifactDeleteError }, { error: kpiDeleteError }] = await Promise.all([
+      supabase.from("model_run_artifacts").delete().eq("run_id", modelRun.id),
+      supabase.from("model_run_kpis").delete().eq("run_id", modelRun.id),
+    ]);
+
+    if (artifactDeleteError || kpiDeleteError) {
+      audit.error("model_run_cleanup_failed", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        artifactDeleteMessage: artifactDeleteError?.message ?? null,
+        artifactDeleteCode: artifactDeleteError?.code ?? null,
+        kpiDeleteMessage: kpiDeleteError?.message ?? null,
+        kpiDeleteCode: kpiDeleteError?.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to clear prior run artifacts" }, { status: 500 });
     }
 
     audit.info("model_run_launched", {

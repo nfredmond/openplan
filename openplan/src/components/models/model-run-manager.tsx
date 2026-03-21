@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Map as MapIcon, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -395,11 +395,10 @@ export function ModelRunManager({
           {/* Show map for the latest succeeded AequilibraE run */}
           {modelRuns.some((r) => r.status === "succeeded" && r.engine_key === "aequilibrae") && (() => {
             const latestAeqRun = modelRuns.find((r) => r.status === "succeeded" && r.engine_key === "aequilibrae")!;
-            const volumesArt = latestAeqRun.artifacts?.find((a) => a.artifact_type === "volumes_geojson");
-            const geojsonUrl = volumesArt?.file_url || "/data/pilot-volumes.geojson";
+            const geojsonUrl = `/api/models/${modelId}/runs/${latestAeqRun.id}/volumes`;
             return (
               <div className="mt-4">
-                <TrafficVolumeMap modelRunId={latestAeqRun.id} geojsonUrl={geojsonUrl} />
+                <TrafficVolumeMap geojsonUrl={geojsonUrl} />
               </div>
             );
           })()}

@@ -24,8 +24,10 @@ from typing import Tuple
 import requests
 import numpy as np
 import pandas as pd
-from shapely.geometry import box
+from shapely.geometry import box, shape
 from dotenv import load_dotenv
+
+from data_pipeline import DataPipelineError, generate_package
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -135,13 +137,56 @@ def sb_post_kpi(payload: dict):
     requests.post(url, headers=HEADERS, json=payload)
 
 
+def sb_get_run(run_id: str) -> dict:
+    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,corridor_geojson,query_text,engine_key,run_title"
+    res = requests.get(url, headers=HEADERS, timeout=30)
+    if res.status_code != 200:
+        raise RuntimeError(f"Failed to load model run {run_id}: {res.status_code} {res.text[:200]}")
+    rows = res.json()
+    if not rows:
+        raise RuntimeError(f"Model run {run_id} not found")
+    return rows[0]
+
+
+def resolve_run_study_area(run_row: dict) -> tuple[dict | None, tuple]:
+    corridor_geojson = run_row.get("corridor_geojson")
+    if corridor_geojson:
+        geom = shape(corridor_geojson)
+        if geom.is_empty:
+            raise RuntimeError("corridor_geojson is empty")
+        min_lon, min_lat, max_lon, max_lat = geom.bounds
+        return corridor_geojson, (float(min_lon), float(min_lat), float(max_lon), float(max_lat))
+    return None, PILOT_BBOX
+
+
+def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None) -> dict:
+    run_row = run_row or sb_get_run(run_id)
+    corridor_geojson, bbox = resolve_run_study_area(run_row)
+    pkg_dir = os.path.join(work_dir, "package")
+    manifest_path = os.path.join(pkg_dir, "manifest.json")
+
+    if os.path.exists(manifest_path):
+        with open(manifest_path) as f:
+            manifest = json.load(f)
+        manifest["package_dir"] = pkg_dir
+        manifest["bbox"] = manifest.get("bbox") or list(bbox)
+        return manifest
+
+    try:
+        manifest = generate_package(output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson)
+    except DataPipelineError as exc:
+        raise RuntimeError(f"Dynamic package generation failed: {exc}") from exc
+
+    manifest["package_dir"] = pkg_dir
+    return manifest
+
+
 # ─── Stage 1: AequilibraE Setup ────────────────────────────────────────
-def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple) -> dict:
+def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir: str) -> dict:
     """Download OSM, add centroids + connectors, renumber, populate attrs."""
     from aequilibrae import Project
 
     proj_dir = os.path.join(work_dir, "aeq_project")
-    pkg_dir = SEED_DATA_DIR
 
     log = "Creating AequilibraE project from OSM...\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -300,13 +345,12 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple) -> dict:
 
 
 # ─── Stage 2: Network Assignment ───────────────────────────────────────
-def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: dict) -> dict:
+def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: dict, pkg_dir: str) -> dict:
     from aequilibrae import Project
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
     proj_dir = os.path.join(work_dir, "aeq_project")
-    pkg_dir = SEED_DATA_DIR
     out_dir = os.path.join(work_dir, "run_output")
     os.makedirs(out_dir, exist_ok=True)
 
@@ -418,6 +462,13 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 # ─── Stage 3: Artifact Extraction ──────────────────────────────────────
 def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict) -> str:
     out_dir = os.path.join(work_dir, "run_output")
+    bbox = setup_result.get("bbox")
+    model_area_label = (
+        f"Dynamic study area ({bbox[0]:.5f},{bbox[1]:.5f} to {bbox[2]:.5f},{bbox[3]:.5f})"
+        if bbox and len(bbox) == 4
+        else "Dynamic study area"
+    )
+    log = "Extracting artifacts...\n"
 
     evidence = {
         "run_id": run_id,
@@ -431,14 +482,16 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
         "skims": assign_result["skims"],
         "loaded_links": assign_result["loaded_links"],
         "largest_component_pct": setup_result.get("largest_component_pct"),
+        "bbox": list(bbox) if bbox else None,
         "caveats": ["Uncalibrated", "OSM default speeds/capacities", "Closed boundary", "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "model_area": "Nevada County (-121.30,39.00 to -120.00,39.50)"
+        "model_area": model_area_label,
     }
 
     evidence_path = os.path.join(out_dir, "evidence_packet.json")
     with open(evidence_path, "w") as f:
         json.dump(evidence, f, indent=2)
+    log += f"Wrote evidence packet to {evidence_path}.\n"
 
     # Register artifacts in Supabase
     for fname, atype in [
@@ -554,18 +607,22 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
 
             if upload_res.status_code in (200, 201):
                 public_url = f"{SUPABASE_URL}/storage/v1/object/public/run-artifacts/{storage_path}"
+                with open(geojson_path, "rb") as geojson_file:
+                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()[:16]
                 sb_post_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "volumes_geojson",
                     "file_url": public_url,
                     "file_size_bytes": os.path.getsize(geojson_path),
-                    "content_hash": hashlib.sha256(open(geojson_path, "rb").read()).hexdigest()[:16],
+                    "content_hash": geojson_hash,
                     "metadata_json": {"format": "geojson", "features": len(features), "maxVolume": max_vol},
                 })
                 log += f"Uploaded volumes GeoJSON ({len(features)} features) to Supabase Storage.\n"
             else:
                 log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
+        else:
+            log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
     except Exception as e:
         log += f"GeoJSON generation warning: {e}\n"
 
@@ -576,8 +633,7 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
 # ─── Main poll loop ────────────────────────────────────────────────────
 # Work directory: use /tmp/aeq_runs in cloud, or local data dir for dev
 PILOT_WORK_DIR = os.getenv("AEQ_WORK_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county"))
-# Seed data (zone_attributes.csv, od_trip_matrix.csv) bundled with the worker
-SEED_DATA_DIR = os.getenv("AEQ_SEED_DIR", os.path.join(os.path.dirname(__file__), "data", "package"))
+# Fallback bbox only if a run somehow has no stored corridor geometry.
 PILOT_BBOX = (-121.30, 39.00, -120.00, 39.50)
 
 
@@ -600,10 +656,15 @@ def process_stage(stage: dict):
 
     try:
         if stage_name == "AequilibraE Setup":
-            result = stage_setup(run_id, stage_id, work_dir, PILOT_BBOX)
+            run_row = sb_get_run(run_id)
+            package_meta = ensure_dynamic_package(run_id, work_dir, run_row=run_row)
+            pkg_dir = package_meta["package_dir"]
+            bbox = tuple(package_meta["bbox"])
+
+            result = stage_setup(run_id, stage_id, work_dir, bbox, pkg_dir)
             os.makedirs(os.path.join(work_dir, "run_output"), exist_ok=True)
             with open(state_file, "w") as f:
-                json.dump({"setup": result}, f)
+                json.dump({"setup": result, "package": package_meta}, f)
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -613,7 +674,8 @@ def process_stage(stage: dict):
         elif stage_name == "Network Assignment":
             with open(state_file) as f:
                 state = json.load(f)
-            result = stage_assignment(run_id, stage_id, work_dir, state["setup"])
+            pkg_dir = state["package"]["package_dir"]
+            result = stage_assignment(run_id, stage_id, work_dir, state["setup"], pkg_dir)
             state["assignment"] = result
             with open(state_file, "w") as f:
                 json.dump(state, f)
@@ -664,6 +726,44 @@ def process_stage(stage: dict):
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
 
 
+def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
+    if sort_order <= 1:
+        return []
+    url = (
+        f"{SUPABASE_URL}/rest/v1/model_run_stages"
+        f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+    )
+    res = requests.get(url, headers=HEADERS, timeout=30)
+    if res.status_code != 200:
+        raise RuntimeError(f"Failed to load prior stage state: {res.status_code} {res.text[:200]}")
+    return res.json()
+
+
+def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
+    prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+    if not prior:
+        return "ready", None
+
+    terminal_blockers = [s for s in prior if s["status"] in {"failed", "cancelled", "skipped"}]
+    if terminal_blockers:
+        blocker = terminal_blockers[-1]
+        return "blocked_terminal", f"Blocked by prior stage {blocker['stage_name']} ({blocker['status']})"
+
+    if any(s["status"] != "succeeded" for s in prior):
+        return "waiting", None
+
+    return "ready", None
+
+
+def mark_stage_skipped(stage: dict, reason: str):
+    sb_patch_stage(stage["id"], {
+        "status": "skipped",
+        "error_message": reason[:2000],
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "log_tail": reason,
+    })
+
+
 def poll_for_jobs():
     print(f"AequilibraE Worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages...")
@@ -672,9 +772,9 @@ def poll_for_jobs():
         try:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
-                "?status=eq.queued&order=run_id.asc,sort_order.asc&limit=1"
+                "?status=eq.queued&select=id,run_id,stage_name,status,sort_order,created_at&order=created_at.asc,sort_order.asc&limit=25"
             )
-            res = requests.get(url, headers=HEADERS)
+            res = requests.get(url, headers=HEADERS, timeout=30)
             if res.status_code != 200:
                 print(f"Poll error: {res.text}")
                 time.sleep(5)
@@ -685,7 +785,21 @@ def poll_for_jobs():
                 time.sleep(5)
                 continue
 
-            process_stage(stages[0])
+            processed = False
+            for stage in stages:
+                readiness, reason = classify_stage_readiness(stage)
+                if readiness == "ready":
+                    process_stage(stage)
+                    processed = True
+                    break
+                if readiness == "blocked_terminal":
+                    print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
+                    mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
+                    processed = True
+                    break
+
+            if not processed:
+                time.sleep(5)
 
         except Exception as e:
             print(f"Poll loop error: {e}")
