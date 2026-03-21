@@ -9,6 +9,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
+import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
+import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -29,6 +31,8 @@ export type ModelRunStage = {
   status: string;
   started_at: string | null;
   completed_at: string | null;
+  error_message?: string | null;
+  log_tail?: string | null;
 };
 
 export type ModelRunArtifact = {
@@ -427,7 +431,7 @@ export function ModelRunManager({
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={toneForRunStatus(run.status)}>{run.status}</StatusBadge>
-                        <StatusBadge tone="neutral">{run.engine_key === "aequilibrae" ? "AequilibraE" : "Deterministic"}</StatusBadge>
+                        <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
                       </div>
@@ -453,7 +457,7 @@ export function ModelRunManager({
                           </Link>
                         </div>
                       ) : null}
-                      <ModelRunStagingAndArtifacts stages={run.stages} artifacts={run.artifacts} />
+                      <ModelRunStagingAndArtifacts modelId={modelId} run={run} stages={run.stages} artifacts={run.artifacts} />
                       <ManagedRunPromotionControl modelId={modelId} run={run} scenarioEntries={scenarioEntries} />
                     </div>
                   </div>
@@ -467,39 +471,74 @@ export function ModelRunManager({
   );
 }
 
-function ModelRunStagingAndArtifacts({ stages, artifacts }: { stages: ModelRunStage[]; artifacts: ModelRunArtifact[] }) {
-  if (!stages?.length && !artifacts?.length) return null;
+function ModelRunStagingAndArtifacts({
+  modelId,
+  run,
+  stages,
+  artifacts,
+}: {
+  modelId: string;
+  run: ManagedModelRun;
+  stages: ModelRunStage[];
+  artifacts: ModelRunArtifact[];
+}) {
+  if (!stages?.length && !artifacts?.length && run.status !== "succeeded" && run.engine_key !== "aequilibrae") {
+    return null;
+  }
 
   return (
-    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t pt-4">
-      {stages?.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Execution Stages</h4>
-          <ul className="space-y-2">
-            {stages.map((stage) => (
-              <li key={stage.id} className="flex items-center justify-between">
-                <span className="capitalize">{stage.stage_name}</span>
-                <StatusBadge tone={toneForRunStatus(stage.status)}>{stage.status}</StatusBadge>
-              </li>
-            ))}
-          </ul>
+    <div className="mt-4 border-t pt-4">
+      {(stages?.length > 0 || artifacts?.length > 0) ? (
+        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+          {stages?.length > 0 && (
+            <div>
+              <h4 className="mb-2 font-semibold">Execution stages</h4>
+              <ul className="space-y-2">
+                {stages.map((stage) => (
+                  <li key={stage.id} className="rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-foreground">{stage.stage_name}</p>
+                        <p className="text-xs text-muted-foreground">{formatDurationSeconds((() => {
+                          if (!stage.started_at || !stage.completed_at) return null;
+                          const started = new Date(stage.started_at).getTime();
+                          const completed = new Date(stage.completed_at).getTime();
+                          return Number.isFinite(started) && Number.isFinite(completed) ? Math.max(0, Math.round((completed - started) / 1000)) : null;
+                        })()) ?? "Duration unavailable"}</p>
+                      </div>
+                      <StatusBadge tone={toneForRunStatus(stage.status)}>{stage.status}</StatusBadge>
+                    </div>
+                    {stage.error_message ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{stage.error_message}</p> : null}
+                    {stage.log_tail ? <pre className="mt-2 max-h-32 overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100">{stage.log_tail}</pre> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {artifacts?.length > 0 && (
+            <div>
+              <h4 className="mb-2 font-semibold">Run artifacts</h4>
+              <ul className="space-y-2">
+                {artifacts.map((art) => (
+                  <li key={art.id} className="flex items-center justify-between gap-3 rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
+                    <div>
+                      <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
+                      {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}
+                    </div>
+                    <a href={art.file_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                      View / Download
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
-      {artifacts?.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Run Artifacts</h4>
-          <ul className="space-y-2">
-            {artifacts.map((art) => (
-              <li key={art.id} className="flex items-center justify-between text-muted-foreground">
-                <span>{art.artifact_type}</span>
-                <a href={art.file_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-                  View / Download
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      ) : null}
+
+      {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (
+        <ModelRunEvidencePanel modelId={modelId} modelRunId={run.id} runStatus={run.status} engineKey={run.engine_key} />
+      ) : null}
     </div>
   );
 }

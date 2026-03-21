@@ -95,7 +95,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase
         .from("model_runs")
         .select(
-          "id, model_id, scenario_entry_id, source_analysis_run_id, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
+          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
         )
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
@@ -284,7 +284,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     created_at: string | null;
     stages: ModelRunStage[];
     artifacts: ModelRunArtifact[];
-  }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic" }));
+  }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic_corridor_v1" }));
   const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
     id: string;
     label: string;

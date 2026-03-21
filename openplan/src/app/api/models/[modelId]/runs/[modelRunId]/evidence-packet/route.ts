@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { loadModelAccess } from "@/lib/models/api";
+import { normalizeEvidencePacket } from "@/lib/models/evidence-packet";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -104,27 +105,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
   ]);
 
   const artifactRows = (artifacts ?? []) as Array<Record<string, unknown>>;
+  const stageRows = (stages ?? []) as Array<Record<string, unknown>>;
+  const kpiRows = (kpis ?? []) as Array<Record<string, unknown>>;
   const evidenceArtifact = artifactRows.find(
     (artifact) =>
       artifact.artifact_type === "evidence_packet" &&
       typeof artifact.file_url === "string" &&
       Boolean(artifact.file_url)
   ) as ArtifactRow | undefined;
-
-  if (evidenceArtifact?.file_url) {
-    try {
-      const storedPacket = await loadJsonArtifact(evidenceArtifact.file_url);
-      if (storedPacket && typeof storedPacket === "object") {
-        return NextResponse.json(storedPacket);
-      }
-    } catch (error) {
-      console.warn("Failed to load stored evidence packet artifact", {
-        modelRunId: parsedParams.data.modelRunId,
-        fileUrl: evidenceArtifact.file_url,
-        error,
-      });
-    }
-  }
 
   const caveats: string[] = [
     "Model outputs are from an uncalibrated prototype engine.",
@@ -142,8 +130,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const failedStages = (stages ?? []).filter(
-    (stage: Record<string, unknown>) => stage.status === "failed"
+  const failedStages = stageRows.filter(
+    (stage) => stage.status === "failed"
   );
   if (failedStages.length > 0) {
     caveats.push(
@@ -151,78 +139,42 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
-  if ((kpis ?? []).length === 0) {
+  if (kpiRows.length === 0) {
     caveats.push("No KPIs were extracted for this run.");
   }
 
-  const kpiSummary: Record<string, unknown[]> = {};
-  for (const kpi of kpis ?? []) {
-    const row = kpi as Record<string, unknown>;
-    const category = row.kpi_category as string;
-    if (!kpiSummary[category]) kpiSummary[category] = [];
-    kpiSummary[category].push({
-      name: row.kpi_name,
-      label: row.kpi_label,
-      value: row.value,
-      unit: row.unit,
-      geometry_ref: row.geometry_ref,
-    });
+  let storedPacket: unknown | undefined;
+  let fallbackReason: string | null = null;
+
+  if (evidenceArtifact?.file_url) {
+    try {
+      storedPacket = await loadJsonArtifact(evidenceArtifact.file_url);
+    } catch (error) {
+      console.warn("Failed to load stored evidence packet artifact", {
+        modelRunId: parsedParams.data.modelRunId,
+        fileUrl: evidenceArtifact.file_url,
+        error,
+      });
+      fallbackReason = "Stored evidence artifact could not be loaded; synthesized fallback returned.";
+    }
+  } else {
+    fallbackReason = "No stored evidence artifact was available; synthesized fallback returned.";
   }
 
-  const stageSummaries = (stages ?? []).map((stage: Record<string, unknown>) => {
-    const started = stage.started_at
-      ? new Date(stage.started_at as string).getTime()
-      : null;
-    const completed = stage.completed_at
-      ? new Date(stage.completed_at as string).getTime()
-      : null;
-    const durationS = started && completed ? Math.round((completed - started) / 1000) : null;
-    return {
-      name: stage.stage_name,
-      status: stage.status,
-      duration_s: durationS,
-    };
+  const runRecord = run as Record<string, unknown>;
+  const evidencePacket = normalizeEvidencePacket({
+    rawPacket: storedPacket,
+    modelId: parsedParams.data.modelId,
+    modelRunId: parsedParams.data.modelRunId,
+    modelTitle: access.model.title ?? "Untitled model",
+    runRecord,
+    artifacts: artifactRows,
+    stages: stageRows,
+    kpis: kpiRows,
+    fallbackReason,
   });
 
-  const runRecord = run as Record<string, unknown>;
-  const evidencePacket = {
-    packet_version: "1.0-fallback",
-    generated_at: new Date().toISOString(),
-    run_id: parsedParams.data.modelRunId,
-    model_id: parsedParams.data.modelId,
-    model_title: access.model.title,
-    engine: runRecord.engine_key ?? "deterministic",
-    inputs: {
-      query_text: runRecord.query_text ?? null,
-      corridor_geojson: runRecord.corridor_geojson ?? null,
-      input_snapshot: runRecord.input_snapshot_json ?? {},
-    },
-    assumptions: {
-      snapshot: runRecord.assumption_snapshot_json ?? {},
-    },
-    outputs: {
-      kpi_summary: kpiSummary,
-      artifacts: artifactRows.map((artifact) => ({
-        type: artifact.artifact_type,
-        file_url: artifact.file_url,
-        hash: artifact.content_hash ?? null,
-        size_bytes: artifact.file_size_bytes ?? null,
-      })),
-      stages: stageSummaries,
-      result_summary: runRecord.result_summary_json ?? {},
-    },
-    caveats,
-    provenance: {
-      platform: "OpenPlan",
-      engine_version: `${runRecord.engine_key ?? "deterministic"}-prototype-v1`,
-      run_started_at: runRecord.started_at,
-      run_completed_at: runRecord.completed_at,
-      run_status: runRecord.status,
-      fallback_reason: evidenceArtifact?.file_url
-        ? "Stored evidence artifact could not be loaded; synthesized fallback returned."
-        : "No stored evidence artifact was available; synthesized fallback returned.",
-    },
-  };
+  evidencePacket.caveats = Array.from(new Set([...evidencePacket.caveats, ...caveats]));
 
   return NextResponse.json(evidencePacket);
 }
