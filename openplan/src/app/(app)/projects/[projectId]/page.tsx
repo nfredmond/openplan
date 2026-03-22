@@ -656,7 +656,7 @@ export default async function ProjectDetailPage({
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 {stageGateSummary.nextGate
-                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. Build the evidence pack before expecting a PASS decision.`
+                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. ${stageGateSummary.nextGate.operatorControlEvidenceCount > 0 ? `${stageGateSummary.nextGate.operatorControlEvidenceCount} PM/invoicing operator control profile${stageGateSummary.nextGate.operatorControlEvidenceCount === 1 ? " is" : "s are"} available for the readiness pack.` : "Build the evidence pack before expecting a PASS decision."}`
                   : "Every stage gate in the active template currently has a recorded PASS decision."}
               </p>
             </div>
@@ -672,6 +672,9 @@ export default async function ProjectDetailPage({
                     </StatusBadge>
                     <StatusBadge tone="neutral">{gate.gateId}</StatusBadge>
                     <StatusBadge tone="info">{gate.requiredEvidenceCount} required evidence</StatusBadge>
+                    {gate.operatorControlEvidenceCount > 0 ? (
+                      <StatusBadge tone="info">{gate.operatorControlEvidenceCount} PM/invoicing controls</StatusBadge>
+                    ) : null}
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -702,8 +705,25 @@ export default async function ProjectDetailPage({
                       <ul className="list-disc space-y-1 pl-5">
                         {gate.evidencePreview.map((evidence) => (
                           <li key={evidence.evidence_id}>
-                            {evidence.title}
-                            {evidence.conditional_required_when ? ` (${evidence.conditional_required_when})` : ""}
+                            <div>
+                              {evidence.title}
+                              {evidence.conditional_required_when ? ` (${evidence.conditional_required_when})` : ""}
+                            </div>
+                            {evidence.operatorControlTitle ? (
+                              <div className="mt-1 space-y-1 pl-1 text-xs text-muted-foreground">
+                                <p>
+                                  PM/invoicing controls: {evidence.operatorControlTitle} · {evidence.operatorControlFieldCount} field{evidence.operatorControlFieldCount === 1 ? "" : "s"}
+                                </p>
+                                {evidence.operatorControlGoal ? <p>{evidence.operatorControlGoal}</p> : null}
+                                {evidence.operatorControlAcceptancePreview.length > 0 ? (
+                                  <ul className="list-disc space-y-1 pl-5">
+                                    {evidence.operatorControlAcceptancePreview.map((criterion) => (
+                                      <li key={`${evidence.evidence_id}-${criterion}`}>{criterion}</li>
+                                    ))}
+                                  </ul>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </li>
                         ))}
                       </ul>
