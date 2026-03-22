@@ -1,0 +1,516 @@
+{
+  "control_pack_id": "lapm_pm_invoicing_controls_v0_1",
+  "title": "LAPM PM + Invoicing Operator Controls",
+  "version": "0.1.0",
+  "status": "planning_support_not_runtime_enforced",
+  "jurisdiction": "CA",
+  "intent": "Low-risk planning/governance control pack for LAPM-style project control and consultant invoicing operations.",
+  "source_docs": [
+    "docs/ops/2026-03-15-openplan-v1-execution-queue.md",
+    "docs/ops/2026-03-05-california-stage-gate-template-pack.md",
+    "docs/ops/2026-03-05-ca-stage-gate-lapm-v02-review-pack.md"
+  ],
+  "workflow_statuses": [
+    {
+      "key": "not_started",
+      "label": "Not started",
+      "definition": "No operator work has started on the evidence item or control bundle."
+    },
+    {
+      "key": "collecting_support",
+      "label": "Collecting support",
+      "definition": "Backing records are being assembled, but review has not started."
+    },
+    {
+      "key": "pm_review",
+      "label": "PM review",
+      "definition": "Project manager or task lead is checking completeness, billing basis, and support quality."
+    },
+    {
+      "key": "principal_review",
+      "label": "Principal review",
+      "definition": "Planner/principal review is required before the item may be labeled ready."
+    },
+    {
+      "key": "hold",
+      "label": "Hold",
+      "definition": "A material gap, unresolved policy issue, or unsupported claim blocks readiness."
+    },
+    {
+      "key": "approved",
+      "label": "Approved",
+      "definition": "Required support is complete for the intended internal/operator use."
+    }
+  ],
+  "lapm_readiness_statuses": [
+    {
+      "key": "not_assessed",
+      "label": "Not assessed",
+      "definition": "No LAPM readiness judgment has been made."
+    },
+    {
+      "key": "internal_control_ready",
+      "label": "Internal control ready",
+      "definition": "Usable for internal consultant operations, but not yet fit to claim LAPM-ready status."
+    },
+    {
+      "key": "candidate",
+      "label": "Candidate",
+      "definition": "Likely LAPM-aligned, but still awaiting citation completion, policy review, or signoff."
+    },
+    {
+      "key": "lapm_ready",
+      "label": "LAPM ready",
+      "definition": "Safe to describe as LAPM-ready because exact citation, source traceability, and required approvals are complete."
+    },
+    {
+      "key": "deferred",
+      "label": "Deferred",
+      "definition": "Important work is intentionally parked from LAPM-ready claims pending missing authority, project phase, or closeout evidence."
+    },
+    {
+      "key": "not_applicable",
+      "label": "Not applicable",
+      "definition": "The control or citation does not apply to this project path and that disposition is documented."
+    }
+  ],
+  "invoice_lifecycle_statuses": [
+    {
+      "key": "not_started",
+      "label": "Not started",
+      "definition": "No invoice draft or pay estimate has been opened."
+    },
+    {
+      "key": "drafting",
+      "label": "Drafting",
+      "definition": "Costs, progress quantities, and support are being assembled into a draft invoice."
+    },
+    {
+      "key": "internal_review",
+      "label": "Internal review",
+      "definition": "PM and reviewer are checking allowability, math, and support before release."
+    },
+    {
+      "key": "approved_for_submission",
+      "label": "Approved for submission",
+      "definition": "Internal release is complete and the invoice/pay estimate may be submitted."
+    },
+    {
+      "key": "submitted",
+      "label": "Submitted",
+      "definition": "The invoice or pay estimate has been transmitted to the client/agency."
+    },
+    {
+      "key": "partially_paid",
+      "label": "Partially paid",
+      "definition": "A payment was received, but not the full requested amount or not all line items are cleared."
+    },
+    {
+      "key": "paid",
+      "label": "Paid",
+      "definition": "The invoice/pay estimate has been fully paid and reconciled."
+    },
+    {
+      "key": "disputed",
+      "label": "Disputed",
+      "definition": "The payer rejected or questioned part of the request and follow-up is open."
+    },
+    {
+      "key": "closeout_complete",
+      "label": "Closeout complete",
+      "definition": "Final billing, reconciliation, and closeout documentation are complete."
+    }
+  ],
+  "labeling_guardrails": {
+    "lapm_ready_requires": [
+      "Exact LAPM chapter or approved not-applicable disposition recorded.",
+      "Exact exhibit/form ID recorded when required by the evidence item; otherwise approved rationale for why no single form governs the item.",
+      "Revision date and source URL recorded from an auditable source.",
+      "Evidence item state is approved and workflow status is approved.",
+      "No unresolved Office Bulletin/LPP supersession conflict remains open.",
+      "Any required planning/legal/principal review is complete and dated."
+    ],
+    "must_use_deferred_or_internal_only_when": [
+      "Placeholders such as PENDING_REVIEW remain in the record.",
+      "Only chapter-level intent is known, but exact form/exhibit applicability is unresolved.",
+      "The control is a good internal consultant SOP but has not been validated against current LAPM/LPP language.",
+      "The project phase has not yet produced the underlying field review, pay estimate, or closeout evidence.",
+      "Payment or closeout support is still draft, disputed, or missing subconsultant/final reconciliation inputs."
+    ],
+    "never_label_lapm_ready_when": [
+      "Evidence is AI-generated or summary-only without human-reviewed source support.",
+      "Cost, invoice, or progress claims are based on unsupported percentages or informal email-only approvals.",
+      "A legal/policy conflict is known but not resolved or explicitly accepted in writing.",
+      "The only support is an internal work product with no auditable link to official source requirements where such linkage is required."
+    ]
+  },
+  "profiles": [
+    {
+      "profile_id": "g02_e04_invoice_controls_protocol",
+      "gate_id": "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+      "evidence_id": "G02_E04",
+      "title": "Invoicing controls and eligible cost protocol",
+      "goal": "Set the billing basis and review chain before downstream draw activity starts.",
+      "operator_fields": [
+        {
+          "key": "funding_delivery_path",
+          "label": "Funding / delivery path",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "local_only",
+            "local_assistance_federal_aid",
+            "state_funded",
+            "mixed"
+          ],
+          "definition": "Program and reimbursement path governing allowability and billing discipline."
+        },
+        {
+          "key": "billing_basis",
+          "label": "Billing basis",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "lump_sum",
+            "cost_plus_fixed_fee",
+            "time_and_materials",
+            "milestone",
+            "other"
+          ],
+          "definition": "Commercial basis used for consultant billing and progress invoicing."
+        },
+        {
+          "key": "progress_billing_frequency",
+          "label": "Progress billing frequency",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "monthly",
+            "biweekly",
+            "milestone",
+            "other"
+          ],
+          "definition": "Planned cadence for invoice or pay estimate preparation."
+        },
+        {
+          "key": "eligible_cost_basis_note",
+          "label": "Eligible cost basis note",
+          "type": "text",
+          "required": true,
+          "definition": "Short note identifying how allowability/eligibility will be checked."
+        },
+        {
+          "key": "invoice_review_owner",
+          "label": "Invoice review owner",
+          "type": "person",
+          "required": true,
+          "definition": "Primary internal reviewer who clears draft invoices before submission."
+        },
+        {
+          "key": "backup_document_requirements",
+          "label": "Backup document requirements",
+          "type": "multi_select",
+          "required": true,
+          "allowed_values": [
+            "timesheets",
+            "expense_receipts",
+            "subconsultant_invoices",
+            "progress_quantities",
+            "field_review_memo",
+            "other"
+          ],
+          "definition": "Minimum support to retain with each invoice or pay estimate."
+        },
+        {
+          "key": "policy_delta_check_required",
+          "label": "Policy delta check required",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether current LAPM/LPP/Office Bulletin deltas must be reviewed before using LAPM-ready language."
+        }
+      ],
+      "acceptance_criteria": [
+        "Billing basis and progress billing cadence are selected.",
+        "Internal reviewer/approver is named.",
+        "Allowability or eligible-cost basis is documented in plain language.",
+        "Required invoice backup list is explicit.",
+        "Any required policy-delta review is assigned, not implied.",
+        "May be marked internal_control_ready before LAPM citation lock, but not lapm_ready without source-traceable citation fields."
+      ]
+    },
+    {
+      "profile_id": "g06_e04_cost_invoice_field_review",
+      "gate_id": "G06_DESIGN_PSE_ROW_UTILITIES_COST",
+      "evidence_id": "G06_E04",
+      "title": "Cost / invoicing update + field review disposition",
+      "goal": "Tie cost updates and draw readiness to an actual field-review disposition instead of narrative-only status.",
+      "operator_fields": [
+        {
+          "key": "current_cost_estimate_date",
+          "label": "Current cost estimate date",
+          "type": "date",
+          "required": true,
+          "definition": "Date of the estimate supporting the current draw or budget statement."
+        },
+        {
+          "key": "percent_design_or_progress_basis",
+          "label": "Percent design / progress basis",
+          "type": "text",
+          "required": true,
+          "definition": "Human-readable basis for percent complete or design maturity used in the billing narrative."
+        },
+        {
+          "key": "field_review_status",
+          "label": "Field review status",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "not_required",
+            "scheduled",
+            "complete_no_major_issues",
+            "complete_with_open_items",
+            "deferred"
+          ],
+          "definition": "Status of the field review or analogous site/design verification activity."
+        },
+        {
+          "key": "scope_delta_flag",
+          "label": "Scope delta flag",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether scope changes affect the cost/update package."
+        },
+        {
+          "key": "invoice_support_complete",
+          "label": "Invoice support complete",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether draw support is assembled well enough for internal release."
+        },
+        {
+          "key": "open_cost_risk_note",
+          "label": "Open cost risk note",
+          "type": "text",
+          "required": false,
+          "definition": "Short note for unresolved estimate, utility, or ROW risk."
+        }
+      ],
+      "acceptance_criteria": [
+        "Current estimate date is recorded.",
+        "Percent complete or design maturity basis is explicit and auditable.",
+        "Field review status is stated; if complete_with_open_items, unresolved items are noted.",
+        "Scope-change impact is acknowledged, not hidden.",
+        "Invoice support completeness is explicitly YES/NO.",
+        "Do not use lapm_ready if field review is deferred or if cost support is narrative-only."
+      ]
+    },
+    {
+      "profile_id": "g08_e01_progress_payment_records",
+      "gate_id": "G08_CONSTRUCTION_ADMINISTRATION",
+      "evidence_id": "G08_E01",
+      "title": "Daily reports + progress payment records",
+      "goal": "Make progress-payment readiness depend on quantity/support discipline, not just payment intent.",
+      "operator_fields": [
+        {
+          "key": "payment_application_number",
+          "label": "Payment application number",
+          "type": "text",
+          "required": true,
+          "definition": "Sequential invoice/pay estimate identifier."
+        },
+        {
+          "key": "billing_period_end_date",
+          "label": "Billing period end date",
+          "type": "date",
+          "required": true,
+          "definition": "End date for the period covered by the payment request."
+        },
+        {
+          "key": "work_progress_basis",
+          "label": "Work progress basis",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "daily_reports",
+            "measured_quantities",
+            "milestone_completion",
+            "hybrid"
+          ],
+          "definition": "Primary basis used to justify the requested payment."
+        },
+        {
+          "key": "inspector_or_pm_confirmation",
+          "label": "Inspector / PM confirmation",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether responsible staff confirmed the work claimed for payment."
+        },
+        {
+          "key": "disputed_items_flag",
+          "label": "Disputed items flag",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether any claimed work is disputed or pending correction."
+        },
+        {
+          "key": "invoice_lifecycle_status",
+          "label": "Invoice lifecycle status",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "drafting",
+            "internal_review",
+            "approved_for_submission",
+            "submitted",
+            "partially_paid",
+            "paid",
+            "disputed"
+          ],
+          "definition": "Current payment request status."
+        }
+      ],
+      "acceptance_criteria": [
+        "Payment number and covered period are recorded.",
+        "Progress basis is explicit.",
+        "Inspector/PM confirmation is recorded before approved_for_submission.",
+        "Disputed items are visible rather than buried in notes.",
+        "Do not use lapm_ready if support is only draft, disputed, or missing quantity/daily-report linkage."
+      ]
+    },
+    {
+      "profile_id": "g08_e02_change_order_billing_impact",
+      "gate_id": "G08_CONSTRUCTION_ADMINISTRATION",
+      "evidence_id": "G08_E02",
+      "title": "Change-order register + rationale",
+      "goal": "Track whether change orders alter the payment basis, reimbursement eligibility, or closeout risk.",
+      "operator_fields": [
+        {
+          "key": "change_order_id",
+          "label": "Change order ID",
+          "type": "text",
+          "required": true,
+          "definition": "Identifier used in the change-order register."
+        },
+        {
+          "key": "cost_impact_status",
+          "label": "Cost impact status",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "none",
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "definition": "Disposition of added or reduced cost."
+        },
+        {
+          "key": "time_impact_status",
+          "label": "Time impact status",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "none",
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "definition": "Disposition of schedule impact."
+        },
+        {
+          "key": "billing_effect_note",
+          "label": "Billing effect note",
+          "type": "text",
+          "required": true,
+          "definition": "Short explanation of whether the change affects current or future payment requests."
+        },
+        {
+          "key": "funding_eligibility_recheck_required",
+          "label": "Funding eligibility recheck required",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether the change triggers a new allowability/reimbursement check."
+        }
+      ],
+      "acceptance_criteria": [
+        "Cost and time effects are classified.",
+        "Billing effect is explained in plain language.",
+        "Eligibility recheck flag is explicit when scope/funding risk changes.",
+        "Do not call downstream invoice support ready if change-order billing effect remains unknown."
+      ]
+    },
+    {
+      "profile_id": "g09_e03_final_invoice_closeout",
+      "gate_id": "G09_COMPLETION_MAINTENANCE_AUDIT",
+      "evidence_id": "G09_E03",
+      "title": "Final invoicing and financial closeout package",
+      "goal": "Require final reconciliation discipline before any closeout package is described as complete or LAPM-ready.",
+      "operator_fields": [
+        {
+          "key": "final_invoice_status",
+          "label": "Final invoice status",
+          "type": "enum",
+          "required": true,
+          "allowed_values": [
+            "drafting",
+            "internal_review",
+            "approved_for_submission",
+            "submitted",
+            "partially_paid",
+            "paid",
+            "disputed",
+            "closeout_complete"
+          ],
+          "definition": "Lifecycle state for the final invoice or reimbursement request."
+        },
+        {
+          "key": "final_cost_reconciliation_complete",
+          "label": "Final cost reconciliation complete",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether budget, invoice total, and paid-to-date amounts reconcile."
+        },
+        {
+          "key": "retention_release_status",
+          "label": "Retention release status",
+          "type": "enum",
+          "required": false,
+          "allowed_values": [
+            "not_applicable",
+            "pending",
+            "released"
+          ],
+          "definition": "Status of retention release if applicable."
+        },
+        {
+          "key": "subconsultant_final_received",
+          "label": "Subconsultant final received",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether all subconsultant finals have been received and checked."
+        },
+        {
+          "key": "audit_hold_flag",
+          "label": "Audit hold flag",
+          "type": "boolean",
+          "required": true,
+          "definition": "Whether audit/corrective action issues prevent final closeout."
+        },
+        {
+          "key": "closeout_approval_date",
+          "label": "Closeout approval date",
+          "type": "date",
+          "required": false,
+          "definition": "Date the final package was approved for archive/closeout."
+        }
+      ],
+      "acceptance_criteria": [
+        "Final invoice lifecycle state is recorded.",
+        "Final reconciliation is complete.",
+        "Subconsultant finals are received and checked.",
+        "Any audit hold is visible.",
+        "Do not label the package complete or lapm_ready while final invoice is still drafting, disputed, or unreconciled."
+      ]
+    }
+  ]
+}
