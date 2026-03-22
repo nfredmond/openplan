@@ -22,6 +22,8 @@ export const WORKSPACE_ACTIONS = [
   "runs.delete",
   "report.generate",
   "billing.checkout",
+  "billing.invoices.read",
+  "billing.invoices.write",
   "stage_gates.decisions.read",
   "stage_gates.decisions.write",
 ] as const;
@@ -48,6 +50,8 @@ export const WORKSPACE_ACTION_ROLE_MATRIX: Record<WorkspaceAction, readonly Work
   "runs.delete": ["owner", "admin", "member"],
   "report.generate": ["owner", "admin", "member"],
   "billing.checkout": ["owner", "admin"],
+  "billing.invoices.read": ["owner", "admin", "member"],
+  "billing.invoices.write": ["owner", "admin"],
   "stage_gates.decisions.read": ["owner", "admin", "member"],
   "stage_gates.decisions.write": ["owner", "admin", "member"],
 };

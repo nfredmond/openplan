@@ -20,6 +20,8 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
         { action: "runs.delete", allowedRoles: ["owner", "admin", "member"] },
         { action: "report.generate", allowedRoles: ["owner", "admin", "member"] },
         { action: "billing.checkout", allowedRoles: ["owner", "admin"] },
+        { action: "billing.invoices.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "billing.invoices.write", allowedRoles: ["owner", "admin"] },
         { action: "stage_gates.decisions.read", allowedRoles: ["owner", "admin", "member"] },
         { action: "stage_gates.decisions.write", allowedRoles: ["owner", "admin", "member"] },
       ])
@@ -40,5 +42,12 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
     expect(canAccessWorkspaceAction("billing.checkout", "owner")).toBe(true);
     expect(canAccessWorkspaceAction("billing.checkout", "admin")).toBe(true);
     expect(canAccessWorkspaceAction("billing.checkout", "member")).toBe(false);
+  });
+
+  it("allows members to read invoice records but not write them", () => {
+    expect(canAccessWorkspaceAction("billing.invoices.read", "member")).toBe(true);
+    expect(canAccessWorkspaceAction("billing.invoices.write", "owner")).toBe(true);
+    expect(canAccessWorkspaceAction("billing.invoices.write", "admin")).toBe(true);
+    expect(canAccessWorkspaceAction("billing.invoices.write", "member")).toBe(false);
   });
 });
