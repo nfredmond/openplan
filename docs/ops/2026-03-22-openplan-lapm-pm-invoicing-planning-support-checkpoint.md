@@ -44,6 +44,24 @@ A checkpoint is reviewable when an authenticated operator can open the correct w
 
 This checkpoint should prove that OpenPlan can hold the **right project-control structure** before deeper feature expansion.
 
+
+### Mergeable slice definition (for Iris)
+Treat the next mergeable slice as **one project-controls summary surface**, not a full module.
+
+The slice should be reviewable if it can show these five things in one place:
+1. explicit workspace/project context,
+2. current gate/stage label,
+3. compliance state split (approved vs pending review),
+4. invoicing/control posture,
+5. one recommended next action.
+
+### Not required for this mergeable slice
+- no full invoice composer or export engine,
+- no final LAPM citation resolver,
+- no multi-screen PM workspace,
+- no advanced dashboards or analytics,
+- no new engagement/copilot/modeling dependencies.
+
 ---
 
 ## 2) Workflow language (for product and review alignment)
@@ -189,6 +207,27 @@ If a proposed addition does not improve the reviewability of the **project-contr
 
 ---
 
+## 6) Review-clarity checklist for next checkpoint
+
+### What the checkpoint should let Iris claim safely
+- “The operator can see the correct project-control context.”
+- “The operator can tell what is approved versus still pending review.”
+- “The operator can tell whether the project/invoicing posture is ready, held, or awaiting review.”
+- “The operator can see the next safe step without guessing.”
+
+### What the checkpoint should **not** claim yet
+- “LAPM compliance is complete.”
+- “Invoices are fully production-ready.”
+- “Legal/principal review is replaced by the interface.”
+- “This closes engagement, copilot, or modeling scope.”
+
+### Questions Mateo and Elena should be able to answer quickly
+1. Is the workspace/project context explicit and unambiguous?
+2. Is draft vs approved status visible without reading internal notes?
+3. Does invoicing posture follow project-control truth instead of implying false readiness?
+4. Is the next safe action obvious?
+5. Is the slice narrow enough to merge without dragging in broader module scope?
+
 ## 6) Recommended checkpoint PASS test (planning/ops view)
 
 I would treat the checkpoint as planning/ops-PASS-ready when this statement is true:
@@ -198,6 +237,16 @@ I would treat the checkpoint as planning/ops-PASS-ready when this statement is t
 If that statement is not yet true, keep the checkpoint in HOLD and cut scope until it is.
 
 ---
+
+## 7) Suggested plain-language status vocabulary
+Use restrained labels that help review clarity:
+- **Ready for next step** = enough structure/evidence exists to proceed within current scope
+- **Pending review** = documented, but still waiting on planning/legal/principal confirmation
+- **Hold — missing evidence** = key support material is absent or incomplete
+- **Hold — context required** = workspace/project must be selected or confirmed before action
+- **Closeout-ready** = current step is complete enough to package and hand off
+
+These labels are more review-safe than vague phrases like “green,” “done,” or “good to go.”
 
 ## Bottom line
 The right #1 checkpoint is **not** “build all LAPM / PM / invoicing features.”  
