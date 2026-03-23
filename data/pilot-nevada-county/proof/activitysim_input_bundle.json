@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "activitysim_input_bundle_v0.1",
+  "studyAreaKey": "nevada-county-pilot",
+  "packageName": "nevada-county-accessibility-v1",
+  "packageVersion": "1.0.0-draft",
+  "zoneSystem": {
+    "zoneType": "census_tract",
+    "zoneCount": 26,
+    "zoneIdField": "zone_id",
+    "externalZoneIdField": "GEOID"
+  },
+  "inputFiles": {
+    "landUsePrecursor": "data/pilot-nevada-county/package/zone_attributes.csv",
+    "zoneBoundaries": "data/pilot-nevada-county/package/zones.geojson",
+    "zoneCentroids": "data/pilot-nevada-county/package/zone_centroids.geojson",
+    "tractMarginals": "data/pilot-nevada-county/synthetic_population/tract_marginals.csv",
+    "screeningDemandMatrix": "data/pilot-nevada-county/package/od_trip_matrix.csv",
+    "syntheticHouseholds": null,
+    "syntheticPersons": null,
+    "skimsOmx": null
+  },
+  "observedCurrentState": {
+    "populationEstimate": 101987,
+    "jobEstimate": 29840,
+    "tripMatrixShape": [
+      26,
+      26
+    ],
+    "dailyTripTotal": 66572.0,
+    "positiveOdCells": 488
+  },
+  "handoffNotes": [
+    "zone_attributes.csv is a land-use-style precursor and not yet a final ActivitySim land_use.csv contract.",
+    "Static pilot zone_attributes.csv does not include households; tract_marginals.csv or fresh ACS pulls must be joined by GEOID for household controls.",
+    "synthetic_households.csv and synthetic_persons.csv are not yet materialized in-repo; run_synthesis.py is the intended builder.",
+    "No skim OMX artifact is currently stored in the repo, so downstream ActivitySim packaging must not assume skims already exist."
+  ]
+}

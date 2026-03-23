@@ -372,6 +372,7 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
 
 export function labelForEngineKey(engineKey: string | null | undefined) {
   if (engineKey === "aequilibrae") return "AequilibraE";
+  if (engineKey === "activitysim") return "ActivitySim (handoff scaffold)";
   if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
   if (!engineKey) return "Unknown engine";
   return engineKey
@@ -383,6 +384,7 @@ export function labelForEngineKey(engineKey: string | null | undefined) {
 
 export function labelForArtifactType(artifactType: string | null | undefined) {
   if (!artifactType) return "Artifact";
+  if (artifactType === "activitysim_handoff_manifest") return "ActivitySim Handoff Manifest";
   return artifactType
     .split(/[_-]+/)
     .filter(Boolean)

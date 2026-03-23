@@ -138,7 +138,7 @@ def sb_post_kpi(payload: dict):
 
 
 def sb_get_run(run_id: str) -> dict:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,corridor_geojson,query_text,engine_key,run_title"
+    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,model_id,corridor_geojson,query_text,engine_key,run_title"
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
         raise RuntimeError(f"Failed to load model run {run_id}: {res.status_code} {res.text[:200]}")
@@ -459,6 +459,127 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     }
 
 
+def _artifact_descriptor(fpath: str, artifact_type: str) -> dict | None:
+    if not os.path.exists(fpath):
+        return None
+    with open(fpath, "rb") as fh:
+        content_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+    return {
+        "artifact_type": artifact_type,
+        "file_url": f"local://{fpath}",
+        "file_size_bytes": os.path.getsize(fpath),
+        "content_hash": content_hash,
+    }
+
+
+def build_activitysim_handoff_manifest(run_id: str, work_dir: str, setup_result: dict, assign_result: dict) -> dict:
+    run_row = sb_get_run(run_id)
+    package_dir = os.path.join(work_dir, "package")
+    pilot_root = os.path.abspath(os.path.join(work_dir, "..", ".."))
+    synthetic_root = os.path.join(pilot_root, "synthetic_population")
+    activitysim_root = os.path.join(pilot_root, "activitysim")
+    output_dir = os.path.join(work_dir, "run_output")
+
+    package_manifest_path = os.path.join(package_dir, "manifest.json")
+    package_manifest = None
+    if os.path.exists(package_manifest_path):
+        with open(package_manifest_path) as fh:
+            package_manifest = json.load(fh)
+
+    input_checks = [
+        {"label": "zone_attributes", "path": os.path.join(package_dir, "zone_attributes.csv")},
+        {"label": "zone_centroids", "path": os.path.join(package_dir, "zone_centroids.geojson")},
+        {"label": "zones", "path": os.path.join(package_dir, "zones.geojson")},
+        {"label": "tract_marginals", "path": os.path.join(synthetic_root, "tract_marginals.csv")},
+        {"label": "seed_households", "path": os.path.join(synthetic_root, "seed_households.csv")},
+        {"label": "seed_persons", "path": os.path.join(synthetic_root, "seed_persons.csv")},
+        {"label": "settings_yaml", "path": os.path.join(activitysim_root, "settings.yaml")},
+        {"label": "land_use_csv", "path": os.path.join(activitysim_root, "land_use.csv")},
+        {"label": "households_csv", "path": os.path.join(activitysim_root, "households.csv")},
+        {"label": "persons_csv", "path": os.path.join(activitysim_root, "persons.csv")},
+    ]
+
+    for probe in input_checks:
+        probe["exists"] = os.path.exists(probe["path"])
+
+    artifacts = [
+        _artifact_descriptor(os.path.join(output_dir, "travel_time_skims.omx"), "skim_matrix"),
+        _artifact_descriptor(os.path.join(output_dir, "demand.omx"), "demand_matrix"),
+        _artifact_descriptor(os.path.join(output_dir, "link_volumes.csv"), "link_volumes"),
+        _artifact_descriptor(os.path.join(output_dir, "evidence_packet.json"), "evidence_packet"),
+        _artifact_descriptor(os.path.join(output_dir, "volumes.geojson"), "volumes_geojson"),
+    ]
+    artifacts = [item for item in artifacts if item is not None]
+
+    missing_requirements = []
+    if not any(item["artifact_type"] == "skim_matrix" for item in artifacts):
+        missing_requirements.append("skim_matrix")
+    if not any(item["artifact_type"] == "demand_matrix" for item in artifacts):
+        missing_requirements.append("demand_matrix")
+    if not os.path.exists(os.path.join(synthetic_root, "seed_households.csv")):
+        missing_requirements.append("seed_households")
+    if not os.path.exists(os.path.join(synthetic_root, "seed_persons.csv")):
+        missing_requirements.append("seed_persons")
+    if not os.path.exists(os.path.join(activitysim_root, "settings.yaml")):
+        missing_requirements.append("settings_yaml")
+
+    return {
+        "schemaVersion": "openplan-activitysim-handoff.v1",
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "modelRunId": run_id,
+        "modelId": run_row.get("model_id"),
+        "engineKey": run_row.get("engine_key"),
+        "pipelineKey": "aequilibrae_activitysim_handoff_v1",
+        "summary": (
+            "AequilibraE outputs were packaged into an ActivitySim-facing handoff manifest. "
+            "This does not mean ActivitySim executed."
+        ),
+        "runStatus": "succeeded",
+        "readyChecks": [
+            {
+                "key": "skim_matrix",
+                "label": "AequilibraE skim matrix",
+                "status": "ready" if any(item["artifact_type"] == "skim_matrix" for item in artifacts) else "missing",
+                "detail": "OMX skim output available for adapter packaging." if any(item["artifact_type"] == "skim_matrix" for item in artifacts) else "travel_time_skims.omx missing",
+            },
+            {
+                "key": "demand_matrix",
+                "label": "AequilibraE demand matrix",
+                "status": "ready" if any(item["artifact_type"] == "demand_matrix" for item in artifacts) else "missing",
+                "detail": "Prototype demand OMX available." if any(item["artifact_type"] == "demand_matrix" for item in artifacts) else "demand.omx missing",
+            },
+            {
+                "key": "synthetic_population",
+                "label": "Synthetic households/persons",
+                "status": "ready" if os.path.exists(os.path.join(synthetic_root, "seed_households.csv")) and os.path.exists(os.path.join(synthetic_root, "seed_persons.csv")) else "partial",
+                "detail": "Seed household/person files present." if os.path.exists(os.path.join(synthetic_root, "seed_households.csv")) and os.path.exists(os.path.join(synthetic_root, "seed_persons.csv")) else "Seed household/person files are not both present yet.",
+            },
+            {
+                "key": "activitysim_runtime",
+                "label": "ActivitySim runtime settings",
+                "status": "ready" if os.path.exists(os.path.join(activitysim_root, "settings.yaml")) else "missing",
+                "detail": "settings.yaml present." if os.path.exists(os.path.join(activitysim_root, "settings.yaml")) else "No ActivitySim settings bundle is present yet.",
+            },
+        ],
+        "missingRequirements": missing_requirements,
+        "aequilibraeArtifacts": artifacts,
+        "canonicalInputs": [probe for probe in input_checks if probe["label"] in ["zone_attributes", "zone_centroids", "zones"]],
+        "populationInputs": [probe for probe in input_checks if probe["label"] in ["tract_marginals", "seed_households", "seed_persons"]],
+        "runtimeInputs": [probe for probe in input_checks if probe["label"] in ["settings_yaml", "land_use_csv", "households_csv", "persons_csv"]],
+        "notes": [
+            "Current lane produces a handoff package only.",
+            "ActivitySim runtime execution still requires a future worker/runtime lane.",
+            f"Query text: {run_row.get('query_text') or 'n/a'}",
+        ],
+        "packageManifest": package_manifest,
+        "assignmentSummary": {
+            "network": assign_result.get("network"),
+            "demand": assign_result.get("demand"),
+            "skims": assign_result.get("skims"),
+        },
+    }
+
+
 # ─── Stage 3: Artifact Extraction ──────────────────────────────────────
 def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict) -> str:
     out_dir = os.path.join(work_dir, "run_output")
@@ -539,6 +660,25 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
             "value": value,
             "unit": unit,
         })
+
+    run_row = sb_get_run(run_id)
+    if run_row.get("engine_key") != "activitysim":
+        handoff_manifest = build_activitysim_handoff_manifest(run_id, work_dir, setup_result, assign_result)
+        handoff_path = os.path.join(out_dir, "activitysim_handoff_manifest.json")
+        with open(handoff_path, "w") as f:
+            json.dump(handoff_manifest, f, indent=2)
+        with open(handoff_path, "rb") as fh:
+            handoff_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+        sb_post_artifact({
+            "run_id": run_id,
+            "stage_id": stage_id,
+            "artifact_type": "activitysim_handoff_manifest",
+            "file_url": f"local://{handoff_path}",
+            "file_size_bytes": os.path.getsize(handoff_path),
+            "content_hash": handoff_hash,
+            "metadata_json": {"stage_name": "ActivitySim Handoff Package", "pipeline": "aequilibrae_activitysim_handoff_v1"},
+        })
+        log += f"Wrote ActivitySim handoff manifest to {handoff_path}.\n"
 
     # Generate GeoJSON for the map and upload to Supabase Storage
     try:
@@ -630,6 +770,35 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
     return log
 
 
+def stage_activitysim_handoff(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict) -> str:
+    out_dir = os.path.join(work_dir, "run_output")
+    manifest = build_activitysim_handoff_manifest(run_id, work_dir, setup_result, assign_result)
+    handoff_path = os.path.join(out_dir, "activitysim_handoff_manifest.json")
+    with open(handoff_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+
+    with open(handoff_path, "rb") as fh:
+        handoff_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+
+    sb_post_artifact({
+        "run_id": run_id,
+        "stage_id": stage_id,
+        "artifact_type": "activitysim_handoff_manifest",
+        "file_url": f"local://{handoff_path}",
+        "file_size_bytes": os.path.getsize(handoff_path),
+        "content_hash": handoff_hash,
+        "metadata_json": {"stage_name": "ActivitySim Handoff Package", "pipeline": "aequilibrae_activitysim_handoff_v1"},
+    })
+
+    missing = manifest.get("missingRequirements") or []
+    log = "ActivitySim handoff packaging complete.\n"
+    if missing:
+        log += f"Remaining gaps: {', '.join(missing)}\n"
+    else:
+        log += "All currently-expected handoff inputs are present.\n"
+    return log
+
+
 # ─── Main poll loop ────────────────────────────────────────────────────
 # Work directory: use /tmp/aeq_runs in cloud, or local data dir for dev
 PILOT_WORK_DIR = os.getenv("AEQ_WORK_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county"))
@@ -689,6 +858,16 @@ def process_stage(stage: dict):
             with open(state_file) as f:
                 state = json.load(f)
             log = stage_artifacts(run_id, stage_id, work_dir, state["setup"], state["assignment"])
+            sb_patch_stage(stage_id, {
+                "status": "succeeded",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "log_tail": log,
+            })
+
+        elif stage_name == "ActivitySim Handoff Package":
+            with open(state_file) as f:
+                state = json.load(f)
+            log = stage_activitysim_handoff(run_id, stage_id, work_dir, state["setup"], state["assignment"])
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),

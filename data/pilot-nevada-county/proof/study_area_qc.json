@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "openplan_study_area_qc_v1",
+  "studyAreaKey": "nevada-county-pilot",
+  "bbox": [
+    -121.279784,
+    39.006807,
+    -120.005903,
+    39.522242
+  ],
+  "summary": {
+    "zoneCount": 26,
+    "totalPopulation": 101987,
+    "totalJobsEstimate": 29840,
+    "totalTrips": 66572,
+    "intrazonalTrips": 13172,
+    "intrazonalShare": 0.1979,
+    "positiveOdCells": 488,
+    "zeroOdCells": 188
+  },
+  "checks": [
+    {
+      "name": "zone_ids_unique",
+      "status": "pass",
+      "message": "26 unique zone_id values detected in zone_attributes.csv."
+    },
+    {
+      "name": "tract_geoids_unique",
+      "status": "pass",
+      "message": "26 unique tract GEOIDs detected across zone artifacts and tract marginals."
+    },
+    {
+      "name": "centroids_present",
+      "status": "pass",
+      "message": "All 26 zones have centroid coordinates in the static package."
+    },
+    {
+      "name": "positive_population",
+      "status": "pass",
+      "message": "All 26 zones have positive estimated population in zone_attributes.csv."
+    },
+    {
+      "name": "internal_od_coverage",
+      "status": "warn",
+      "message": "188 of 676 OD cells are zero in the screening demand matrix; this reflects tract-level internal LODES flows plus expansion, not a behavioral all-purpose demand model."
+    }
+  ],
+  "warnings": [
+    "Pilot package uses Census tracts rather than custom TAZs or explicit external stations.",
+    "Static zone_attributes.csv omits households, so ActivitySim land-use packaging must join tract_marginals.csv or refresh ACS household totals.",
+    "Current run evidence is on an OSM-derived network, not a one-to-one replay of the TIGER screening network package."
+  ]
+}

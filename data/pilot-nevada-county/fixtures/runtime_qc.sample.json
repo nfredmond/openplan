@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "openplan_runtime_qc_v0.1",
+  "runId": "1de72401-4bb7-4377-a1c0-bbb7381a8f95",
+  "stageKey": "run_assignment",
+  "engine": {
+    "name": "AequilibraE",
+    "version": "1.6.1",
+    "algorithm": "BFW",
+    "vdf": "BPR (alpha=0.15, beta=4.0)"
+  },
+  "network": {
+    "source": "OpenStreetMap",
+    "links": 49005,
+    "nodes": 19460,
+    "zones": 26,
+    "largestComponentPct": 95.3
+  },
+  "demand": {
+    "totalTrips": 66572.0,
+    "routableTrips": 34840.0,
+    "unroutableTrips": 31732.0,
+    "routableShare": 0.5233
+  },
+  "skims": {
+    "reachablePairs": 380,
+    "totalPairs": 650,
+    "avgTimeMin": 3.3742,
+    "maxTimeMin": 7.427
+  },
+  "assignment": {
+    "loadedLinks": 2412,
+    "linksVocGt1": 215,
+    "finalGap": 0.013372032595148657,
+    "iterations": 50
+  },
+  "flags": [
+    {
+      "severity": "warn",
+      "message": "Only 52.3% of requested trips were routable in the current pilot run; preserve requested-versus-routed demand in downstream artifact contracts."
+    },
+    {
+      "severity": "warn",
+      "message": "Largest connected component is 95.3% of nodes, so disconnected demand remains material and should be surfaced in QA."
+    },
+    {
+      "severity": "warn",
+      "message": "215 loaded links exceed VOC 1.0 under default OSM capacities; this is acceptable for screening but not for calibrated reporting."
+    },
+    {
+      "severity": "warn",
+      "message": "This run is explicitly uncalibrated, closed-boundary, and screening-grade."
+    }
+  ],
+  "repoArtifacts": [
+    "data/pilot-nevada-county/run_output/evidence_packet.json",
+    "data/pilot-nevada-county/run_output/link_volumes.csv",
+    "data/pilot-nevada-county/run_output/top_loaded_links.geojson"
+  ]
+}
