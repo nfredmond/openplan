@@ -40,6 +40,11 @@ describe("buildProjectStageGateSummary", () => {
     expect(gateTwo?.workflowState).toBe("hold");
     expect(gateTwo?.rationale).toBe("Civil rights plan is still missing.");
     expect(gateTwo?.requiredEvidenceCount).toBeGreaterThan(0);
+    expect(gateTwo?.operatorControlEvidenceCount).toBe(1);
+
+    const gateEight = summary.gates.find((gate) => gate.gateId === "G08_CONSTRUCTION_ADMINISTRATION");
+    expect(gateEight?.operatorControlEvidenceCount).toBe(2);
+    expect(gateEight?.evidencePreview[0]?.operatorControlTitle).toBe("Daily reports + progress payment records");
   });
 
   it("marks untouched gates as not started", () => {
@@ -49,5 +54,6 @@ describe("buildProjectStageGateSummary", () => {
     expect(summary.holdCount).toBe(0);
     expect(summary.notStartedCount).toBe(summary.totalGateCount);
     expect(summary.nextGate?.workflowState).toBe("not_started");
+    expect(summary.nextGate?.operatorControlEvidenceCount).toBeGreaterThanOrEqual(0);
   });
 });

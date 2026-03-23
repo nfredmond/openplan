@@ -6,6 +6,14 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const projectsSingleMock = vi.fn();
 
+const projectMilestonesSingleMock = vi.fn();
+const projectMilestonesSelectMock = vi.fn(() => ({ single: projectMilestonesSingleMock }));
+const projectMilestonesInsertMock = vi.fn(() => ({ select: projectMilestonesSelectMock }));
+
+const projectSubmittalsSingleMock = vi.fn();
+const projectSubmittalsSelectMock = vi.fn(() => ({ single: projectSubmittalsSingleMock }));
+const projectSubmittalsInsertMock = vi.fn(() => ({ select: projectSubmittalsSelectMock }));
+
 const projectDeliverablesSingleMock = vi.fn();
 const projectDeliverablesSelectMock = vi.fn(() => ({ single: projectDeliverablesSingleMock }));
 const projectDeliverablesInsertMock = vi.fn(() => ({ select: projectDeliverablesSelectMock }));
@@ -20,6 +28,14 @@ const projectsSelectMock = vi.fn(() => ({ eq: projectsSelectEqMock }));
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
+  }
+
+  if (table === "project_milestones") {
+    return { insert: projectMilestonesInsertMock };
+  }
+
+  if (table === "project_submittals") {
+    return { insert: projectSubmittalsInsertMock };
   }
 
   if (table === "project_deliverables") {
@@ -75,6 +91,31 @@ describe("POST /api/projects/[projectId]/records", () => {
       error: null,
     });
 
+    projectMilestonesSingleMock.mockResolvedValue({
+      data: {
+        id: "aaaa1111-3333-4333-8333-333333333333",
+        title: "LAPM authorization packet ready",
+        status: "scheduled",
+        phase_code: "initiation",
+        milestone_type: "authorization",
+        target_date: "2026-03-20",
+        created_at: "2026-03-13T07:00:00.000Z",
+      },
+      error: null,
+    });
+
+    projectSubmittalsSingleMock.mockResolvedValue({
+      data: {
+        id: "bbbb1111-3333-4333-8333-333333333333",
+        title: "Invoice backup packet",
+        status: "submitted",
+        submittal_type: "invoice_backup",
+        due_date: "2026-03-18",
+        created_at: "2026-03-13T07:05:00.000Z",
+      },
+      error: null,
+    });
+
     projectDeliverablesSingleMock.mockResolvedValue({
       data: {
         id: "33333333-3333-4333-8333-333333333333",
@@ -117,6 +158,82 @@ describe("POST /api/projects/[projectId]/records", () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({ error: "Unauthorized" });
+  });
+
+  it("creates a milestone for an accessible project", async () => {
+    const response = await postRecord(
+      jsonRequest({
+        recordType: "milestone",
+        title: "LAPM authorization packet ready",
+        milestoneType: "authorization",
+        phaseCode: "initiation",
+        status: "scheduled",
+        ownerLabel: "Elena",
+        targetDate: "2026-03-20",
+      }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(projectMilestonesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project_id: "11111111-1111-4111-8111-111111111111",
+        title: "LAPM authorization packet ready",
+        milestone_type: "authorization",
+        phase_code: "initiation",
+        status: "scheduled",
+        owner_label: "Elena",
+        target_date: "2026-03-20",
+        created_by: "22222222-2222-4222-8222-222222222222",
+      })
+    );
+
+    expect(await response.json()).toMatchObject({
+      recordType: "milestone",
+      record: {
+        id: "aaaa1111-3333-4333-8333-333333333333",
+        title: "LAPM authorization packet ready",
+      },
+    });
+  });
+
+  it("creates a submittal for an accessible project", async () => {
+    const response = await postRecord(
+      jsonRequest({
+        recordType: "submittal",
+        title: "Invoice backup packet",
+        submittalType: "invoice_backup",
+        status: "submitted",
+        agencyLabel: "Caltrans D3 Local Assistance",
+        referenceNumber: "INV-7",
+        dueDate: "2026-03-18",
+        reviewCycle: 2,
+      }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(projectSubmittalsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project_id: "11111111-1111-4111-8111-111111111111",
+        title: "Invoice backup packet",
+        submittal_type: "invoice_backup",
+        status: "submitted",
+        agency_label: "Caltrans D3 Local Assistance",
+        reference_number: "INV-7",
+        due_date: "2026-03-18",
+        review_cycle: 2,
+        created_by: "22222222-2222-4222-8222-222222222222",
+      })
+    );
+
+    expect(await response.json()).toMatchObject({
+      recordType: "submittal",
+      record: {
+        id: "bbbb1111-3333-4333-8333-333333333333",
+        title: "Invoice backup packet",
+      },
+    });
   });
 
   it("creates a deliverable for an accessible project", async () => {

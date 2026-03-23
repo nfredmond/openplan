@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ClipboardCheck, Loader2, MessagesSquare, Scale, Siren } from "lucide-react";
+import {
+  AlertTriangle,
+  ClipboardCheck,
+  FileText,
+  Flag,
+  Loader2,
+  MessagesSquare,
+  Scale,
+  Siren,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +32,30 @@ function FormError({ error }: { error: string | null }) {
 
 export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps) {
   const router = useRouter();
+
+  const [milestoneTitle, setMilestoneTitle] = useState("");
+  const [milestoneSummary, setMilestoneSummary] = useState("");
+  const [milestoneType, setMilestoneType] = useState("authorization");
+  const [milestonePhaseCode, setMilestonePhaseCode] = useState("initiation");
+  const [milestoneStatus, setMilestoneStatus] = useState("scheduled");
+  const [milestoneOwner, setMilestoneOwner] = useState("");
+  const [milestoneTargetDate, setMilestoneTargetDate] = useState("");
+  const [milestoneActualDate, setMilestoneActualDate] = useState("");
+  const [milestoneNotes, setMilestoneNotes] = useState("");
+  const [milestoneError, setMilestoneError] = useState<string | null>(null);
+  const [milestoneSaving, setMilestoneSaving] = useState(false);
+
+  const [submittalTitle, setSubmittalTitle] = useState("");
+  const [submittalType, setSubmittalType] = useState("authorization_packet");
+  const [submittalStatus, setSubmittalStatus] = useState("draft");
+  const [submittalAgency, setSubmittalAgency] = useState("");
+  const [submittalReferenceNumber, setSubmittalReferenceNumber] = useState("");
+  const [submittalDueDate, setSubmittalDueDate] = useState("");
+  const [submittalSubmittedAt, setSubmittalSubmittedAt] = useState("");
+  const [submittalReviewCycle, setSubmittalReviewCycle] = useState("1");
+  const [submittalNotes, setSubmittalNotes] = useState("");
+  const [submittalError, setSubmittalError] = useState<string | null>(null);
+  const [submittalSaving, setSubmittalSaving] = useState(false);
 
   const [deliverableTitle, setDeliverableTitle] = useState("");
   const [deliverableSummary, setDeliverableSummary] = useState("");
@@ -77,6 +110,72 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
     }
 
     router.refresh();
+  }
+
+  async function handleMilestoneSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMilestoneError(null);
+    setMilestoneSaving(true);
+    try {
+      await submitRecord({
+        recordType: "milestone",
+        title: milestoneTitle,
+        summary: milestoneSummary,
+        milestoneType,
+        phaseCode: milestonePhaseCode,
+        status: milestoneStatus,
+        ownerLabel: milestoneOwner,
+        targetDate: milestoneTargetDate,
+        actualDate: milestoneActualDate,
+        notes: milestoneNotes,
+      });
+      setMilestoneTitle("");
+      setMilestoneSummary("");
+      setMilestoneType("authorization");
+      setMilestonePhaseCode("initiation");
+      setMilestoneStatus("scheduled");
+      setMilestoneOwner("");
+      setMilestoneTargetDate("");
+      setMilestoneActualDate("");
+      setMilestoneNotes("");
+    } catch (error) {
+      setMilestoneError(error instanceof Error ? error.message : "Failed to save milestone");
+    } finally {
+      setMilestoneSaving(false);
+    }
+  }
+
+  async function handleSubmittalSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmittalError(null);
+    setSubmittalSaving(true);
+    try {
+      await submitRecord({
+        recordType: "submittal",
+        title: submittalTitle,
+        submittalType,
+        status: submittalStatus,
+        agencyLabel: submittalAgency,
+        referenceNumber: submittalReferenceNumber,
+        dueDate: submittalDueDate,
+        submittedAt: submittalSubmittedAt ? new Date(submittalSubmittedAt).toISOString() : undefined,
+        reviewCycle: Number.parseInt(submittalReviewCycle, 10) || 1,
+        notes: submittalNotes,
+      });
+      setSubmittalTitle("");
+      setSubmittalType("authorization_packet");
+      setSubmittalStatus("draft");
+      setSubmittalAgency("");
+      setSubmittalReferenceNumber("");
+      setSubmittalDueDate("");
+      setSubmittalSubmittedAt("");
+      setSubmittalReviewCycle("1");
+      setSubmittalNotes("");
+    } catch (error) {
+      setSubmittalError(error instanceof Error ? error.message : "Failed to save submittal");
+    } finally {
+      setSubmittalSaving(false);
+    }
   }
 
   async function handleDeliverableSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -206,14 +305,22 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
     <article className="module-section-surface">
       <div className="module-section-heading">
         <p className="module-section-label">Create records</p>
-        <h2 className="module-section-title">Add deliverables, risks, issues, decisions, and meetings</h2>
+        <h2 className="module-section-title">Add milestones, submittals, deliverables, risks, issues, decisions, and meetings</h2>
         <p className="module-section-description">
           This control layer turns each project into an active operating workspace instead of a passive record.
         </p>
       </div>
 
-      <Tabs defaultValue="deliverable" className="mt-5">
-        <TabsList variant="line" className="module-tabs-list">
+      <Tabs defaultValue="milestone" className="mt-5">
+        <TabsList variant="line" className="module-tabs-list flex-wrap">
+          <TabsTrigger value="milestone" className="module-tab-trigger">
+            <Flag className="h-4 w-4" />
+            Milestone
+          </TabsTrigger>
+          <TabsTrigger value="submittal" className="module-tab-trigger">
+            <FileText className="h-4 w-4" />
+            Submittal
+          </TabsTrigger>
           <TabsTrigger value="deliverable" className="module-tab-trigger">
             <ClipboardCheck className="h-4 w-4" />
             Deliverable
@@ -235,6 +342,228 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
             Meeting
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="milestone" className="pt-4">
+          <form className="space-y-4" onSubmit={handleMilestoneSubmit}>
+            <div className="space-y-2">
+              <label htmlFor="milestone-title" className="text-sm font-medium">
+                Milestone title
+              </label>
+              <Input
+                id="milestone-title"
+                value={milestoneTitle}
+                onChange={(e) => setMilestoneTitle(e.target.value)}
+                placeholder="LAPM authorization checklist packet ready"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="milestone-summary" className="text-sm font-medium">
+                Summary
+              </label>
+              <Textarea
+                id="milestone-summary"
+                value={milestoneSummary}
+                onChange={(e) => setMilestoneSummary(e.target.value)}
+                rows={4}
+                placeholder="What phase gate or operator checkpoint does this milestone represent?"
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label htmlFor="milestone-type" className="text-sm font-medium">
+                  Milestone type
+                </label>
+                <select id="milestone-type" className="module-select" value={milestoneType} onChange={(e) => setMilestoneType(e.target.value)}>
+                  <option value="authorization">Authorization</option>
+                  <option value="agreement">Agreement</option>
+                  <option value="schedule">Schedule</option>
+                  <option value="hearing">Hearing</option>
+                  <option value="invoice">Invoice</option>
+                  <option value="deliverable">Deliverable</option>
+                  <option value="decision">Decision</option>
+                  <option value="permit">Permit</option>
+                  <option value="closeout">Closeout</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="milestone-phase" className="text-sm font-medium">
+                  Phase code
+                </label>
+                <select id="milestone-phase" className="module-select" value={milestonePhaseCode} onChange={(e) => setMilestonePhaseCode(e.target.value)}>
+                  <option value="initiation">Initiation</option>
+                  <option value="procurement">Procurement</option>
+                  <option value="environmental">Environmental</option>
+                  <option value="outreach">Outreach</option>
+                  <option value="programming">Programming</option>
+                  <option value="ps_e">PS&E</option>
+                  <option value="row_utilities">ROW / Utilities</option>
+                  <option value="advertise_award">Advertise / Award</option>
+                  <option value="construction">Construction</option>
+                  <option value="closeout">Closeout</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="milestone-status" className="text-sm font-medium">
+                  Status
+                </label>
+                <select id="milestone-status" className="module-select" value={milestoneStatus} onChange={(e) => setMilestoneStatus(e.target.value)}>
+                  <option value="not_started">Not started</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="blocked">Blocked</option>
+                  <option value="complete">Complete</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label htmlFor="milestone-owner" className="text-sm font-medium">
+                  Owner
+                </label>
+                <Input id="milestone-owner" value={milestoneOwner} onChange={(e) => setMilestoneOwner(e.target.value)} placeholder="Elena / Owen / Consultant" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="milestone-target-date" className="text-sm font-medium">
+                  Target date
+                </label>
+                <Input id="milestone-target-date" type="date" value={milestoneTargetDate} onChange={(e) => setMilestoneTargetDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="milestone-actual-date" className="text-sm font-medium">
+                  Actual date
+                </label>
+                <Input id="milestone-actual-date" type="date" value={milestoneActualDate} onChange={(e) => setMilestoneActualDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="milestone-notes" className="text-sm font-medium">
+                Notes
+              </label>
+              <Textarea
+                id="milestone-notes"
+                value={milestoneNotes}
+                onChange={(e) => setMilestoneNotes(e.target.value)}
+                rows={4}
+                placeholder="Capture control-room context, dependency notes, or why this milestone is blocked."
+              />
+            </div>
+            <FormError error={milestoneError} />
+            <Button type="submit" disabled={milestoneSaving}>
+              {milestoneSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Saving milestone…
+                </>
+              ) : (
+                "Add milestone"
+              )}
+            </Button>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="submittal" className="pt-4">
+          <form className="space-y-4" onSubmit={handleSubmittalSubmit}>
+            <div className="space-y-2">
+              <label htmlFor="submittal-title" className="text-sm font-medium">
+                Submittal title
+              </label>
+              <Input
+                id="submittal-title"
+                value={submittalTitle}
+                onChange={(e) => setSubmittalTitle(e.target.value)}
+                placeholder="Invoice backup packet"
+                required
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label htmlFor="submittal-type" className="text-sm font-medium">
+                  Submittal type
+                </label>
+                <select id="submittal-type" className="module-select" value={submittalType} onChange={(e) => setSubmittalType(e.target.value)}>
+                  <option value="authorization_packet">Authorization packet</option>
+                  <option value="invoice_backup">Invoice backup</option>
+                  <option value="environmental_package">Environmental package</option>
+                  <option value="hearing_record">Hearing record</option>
+                  <option value="ps_e">PS&amp;E</option>
+                  <option value="reimbursement">Reimbursement</option>
+                  <option value="progress_report">Progress report</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="submittal-status" className="text-sm font-medium">
+                  Status
+                </label>
+                <select id="submittal-status" className="module-select" value={submittalStatus} onChange={(e) => setSubmittalStatus(e.target.value)}>
+                  <option value="draft">Draft</option>
+                  <option value="internal_review">Internal review</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="revise_and_resubmit">Revise and resubmit</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="submittal-review-cycle" className="text-sm font-medium">
+                  Review cycle
+                </label>
+                <Input id="submittal-review-cycle" type="number" min="1" max="10" value={submittalReviewCycle} onChange={(e) => setSubmittalReviewCycle(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="submittal-agency" className="text-sm font-medium">
+                  Agency / reviewer
+                </label>
+                <Input id="submittal-agency" value={submittalAgency} onChange={(e) => setSubmittalAgency(e.target.value)} placeholder="Caltrans D3 Local Assistance" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="submittal-reference-number" className="text-sm font-medium">
+                  Reference number
+                </label>
+                <Input id="submittal-reference-number" value={submittalReferenceNumber} onChange={(e) => setSubmittalReferenceNumber(e.target.value)} placeholder="INV-7 / EX-10-A" />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="submittal-due-date" className="text-sm font-medium">
+                  Due date
+                </label>
+                <Input id="submittal-due-date" type="date" value={submittalDueDate} onChange={(e) => setSubmittalDueDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="submittal-submitted-at" className="text-sm font-medium">
+                  Submitted at
+                </label>
+                <Input id="submittal-submitted-at" type="datetime-local" value={submittalSubmittedAt} onChange={(e) => setSubmittalSubmittedAt(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="submittal-notes" className="text-sm font-medium">
+                Notes
+              </label>
+              <Textarea
+                id="submittal-notes"
+                value={submittalNotes}
+                onChange={(e) => setSubmittalNotes(e.target.value)}
+                rows={4}
+                placeholder="Capture resubmittal comments, backup requirements, or review conditions."
+              />
+            </div>
+            <FormError error={submittalError} />
+            <Button type="submit" disabled={submittalSaving}>
+              {submittalSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Saving submittal…
+                </>
+              ) : (
+                "Add submittal"
+              )}
+            </Button>
+          </form>
+        </TabsContent>
 
         <TabsContent value="deliverable" className="pt-4">
           <form className="space-y-4" onSubmit={handleDeliverableSubmit}>
@@ -284,12 +613,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 <label htmlFor="deliverable-status" className="text-sm font-medium">
                   Status
                 </label>
-                <select
-                  id="deliverable-status"
-                  className="module-select"
-                  value={deliverableStatus}
-                  onChange={(e) => setDeliverableStatus(e.target.value)}
-                >
+                <select id="deliverable-status" className="module-select" value={deliverableStatus} onChange={(e) => setDeliverableStatus(e.target.value)}>
                   <option value="not_started">Not started</option>
                   <option value="in_progress">In progress</option>
                   <option value="blocked">Blocked</option>
@@ -316,25 +640,13 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="risk-title" className="text-sm font-medium">
                 Risk title
               </label>
-              <Input
-                id="risk-title"
-                value={riskTitle}
-                onChange={(e) => setRiskTitle(e.target.value)}
-                placeholder="Schedule compression may weaken review quality"
-                required
-              />
+              <Input id="risk-title" value={riskTitle} onChange={(e) => setRiskTitle(e.target.value)} placeholder="Schedule compression may weaken review quality" required />
             </div>
             <div className="space-y-2">
               <label htmlFor="risk-description" className="text-sm font-medium">
                 Description
               </label>
-              <Textarea
-                id="risk-description"
-                value={riskDescription}
-                onChange={(e) => setRiskDescription(e.target.value)}
-                rows={4}
-                placeholder="Describe the risk and what could go wrong if it is ignored."
-              />
+              <Textarea id="risk-description" value={riskDescription} onChange={(e) => setRiskDescription(e.target.value)} rows={4} placeholder="Describe the risk and what could go wrong if it is ignored." />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -364,13 +676,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="risk-mitigation" className="text-sm font-medium">
                 Mitigation
               </label>
-              <Textarea
-                id="risk-mitigation"
-                value={riskMitigation}
-                onChange={(e) => setRiskMitigation(e.target.value)}
-                rows={4}
-                placeholder="What is the mitigation path, owner, or contingency?"
-              />
+              <Textarea id="risk-mitigation" value={riskMitigation} onChange={(e) => setRiskMitigation(e.target.value)} rows={4} placeholder="What is the mitigation path, owner, or contingency?" />
             </div>
             <FormError error={riskError} />
             <Button type="submit" disabled={riskSaving}>
@@ -391,25 +697,13 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="issue-title" className="text-sm font-medium">
                 Issue title
               </label>
-              <Input
-                id="issue-title"
-                value={issueTitle}
-                onChange={(e) => setIssueTitle(e.target.value)}
-                placeholder="Traffic count package still missing"
-                required
-              />
+              <Input id="issue-title" value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder="Traffic count package still missing" required />
             </div>
             <div className="space-y-2">
               <label htmlFor="issue-description" className="text-sm font-medium">
                 Description
               </label>
-              <Textarea
-                id="issue-description"
-                value={issueDescription}
-                onChange={(e) => setIssueDescription(e.target.value)}
-                rows={4}
-                placeholder="Describe the active blocker or operational problem."
-              />
+              <Textarea id="issue-description" value={issueDescription} onChange={(e) => setIssueDescription(e.target.value)} rows={4} placeholder="Describe the active blocker or operational problem." />
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
@@ -438,12 +732,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 <label htmlFor="issue-owner" className="text-sm font-medium">
                   Owner
                 </label>
-                <Input
-                  id="issue-owner"
-                  value={issueOwner}
-                  onChange={(e) => setIssueOwner(e.target.value)}
-                  placeholder="Priya / Consultant"
-                />
+                <Input id="issue-owner" value={issueOwner} onChange={(e) => setIssueOwner(e.target.value)} placeholder="Priya / Consultant" />
               </div>
             </div>
             <FormError error={issueError} />
@@ -465,26 +754,13 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="decision-title" className="text-sm font-medium">
                 Decision title
               </label>
-              <Input
-                id="decision-title"
-                value={decisionTitle}
-                onChange={(e) => setDecisionTitle(e.target.value)}
-                placeholder="Use VMT-first narrative for public packet"
-                required
-              />
+              <Input id="decision-title" value={decisionTitle} onChange={(e) => setDecisionTitle(e.target.value)} placeholder="Use VMT-first narrative for public packet" required />
             </div>
             <div className="space-y-2">
               <label htmlFor="decision-rationale" className="text-sm font-medium">
                 Rationale
               </label>
-              <Textarea
-                id="decision-rationale"
-                value={decisionRationale}
-                onChange={(e) => setDecisionRationale(e.target.value)}
-                rows={4}
-                placeholder="Why was this decision made, on what basis, and with what tradeoffs?"
-                required
-              />
+              <Textarea id="decision-rationale" value={decisionRationale} onChange={(e) => setDecisionRationale(e.target.value)} rows={4} placeholder="Why was this decision made, on what basis, and with what tradeoffs?" required />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -508,13 +784,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="decision-impact" className="text-sm font-medium">
                 Impact summary
               </label>
-              <Textarea
-                id="decision-impact"
-                value={decisionImpact}
-                onChange={(e) => setDecisionImpact(e.target.value)}
-                rows={4}
-                placeholder="What downstream scope, quality, schedule, or policy effects does this decision create?"
-              />
+              <Textarea id="decision-impact" value={decisionImpact} onChange={(e) => setDecisionImpact(e.target.value)} rows={4} placeholder="What downstream scope, quality, schedule, or policy effects does this decision create?" />
             </div>
             <FormError error={decisionError} />
             <Button type="submit" disabled={decisionSaving}>
@@ -535,13 +805,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               <label htmlFor="meeting-title" className="text-sm font-medium">
                 Meeting title
               </label>
-              <Input
-                id="meeting-title"
-                value={meetingTitle}
-                onChange={(e) => setMeetingTitle(e.target.value)}
-                placeholder="Weekly project sync"
-                required
-              />
+              <Input id="meeting-title" value={meetingTitle} onChange={(e) => setMeetingTitle(e.target.value)} placeholder="Weekly project sync" required />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -554,25 +818,14 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 <label htmlFor="meeting-attendees" className="text-sm font-medium">
                   Attendees
                 </label>
-                <Input
-                  id="meeting-attendees"
-                  value={meetingAttendees}
-                  onChange={(e) => setMeetingAttendees(e.target.value)}
-                  placeholder="Nathaniel, Elena, Owen"
-                />
+                <Input id="meeting-attendees" value={meetingAttendees} onChange={(e) => setMeetingAttendees(e.target.value)} placeholder="Nathaniel, Elena, Owen" />
               </div>
             </div>
             <div className="space-y-2">
               <label htmlFor="meeting-notes" className="text-sm font-medium">
                 Notes
               </label>
-              <Textarea
-                id="meeting-notes"
-                value={meetingNotes}
-                onChange={(e) => setMeetingNotes(e.target.value)}
-                rows={5}
-                placeholder="Key points, action items, and open questions."
-              />
+              <Textarea id="meeting-notes" value={meetingNotes} onChange={(e) => setMeetingNotes(e.target.value)} rows={5} placeholder="Key points, action items, and open questions." />
             </div>
             <FormError error={meetingError} />
             <Button type="submit" disabled={meetingSaving}>

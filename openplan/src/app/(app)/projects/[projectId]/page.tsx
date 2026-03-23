@@ -6,15 +6,19 @@ import {
   Clock3,
   Database,
   FileClock,
+  FileSpreadsheet,
   FolderKanban,
   MessagesSquare,
   Scale,
   ShieldCheck,
   Siren,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
@@ -50,6 +54,53 @@ type LinkedDatasetItem = {
   lastRefreshedAt: string | null;
 };
 
+type MilestoneRow = {
+  id: string;
+  title: string;
+  summary: string | null;
+  milestone_type: string;
+  phase_code: string;
+  status: string;
+  owner_label: string | null;
+  target_date: string | null;
+  actual_date: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+type SubmittalRow = {
+  id: string;
+  title: string;
+  submittal_type: string;
+  status: string;
+  agency_label: string | null;
+  reference_number: string | null;
+  due_date: string | null;
+  submitted_at: string | null;
+  review_cycle: number;
+  notes: string | null;
+  created_at: string;
+};
+
+type BillingInvoiceRow = {
+  id: string;
+  invoice_number: string;
+  consultant_name: string | null;
+  billing_basis: string;
+  status: string;
+  invoice_date: string | null;
+  due_date: string | null;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  net_amount: number | string | null;
+  supporting_docs_status: string;
+  submitted_to: string | null;
+  caltrans_posture: string;
+  notes: string | null;
+  created_at: string;
+};
+
 function titleize(value: string | null | undefined): string {
   if (!value) return "Unknown";
   return value
@@ -64,6 +115,12 @@ function fmtDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function fmtCurrency(value: number | string | null | undefined): string {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
+  const safeValue = Number.isFinite(parsed) ? parsed : 0;
+  return safeValue.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
 function toneForStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -88,6 +145,30 @@ function toneForDeliverableStatus(status: string): "info" | "success" | "warning
   return "neutral";
 }
 
+function toneForMilestoneStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "complete") return "success";
+  if (status === "in_progress") return "info";
+  if (status === "blocked") return "warning";
+  if (status === "scheduled") return "neutral";
+  return "neutral";
+}
+
+function toneForSubmittalStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "accepted") return "success";
+  if (status === "submitted") return "info";
+  if (status === "internal_review") return "warning";
+  if (status === "revise_and_resubmit") return "danger";
+  return "neutral";
+}
+
+function toneForInvoiceStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "paid") return "success";
+  if (status === "submitted" || status === "approved_for_payment") return "info";
+  if (status === "internal_review") return "warning";
+  if (status === "rejected") return "danger";
+  return "neutral";
+}
+
 function toneForRiskSeverity(severity: string): "info" | "success" | "warning" | "danger" | "neutral" {
   if (severity === "critical") return "danger";
   if (severity === "high") return "warning";
@@ -101,6 +182,13 @@ function toneForDatasetStatus(status: string): "info" | "success" | "warning" | 
   if (status === "refreshing") return "info";
   if (status === "stale") return "warning";
   if (status === "error") return "danger";
+  return "neutral";
+}
+
+function toneForControlHealth(health: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (health === "stable") return "success";
+  if (health === "attention") return "warning";
+  if (health === "active") return "info";
   return "neutral";
 }
 
@@ -156,6 +244,24 @@ export default async function ProjectDetailPage({
     .order("decided_at", { ascending: false })
     .limit(200);
 
+  const milestoneResult = await supabase
+    .from("project_milestones")
+    .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at")
+    .eq("project_id", project.id)
+    .order("target_date", { ascending: true })
+    .limit(8);
+  const milestones = looksLikePendingSchema(milestoneResult.error?.message) ? [] : ((milestoneResult.data ?? []) as MilestoneRow[]);
+  const projectMilestonesPending = looksLikePendingSchema(milestoneResult.error?.message);
+
+  const submittalResult = await supabase
+    .from("project_submittals")
+    .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
+    .eq("project_id", project.id)
+    .order("due_date", { ascending: true })
+    .limit(8);
+  const submittals = looksLikePendingSchema(submittalResult.error?.message) ? [] : ((submittalResult.data ?? []) as SubmittalRow[]);
+  const projectSubmittalsPending = looksLikePendingSchema(submittalResult.error?.message);
+
   const { data: deliverables } = await supabase
     .from("project_deliverables")
     .select("id, title, summary, owner_label, due_date, status, created_at")
@@ -190,6 +296,17 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(6);
+
+  const invoiceResult = await supabase
+    .from("billing_invoice_records")
+    .select(
+      "id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
+    )
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message) ? [] : ((invoiceResult.data ?? []) as BillingInvoiceRow[]);
+  const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
   const datasetLinksResult = await supabase
     .from("data_dataset_project_links")
@@ -270,7 +387,39 @@ export default async function ProjectDetailPage({
     missing_artifacts?: string[] | null;
   }>);
 
+  const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
+  const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
+
   const timelineItems: TimelineItem[] = [
+    ...milestones.map((item) => ({
+      id: `milestone-${item.id}`,
+      type: "milestone",
+      title: item.title,
+      description: item.summary || item.notes || "Milestone added to the project control room.",
+      at: item.actual_date || item.target_date || item.created_at,
+      badge: `Milestone · ${titleize(item.status)}`,
+      tone: toneForMilestoneStatus(item.status),
+    })),
+    ...submittals.map((item) => ({
+      id: `submittal-${item.id}`,
+      type: "submittal",
+      title: item.title,
+      description:
+        item.notes ||
+        `${titleize(item.submittal_type)}${item.agency_label ? ` · ${item.agency_label}` : ""}`,
+      at: item.submitted_at || item.due_date || item.created_at,
+      badge: `Submittal · ${titleize(item.status)}`,
+      tone: toneForSubmittalStatus(item.status),
+    })),
+    ...projectInvoices.map((item) => ({
+      id: `invoice-${item.id}`,
+      type: "invoice",
+      title: item.invoice_number,
+      description: `${fmtCurrency(item.net_amount)} net${item.submitted_to ? ` · ${item.submitted_to}` : ""}`,
+      at: item.invoice_date || item.created_at,
+      badge: `Invoice · ${titleize(item.status)}`,
+      tone: toneForInvoiceStatus(item.status),
+    })),
     ...(deliverables ?? []).map((item) => ({
       id: `deliverable-${item.id}`,
       type: "deliverable",
@@ -361,6 +510,9 @@ export default async function ProjectDetailPage({
             <StatusBadge tone={toneForStatus(project.status)}>{titleize(project.status)}</StatusBadge>
             <StatusBadge tone="info">{titleize(project.plan_type)}</StatusBadge>
             <StatusBadge tone="neutral">{titleize(project.delivery_phase)}</StatusBadge>
+            <StatusBadge tone={toneForControlHealth(projectControlsSummary.controlHealth)}>
+              Controls {titleize(projectControlsSummary.controlHealth)}
+            </StatusBadge>
             <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
               Workspace {workspaceData?.name ?? "Unknown"} · Updated {fmtDateTime(project.updated_at)}
             </p>
@@ -369,11 +521,11 @@ export default async function ProjectDetailPage({
             <h1 className="module-intro-title">{project.name}</h1>
             <p className="module-intro-description">
               {project.summary ||
-                "This project now has a real record inside OpenPlan. Use this detail view as the anchor point for runs, stage gates, deliverables, risks, issues, decisions, meetings, and linked datasets."}
+                "This project now has a real record inside OpenPlan. Use this detail view as the anchor point for runs, stage gates, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and linked datasets."}
             </p>
           </div>
 
-          <div className="module-summary-grid cols-4">
+          <div className="module-summary-grid cols-5">
             <div className="module-summary-card">
               <p className="module-summary-label">Deliverables</p>
               <p className="module-summary-value">{deliverables?.length ?? 0}</p>
@@ -390,9 +542,14 @@ export default async function ProjectDetailPage({
               <p className="module-summary-detail">Current blockers surfaced for delivery and analysis flow.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Data links</p>
-              <p className="module-summary-value">{linkedDatasets.length}</p>
-              <p className="module-summary-detail">Linked source records currently visible from Data Hub.</p>
+              <p className="module-summary-label">Milestones</p>
+              <p className="module-summary-value">{projectControlsSummary.milestoneCount}</p>
+              <p className="module-summary-detail">Phase checkpoints and operator deadlines on the record.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Pending submittals</p>
+              <p className="module-summary-value">{projectControlsSummary.pendingSubmittalCount}</p>
+              <p className="module-summary-detail">Packets still in draft, review, or submitted posture.</p>
             </div>
           </div>
         </article>
@@ -404,12 +561,11 @@ export default async function ProjectDetailPage({
             </span>
             <div>
               <p className="module-operator-eyebrow">Project control room</p>
-              <h2 className="module-operator-title">Operating core is now structurally consistent</h2>
+              <h2 className="module-operator-title">LAPM-oriented controls are now visible, not implied</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            This page now uses the same page-intro and section hierarchy as Dashboard, Projects, and Data Hub, so the
-            module feels like part of one system instead of a custom internal screen.
+            OpenPlan now treats milestones, submittals, and invoice posture as first-class project controls instead of burying them inside generic notes.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Workspace tier: {titleize(workspaceData?.plan ?? "pilot")}</div>
@@ -417,9 +573,9 @@ export default async function ProjectDetailPage({
               Stage-gate template: {workspaceData?.stage_gate_template_id ?? "Not available"}
             </div>
             <div className="module-operator-item">
-              Template version: {workspaceData?.stage_gate_template_version ?? "Not available"} · Workspace slug:{" "}
-              {workspaceData?.slug ?? "Unknown"}
+              Template version: {workspaceData?.stage_gate_template_version ?? "Not available"} · Workspace slug: {workspaceData?.slug ?? "Unknown"}
             </div>
+            <div className="module-operator-item">CALTRANS posture is aligned to gate domains and invoice/submittal workflow, while exact exhibit/form IDs remain deferred in v0.1.</div>
           </div>
         </article>
       </header>
@@ -464,9 +620,7 @@ export default async function ProjectDetailPage({
               <p className="module-summary-value text-base leading-tight">
                 {stageGateSummary.nextGate ? `G${String(stageGateSummary.nextGate.sequence).padStart(2, "0")}` : "None"}
               </p>
-              <p className="module-summary-detail">
-                {stageGateSummary.nextGate?.name ?? "All gates currently pass."}
-              </p>
+              <p className="module-summary-detail">{stageGateSummary.nextGate?.name ?? "All gates currently pass."}</p>
             </div>
           </div>
 
@@ -476,9 +630,7 @@ export default async function ProjectDetailPage({
                 <FileClock className="h-5 w-5 text-amber-500" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Blocking condition</p>
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {stageGateSummary.blockedGate?.name ?? "No gate currently on formal hold"}
-                  </h3>
+                  <h3 className="text-sm font-semibold text-foreground">{stageGateSummary.blockedGate?.name ?? "No gate currently on formal hold"}</h3>
                 </div>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
@@ -504,7 +656,7 @@ export default async function ProjectDetailPage({
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 {stageGateSummary.nextGate
-                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. Build the evidence pack before expecting a PASS decision.`
+                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. ${stageGateSummary.nextGate.operatorControlEvidenceCount > 0 ? `${stageGateSummary.nextGate.operatorControlEvidenceCount} PM/invoicing operator control profile${stageGateSummary.nextGate.operatorControlEvidenceCount === 1 ? " is" : "s are"} available for the readiness pack.` : "Build the evidence pack before expecting a PASS decision."}`
                   : "Every stage gate in the active template currently has a recorded PASS decision."}
               </p>
             </div>
@@ -520,6 +672,9 @@ export default async function ProjectDetailPage({
                     </StatusBadge>
                     <StatusBadge tone="neutral">{gate.gateId}</StatusBadge>
                     <StatusBadge tone="info">{gate.requiredEvidenceCount} required evidence</StatusBadge>
+                    {gate.operatorControlEvidenceCount > 0 ? (
+                      <StatusBadge tone="info">{gate.operatorControlEvidenceCount} PM/invoicing controls</StatusBadge>
+                    ) : null}
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -550,8 +705,25 @@ export default async function ProjectDetailPage({
                       <ul className="list-disc space-y-1 pl-5">
                         {gate.evidencePreview.map((evidence) => (
                           <li key={evidence.evidence_id}>
-                            {evidence.title}
-                            {evidence.conditional_required_when ? ` (${evidence.conditional_required_when})` : ""}
+                            <div>
+                              {evidence.title}
+                              {evidence.conditional_required_when ? ` (${evidence.conditional_required_when})` : ""}
+                            </div>
+                            {evidence.operatorControlTitle ? (
+                              <div className="mt-1 space-y-1 pl-1 text-xs text-muted-foreground">
+                                <p>
+                                  PM/invoicing controls: {evidence.operatorControlTitle} · {evidence.operatorControlFieldCount} field{evidence.operatorControlFieldCount === 1 ? "" : "s"}
+                                </p>
+                                {evidence.operatorControlGoal ? <p>{evidence.operatorControlGoal}</p> : null}
+                                {evidence.operatorControlAcceptancePreview.length > 0 ? (
+                                  <ul className="list-disc space-y-1 pl-5">
+                                    {evidence.operatorControlAcceptancePreview.map((criterion) => (
+                                      <li key={`${evidence.evidence_id}-${criterion}`}>{criterion}</li>
+                                    ))}
+                                  </ul>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </li>
                         ))}
                       </ul>
@@ -571,8 +743,223 @@ export default async function ProjectDetailPage({
           </div>
 
           <div className="module-note mt-5 text-sm">
-            The project already had stage-gate data. This cockpit makes it actionable: explicit workflow state, next gate cue, blocked evidence, and compliance-domain mappings in one place.
+            California/LAPM alignment is honest here: OpenPlan now tracks gate logic, evidence posture, milestones, submittals, and invoicing cues, but it does not yet generate exact exhibit/form packets automatically.
           </div>
+        </article>
+      </div>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <Target className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Project controls</p>
+              <h2 className="module-section-title">Milestone, submittal, and invoice readiness</h2>
+              <p className="module-section-description">
+                This is the operator-facing slice for LAPM-style project controls. It is deliberately honest: workflow posture is live now, while exact Caltrans exhibit/form numbering remains deferred.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="module-summary-grid cols-5 mt-5">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Delivery phase</p>
+            <p className="module-summary-value text-base leading-tight">{titleize(project.delivery_phase)}</p>
+            <p className="module-summary-detail">Current top-level phase on the project record.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Milestones</p>
+            <p className="module-summary-value">{projectControlsSummary.milestoneCount}</p>
+            <p className="module-summary-detail">{projectControlsSummary.completedMilestoneCount} complete · {projectControlsSummary.blockedMilestoneCount} blocked.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Pending submittals</p>
+            <p className="module-summary-value">{projectControlsSummary.pendingSubmittalCount}</p>
+            <p className="module-summary-detail">{projectControlsSummary.overdueSubmittalCount} overdue for review or agency response.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Overdue controls</p>
+            <p className="module-summary-value">{projectControlsSummary.overdueMilestoneCount + projectControlsSummary.overdueSubmittalCount}</p>
+            <p className="module-summary-detail">Milestones + submittals currently behind target dates.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Outstanding invoices</p>
+            <p className="module-summary-value text-base leading-tight">{fmtCurrency(invoiceSummary.outstandingNetAmount)}</p>
+            <p className="module-summary-detail">{invoiceSummary.submittedCount} invoice record(s) still in review or payment flow.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3 mt-5">
+          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextMilestone?.title ?? "No upcoming milestone recorded"}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {projectControlsSummary.nextMilestone
+                ? `${titleize(projectControlsSummary.nextMilestone.phase_code)} · target ${fmtDateTime(projectControlsSummary.nextMilestone.target_date)}`
+                : "Add the next phase checkpoint or approval target to make schedule pressure visible."}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next submittal</p>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextSubmittal?.title ?? "No upcoming submittal recorded"}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {projectControlsSummary.nextSubmittal
+                ? `${titleize(projectControlsSummary.nextSubmittal.submittal_type)} · due ${fmtDateTime(projectControlsSummary.nextSubmittal.due_date)}`
+                : "Add the next packet, reimbursement claim, or agency handoff to expose review cadence."}
+            </p>
+          </div>
+          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice posture</p>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : "No invoice records yet"}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {invoiceSummary.totalCount
+                ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
+                : "The register is ready for consulting/project-delivery invoices instead of SaaS-only subscription state."}
+            </p>
+          </div>
+        </div>
+
+        <div className="module-note mt-5 text-sm">
+          Exact CALTRANS/LAPM exhibit/form IDs, claim packet generation, and agency-specific packet templates remain deferred. What works now is the operator control surface: milestone tracking, submittal tracking, and invoice register scaffolding tied to the project record.
+        </div>
+      </article>
+
+      <div className="grid gap-6 xl:grid-cols-3">
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
+                <Target className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Milestones</p>
+                <h2 className="module-section-title">Phase checkpoints</h2>
+              </div>
+            </div>
+          </div>
+          {projectMilestonesPending ? (
+            <div className="module-alert mt-5 text-sm">Project milestones will appear after the Lane C migration is applied to the database.</div>
+          ) : milestones.length === 0 ? (
+            <div className="module-empty-state mt-5 text-sm">No milestones recorded yet.</div>
+          ) : (
+            <div className="mt-5 module-record-list">
+              {milestones.map((milestone) => (
+                <div key={milestone.id} className="module-record-row">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={toneForMilestoneStatus(milestone.status)}>{titleize(milestone.status)}</StatusBadge>
+                      <StatusBadge tone="neutral">{titleize(milestone.phase_code)}</StatusBadge>
+                      <StatusBadge tone="info">{titleize(milestone.milestone_type)}</StatusBadge>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title">{milestone.title}</h3>
+                        <p className="module-record-stamp">{milestone.target_date ? `Target ${fmtDateTime(milestone.target_date)}` : "No target date"}</p>
+                      </div>
+                      <p className="module-record-summary">{milestone.summary || milestone.notes || "No milestone summary yet."}</p>
+                    </div>
+                    <div className="module-record-meta">
+                      {milestone.owner_label ? <span className="module-record-chip">Owner {milestone.owner_label}</span> : null}
+                      {milestone.actual_date ? <span className="module-record-chip">Actual {fmtDateTime(milestone.actual_date)}</span> : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+                <FileClock className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Submittals</p>
+                <h2 className="module-section-title">Packets in review flow</h2>
+              </div>
+            </div>
+          </div>
+          {projectSubmittalsPending ? (
+            <div className="module-alert mt-5 text-sm">Project submittals will appear after the Lane C migration is applied to the database.</div>
+          ) : submittals.length === 0 ? (
+            <div className="module-empty-state mt-5 text-sm">No submittals recorded yet.</div>
+          ) : (
+            <div className="mt-5 module-record-list">
+              {submittals.map((submittal) => (
+                <div key={submittal.id} className="module-record-row">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={toneForSubmittalStatus(submittal.status)}>{titleize(submittal.status)}</StatusBadge>
+                      <StatusBadge tone="info">{titleize(submittal.submittal_type)}</StatusBadge>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title">{submittal.title}</h3>
+                        <p className="module-record-stamp">{submittal.due_date ? `Due ${fmtDateTime(submittal.due_date)}` : "No due date"}</p>
+                      </div>
+                      <p className="module-record-summary">{submittal.notes || "No submittal notes yet."}</p>
+                    </div>
+                    <div className="module-record-meta">
+                      {submittal.agency_label ? <span className="module-record-chip">Agency {submittal.agency_label}</span> : null}
+                      {submittal.reference_number ? <span className="module-record-chip">Ref {submittal.reference_number}</span> : null}
+                      <span className="module-record-chip">Cycle {submittal.review_cycle}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                <FileSpreadsheet className="h-5 w-5" />
+              </span>
+              <div className="module-section-heading">
+                <p className="module-section-label">Invoices</p>
+                <h2 className="module-section-title">Project-linked billing register</h2>
+              </div>
+            </div>
+          </div>
+          {projectInvoicesPending ? (
+            <div className="module-alert mt-5 text-sm">Invoice records will appear after the Lane C migration is applied to the database.</div>
+          ) : projectInvoices.length === 0 ? (
+            <div className="module-empty-state mt-5 text-sm">No invoice records linked to this project yet.</div>
+          ) : (
+            <div className="mt-5 module-record-list">
+              {projectInvoices.map((invoice) => (
+                <div key={invoice.id} className="module-record-row">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
+                      <StatusBadge tone="info">{titleize(invoice.billing_basis)}</StatusBadge>
+                      <StatusBadge tone="neutral">{titleize(invoice.supporting_docs_status)}</StatusBadge>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title">{invoice.invoice_number}</h3>
+                        <p className="module-record-stamp">{fmtCurrency(invoice.net_amount)}</p>
+                      </div>
+                      <p className="module-record-summary">
+                        {invoice.notes || `${titleize(invoice.caltrans_posture)}${invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}`}
+                      </p>
+                    </div>
+                    <div className="module-record-meta">
+                      {invoice.invoice_date ? <span className="module-record-chip">Invoice {fmtDateTime(invoice.invoice_date)}</span> : null}
+                      {invoice.due_date ? <span className="module-record-chip">Due {fmtDateTime(invoice.due_date)}</span> : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </article>
       </div>
 
@@ -590,26 +977,20 @@ export default async function ProjectDetailPage({
             </div>
           </div>
           {!deliverables || deliverables.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">
-              No deliverables yet. Add the first required output in the creation lane.
-            </div>
+            <div className="module-empty-state mt-5 text-sm">No deliverables yet. Add the first required output in the creation lane.</div>
           ) : (
             <div className="mt-5 module-record-list">
               {deliverables.map((deliverable) => (
                 <div key={deliverable.id} className="module-record-row">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
-                      <StatusBadge tone={toneForDeliverableStatus(deliverable.status)}>
-                        {titleize(deliverable.status)}
-                      </StatusBadge>
+                      <StatusBadge tone={toneForDeliverableStatus(deliverable.status)}>{titleize(deliverable.status)}</StatusBadge>
                       {deliverable.owner_label ? <StatusBadge tone="neutral">{deliverable.owner_label}</StatusBadge> : null}
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <h3 className="module-record-title">{deliverable.title}</h3>
-                        {deliverable.due_date ? (
-                          <p className="module-record-stamp">Due {fmtDateTime(deliverable.due_date)}</p>
-                        ) : null}
+                        {deliverable.due_date ? <p className="module-record-stamp">Due {fmtDateTime(deliverable.due_date)}</p> : null}
                       </div>
                       <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
                     </div>
@@ -721,9 +1102,7 @@ export default async function ProjectDetailPage({
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <h3 className="module-record-title">{decision.title}</h3>
-                        {decision.decided_at ? (
-                          <p className="module-record-stamp">{fmtDateTime(decision.decided_at)}</p>
-                        ) : null}
+                        {decision.decided_at ? <p className="module-record-stamp">{fmtDateTime(decision.decided_at)}</p> : null}
                       </div>
                       <p className="module-record-summary">{decision.rationale}</p>
                     </div>
@@ -768,9 +1147,7 @@ export default async function ProjectDetailPage({
                         {meeting.meeting_at ? <p className="module-record-stamp">{fmtDateTime(meeting.meeting_at)}</p> : null}
                       </div>
                       {meeting.attendees_summary ? (
-                        <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                          Attendees: {meeting.attendees_summary}
-                        </p>
+                        <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Attendees: {meeting.attendees_summary}</p>
                       ) : null}
                       <p className="module-record-summary">{meeting.notes || "No notes yet."}</p>
                     </div>
@@ -797,16 +1174,11 @@ export default async function ProjectDetailPage({
           </div>
           {dataHubMigrationPending ? (
             <div className="module-alert mt-5 text-sm">
-              Data Hub schema is pending in the current database, so project-linked datasets will appear here after the
-              migration is applied.
+              Data Hub schema is pending in the current database, so project-linked datasets will appear here after the migration is applied.
             </div>
           ) : linkedDatasets.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No datasets linked yet. Use{" "}
-              <Link href="/data-hub" className="font-semibold text-foreground underline">
-                Data Hub
-              </Link>{" "}
-              to register a source and connect it back to this project.
+              No datasets linked yet. Use <Link href="/data-hub" className="font-semibold text-foreground underline">Data Hub</Link> to register a source and connect it back to this project.
             </div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -823,9 +1195,7 @@ export default async function ProjectDetailPage({
                         <h3 className="module-record-title">{dataset.name}</h3>
                         <p className="module-record-stamp">Refreshed {fmtDateTime(dataset.lastRefreshedAt)}</p>
                       </div>
-                      <p className="module-record-summary">
-                        {dataset.vintageLabel ? `Vintage: ${dataset.vintageLabel}` : "Vintage not captured yet."}
-                      </p>
+                      <p className="module-record-summary">{dataset.vintageLabel ? `Vintage: ${dataset.vintageLabel}` : "Vintage not captured yet."}</p>
                     </div>
                   </div>
                 </div>
@@ -848,11 +1218,7 @@ export default async function ProjectDetailPage({
           </div>
           {!recentRuns || recentRuns.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No runs yet. Use{" "}
-              <Link href="/explore" className="font-semibold text-foreground underline">
-                Analysis Studio
-              </Link>{" "}
-              to create the first project-linked run.
+              No runs yet. Use <Link href="/explore" className="font-semibold text-foreground underline">Analysis Studio</Link> to create the first project-linked run.
             </div>
           ) : (
             <div className="mt-5 module-record-list">

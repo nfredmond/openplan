@@ -1,3 +1,4 @@
+import { getOperatorControlProfileByEvidenceId } from "@/lib/stage-gates/operator-controls";
 import caStageGatesTemplate from "@/lib/stage-gates/templates/ca_stage_gates_v0.1.json";
 
 export type StageGateDecisionRow = {
@@ -14,6 +15,13 @@ type StageGateTemplateEvidence = {
   artifact_type: string;
   required: boolean;
   conditional_required_when?: string;
+};
+
+export type StageGateEvidencePreviewItem = StageGateTemplateEvidence & {
+  operatorControlTitle: string | null;
+  operatorControlFieldCount: number;
+  operatorControlGoal: string | null;
+  operatorControlAcceptancePreview: string[];
 };
 
 type StageGateTemplateGate = {
@@ -48,11 +56,12 @@ export type StageGateSummaryItem = {
   decidedAt: string | null;
   missingArtifacts: string[];
   requiredEvidenceCount: number;
+  operatorControlEvidenceCount: number;
   lapmMappings: string[];
   stipRtipMappings: string[];
   ceqaVmtMappings: string[];
   outreachMappings: string[];
-  evidencePreview: StageGateTemplateEvidence[];
+  evidencePreview: StageGateEvidencePreviewItem[];
 };
 
 export type ProjectStageGateSummary = {
@@ -97,6 +106,18 @@ export function buildProjectStageGateSummary(
         ? latestDecision?.missing_artifacts.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
         : [];
       const requiredEvidence = (gate.required_evidence ?? []).filter((item) => item.required);
+      const evidencePreview = requiredEvidence.slice(0, 3).map((evidence) => {
+        const operatorControlProfile = getOperatorControlProfileByEvidenceId(evidence.evidence_id);
+
+        return {
+          ...evidence,
+          operatorControlTitle: operatorControlProfile?.title ?? null,
+          operatorControlFieldCount: operatorControlProfile?.operator_fields.length ?? 0,
+          operatorControlGoal: operatorControlProfile?.goal ?? null,
+          operatorControlAcceptancePreview: operatorControlProfile?.acceptance_criteria.slice(0, 2) ?? [],
+        } satisfies StageGateEvidencePreviewItem;
+      });
+      const operatorControlEvidenceCount = requiredEvidence.filter((evidence) => getOperatorControlProfileByEvidenceId(evidence.evidence_id)).length;
 
       return {
         gateId: gate.gate_id,
@@ -119,11 +140,12 @@ export function buildProjectStageGateSummary(
         decidedAt: latestDecision?.decided_at ?? null,
         missingArtifacts,
         requiredEvidenceCount: requiredEvidence.length,
+        operatorControlEvidenceCount,
         lapmMappings: gate.lapm_mapping ?? [],
         stipRtipMappings: gate.stip_rtip_mapping ?? [],
         ceqaVmtMappings: gate.ceqa_vmt_mapping ?? [],
         outreachMappings: gate.outreach_mapping ?? [],
-        evidencePreview: requiredEvidence.slice(0, 3),
+        evidencePreview,
       } satisfies StageGateSummaryItem;
     });
 
