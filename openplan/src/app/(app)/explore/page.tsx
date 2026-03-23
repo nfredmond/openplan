@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import mapboxgl, {
   FullscreenControl,
   LngLatBoundsLike,
@@ -574,6 +574,8 @@ function buildCrashLayerFilter(
 }
 
 export default function ExplorePage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
@@ -1780,6 +1782,34 @@ export default function ExplorePage() {
     setError("");
     setComparisonRun(null);
   }, []);
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    const currentRunId = analysisResult?.runId ?? null;
+    const baselineRunId = comparisonRun?.id ?? null;
+
+    if (currentRunId) {
+      nextParams.set("runId", currentRunId);
+    } else {
+      nextParams.delete("runId");
+    }
+
+    if (baselineRunId) {
+      nextParams.set("baselineRunId", baselineRunId);
+    } else {
+      nextParams.delete("baselineRunId");
+    }
+
+    const currentRunParam = searchParams.get("runId");
+    const currentBaselineParam = searchParams.get("baselineRunId");
+
+    if (currentRunParam === currentRunId && currentBaselineParam === baselineRunId) {
+      return;
+    }
+
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [analysisResult?.runId, comparisonRun?.id, pathname, router, searchParams]);
 
   const comparisonDeltas = useMemo(() => {
     if (!analysisResult || !comparisonRun?.metrics) {

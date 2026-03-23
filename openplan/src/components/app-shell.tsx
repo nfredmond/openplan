@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
 import { AppSidebarLink } from "@/components/nav/app-sidebar-link";
+import { AppCopilot } from "@/components/assistant/app-copilot";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -194,6 +195,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Right: notification + user */}
             <div className="flex items-center gap-2">
+              <AppCopilot workspaceId={membership?.workspace_id ?? null} workspaceName={workspaceName} />
               <button
                 type="button"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.05] hover:text-white"
