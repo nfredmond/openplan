@@ -1,0 +1,37 @@
+{
+  "run_id": "placer-county-pilot-final",
+  "engine": "AequilibraE 1.6.1",
+  "network_source": "OpenStreetMap",
+  "model_area": "Placer County (-121.50,38.70 to -119.90,39.40)",
+  "algorithm": "BFW",
+  "vdf": "BPR (\u03b1=0.15, \u03b2=4.0)",
+  "convergence": {
+    "final_gap": 0.007612708357883145,
+    "iterations": 50
+  },
+  "network": {
+    "links": 204262,
+    "nodes": 89800,
+    "zones": 92
+  },
+  "demand": {
+    "total_trips": 247512.0,
+    "routable_trips": 247512.0,
+    "source": "LODES 2021 \u00d7 4.0"
+  },
+  "skims": {
+    "reachable_pairs": 8372,
+    "total_pairs": 8372,
+    "avg_time": 33.52644184065003,
+    "max_time": 126.3449252648606
+  },
+  "loaded_links": 21645,
+  "caveats": [
+    "Uncalibrated",
+    "OSM default speeds/capacities",
+    "Closed boundary",
+    "Screening-grade",
+    "In-memory centroid/connectors (DB left unchanged)"
+  ],
+  "created_at": "2026-03-22"
+}

@@ -1,0 +1,53 @@
+{
+  "package_name": "placer-county-accessibility-v1",
+  "version": "1.0.0-draft",
+  "geography": {
+    "name": "Placer County, California",
+    "fips": "06061",
+    "state_fips": "06",
+    "county_fips": "061",
+    "bbox": {
+      "west": -121.484442,
+      "south": 38.713444,
+      "east": -120.005577,
+      "north": 39.316437
+    }
+  },
+  "network": {
+    "source": "TIGER/Line 2023 Roads (tl_2023_06061_roads)",
+    "total_links": 15334,
+    "total_miles": 5199.0,
+    "classification": {
+      "collector": 362,
+      "interstate": 20,
+      "local": 14351,
+      "local_unpaved": 265,
+      "ramp_service": 284,
+      "state_highway": 52
+    },
+    "crs": "EPSG:4326",
+    "file": "network_links.geojson"
+  },
+  "zones": {
+    "source": "TIGER/Line 2023 Census Tracts (tl_2023_06_tract)",
+    "count": 92,
+    "type": "Census Tracts",
+    "crs": "EPSG:4326",
+    "file": "zones.geojson",
+    "centroids_file": "zone_centroids.geojson"
+  },
+  "corridors": {
+    "count": 5,
+    "file": "corridors.json"
+  },
+  "calibration_status": "uncalibrated",
+  "caveats": [
+    "Network attributes (speed, capacity, lanes) are default estimates, not field-verified",
+    "Zone boundaries are Census tracts, not custom TAZs",
+    "No transit network included in v1",
+    "Trip generation will be synthetic (gravity model from Census/LODES data)",
+    "All outputs carry 'uncalibrated screening' label until validated against observed counts"
+  ],
+  "created_at": "2026-03-19",
+  "created_by": "Bartholomew Hale (COO), Nat Ford"
+}

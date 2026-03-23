@@ -1,0 +1,12 @@
+# Local environment
+.venv/
+__pycache__/
+
+# Heavy/generated network artifacts
+aeq_project/
+roads/
+
+# Generated run outputs (keep lightweight proof descriptor tracked)
+run_output/*.omx
+run_output/link_volumes.csv
+!run_output/evidence_packet.json
