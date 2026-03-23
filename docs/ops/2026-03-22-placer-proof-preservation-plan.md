@@ -132,7 +132,7 @@ Before making the preservation commit for the proof lane:
 - source code
 - small CSV/GeoJSON package inputs
 - documentation
-- corrected lightweight evidence descriptor
+- lightweight evidence descriptor carried with explicit mixed-source documentation
 
 ### Commit boundary: no (for now)
 - raw TIGER download payloads

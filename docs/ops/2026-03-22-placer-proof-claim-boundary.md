@@ -105,7 +105,7 @@ Unsafe phrasing:
 
 ## Truth gate for future use
 Before expanding claims beyond the accepted safe claim, require at minimum:
-- corrected evidence-packet wording,
+- explicit mixed-source documentation that keeps OSM assignment lineage and TIGER/Line package lineage unblurred,
 - preserved proof code on a clean branch,
 - repeatable rerun from that clean branch,
 - observed-count validation inputs,
