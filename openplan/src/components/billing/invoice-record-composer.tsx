@@ -146,7 +146,7 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
       </div>
 
       <p className="mt-4 text-sm text-muted-foreground">
-        This is LAPM-oriented scaffolding for delivery teams: invoice register, backup posture, retention, and workspace/project linkage. Exact Caltrans exhibit/form IDs remain deferred in v0.1.
+        Capture consulting invoice records with retention, backup posture, and workspace/project linkage.
       </p>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>

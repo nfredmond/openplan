@@ -328,31 +328,42 @@ export default async function BillingPage({
         </div>
       </article>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <InvoiceRecordComposer workspaceId={workspaceId} projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))} canWrite={canWriteInvoices} />
-
-        <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-              <FileSpreadsheet className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice register</p>
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">Consulting/project-delivery billing posture</h2>
-            </div>
-          </div>
-
+      <section className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Consulting invoice operations</h2>
           <p className="text-sm text-muted-foreground">
-            This is intentionally separate from Stripe subscription state. It captures invoice workflow, supporting-doc posture, retention, and project linkage for consulting work. Exact CALTRANS/LAPM exhibit/form IDs and automated claim packets remain deferred in v0.1.
+            Subscription checkout stays above as account/billing state. This section is the project-delivery invoice register used by operators for retention, backup posture, and workspace/project linkage.
           </p>
+        </div>
 
-          {invoiceRegisterPending ? (
-            <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
-              Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
+        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
+          <p className="font-semibold text-foreground">Current scope</p>
+          <p className="mt-1">
+            OpenPlan supports a workspace/project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate exact CALTRANS/LAPM exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
+          </p>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <InvoiceRecordComposer workspaceId={workspaceId} projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))} canWrite={canWriteInvoices} />
+
+          <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                <FileSpreadsheet className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice register</p>
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">Register summary</h3>
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+            {invoiceRegisterPending ? (
+              <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+                Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Records</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{invoiceSummary.totalCount}</p>
@@ -374,66 +385,62 @@ export default async function BillingPage({
                   <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.overdueCount} overdue invoice record(s) still need attention.</p>
                 </div>
               </div>
+            )}
+          </article>
+        </div>
 
-              <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
-                <p className="font-semibold text-foreground">Current boundary</p>
-                <p className="mt-1">
-                  OpenPlan now supports a workspace/project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate exact CALTRANS/LAPM exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
-                </p>
-              </div>
-            </>
+        <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice register</p>
+            <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
+          </div>
+
+          {invoiceRegisterPending ? (
+            <p className="text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
+          ) : invoiceRecords.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No invoice records recorded yet for this workspace.</p>
+          ) : (
+            <ul className="space-y-2.5">
+              {invoiceRecords.map((invoice) => (
+                <li key={invoice.id} className="rounded-xl border border-border/70 bg-background p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
+                    <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
+                    <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
+                    <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
+                      {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
+                    </p>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {invoice.project_id ? `Project ${projectNameById.get(invoice.project_id) ?? invoice.project_id}` : "Workspace-level record"}
+                        {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Gross {formatCurrency(Number(invoice.amount ?? 0))}
+                        {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${formatCurrency(Number(invoice.retention_amount ?? 0))}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
+                    {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
+                    {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </article>
-      </div>
-
-      <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Invoice Register</h2>
-
-        {invoiceRegisterPending ? (
-          <p className="text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
-        ) : invoiceRecords.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No invoice records recorded yet for this workspace.</p>
-        ) : (
-          <ul className="space-y-2.5">
-            {invoiceRecords.map((invoice) => (
-              <li key={invoice.id} className="rounded-xl border border-border/70 bg-background p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
-                  <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
-                  <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
-                  <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
-                    {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
-                  </p>
-                </div>
-                <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {invoice.project_id ? `Project ${projectNameById.get(invoice.project_id) ?? invoice.project_id}` : "Workspace-level record"}
-                      {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Gross {formatCurrency(Number(invoice.amount ?? 0))}
-                      {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${formatCurrency(Number(invoice.retention_amount ?? 0))}` : ""}
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
-                  {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
-                  {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </article>
+      </section>
 
       <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
         <h2 className="text-lg font-semibold tracking-tight">Recent Billing Events</h2>
