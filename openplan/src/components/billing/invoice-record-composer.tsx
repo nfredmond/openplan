@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/billing/invoice-records";
 
+function formatCurrency(value: number): string {
+  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
 type ProjectOption = {
   id: string;
   name: string;
@@ -242,10 +246,23 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
             </label>
             <Input id="retention-percent" type="number" min="0" max="100" step="0.01" value={retentionPercent} onChange={(event) => setRetentionPercent(event.target.value)} />
           </div>
-          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm">
+          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm" aria-live="polite">
             <p className="font-medium text-foreground">Net request preview</p>
-            <p className="mt-1 text-muted-foreground">Retention {retentionAmountPreview.toLocaleString("en-US", { style: "currency", currency: "USD" })}</p>
-            <p className="text-base font-semibold text-foreground">{netAmountPreview.toLocaleString("en-US", { style: "currency", currency: "USD" })}</p>
+            <p className="mt-1 text-muted-foreground">Updates live from the gross amount and retention fields so the billing request math is visible before save.</p>
+            <dl className="mt-3 space-y-1 text-muted-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <dt>Gross amount</dt>
+                <dd className="font-medium text-foreground">{formatCurrency(amountValue)}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt>Retention ({retentionPercentValue.toFixed(2)}%)</dt>
+                <dd className="font-medium text-foreground">{formatCurrency(retentionAmountPreview)}</dd>
+              </div>
+            </dl>
+            <div className="mt-3 border-t border-border/60 pt-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Net request</p>
+              <p className="text-base font-semibold text-foreground">{formatCurrency(netAmountPreview)}</p>
+            </div>
           </div>
         </div>
 
