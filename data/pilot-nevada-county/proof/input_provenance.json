@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "openplan_input_provenance_v1",
+  "studyArea": {
+    "name": "Nevada County pilot",
+    "selectionMode": "county_package_static",
+    "bbox": [
+      -121.279784,
+      39.006807,
+      -120.005903,
+      39.522242
+    ],
+    "zoneSystem": "census_tract_centroid",
+    "zoneCount": 26,
+    "tractGeoids": [
+      "06057000102",
+      "06057000104",
+      "06057000105",
+      "06057000106",
+      "06057000107",
+      "06057000200",
+      "06057000300",
+      "06057000401",
+      "06057000403",
+      "06057000404",
+      "06057000502",
+      "06057000503",
+      "06057000504",
+      "06057000601",
+      "06057000602",
+      "06057000701",
+      "06057000702",
+      "06057000801",
+      "06057000802",
+      "06057000900",
+      "06057001205",
+      "06057001207",
+      "06057001208",
+      "06057001209",
+      "06057001210",
+      "06057001211"
+    ],
+    "countyFips": [
+      "06057"
+    ]
+  },
+  "datasets": [
+    {
+      "datasetKey": "tiger_roads_2023",
+      "role": "screening_network_package",
+      "source": "TIGER/Line 2023 Roads (tl_2023_06057_roads)",
+      "repoArtifact": "data/pilot-nevada-county/package/network_links.geojson"
+    },
+    {
+      "datasetKey": "tiger_tracts_2023",
+      "role": "zone_boundaries_and_centroids",
+      "source": "TIGER/Line 2023 Census Tracts (tl_2023_06_tract)",
+      "repoArtifacts": [
+        "data/pilot-nevada-county/package/zones.geojson",
+        "data/pilot-nevada-county/package/zone_centroids.geojson"
+      ]
+    },
+    {
+      "datasetKey": "lodes_wac_2021",
+      "role": "tract_employment_aggregation",
+      "source": "ca_wac_S000_JT00_2021.csv.gz",
+      "builder": "data/pilot-nevada-county/build_trip_tables.py"
+    },
+    {
+      "datasetKey": "lodes_od_2021",
+      "role": "internal_commute_seed_flows",
+      "source": "ca_od_main_JT00_2021.csv.gz",
+      "builder": "data/pilot-nevada-county/build_trip_tables.py"
+    },
+    {
+      "datasetKey": "acs_2022_5yr",
+      "role": "synthetic_population_controls",
+      "source": "Census API via data/pilot-nevada-county/synthetic_population/run_synthesis.py",
+      "repoArtifact": "data/pilot-nevada-county/synthetic_population/tract_marginals.csv"
+    }
+  ],
+  "derivations": {
+    "populationEstimateMethod": "LODES workplace jobs scaled to ~102,000 county population in build_trip_tables.py",
+    "screeningDemandMethod": "Internal LODES work trips expanded by factor 4.0 to approximate all-purpose daily trips",
+    "currentStaticPackageLimitation": "Static zone_attributes.csv has jobs and estimated population but no households field"
+  },
+  "knownLimits": [
+    "The current run evidence in-repo uses an OSM-derived AequilibraE network, not the TIGER screening network written to package/network_links.geojson.",
+    "The package is tract-based and does not yet represent custom TAZ splits, external stations, or mode-specific connectors.",
+    "All outputs remain screening-grade and uncalibrated until observed-count validation is completed."
+  ]
+}

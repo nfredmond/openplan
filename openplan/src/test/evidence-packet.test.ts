@@ -130,7 +130,9 @@ describe("evidence packet helpers", () => {
   it("formats labels and durations for the run surface", () => {
     expect(labelForEngineKey("deterministic_corridor_v1")).toBe("Deterministic Corridor");
     expect(labelForEngineKey("aequilibrae")).toBe("AequilibraE");
+    expect(labelForEngineKey("activitysim")).toBe("ActivitySim (handoff scaffold)");
     expect(labelForArtifactType("volumes_geojson")).toBe("Volumes Geojson");
+    expect(labelForArtifactType("activitysim_handoff_manifest")).toBe("ActivitySim Handoff Manifest");
     expect(formatDurationSeconds(45)).toBe("45s");
     expect(formatDurationSeconds(125)).toBe("2m 5s");
     expect(formatDurationSeconds(7200)).toBe("2h");

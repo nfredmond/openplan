@@ -10,6 +10,7 @@ import {
   looksLikePendingSchema,
   mergeScenarioLaunchPayload,
 } from "@/lib/models/run-launch";
+import { buildManagedRunLaunchPlan, buildManagedRunManifest } from "@/lib/models/orchestration";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -21,7 +22,7 @@ const launchModelRunSchema = z.object({
   queryText: z.string().trim().min(1).max(5000).optional(),
   corridorGeojson: corridorGeojsonSchema.optional(),
   attachToScenarioEntry: z.boolean().optional(),
-  engineKey: z.enum(['deterministic_corridor_v1', 'aequilibrae']).optional().default('deterministic_corridor_v1'),
+  engineKey: z.enum(["deterministic_corridor_v1", "aequilibrae", "activitysim"]).optional().default("deterministic_corridor_v1"),
 });
 
 type RouteContext = {
@@ -199,12 +200,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const modelRunId = crypto.randomUUID();
-    const launchTitle =
-      parsed.data.title?.trim() ||
-      scenarioEntry?.label?.trim() ||
-      `${access.model.title} run`;
+    const launchTitle = parsed.data.title?.trim() || scenarioEntry?.label?.trim() || `${access.model.title} run`;
     const launchedAt = new Date().toISOString();
-    const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
+    const launchPlan = buildManagedRunLaunchPlan(
+      launchPayload.engineKey as "deterministic_corridor_v1" | "aequilibrae" | "activitysim"
+    );
+    const runManifest = buildManagedRunManifest({
+      plan: launchPlan,
+      launchedAt,
+      model: {
+        id: access.model.id,
+        title: access.model.title ?? null,
+        family: access.model.model_family ?? null,
+        configVersion: access.model.config_version ?? null,
+      },
+      scenario: scenarioEntry
+        ? {
+            id: scenarioEntry.id,
+            label: scenarioEntry.label,
+            status: scenarioEntry.status,
+          }
+        : null,
+      queryText: launchPayload.queryText,
+      corridorGeojson: launchPayload.corridorGeojson,
+      assumptionSnapshot: launchPayload.assumptionSnapshot,
+    });
+    const isQueuedRun = launchPlan.defaultRunStatus === "queued";
 
     const { error: createModelRunError } = await supabase.from("model_runs").insert({
       id: modelRunId,
@@ -214,7 +235,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenario_entry_id: scenarioEntry?.id ?? null,
       engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
       launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
-      status: isAequilibraeRun ? "queued" : "running",
+      status: launchPlan.defaultRunStatus,
       run_title: launchTitle,
       query_text: launchPayload.queryText,
       corridor_geojson: launchPayload.corridorGeojson,
@@ -224,13 +245,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelFamily: access.model.model_family ?? null,
         configVersion: access.model.config_version ?? null,
         launchedAt,
+        orchestration: runManifest,
       },
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
-      started_at: isAequilibraeRun ? null : launchedAt,
+      started_at: isQueuedRun ? null : launchedAt,
       created_by: user.id,
     });
 
-    
     if (createModelRunError) {
       if (looksLikePendingSchema(createModelRunError.message)) {
         return NextResponse.json(
@@ -248,35 +269,45 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to create model run" }, { status: 500 });
     }
 
-    if (isAequilibraeRun) {
-      // Async run. Create stages and return immediately.
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-        { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-      ]);
+    if (isQueuedRun) {
+      const stageRows = launchPlan.stagePlan.map((stage) => ({
+        run_id: modelRunId,
+        stage_name: stage.stageName,
+        sort_order: stage.sortOrder,
+        status: "queued" as const,
+      }));
 
-      if (stageInsertError) {
-        await supabase
-          .from("model_runs")
-          .update({
-            status: "failed",
-            error_message: "Failed to initialize AequilibraE run stages",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", modelRunId);
+      if (stageRows.length > 0) {
+        const { error: stageInsertError } = await supabase.from("model_run_stages").insert(stageRows);
 
-        audit.error("model_run_stage_insert_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          message: stageInsertError.message,
-          code: stageInsertError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+        if (stageInsertError) {
+          await supabase
+            .from("model_runs")
+            .update({
+              status: "failed",
+              error_message: `Failed to initialize ${launchPlan.engineLabel} run stages`,
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", modelRunId);
+
+          audit.error("model_run_stage_insert_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            engineKey: launchPlan.engineKey,
+            message: stageInsertError.message,
+            code: stageInsertError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+        }
       }
 
       return NextResponse.json(
-        { modelRunId, status: "queued" },
+        {
+          modelRunId,
+          status: launchPlan.defaultRunStatus,
+          pipelineKey: launchPlan.pipelineKey,
+          honestCapability: launchPlan.honestCapability,
+        },
         { status: 201 }
       );
     }

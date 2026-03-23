@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { buildManagedRunLaunchPlan } from "@/lib/models/orchestration";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Load the model run
     const { data: modelRun, error: modelRunError } = await supabase
       .from("model_runs")
-      .select("id, status")
+      .select("id, status, engine_key")
       .eq("id", parsedParams.data.modelRunId)
       .eq("model_id", access.model.id)
       .maybeSingle();
@@ -74,6 +75,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to queue model run" }, { status: 500 });
     }
 
+    const launchPlan = buildManagedRunLaunchPlan(modelRun.engine_key as "deterministic_corridor_v1" | "aequilibrae" | "activitysim");
+
     // Create the first stage if it doesn't exist, or reset it
     const { data: existingStages } = await supabase
       .from("model_run_stages")
@@ -81,21 +84,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .eq("run_id", modelRun.id);
 
     if (!existingStages || existingStages.length === 0) {
-      // Create initial stages
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-        { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-      ]);
+      const stageRows = launchPlan.stagePlan.map((stage) => ({
+        run_id: modelRun.id,
+        stage_name: stage.stageName,
+        sort_order: stage.sortOrder,
+        status: "queued" as const,
+      }));
 
-      if (stageInsertError) {
-        audit.error("model_run_stage_insert_failed", {
-          modelId: access.model.id,
-          modelRunId: modelRun.id,
-          message: stageInsertError.message,
-          code: stageInsertError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+      if (stageRows.length > 0) {
+        const { error: stageInsertError } = await supabase.from("model_run_stages").insert(stageRows);
+
+        if (stageInsertError) {
+          audit.error("model_run_stage_insert_failed", {
+            modelId: access.model.id,
+            modelRunId: modelRun.id,
+            message: stageInsertError.message,
+            code: stageInsertError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+        }
       }
     } else {
       // Reset stages to queued

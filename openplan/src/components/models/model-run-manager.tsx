@@ -278,8 +278,8 @@ export function ModelRunManager({
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Engines available</p>
-          <p className="module-summary-value text-base">2</p>
-          <p className="module-summary-detail">Deterministic Corridor (sync) · AequilibraE (async worker)</p>
+          <p className="module-summary-value text-base">3</p>
+          <p className="module-summary-detail">Deterministic Corridor (sync) · AequilibraE (async worker) · ActivitySim handoff scaffold</p>
         </div>
       </div>
 
@@ -310,7 +310,15 @@ export function ModelRunManager({
             >
               <option value="deterministic_corridor_v1">Deterministic Corridor (Synchronous)</option>
               <option value="aequilibrae">AequilibraE (Asynchronous Worker Prototype)</option>
+              <option value="activitysim">ActivitySim (AequilibraE → handoff scaffold)</option>
             </select>
+            <p className="text-xs text-muted-foreground">
+              {engineKey === "activitysim"
+                ? "Current ActivitySim lane builds a staged AequilibraE → ActivitySim handoff package and manifest. It does not execute ActivitySim itself yet."
+                : engineKey === "aequilibrae"
+                  ? "Runs the current async AequilibraE worker and now emits ActivitySim-facing handoff artifacts when possible."
+                  : "Uses the existing synchronous corridor analysis flow."}
+            </p>
           </div>
 
           <div className="space-y-1.5">
@@ -462,14 +470,24 @@ export function ModelRunManager({
                               : "Managed execution record created without a linked analysis run yet.")}
                         </p>
                       </div>
-                      {runLink ? (
+                      {runLink || run.engine_key === "aequilibrae" || run.engine_key === "activitysim" ? (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Link href={runLink} className="inline-flex">
-                            <Button type="button" variant="outline" size="sm">
-                              Open in Studio
-                              <ArrowRight className="h-4 w-4" />
-                            </Button>
-                          </Link>
+                          {runLink ? (
+                            <Link href={runLink} className="inline-flex">
+                              <Button type="button" variant="outline" size="sm">
+                                Open in Studio
+                                <ArrowRight className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          ) : null}
+                          {(run.engine_key === "aequilibrae" || run.engine_key === "activitysim") ? (
+                            <a href={`/api/models/${modelId}/runs/${run.id}/activitysim-handoff`} target="_blank" rel="noopener noreferrer" className="inline-flex">
+                              <Button type="button" variant="outline" size="sm">
+                                View ActivitySim handoff
+                                <ArrowRight className="h-4 w-4" />
+                              </Button>
+                            </a>
+                          ) : null}
                         </div>
                       ) : null}
                       <ModelRunStagingAndArtifacts
@@ -490,6 +508,18 @@ export function ModelRunManager({
       </div>
     </article>
   );
+}
+
+function artifactHrefForRun(modelId: string, runId: string, artifact: ModelRunArtifact) {
+  if (artifact.artifact_type === "evidence_packet") {
+    return `/api/models/${modelId}/runs/${runId}/evidence-packet`;
+  }
+
+  if (artifact.artifact_type === "activitysim_handoff_manifest") {
+    return `/api/models/${modelId}/runs/${runId}/activitysim-handoff`;
+  }
+
+  return artifact.file_url;
 }
 
 function ModelRunStagingAndArtifacts({
@@ -542,17 +572,20 @@ function ModelRunStagingAndArtifacts({
             <div>
               <h4 className="mb-2 font-semibold">Run artifacts</h4>
               <ul className="space-y-2">
-                {artifacts.map((art) => (
-                  <li key={art.id} className="flex items-center justify-between gap-3 rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
-                    <div>
-                      <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
-                      {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}
-                    </div>
-                    <a href={art.file_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-                      View / Download
-                    </a>
-                  </li>
-                ))}
+                {artifacts.map((art) => {
+                  const href = artifactHrefForRun(modelId, run.id, art);
+                  return (
+                    <li key={art.id} className="flex items-center justify-between gap-3 rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
+                      <div>
+                        <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
+                        {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}
+                      </div>
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                        View / Download
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
