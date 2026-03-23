@@ -17,6 +17,9 @@ const patchCampaignSchema = z
     status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
     engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
     projectId: z.union([z.string().uuid(), z.null()]).optional(),
+    shareToken: z.union([z.string().trim().min(8).max(64), z.null()]).optional(),
+    publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
+    allowPublicSubmissions: z.boolean().optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -246,6 +249,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.engagementType !== undefined) updates.engagement_type = parsed.data.engagementType;
     if (parsed.data.projectId !== undefined) updates.project_id = nextProjectId;
+    if (parsed.data.shareToken !== undefined) updates.share_token = parsed.data.shareToken;
+    if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
+    if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
 
     const { error: updateError } = await supabase.from("engagement_campaigns").update(updates).eq("id", access.campaign.id);
 

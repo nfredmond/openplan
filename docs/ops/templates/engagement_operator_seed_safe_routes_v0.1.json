@@ -1,0 +1,231 @@
+{
+  "templateVersion": "0.1",
+  "templateType": "engagement_operator_seed",
+  "notes": [
+    "Docs-only sample content for Lane A planning/content/operator support.",
+    "Uses current shipped enum values only.",
+    "Intended for manual entry, QA/demo setup, or future import/reference work.",
+    "Category references below use categoryLabel for readability; adapt to actual IDs if an import path is later built."
+  ],
+  "campaign": {
+    "title": "Downtown & School Access — Safety Map Feedback — Spring 2026",
+    "summary": "This campaign captures location-specific safety and access feedback related to downtown circulation and school access, including direct public comments, open-house notes, email feedback, and staff-entered observations. The purpose is to surface recurring problem locations, access barriers, and improvement ideas that should inform project review and downstream reporting.",
+    "status": "active",
+    "engagementType": "map_feedback",
+    "publicFacingDraft": {
+      "headline": "Share what you see, use, and need in this area.",
+      "subhead": "Help the project team understand safety issues, access needs, and location-specific opportunities. Comments are reviewed before they are included in planning analysis or project materials.",
+      "moderationDisclosure": "Comments are reviewed for relevance, privacy, duplicate content, and safety before they are included in project materials."
+    }
+  },
+  "categories": [
+    {
+      "label": "Crossing safety",
+      "description": "Crosswalk visibility, crossing distance, turning conflicts, school pickup conflicts, and near-miss locations.",
+      "sortOrder": 10
+    },
+    {
+      "label": "Sidewalks and accessibility",
+      "description": "Sidewalk gaps, narrow walkways, ADA barriers, surface conditions, and curb ramp issues.",
+      "sortOrder": 20
+    },
+    {
+      "label": "Bicycle comfort and network gaps",
+      "description": "Bicycle stress points, missing links, uncomfortable crossings, and route continuity concerns.",
+      "sortOrder": 30
+    },
+    {
+      "label": "Transit access and stops",
+      "description": "Stop placement, stop amenities, crossings to stops, schedule reliability comments, and first/last-mile access.",
+      "sortOrder": 40
+    },
+    {
+      "label": "Parking, loading, and curb use",
+      "description": "Short-term parking, loading activity, pickup/drop-off conflicts, curb turnover, and delivery access concerns.",
+      "sortOrder": 50
+    },
+    {
+      "label": "Maintenance, lighting, and visibility",
+      "description": "Vegetation, pavement, drainage, lighting, signage, striping, and sight-line maintenance issues.",
+      "sortOrder": 60
+    },
+    {
+      "label": "Support / positive signal",
+      "description": "Positive support, reinforcement of proposed changes, or appreciation without a separate primary issue.",
+      "sortOrder": 70
+    },
+    {
+      "label": "Other / needs follow-up",
+      "description": "Useful comments that are still too broad, mixed, or ambiguous for a tighter category assignment.",
+      "sortOrder": 80
+    }
+  ],
+  "items": [
+    {
+      "title": "Fast turns during school pickup",
+      "body": "Cars turning right toward the school cut the corner quickly and kids are already in the crosswalk. Crossing guards help, but the conflict still happens most afternoons.",
+      "submittedBy": "Resident web comment",
+      "sourceType": "public",
+      "status": "approved",
+      "categoryLabel": "Crossing safety",
+      "latitude": 39.2322,
+      "longitude": -121.0618,
+      "moderationNotes": "Approved as direct place-based safety comment. Location precise enough for mapping.",
+      "metadata": {
+        "intakeChannelDetail": "project website",
+        "locationNote": "Corner by elementary school pickup zone",
+        "languageCode": "en"
+      }
+    },
+    {
+      "title": "Missing curb ramp connection",
+      "body": "The sidewalk route from downtown toward the school has a curb ramp mismatch and broken pavement, which makes pushing a stroller or wheelchair difficult.",
+      "submittedBy": "Open house participant",
+      "sourceType": "meeting",
+      "status": "approved",
+      "categoryLabel": "Sidewalks and accessibility",
+      "latitude": 39.2316,
+      "longitude": -121.0589,
+      "moderationNotes": "Entered from open house board transcription and retained as a direct accessibility concern.",
+      "metadata": {
+        "eventName": "Round 1 open house",
+        "eventDate": "2026-03-12",
+        "intakeChannelDetail": "comment board"
+      }
+    },
+    {
+      "title": "Bikeway disappears at bridge approach",
+      "body": "Riding into downtown feels comfortable until the bridge approach, where the lane narrows and drivers pass too close.",
+      "submittedBy": "Resident email",
+      "sourceType": "email",
+      "status": "approved",
+      "categoryLabel": "Bicycle comfort and network gaps",
+      "latitude": 39.2298,
+      "longitude": -121.0557,
+      "moderationNotes": "Approved from resident email; summary kept close to original wording and geolocated from location description.",
+      "metadata": {
+        "intakeChannelDetail": "project inbox",
+        "locationNote": "Bridge approach heading into downtown"
+      }
+    },
+    {
+      "title": "Need better bus stop lighting",
+      "body": "The stop near downtown is dark in winter evenings and students wait there after activities. Better lighting and clearer crossing markings would help.",
+      "submittedBy": "Parent web comment",
+      "sourceType": "public",
+      "status": "pending",
+      "categoryLabel": "Transit access and stops",
+      "latitude": 39.2334,
+      "longitude": -121.0601,
+      "moderationNotes": "Pending because stop location should be confirmed before final approval.",
+      "metadata": {
+        "intakeChannelDetail": "project website",
+        "sensitivity": "youth_comment_context"
+      }
+    },
+    {
+      "title": "Delivery trucks block visibility",
+      "body": "Morning delivery trucks often occupy the curb near the coffee shop and make it hard to see people crossing from the corner.",
+      "submittedBy": "Business owner email",
+      "sourceType": "email",
+      "status": "approved",
+      "categoryLabel": "Parking, loading, and curb use",
+      "latitude": 39.2319,
+      "longitude": -121.0597,
+      "moderationNotes": "Approved as curb-management issue with crossing visibility implications.",
+      "metadata": {
+        "districtTag": "downtown core",
+        "intakeChannelDetail": "business outreach email"
+      }
+    },
+    {
+      "title": "Trees block stop sign",
+      "body": "Overgrown branches make it hard to see the stop sign from one approach, especially if you are unfamiliar with the area.",
+      "submittedBy": "Staff site visit note",
+      "sourceType": "internal",
+      "status": "approved",
+      "categoryLabel": "Maintenance, lighting, and visibility",
+      "latitude": 39.2307,
+      "longitude": -121.0576,
+      "moderationNotes": "Internal site note retained because it documents an observable visibility condition relevant to the campaign.",
+      "metadata": {
+        "enteredByRole": "planner",
+        "intakeChannelDetail": "field review"
+      }
+    },
+    {
+      "title": "Support for calmer school frontage",
+      "body": "Anything that slows drivers and makes the school frontage feel calmer would be welcome. Families walk here every day and the current setup feels too rushed.",
+      "submittedBy": "Workshop table 2",
+      "sourceType": "meeting",
+      "status": "approved",
+      "categoryLabel": "Support / positive signal",
+      "latitude": null,
+      "longitude": null,
+      "moderationNotes": "Approved as positive support signal without exact map location.",
+      "metadata": {
+        "eventName": "School access workshop",
+        "eventDate": "2026-03-15"
+      }
+    },
+    {
+      "title": "Possible duplicate of pickup conflict",
+      "body": "Another participant described dangerous turning movements during dismissal at the same school corner mentioned elsewhere in the campaign.",
+      "submittedBy": "Open house facilitator note",
+      "sourceType": "meeting",
+      "status": "flagged",
+      "categoryLabel": "Crossing safety",
+      "latitude": 39.2322,
+      "longitude": -121.0618,
+      "moderationNotes": "Flagged for duplicate review against earlier school pickup conflict record; retain if additional details are materially different.",
+      "metadata": {
+        "duplicateGroup": "school-pickup-turn-conflict-01",
+        "eventName": "Round 1 open house"
+      }
+    },
+    {
+      "title": "Off-topic complaint",
+      "body": "This project should also lower utility rates and fix broadband service.",
+      "submittedBy": "Resident web comment",
+      "sourceType": "public",
+      "status": "rejected",
+      "categoryLabel": "Other / needs follow-up",
+      "latitude": null,
+      "longitude": null,
+      "moderationNotes": "Rejected as off-topic for the campaign scope.",
+      "metadata": {
+        "intakeChannelDetail": "project website"
+      }
+    },
+    {
+      "title": "Crossing near library feels too wide",
+      "body": "The crossing near the library takes too long for seniors and children, and drivers do not always yield when someone starts late in the cycle.",
+      "submittedBy": "Resident web comment",
+      "sourceType": "public",
+      "status": "approved",
+      "categoryLabel": "Crossing safety",
+      "latitude": 39.2341,
+      "longitude": -121.0581,
+      "moderationNotes": "Approved as direct crossing geometry and yielding concern.",
+      "metadata": {
+        "districtTag": "library area",
+        "languageCode": "en"
+      }
+    },
+    {
+      "title": "Need clearer category before handoff",
+      "body": "Several comments mention that downtown feels stressful for walking after dark, but the issue mixes lighting, visibility, and personal security concerns.",
+      "submittedBy": "Planner synthesis note",
+      "sourceType": "internal",
+      "status": "pending",
+      "categoryLabel": "Other / needs follow-up",
+      "latitude": null,
+      "longitude": null,
+      "moderationNotes": "Pending until operator decides whether to split into lighting/visibility versus perceived security theme.",
+      "metadata": {
+        "enteredByRole": "planner",
+        "sensitivity": "staff_entered"
+      }
+    }
+  ]
+}

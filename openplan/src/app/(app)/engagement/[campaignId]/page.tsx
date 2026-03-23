@@ -6,6 +6,8 @@ import { EngagementReportCreateButton } from "@/components/engagement/engagement
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
+import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
+import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
@@ -21,6 +23,10 @@ type CampaignRow = {
   summary: string | null;
   status: string;
   engagement_type: string;
+  share_token: string | null;
+  public_description: string | null;
+  allow_public_submissions: boolean;
+  submissions_closed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -62,7 +68,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, created_at, updated_at")
+    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, created_at, updated_at")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -195,6 +201,10 @@ export default async function EngagementCampaignDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <EngagementCampaignControls campaign={campaign} projects={(projects ?? []) as Array<{ id: string; name: string }>} />
+        <EngagementShareControls campaign={campaign} />
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <EngagementItemComposer
           campaignId={campaign.id}
           categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
@@ -203,6 +213,26 @@ export default async function EngagementCampaignDetailPage({
           }))}
         />
       </div>
+
+      {(items?.length ?? 0) > 0 && (
+        <div className="mt-6">
+          <EngagementBulkModeration
+            campaignId={campaign.id}
+            items={(items ?? []) as Array<{
+              id: string;
+              campaign_id: string;
+              category_id: string | null;
+              title: string | null;
+              status: string;
+              source_type: string;
+            }>}
+            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
+              id: c.id,
+              label: c.label,
+            }))}
+          />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
         <div className="space-y-6">
