@@ -1,0 +1,38 @@
+{
+  "schema_version": "openplan.county_onramp_manifest.v1",
+  "generated_at": "2026-03-24T23:53:11.501158+00:00",
+  "name": "placer-county-runtime-connectorbias2-20260324",
+  "county_fips": null,
+  "county_prefix": "PLACER",
+  "run_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324",
+  "mode": "existing-run",
+  "stage": "runtime-complete",
+  "artifacts": {
+    "scaffold_csv": "/tmp/placer_example_scaffold.csv",
+    "review_packet_md": "/tmp/placer_example_review.md",
+    "run_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/run_summary.json",
+    "bundle_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/bundle_manifest.json",
+    "validation_summary_json": null
+  },
+  "runtime": {
+    "keep_project": false,
+    "force": false,
+    "overall_demand_scalar": null,
+    "external_demand_scalar": null,
+    "hbw_scalar": null,
+    "hbo_scalar": null,
+    "nhb_scalar": null
+  },
+  "summary": {
+    "run": {
+      "zone_count": 92,
+      "population_total": null,
+      "jobs_total": null,
+      "loaded_links": 17719,
+      "final_gap": null,
+      "total_trips": 1723626.2
+    },
+    "validation": null,
+    "bundle_validation": null
+  }
+}

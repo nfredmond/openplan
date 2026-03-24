@@ -23,6 +23,11 @@ If this is going to back a web workflow later, the fields need to be treated as 
 ## Current JSON Schema artifact
 - `schemas/county_onramp_manifest.schema.json`
 
+## Example fixtures
+- `schemas/examples/county_onramp_manifest.nevada.validated-screening.json`
+- `schemas/examples/county_onramp_manifest.placer.runtime-complete.json`
+- `schemas/examples/README.md`
+
 ## Intended consumers
 Future examples:
 - Supabase run/job tables
