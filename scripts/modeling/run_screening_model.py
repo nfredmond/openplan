@@ -49,6 +49,36 @@ def parse_args() -> argparse.Namespace:
         default=3,
         help="Minimum matched observed-count stations required for bounded screening-ready validation (default: 3)",
     )
+    parser.add_argument(
+        "--overall-demand-scalar",
+        type=float,
+        default=1.0,
+        help="Multiply all synthesized trips by this scalar for sensitivity testing (default: 1.0)",
+    )
+    parser.add_argument(
+        "--external-demand-scalar",
+        type=float,
+        default=1.0,
+        help="Multiply inferred external gateway trips by this scalar for sensitivity testing (default: 1.0)",
+    )
+    parser.add_argument(
+        "--hbw-scalar",
+        type=float,
+        default=1.0,
+        help="Multiply home-based work demand by this scalar for sensitivity testing (default: 1.0)",
+    )
+    parser.add_argument(
+        "--hbo-scalar",
+        type=float,
+        default=1.0,
+        help="Multiply home-based other demand by this scalar for sensitivity testing (default: 1.0)",
+    )
+    parser.add_argument(
+        "--nhb-scalar",
+        type=float,
+        default=1.0,
+        help="Multiply non-home-based demand by this scalar for sensitivity testing (default: 1.0)",
+    )
     return parser.parse_args()
 
 
@@ -75,6 +105,11 @@ def main() -> int:
         ready_median_ape=args.ready_median_ape,
         ready_critical_ape=args.ready_critical_ape,
         required_matches=args.required_matches,
+        overall_demand_scalar=args.overall_demand_scalar,
+        external_demand_scalar=args.external_demand_scalar,
+        hbw_scalar=args.hbw_scalar,
+        hbo_scalar=args.hbo_scalar,
+        nhb_scalar=args.nhb_scalar,
     )
     print(json.dumps(summary, indent=2))
     return 0

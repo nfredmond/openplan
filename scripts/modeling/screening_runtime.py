@@ -653,6 +653,11 @@ def synthesize_demand(
     project_dir: Path,
     boundary_geom,
     package_dir: Path,
+    overall_demand_scalar: float = 1.0,
+    external_demand_scalar: float = 1.0,
+    hbw_scalar: float = 1.0,
+    hbo_scalar: float = 1.0,
+    nhb_scalar: float = 1.0,
 ) -> dict[str, Any]:
     zone_ids = zones_df["zone_id"].astype(int).tolist()
     pop = zones_df["est_population"].to_numpy(dtype=float)
@@ -669,22 +674,38 @@ def synthesize_demand(
 
     hbw_prod = np.maximum(workers, households * 0.35)
     hbw_attr = np.maximum(jobs, 10)
-    hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA)
+    hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA) * hbw_scalar
 
     hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1)
     hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1)
-    hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA)
+    hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA) * hbo_scalar
 
     nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1)
     nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1)
-    nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA)
+    nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA) * nhb_scalar
 
     gateways = detect_external_gateways(project_dir, boundary_geom, zones_df)
+    if external_demand_scalar != 1.0:
+        gateways = [
+            {
+                **gateway,
+                "daily_in": float(gateway["daily_in"]) * external_demand_scalar,
+                "daily_out": float(gateway["daily_out"]) * external_demand_scalar,
+                "daily": float(gateway.get("daily", 0.0)) * external_demand_scalar,
+            }
+            for gateway in gateways
+        ]
     external = build_external_gateway_matrix(gateways, zones_df)
 
     valid_pairs = np.isfinite(skim_matrix) & (skim_matrix > 0)
     np.fill_diagonal(valid_pairs, True)
     total = (hbw + hbo + nhb + external) * valid_pairs
+    if overall_demand_scalar != 1.0:
+        total = total * overall_demand_scalar
+        hbw = hbw * overall_demand_scalar
+        hbo = hbo * overall_demand_scalar
+        nhb = nhb * overall_demand_scalar
+        external = external * overall_demand_scalar
 
     write_od_csv(total, zone_ids, package_dir / "od_trip_matrix.csv")
     layers = {
@@ -699,6 +720,11 @@ def synthesize_demand(
             "nhb_prod_per_person": NHB_PROD_RATE,
             "gravity_gamma_hbo": HBO_GAMMA,
             "gravity_gamma_nhb": NHB_GAMMA,
+            "overall_demand_scalar": overall_demand_scalar,
+            "external_demand_scalar": external_demand_scalar,
+            "hbw_scalar": hbw_scalar,
+            "hbo_scalar": hbo_scalar,
+            "nhb_scalar": nhb_scalar,
         },
         "external_gateways": gateways,
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
@@ -890,6 +916,11 @@ def run_screening_model(
     ready_median_ape: float = 30.0,
     ready_critical_ape: float = 50.0,
     required_matches: int = 3,
+    overall_demand_scalar: float = 1.0,
+    external_demand_scalar: float = 1.0,
+    hbw_scalar: float = 1.0,
+    hbo_scalar: float = 1.0,
+    nhb_scalar: float = 1.0,
 ) -> dict[str, Any]:
     repo_root = Path(__file__).resolve().parents[2]
     output_root_path = Path(output_root).expanduser().resolve() if output_root else repo_root / "data" / "screening-runs"
@@ -915,7 +946,18 @@ def run_screening_model(
     network_meta = build_network(run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles)
     project_dir = Path(network_meta["project_dir"])
     skim_meta = compute_freeflow_skims(project_dir, network_meta["centroid_map"], run_output_dir)
-    demand_meta = synthesize_demand(zones_df, skim_meta["matrix"], project_dir, boundary_meta["geometry"], package_dir)
+    demand_meta = synthesize_demand(
+        zones_df,
+        skim_meta["matrix"],
+        project_dir,
+        boundary_meta["geometry"],
+        package_dir,
+        overall_demand_scalar=overall_demand_scalar,
+        external_demand_scalar=external_demand_scalar,
+        hbw_scalar=hbw_scalar,
+        hbo_scalar=hbo_scalar,
+        nhb_scalar=nhb_scalar,
+    )
     assignment_meta = run_assignment(project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta)
     manifest = write_bundle_outputs(
         run_dir=run_dir,

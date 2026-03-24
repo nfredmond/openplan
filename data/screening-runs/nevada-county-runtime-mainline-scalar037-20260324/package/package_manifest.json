@@ -1,0 +1,17 @@
+{
+  "zones": 26,
+  "tract_states": [
+    "06",
+    "32"
+  ],
+  "zone_type": "census-tract-fragments",
+  "total_population": 102321.99999999993,
+  "total_households": 41414.99999999997,
+  "total_worker_residents": 45063.99999999996,
+  "total_jobs_est": 48252.0,
+  "files": {
+    "zone_attributes": "package/zone_attributes.csv",
+    "zones_geojson": "package/zones.geojson",
+    "zone_centroids_geojson": "package/zone_centroids.geojson"
+  }
+}

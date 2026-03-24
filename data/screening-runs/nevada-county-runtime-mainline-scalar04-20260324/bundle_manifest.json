@@ -1,0 +1,214 @@
+{
+  "run_name": "nevada-county-runtime-mainline-scalar04-20260324",
+  "screening_grade": true,
+  "boundary": {
+    "source": "county-fips",
+    "label": "Nevada County",
+    "source_path": "06057",
+    "bbox": [
+      -121.279784,
+      39.00516,
+      -120.003773,
+      39.52692
+    ],
+    "area_sq_mi": 973.796
+  },
+  "zones": {
+    "zones": 26,
+    "tract_states": [
+      "06",
+      "32"
+    ],
+    "zone_type": "census-tract-fragments",
+    "total_population": 102321.99999999993,
+    "total_households": 41414.99999999997,
+    "total_worker_residents": 45063.99999999996,
+    "total_jobs_est": 48252.0,
+    "files": {
+      "zone_attributes": "package/zone_attributes.csv",
+      "zones_geojson": "package/zones.geojson",
+      "zone_centroids_geojson": "package/zone_centroids.geojson"
+    }
+  },
+  "network": {
+    "bbox": [
+      -121.31722255259845,
+      38.97617449275362,
+      -119.96633444740155,
+      39.55590550724637
+    ],
+    "largest_component_pct": 95.97,
+    "zones_connected": 26
+  },
+  "skims": {
+    "reachable_pairs": 650,
+    "total_pairs": 650,
+    "avg_time_min": 42.18129906792613,
+    "max_time_min": 93.77249487080559
+  },
+  "demand": {
+    "hbw_trips": 18025.6,
+    "hbo_trips": 90043.36,
+    "nhb_trips": 36835.92,
+    "external_trips": 106400.0,
+    "total_trips": 251304.88,
+    "trip_rates": {
+      "hbw_gamma": 1.8,
+      "hbo_prod_per_person": 2.2,
+      "nhb_prod_per_person": 0.9,
+      "gravity_gamma_hbo": 1.5,
+      "gravity_gamma_nhb": 1.2,
+      "overall_demand_scalar": 0.4,
+      "external_demand_scalar": 1.0,
+      "hbw_scalar": 1.0,
+      "hbo_scalar": 1.0,
+      "nhb_scalar": 1.0
+    },
+    "external_gateways": [
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 20,
+        "link_type": "motorway",
+        "link_id": 18154,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.62492,
+        "boundary_lat": 39.315411
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 23,
+        "link_type": "motorway",
+        "link_id": 23878,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.435479,
+        "boundary_lat": 39.316193
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 20,
+        "link_type": "motorway",
+        "link_id": 24690,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.556642,
+        "boundary_lat": 39.3156
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 21,
+        "link_type": "motorway",
+        "link_id": 24757,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.010359,
+        "boundary_lat": 39.445117
+      },
+      {
+        "label": "trunk-gateway-05",
+        "zone_id": 9,
+        "link_type": "trunk",
+        "link_id": 2391,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -121.279574,
+        "boundary_lat": 39.203905
+      },
+      {
+        "label": "primary-gautier-bridge",
+        "zone_id": 3,
+        "link_type": "primary",
+        "link_id": 6133,
+        "daily_in": 12000.0,
+        "daily_out": 12000.0,
+        "boundary_lon": -121.104317,
+        "boundary_lat": 39.011868
+      },
+      {
+        "label": "primary-gateway-07",
+        "zone_id": 24,
+        "link_type": "primary",
+        "link_id": 26280,
+        "daily_in": 12000.0,
+        "daily_out": 12000.0,
+        "boundary_lon": -120.20428,
+        "boundary_lat": 39.316227
+      },
+      {
+        "label": "trunk-gateway-08",
+        "zone_id": 20,
+        "link_type": "trunk",
+        "link_id": 16006,
+        "daily_in": 9000.0,
+        "daily_out": 9000.0,
+        "boundary_lon": -120.679173,
+        "boundary_lat": 39.306449
+      }
+    ],
+    "files": {
+      "od_trip_matrix": "package/od_trip_matrix.csv"
+    }
+  },
+  "assignment": {
+    "convergence": {
+      "final_gap": 0.009934103404132805,
+      "iterations": 50,
+      "target_gap": 0.01
+    },
+    "network": {
+      "links": 54944,
+      "nodes": 24743,
+      "zones": 26,
+      "missing_centroids_in_graph": [],
+      "graph_centroid_coverage_pct": 100.0
+    },
+    "demand": {
+      "total_trips": 251304.88,
+      "peak_hour_factor": 0.1
+    },
+    "loaded_links": 3547,
+    "link_results_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-mainline-scalar04-20260324/run_output/link_volumes.csv",
+    "loaded_links_geojson": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-mainline-scalar04-20260324/run_output/loaded_links.geojson",
+    "top_loaded_links_geojson": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-mainline-scalar04-20260324/run_output/top_loaded_links.geojson"
+  },
+  "artifacts": {
+    "boundary": "boundary/analysis_boundary.geojson",
+    "zones": "package/zones.geojson",
+    "zone_centroids": "package/zone_centroids.geojson",
+    "zone_attributes": "package/zone_attributes.csv",
+    "od_trip_matrix": "package/od_trip_matrix.csv",
+    "demand_layers": "package/demand_layers.json",
+    "demand_omx": "run_output/demand.omx",
+    "skim_omx": "run_output/travel_time_skims.omx",
+    "link_volumes": "run_output/link_volumes.csv",
+    "loaded_links_geojson": "run_output/loaded_links.geojson",
+    "top_loaded_links_geojson": "run_output/top_loaded_links.geojson",
+    "evidence_packet": "run_output/evidence_packet.json",
+    "validation_results": "validation/validation_results.csv",
+    "validation_summary": "validation/validation_summary.json",
+    "validation_report": "validation/validation_report.md",
+    "validation_candidate_audit_json": "validation/validation_candidate_audit.json",
+    "validation_candidate_audit_csv": "validation/validation_candidate_audit.csv"
+  },
+  "project_retained": false,
+  "caveats": [
+    "screening-grade only",
+    "OSM default speeds/capacities",
+    "tract fragments are not calibrated TAZs",
+    "jobs are estimated from tract-scale demographic proxies",
+    "external gateways are inferred from major boundary-crossing roads"
+  ],
+  "validation": {
+    "counts_csv": "/home/nathaniel/.openclaw/workspace/openplan/data/pilot-nevada-county/validation/caltrans_2023_priority_counts.csv",
+    "status_label": "internal prototype only",
+    "matched_stations": 5,
+    "metrics": {
+      "median_absolute_percent_error": 27.68,
+      "mean_absolute_percent_error": 32.85,
+      "min_absolute_percent_error": 8.29,
+      "max_absolute_percent_error": 58.54,
+      "spearman_rho_facility_ranking": 0.7
+    }
+  }
+}

@@ -1,0 +1,772 @@
+{
+  "network_bbox": [
+    -121.31722255259845,
+    38.97617449275362,
+    -119.96633444740155,
+    39.55590550724637
+  ],
+  "zones_connected": 26,
+  "nodes_before_centroids": 24717,
+  "links_before_centroids": 28314,
+  "largest_component_pct": 95.97,
+  "project_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-mainline-scalar04-20260324/work/aeq_project",
+  "node_id_strategy": "preserve_osm_ids",
+  "centroid_map": {
+    "1": 315244,
+    "2": 315245,
+    "3": 315246,
+    "4": 315247,
+    "5": 315248,
+    "6": 315249,
+    "7": 315250,
+    "8": 315251,
+    "9": 315252,
+    "10": 315253,
+    "11": 315254,
+    "12": 315255,
+    "13": 315256,
+    "14": 315257,
+    "15": 315258,
+    "16": 315259,
+    "17": 315260,
+    "18": 315261,
+    "19": 315262,
+    "20": 315263,
+    "21": 315264,
+    "22": 315265,
+    "23": 315266,
+    "24": 315267,
+    "25": 315268,
+    "26": 315269
+  },
+  "connector_diagnostics": [
+    {
+      "zone_id": 1,
+      "zone_label": "Census Tract 1.02",
+      "centroid_node": 315244,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28349,
+          "to_node": 70527,
+          "distance_m": 189.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28350,
+          "to_node": 130534,
+          "distance_m": 240.8,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28351,
+          "to_node": 106504,
+          "distance_m": 247.5,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 2,
+      "zone_label": "Census Tract 1.04",
+      "centroid_node": 315245,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28352,
+          "to_node": 95408,
+          "distance_m": 119.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28353,
+          "to_node": 23985,
+          "distance_m": 146.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28354,
+          "to_node": 95404,
+          "distance_m": 175.7,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 3,
+      "zone_label": "Census Tract 1.05",
+      "centroid_node": 315246,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28355,
+          "to_node": 120975,
+          "distance_m": 132.3,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28356,
+          "to_node": 115115,
+          "distance_m": 309.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28357,
+          "to_node": 130605,
+          "distance_m": 357.4,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 4,
+      "zone_label": "Census Tract 1.06",
+      "centroid_node": 315247,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 45,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28358,
+          "to_node": 64353,
+          "distance_m": 361.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28359,
+          "to_node": 99434,
+          "distance_m": 434.2,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28360,
+          "to_node": 99442,
+          "distance_m": 441.2,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 5,
+      "zone_label": "Census Tract 1.07",
+      "centroid_node": 315248,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28361,
+          "to_node": 27543,
+          "distance_m": 731.3,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28362,
+          "to_node": 115500,
+          "distance_m": 775.6,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28363,
+          "to_node": 120279,
+          "distance_m": 787.0,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 6,
+      "zone_label": "Census Tract 2",
+      "centroid_node": 315249,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28364,
+          "to_node": 13597,
+          "distance_m": 1194.5,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28365,
+          "to_node": 107915,
+          "distance_m": 1233.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28366,
+          "to_node": 13600,
+          "distance_m": 1233.2,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 7,
+      "zone_label": "Census Tract 3",
+      "centroid_node": 315250,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28367,
+          "to_node": 121323,
+          "distance_m": 97.3,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28368,
+          "to_node": 121250,
+          "distance_m": 171.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28369,
+          "to_node": 116942,
+          "distance_m": 194.8,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 8,
+      "zone_label": "Census Tract 4.01",
+      "centroid_node": 315251,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 22,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28370,
+          "to_node": 60922,
+          "distance_m": 1132.8,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28371,
+          "to_node": 87558,
+          "distance_m": 1190.5,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28372,
+          "to_node": 112927,
+          "distance_m": 1450.1,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 9,
+      "zone_label": "Census Tract 4.03",
+      "centroid_node": 315252,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28373,
+          "to_node": 86637,
+          "distance_m": 1177.3,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28374,
+          "to_node": 115538,
+          "distance_m": 1219.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28375,
+          "to_node": 86598,
+          "distance_m": 1499.6,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 10,
+      "zone_label": "Census Tract 4.04",
+      "centroid_node": 315253,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28376,
+          "to_node": 108904,
+          "distance_m": 270.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28377,
+          "to_node": 44616,
+          "distance_m": 400.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28378,
+          "to_node": 108915,
+          "distance_m": 413.4,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 11,
+      "zone_label": "Census Tract 5.02",
+      "centroid_node": 315254,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28379,
+          "to_node": 110960,
+          "distance_m": 115.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28380,
+          "to_node": 43577,
+          "distance_m": 117.9,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28381,
+          "to_node": 136865,
+          "distance_m": 119.7,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 12,
+      "zone_label": "Census Tract 5.03",
+      "centroid_node": 315255,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28382,
+          "to_node": 18913,
+          "distance_m": 549.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28383,
+          "to_node": 16812,
+          "distance_m": 614.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28384,
+          "to_node": 151748,
+          "distance_m": 631.1,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 13,
+      "zone_label": "Census Tract 5.04",
+      "centroid_node": 315256,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 44,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28385,
+          "to_node": 106528,
+          "distance_m": 230.6,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28386,
+          "to_node": 24649,
+          "distance_m": 261.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28387,
+          "to_node": 106533,
+          "distance_m": 263.1,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 14,
+      "zone_label": "Census Tract 6.01",
+      "centroid_node": 315257,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28388,
+          "to_node": 147299,
+          "distance_m": 290.5,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28389,
+          "to_node": 140706,
+          "distance_m": 291.9,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28390,
+          "to_node": 20154,
+          "distance_m": 320.4,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 15,
+      "zone_label": "Census Tract 6.02",
+      "centroid_node": 315258,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 49,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28391,
+          "to_node": 17218,
+          "distance_m": 238.9,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28392,
+          "to_node": 17217,
+          "distance_m": 312.2,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28393,
+          "to_node": 19282,
+          "distance_m": 384.8,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 16,
+      "zone_label": "Census Tract 7.01",
+      "centroid_node": 315259,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28394,
+          "to_node": 94025,
+          "distance_m": 328.7,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28395,
+          "to_node": 129529,
+          "distance_m": 329.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28396,
+          "to_node": 129528,
+          "distance_m": 333.1,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 17,
+      "zone_label": "Census Tract 7.02",
+      "centroid_node": 315260,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28397,
+          "to_node": 21981,
+          "distance_m": 330.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28398,
+          "to_node": 101362,
+          "distance_m": 420.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28399,
+          "to_node": 123162,
+          "distance_m": 562.1,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 18,
+      "zone_label": "Census Tract 8.01",
+      "centroid_node": 315261,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 44,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28400,
+          "to_node": 161600,
+          "distance_m": 710.6,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28401,
+          "to_node": 161597,
+          "distance_m": 810.3,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28402,
+          "to_node": 212030,
+          "distance_m": 813.5,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 19,
+      "zone_label": "Census Tract 8.02",
+      "centroid_node": 315262,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 47,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28403,
+          "to_node": 24352,
+          "distance_m": 204.8,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28404,
+          "to_node": 135101,
+          "distance_m": 297.2,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28405,
+          "to_node": 98089,
+          "distance_m": 365.3,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 20,
+      "zone_label": "Census Tract 9",
+      "centroid_node": 315263,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28406,
+          "to_node": 259392,
+          "distance_m": 1371.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28407,
+          "to_node": 274011,
+          "distance_m": 1409.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28408,
+          "to_node": 313550,
+          "distance_m": 1447.3,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 21,
+      "zone_label": "Census Tract 12.05",
+      "centroid_node": 315264,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28409,
+          "to_node": 259731,
+          "distance_m": 111.9,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28410,
+          "to_node": 259710,
+          "distance_m": 210.8,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28411,
+          "to_node": 261325,
+          "distance_m": 265.5,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 22,
+      "zone_label": "Census Tract 12.07",
+      "centroid_node": 315265,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28412,
+          "to_node": 294921,
+          "distance_m": 320.1,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28413,
+          "to_node": 294922,
+          "distance_m": 326.6,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28414,
+          "to_node": 275817,
+          "distance_m": 339.8,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 23,
+      "zone_label": "Census Tract 12.08",
+      "centroid_node": 315266,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28415,
+          "to_node": 281952,
+          "distance_m": 283.2,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28416,
+          "to_node": 290604,
+          "distance_m": 290.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28417,
+          "to_node": 290923,
+          "distance_m": 306.2,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 24,
+      "zone_label": "Census Tract 12.09",
+      "centroid_node": 315267,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 35,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28418,
+          "to_node": 285884,
+          "distance_m": 259.4,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28419,
+          "to_node": 285900,
+          "distance_m": 263.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28420,
+          "to_node": 285868,
+          "distance_m": 266.7,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 25,
+      "zone_label": "Census Tract 12.10",
+      "centroid_node": 315268,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28421,
+          "to_node": 260981,
+          "distance_m": 114.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28422,
+          "to_node": 261188,
+          "distance_m": 202.0,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28423,
+          "to_node": 259881,
+          "distance_m": 279.3,
+          "in_largest_component": true
+        }
+      ]
+    },
+    {
+      "zone_id": 26,
+      "zone_label": "Census Tract 12.11",
+      "centroid_node": 315269,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28424,
+          "to_node": 260061,
+          "distance_m": 766.9,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28425,
+          "to_node": 262780,
+          "distance_m": 880.7,
+          "in_largest_component": true
+        },
+        {
+          "link_id": 28426,
+          "to_node": 260909,
+          "distance_m": 944.5,
+          "in_largest_component": true
+        }
+      ]
+    }
+  ]
+}

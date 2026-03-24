@@ -124,6 +124,15 @@ def parse_candidate_names(value: Any) -> list[str]:
     return [piece.strip() for piece in text.split("|") if piece.strip()]
 
 
+def parse_pipe_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    text = str(value).strip()
+    if not text:
+        return []
+    return [piece.strip() for piece in text.split("|") if piece.strip()]
+
+
 def choose_geometry_path(run_output_dir: Path) -> Path:
     loaded = run_output_dir / "loaded_links.geojson"
     top = run_output_dir / "top_loaded_links.geojson"
@@ -298,6 +307,8 @@ def collect_station_candidates(
 ) -> list[dict[str, Any]]:
     candidate_names = parse_candidate_names(station.get("candidate_model_names"))
     candidate_names_norm = {normalize_text(name) for name in candidate_names}
+    excluded_names_norm = {normalize_text(name) for name in parse_pipe_list(station.get("exclude_model_names"))}
+    allowed_link_types_norm = {normalize_text(link_type) for link_type in parse_pipe_list(station.get("candidate_link_types"))}
     facility_name_norm = normalize_text(station.get("facility_name"))
 
     candidates: dict[int, dict[str, Any]] = {}
@@ -307,11 +318,18 @@ def collect_station_candidates(
             if not bbox_contains(station, feature["lon"], feature["lat"]):
                 continue
             feature_name_norm = normalize_text(feature.get("name"))
+            feature_link_type_norm = normalize_text(feature.get("link_type"))
+            if excluded_names_norm and feature_name_norm in excluded_names_norm:
+                continue
+            type_allowed = not allowed_link_types_norm or feature_link_type_norm in allowed_link_types_norm
+            if not type_allowed:
+                continue
             exact_name_match = bool(candidate_names_norm and feature_name_norm in candidate_names_norm)
             facility_name_match = bool(facility_name_norm and facility_name_norm in feature_name_norm)
-            if not exact_name_match and not facility_name_match:
+            type_only_match = bool(allowed_link_types_norm)
+            if not exact_name_match and not facility_name_match and not type_only_match:
                 continue
-            match_score = 2 if exact_name_match else 1
+            match_score = 3 if exact_name_match else 2 if facility_name_match else 1
             link_id = int(feature["link_id"])
             candidate = {
                 "link_id": link_id,
@@ -323,6 +341,7 @@ def collect_station_candidates(
                 "source": source,
                 "exact_name_match": exact_name_match,
                 "facility_name_match": facility_name_match,
+                "type_only_match": type_only_match and not exact_name_match and not facility_name_match,
                 "match_score": match_score,
             }
             existing = candidates.get(link_id)
@@ -542,6 +561,7 @@ def write_candidate_audit_csv(path: Path, audit: list[dict[str, Any]]) -> None:
                     "candidate_source": candidate.get("source", ""),
                     "candidate_exact_name_match": candidate.get("exact_name_match", False),
                     "candidate_facility_name_match": candidate.get("facility_name_match", False),
+                    "candidate_type_only_match": candidate.get("type_only_match", False),
                     "candidate_lon": candidate.get("lon", ""),
                     "candidate_lat": candidate.get("lat", ""),
                     "candidate_modeled_daily_pce": int(round(float(candidate.get("volume") or 0))),
