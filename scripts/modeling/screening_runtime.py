@@ -8,6 +8,7 @@ import re
 import shutil
 import sqlite3
 import string
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -298,6 +299,19 @@ def _parse_speed(value: Any) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def extract_missing_centroids_from_warnings(caught_warnings: list[warnings.WarningMessage]) -> list[int]:
+    missing: set[int] = set()
+    for caught in caught_warnings:
+        message = str(caught.message)
+        if "Found centroids not present in the graph" not in message:
+            continue
+        for block in re.findall(r"\[([^\]]+)\]", message, flags=re.MULTILINE):
+            for token in re.split(r"[\s,]+", block.strip()):
+                if token.isdigit():
+                    missing.add(int(token))
+    return sorted(missing)
+
+
 def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, network_buffer_miles: float) -> dict[str, Any]:
     from aequilibrae import Project
 
@@ -352,6 +366,7 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
     next_node = max_node + 1
     next_link = max_link + 1
     centroid_map: dict[int, int] = {}
+    connector_diagnostics: list[dict[str, Any]] = []
 
     for _, zone in zones_df.iterrows():
         zone_id = int(zone["zone_id"])
@@ -369,7 +384,9 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
             "FROM nodes WHERE is_centroid=0 AND node_id!=? ORDER BY d2 ASC LIMIT 50",
             (clon, clon, clat, clat, centroid_node),
         ).fetchall()
-        preferred = [(nid, d2) for nid, d2 in nearest if nid in largest_component][:3] or nearest[:3]
+        nearest_in_largest = [(nid, d2) for nid, d2 in nearest if nid in largest_component]
+        preferred = nearest_in_largest[:3] or nearest[:3]
+        chosen_connectors = []
         for near_node, d2 in preferred:
             nx, ny = conn.execute("SELECT X(geometry), Y(geometry) FROM nodes WHERE node_id=?", (near_node,)).fetchone()
             line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
@@ -380,22 +397,28 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
                 "VALUES (?, ?, ?, 0, ?, 'c', 'centroid_connector', 'connector', 50, 50, 99999, 99999, GeomFromText(?, 4326))",
                 (next_link, centroid_node, near_node, length_m, line_wkt),
             )
+            chosen_connectors.append(
+                {
+                    "link_id": int(next_link),
+                    "to_node": int(near_node),
+                    "distance_m": round(float(length_m), 1),
+                    "in_largest_component": bool(near_node in largest_component),
+                }
+            )
             next_link += 1
+        connector_diagnostics.append(
+            {
+                "zone_id": zone_id,
+                "zone_label": str(zone.get("NAMELSAD") or zone.get("GEOID") or zone_id),
+                "centroid_node": int(centroid_node),
+                "nearest_candidates_considered": int(len(nearest)),
+                "largest_component_candidates_in_nearest_50": int(len(nearest_in_largest)),
+                "used_fallback_non_largest_component": int(len(nearest_in_largest)) == 0,
+                "chosen_connectors": chosen_connectors,
+            }
+        )
         centroid_map[zone_id] = centroid_node
     conn.commit()
-
-    old_ids = [row[0] for row in conn.execute("SELECT node_id FROM nodes ORDER BY node_id")]
-    remap = {old: new for new, old in enumerate(old_ids, 1)}
-    for old, new in remap.items():
-        if old != new:
-            conn.execute("UPDATE nodes SET node_id=? WHERE node_id=?", (-new, old))
-    conn.execute("UPDATE nodes SET node_id=-node_id WHERE node_id<0")
-    for old, new in remap.items():
-        if old != new:
-            conn.execute("UPDATE links SET a_node=? WHERE a_node=?", (new, old))
-            conn.execute("UPDATE links SET b_node=? WHERE b_node=?", (new, old))
-    conn.commit()
-    centroid_map = {zone_id: remap[node_id] for zone_id, node_id in centroid_map.items()}
 
     links_data = conn.execute(
         "SELECT link_id, link_type, speed_ab, speed_ba, distance, lanes_ab, lanes_ba FROM links"
@@ -427,7 +450,9 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
         "links_before_centroids": int(len(links_raw)),
         "largest_component_pct": round(100 * len(largest_component) / max(len(nodes_all), 1), 2),
         "project_dir": str(proj_dir),
+        "node_id_strategy": "preserve_osm_ids",
         "centroid_map": centroid_map,
+        "connector_diagnostics": connector_diagnostics,
     }
     (bundle_dir / "work" / "network_setup_summary.json").write_text(json.dumps(summary, indent=2))
     return summary
@@ -447,7 +472,10 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
     time_field = "travel_time" if "travel_time" in columns else "distance"
     capacity_field = "capacity" if "capacity" in columns else "capacity_ab"
     graph.set_graph(time_field)
-    graph.prepare_graph(centroids_sorted)
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        warnings.simplefilter("always")
+        graph.prepare_graph(centroids_sorted)
+    missing_centroids = extract_missing_centroids_from_warnings(caught_warnings)
     graph.set_blocked_centroid_flows(True)
     graph.set_skimming([time_field])
 
@@ -467,6 +495,7 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
         "centroids_sorted": centroids_sorted.tolist(),
         "time_field": time_field,
         "capacity_field": capacity_field,
+        "missing_centroids_in_graph": missing_centroids,
         "reachable_pairs": reachable_pairs,
         "total_pairs": total_pairs,
         "avg_time_min": float(matrix[finite].mean()) if reachable_pairs else None,
@@ -774,14 +803,12 @@ def run_assignment(
 
     graph = Graph()
     graph.network = links_df.copy()
-    graph.prepare_graph(centroids_sorted, remove_dead_ends=False)
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        warnings.simplefilter("always")
+        graph.prepare_graph(centroids_sorted, remove_dead_ends=False)
     prepared_graph_df = getattr(graph, "graph", pd.DataFrame())
     graph_columns = list(prepared_graph_df.columns)
-    graph_nodes: set[int] = set()
-    for column in ["a_node", "b_node"]:
-        if column in graph_columns:
-            graph_nodes |= {int(value) for value in pd.to_numeric(prepared_graph_df[column], errors="coerce").dropna().astype(int).tolist()}
-    missing_centroids = sorted(int(value) for value in centroids_sorted if int(value) not in graph_nodes) if graph_nodes else []
+    missing_centroids = extract_missing_centroids_from_warnings(caught_warnings)
     time_field = "travel_time" if "travel_time" in graph_columns else "distance"
     capacity_field = next(
         (field for field in ["capacity_ab", "capacity", "capacity_ba"] if field in graph_columns),

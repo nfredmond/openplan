@@ -1,0 +1,99 @@
+{
+  "hbw_trips": 45064.0,
+  "hbo_trips": 225108.4,
+  "nhb_trips": 92089.8,
+  "external_trips": 266000.0,
+  "total_trips": 628262.2,
+  "trip_rates": {
+    "hbw_gamma": 1.8,
+    "hbo_prod_per_person": 2.2,
+    "nhb_prod_per_person": 0.9,
+    "gravity_gamma_hbo": 1.5,
+    "gravity_gamma_nhb": 1.2
+  },
+  "external_gateways": [
+    {
+      "label": "motorway-alan-s-hart-freeway",
+      "zone_id": 20,
+      "link_type": "motorway",
+      "link_id": 18154,
+      "daily_in": 20000.0,
+      "daily_out": 20000.0,
+      "boundary_lon": -120.62492,
+      "boundary_lat": 39.315411
+    },
+    {
+      "label": "motorway-alan-s-hart-freeway",
+      "zone_id": 23,
+      "link_type": "motorway",
+      "link_id": 23878,
+      "daily_in": 20000.0,
+      "daily_out": 20000.0,
+      "boundary_lon": -120.435479,
+      "boundary_lat": 39.316193
+    },
+    {
+      "label": "motorway-alan-s-hart-freeway",
+      "zone_id": 20,
+      "link_type": "motorway",
+      "link_id": 24690,
+      "daily_in": 20000.0,
+      "daily_out": 20000.0,
+      "boundary_lon": -120.556642,
+      "boundary_lat": 39.3156
+    },
+    {
+      "label": "motorway-alan-s-hart-freeway",
+      "zone_id": 21,
+      "link_type": "motorway",
+      "link_id": 24757,
+      "daily_in": 20000.0,
+      "daily_out": 20000.0,
+      "boundary_lon": -120.010359,
+      "boundary_lat": 39.445117
+    },
+    {
+      "label": "trunk-gateway-05",
+      "zone_id": 9,
+      "link_type": "trunk",
+      "link_id": 2391,
+      "daily_in": 20000.0,
+      "daily_out": 20000.0,
+      "boundary_lon": -121.279574,
+      "boundary_lat": 39.203905
+    },
+    {
+      "label": "primary-gautier-bridge",
+      "zone_id": 3,
+      "link_type": "primary",
+      "link_id": 6133,
+      "daily_in": 12000.0,
+      "daily_out": 12000.0,
+      "boundary_lon": -121.104317,
+      "boundary_lat": 39.011868
+    },
+    {
+      "label": "primary-gateway-07",
+      "zone_id": 24,
+      "link_type": "primary",
+      "link_id": 26280,
+      "daily_in": 12000.0,
+      "daily_out": 12000.0,
+      "boundary_lon": -120.20428,
+      "boundary_lat": 39.316227
+    },
+    {
+      "label": "trunk-gateway-08",
+      "zone_id": 20,
+      "link_type": "trunk",
+      "link_id": 16006,
+      "daily_in": 9000.0,
+      "daily_out": 9000.0,
+      "boundary_lon": -120.679173,
+      "boundary_lat": 39.306449
+    }
+  ],
+  "files": {
+    "od_trip_matrix": "package/od_trip_matrix.csv"
+  }
+}
