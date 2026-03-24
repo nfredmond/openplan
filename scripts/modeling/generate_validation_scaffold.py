@@ -39,6 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source-agency", default="TBD", help="Default source agency placeholder")
     parser.add_argument("--limit", type=int, default=8, help="Max number of scaffold rows to emit")
     parser.add_argument("--bbox-padding-deg", type=float, default=0.006, help="Half-width/height bbox padding in degrees")
+    parser.add_argument("--output-md", help="Optional markdown review packet path")
     return parser.parse_args()
 
 
@@ -124,6 +125,53 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def write_review_packet(path: Path, run_dir: Path, rows: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"# Validation Scaffold Review Packet — {run_dir.name}",
+        "",
+        "This packet is auto-generated from a completed screening run.",
+        "Use it to pick the first observed-count stations to source and finalize.",
+        "",
+        "## Selected starter stations",
+        "",
+    ]
+    for row in rows:
+        lines.extend(
+            [
+                f"### {row['station_id']} — {row['facility_name']}",
+                f"- label: {row['label']}",
+                f"- candidate link type: `{row['candidate_link_types']}`",
+                f"- candidate model names: `{row['candidate_model_names']}`",
+                f"- bbox: `{row['bbox_min_lon']}, {row['bbox_min_lat']}` to `{row['bbox_max_lon']}, {row['bbox_max_lat']}`",
+                f"- source seed: {row['source_description']}",
+                f"- notes: {row['notes']}",
+                "",
+            ]
+        )
+    lines.extend([
+        "## Top screened facilities by loaded volume",
+        "",
+        "| Rank | Facility | Link type | Top link volume | Segments | Representative lon | Representative lat |",
+        "|---:|---|---|---:|---:|---:|---:|",
+    ])
+    for idx, item in enumerate(ranked[:25], start=1):
+        lines.append(
+            f"| {idx} | {item['name']} | {item['link_type']} | {item['top_volume']:.0f} | {item['segments']} | {item['lon']:.5f} | {item['lat']:.5f} |"
+        )
+    lines.extend([
+        "",
+        "## Review guidance",
+        "",
+        "- Replace placeholders with actual observed counts and source text.",
+        "- Tighten each bbox before formal validation.",
+        "- Add `exclude_model_names` where nearby cross streets, ramps, or frontage roads could contaminate the match.",
+        "- If the first validation pass shows ambiguity, use the validator's candidate-audit outputs to refine the station definitions.",
+        "",
+    ])
+    path.write_text("\n".join(lines))
 
 
 def main() -> int:
@@ -222,7 +270,11 @@ def main() -> int:
             break
 
     write_csv(output_csv, emitted)
+    if args.output_md:
+        write_review_packet(Path(args.output_md).expanduser().resolve(), run_dir, emitted, ranked)
     print(f"Wrote {len(emitted)} scaffold rows to {output_csv}")
+    if args.output_md:
+        print(f"Wrote review packet to {Path(args.output_md).expanduser().resolve()}")
     return 0
 
 
