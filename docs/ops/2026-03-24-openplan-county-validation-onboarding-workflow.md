@@ -55,7 +55,10 @@ Why:
 - prevents later confusion about what exactly was proven at each stage
 
 ## Step 3 — Generate a first-pass validation scaffold
-Use:
+Preferred bootstrap path:
+- `scripts/modeling/bootstrap_county_validation_onramp.py`
+
+Direct scaffold-generation helper:
 - `scripts/modeling/generate_validation_scaffold.py`
 
 Outputs:
@@ -155,6 +158,19 @@ After a meaningful pass or failure, write a durable note that records:
 - best next step
 
 This prevents repetition and keeps the modeling lane decision-useful.
+
+## Example bootstrap invocation
+```bash
+python3 scripts/modeling/bootstrap_county_validation_onramp.py \
+  --name placer-county-runtime-connectorbias2-20260324 \
+  --county-fips 06061 \
+  --county-prefix PLACER \
+  --output-csv data/pilot-placer-county/validation/placer_priority_count_scaffold_auto.csv \
+  --output-md docs/ops/2026-03-24-openplan-placer-validation-review-packet.md \
+  --keep-project --force
+```
+
+For a brand-new county, use a fresh `--name` and county-specific output paths.
 
 ## Products created by this workflow
 A county that follows this workflow should accumulate:
