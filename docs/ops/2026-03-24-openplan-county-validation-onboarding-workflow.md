@@ -57,6 +57,8 @@ Why:
 ## Step 3 — Generate a first-pass validation scaffold
 Preferred bootstrap path:
 - `scripts/modeling/bootstrap_county_validation_onramp.py`
+- can either build a new county run or attach to an existing completed run via `--existing-run-dir`
+- can emit a JSON manifest for orchestration/backends via `--output-manifest`
 
 Direct scaffold-generation helper:
 - `scripts/modeling/generate_validation_scaffold.py`
