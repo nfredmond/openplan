@@ -170,6 +170,9 @@ A background worker should:
 3. capture the produced manifest path,  
 4. post that manifest to `/api/county-runs/:id/manifest`.
 
+Detailed worker contract:
+- `docs/ops/2026-03-24-openplan-county-onramp-worker-contract.md`
+
 ## Backend derivation rules
 
 ### `stage`
