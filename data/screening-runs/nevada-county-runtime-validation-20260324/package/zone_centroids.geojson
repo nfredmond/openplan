@@ -1,0 +1,33 @@
+{
+"type": "FeatureCollection",
+"name": "zone_centroids",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "GEOID": "06057000102", "NAMELSAD": "Census Tract 1.02", "zone_id": 1 }, "geometry": { "type": "Point", "coordinates": [ -121.050129056761904, 39.1207155 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000104", "NAMELSAD": "Census Tract 1.04", "zone_id": 2 }, "geometry": { "type": "Point", "coordinates": [ -121.064917080792696, 39.1499415 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000105", "NAMELSAD": "Census Tract 1.05", "zone_id": 3 }, "geometry": { "type": "Point", "coordinates": [ -121.109364135190219, 39.0670805 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000106", "NAMELSAD": "Census Tract 1.06", "zone_id": 4 }, "geometry": { "type": "Point", "coordinates": [ -121.040586333628966, 39.0370365 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000107", "NAMELSAD": "Census Tract 1.07", "zone_id": 5 }, "geometry": { "type": "Point", "coordinates": [ -121.029691957499949, 39.0777835 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000200", "NAMELSAD": "Census Tract 2", "zone_id": 6 }, "geometry": { "type": "Point", "coordinates": [ -121.201593161424327, 39.09483 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000300", "NAMELSAD": "Census Tract 3", "zone_id": 7 }, "geometry": { "type": "Point", "coordinates": [ -121.10279302364124, 39.1690985 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000401", "NAMELSAD": "Census Tract 4.01", "zone_id": 8 }, "geometry": { "type": "Point", "coordinates": [ -121.193370641215097, 39.2395085 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000403", "NAMELSAD": "Census Tract 4.03", "zone_id": 9 }, "geometry": { "type": "Point", "coordinates": [ -121.261917498877196, 39.159659 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000404", "NAMELSAD": "Census Tract 4.04", "zone_id": 10 }, "geometry": { "type": "Point", "coordinates": [ -121.135650380821403, 39.237804 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000502", "NAMELSAD": "Census Tract 5.02", "zone_id": 11 }, "geometry": { "type": "Point", "coordinates": [ -121.075955175070021, 39.208592 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000503", "NAMELSAD": "Census Tract 5.03", "zone_id": 12 }, "geometry": { "type": "Point", "coordinates": [ -121.085373638254922, 39.2336025 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000504", "NAMELSAD": "Census Tract 5.04", "zone_id": 13 }, "geometry": { "type": "Point", "coordinates": [ -121.055390590721657, 39.232351 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000601", "NAMELSAD": "Census Tract 6.01", "zone_id": 14 }, "geometry": { "type": "Point", "coordinates": [ -121.026547983395801, 39.230065 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000602", "NAMELSAD": "Census Tract 6.02", "zone_id": 15 }, "geometry": { "type": "Point", "coordinates": [ -121.041398626232734, 39.210821 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000701", "NAMELSAD": "Census Tract 7.01", "zone_id": 16 }, "geometry": { "type": "Point", "coordinates": [ -120.917198897145582, 39.22599 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000702", "NAMELSAD": "Census Tract 7.02", "zone_id": 17 }, "geometry": { "type": "Point", "coordinates": [ -121.004028900234744, 39.157009 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000801", "NAMELSAD": "Census Tract 8.01", "zone_id": 18 }, "geometry": { "type": "Point", "coordinates": [ -120.926932816661605, 39.3056905 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000802", "NAMELSAD": "Census Tract 8.02", "zone_id": 19 }, "geometry": { "type": "Point", "coordinates": [ -121.031825236607119, 39.25721 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057000900", "NAMELSAD": "Census Tract 9", "zone_id": 20 }, "geometry": { "type": "Point", "coordinates": [ -120.597344314969064, 39.383887 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001205", "NAMELSAD": "Census Tract 12.05", "zone_id": 21 }, "geometry": { "type": "Point", "coordinates": [ -120.10655033285019, 39.3507825 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001207", "NAMELSAD": "Census Tract 12.07", "zone_id": 22 }, "geometry": { "type": "Point", "coordinates": [ -120.166011362607208, 39.3458585 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001208", "NAMELSAD": "Census Tract 12.08", "zone_id": 23 }, "geometry": { "type": "Point", "coordinates": [ -120.269864279375057, 39.347159 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001209", "NAMELSAD": "Census Tract 12.09", "zone_id": 24 }, "geometry": { "type": "Point", "coordinates": [ -120.200905841811135, 39.328612 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001210", "NAMELSAD": "Census Tract 12.10", "zone_id": 25 }, "geometry": { "type": "Point", "coordinates": [ -120.229201770696051, 39.3590385 ] } },
+{ "type": "Feature", "properties": { "GEOID": "06057001211", "NAMELSAD": "Census Tract 12.11", "zone_id": 26 }, "geometry": { "type": "Point", "coordinates": [ -120.192641727186313, 39.3493725 ] } }
+]
+}
