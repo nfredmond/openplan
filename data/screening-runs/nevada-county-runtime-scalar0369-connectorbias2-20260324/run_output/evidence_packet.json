@@ -1,0 +1,146 @@
+{
+  "run_name": "nevada-county-runtime-scalar0369-connectorbias2-20260324",
+  "run_id": "nevada-county-runtime-scalar0369-connectorbias2-20260324",
+  "engine": "AequilibraE screening runtime",
+  "network_source": "OpenStreetMap",
+  "zone_system": "census-tract-fragments",
+  "assignment": {
+    "convergence": {
+      "final_gap": 0.009528380989681269,
+      "iterations": 50,
+      "target_gap": 0.01
+    },
+    "network": {
+      "links": 54944,
+      "nodes": 24743,
+      "zones": 26,
+      "missing_centroids_in_graph": [],
+      "graph_centroid_coverage_pct": 100.0
+    },
+    "demand": {
+      "total_trips": 231828.75,
+      "peak_hour_factor": 0.1
+    },
+    "loaded_links": 3174,
+    "link_results_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/run_output/link_volumes.csv",
+    "loaded_links_geojson": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/run_output/loaded_links.geojson",
+    "top_loaded_links_geojson": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/run_output/top_loaded_links.geojson"
+  },
+  "demand": {
+    "hbw_trips": 16628.62,
+    "hbo_trips": 83065.0,
+    "nhb_trips": 33981.14,
+    "external_trips": 98154.0,
+    "total_trips": 231828.75,
+    "trip_rates": {
+      "hbw_gamma": 1.8,
+      "hbo_prod_per_person": 2.2,
+      "nhb_prod_per_person": 0.9,
+      "gravity_gamma_hbo": 1.5,
+      "gravity_gamma_nhb": 1.2,
+      "overall_demand_scalar": 0.369,
+      "external_demand_scalar": 1.0,
+      "hbw_scalar": 1.0,
+      "hbo_scalar": 1.0,
+      "nhb_scalar": 1.0
+    },
+    "external_gateways": [
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 20,
+        "link_type": "motorway",
+        "link_id": 18154,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.62492,
+        "boundary_lat": 39.315411
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 23,
+        "link_type": "motorway",
+        "link_id": 23878,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.435479,
+        "boundary_lat": 39.316193
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 20,
+        "link_type": "motorway",
+        "link_id": 24690,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.556642,
+        "boundary_lat": 39.3156
+      },
+      {
+        "label": "motorway-alan-s-hart-freeway",
+        "zone_id": 21,
+        "link_type": "motorway",
+        "link_id": 24757,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -120.010359,
+        "boundary_lat": 39.445117
+      },
+      {
+        "label": "trunk-gateway-05",
+        "zone_id": 9,
+        "link_type": "trunk",
+        "link_id": 2391,
+        "daily_in": 20000.0,
+        "daily_out": 20000.0,
+        "boundary_lon": -121.279574,
+        "boundary_lat": 39.203905
+      },
+      {
+        "label": "primary-gautier-bridge",
+        "zone_id": 3,
+        "link_type": "primary",
+        "link_id": 6133,
+        "daily_in": 12000.0,
+        "daily_out": 12000.0,
+        "boundary_lon": -121.104317,
+        "boundary_lat": 39.011868
+      },
+      {
+        "label": "primary-gateway-07",
+        "zone_id": 24,
+        "link_type": "primary",
+        "link_id": 26280,
+        "daily_in": 12000.0,
+        "daily_out": 12000.0,
+        "boundary_lon": -120.20428,
+        "boundary_lat": 39.316227
+      },
+      {
+        "label": "trunk-gateway-08",
+        "zone_id": 20,
+        "link_type": "trunk",
+        "link_id": 16006,
+        "daily_in": 9000.0,
+        "daily_out": 9000.0,
+        "boundary_lon": -120.679173,
+        "boundary_lat": 39.306449
+      }
+    ],
+    "files": {
+      "od_trip_matrix": "package/od_trip_matrix.csv"
+    }
+  },
+  "skims": {
+    "reachable_pairs": 650,
+    "total_pairs": 650,
+    "avg_time_min": 41.25535597412145,
+    "max_time_min": 93.77249487080559
+  },
+  "caveats": [
+    "screening-grade only",
+    "OSM default speeds/capacities",
+    "tract fragments are not calibrated TAZs",
+    "jobs are estimated from tract-scale demographic proxies",
+    "external gateways are inferred from major boundary-crossing roads"
+  ]
+}

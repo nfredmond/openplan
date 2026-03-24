@@ -1,0 +1,73 @@
+{
+  "validation_type": "screening_assignment_vs_observed_counts",
+  "model_run_id": "nevada-county-runtime-scalar0369-connectorbias2-20260324",
+  "model_engine": "AequilibraE screening runtime",
+  "model_caveats": [
+    "screening-grade only",
+    "OSM default speeds/capacities",
+    "tract fragments are not calibrated TAZs",
+    "jobs are estimated from tract-scale demographic proxies",
+    "external gateways are inferred from major boundary-crossing roads"
+  ],
+  "counts_source_csv": "/home/nathaniel/.openclaw/workspace/openplan/data/pilot-nevada-county/validation/caltrans_2023_priority_counts.csv",
+  "model_geometry_source": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/run_output/loaded_links.geojson",
+  "model_project_db": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/work/aeq_project/project_database.sqlite",
+  "model_volume_field": "PCE_tot",
+  "stations_total": 5,
+  "stations_matched": 5,
+  "stations_missed": 0,
+  "screening_gate": {
+    "status_label": "bounded screening-ready",
+    "required_matches": 3,
+    "ready_median_ape_threshold": 30.0,
+    "ready_critical_ape_threshold": 50.0,
+    "reasons": [
+      "Matched stations >= 3, median absolute percent error <= 30.00%, and no matched facility exceeds 50.00% absolute percent error."
+    ]
+  },
+  "metrics": {
+    "median_absolute_percent_error": 16.01,
+    "mean_absolute_percent_error": 23.13,
+    "min_absolute_percent_error": 9.3,
+    "max_absolute_percent_error": 49.48,
+    "spearman_rho_facility_ranking": 1.0
+  },
+  "facility_ranking": [
+    {
+      "station": "SR 20 at Jct Rte 49",
+      "observed_volume": 45500,
+      "modeled_daily_pce": 32822,
+      "obs_rank": 1,
+      "mod_rank": 1
+    },
+    {
+      "station": "SR 20 at Brunswick Rd",
+      "observed_volume": 35500,
+      "modeled_daily_pce": 30890,
+      "obs_rank": 2,
+      "mod_rank": 2
+    },
+    {
+      "station": "SR 49 at South Grass Valley",
+      "observed_volume": 26000,
+      "modeled_daily_pce": 30162,
+      "obs_rank": 3,
+      "mod_rank": 3
+    },
+    {
+      "station": "SR 20 at Penn Valley Dr",
+      "observed_volume": 17500,
+      "modeled_daily_pce": 19128,
+      "obs_rank": 4,
+      "mod_rank": 4
+    },
+    {
+      "station": "SR 174 at Brunswick Rd",
+      "observed_volume": 10300,
+      "modeled_daily_pce": 15396,
+      "obs_rank": 5,
+      "mod_rank": 5
+    }
+  ],
+  "created_at": "2026-03-24T22:21:42.928723+00:00"
+}

@@ -1,0 +1,1215 @@
+{
+  "network_bbox": [
+    -121.31722255259845,
+    38.97617449275362,
+    -119.96633444740155,
+    39.55590550724637
+  ],
+  "zones_connected": 26,
+  "nodes_before_centroids": 24717,
+  "links_before_centroids": 28314,
+  "largest_component_pct": 95.97,
+  "project_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias-20260324/work/aeq_project",
+  "node_id_strategy": "preserve_osm_ids",
+  "centroid_map": {
+    "1": 315244,
+    "2": 315245,
+    "3": 315246,
+    "4": 315247,
+    "5": 315248,
+    "6": 315249,
+    "7": 315250,
+    "8": 315251,
+    "9": 315252,
+    "10": 315253,
+    "11": 315254,
+    "12": 315255,
+    "13": 315256,
+    "14": 315257,
+    "15": 315258,
+    "16": 315259,
+    "17": 315260,
+    "18": 315261,
+    "19": 315262,
+    "20": 315263,
+    "21": 315264,
+    "22": 315265,
+    "23": 315266,
+    "24": 315267,
+    "25": 315268,
+    "26": 315269
+  },
+  "connector_diagnostics": [
+    {
+      "zone_id": 1,
+      "zone_label": "Census Tract 1.02",
+      "centroid_node": 315244,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28349,
+          "to_node": 25658,
+          "distance_m": 861.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28350,
+          "to_node": 19829,
+          "distance_m": 950.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28351,
+          "to_node": 18244,
+          "distance_m": 985.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 2,
+      "zone_label": "Census Tract 1.04",
+      "centroid_node": 315245,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28352,
+          "to_node": 14048,
+          "distance_m": 335.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "primary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 6
+        },
+        {
+          "link_id": 28353,
+          "to_node": 46230,
+          "distance_m": 349.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "primary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 6
+        },
+        {
+          "link_id": 28354,
+          "to_node": 46172,
+          "distance_m": 357.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "primary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 6
+        }
+      ]
+    },
+    {
+      "zone_id": 3,
+      "zone_label": "Census Tract 1.05",
+      "centroid_node": 315246,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28355,
+          "to_node": 13877,
+          "distance_m": 872.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28356,
+          "to_node": 29320,
+          "distance_m": 901.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28357,
+          "to_node": 28179,
+          "distance_m": 913.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 4,
+      "zone_label": "Census Tract 1.06",
+      "centroid_node": 315247,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 45,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28358,
+          "to_node": 64353,
+          "distance_m": 361.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        },
+        {
+          "link_id": 28359,
+          "to_node": 99434,
+          "distance_m": 434.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        },
+        {
+          "link_id": 28360,
+          "to_node": 64371,
+          "distance_m": 475.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        }
+      ]
+    },
+    {
+      "zone_id": 5,
+      "zone_label": "Census Tract 1.07",
+      "centroid_node": 315248,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28361,
+          "to_node": 22229,
+          "distance_m": 1320.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28362,
+          "to_node": 105548,
+          "distance_m": 1553.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28363,
+          "to_node": 22235,
+          "distance_m": 1602.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        }
+      ]
+    },
+    {
+      "zone_id": 6,
+      "zone_label": "Census Tract 2",
+      "centroid_node": 315249,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28364,
+          "to_node": 107915,
+          "distance_m": 1233.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28365,
+          "to_node": 21873,
+          "distance_m": 1484.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28366,
+          "to_node": 107893,
+          "distance_m": 1517.3,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        }
+      ]
+    },
+    {
+      "zone_id": 7,
+      "zone_label": "Census Tract 3",
+      "centroid_node": 315250,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28367,
+          "to_node": 21940,
+          "distance_m": 1152.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28368,
+          "to_node": 21942,
+          "distance_m": 1204.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28369,
+          "to_node": 14156,
+          "distance_m": 1215.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 8,
+      "zone_label": "Census Tract 4.01",
+      "centroid_node": 315251,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 22,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28370,
+          "to_node": 117902,
+          "distance_m": 1750.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28371,
+          "to_node": 11126,
+          "distance_m": 1766.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28372,
+          "to_node": 117883,
+          "distance_m": 1841.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "service",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 9,
+      "zone_label": "Census Tract 4.03",
+      "centroid_node": 315252,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28373,
+          "to_node": 86637,
+          "distance_m": 1177.3,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        },
+        {
+          "link_id": 28374,
+          "to_node": 86598,
+          "distance_m": 1499.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        },
+        {
+          "link_id": 28375,
+          "to_node": 115468,
+          "distance_m": 1561.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 2
+        }
+      ]
+    },
+    {
+      "zone_id": 10,
+      "zone_label": "Census Tract 4.04",
+      "centroid_node": 315253,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28376,
+          "to_node": 11300,
+          "distance_m": 847.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28377,
+          "to_node": 10940,
+          "distance_m": 1013.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "secondary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28378,
+          "to_node": 112857,
+          "distance_m": 1083.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 11,
+      "zone_label": "Census Tract 5.02",
+      "centroid_node": 315254,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28379,
+          "to_node": 49035,
+          "distance_m": 152.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "trunk",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        },
+        {
+          "link_id": 28380,
+          "to_node": 46867,
+          "distance_m": 183.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "trunk",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        },
+        {
+          "link_id": 28381,
+          "to_node": 46859,
+          "distance_m": 252.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "trunk",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        }
+      ]
+    },
+    {
+      "zone_id": 12,
+      "zone_label": "Census Tract 5.03",
+      "centroid_node": 315255,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28382,
+          "to_node": 18913,
+          "distance_m": 549.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28383,
+          "to_node": 16812,
+          "distance_m": 614.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28384,
+          "to_node": 151748,
+          "distance_m": 631.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 13,
+      "zone_label": "Census Tract 5.04",
+      "centroid_node": 315256,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 44,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28385,
+          "to_node": 19340,
+          "distance_m": 333.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28386,
+          "to_node": 16758,
+          "distance_m": 344.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28387,
+          "to_node": 14756,
+          "distance_m": 407.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 14,
+      "zone_label": "Census Tract 6.01",
+      "centroid_node": 315257,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28388,
+          "to_node": 140706,
+          "distance_m": 291.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28389,
+          "to_node": 120841,
+          "distance_m": 364.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "secondary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28390,
+          "to_node": 140709,
+          "distance_m": 435.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 15,
+      "zone_label": "Census Tract 6.02",
+      "centroid_node": 315258,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 49,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28391,
+          "to_node": 19282,
+          "distance_m": 384.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28392,
+          "to_node": 67496,
+          "distance_m": 408.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28393,
+          "to_node": 97865,
+          "distance_m": 431.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "secondary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 16,
+      "zone_label": "Census Tract 7.01",
+      "centroid_node": 315259,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28394,
+          "to_node": 94025,
+          "distance_m": 328.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28395,
+          "to_node": 129529,
+          "distance_m": 329.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28396,
+          "to_node": 129528,
+          "distance_m": 333.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        }
+      ]
+    },
+    {
+      "zone_id": 17,
+      "zone_label": "Census Tract 7.02",
+      "centroid_node": 315260,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28397,
+          "to_node": 11099,
+          "distance_m": 785.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28398,
+          "to_node": 10644,
+          "distance_m": 1027.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28399,
+          "to_node": 101293,
+          "distance_m": 1289.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        }
+      ]
+    },
+    {
+      "zone_id": 18,
+      "zone_label": "Census Tract 8.01",
+      "centroid_node": 315261,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 44,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28400,
+          "to_node": 211941,
+          "distance_m": 1392.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "service",
+            "trunk",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        },
+        {
+          "link_id": 28401,
+          "to_node": 211944,
+          "distance_m": 1436.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "service",
+            "trunk",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        },
+        {
+          "link_id": 28402,
+          "to_node": 211945,
+          "distance_m": 1469.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "trunk",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 7
+        }
+      ]
+    },
+    {
+      "zone_id": 19,
+      "zone_label": "Census Tract 8.02",
+      "centroid_node": 315262,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 47,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28403,
+          "to_node": 17327,
+          "distance_m": 757.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28404,
+          "to_node": 17328,
+          "distance_m": 760.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28405,
+          "to_node": 120178,
+          "distance_m": 761.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 20,
+      "zone_label": "Census Tract 9",
+      "centroid_node": 315263,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 48,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28406,
+          "to_node": 261821,
+          "distance_m": 6425.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28407,
+          "to_node": 261124,
+          "distance_m": 6434.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28408,
+          "to_node": 261818,
+          "distance_m": 6513.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        }
+      ]
+    },
+    {
+      "zone_id": 21,
+      "zone_label": "Census Tract 12.05",
+      "centroid_node": 315264,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28409,
+          "to_node": 260424,
+          "distance_m": 276.9,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28410,
+          "to_node": 260044,
+          "distance_m": 300.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "secondary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        },
+        {
+          "link_id": 28411,
+          "to_node": 260423,
+          "distance_m": 483.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "secondary",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 5
+        }
+      ]
+    },
+    {
+      "zone_id": 22,
+      "zone_label": "Census Tract 12.07",
+      "centroid_node": 315265,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28412,
+          "to_node": 274499,
+          "distance_m": 551.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28413,
+          "to_node": 274492,
+          "distance_m": 571.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28414,
+          "to_node": 276887,
+          "distance_m": 798.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        }
+      ]
+    },
+    {
+      "zone_id": 23,
+      "zone_label": "Census Tract 12.08",
+      "centroid_node": 315266,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28415,
+          "to_node": 260476,
+          "distance_m": 1959.5,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28416,
+          "to_node": 260563,
+          "distance_m": 1396.6,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "service",
+            "unclassified",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        },
+        {
+          "link_id": 28417,
+          "to_node": 290901,
+          "distance_m": 1426.8,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "unclassified",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 3
+        }
+      ]
+    },
+    {
+      "zone_id": 24,
+      "zone_label": "Census Tract 12.09",
+      "centroid_node": 315267,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 35,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28418,
+          "to_node": 274321,
+          "distance_m": 594.2,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28419,
+          "to_node": 261872,
+          "distance_m": 638.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        },
+        {
+          "link_id": 28420,
+          "to_node": 261869,
+          "distance_m": 681.7,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "motorway",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 8
+        }
+      ]
+    },
+    {
+      "zone_id": 25,
+      "zone_label": "Census Tract 12.10",
+      "centroid_node": 315268,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28421,
+          "to_node": 283309,
+          "distance_m": 758.4,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28422,
+          "to_node": 299620,
+          "distance_m": 759.3,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "service",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28423,
+          "to_node": 260417,
+          "distance_m": 760.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "residential",
+            "tertiary",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    },
+    {
+      "zone_id": 26,
+      "zone_label": "Census Tract 12.11",
+      "centroid_node": 315269,
+      "nearest_candidates_considered": 50,
+      "largest_component_candidates_in_nearest_50": 50,
+      "used_fallback_non_largest_component": false,
+      "chosen_connectors": [
+        {
+          "link_id": 28424,
+          "to_node": 279009,
+          "distance_m": 1546.0,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28425,
+          "to_node": 278673,
+          "distance_m": 1547.3,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        },
+        {
+          "link_id": 28426,
+          "to_node": 278996,
+          "distance_m": 1563.1,
+          "in_largest_component": true,
+          "adjacent_link_types": [
+            "tertiary",
+            "residential",
+            "centroid_connector"
+          ],
+          "best_adjacent_link_priority": 4
+        }
+      ]
+    }
+  ]
+}

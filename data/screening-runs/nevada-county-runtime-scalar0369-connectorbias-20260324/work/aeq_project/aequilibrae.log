@@ -1,0 +1,45 @@
+2026-03-24 14:59:00,147;WARNING ; About table already exists. Nothing was done
+2026-03-24 14:59:00,199;INFO ; Downloading data
+2026-03-24 14:59:06,251;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-121.317223,39.266040,-120.641779);>;);out;'}"
+2026-03-24 14:59:14,388;INFO ; Downloaded 0.7KB from overpass-api.de in 8.14 seconds
+2026-03-24 14:59:14,388;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 14:59:25,388;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-121.317223,39.266040,-120.641779);>;);out;'}"
+2026-03-24 14:59:30,599;INFO ; Downloaded 0.7KB from overpass-api.de in 5.21 seconds
+2026-03-24 14:59:30,599;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 14:59:42,476;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-121.317223,39.266040,-120.641779);>;);out;'}"
+2026-03-24 14:59:47,331;INFO ; Downloaded 0.7KB from overpass-api.de in 4.85 seconds
+2026-03-24 14:59:47,331;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 14:59:58,331;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-121.317223,39.266040,-120.641779);>;);out;'}"
+2026-03-24 15:00:02,725;INFO ; Downloaded 0.7KB from overpass-api.de in 4.39 seconds
+2026-03-24 15:00:02,725;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 15:00:14,630;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-121.317223,39.266040,-120.641779);>;);out;'}"
+2026-03-24 15:00:17,109;INFO ; Downloaded 16,367.9KB from overpass-api.de in 2.48 seconds
+2026-03-24 15:00:22,511;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](39.266040,-121.317223,39.555906,-120.641779);>;);out;'}"
+2026-03-24 15:00:26,821;INFO ; Downloaded 0.7KB from overpass-api.de in 4.31 seconds
+2026-03-24 15:00:26,821;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 15:00:37,822;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](39.266040,-121.317223,39.555906,-120.641779);>;);out;'}"
+2026-03-24 15:00:43,941;INFO ; Downloaded 0.7KB from overpass-api.de in 6.12 seconds
+2026-03-24 15:00:43,941;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 15:00:54,941;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](39.266040,-121.317223,39.555906,-120.641779);>;);out;'}"
+2026-03-24 15:00:56,988;INFO ; Downloaded 8,923.9KB from overpass-api.de in 2.05 seconds
+2026-03-24 15:01:02,210;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-120.641779,39.266040,-119.966334);>;);out;'}"
+2026-03-24 15:01:11,169;INFO ; Downloaded 0.7KB from overpass-api.de in 8.96 seconds
+2026-03-24 15:01:11,169;INFO ; Server at overpass-api.de returned status code 504 and no JSON data. Re-trying request in 6.00 seconds.
+2026-03-24 15:01:23,078;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](38.976174,-120.641779,39.266040,-119.966334);>;);out;'}"
+2026-03-24 15:01:27,967;INFO ; Downloaded 3,542.8KB from overpass-api.de in 4.89 seconds
+2026-03-24 15:01:33,084;DEBUG ; Posting to http://overpass-api.de/api/interpreter with timeout=540, "{'data': '[out:json][timeout:540];(way["highway"]["area"!~"yes"]["highway"!~"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway"]["service"!~"parking|parking_aisle|driveway|private|emergency_access"]["access"!~"private"](39.266040,-120.641779,39.555906,-119.966334);>;);out;'}"
+2026-03-24 15:01:35,511;INFO ; Downloaded 6,946.2KB from overpass-api.de in 2.43 seconds
+2026-03-24 15:01:36,067;INFO ; Building Network
+2026-03-24 15:01:36,067;INFO ; Preparing OSM builder
+2026-03-24 15:01:36,545;INFO ; Importing the network
+2026-03-24 15:01:36,812;INFO ; Processing link modes, types and fields
+2026-03-24 15:01:37,701;INFO ; Geo-procesing links
+2026-03-24 15:02:10,138;INFO ; Adding nodes to file
+2026-03-24 15:02:31,362;INFO ; Adding links to file
+2026-03-24 15:02:44,285;INFO ; Cleaning things up
+2026-03-24 15:02:48,703;INFO ; Cleaning up the network down to the selected area
+2026-03-24 15:02:49,386;INFO ; Network built successfully
+2026-03-24 15:02:50,582;WARNING ; Field(s) osm_id, busway, busway_right, busway_left, lanes has(ve) at least one NaN value. Check your computations
+2026-03-24 15:02:50,582;WARNING ; Field(s) osm_id, busway, busway_right, busway_left, lanes has(ve) at least one NaN value. Check your computations
+2026-03-24 15:02:50,703;WARNING ; Field(s) osm_id, busway, busway_right, busway_left, lanes has(ve) at least one NaN value. Check your computations
+2026-03-24 15:02:50,703;WARNING ; Field(s) osm_id, busway, busway_right, busway_left, lanes has(ve) at least one NaN value. Check your computations

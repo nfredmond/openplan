@@ -52,6 +52,20 @@ LINK_DEFAULTS = {
     "centroid_connector": (50, 99999, 1),
 }
 
+LINK_CLASS_PRIORITY = {
+    "motorway": 8,
+    "trunk": 7,
+    "primary": 6,
+    "secondary": 5,
+    "tertiary": 4,
+    "unclassified": 3,
+    "residential": 2,
+    "service": 1,
+    "services": 1,
+    "living_street": 0,
+    "pedestrian": 0,
+}
+
 GATEWAY_DAILY_TRIPS = {
     "motorway": 15000,
     "trunk": 9000,
@@ -312,6 +326,19 @@ def extract_missing_centroids_from_warnings(caught_warnings: list[warnings.Warni
     return sorted(missing)
 
 
+def rank_connector_candidate(conn: sqlite3.Connection, node_id: int, d2: float) -> tuple[float, float, float, float]:
+    rows = conn.execute(
+        "SELECT DISTINCT COALESCE(link_type, '') FROM links WHERE a_node=? OR b_node=?",
+        (node_id, node_id),
+    ).fetchall()
+    best_priority = max((LINK_CLASS_PRIORITY.get(str(link_type or '').strip().lower(), -1) for (link_type,) in rows), default=-1)
+    distance_m = max((float(d2) ** 0.5) * 111000, 10)
+    # Conservative scoring: a one-class road upgrade is only worth a few hundred meters,
+    # so very close local collectors can still beat farther arterials.
+    score = best_priority * 250.0 - distance_m
+    return (score, float(best_priority), -distance_m, -float(node_id))
+
+
 def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, network_buffer_miles: float) -> dict[str, Any]:
     from aequilibrae import Project
 
@@ -385,7 +412,12 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
             (clon, clon, clat, clat, centroid_node),
         ).fetchall()
         nearest_in_largest = [(nid, d2) for nid, d2 in nearest if nid in largest_component]
-        preferred = nearest_in_largest[:3] or nearest[:3]
+        candidate_pool = nearest_in_largest or nearest
+        preferred = sorted(
+            candidate_pool,
+            key=lambda item: rank_connector_candidate(conn, int(item[0]), float(item[1])),
+            reverse=True,
+        )[:3]
         chosen_connectors = []
         for near_node, d2 in preferred:
             nx, ny = conn.execute("SELECT X(geometry), Y(geometry) FROM nodes WHERE node_id=?", (near_node,)).fetchone()
@@ -397,12 +429,21 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
                 "VALUES (?, ?, ?, 0, ?, 'c', 'centroid_connector', 'connector', 50, 50, 99999, 99999, GeomFromText(?, 4326))",
                 (next_link, centroid_node, near_node, length_m, line_wkt),
             )
+            adjacent_link_types = [
+                str(link_type or '').strip().lower()
+                for (link_type,) in conn.execute(
+                    "SELECT DISTINCT COALESCE(link_type, '') FROM links WHERE a_node=? OR b_node=?",
+                    (near_node, near_node),
+                ).fetchall()
+            ]
             chosen_connectors.append(
                 {
                     "link_id": int(next_link),
                     "to_node": int(near_node),
                     "distance_m": round(float(length_m), 1),
                     "in_largest_component": bool(near_node in largest_component),
+                    "adjacent_link_types": adjacent_link_types,
+                    "best_adjacent_link_priority": max((LINK_CLASS_PRIORITY.get(t, -1) for t in adjacent_link_types), default=-1),
                 }
             )
             next_link += 1

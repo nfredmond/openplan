@@ -1,0 +1,167 @@
+station_id,label,observed_volume,best_model_link_id,best_model_link_name,best_modeled_daily_pce,candidate_rank,candidate_link_id,candidate_name,candidate_link_type,candidate_source,candidate_exact_name_match,candidate_facility_name_match,candidate_type_only_match,candidate_lon,candidate_lat,candidate_modeled_daily_pce
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,1,7630,Golden Center Freeway,motorway,project_db,True,False,False,-121.05450378681341,39.220357681716386,28669
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,2,7626,Golden Center Freeway,motorway,project_db,True,False,False,-121.05506575,39.22034015,28118
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,3,8138,Golden Center Freeway,motorway,geometry,True,False,False,-121.0400288,39.232251233333336,25796
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,4,7730,Golden Center Freeway,motorway,geometry,True,False,False,-121.04000853333334,39.23207326666667,24853
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,5,7628,Golden Center Freeway,motorway,project_db,True,False,False,-121.05924574999999,39.217847899999995,22816
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,6,7629,Golden Center Freeway,motorway,project_db,True,False,False,-121.05703523835255,39.219567947152164,22816
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,7,7739,Golden Center Freeway,motorway,project_db,True,False,False,-121.05889213050519,39.21830324789134,22816
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,8,7745,Golden Center Freeway,motorway,project_db,True,False,False,-121.05855465,39.21866225,22816
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,9,7744,Golden Center Freeway,motorway,project_db,True,False,False,-121.0599570678192,39.217017832987146,22816
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,10,7625,Golden Center Freeway,motorway,project_db,True,False,False,-121.05300419584182,39.22111850638799,21575
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,11,7752,Golden Center Freeway,motorway,project_db,True,False,False,-121.05089129999999,39.222926650000005,21575
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,12,7753,Golden Center Freeway,motorway,project_db,True,False,False,-121.0511813,39.2225738,21575
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,13,8140,Golden Center Freeway,motorway,project_db,True,False,False,-121.04903289676155,39.22474036686552,21575
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,14,7631,Golden Center Freeway,motorway,project_db,True,False,False,-121.05227603001667,39.22136298308653,21520
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,15,7727,Golden Center Freeway,motorway,project_db,True,False,False,-121.05016527596358,39.22357328880979,21520
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,16,7728,Golden Center Freeway,motorway,project_db,True,False,False,-121.04835491145036,39.2251296074407,21520
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,17,7755,Golden Center Freeway,motorway,project_db,True,False,False,-121.05097362503972,39.22260732165002,21520
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,18,7729,Golden Center Freeway,motorway,project_db,True,False,False,-121.04394834072589,39.22861734896796,21487
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,19,7627,Golden Center Freeway,motorway,project_db,True,False,False,-121.05693346579271,39.21970387296094,21442
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,20,7740,Golden Center Freeway,motorway,project_db,True,False,False,-121.0593952,39.217872400000005,21442
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,21,7746,Golden Center Freeway,motorway,project_db,True,False,False,-121.0586216,39.21875585,21442
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,22,7747,Golden Center Freeway,motorway,project_db,True,False,False,-121.05900144630782,39.21835331172085,21442
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,23,8139,Golden Center Freeway,motorway,project_db,True,False,False,-121.04388055562505,39.22886089901617,18341
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,24,9400,,motorway,geometry,False,False,True,-121.04160775,39.2309324,7455
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,25,9401,,motorway,geometry,False,False,True,-121.04300208,39.22986454,7455
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,26,106,,motorway,geometry,False,False,True,-121.05118430833333,39.22187898333333,7149
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,27,1088,,motorway,geometry,False,False,True,-121.05757924444444,39.21960952222222,6676
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,28,7619,,motorway,geometry,False,False,True,-121.05390312499999,39.221099075000005,6544
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,29,7610,,motorway,geometry,False,False,True,-121.05732696666666,39.21924668333333,5854
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,30,9396,,motorway,geometry,False,False,True,-121.04170060000001,39.230270250000004,3366
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,31,9398,,motorway,geometry,False,False,True,-121.04266305,39.229149199999995,3366
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,32,9399,,motorway,geometry,False,False,True,-121.04258315000001,39.22922285,3366
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,33,9402,,motorway,geometry,False,False,True,-121.04338824999999,39.22955535,3233
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,34,9403,,motorway,geometry,False,False,True,-121.04428757999999,39.22872262,3233
+CT_SR20_JCT49,SR 20 at Jct Rte 49,45500,7630,Golden Center Freeway,28669,35,9397,,motorway,geometry,False,False,True,-121.04384379999999,39.228322475,34
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,1,8138,Golden Center Freeway,motorway,project_db,True,False,False,-121.03983446818927,39.232426543325246,25796
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,2,7733,Golden Center Freeway,motorway,project_db,True,False,False,-121.03127377145528,39.242132999146776,24912
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,3,7730,Golden Center Freeway,motorway,project_db,True,False,False,-121.0399959023811,39.2320813596811,24853
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,4,8135,Golden Center Freeway,motorway,project_db,True,False,False,-121.03084551370142,39.24285532087348,24520
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,5,8136,Golden Center Freeway,motorway,project_db,True,False,False,-121.03561711929457,39.236717956005826,23602
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,6,8137,Golden Center Freeway,motorway,project_db,True,False,False,-121.03807159999998,39.2340698,23602
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,7,7731,Golden Center Freeway,motorway,project_db,True,False,False,-121.03755117970582,39.234354498240506,22562
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,8,7732,Golden Center Freeway,motorway,project_db,True,False,False,-121.03536214532151,39.236622168897526,22562
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,9,9400,,motorway,geometry,False,False,True,-121.04160775,39.2309324,7455
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,10,9396,,motorway,geometry,False,False,True,-121.04170060000001,39.230270250000004,3366
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,11,11659,,motorway,geometry,False,False,True,-121.03529996470589,39.23561475882353,2351
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,12,4555,,motorway,geometry,False,False,True,-121.03669685,39.23416506666667,2291
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,13,7738,,motorway,geometry,False,False,True,-121.037651725,39.234973159999996,2195
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,35500,8138,Golden Center Freeway,25796,14,4550,,motorway,geometry,False,False,True,-121.03611234285715,39.23692937142857,918
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,1,12838,,primary,geometry,False,False,True,-121.06627800000001,39.15306666666667,30348
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,2,12839,,primary,geometry,False,False,True,-121.06553955000001,39.15380595,30348
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,3,12840,,primary,geometry,False,False,True,-121.06279885,39.15636203333333,30348
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,4,9320,,primary,geometry,False,False,True,-121.05509383333333,39.16964888888889,29731
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,5,9321,,primary,geometry,False,False,True,-121.05652463333332,39.167067,29731
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,6,9322,,primary,geometry,False,False,True,-121.05713204285715,39.16452322857143,29731
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,7,12841,,primary,geometry,False,False,True,-121.05925063636364,39.160169554545455,29731
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,8,9328,,primary,geometry,False,False,True,-121.07102548571427,39.14174118571429,25640
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,9,9350,,primary,geometry,False,False,True,-121.0701804,39.144270399999996,25640
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,10,12834,,primary,geometry,False,False,True,-121.0687554,39.14815845,25638
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,11,12835,,primary,geometry,False,False,True,-121.06853394999999,39.14878875,25638
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,12,12842,,primary,geometry,False,False,True,-121.06822206666668,39.14962616666667,25638
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,13,14847,,primary,geometry,False,False,True,-121.0683654,39.14925265,25638
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,14,9349,,primary,geometry,False,False,True,-121.0693985,39.14642755,25629
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,15,12843,,primary,geometry,False,False,True,-121.06903205,39.147399750000005,25629
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,16,9323,,primary,geometry,False,False,True,-121.06698633333333,39.152212666666664,22094
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,17,12837,,primary,geometry,False,False,True,-121.06775345,39.15075725,22094
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,18,9301,,primary,geometry,False,False,True,-121.07140425,39.13963445,15338
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,19,9302,,primary,geometry,False,False,True,-121.07166253333332,39.1378062,15338
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,20,9303,,primary,geometry,False,False,True,-121.0718889,39.1362924,15338
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,21,9304,,primary,geometry,False,False,True,-121.07250599999999,39.13333627142857,15338
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,22,9305,,primary,geometry,False,False,True,-121.07372953333333,39.1311456,15338
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,26000,12838,,30348,23,9313,,primary,geometry,False,False,True,-121.07124825,39.140668950000006,15338
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,17500,11725,Eric Rood Memorial Expressway,24830,1,11725,Eric Rood Memorial Expressway,trunk,project_db,True,False,False,-121.16912565000001,39.203305900000004,24830
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,17500,11725,Eric Rood Memorial Expressway,24830,2,7989,,trunk,geometry,False,False,True,-121.17027985,39.2032991,26597
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,17500,11725,Eric Rood Memorial Expressway,24830,3,7991,,trunk,geometry,False,False,True,-121.16981485,39.203303000000005,26597
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,17500,11725,Eric Rood Memorial Expressway,24830,4,7995,,trunk,geometry,False,False,True,-121.18381629999999,39.20361044444444,26597
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,17500,11725,Eric Rood Memorial Expressway,24830,5,7996,,trunk,geometry,False,False,True,-121.17355065000001,39.2032922,26597
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,1,2638,Colfax Highway,secondary,project_db,True,False,False,-121.05417726101595,39.21367949358475,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,2,4717,Colfax Highway,secondary,project_db,True,False,False,-121.05419014999998,39.2142681,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,3,4718,Colfax Highway,secondary,project_db,True,False,False,-121.05420834448296,39.214740977460735,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,4,4719,Colfax Highway,secondary,project_db,True,False,False,-121.05429017753266,39.21531421067731,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,5,7808,Colfax Highway,secondary,project_db,True,False,False,-121.05092073546884,39.21121836850314,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,6,7809,Colfax Highway,secondary,project_db,True,False,False,-121.05306299330299,39.21221565379186,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,7,14491,Colfax Highway,secondary,project_db,True,False,False,-121.04581598901837,39.209087409180384,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,8,14492,Colfax Highway,secondary,project_db,True,False,False,-121.04735174575758,39.20974173765118,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,9,14493,Colfax Highway,secondary,project_db,True,False,False,-121.04875215974296,39.210577198954574,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,10,14479,Colfax Highway,secondary,project_db,True,False,False,-121.03616627291248,39.20074737008175,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,11,14480,Colfax Highway,secondary,project_db,True,False,False,-121.03739208147283,39.20245741168676,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,12,14481,Colfax Highway,secondary,project_db,True,False,False,-121.03769420744675,39.20356025434814,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,13,14482,Colfax Highway,secondary,project_db,True,False,False,-121.03808444999999,39.20422165,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,14,14483,Colfax Highway,secondary,project_db,True,False,False,-121.0383271,39.204618350000004,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,15,14484,Colfax Highway,secondary,project_db,True,False,False,-121.03850675000001,39.2048922,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,16,14485,Colfax Highway,secondary,project_db,True,False,False,-121.03878636032778,39.20527224217078,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,17,14486,Colfax Highway,secondary,project_db,True,False,False,-121.03929912096409,39.205821895356,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,18,14487,Colfax Highway,secondary,project_db,True,False,False,-121.04006926969154,39.20644936944097,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,19,14488,Colfax Highway,secondary,project_db,True,False,False,-121.04096507183705,39.20694379424902,13484
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,20,14489,Colfax Highway,secondary,project_db,True,False,False,-121.04244280871174,39.20753309424892,9202
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,21,14490,Colfax Highway,secondary,project_db,True,False,False,-121.04401750132085,39.20837375170723,7137
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,22,11095,Colfax Avenue,secondary,geometry,False,False,True,-121.05438358,39.21559454,16920
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,23,4369,Colfax Avenue,secondary,geometry,False,False,True,-121.05481031666666,39.215727316666666,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,24,4370,Colfax Avenue,secondary,geometry,False,False,True,-121.05579883333333,39.21578733333333,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,25,4371,Colfax Avenue,secondary,geometry,False,False,True,-121.0564628,39.2158209,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,26,4372,Colfax Avenue,secondary,geometry,False,False,True,-121.05735688333334,39.215861499999995,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,27,4373,Colfax Avenue,secondary,geometry,False,False,True,-121.05826033333334,39.215937,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,28,4374,Colfax Avenue,secondary,geometry,False,False,True,-121.05884879999999,39.2160407,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,29,4375,Colfax Avenue,secondary,geometry,False,False,True,-121.05956296,39.21619058,11217
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,30,8347,East Main Street,secondary,geometry,False,False,True,-121.0539497,39.2232065,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,31,8348,East Main Street,secondary,geometry,False,False,True,-121.05396965,39.223908225,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,32,8349,East Main Street,secondary,geometry,False,False,True,-121.0539732,39.224309500000004,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,33,8350,East Main Street,secondary,geometry,False,False,True,-121.0539754,39.2245603,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,34,8351,East Main Street,secondary,geometry,False,False,True,-121.0539671,39.2247477,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,35,8352,East Main Street,secondary,geometry,False,False,True,-121.0539578,39.224930400000005,8781
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,36,4634,Bennett Street,secondary,geometry,False,False,True,-121.0591328,39.2195466,8218
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,37,13441,Bennett Street,secondary,geometry,False,False,True,-121.0589095,39.21914835,8218
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,38,13443,Bennett Street,secondary,geometry,False,False,True,-121.05897365000001,39.219262900000004,8218
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,39,14228,Bennett Street,secondary,geometry,False,False,True,-121.0590284,39.21936005,8218
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,40,9696,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04995866666667,39.2229462,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,41,9697,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04899922857143,39.223301785714284,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,42,9698,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04826465,39.2235183,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,43,9699,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04755337142856,39.22357915714286,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,44,9700,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04609538,39.223475740000005,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,45,9701,Idaho Maryland Road,secondary,geometry,False,False,True,-121.044703875,39.2234146875,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,46,9702,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04315795714285,39.22331825714286,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,47,9703,Idaho Maryland Road,secondary,geometry,False,False,True,-121.04136885,39.22361855,7958
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,48,9704,Idaho Maryland Road,secondary,geometry,False,False,True,-121.03798658000001,39.22415676666666,7916
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,49,9705,Idaho Maryland Road,secondary,geometry,False,False,True,-121.03544575000001,39.2244022,7916
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,50,14326,Idaho Maryland Road,secondary,geometry,False,False,True,-121.03517845,39.2243821,7916
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,51,14327,Idaho Maryland Road,secondary,geometry,False,False,True,-121.03079555882353,39.224188544117645,7916
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,52,14328,Idaho Maryland Road,secondary,geometry,False,False,True,-121.0352953,39.2243909,7916
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,53,14216,East Main Street,secondary,geometry,False,False,True,-121.0594165,39.219622225,7522
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,54,14241,East Main Street,secondary,geometry,False,False,True,-121.05388350000001,39.22155395,7240
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,55,9695,Idaho Maryland Road,secondary,geometry,False,False,True,-121.05073216666666,39.22269166666666,6931
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,56,14217,Bennett Street,secondary,geometry,False,False,True,-121.0586602,39.21876245,6594
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,57,14239,East Main Street,secondary,geometry,False,False,True,-121.0539612,39.22177605,6544
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,58,14240,East Main Street,secondary,geometry,False,False,True,-121.0539667,39.22165183333333,6544
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,59,8345,East Main Street,secondary,geometry,False,False,True,-121.0539127,39.22239823333334,6124
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,60,8346,East Main Street,secondary,geometry,False,False,True,-121.05393020000001,39.22267663333333,6124
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,61,14245,East Main Street,secondary,geometry,False,False,True,-121.0537052,39.2218138,4970
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,62,7982,Idaho Maryland Road,secondary,geometry,False,False,True,-121.053262175,39.2219616,4274
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,63,9693,Idaho Maryland Road,secondary,geometry,False,False,True,-121.05281459999999,39.22209036666667,4274
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,64,9694,Idaho Maryland Road,secondary,geometry,False,False,True,-121.05208089999999,39.22229635,4274
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,65,9707,Idaho Maryland Road,secondary,geometry,False,False,True,-121.053578075,39.221827375000004,4274
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,66,7981,East Main Street,secondary,geometry,False,False,True,-121.05393563333332,39.22216956666667,3849
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,67,9709,East Main Street,secondary,geometry,False,False,True,-121.05392834,39.22192916,3849
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,68,14238,East Main Street,secondary,geometry,False,False,True,-121.05392145,39.2218097,2695
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,69,14246,East Main Street,secondary,geometry,False,False,True,-121.053814725,39.221831449999996,2695
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,70,7758,East McKnight Way,secondary,geometry,False,False,True,-121.05909625000001,39.200590250000005,2467
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,71,7759,East McKnight Way,secondary,geometry,False,False,True,-121.05882865000001,39.2007011,2429
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,72,9706,East Main Street,secondary,geometry,False,False,True,-121.0538397875,39.222033887500004,2275
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,73,4899,South Auburn Street,secondary,geometry,False,False,True,-121.05988113333332,39.20176655,2274
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,74,731,East McKnight Way,secondary,geometry,False,False,True,-121.05956035,39.2003818,1206
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,75,8377,West McKnight Way,secondary,geometry,False,False,True,-121.0598943,39.2002176,1206
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,76,14540,East McKnight Way,secondary,geometry,False,False,True,-121.05922555000001,39.20054485,1206
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,77,9692,East Main Street,secondary,geometry,False,False,True,-121.0540881,39.2215286,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,78,14224,East Main Street,secondary,geometry,False,False,True,-121.05847123999999,39.2198668,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,79,14225,East Main Street,secondary,geometry,False,False,True,-121.05776565,39.2201011,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,80,14226,East Main Street,secondary,geometry,False,False,True,-121.05635115,39.2205994,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,81,14227,East Main Street,secondary,geometry,False,False,True,-121.05465065,39.221296699999996,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,82,14229,East Main Street,secondary,geometry,False,False,True,-121.059047,39.21970796666667,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,83,14242,East Main Street,secondary,geometry,False,False,True,-121.05375656666666,39.221564300000004,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,84,14243,East Main Street,secondary,geometry,False,False,True,-121.05363990000001,39.22162543333334,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,85,14244,East Main Street,secondary,geometry,False,False,True,-121.05363698000001,39.22172096,696
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,86,2914,La Barr Meadows Road,secondary,geometry,False,False,True,-121.05802807500001,39.200143600000004,200
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,87,2915,La Barr Meadows Road,secondary,geometry,False,False,True,-121.05839805,39.200557450000005,162
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,88,2916,La Barr Meadows Road,secondary,geometry,False,False,True,-121.05852780000001,39.2006888,162
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,10300,2638,Colfax Highway,16920,89,9662,,secondary,geometry,False,False,True,-121.05865934,39.20061226,38
