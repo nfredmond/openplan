@@ -59,6 +59,7 @@ Preferred bootstrap path:
 - `scripts/modeling/bootstrap_county_validation_onramp.py`
 - can either build a new county run or attach to an existing completed run via `--existing-run-dir`
 - can emit a JSON manifest for orchestration/backends via `--output-manifest`
+- manifest includes a simple stage label (`bootstrap-incomplete`, `runtime-complete`, `validation-scaffolded`, `validated-screening`) plus artifact paths and any available validation summary
 
 Direct scaffold-generation helper:
 - `scripts/modeling/generate_validation_scaffold.py`

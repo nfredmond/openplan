@@ -44,6 +44,32 @@ def write_manifest(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2))
 
 
+def read_json_if_exists(path: Path) -> dict | None:
+    if not path.exists():
+        return None
+    return json.loads(path.read_text())
+
+
+def derive_stage(run_summary: dict | None, validation_summary: dict | None) -> str:
+    if validation_summary:
+        status = ((validation_summary.get("screening_gate") or {}).get("status_label") or "").strip().lower()
+        if status == "bounded screening-ready":
+            return "validated-screening"
+        return "validation-scaffolded"
+    if run_summary:
+        return "runtime-complete"
+    return "bootstrap-incomplete"
+
+
+def get_nested(mapping: dict | None, *keys: str):
+    current = mapping
+    for key in keys:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
@@ -99,15 +125,23 @@ def main() -> int:
     ]
     run_cmd(scaffold_cmd, repo_root)
 
+    run_summary = read_json_if_exists(run_dir / "run_summary.json")
+    validation_summary = read_json_if_exists(run_dir / "validation" / "validation_summary.json")
+    bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
+
     manifest = {
         "name": args.name,
         "county_fips": args.county_fips,
         "county_prefix": args.county_prefix,
         "run_dir": str(run_dir),
         "mode": "existing-run" if args.existing_run_dir else "build-and-bootstrap",
+        "stage": derive_stage(run_summary, validation_summary),
         "artifacts": {
             "scaffold_csv": str(Path(args.output_csv).expanduser().resolve()),
             "review_packet_md": str(Path(args.output_md).expanduser().resolve()),
+            "run_summary_json": str((run_dir / 'run_summary.json').resolve()) if (run_dir / 'run_summary.json').exists() else None,
+            "bundle_manifest_json": str((run_dir / 'bundle_manifest.json').resolve()) if (run_dir / 'bundle_manifest.json').exists() else None,
+            "validation_summary_json": str((run_dir / 'validation' / 'validation_summary.json').resolve()) if (run_dir / 'validation' / 'validation_summary.json').exists() else None,
         },
         "runtime": {
             "keep_project": bool(args.keep_project),
@@ -117,6 +151,18 @@ def main() -> int:
             "hbw_scalar": args.hbw_scalar,
             "hbo_scalar": args.hbo_scalar,
             "nhb_scalar": args.nhb_scalar,
+        },
+        "summary": {
+            "run": {
+                "zone_count": get_nested(run_summary, "zones", "count") or get_nested(run_summary, "zone_count") or get_nested(run_summary, "zones"),
+                "population_total": get_nested(run_summary, "zones", "population_total") or get_nested(run_summary, "population_total"),
+                "jobs_total": get_nested(run_summary, "zones", "jobs_total") or get_nested(run_summary, "jobs_total"),
+                "loaded_links": get_nested(run_summary, "assignment", "loaded_links") or get_nested(run_summary, "loaded_links"),
+                "final_gap": get_nested(run_summary, "assignment", "convergence", "final_gap") or get_nested(run_summary, "final_gap"),
+                "total_trips": get_nested(run_summary, "demand", "total_trips") or get_nested(run_summary, "total_trips"),
+            },
+            "validation": validation_summary,
+            "bundle_validation": (bundle_manifest or {}).get("validation"),
         },
     }
     if args.output_manifest:
