@@ -6,6 +6,7 @@ import json
 import shlex
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -130,6 +131,8 @@ def main() -> int:
     bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
 
     manifest = {
+        "schema_version": "openplan.county_onramp_manifest.v1",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "name": args.name,
         "county_fips": args.county_fips,
         "county_prefix": args.county_prefix,

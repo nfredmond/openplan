@@ -17,6 +17,12 @@ If this is going to back a web workflow later, the fields need to be treated as 
 ## Current producer
 - `scripts/modeling/bootstrap_county_validation_onramp.py`
 
+## Current lightweight checker
+- `scripts/modeling/check_county_onramp_manifest.py`
+
+## Current JSON Schema artifact
+- `schemas/county_onramp_manifest.schema.json`
+
 ## Intended consumers
 Future examples:
 - Supabase run/job tables

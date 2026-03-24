@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openplan.local/schemas/county_onramp_manifest.schema.json",
+  "title": "OpenPlan County Onramp Manifest",
+  "description": "Machine-readable status object for county validation-onramp workflow.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "name",
+    "county_prefix",
+    "run_dir",
+    "mode",
+    "stage",
+    "artifacts",
+    "runtime",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "openplan.county_onramp_manifest.v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "county_fips": {
+      "type": ["string", "null"]
+    },
+    "county_prefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["build-and-bootstrap", "existing-run"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "bootstrap-incomplete",
+        "runtime-complete",
+        "validation-scaffolded",
+        "validated-screening"
+      ]
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "scaffold_csv",
+        "review_packet_md",
+        "run_summary_json",
+        "bundle_manifest_json",
+        "validation_summary_json"
+      ],
+      "properties": {
+        "scaffold_csv": { "type": "string" },
+        "review_packet_md": { "type": "string" },
+        "run_summary_json": { "type": ["string", "null"] },
+        "bundle_manifest_json": { "type": ["string", "null"] },
+        "validation_summary_json": { "type": ["string", "null"] }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "keep_project",
+        "force",
+        "overall_demand_scalar",
+        "external_demand_scalar",
+        "hbw_scalar",
+        "hbo_scalar",
+        "nhb_scalar"
+      ],
+      "properties": {
+        "keep_project": { "type": "boolean" },
+        "force": { "type": "boolean" },
+        "overall_demand_scalar": { "type": ["number", "null"] },
+        "external_demand_scalar": { "type": ["number", "null"] },
+        "hbw_scalar": { "type": ["number", "null"] },
+        "hbo_scalar": { "type": ["number", "null"] },
+        "nhb_scalar": { "type": ["number", "null"] }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["run", "validation", "bundle_validation"],
+      "properties": {
+        "run": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "zone_count",
+            "population_total",
+            "jobs_total",
+            "loaded_links",
+            "final_gap",
+            "total_trips"
+          ],
+          "properties": {
+            "zone_count": { "type": ["number", "null"] },
+            "population_total": { "type": ["number", "null"] },
+            "jobs_total": { "type": ["number", "null"] },
+            "loaded_links": { "type": ["number", "null"] },
+            "final_gap": { "type": ["number", "null"] },
+            "total_trips": { "type": ["number", "null"] }
+          }
+        },
+        "validation": {
+          "type": ["object", "null"],
+          "additionalProperties": true
+        },
+        "bundle_validation": {
+          "type": ["object", "null"],
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}
