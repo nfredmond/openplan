@@ -191,6 +191,9 @@ It lets the future app ask a county run:
 - what stage is it in,
 - and whether it has crossed into a truth-gated validation state.
 
+Related backend-mapping note:
+- `docs/ops/2026-03-24-openplan-county-onramp-backend-data-model.md`
+
 ## Bottom line
 The county onramp manifest should now be treated as a **backend contract draft**.
 
