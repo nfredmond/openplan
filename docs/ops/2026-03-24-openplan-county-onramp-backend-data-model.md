@@ -211,6 +211,9 @@ This data model is enough to support an early web flow like:
 
 That is a credible first bridge from today’s local modeling workflow to the eventual Vercel/Railway/Supabase product architecture.
 
+Related API outline:
+- `docs/ops/2026-03-24-openplan-county-onramp-api-outline.md`
+
 ## Bottom line
 The county onramp manifest is now mature enough to anchor a practical backend data model.
 
