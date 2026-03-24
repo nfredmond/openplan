@@ -182,7 +182,9 @@
     "evidence_packet": "run_output/evidence_packet.json",
     "validation_results": "validation/validation_results.csv",
     "validation_summary": "validation/validation_summary.json",
-    "validation_report": "validation/validation_report.md"
+    "validation_report": "validation/validation_report.md",
+    "validation_candidate_audit_json": "validation/validation_candidate_audit.json",
+    "validation_candidate_audit_csv": "validation/validation_candidate_audit.csv"
   },
   "project_retained": false,
   "caveats": [

@@ -289,20 +289,21 @@ def station_sort_key(row: dict[str, Any]) -> tuple[int, float]:
     return (0 if volume > 0 else 1, -volume)
 
 
-def find_best_model_link(
+def collect_station_candidates(
     station: dict[str, Any],
     features: list[dict[str, Any]],
     project_db: Path | None,
     volume_lookup: dict[int, dict[str, Any]],
     volume_field: str,
-) -> dict[str, Any] | None:
+) -> list[dict[str, Any]]:
     candidate_names = parse_candidate_names(station.get("candidate_model_names"))
     candidate_names_norm = {normalize_text(name) for name in candidate_names}
     facility_name_norm = normalize_text(station.get("facility_name"))
 
-    def score_matches(candidates: list[dict[str, Any]]) -> list[tuple[int, float, dict[str, Any]]]:
-        matches = []
-        for feature in candidates:
+    candidates: dict[int, dict[str, Any]] = {}
+
+    def ingest(source: str, rows: list[dict[str, Any]]) -> None:
+        for feature in rows:
             if not bbox_contains(station, feature["lon"], feature["lat"]):
                 continue
             feature_name_norm = normalize_text(feature.get("name"))
@@ -311,19 +312,46 @@ def find_best_model_link(
             if not exact_name_match and not facility_name_match:
                 continue
             match_score = 2 if exact_name_match else 1
-            matches.append((match_score, float(feature.get("volume") or 0), feature))
-        matches.sort(key=lambda item: (item[0], item[1]), reverse=True)
-        return matches
+            link_id = int(feature["link_id"])
+            candidate = {
+                "link_id": link_id,
+                "name": feature.get("name", ""),
+                "link_type": feature.get("link_type", ""),
+                "lon": feature.get("lon"),
+                "lat": feature.get("lat"),
+                "volume": float(feature.get("volume") or 0),
+                "source": source,
+                "exact_name_match": exact_name_match,
+                "facility_name_match": facility_name_match,
+                "match_score": match_score,
+            }
+            existing = candidates.get(link_id)
+            if existing is None or (candidate["match_score"], candidate["volume"], source == "project_db") > (
+                existing["match_score"],
+                existing["volume"],
+                existing["source"] == "project_db",
+            ):
+                candidates[link_id] = candidate
 
-    matches = score_matches(features)
-    if matches:
-        return matches[0][2]
+    ingest("geometry", features)
     if project_db is not None:
-        db_features = query_project_db_candidates(project_db, station, volume_lookup, volume_field)
-        matches = score_matches(db_features)
-        if matches:
-            return matches[0][2]
-    return None
+        ingest("project_db", query_project_db_candidates(project_db, station, volume_lookup, volume_field))
+
+    ordered = sorted(candidates.values(), key=lambda item: (item["match_score"], item["volume"]), reverse=True)
+    for idx, candidate in enumerate(ordered, start=1):
+        candidate["rank"] = idx
+    return ordered
+
+
+def find_best_model_link(
+    station: dict[str, Any],
+    features: list[dict[str, Any]],
+    project_db: Path | None,
+    volume_lookup: dict[int, dict[str, Any]],
+    volume_field: str,
+) -> dict[str, Any] | None:
+    candidates = collect_station_candidates(station, features, project_db, volume_lookup, volume_field)
+    return candidates[0] if candidates else None
 
 
 def safe_ratio(numerator: float, denominator: float) -> float | None:
@@ -488,6 +516,47 @@ def write_results_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
+def write_candidate_audit_json(path: Path, audit: list[dict[str, Any]]) -> None:
+    path.write_text(json.dumps(audit, indent=2))
+
+
+def write_candidate_audit_csv(path: Path, audit: list[dict[str, Any]]) -> None:
+    rows: list[dict[str, Any]] = []
+    for station in audit:
+        base = {
+            "station_id": station.get("station_id", ""),
+            "label": station.get("label", ""),
+            "observed_volume": station.get("observed_volume", ""),
+            "best_model_link_id": station.get("best_model_link_id", ""),
+            "best_model_link_name": station.get("best_model_link_name", ""),
+            "best_modeled_daily_pce": station.get("best_modeled_daily_pce", ""),
+        }
+        for candidate in station.get("candidates", []):
+            row = dict(base)
+            row.update(
+                {
+                    "candidate_rank": candidate.get("rank", ""),
+                    "candidate_link_id": candidate.get("link_id", ""),
+                    "candidate_name": candidate.get("name", ""),
+                    "candidate_link_type": candidate.get("link_type", ""),
+                    "candidate_source": candidate.get("source", ""),
+                    "candidate_exact_name_match": candidate.get("exact_name_match", False),
+                    "candidate_facility_name_match": candidate.get("facility_name_match", False),
+                    "candidate_lon": candidate.get("lon", ""),
+                    "candidate_lat": candidate.get("lat", ""),
+                    "candidate_modeled_daily_pce": int(round(float(candidate.get("volume") or 0))),
+                }
+            )
+            rows.append(row)
+    if not rows:
+        rows.append({"station_id": "", "label": "", "candidate_rank": ""})
+    fieldnames = list(rows[0].keys())
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dict[str, Any]]) -> None:
     lines = [
         "# Screening Validation Report",
@@ -569,9 +638,11 @@ def run_validation_bundle(
         stations = sorted(list(reader), key=station_sort_key)
 
     results: list[dict[str, Any]] = []
+    candidate_audit: list[dict[str, Any]] = []
     for station in stations:
         observed_volume = parse_float(station.get("observed_volume"))
-        best_model_link = find_best_model_link(station, features, project_db_path, volume_lookup, volume_field)
+        station_candidates = collect_station_candidates(station, features, project_db_path, volume_lookup, volume_field)
+        best_model_link = station_candidates[0] if station_candidates else None
         result = {
             "station_id": station.get("station_id", ""),
             "label": station.get("label", ""),
@@ -615,6 +686,23 @@ def run_validation_bundle(
                     "volume_ratio_model_obs": round(ratio, 4) if ratio is not None else "",
                 }
             )
+        candidate_audit.append(
+            {
+                "station_id": station.get("station_id", ""),
+                "label": station.get("label", ""),
+                "observed_volume": int(round(observed_volume)) if observed_volume is not None else "",
+                "best_model_link_id": result.get("model_link_id", ""),
+                "best_model_link_name": result.get("model_link_name", ""),
+                "best_modeled_daily_pce": result.get("modeled_daily_pce", ""),
+                "candidates": [
+                    {
+                        **candidate,
+                        "volume": int(round(float(candidate.get("volume") or 0))),
+                    }
+                    for candidate in station_candidates
+                ],
+            }
+        )
         results.append(result)
 
     summary = build_summary(
@@ -632,6 +720,8 @@ def run_validation_bundle(
     write_results_csv(output_dir / "validation_results.csv", results)
     (output_dir / "validation_summary.json").write_text(json.dumps(summary, indent=2))
     write_markdown_report(output_dir / "validation_report.md", summary, results)
+    write_candidate_audit_json(output_dir / "validation_candidate_audit.json", candidate_audit)
+    write_candidate_audit_csv(output_dir / "validation_candidate_audit.csv", candidate_audit)
     return summary
 
 

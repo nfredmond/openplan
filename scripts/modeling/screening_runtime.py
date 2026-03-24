@@ -949,6 +949,8 @@ def run_screening_model(
                 "validation_results": "validation/validation_results.csv",
                 "validation_summary": "validation/validation_summary.json",
                 "validation_report": "validation/validation_report.md",
+                "validation_candidate_audit_json": "validation/validation_candidate_audit.json",
+                "validation_candidate_audit_csv": "validation/validation_candidate_audit.csv",
             }
         )
         manifest["validation"] = {

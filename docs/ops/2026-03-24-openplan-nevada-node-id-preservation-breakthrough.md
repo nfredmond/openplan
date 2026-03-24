@@ -103,6 +103,27 @@ Now that centroid coverage is complete, the remaining Nevada issues look more li
 - possible over-allocation to the SR 174 / Colfax Highway facility,
 - and likely remaining gateway / connector realism issues near the western Nevada core.
 
+## D. Candidate-link audit shows SR 174 is not just a single-link validator accident
+The validation tooling was extended to emit a full candidate-link audit per station (`validation_candidate_audit.json` / `.csv`) instead of only storing the top selected link.
+
+That matters because the immediate question after the node-ID breakthrough was whether `SR 174 at Brunswick Rd` was still failing due to a coarse station-to-link match.
+
+Current evidence says **no, not primarily**.
+
+For `SR 174 at Brunswick Rd`, the candidate audit shows that multiple candidate `Colfax Highway` segments inside the station search box are all materially above the observed count of **10,300**. Representative modeled segment volumes include approximately:
+- **34,775**
+- **33,420**
+- **32,696**
+- **29,561**
+- **27,528**
+- **23,505**
+- **20,504**
+- even the lowest audited nearby candidate was still about **17,413**
+
+So the current problem is not just “the validator picked the wrong one of several close links.” The corridor itself is being over-assigned in that area.
+
+A similar pattern appears at `SR 20 at Jct Rte 49`: the selected `Golden Center Freeway` segment is high, but many nearby candidate freeway segments inside the station search area are also high. That points more to corridor-level loading distortion than a one-off bad match.
+
 ## Governing status after this breakthrough
 
 ### Internal status
