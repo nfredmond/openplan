@@ -158,6 +158,21 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
                     {item.statusLabel ? <StatusBadge tone={card.tone}>{item.statusLabel}</StatusBadge> : null}
+                    <StatusBadge
+                      tone={
+                        item.enqueueStatus === "queued_stub"
+                          ? "info"
+                          : item.enqueueStatus === "failed"
+                            ? "danger"
+                            : "neutral"
+                      }
+                    >
+                      {item.enqueueStatus === "queued_stub"
+                        ? "Enqueue Prepared"
+                        : item.enqueueStatus === "failed"
+                          ? "Enqueue Failed"
+                          : "Not Enqueued"}
+                    </StatusBadge>
                   </div>
                 </div>
               </CardHeader>
@@ -169,6 +184,21 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 <div>
                   <div className="font-medium text-foreground">Next action</div>
                   <p className="mt-1 text-muted-foreground">{card.nextAction}</p>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Execution status</div>
+                  <p className="mt-1 text-muted-foreground">
+                    {item.enqueueStatus === "queued_stub"
+                      ? "County bootstrap handoff is prepared for background execution."
+                      : item.enqueueStatus === "failed"
+                        ? "Most recent enqueue/bootstrap attempt failed and needs operator review."
+                        : "County run has not yet been prepared for background bootstrap."}
+                  </p>
+                  {item.lastEnqueuedAt ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Last enqueued {new Date(item.lastEnqueuedAt).toLocaleString()}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
