@@ -72,6 +72,8 @@ describe("county onramp presenters", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
+        enqueue_status: "not-enqueued",
+        last_enqueued_at: null,
         updated_at: "2026-03-24T23:00:00Z",
       })
     ).toEqual({
@@ -80,6 +82,8 @@ describe("county onramp presenters", () => {
       runName: "nevada-run",
       stage: "validated-screening",
       statusLabel: "bounded screening-ready",
+      enqueueStatus: "not-enqueued",
+      lastEnqueuedAt: null,
       updatedAt: "2026-03-24T23:00:00Z",
     });
   });

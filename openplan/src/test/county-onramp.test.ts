@@ -3,6 +3,9 @@ import {
   countyOnrampManifestSchema,
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
+  getCountyRunEnqueueHelpText,
+  getCountyRunEnqueueStatusLabel,
+  getCountyRunEnqueueStatusTone,
   getCountyRunStageLabel,
   getCountyRunStageTone,
 } from "@/lib/models/county-onramp";
@@ -145,6 +148,9 @@ describe("county onramp primitives", () => {
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");
     expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
     expect(getCountyRunCaveats("runtime-complete")).toContain("No local validation result yet.");
+    expect(getCountyRunEnqueueStatusLabel("queued_stub")).toBe("Enqueue Prepared");
+    expect(getCountyRunEnqueueStatusTone("failed")).toBe("danger");
+    expect(getCountyRunEnqueueHelpText("not-enqueued")).toContain("not yet been prepared");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
   });
 });

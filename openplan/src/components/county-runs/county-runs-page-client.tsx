@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
+import {
+  getCountyRunEnqueueHelpText,
+  getCountyRunEnqueueStatusLabel,
+  getCountyRunEnqueueStatusTone,
+} from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -150,6 +155,9 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             manifest: null,
             stage: item.stage,
           });
+          const enqueueLabel = getCountyRunEnqueueStatusLabel(item.enqueueStatus ?? "not-enqueued");
+          const enqueueTone = getCountyRunEnqueueStatusTone(item.enqueueStatus ?? "not-enqueued");
+          const enqueueHelp = getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
 
           return (
             <Card key={item.id}>
@@ -162,21 +170,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
                     {item.statusLabel ? <StatusBadge tone={card.tone}>{item.statusLabel}</StatusBadge> : null}
-                    <StatusBadge
-                      tone={
-                        item.enqueueStatus === "queued_stub"
-                          ? "info"
-                          : item.enqueueStatus === "failed"
-                            ? "danger"
-                            : "neutral"
-                      }
-                    >
-                      {item.enqueueStatus === "queued_stub"
-                        ? "Enqueue Prepared"
-                        : item.enqueueStatus === "failed"
-                          ? "Enqueue Failed"
-                          : "Not Enqueued"}
-                    </StatusBadge>
+                    <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
                   </div>
                 </div>
               </CardHeader>
@@ -191,13 +185,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 </div>
                 <div>
                   <div className="font-medium text-foreground">Execution status</div>
-                  <p className="mt-1 text-muted-foreground">
-                    {item.enqueueStatus === "queued_stub"
-                      ? "County bootstrap handoff is prepared for background execution."
-                      : item.enqueueStatus === "failed"
-                        ? "Most recent enqueue/bootstrap attempt failed and needs operator review."
-                        : "County run has not yet been prepared for background bootstrap."}
-                  </p>
+                  <p className="mt-1 text-muted-foreground">{enqueueHelp}</p>
                   {item.lastEnqueuedAt ? (
                     <p className="mt-1 text-xs text-muted-foreground">
                       Last enqueued {new Date(item.lastEnqueuedAt).toLocaleString()}

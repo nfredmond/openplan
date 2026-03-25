@@ -148,3 +148,39 @@ export function getCountyRunCaveats(stage: CountyRunStage): string[] {
   }
   return ["County onboarding job is still in progress."];
 }
+
+export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): string {
+  switch (status) {
+    case "queued_stub":
+      return "Enqueue Prepared";
+    case "failed":
+      return "Enqueue Failed";
+    case "not-enqueued":
+    default:
+      return "Not Enqueued";
+  }
+}
+
+export function getCountyRunEnqueueStatusTone(status: CountyRunEnqueueStatus): "neutral" | "info" | "danger" {
+  switch (status) {
+    case "queued_stub":
+      return "info";
+    case "failed":
+      return "danger";
+    case "not-enqueued":
+    default:
+      return "neutral";
+  }
+}
+
+export function getCountyRunEnqueueHelpText(status: CountyRunEnqueueStatus): string {
+  switch (status) {
+    case "queued_stub":
+      return "County bootstrap handoff is prepared for background execution.";
+    case "failed":
+      return "Most recent enqueue/bootstrap attempt failed and needs operator review.";
+    case "not-enqueued":
+    default:
+      return "County run has not yet been prepared for background bootstrap.";
+  }
+}

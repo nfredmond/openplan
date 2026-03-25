@@ -56,6 +56,18 @@ export function useCountyRuns(params: {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    if (!workspaceId || !refreshMs || refreshMs <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      void refresh();
+    }, refreshMs);
+
+    return () => window.clearInterval(timer);
+  }, [workspaceId, refreshMs, refresh]);
+
   return {
     data,
     items: data?.items ?? [],
@@ -96,6 +108,18 @@ export function useCountyRunDetail(countyRunId?: string, refreshMs?: number) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!countyRunId || !refreshMs || refreshMs <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      void refresh();
+    }, refreshMs);
+
+    return () => window.clearInterval(timer);
+  }, [countyRunId, refreshMs, refresh]);
 
   return {
     data,

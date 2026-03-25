@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
+import {
+  getCountyRunEnqueueHelpText,
+  getCountyRunEnqueueStatusLabel,
+  getCountyRunEnqueueStatusTone,
+} from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +59,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     stage: data.stage,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
+  const enqueueLabel = getCountyRunEnqueueStatusLabel(data.enqueueStatus);
+  const enqueueTone = getCountyRunEnqueueStatusTone(data.enqueueStatus);
+  const enqueueHelp = getCountyRunEnqueueHelpText(data.enqueueStatus);
+  const canEnqueue = data.enqueueStatus !== "queued_stub";
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
@@ -77,25 +86,26 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <div className="mt-5 flex flex-wrap gap-3">
           <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
           {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
-          <StatusBadge tone={data.enqueueStatus === "queued_stub" ? "info" : data.enqueueStatus === "failed" ? "danger" : "neutral"}>
-            {data.enqueueStatus === "queued_stub" ? "Enqueue Prepared" : data.enqueueStatus === "failed" ? "Enqueue Failed" : "Not Enqueued"}
-          </StatusBadge>
+          <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
           <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
-          <Button onClick={() => void runEnqueue()} disabled={actionLoading}>
-            Enqueue bootstrap
+          <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
+            {data.enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
           </Button>
           <Button asChild variant="outline">
             <Link href="/county-runs">Back to county runs</Link>
           </Button>
         </div>
-        {actionError ? <p className="mt-3 text-sm text-destructive">{actionError}</p> : null}
+        <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
+        {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
         {enqueueState ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Enqueue stub prepared. Callback: {enqueueState.manifestIngestUrl} · Manifest: {enqueueState.manifestPath}
-          </p>
+          <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
+            <div className="font-medium text-foreground">Enqueue stub prepared</div>
+            <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
+            <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
+          </div>
         ) : null}
       </div>
 
