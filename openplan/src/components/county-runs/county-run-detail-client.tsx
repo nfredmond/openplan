@@ -11,7 +11,7 @@ import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
-  const { data, loading, error, refresh } = useCountyRunDetail(countyRunId);
+  const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
     status: "queued_stub";

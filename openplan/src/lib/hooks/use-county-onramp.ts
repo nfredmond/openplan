@@ -17,8 +17,14 @@ import {
   listCountyRuns,
 } from "@/lib/api/county-onramp-client";
 
-export function useCountyRuns(params: { workspaceId?: string; stage?: string; geographyId?: string; limit?: number }) {
-  const { workspaceId, stage, geographyId, limit } = params;
+export function useCountyRuns(params: {
+  workspaceId?: string;
+  stage?: string;
+  geographyId?: string;
+  limit?: number;
+  refreshMs?: number;
+}) {
+  const { workspaceId, stage, geographyId, limit, refreshMs } = params;
   const [data, setData] = useState<CountyRunListResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +65,7 @@ export function useCountyRuns(params: { workspaceId?: string; stage?: string; ge
   };
 }
 
-export function useCountyRunDetail(countyRunId?: string) {
+export function useCountyRunDetail(countyRunId?: string, refreshMs?: number) {
   const [data, setData] = useState<CountyRunDetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

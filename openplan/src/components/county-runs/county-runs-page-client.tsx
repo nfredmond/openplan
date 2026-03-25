@@ -14,7 +14,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
-  const { items, loading, error, refresh } = useCountyRuns({ workspaceId, limit: 25 });
+  const { items, loading, error, refresh } = useCountyRuns({
+    workspaceId,
+    limit: 25,
+    refreshMs: 15000,
+  });
   const { create, loading: creating, error: createError } = useCountyRunMutations();
   const [countyFips, setCountyFips] = useState("");
   const [geographyLabel, setGeographyLabel] = useState("");
