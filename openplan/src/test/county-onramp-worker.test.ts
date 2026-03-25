@@ -1,0 +1,56 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildCountyOnrampWorkerPayload,
+  countyOnrampWorkerPayloadSchema,
+} from "@/lib/api/county-onramp-worker";
+
+describe("county onramp worker payload", () => {
+  it("builds a valid payload from a create request", () => {
+    const payload = buildCountyOnrampWorkerPayload({
+      origin: "https://openplan.example.com",
+      jobId: "123e4567-e89b-12d3-a456-426614174001",
+      countyRunId: "123e4567-e89b-12d3-a456-426614174002",
+      input: {
+        workspaceId: "123e4567-e89b-12d3-a456-426614174000",
+        geographyType: "county_fips",
+        geographyId: "06057",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-county-runtime-connectorbias2-20260324",
+        runtimeOptions: {
+          keepProject: true,
+          overallDemandScalar: 0.369,
+        },
+      },
+    });
+
+    expect(countyOnrampWorkerPayloadSchema.parse(payload)).toBeTruthy();
+    expect(payload.countyPrefix).toBe("NEVADA");
+    expect(payload.runtimeOptions.keepProject).toBe(true);
+    expect(payload.runtimeOptions.force).toBe(true);
+    expect(payload.runtimeOptions.overallDemandScalar).toBe(0.369);
+    expect(payload.callback.manifestIngestUrl).toBe(
+      "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174002/manifest"
+    );
+    expect(payload.artifactTargets.manifestPath).toContain("nevada-county-runtime-connectorbias2-20260324.manifest.json");
+  });
+
+  it("uses explicit county prefixes when provided", () => {
+    const payload = buildCountyOnrampWorkerPayload({
+      origin: "https://openplan.example.com/",
+      jobId: "123e4567-e89b-12d3-a456-426614174011",
+      countyRunId: "123e4567-e89b-12d3-a456-426614174012",
+      input: {
+        workspaceId: "123e4567-e89b-12d3-a456-426614174010",
+        geographyType: "county_fips",
+        geographyId: "06061",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-county-runtime-connectorbias2-20260324",
+        countyPrefix: "PLACER",
+        runtimeOptions: {},
+      },
+    });
+
+    expect(payload.countyPrefix).toBe("PLACER");
+    expect(payload.artifactTargets.scaffoldCsvPath).toContain("pilot-placer-county/validation/placer_priority_count_scaffold_auto.csv");
+  });
+});
