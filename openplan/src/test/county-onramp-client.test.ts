@@ -1,0 +1,181 @@
+import { describe, expect, it, vi } from "vitest";
+import {
+  createCountyRun,
+  getCountyRunDetail,
+  ingestCountyRunManifest,
+  listCountyRuns,
+} from "@/lib/api/county-onramp-client";
+
+const manifest = {
+  schema_version: "openplan.county_onramp_manifest.v1",
+  generated_at: "2026-03-24T23:00:00Z",
+  name: "nevada-run",
+  county_fips: "06057",
+  county_prefix: "NEVADA",
+  run_dir: "/tmp/nevada",
+  mode: "existing-run",
+  stage: "validated-screening",
+  artifacts: {
+    scaffold_csv: "/tmp/scaffold.csv",
+    review_packet_md: "/tmp/review.md",
+    run_summary_json: "/tmp/run_summary.json",
+    bundle_manifest_json: "/tmp/bundle_manifest.json",
+    validation_summary_json: "/tmp/validation_summary.json",
+  },
+  runtime: {
+    keep_project: true,
+    force: false,
+    overall_demand_scalar: 0.369,
+    external_demand_scalar: null,
+    hbw_scalar: null,
+    hbo_scalar: null,
+    nhb_scalar: null,
+  },
+  summary: {
+    run: {
+      zone_count: 26,
+      population_total: 102345,
+      jobs_total: 45678,
+      loaded_links: 3174,
+      final_gap: 0.0091,
+      total_trips: 231828.75,
+    },
+    validation: {
+      screening_gate: {
+        status_label: "bounded screening-ready",
+      },
+      metrics: {
+        median_absolute_percent_error: 16.01,
+        max_absolute_percent_error: 49.48,
+      },
+    },
+    bundle_validation: {
+      status_label: "bounded screening-ready",
+    },
+  },
+} as const;
+
+describe("county onramp client helpers", () => {
+  it("lists county runs", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          items: [
+            {
+              id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              geographyLabel: "Nevada County, CA",
+              runName: "nevada-run",
+              stage: "validated-screening",
+              statusLabel: "bounded screening-ready",
+              updatedAt: "2026-03-24T23:00:00Z",
+            },
+          ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    );
+
+    const result = await listCountyRuns({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      fetcher: fetcher as typeof fetch,
+    });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      "/api/county-runs?workspaceId=11111111-1111-4111-8111-111111111111",
+      expect.objectContaining({ method: "GET" })
+    );
+    expect(result.items).toHaveLength(1);
+  });
+
+  it("creates a county run", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          stage: "bootstrap-incomplete",
+          runName: "placer-run",
+        }),
+        { status: 201, headers: { "content-type": "application/json" } }
+      )
+    );
+
+    const result = await createCountyRun(
+      {
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        geographyType: "county_fips",
+        geographyId: "06061",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+        runtimeOptions: { keepProject: true },
+      },
+      fetcher as typeof fetch
+    );
+
+    expect(result.stage).toBe("bootstrap-incomplete");
+    expect(fetcher).toHaveBeenCalledWith(
+      "/api/county-runs",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("loads county run detail and ingests manifests", async () => {
+    const detailPayload = {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      geographyType: "county_fips",
+      geographyId: "06057",
+      geographyLabel: "Nevada County, CA",
+      runName: "nevada-run",
+      stage: "validated-screening",
+      statusLabel: "bounded screening-ready",
+      manifest,
+      artifacts: [{ artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" }],
+      validationSummary: { screening_gate: { status_label: "bounded screening-ready" } },
+    };
+
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", status: "failed" }), {
+          status: 202,
+          headers: { "content-type": "application/json" },
+        })
+      );
+
+    const detail = await getCountyRunDetail("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
+    expect(detail.stage).toBe("validated-screening");
+
+    const completed = await ingestCountyRunManifest(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      { status: "completed", manifest },
+      fetcher as typeof fetch
+    );
+    expect("stage" in completed && completed.stage).toBe("validated-screening");
+
+    const failed = await ingestCountyRunManifest(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      { status: "failed", error: { message: "Worker crashed" } },
+      fetcher as typeof fetch
+    );
+    expect(failed).toEqual({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", status: "failed" });
+  });
+
+  it("throws friendly errors for non-ok responses", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Failed to load county runs" }), {
+        status: 500,
+        headers: { "content-type": "application/json" },
+      })
+    );
+
+    await expect(
+      listCountyRuns({ workspaceId: "11111111-1111-4111-8111-111111111111", fetcher: fetcher as typeof fetch })
+    ).rejects.toThrow("Failed to load county runs");
+  });
+});
