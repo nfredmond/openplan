@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { useCountyRunDetail } from "@/lib/hooks/use-county-onramp";
+import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId);
+  const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const [enqueueState, setEnqueueState] = useState<{
+    status: "queued_stub";
+    manifestIngestUrl: string;
+    manifestPath: string;
+  } | null>(null);
 
   if (error) {
     return (
@@ -48,6 +55,17 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
 
+  const runEnqueue = async () => {
+    const result = await enqueue(countyRunId);
+    if (result?.status === "queued_stub") {
+      setEnqueueState({
+        status: result.status,
+        manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
+        manifestPath: result.workerPayload.artifactTargets.manifestPath,
+      });
+    }
+  };
+
   return (
     <section className="module-page pb-10">
       <div className="module-intro-card">
@@ -63,10 +81,19 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
+          <Button onClick={() => void runEnqueue()} disabled={actionLoading}>
+            Enqueue bootstrap
+          </Button>
           <Button asChild variant="outline">
             <Link href="/county-runs">Back to county runs</Link>
           </Button>
         </div>
+        {actionError ? <p className="mt-3 text-sm text-destructive">{actionError}</p> : null}
+        {enqueueState ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Enqueue stub prepared. Callback: {enqueueState.manifestIngestUrl} · Manifest: {enqueueState.manifestPath}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">

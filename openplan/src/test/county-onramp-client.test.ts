@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createCountyRun,
+  enqueueCountyRun,
   getCountyRunDetail,
   ingestCountyRunManifest,
   listCountyRuns,
@@ -118,7 +119,7 @@ describe("county onramp client helpers", () => {
     );
   });
 
-  it("loads county run detail and ingests manifests", async () => {
+  it("loads county run detail, enqueues runs, and ingests manifests", async () => {
     const detailPayload = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       workspaceId: "11111111-1111-4111-8111-111111111111",
@@ -139,6 +140,42 @@ describe("county onramp client helpers", () => {
         new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
       )
       .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            status: "queued_stub",
+            workerPayload: {
+              jobId: "123e4567-e89b-12d3-a456-426614174999",
+              countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              workspaceId: "11111111-1111-4111-8111-111111111111",
+              runName: "nevada-run",
+              geographyType: "county_fips",
+              geographyId: "06057",
+              geographyLabel: "Nevada County, CA",
+              countyPrefix: "NEVADA",
+              runtimeOptions: {
+                keepProject: true,
+                force: true,
+                overallDemandScalar: 0.369,
+                externalDemandScalar: null,
+                hbwScalar: null,
+                hboScalar: null,
+                nhbScalar: null,
+              },
+              artifactTargets: {
+                scaffoldCsvPath: "/tmp/scaffold.csv",
+                reviewPacketMdPath: "/tmp/review.md",
+                manifestPath: "/tmp/manifest.json",
+              },
+              callback: {
+                manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+              },
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      )
+      .mockResolvedValueOnce(
         new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
       )
       .mockResolvedValueOnce(
@@ -150,6 +187,9 @@ describe("county onramp client helpers", () => {
 
     const detail = await getCountyRunDetail("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(detail.stage).toBe("validated-screening");
+
+    const enqueued = await enqueueCountyRun("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
+    expect(enqueued.status).toBe("queued_stub");
 
     const completed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

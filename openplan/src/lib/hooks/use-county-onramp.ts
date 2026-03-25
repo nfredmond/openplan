@@ -6,10 +6,12 @@ import type {
   CountyRunListResponse,
   CreateCountyRunRequest,
   CreateCountyRunResponse,
+  EnqueueCountyRunResponse,
   IngestCountyRunManifestRequest,
 } from "@/lib/api/county-onramp";
 import {
   createCountyRun,
+  enqueueCountyRun,
   getCountyRunDetail,
   ingestCountyRunManifest,
   listCountyRuns,
@@ -115,6 +117,20 @@ export function useCountyRunMutations() {
     }
   }, []);
 
+  const enqueue = useCallback(async (countyRunId: string): Promise<EnqueueCountyRunResponse | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await enqueueCountyRun(countyRunId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to enqueue county run";
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const ingestManifest = useCallback(
     async (
       countyRunId: string,
@@ -139,6 +155,7 @@ export function useCountyRunMutations() {
     loading,
     error,
     create,
+    enqueue,
     ingestManifest,
   };
 }

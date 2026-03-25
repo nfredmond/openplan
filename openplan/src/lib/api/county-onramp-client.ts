@@ -3,11 +3,13 @@ import {
   countyRunListResponseSchema,
   createCountyRunRequestSchema,
   createCountyRunResponseSchema,
+  enqueueCountyRunResponseSchema,
   ingestCountyRunManifestRequestSchema,
   type CountyRunDetailResponse,
   type CountyRunListResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
+  type EnqueueCountyRunResponse,
   type IngestCountyRunManifestRequest,
 } from "@/lib/api/county-onramp";
 
@@ -73,6 +75,18 @@ export async function getCountyRunDetail(
   });
 
   return countyRunDetailResponseSchema.parse(await parseJson(response));
+}
+
+export async function enqueueCountyRun(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<EnqueueCountyRunResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/enqueue`, {
+    method: "POST",
+    headers: { accept: "application/json" },
+  });
+
+  return enqueueCountyRunResponseSchema.parse(await parseJson(response));
 }
 
 export async function ingestCountyRunManifest(

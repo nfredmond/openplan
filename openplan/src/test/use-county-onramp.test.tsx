@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const listCountyRunsMock = vi.fn();
 const getCountyRunDetailMock = vi.fn();
 const createCountyRunMock = vi.fn();
+const enqueueCountyRunMock = vi.fn();
 const ingestCountyRunManifestMock = vi.fn();
 
 vi.mock("@/lib/api/county-onramp-client", () => ({
   listCountyRuns: (...args: unknown[]) => listCountyRunsMock(...args),
   getCountyRunDetail: (...args: unknown[]) => getCountyRunDetailMock(...args),
   createCountyRun: (...args: unknown[]) => createCountyRunMock(...args),
+  enqueueCountyRun: (...args: unknown[]) => enqueueCountyRunMock(...args),
   ingestCountyRunManifest: (...args: unknown[]) => ingestCountyRunManifestMock(...args),
 }));
 
@@ -71,6 +73,14 @@ describe("useCountyOnramp hooks", () => {
       stage: "bootstrap-incomplete",
       runName: "placer-run",
     });
+    enqueueCountyRunMock.mockResolvedValue({
+      countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      status: "queued_stub",
+      workerPayload: {
+        countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        callback: { manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest" },
+      },
+    });
     ingestCountyRunManifestMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       status: "failed",
@@ -91,6 +101,16 @@ describe("useCountyOnramp hooks", () => {
     });
 
     expect(createResult).toMatchObject({ runName: "placer-run" });
+
+    let enqueueResult;
+    await act(async () => {
+      enqueueResult = await result.current.enqueue("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    });
+
+    expect(enqueueResult).toMatchObject({
+      countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      status: "queued_stub",
+    });
 
     let ingestResult;
     await act(async () => {
