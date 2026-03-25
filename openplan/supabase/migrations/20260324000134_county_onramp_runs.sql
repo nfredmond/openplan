@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS county_runs (
     stage IN ('bootstrap-incomplete', 'runtime-complete', 'validation-scaffolded', 'validated-screening')
   ),
   status_label TEXT,
+  enqueue_status TEXT NOT NULL DEFAULT 'not-enqueued' CHECK (
+    enqueue_status IN ('not-enqueued', 'queued_stub', 'failed')
+  ),
+  last_enqueued_at TIMESTAMPTZ,
   mode TEXT NOT NULL DEFAULT 'build-and-bootstrap' CHECK (mode IN ('build-and-bootstrap', 'existing-run')),
   requested_runtime_json JSONB NOT NULL DEFAULT '{}'::jsonb,
   manifest_json JSONB NOT NULL DEFAULT '{}'::jsonb,

@@ -70,6 +70,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
       input: storedRequest.data,
     });
 
+    const { error: updateError } = await supabase
+      .from("county_runs")
+      .update({
+        enqueue_status: "queued_stub",
+        last_enqueued_at: new Date().toISOString(),
+      })
+      .eq("id", parsedParams.data.countyRunId);
+
+    if (updateError) {
+      audit.error("county_run_enqueue_update_failed", {
+        message: updateError.message,
+        code: updateError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to persist county enqueue state" }, { status: 500 });
+    }
+
     const response = enqueueCountyRunResponseSchema.parse({
       countyRunId: parsedParams.data.countyRunId,
       status: "queued_stub",

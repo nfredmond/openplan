@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("county_runs")
-      .select("id, geography_label, geography_id, run_name, stage, status_label, updated_at")
+      .select("id, geography_label, geography_id, run_name, stage, status_label, enqueue_status, last_enqueued_at, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(limit);
@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
           run_name: row.run_name,
           stage: row.stage,
           status_label: row.status_label,
+          enqueue_status: row.enqueue_status,
+          last_enqueued_at: row.last_enqueued_at,
           updated_at: row.updated_at,
         })
       ),
@@ -133,6 +135,8 @@ export async function POST(request: NextRequest) {
         run_name: runName,
         stage: "bootstrap-incomplete",
         status_label: null,
+        enqueue_status: "not-enqueued",
+        last_enqueued_at: null,
         mode: "build-and-bootstrap",
         requested_runtime_json: normalizedRequest,
         manifest_json: {},

@@ -77,6 +77,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <div className="mt-5 flex flex-wrap gap-3">
           <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
           {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
+          <StatusBadge tone={data.enqueueStatus === "queued_stub" ? "info" : data.enqueueStatus === "failed" ? "danger" : "neutral"}>
+            {data.enqueueStatus === "queued_stub" ? "Enqueue Prepared" : data.enqueueStatus === "failed" ? "Enqueue Failed" : "Not Enqueued"}
+          </StatusBadge>
           <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCcw className="h-4 w-4" />
             Refresh

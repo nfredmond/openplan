@@ -57,6 +57,10 @@ export const countyOnrampValidationSummarySchema = z
   })
   .passthrough();
 
+export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "queued_stub", "failed"]);
+
+export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
+
 export const countyOnrampManifestSchema = z.object({
   schema_version: z.literal("openplan.county_onramp_manifest.v1"),
   generated_at: z.string(),

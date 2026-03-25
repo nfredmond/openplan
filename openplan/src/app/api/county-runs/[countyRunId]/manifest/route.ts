@@ -26,6 +26,8 @@ type CountyRunRow = {
   run_name: string;
   stage: "bootstrap-incomplete" | "runtime-complete" | "validation-scaffolded" | "validated-screening";
   status_label: string | null;
+  enqueue_status?: "not-enqueued" | "queued_stub" | "failed" | null;
+  last_enqueued_at?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, requested_runtime_json, manifest_json, validation_summary_json")
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, manifest_json, validation_summary_json")
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
 
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         validation_summary_json: nextRecord.validation_summary_json,
       })
       .eq("id", existingRow.id)
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, requested_runtime_json, manifest_json, validation_summary_json")
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, manifest_json, validation_summary_json")
       .single();
 
     if (updateError || !updatedRows) {

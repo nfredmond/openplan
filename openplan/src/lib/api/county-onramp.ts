@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { countyOnrampManifestSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
+import { countyOnrampManifestSchema, countyRunEnqueueStatusSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
 import { countyOnrampWorkerPayloadSchema } from "@/lib/api/county-onramp-worker";
 
 export const countyRuntimeOptionsSchema = z.object({
@@ -35,6 +35,8 @@ export const countyRunListItemSchema = z.object({
   runName: z.string().min(1),
   stage: countyRunStageSchema,
   statusLabel: z.string().nullable().optional(),
+  enqueueStatus: countyRunEnqueueStatusSchema.optional(),
+  lastEnqueuedAt: z.string().nullable().optional(),
   updatedAt: z.string(),
 });
 
@@ -56,6 +58,8 @@ export const countyRunDetailResponseSchema = z.object({
   runName: z.string().min(1),
   stage: countyRunStageSchema,
   statusLabel: z.string().nullable().optional(),
+  enqueueStatus: countyRunEnqueueStatusSchema.optional(),
+  lastEnqueuedAt: z.string().nullable().optional(),
   workerPayload: countyOnrampWorkerPayloadSchema.nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),

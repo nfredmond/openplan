@@ -22,6 +22,8 @@ export type CountyRunRowLike = {
   run_name: string;
   stage: CountyRunStage;
   status_label: string | null;
+  enqueue_status?: "not-enqueued" | "queued_stub" | "failed" | null;
+  last_enqueued_at?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
@@ -45,6 +47,8 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     runName: row.run_name,
     stage: row.stage,
     statusLabel: row.status_label,
+    enqueueStatus: row.enqueue_status ?? "not-enqueued",
+    lastEnqueuedAt: row.last_enqueued_at ?? null,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }
@@ -83,6 +87,8 @@ export function presentCountyRunDetail(params: {
     runName: row.run_name,
     stage: row.stage,
     statusLabel: row.status_label,
+    enqueueStatus: row.enqueue_status ?? "not-enqueued",
+    lastEnqueuedAt: row.last_enqueued_at ?? null,
     workerPayload,
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),

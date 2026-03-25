@@ -55,6 +55,8 @@ describe("GET /api/county-runs/[countyRunId]", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
+        enqueue_status: "queued_stub",
+        last_enqueued_at: "2026-03-24T23:05:00Z",
         requested_runtime_json: {
           workspaceId: "11111111-1111-4111-8111-111111111111",
           geographyType: "county_fips",
@@ -166,6 +168,8 @@ describe("GET /api/county-runs/[countyRunId]", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validated-screening");
     expect(payload.statusLabel).toBe("bounded screening-ready");
+    expect(payload.enqueueStatus).toBe("queued_stub");
+    expect(payload.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.artifacts).toEqual([
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },

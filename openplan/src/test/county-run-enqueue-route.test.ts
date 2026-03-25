@@ -8,6 +8,8 @@ const fromMock = vi.fn();
 const countyRunSelectMock = vi.fn();
 const countyRunEqMock = vi.fn();
 const countyRunMaybeSingleMock = vi.fn();
+const countyRunUpdateMock = vi.fn();
+const countyRunUpdateEqMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -67,10 +69,12 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     });
     countyRunEqMock.mockReturnValue({ maybeSingle: countyRunMaybeSingleMock });
     countyRunSelectMock.mockReturnValue({ eq: countyRunEqMock });
+    countyRunUpdateEqMock.mockResolvedValue({ error: null });
+    countyRunUpdateMock.mockReturnValue({ eq: countyRunUpdateEqMock });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
-        return { select: countyRunSelectMock };
+        return { select: countyRunSelectMock, update: countyRunUpdateMock };
       }
       throw new Error(`Unexpected table: ${table}`);
     });
@@ -92,6 +96,12 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.workerPayload.callback.manifestIngestUrl).toBe(
       "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest"
+    );
+    expect(countyRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enqueue_status: "queued_stub",
+        last_enqueued_at: expect.any(String),
+      })
     );
   });
 
