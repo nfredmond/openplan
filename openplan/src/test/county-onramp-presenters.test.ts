@@ -104,14 +104,35 @@ describe("county onramp presenters", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
+        requested_runtime_json: {
+          workspaceId: "123e4567-e89b-12d3-a456-426614174001",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "nevada-run",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            overallDemandScalar: 0.369,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+        },
         manifest_json: manifest,
         validation_summary_json: { screening_gate: { status_label: "bounded screening-ready" } },
       },
       artifacts: [{ artifact_type: "validation_scaffold_csv", path: "/tmp/scaffold.csv" }],
+      origin: "https://openplan.example.com",
     });
 
     expect(detail.geographyLabel).toBe("Nevada County, CA");
     expect(detail.manifest?.stage).toBe("validated-screening");
+    expect(detail.workerPayload?.callback.manifestIngestUrl).toBe(
+      "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174000/manifest"
+    );
     expect(detail.artifacts).toEqual([{ artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" }]);
     expect(detail.validationSummary).toEqual({ screening_gate: { status_label: "bounded screening-ready" } });
   });

@@ -111,6 +111,23 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         run_name: "old-run",
         stage: "bootstrap-incomplete",
         status_label: null,
+        requested_runtime_json: {
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "old-run",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            overallDemandScalar: 0.369,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+        },
         manifest_json: {},
         validation_summary_json: {},
       },
@@ -129,6 +146,23 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         run_name: manifest.name,
         stage: "validated-screening",
         status_label: "bounded screening-ready",
+        requested_runtime_json: {
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "nevada-county-runtime-scalar0369-connectorbias2-20260324",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            overallDemandScalar: 0.369,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+        },
         manifest_json: manifest,
         validation_summary_json: manifest.summary.validation,
       },
@@ -181,6 +215,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validated-screening");
     expect(payload.statusLabel).toBe("bounded screening-ready");
+    expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.manifest.stage).toBe("validated-screening");
     expect(payload.artifacts).toEqual([
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },

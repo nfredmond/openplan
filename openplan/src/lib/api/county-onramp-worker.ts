@@ -1,6 +1,24 @@
 import { z } from "zod";
 import type { CreateCountyRunRequest } from "@/lib/api/county-onramp";
 
+export const storedCountyOnrampRequestSchema = z.object({
+  workspaceId: z.string().uuid(),
+  geographyType: z.literal("county_fips"),
+  geographyId: z.string().min(1),
+  geographyLabel: z.string().min(1),
+  runName: z.string().min(1),
+  countyPrefix: z.string().min(1),
+  runtimeOptions: z.object({
+    keepProject: z.boolean(),
+    force: z.boolean(),
+    overallDemandScalar: z.number().nullable(),
+    externalDemandScalar: z.number().nullable(),
+    hbwScalar: z.number().nullable(),
+    hboScalar: z.number().nullable(),
+    nhbScalar: z.number().nullable(),
+  }),
+});
+
 export const countyOnrampWorkerPayloadSchema = z.object({
   jobId: z.string().uuid(),
   countyRunId: z.string().uuid(),
@@ -29,6 +47,7 @@ export const countyOnrampWorkerPayloadSchema = z.object({
   }),
 });
 
+export type StoredCountyOnrampRequest = z.infer<typeof storedCountyOnrampRequestSchema>;
 export type CountyOnrampWorkerPayload = z.infer<typeof countyOnrampWorkerPayloadSchema>;
 
 function defaultCountyPrefix(input: CreateCountyRunRequest): string {
@@ -42,14 +61,34 @@ function defaultCountyPrefix(input: CreateCountyRunRequest): string {
   return firstToken.toUpperCase();
 }
 
-export function buildCountyOnrampWorkerPayload(params: {
+export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): StoredCountyOnrampRequest {
+  return storedCountyOnrampRequestSchema.parse({
+    workspaceId: input.workspaceId,
+    geographyType: input.geographyType,
+    geographyId: input.geographyId,
+    geographyLabel: input.geographyLabel,
+    runName: input.runName,
+    countyPrefix: defaultCountyPrefix(input),
+    runtimeOptions: {
+      keepProject: input.runtimeOptions.keepProject ?? true,
+      force: input.runtimeOptions.force ?? true,
+      overallDemandScalar: input.runtimeOptions.overallDemandScalar ?? null,
+      externalDemandScalar: input.runtimeOptions.externalDemandScalar ?? null,
+      hbwScalar: input.runtimeOptions.hbwScalar ?? null,
+      hboScalar: input.runtimeOptions.hboScalar ?? null,
+      nhbScalar: input.runtimeOptions.nhbScalar ?? null,
+    },
+  });
+}
+
+export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
   origin: string;
   jobId: string;
   countyRunId: string;
-  input: CreateCountyRunRequest;
+  input: StoredCountyOnrampRequest;
 }): CountyOnrampWorkerPayload {
   const { origin, jobId, countyRunId, input } = params;
-  const countyPrefix = defaultCountyPrefix(input);
+  const countyPrefix = input.countyPrefix;
   const runSlug = input.runName;
   const artifactBase = input.geographyId.toLowerCase().includes("06061")
     ? "data/pilot-placer-county/validation"
@@ -64,15 +103,7 @@ export function buildCountyOnrampWorkerPayload(params: {
     geographyId: input.geographyId,
     geographyLabel: input.geographyLabel,
     countyPrefix,
-    runtimeOptions: {
-      keepProject: input.runtimeOptions.keepProject ?? true,
-      force: input.runtimeOptions.force ?? true,
-      overallDemandScalar: input.runtimeOptions.overallDemandScalar ?? null,
-      externalDemandScalar: input.runtimeOptions.externalDemandScalar ?? null,
-      hbwScalar: input.runtimeOptions.hbwScalar ?? null,
-      hboScalar: input.runtimeOptions.hboScalar ?? null,
-      nhbScalar: input.runtimeOptions.nhbScalar ?? null,
-    },
+    runtimeOptions: input.runtimeOptions,
     artifactTargets: {
       scaffoldCsvPath: `${artifactBase}/${countyPrefix.toLowerCase()}_priority_count_scaffold_auto.csv`,
       reviewPacketMdPath: `docs/ops/${runSlug}-validation-review-packet.md`,
@@ -81,5 +112,19 @@ export function buildCountyOnrampWorkerPayload(params: {
     callback: {
       manifestIngestUrl: `${origin.replace(/\/$/, "")}/api/county-runs/${countyRunId}/manifest`,
     },
+  });
+}
+
+export function buildCountyOnrampWorkerPayload(params: {
+  origin: string;
+  jobId: string;
+  countyRunId: string;
+  input: CreateCountyRunRequest;
+}): CountyOnrampWorkerPayload {
+  return buildCountyOnrampWorkerPayloadFromStoredRequest({
+    origin: params.origin,
+    jobId: params.jobId,
+    countyRunId: params.countyRunId,
+    input: normalizeCountyOnrampRequest(params.input),
   });
 }

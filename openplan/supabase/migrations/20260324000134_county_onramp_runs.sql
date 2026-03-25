@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS county_runs (
   ),
   status_label TEXT,
   mode TEXT NOT NULL DEFAULT 'build-and-bootstrap' CHECK (mode IN ('build-and-bootstrap', 'existing-run')),
+  requested_runtime_json JSONB NOT NULL DEFAULT '{}'::jsonb,
   manifest_json JSONB NOT NULL DEFAULT '{}'::jsonb,
   run_summary_json JSONB NOT NULL DEFAULT '{}'::jsonb,
   validation_summary_json JSONB NOT NULL DEFAULT '{}'::jsonb,

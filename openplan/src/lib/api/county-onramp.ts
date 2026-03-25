@@ -56,6 +56,7 @@ export const countyRunDetailResponseSchema = z.object({
   runName: z.string().min(1),
   stage: countyRunStageSchema,
   statusLabel: z.string().nullable().optional(),
+  workerPayload: countyOnrampWorkerPayloadSchema.nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),
   validationSummary: z.record(z.string(), z.unknown()).nullable().optional(),

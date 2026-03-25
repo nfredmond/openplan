@@ -1,4 +1,5 @@
 import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
+import type { StoredCountyOnrampRequest } from "@/lib/api/county-onramp-worker";
 
 export type CountyRunRecordInput = {
   workspace_id: string;
@@ -9,6 +10,7 @@ export type CountyRunRecordInput = {
   stage: CountyOnrampManifest["stage"];
   status_label: string | null;
   mode: CountyOnrampManifest["mode"];
+  requested_runtime_json?: StoredCountyOnrampRequest | Record<string, unknown>;
   manifest_json: CountyOnrampManifest;
   run_summary_json: Record<string, unknown>;
   validation_summary_json: Record<string, unknown>;

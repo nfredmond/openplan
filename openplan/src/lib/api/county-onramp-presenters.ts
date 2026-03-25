@@ -3,6 +3,10 @@ import {
   type CountyOnrampManifest,
   type CountyRunStage,
 } from "@/lib/models/county-onramp";
+import {
+  buildCountyOnrampWorkerPayloadFromStoredRequest,
+  storedCountyOnrampRequestSchema,
+} from "@/lib/api/county-onramp-worker";
 import type {
   CountyRunArtifact,
   CountyRunDetailResponse,
@@ -18,6 +22,7 @@ export type CountyRunRowLike = {
   run_name: string;
   stage: CountyRunStage;
   status_label: string | null;
+  requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
   updated_at?: string | null;
@@ -54,9 +59,20 @@ export function presentCountyRunArtifact(row: CountyRunArtifactRowLike): CountyR
 export function presentCountyRunDetail(params: {
   row: CountyRunRowLike;
   artifacts: CountyRunArtifactRowLike[];
+  origin?: string;
 }): CountyRunDetailResponse {
-  const { row, artifacts } = params;
+  const { row, artifacts, origin } = params;
   const manifest = parseCountyOnrampManifest(row.manifest_json);
+  const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
+  const workerPayload =
+    origin && storedRequest.success
+      ? buildCountyOnrampWorkerPayloadFromStoredRequest({
+          origin,
+          jobId: crypto.randomUUID(),
+          countyRunId: row.id,
+          input: storedRequest.data,
+        })
+      : null;
 
   return {
     id: row.id,
@@ -67,6 +83,7 @@ export function presentCountyRunDetail(params: {
     runName: row.run_name,
     stage: row.stage,
     statusLabel: row.status_label,
+    workerPayload,
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),
     validationSummary: row.validation_summary_json ?? null,

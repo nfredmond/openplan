@@ -156,6 +156,9 @@ describe("/api/county-runs route", () => {
         geography_id: "06061",
         run_name: "placer-run",
         stage: "bootstrap-incomplete",
+        requested_runtime_json: expect.objectContaining({
+          countyPrefix: "PLACER",
+        }),
       })
     );
   });

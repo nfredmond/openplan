@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
       .select(
-        "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, manifest_json, validation_summary_json"
+        "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, requested_runtime_json, manifest_json, validation_summary_json"
       )
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const response = presentCountyRunDetail({
       row: countyRun,
       artifacts: (artifacts ?? []) as { artifact_type: string; path: string }[],
+      origin: new URL(request.url).origin,
     });
 
     audit.info("county_run_loaded", {

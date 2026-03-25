@@ -6,7 +6,7 @@ import {
   createCountyRunResponseSchema,
   countyRunListResponseSchema,
 } from "@/lib/api/county-onramp";
-import { buildCountyOnrampWorkerPayload } from "@/lib/api/county-onramp-worker";
+import { buildCountyOnrampWorkerPayload, normalizeCountyOnrampRequest } from "@/lib/api/county-onramp-worker";
 import { presentCountyRunListItem } from "@/lib/api/county-onramp-presenters";
 
 export async function GET(request: NextRequest) {
@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
     const geographyId = parsed.data.geographyId;
     const geographyLabel = parsed.data.geographyLabel;
     const runName = parsed.data.runName;
+    const normalizedRequest = normalizeCountyOnrampRequest(parsed.data);
 
     const { data, error } = await supabase
       .from("county_runs")
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
         stage: "bootstrap-incomplete",
         status_label: null,
         mode: "build-and-bootstrap",
+        requested_runtime_json: normalizedRequest,
         manifest_json: {},
         run_summary_json: {},
         validation_summary_json: {},
