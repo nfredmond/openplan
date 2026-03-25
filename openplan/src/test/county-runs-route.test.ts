@@ -135,10 +135,20 @@ describe("/api/county-runs route", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toMatchObject({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       stage: "bootstrap-incomplete",
       runName: "placer-run",
+      workerPayload: {
+        countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        geographyId: "06061",
+        geographyLabel: "Placer County, CA",
+        countyPrefix: "PLACER",
+        callback: {
+          manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest",
+        },
+      },
     });
     expect(insertMock).toHaveBeenCalledWith(
       expect.objectContaining({

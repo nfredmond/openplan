@@ -6,6 +6,7 @@ import {
   createCountyRunResponseSchema,
   countyRunListResponseSchema,
 } from "@/lib/api/county-onramp";
+import { buildCountyOnrampWorkerPayload } from "@/lib/api/county-onramp-worker";
 import { presentCountyRunListItem } from "@/lib/api/county-onramp-presenters";
 
 export async function GET(request: NextRequest) {
@@ -148,10 +149,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create county run" }, { status: 500 });
     }
 
+    const workerPayload = buildCountyOnrampWorkerPayload({
+      origin: new URL(request.url).origin,
+      jobId: crypto.randomUUID(),
+      countyRunId: data.id,
+      input: parsed.data,
+    });
+
     const response = createCountyRunResponseSchema.parse({
       countyRunId: data.id,
       stage: data.stage,
       runName: data.run_name,
+      workerPayload,
     });
 
     audit.info("county_run_created", {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { countyOnrampManifestSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
+import { countyOnrampWorkerPayloadSchema } from "@/lib/api/county-onramp-worker";
 
 export const countyRuntimeOptionsSchema = z.object({
   keepProject: z.boolean().optional(),
@@ -25,6 +26,7 @@ export const createCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
   stage: countyRunStageSchema,
   runName: z.string().min(1),
+  workerPayload: countyOnrampWorkerPayloadSchema.optional(),
 });
 
 export const countyRunListItemSchema = z.object({
