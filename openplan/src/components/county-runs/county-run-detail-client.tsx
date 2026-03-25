@@ -113,24 +113,69 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         </Card>
       </div>
 
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Artifacts</CardTitle>
-          <CardDescription>Current county-run files exposed through the backend artifact list.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {data.artifacts.length === 0 ? (
-            <p className="text-muted-foreground">No artifacts are currently registered for this county run.</p>
-          ) : (
-            data.artifacts.map((artifact) => (
-              <div key={`${artifact.artifactType}:${artifact.path}`} className="rounded-xl border border-border/70 p-3">
-                <div className="font-medium text-foreground">{artifact.artifactType}</div>
-                <div className="mt-1 break-all text-muted-foreground">{artifact.path}</div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Artifacts</CardTitle>
+            <CardDescription>Current county-run files exposed through the backend artifact list.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {data.artifacts.length === 0 ? (
+              <p className="text-muted-foreground">No artifacts are currently registered for this county run.</p>
+            ) : (
+              data.artifacts.map((artifact) => (
+                <div key={`${artifact.artifactType}:${artifact.path}`} className="rounded-xl border border-border/70 p-3">
+                  <div className="font-medium text-foreground">{artifact.artifactType}</div>
+                  <div className="mt-1 break-all text-muted-foreground">{artifact.path}</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Worker handoff</CardTitle>
+            <CardDescription>Stored launch state and next-step execution contract for background bootstrap.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            {data.workerPayload ? (
+              <>
+                <div>
+                  <div className="font-medium text-foreground">County prefix</div>
+                  <div className="mt-1">{data.workerPayload.countyPrefix}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Callback URL</div>
+                  <div className="mt-1 break-all">{data.workerPayload.callback.manifestIngestUrl}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Artifact targets</div>
+                  <ul className="mt-1 space-y-1 break-all">
+                    <li>Scaffold CSV: {data.workerPayload.artifactTargets.scaffoldCsvPath}</li>
+                    <li>Review packet: {data.workerPayload.artifactTargets.reviewPacketMdPath}</li>
+                    <li>Manifest: {data.workerPayload.artifactTargets.manifestPath}</li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Runtime options</div>
+                  <ul className="mt-1 space-y-1">
+                    <li>keepProject: {String(data.workerPayload.runtimeOptions.keepProject)}</li>
+                    <li>force: {String(data.workerPayload.runtimeOptions.force)}</li>
+                    <li>overallDemandScalar: {data.workerPayload.runtimeOptions.overallDemandScalar ?? "—"}</li>
+                    <li>externalDemandScalar: {data.workerPayload.runtimeOptions.externalDemandScalar ?? "—"}</li>
+                    <li>hbwScalar: {data.workerPayload.runtimeOptions.hbwScalar ?? "—"}</li>
+                    <li>hboScalar: {data.workerPayload.runtimeOptions.hboScalar ?? "—"}</li>
+                    <li>nhbScalar: {data.workerPayload.runtimeOptions.nhbScalar ?? "—"}</li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <p>No stored worker handoff is currently available for this county run.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="mt-4">
         <CardHeader>
