@@ -235,3 +235,6 @@ If it can:
 - and expose artifacts,
 
 then the current modeling workflow already has enough structure to appear in a real web product without pretending the entire future system is finished.
+
+Related UI state note:
+- `docs/ops/2026-03-24-openplan-county-run-ui-state-model.md`
