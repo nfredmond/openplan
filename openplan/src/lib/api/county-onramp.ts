@@ -62,6 +62,12 @@ export const countyRunDetailResponseSchema = z.object({
   validationSummary: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
+export const enqueueCountyRunResponseSchema = z.object({
+  countyRunId: z.string().uuid(),
+  status: z.literal("queued_stub"),
+  workerPayload: countyOnrampWorkerPayloadSchema,
+});
+
 export const ingestCountyRunManifestRequestSchema = z.object({
   jobId: z.string().uuid().optional(),
   status: z.enum(["completed", "failed"]).default("completed"),
@@ -97,4 +103,5 @@ export type CountyRunListItem = z.infer<typeof countyRunListItemSchema>;
 export type CountyRunListResponse = z.infer<typeof countyRunListResponseSchema>;
 export type CountyRunArtifact = z.infer<typeof countyRunArtifactSchema>;
 export type CountyRunDetailResponse = z.infer<typeof countyRunDetailResponseSchema>;
+export type EnqueueCountyRunResponse = z.infer<typeof enqueueCountyRunResponseSchema>;
 export type IngestCountyRunManifestRequest = z.infer<typeof ingestCountyRunManifestRequestSchema>;
