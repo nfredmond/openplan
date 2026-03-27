@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCountyOnrampWorkerPayload,
   countyOnrampWorkerPayloadSchema,
+  sanitizeCountyOnrampWorkerPayload,
 } from "@/lib/api/county-onramp-worker";
 
 describe("county onramp worker payload", () => {
@@ -56,5 +57,30 @@ describe("county onramp worker payload", () => {
     expect(payload.artifactTargets.scaffoldCsvPath).toContain(
       "data/county-runs/placer-county-06061/validation/placer-county-06061-priority-count-scaffold-auto.csv"
     );
+  });
+
+  it("includes callback bearer tokens when configured and can sanitize them for browser responses", () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+
+    const payload = buildCountyOnrampWorkerPayload({
+      origin: "https://openplan.example.com",
+      jobId: "123e4567-e89b-12d3-a456-426614174021",
+      countyRunId: "123e4567-e89b-12d3-a456-426614174022",
+      input: {
+        workspaceId: "123e4567-e89b-12d3-a456-426614174020",
+        geographyType: "county_fips",
+        geographyId: "06057",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-county-runtime-connectorbias2-20260324",
+        runtimeOptions: {},
+      },
+    });
+
+    expect(payload.callback.bearerToken).toBe("callback-secret");
+    expect(sanitizeCountyOnrampWorkerPayload(payload).callback).toEqual({
+      manifestIngestUrl: "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174022/manifest",
+    });
+
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
   });
 });

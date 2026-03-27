@@ -38,6 +38,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     vi.clearAllMocks();
     delete process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL;
     delete process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN;
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -111,6 +112,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
   it("dispatches to a configured worker endpoint", async () => {
     process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL = "https://worker.example.com/jobs";
     process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN = "secret-token";
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 202 }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -124,9 +126,17 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ authorization: "Bearer secret-token" }),
+        body: expect.stringContaining("\"bearerToken\":\"callback-secret\""),
       })
     );
-    expect(await response.json()).toMatchObject({ deliveryMode: "submitted" });
+    expect(await response.json()).toMatchObject({
+      deliveryMode: "submitted",
+      workerPayload: {
+        callback: {
+          manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+        },
+      },
+    });
     vi.unstubAllGlobals();
   });
 

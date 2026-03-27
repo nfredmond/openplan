@@ -45,11 +45,17 @@ export const countyOnrampWorkerPayloadSchema = z.object({
   }),
   callback: z.object({
     manifestIngestUrl: z.string().min(1),
+    bearerToken: z.string().min(1).optional(),
   }),
 });
 
 export type StoredCountyOnrampRequest = z.infer<typeof storedCountyOnrampRequestSchema>;
 export type CountyOnrampWorkerPayload = z.infer<typeof countyOnrampWorkerPayloadSchema>;
+
+function getConfiguredCountyWorkerCallbackToken(): string | undefined {
+  const token = process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN?.trim();
+  return token ? token : undefined;
+}
 
 function defaultCountyPrefix(input: CreateCountyRunRequest): string {
   if (input.countyPrefix?.trim()) return input.countyPrefix.trim().toUpperCase();
@@ -81,12 +87,14 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
   jobId: string;
   countyRunId: string;
   input: StoredCountyOnrampRequest;
+  callbackBearerToken?: string;
 }): CountyOnrampWorkerPayload {
   const { origin, jobId, countyRunId, input } = params;
   const countyPrefix = input.countyPrefix;
   const runSlug = input.runName;
   const countySlug = buildCountySlug(input.geographyLabel, input.geographyId);
   const artifactBase = `data/county-runs/${countySlug}/validation`;
+  const callbackBearerToken = params.callbackBearerToken ?? getConfiguredCountyWorkerCallbackToken();
 
   return countyOnrampWorkerPayloadSchema.parse({
     jobId,
@@ -105,6 +113,7 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
     },
     callback: {
       manifestIngestUrl: `${origin.replace(/\/$/, "")}/api/county-runs/${countyRunId}/manifest`,
+      ...(callbackBearerToken ? { bearerToken: callbackBearerToken } : {}),
     },
   });
 }
@@ -114,11 +123,24 @@ export function buildCountyOnrampWorkerPayload(params: {
   jobId: string;
   countyRunId: string;
   input: CreateCountyRunRequest;
+  callbackBearerToken?: string;
 }): CountyOnrampWorkerPayload {
   return buildCountyOnrampWorkerPayloadFromStoredRequest({
     origin: params.origin,
     jobId: params.jobId,
     countyRunId: params.countyRunId,
     input: normalizeCountyOnrampRequest(params.input),
+    callbackBearerToken: params.callbackBearerToken,
+  });
+}
+
+export function sanitizeCountyOnrampWorkerPayload(
+  payload: CountyOnrampWorkerPayload
+): CountyOnrampWorkerPayload {
+  return countyOnrampWorkerPayloadSchema.parse({
+    ...payload,
+    callback: {
+      manifestIngestUrl: payload.callback.manifestIngestUrl,
+    },
   });
 }

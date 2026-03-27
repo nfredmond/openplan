@@ -5,6 +5,7 @@ import {
 } from "@/lib/models/county-onramp";
 import {
   buildCountyOnrampWorkerPayloadFromStoredRequest,
+  sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 import type {
@@ -70,12 +71,14 @@ export function presentCountyRunDetail(params: {
   const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
   const workerPayload =
     origin && storedRequest.success
-      ? buildCountyOnrampWorkerPayloadFromStoredRequest({
-          origin,
-          jobId: crypto.randomUUID(),
-          countyRunId: row.id,
-          input: storedRequest.data,
-        })
+      ? sanitizeCountyOnrampWorkerPayload(
+          buildCountyOnrampWorkerPayloadFromStoredRequest({
+            origin,
+            jobId: crypto.randomUUID(),
+            countyRunId: row.id,
+            input: storedRequest.data,
+          })
+        )
       : null;
 
   return {

@@ -93,6 +93,7 @@ const manifest = {
 describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -246,6 +247,49 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       status: "failed",
     });
+  });
+
+  it("accepts machine-authenticated worker callbacks without a logged-in user", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await postCountyRunManifest(
+      new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer callback-secret",
+        },
+        body: JSON.stringify({ status: "failed", error: { message: "Worker crashed" } }),
+      }),
+      {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      }
+    );
+
+    expect(response.status).toBe(202);
+    expect(authGetUserMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthenticated worker callbacks when the bearer token is wrong", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await postCountyRunManifest(
+      new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer wrong-secret",
+        },
+        body: JSON.stringify({ status: "failed", error: { message: "Worker crashed" } }),
+      }),
+      {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      }
+    );
+
+    expect(response.status).toBe(401);
   });
 
   it("returns 400 for invalid payloads", async () => {

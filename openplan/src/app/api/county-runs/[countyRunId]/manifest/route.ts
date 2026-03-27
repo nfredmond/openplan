@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCountyRunManifestRequestSchema } from "@/lib/api/county-onramp";
+import { isAuthenticatedCountyWorkerCallback } from "@/lib/api/county-onramp-worker-auth";
 import {
   buildCountyRunArtifacts,
   buildCountyRunRecord,
@@ -52,11 +53,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const isWorkerCallback = isAuthenticatedCountyWorkerCallback(request);
+    let user = null;
+    if (!isWorkerCallback) {
+      const authResult = await supabase.auth.getUser();
+      user = authResult.data.user;
+    }
 
-    if (!user) {
+    if (!isWorkerCallback && !user) {
       audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -86,6 +90,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const { error: updateError } = await supabase
         .from("county_runs")
         .update({
+          enqueue_status: "failed",
           status_label: failureStatus,
         })
         .eq("id", existingRow.id);
@@ -101,6 +106,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.warn("county_run_worker_failed", {
         countyRunId: existingRow.id,
         jobId: parsed.data.jobId ?? null,
+        authMode: isWorkerCallback ? "worker" : "user",
         message: failureStatus,
         durationMs: Date.now() - startedAt,
       });
@@ -193,6 +199,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("county_run_manifest_ingested", {
       countyRunId: existingRow.id,
       jobId: parsed.data.jobId ?? null,
+      authMode: isWorkerCallback ? "worker" : "user",
       stage: response.stage,
       statusLabel: response.statusLabel ?? null,
       durationMs: Date.now() - startedAt,

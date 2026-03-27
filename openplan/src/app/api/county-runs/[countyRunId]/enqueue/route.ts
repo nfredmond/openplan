@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { enqueueCountyRunResponseSchema } from "@/lib/api/county-onramp";
 import {
   buildCountyOnrampWorkerPayloadFromStoredRequest,
+  sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 import { dispatchCountyOnrampJob } from "@/lib/api/county-onramp-dispatch";
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       countyRunId: parsedParams.data.countyRunId,
       status: "queued_stub",
       deliveryMode,
-      workerPayload,
+      workerPayload: sanitizeCountyOnrampWorkerPayload(workerPayload),
     });
 
     audit.info("county_run_enqueue_prepared", {
