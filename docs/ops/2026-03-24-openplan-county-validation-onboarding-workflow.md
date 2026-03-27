@@ -65,6 +65,10 @@ Preferred bootstrap path:
 Direct scaffold-generation helper:
 - `scripts/modeling/generate_validation_scaffold.py`
 
+Archived-run note:
+- if `work/aeq_project/project_database.sqlite` was not retained, scaffold replay now falls back to durable runtime artifacts such as `run_output/loaded_links.geojson`
+- that fallback is intentionally lower-fidelity: candidate names, link typing, and representative points may be less exact than the retained-project path and must be reviewed accordingly
+
 Outputs:
 - starter scaffold CSV
 - markdown review packet
