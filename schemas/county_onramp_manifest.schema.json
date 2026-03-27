@@ -69,7 +69,8 @@
         "review_packet_md": { "type": "string" },
         "run_summary_json": { "type": ["string", "null"] },
         "bundle_manifest_json": { "type": ["string", "null"] },
-        "validation_summary_json": { "type": ["string", "null"] }
+        "validation_summary_json": { "type": ["string", "null"] },
+        "activitysim_bundle_manifest_json": { "type": ["string", "null"] }
       }
     },
     "runtime": {
@@ -126,6 +127,20 @@
         "bundle_validation": {
           "type": ["object", "null"],
           "additionalProperties": true
+        },
+        "activitysim_bundle": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "status": { "type": "string", "enum": ["completed", "failed", "not-built"] },
+            "output_dir": { "type": ["string", "null"] },
+            "manifest_path": { "type": ["string", "null"] },
+            "land_use_rows": { "type": ["number", "null"] },
+            "households": { "type": ["number", "null"] },
+            "persons": { "type": ["number", "null"] },
+            "skim_mode": { "type": ["string", "null"], "enum": ["copy", "symlink", null] },
+            "error": { "type": ["object", "null"], "additionalProperties": true }
+          }
         }
       }
     }

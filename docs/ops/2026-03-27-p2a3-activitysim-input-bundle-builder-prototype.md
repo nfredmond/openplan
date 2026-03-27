@@ -73,3 +73,6 @@ Observed bundle output from that real screening run:
 - skim materialization: `copy`
 
 This confirms the builder works not only in unit tests but against the current Nevada County screening artifact set.
+
+## County onramp integration
+As of the same 2026-03-27 modeling pass, `scripts/modeling/bootstrap_county_validation_onramp.py` now attempts to build this ActivitySim bundle automatically after a successful county screening bootstrap and records the resulting bundle manifest path in the county onramp manifest when the build succeeds.

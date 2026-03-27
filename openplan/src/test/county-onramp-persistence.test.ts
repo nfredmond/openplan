@@ -21,6 +21,7 @@ const manifest = countyOnrampManifestSchema.parse({
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
+    activitysim_bundle_manifest_json: "/tmp/activitysim/manifest.json",
   },
   runtime: {
     keep_project: true,
@@ -51,6 +52,15 @@ const manifest = countyOnrampManifestSchema.parse({
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
+    },
+    activitysim_bundle: {
+      status: "completed",
+      output_dir: "/tmp/activitysim",
+      manifest_path: "/tmp/activitysim/manifest.json",
+      land_use_rows: 26,
+      households: 41415,
+      persons: 102322,
+      skim_mode: "copy",
     },
   },
 });
@@ -86,7 +96,7 @@ describe("county onramp persistence helpers", () => {
       manifest,
     });
 
-    expect(artifacts).toHaveLength(5);
+    expect(artifacts).toHaveLength(6);
     expect(artifacts[0]).toMatchObject({
       workspace_id: "123e4567-e89b-12d3-a456-426614174000",
       artifact_type: "validation_scaffold_csv",
@@ -99,6 +109,7 @@ describe("county onramp persistence helpers", () => {
       "run_summary_json",
       "bundle_manifest_json",
       "validation_summary_json",
+      "activitysim_bundle_manifest_json",
     ]);
   });
 

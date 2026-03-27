@@ -9,6 +9,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from build_activitysim_input_bundle import build_activitysim_input_bundle
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -71,6 +73,39 @@ def get_nested(mapping: dict | None, *keys: str):
     return current
 
 
+def build_activitysim_bundle_summary(run_dir: Path) -> dict:
+    output_dir = run_dir / "activitysim_input_bundle"
+    try:
+        result = build_activitysim_input_bundle(
+            screening_run_dir=str(run_dir),
+            output_dir=str(output_dir),
+            force=True,
+        )
+        return {
+            "status": "completed",
+            "output_dir": result["output_dir"],
+            "manifest_path": result["manifest_path"],
+            "land_use_rows": result["land_use_rows"],
+            "households": result["households"],
+            "persons": result["persons"],
+            "skim_mode": result["skim_mode"],
+        }
+    except Exception as exc:
+        return {
+            "status": "failed",
+            "output_dir": str(output_dir.resolve()),
+            "manifest_path": None,
+            "land_use_rows": None,
+            "households": None,
+            "persons": None,
+            "skim_mode": None,
+            "error": {
+                "message": str(exc),
+                "kind": exc.__class__.__name__,
+            },
+        }
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
@@ -129,6 +164,12 @@ def main() -> int:
     run_summary = read_json_if_exists(run_dir / "run_summary.json")
     validation_summary = read_json_if_exists(run_dir / "validation" / "validation_summary.json")
     bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
+    activitysim_bundle = build_activitysim_bundle_summary(run_dir)
+    activitysim_bundle_manifest_path = (
+        Path(activitysim_bundle["manifest_path"]).expanduser().resolve()
+        if activitysim_bundle.get("manifest_path")
+        else None
+    )
 
     manifest = {
         "schema_version": "openplan.county_onramp_manifest.v1",
@@ -145,6 +186,7 @@ def main() -> int:
             "run_summary_json": str((run_dir / 'run_summary.json').resolve()) if (run_dir / 'run_summary.json').exists() else None,
             "bundle_manifest_json": str((run_dir / 'bundle_manifest.json').resolve()) if (run_dir / 'bundle_manifest.json').exists() else None,
             "validation_summary_json": str((run_dir / 'validation' / 'validation_summary.json').resolve()) if (run_dir / 'validation' / 'validation_summary.json').exists() else None,
+            "activitysim_bundle_manifest_json": str(activitysim_bundle_manifest_path) if activitysim_bundle_manifest_path and activitysim_bundle_manifest_path.exists() else None,
         },
         "runtime": {
             "keep_project": bool(args.keep_project),
@@ -166,6 +208,7 @@ def main() -> int:
             },
             "validation": validation_summary,
             "bundle_validation": (bundle_manifest or {}).get("validation"),
+            "activitysim_bundle": activitysim_bundle,
         },
     }
     if args.output_manifest:

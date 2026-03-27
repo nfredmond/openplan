@@ -56,6 +56,7 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
+    activitysim_bundle_manifest_json: "/tmp/activitysim/manifest.json",
   },
   runtime: {
     keep_project: true,
@@ -86,6 +87,15 @@ const manifest = {
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
+    },
+    activitysim_bundle: {
+      status: "completed",
+      output_dir: "/tmp/activitysim",
+      manifest_path: "/tmp/activitysim/manifest.json",
+      land_use_rows: 26,
+      households: 41415,
+      persons: 102322,
+      skim_mode: "copy",
     },
   },
 } as const;
@@ -184,6 +194,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       data: [
         { artifact_type: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
         { artifact_type: "validation_review_packet_md", path: "/tmp/review.md" },
+        { artifact_type: "activitysim_bundle_manifest_json", path: "/tmp/activitysim/manifest.json" },
       ],
       error: null,
     });
@@ -227,6 +238,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     expect(payload.artifacts).toEqual([
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
       { artifactType: "validation_review_packet_md", path: "/tmp/review.md" },
+      { artifactType: "activitysim_bundle_manifest_json", path: "/tmp/activitysim/manifest.json" },
     ]);
   });
 

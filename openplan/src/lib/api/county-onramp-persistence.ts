@@ -73,6 +73,11 @@ export function buildCountyRunArtifacts(params: {
   pushArtifact("run_summary_json", manifest.artifacts.run_summary_json, "application/json");
   pushArtifact("bundle_manifest_json", manifest.artifacts.bundle_manifest_json, "application/json");
   pushArtifact("validation_summary_json", manifest.artifacts.validation_summary_json, "application/json");
+  pushArtifact(
+    "activitysim_bundle_manifest_json",
+    manifest.artifacts.activitysim_bundle_manifest_json,
+    "application/json"
+  );
 
   return artifacts;
 }

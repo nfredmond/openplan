@@ -15,6 +15,7 @@ export const countyOnrampArtifactsSchema = z.object({
   run_summary_json: z.string().nullable(),
   bundle_manifest_json: z.string().nullable(),
   validation_summary_json: z.string().nullable(),
+  activitysim_bundle_manifest_json: z.string().nullable().optional(),
 });
 
 export const countyOnrampRuntimeSchema = z.object({
@@ -57,6 +58,25 @@ export const countyOnrampValidationSummarySchema = z
   })
   .passthrough();
 
+export const countyOnrampActivitySimBundleSummarySchema = z
+  .object({
+    status: z.enum(["completed", "failed", "not-built"]),
+    output_dir: z.string().nullable().optional(),
+    manifest_path: z.string().nullable().optional(),
+    land_use_rows: z.number().nullable().optional(),
+    households: z.number().nullable().optional(),
+    persons: z.number().nullable().optional(),
+    skim_mode: z.enum(["copy", "symlink"]).nullable().optional(),
+    error: z
+      .object({
+        message: z.string().min(1),
+        kind: z.string().min(1).optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
 export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "queued_stub", "failed"]);
 
 export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
@@ -76,6 +96,7 @@ export const countyOnrampManifestSchema = z.object({
     run: countyOnrampRunSnapshotSchema,
     validation: countyOnrampValidationSummarySchema.nullable(),
     bundle_validation: z.record(z.string(), z.unknown()).nullable(),
+    activitysim_bundle: countyOnrampActivitySimBundleSummarySchema.nullable().optional(),
   }),
 });
 
@@ -83,6 +104,7 @@ export type CountyOnrampArtifacts = z.infer<typeof countyOnrampArtifactsSchema>;
 export type CountyOnrampRuntime = z.infer<typeof countyOnrampRuntimeSchema>;
 export type CountyOnrampRunSnapshot = z.infer<typeof countyOnrampRunSnapshotSchema>;
 export type CountyOnrampValidationSummary = z.infer<typeof countyOnrampValidationSummarySchema>;
+export type CountyOnrampActivitySimBundleSummary = z.infer<typeof countyOnrampActivitySimBundleSummarySchema>;
 export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
 
 export function getCountyRunStageLabel(stage: CountyRunStage): string {
