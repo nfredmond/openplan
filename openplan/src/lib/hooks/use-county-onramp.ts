@@ -9,6 +9,7 @@ import type {
   EnqueueCountyRunResponse,
   IngestCountyRunManifestRequest,
 } from "@/lib/api/county-onramp";
+import type { CountyGeographySearchResponse } from "@/lib/api/county-geographies";
 import {
   createCountyRun,
   enqueueCountyRun,
@@ -16,6 +17,58 @@ import {
   ingestCountyRunManifest,
   listCountyRuns,
 } from "@/lib/api/county-onramp-client";
+import { searchCountyGeographies } from "@/lib/api/county-geographies-client";
+
+export function useCountyGeographySearch(query: string, params?: { limit?: number; debounceMs?: number }) {
+  const limit = params?.limit ?? 8;
+  const debounceMs = params?.debounceMs ?? 250;
+  const trimmedQuery = query.trim();
+  const searchable = Boolean(trimmedQuery) && (trimmedQuery.length >= 2 || /^\d{5}$/.test(trimmedQuery));
+  const [data, setData] = useState<CountyGeographySearchResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!searchable) {
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      searchCountyGeographies({ query: trimmedQuery, limit })
+        .then((next) => {
+          if (!cancelled) {
+            setData(next);
+          }
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            const message = err instanceof Error ? err.message : "Failed to search counties";
+            setError(message);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+    }, debounceMs);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [trimmedQuery, searchable, limit, debounceMs]);
+
+  return {
+    data: searchable ? data : { items: [] },
+    items: searchable ? data?.items ?? [] : [],
+    loading: searchable ? loading : false,
+    error: searchable ? error : null,
+  };
+}
 
 export function useCountyRuns(params: {
   workspaceId?: string;

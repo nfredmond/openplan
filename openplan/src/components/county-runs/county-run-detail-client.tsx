@@ -12,7 +12,7 @@ import {
 import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StateBlock } from "@/components/ui/state-block";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
@@ -20,6 +20,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
     status: "queued_stub";
+    deliveryMode: "prepared" | "submitted";
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
@@ -27,11 +28,14 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (error) {
     return (
       <section className="module-page pb-10">
-        <StateBlock
+        <ErrorState
           title="Unable to load county run"
           description={error}
-          tone="danger"
-          action={{ label: "Retry", onClick: () => void refresh() }}
+          action={
+            <Button variant="outline" size="sm" onClick={() => void refresh()}>
+              Retry
+            </Button>
+          }
         />
       </section>
     );
@@ -40,7 +44,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (!data && loading) {
     return (
       <section className="module-page pb-10">
-        <StateBlock title="Loading county run" description="Fetching county run detail and artifact state…" tone="info" />
+        <LoadingState label="Loading county run" description="Fetching county run detail and artifact state…" />
       </section>
     );
   }
@@ -48,7 +52,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (!data) {
     return (
       <section className="module-page pb-10">
-        <StateBlock title="County run unavailable" description="No county run data is currently available." tone="warning" />
+        <EmptyState title="County run unavailable" description="No county run data is currently available." />
       </section>
     );
   }
@@ -59,16 +63,18 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     stage: data.stage,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
-  const enqueueLabel = getCountyRunEnqueueStatusLabel(data.enqueueStatus);
-  const enqueueTone = getCountyRunEnqueueStatusTone(data.enqueueStatus);
-  const enqueueHelp = getCountyRunEnqueueHelpText(data.enqueueStatus);
-  const canEnqueue = data.enqueueStatus !== "queued_stub";
+  const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
+  const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
+  const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
+  const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
+  const canEnqueue = enqueueStatus !== "queued_stub";
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
     if (result?.status === "queued_stub") {
       setEnqueueState({
         status: result.status,
+        deliveryMode: result.deliveryMode,
         manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
         manifestPath: result.workerPayload.artifactTargets.manifestPath,
       });
@@ -102,7 +108,14 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">Enqueue stub prepared</div>
+            <div className="font-medium text-foreground">
+              {enqueueState.deliveryMode === "submitted" ? "Background worker accepted the job" : "Enqueue payload prepared"}
+            </div>
+            <div className="mt-1">
+              {enqueueState.deliveryMode === "submitted"
+                ? "The county bootstrap was handed to the configured worker endpoint for background execution."
+                : "No worker endpoint is configured yet, so the payload is ready for operator/manual dispatch."}
+            </div>
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
             <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
           </div>

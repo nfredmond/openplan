@@ -31,7 +31,9 @@ describe("county onramp worker payload", () => {
     expect(payload.callback.manifestIngestUrl).toBe(
       "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174002/manifest"
     );
-    expect(payload.artifactTargets.manifestPath).toContain("nevada-county-runtime-connectorbias2-20260324.manifest.json");
+    expect(payload.artifactTargets.manifestPath).toContain(
+      "tmp/county-onramp/nevada-county-06057/nevada-county-runtime-connectorbias2-20260324.manifest.json"
+    );
   });
 
   it("uses explicit county prefixes when provided", () => {
@@ -51,6 +53,8 @@ describe("county onramp worker payload", () => {
     });
 
     expect(payload.countyPrefix).toBe("PLACER");
-    expect(payload.artifactTargets.scaffoldCsvPath).toContain("pilot-placer-county/validation/placer_priority_count_scaffold_auto.csv");
+    expect(payload.artifactTargets.scaffoldCsvPath).toContain(
+      "data/county-runs/placer-county-06061/validation/placer-county-06061-priority-count-scaffold-auto.csv"
+    );
   });
 });

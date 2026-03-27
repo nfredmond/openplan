@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { CreateCountyRunRequest } from "@/lib/api/county-onramp";
+import { buildCountyPrefix, buildCountySlug } from "@/lib/geographies/county-utils";
 
 export const storedCountyOnrampRequestSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -52,13 +53,7 @@ export type CountyOnrampWorkerPayload = z.infer<typeof countyOnrampWorkerPayload
 
 function defaultCountyPrefix(input: CreateCountyRunRequest): string {
   if (input.countyPrefix?.trim()) return input.countyPrefix.trim().toUpperCase();
-  const normalized = input.geographyLabel
-    .trim()
-    .replace(/County,?/gi, "")
-    .replace(/[^A-Za-z0-9]+/g, " ")
-    .trim();
-  const firstToken = normalized.split(/\s+/)[0] || input.geographyId;
-  return firstToken.toUpperCase();
+  return buildCountyPrefix(input.geographyLabel, input.geographyId);
 }
 
 export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): StoredCountyOnrampRequest {
@@ -90,9 +85,8 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
   const { origin, jobId, countyRunId, input } = params;
   const countyPrefix = input.countyPrefix;
   const runSlug = input.runName;
-  const artifactBase = input.geographyId.toLowerCase().includes("06061")
-    ? "data/pilot-placer-county/validation"
-    : `data/pilot-${countyPrefix.toLowerCase()}-county/validation`;
+  const countySlug = buildCountySlug(input.geographyLabel, input.geographyId);
+  const artifactBase = `data/county-runs/${countySlug}/validation`;
 
   return countyOnrampWorkerPayloadSchema.parse({
     jobId,
@@ -105,9 +99,9 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
     countyPrefix,
     runtimeOptions: input.runtimeOptions,
     artifactTargets: {
-      scaffoldCsvPath: `${artifactBase}/${countyPrefix.toLowerCase()}_priority_count_scaffold_auto.csv`,
-      reviewPacketMdPath: `docs/ops/${runSlug}-validation-review-packet.md`,
-      manifestPath: `tmp/county-onramp/${runSlug}.manifest.json`,
+      scaffoldCsvPath: `${artifactBase}/${countySlug}-priority-count-scaffold-auto.csv`,
+      reviewPacketMdPath: `docs/ops/${countySlug}-validation-review-packet.md`,
+      manifestPath: `tmp/county-onramp/${countySlug}/${runSlug}.manifest.json`,
     },
     callback: {
       manifestIngestUrl: `${origin.replace(/\/$/, "")}/api/county-runs/${countyRunId}/manifest`,

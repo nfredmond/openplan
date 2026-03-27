@@ -69,6 +69,7 @@ export const countyRunDetailResponseSchema = z.object({
 export const enqueueCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
   status: z.literal("queued_stub"),
+  deliveryMode: z.enum(["prepared", "submitted"]),
   workerPayload: countyOnrampWorkerPayloadSchema,
 });
 

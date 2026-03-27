@@ -7,6 +7,7 @@ import {
   buildCountyOnrampWorkerPayloadFromStoredRequest,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
+import { dispatchCountyOnrampJob } from "@/lib/api/county-onramp-dispatch";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -70,10 +71,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       input: storedRequest.data,
     });
 
+    let deliveryMode: "prepared" | "submitted" = "prepared";
+    try {
+      const dispatchResult = await dispatchCountyOnrampJob(workerPayload);
+      deliveryMode = dispatchResult.deliveryMode;
+    } catch (error) {
+      await supabase
+        .from("county_runs")
+        .update({
+          enqueue_status: "failed",
+          status_label: error instanceof Error ? error.message : "County worker dispatch failed",
+          last_enqueued_at: new Date().toISOString(),
+        })
+        .eq("id", parsedParams.data.countyRunId);
+
+      audit.error("county_run_enqueue_dispatch_failed", {
+        countyRunId: parsedParams.data.countyRunId,
+        durationMs: Date.now() - startedAt,
+        error,
+      });
+      return NextResponse.json({ error: error instanceof Error ? error.message : "County worker dispatch failed" }, { status: 502 });
+    }
+
     const { error: updateError } = await supabase
       .from("county_runs")
       .update({
         enqueue_status: "queued_stub",
+        status_label: null,
         last_enqueued_at: new Date().toISOString(),
       })
       .eq("id", parsedParams.data.countyRunId);
@@ -89,11 +113,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const response = enqueueCountyRunResponseSchema.parse({
       countyRunId: parsedParams.data.countyRunId,
       status: "queued_stub",
+      deliveryMode,
       workerPayload,
     });
 
     audit.info("county_run_enqueue_prepared", {
       countyRunId: parsedParams.data.countyRunId,
+      deliveryMode,
       durationMs: Date.now() - startedAt,
     });
 

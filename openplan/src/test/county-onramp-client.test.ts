@@ -144,6 +144,7 @@ describe("county onramp client helpers", () => {
           JSON.stringify({
             countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             status: "queued_stub",
+            deliveryMode: "prepared",
             workerPayload: {
               jobId: "123e4567-e89b-12d3-a456-426614174999",
               countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -190,6 +191,7 @@ describe("county onramp client helpers", () => {
 
     const enqueued = await enqueueCountyRun("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(enqueued.status).toBe("queued_stub");
+    expect(enqueued.deliveryMode).toBe("prepared");
 
     const completed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

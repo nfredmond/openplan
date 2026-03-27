@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-client";
 
@@ -14,9 +13,19 @@ export default async function CountyRunsPage() {
     redirect("/signin?next=/county-runs");
   }
 
-  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
+  const { data: memberships, error } = await supabase
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("user_id", user.id)
+    .limit(1);
 
-  if (!membership?.workspace_id) {
+  if (error) {
+    throw new Error(error.message || "Failed to load workspace membership");
+  }
+
+  const workspaceId = memberships?.[0]?.workspace_id;
+
+  if (!workspaceId) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="County onboarding"
@@ -26,5 +35,5 @@ export default async function CountyRunsPage() {
     );
   }
 
-  return <CountyRunsPageClient workspaceId={membership.workspace_id} />;
+  return <CountyRunsPageClient workspaceId={workspaceId} />;
 }

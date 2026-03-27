@@ -36,6 +36,8 @@ function request() {
 describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL;
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -93,6 +95,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload.status).toBe("queued_stub");
+    expect(payload.deliveryMode).toBe("prepared");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.workerPayload.callback.manifestIngestUrl).toBe(
       "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest"
@@ -103,6 +106,28 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
         last_enqueued_at: expect.any(String),
       })
     );
+  });
+
+  it("dispatches to a configured worker endpoint", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL = "https://worker.example.com/jobs";
+    process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN = "secret-token";
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 202 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await postCountyRunEnqueue(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://worker.example.com/jobs",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ authorization: "Bearer secret-token" }),
+      })
+    );
+    expect(await response.json()).toMatchObject({ deliveryMode: "submitted" });
+    vi.unstubAllGlobals();
   });
 
   it("returns 409 when launch state is missing", async () => {

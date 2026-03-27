@@ -6,6 +6,7 @@ const getCountyRunDetailMock = vi.fn();
 const createCountyRunMock = vi.fn();
 const enqueueCountyRunMock = vi.fn();
 const ingestCountyRunManifestMock = vi.fn();
+const searchCountyGeographiesMock = vi.fn();
 
 vi.mock("@/lib/api/county-onramp-client", () => ({
   listCountyRuns: (...args: unknown[]) => listCountyRunsMock(...args),
@@ -15,7 +16,12 @@ vi.mock("@/lib/api/county-onramp-client", () => ({
   ingestCountyRunManifest: (...args: unknown[]) => ingestCountyRunManifestMock(...args),
 }));
 
+vi.mock("@/lib/api/county-geographies-client", () => ({
+  searchCountyGeographies: (...args: unknown[]) => searchCountyGeographiesMock(...args),
+}));
+
 import {
+  useCountyGeographySearch,
   useCountyRunDetail,
   useCountyRunMutations,
   useCountyRuns,
@@ -24,6 +30,25 @@ import {
 describe("useCountyOnramp hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("searches county geographies", async () => {
+    searchCountyGeographiesMock.mockResolvedValue({
+      items: [
+        {
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          countyPrefix: "NEVADA",
+          countySlug: "nevada-county-06057",
+          suggestedRunName: "nevada-county-06057-runtime",
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useCountyGeographySearch("nevada", { debounceMs: 0 }));
+
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+    expect(result.current.items[0]?.geographyId).toBe("06057");
   });
 
   it("loads county runs for a workspace", async () => {
@@ -76,6 +101,7 @@ describe("useCountyOnramp hooks", () => {
     enqueueCountyRunMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       status: "queued_stub",
+      deliveryMode: "prepared",
       workerPayload: {
         countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
         callback: { manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest" },

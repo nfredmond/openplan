@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
+import { useCountyGeographySearch, useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
+import type { CountyGeographySearchItem } from "@/lib/api/county-geographies";
 import {
   getCountyRunEnqueueHelpText,
   getCountyRunEnqueueStatusLabel,
@@ -14,7 +15,7 @@ import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StateBlock } from "@/components/ui/state-block";
+import { EmptyState, ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
@@ -25,36 +26,35 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     refreshMs: 15000,
   });
   const { create, loading: creating, error: createError } = useCountyRunMutations();
-  const [countyFips, setCountyFips] = useState("");
-  const [geographyLabel, setGeographyLabel] = useState("");
-  const [countyPrefix, setCountyPrefix] = useState("");
+  const [countyQuery, setCountyQuery] = useState("");
+  const [selectedCounty, setSelectedCounty] = useState<CountyGeographySearchItem | null>(null);
   const [runName, setRunName] = useState("");
+  const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
+    limit: 6,
+  });
 
-  const suggestedRunName = useMemo(() => {
-    const prefix = geographyLabel
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    if (!prefix || !countyFips.trim()) return "";
-    return `${prefix || "county"}-runtime`;
-  }, [geographyLabel, countyFips]);
+  const activeCounty = useMemo(() => {
+    if (!selectedCounty) return null;
+    const normalizedQuery = countyQuery.trim().toLowerCase();
+    const matchesSelected =
+      normalizedQuery === selectedCounty.geographyLabel.toLowerCase() || normalizedQuery === selectedCounty.geographyId;
+    return matchesSelected ? selectedCounty : null;
+  }, [countyQuery, selectedCounty]);
+
+  const suggestedRunName = useMemo(() => activeCounty?.suggestedRunName ?? "", [activeCounty]);
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextRunName = runName.trim() || suggestedRunName;
-    const nextPrefix = countyPrefix.trim().toUpperCase();
-    const nextLabel = geographyLabel.trim();
-    const nextFips = countyFips.trim();
-    if (!nextRunName || !nextPrefix || !nextLabel || !nextFips) return;
+    if (!activeCounty || !nextRunName) return;
 
     const created = await create({
       workspaceId,
       geographyType: "county_fips",
-      geographyId: nextFips,
-      geographyLabel: nextLabel,
+      geographyId: activeCounty.geographyId,
+      geographyLabel: activeCounty.geographyLabel,
       runName: nextRunName,
-      countyPrefix: nextPrefix,
+      countyPrefix: activeCounty.countyPrefix,
       runtimeOptions: { keepProject: true },
     });
 
@@ -92,38 +92,66 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" onSubmit={submitCreate}>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">County FIPS</label>
-              <Input value={countyFips} onChange={(e) => setCountyFips(e.target.value)} placeholder="06061" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Geography label</label>
+            <div className="space-y-2 md:col-span-2 xl:col-span-2">
+              <label className="text-sm font-medium text-foreground">County search</label>
               <Input
-                value={geographyLabel}
-                onChange={(e) => setGeographyLabel(e.target.value)}
-                placeholder="Placer County, CA"
+                value={countyQuery}
+                onChange={(e) => setCountyQuery(e.target.value)}
+                placeholder="Nevada County, CA or 06057"
               />
+              <p className="text-xs text-muted-foreground">Search any U.S. county by name or 5-digit FIPS. Select one result to launch the runtime bootstrap.</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">County prefix</label>
-              <Input value={countyPrefix} onChange={(e) => setCountyPrefix(e.target.value)} placeholder="PLACER" />
-            </div>
-            <div className="space-y-2">
+
+            <div className="space-y-2 md:col-span-2 xl:col-span-2">
               <label className="text-sm font-medium text-foreground">Run name</label>
               <Input
                 value={runName}
                 onChange={(e) => setRunName(e.target.value)}
-                placeholder={suggestedRunName || "placer-county-runtime"}
+                placeholder={suggestedRunName || "county-runtime"}
               />
+              <p className="text-xs text-muted-foreground">Leave blank to use the suggested run name derived from the selected county.</p>
             </div>
+
+            <div className="md:col-span-2 xl:col-span-4 space-y-3">
+              {searchError ? <p className="text-sm text-destructive">{searchError}</p> : null}
+              {!searchError && searchLoading ? <p className="text-sm text-muted-foreground">Searching counties…</p> : null}
+
+              {!searchError && !searchLoading && countyQuery.trim().length >= 2 && !activeCounty && countyMatches.length > 0 ? (
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {countyMatches.map((item) => (
+                    <button
+                      key={item.geographyId}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCounty(item);
+                        setCountyQuery(item.geographyLabel);
+                      }}
+                      className="rounded-xl border border-border/70 bg-background px-3 py-3 text-left transition hover:border-primary/40 hover:bg-muted/40"
+                    >
+                      <div className="font-medium text-foreground">{item.geographyLabel}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">FIPS {item.geographyId} · Prefix {item.countyPrefix}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              {activeCounty ? (
+                <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
+                  <div className="font-medium text-foreground">Selected county</div>
+                  <div className="mt-1">{activeCounty.geographyLabel}</div>
+                  <div className="mt-1 text-xs">FIPS {activeCounty.geographyId} · Prefix {activeCounty.countyPrefix}</div>
+                </div>
+              ) : null}
+            </div>
+
             <div className="md:col-span-2 xl:col-span-4 flex flex-wrap items-center gap-3 pt-1">
-              <Button type="submit" disabled={creating}>
+              <Button type="submit" disabled={creating || !activeCounty}>
                 Launch county run
               </Button>
               {createError ? <span className="text-sm text-destructive">{createError}</span> : null}
               {!createError ? (
                 <span className="text-sm text-muted-foreground">
-                  This creates the county run record and initial stage state. Background execution wiring follows next.
+                  This creates the county run record and initial stage state. If a worker endpoint is configured, enqueue can dispatch the background bootstrap directly.
                 </span>
               ) : null}
             </div>
@@ -132,19 +160,21 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       </Card>
 
       {error ? (
-        <StateBlock
+        <ErrorState
           title="Unable to load county runs"
           description={error}
-          tone="danger"
-          action={{ label: "Retry", onClick: () => void refresh() }}
+          action={
+            <Button variant="outline" size="sm" onClick={() => void refresh()}>
+              Retry
+            </Button>
+          }
         />
       ) : null}
 
       {!error && !loading && items.length === 0 ? (
-        <StateBlock
+        <EmptyState
           title="No county runs yet"
           description="Once county onboarding jobs are created, they will appear here with stage, caveats, and artifact access."
-          tone="neutral"
         />
       ) : null}
 

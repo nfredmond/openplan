@@ -109,6 +109,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const manifest = parsed.data.manifest;
+    if (!manifest) {
+      audit.warn("county_run_manifest_missing", {
+        countyRunId: existingRow.id,
+      });
+      return NextResponse.json({ error: "Manifest is required when status=completed" }, { status: 400 });
+    }
+
     const nextRecord = buildCountyRunRecord({
       workspaceId: existingRow.workspace_id,
       geographyId: existingRow.geography_id,
