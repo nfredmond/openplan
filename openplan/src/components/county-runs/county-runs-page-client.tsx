@@ -908,7 +908,14 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                       {item.artifactAvailabilityLabels.map((label) => (
                         <StatusBadge
                           key={label}
-                          tone={label === "Behavioral prototype" || label === "ActivitySim bundle" ? "info" : "neutral"}
+                          tone={
+                            label === "Behavioral prototype" ||
+                            label === "ActivitySim bundle" ||
+                            label === "Behavioral KPI Summary" ||
+                            label === "Behavioral KPI Packet"
+                              ? "info"
+                              : "neutral"
+                          }
                         >
                           {label}
                         </StatusBadge>

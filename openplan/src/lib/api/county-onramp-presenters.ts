@@ -59,6 +59,8 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     manifest?.artifacts?.validation_summary_json ? "Validation summary" : null,
     manifest?.artifacts?.activitysim_bundle_manifest_json ? "ActivitySim bundle" : null,
     manifest?.artifacts?.behavioral_prototype_manifest_json ? "Behavioral prototype" : null,
+    manifest?.artifacts?.behavioral_kpi_summary_json ? "Behavioral KPI Summary" : null,
+    manifest?.artifacts?.behavioral_kpi_packet_md ? "Behavioral KPI Packet" : null,
   ].filter((value): value is string => Boolean(value));
   const metricAvailabilityLabels = [
     manifest?.summary?.run?.zone_count != null ? `Zones ${manifest.summary.run.zone_count}` : null,

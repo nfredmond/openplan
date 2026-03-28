@@ -98,6 +98,8 @@ describe("/api/county-runs route", () => {
               validation_summary_json: "/tmp/validation_summary.json",
               activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
               behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
+              behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
+              behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
             },
             runtime: {
               keep_project: true,
@@ -213,6 +215,8 @@ describe("/api/county-runs route", () => {
             "Validation summary",
             "ActivitySim bundle",
             "Behavioral prototype",
+            "Behavioral KPI Summary",
+            "Behavioral KPI Packet",
           ],
           metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
           zoneCount: 26,
