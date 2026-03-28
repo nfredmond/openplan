@@ -21,8 +21,10 @@ import {
 import {
   buildCountyBehavioralRuntimeSummary,
   buildCountyRunUiCard,
+  filterCountyRunListItemsByQuickView,
   getCountyBehavioralReadinessBadge,
   sortCountyRunListItems,
+  type CountyRunQuickView,
   type CountyRunSort,
 } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +61,14 @@ const COUNTY_RUN_SORT_OPTIONS: { value: CountyRunSort; label: string }[] = [
   { value: "median-ape-asc", label: "Lowest median APE" },
 ];
 
+const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string }[] = [
+  { value: "all", label: "All runs" },
+  { value: "needs-attention", label: "Needs attention" },
+  { value: "best-validated", label: "Best validated" },
+  { value: "prototype-blocked", label: "Prototype blocked" },
+  { value: "comparison-ready", label: "Comparison-ready" },
+];
+
 type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeStatusFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeModeFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS)[number]["value"];
@@ -89,6 +99,22 @@ function parseCountyRunSort(value: string | null | undefined): CountyRunSort {
   return COUNTY_RUN_SORT_OPTIONS.some((option) => option.value === value)
     ? (value as CountyRunSort)
     : "updated-desc";
+}
+
+function parseCountyRunQuickView(value: string | null | undefined): CountyRunQuickView {
+  return COUNTY_RUN_QUICK_VIEW_OPTIONS.some((option) => option.value === value)
+    ? (value as CountyRunQuickView)
+    : "all";
+}
+
+function getCountyQuickViewDefaultSort(view: CountyRunQuickView): CountyRunSort {
+  if (view === "best-validated" || view === "comparison-ready") {
+    return "median-ape-asc";
+  }
+  if (view === "prototype-blocked") {
+    return "final-gap-asc";
+  }
+  return "updated-desc";
 }
 
 function getCountyFilterOptionLabel(
@@ -161,6 +187,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     parseCountyBehavioralRuntimeModeFilter(searchParams.get("runtimeMode"))
   );
   const [countyRunSort, setCountyRunSort] = useState<CountyRunSort>(() => parseCountyRunSort(searchParams.get("sort")));
+  const [countyRunQuickView, setCountyRunQuickView] = useState<CountyRunQuickView>(() => parseCountyRunQuickView(searchParams.get("view")));
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -178,19 +205,26 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     () => COUNTY_RUNTIME_PRESET_DEFINITIONS.find((preset) => preset.key === runtimePreset) ?? COUNTY_RUNTIME_PRESET_DEFINITIONS[0],
     [runtimePreset]
   );
+  const quickViewItems = useMemo(
+    () => filterCountyRunListItemsByQuickView(items, countyRunQuickView),
+    [countyRunQuickView, items]
+  );
   const filteredItems = useMemo(
     () =>
-      items.filter(
+      quickViewItems.filter(
         (item) =>
           matchesCountyBehavioralFilter(item, behavioralFilter) &&
           matchesCountyBehavioralRuntimeStatusFilter(item, behavioralRuntimeStatusFilter) &&
           matchesCountyBehavioralRuntimeModeFilter(item, behavioralRuntimeModeFilter)
       ),
-    [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, items]
+    [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, quickViewItems]
   );
   const sortedItems = useMemo(() => sortCountyRunListItems(filteredItems, countyRunSort), [countyRunSort, filteredItems]);
   const hasActiveFilters =
-    behavioralFilter !== "all" || behavioralRuntimeStatusFilter !== "all" || behavioralRuntimeModeFilter !== "all";
+    countyRunQuickView !== "all" ||
+    behavioralFilter !== "all" ||
+    behavioralRuntimeStatusFilter !== "all" ||
+    behavioralRuntimeModeFilter !== "all";
 
   const replaceCountyRunsUrl = (params: URLSearchParams) => {
     const nextQuery = params.toString();
@@ -200,6 +234,24 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const updateCountyRunSort = (nextSort: CountyRunSort) => {
     setCountyRunSort(nextSort);
     const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextSort === "updated-desc") {
+      nextParams.delete("sort");
+    } else {
+      nextParams.set("sort", nextSort);
+    }
+    replaceCountyRunsUrl(nextParams);
+  };
+
+  const updateCountyRunQuickView = (nextView: CountyRunQuickView) => {
+    const nextSort = getCountyQuickViewDefaultSort(nextView);
+    setCountyRunQuickView(nextView);
+    setCountyRunSort(nextSort);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextView === "all") {
+      nextParams.delete("view");
+    } else {
+      nextParams.set("view", nextView);
+    }
     if (nextSort === "updated-desc") {
       nextParams.delete("sort");
     } else {
@@ -264,11 +316,18 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   };
 
   const clearAllCountyRunFilters = () => {
-    applyCountyRunsFilters({
-      behavioralFilter: "all",
-      behavioralRuntimeStatusFilter: "all",
-      behavioralRuntimeModeFilter: "all",
-    });
+    setCountyRunQuickView("all");
+    setCountyRunSort("updated-desc");
+    setBehavioralFilter("all");
+    setBehavioralRuntimeStatusFilter("all");
+    setBehavioralRuntimeModeFilter("all");
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("view");
+    nextParams.delete("sort");
+    nextParams.delete("behavioral");
+    nextParams.delete("runtimeStatus");
+    nextParams.delete("runtimeMode");
+    replaceCountyRunsUrl(nextParams);
   };
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -303,7 +362,22 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             screening status.
           </p>
         </div>
-        <div className="mt-5 flex flex-wrap items-end gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Quick views</span>
+          {COUNTY_RUN_QUICK_VIEW_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              type="button"
+              variant={countyRunQuickView === option.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => updateCountyRunQuickView(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end gap-3">
           <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
@@ -385,6 +459,11 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         {hasActiveFilters ? (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Active filters</span>
+            {countyRunQuickView !== "all" ? (
+              <Button type="button" variant="outline" size="sm" onClick={() => updateCountyRunQuickView("all")}>
+                View: {getCountyFilterOptionLabel(COUNTY_RUN_QUICK_VIEW_OPTIONS, countyRunQuickView)} ×
+              </Button>
+            ) : null}
             {behavioralFilter !== "all" ? (
               <Button
                 type="button"

@@ -278,12 +278,44 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
   });
 
+  it("applies quick-view presets with URL-backed sort defaults", () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Best validated" }));
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?view=best-validated&sort=median-ape-asc", {
+      scroll: false,
+    });
+    expect(screen.getByDisplayValue("Lowest median APE")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "View: Best validated ×" })).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs", { scroll: false });
+    expect(screen.getByDisplayValue("Recently updated")).toBeInTheDocument();
+  });
+
   it("initializes county sorting from the URL", () => {
     searchParamsValue = "sort=median-ape-asc";
 
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
     expect(screen.getByDisplayValue("Lowest median APE")).toBeInTheDocument();
+  });
+
+  it("initializes quick view presets from the URL", () => {
+    searchParamsValue = "view=prototype-blocked&sort=final-gap-asc";
+
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "View: Prototype blocked ×" })).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
 
   it("submits the containerized behavioral smoke preset and shows honest caveats", async () => {

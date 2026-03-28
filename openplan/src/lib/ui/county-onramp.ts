@@ -49,6 +49,7 @@ export type CountyBehavioralPrototypeUiCard = {
 };
 
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
+export type CountyRunQuickView = "all" | "needs-attention" | "best-validated" | "prototype-blocked" | "comparison-ready";
 
 export function getCountyRunNextAction(stage: CountyRunStage): string {
   switch (stage) {
@@ -240,6 +241,46 @@ const COUNTY_STAGE_SORT_RANK: Record<CountyRunStage, number> = {
   "validation-scaffolded": 2,
   "validated-screening": 3,
 };
+
+export function filterCountyRunListItemsByQuickView(
+  items: CountyRunListItem[],
+  quickView: CountyRunQuickView
+): CountyRunListItem[] {
+  if (quickView === "all") {
+    return items;
+  }
+
+  return items.filter((item) => {
+    if (quickView === "comparison-ready") {
+      return Boolean(item.behavioralComparisonReady);
+    }
+
+    if (quickView === "best-validated") {
+      return item.stage === "validated-screening";
+    }
+
+    if (quickView === "prototype-blocked") {
+      return (
+        item.behavioralRuntimeStatus === "behavioral_runtime_blocked" ||
+        item.behavioralRuntimeStatus === "behavioral_runtime_failed" ||
+        item.behavioralPipelineStatus === "prototype_pipeline_failed" ||
+        item.behavioralPipelineStatus === "prototype_preflight_complete"
+      );
+    }
+
+    if (quickView === "needs-attention") {
+      return (
+        item.enqueueStatus === "failed" ||
+        item.stage !== "validated-screening" ||
+        item.behavioralRuntimeStatus === "behavioral_runtime_failed" ||
+        item.behavioralPipelineStatus === "prototype_pipeline_failed" ||
+        (item.runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)" && !item.behavioralPipelineStatus)
+      );
+    }
+
+    return true;
+  });
+}
 
 function compareNullableNumberAsc(a: number | null | undefined, b: number | null | undefined): number {
   const leftMissing = a == null;
