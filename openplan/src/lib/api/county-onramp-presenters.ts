@@ -44,6 +44,19 @@ export function parseCountyOnrampManifest(value: unknown): CountyOnrampManifest 
 
 export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListItem {
   const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
+  const runtimePresetLabel = storedRequest.success ? getCountyRuntimePresetLabel(storedRequest.data.runtimeOptions) : null;
+  const behavioralEvidenceStatusLabel =
+    row.stage === "validated-screening"
+      ? "Validation-ready county state"
+      : runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)"
+      ? "Behavioral evidence lane requested"
+      : null;
+  const behavioralComparisonStatusLabel =
+    row.stage === "validated-screening"
+      ? "Open detail for behavioral readiness"
+      : runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)"
+      ? "Await detail-level runtime evidence"
+      : null;
 
   return {
     id: row.id,
@@ -53,7 +66,9 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     statusLabel: row.status_label,
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
-    runtimePresetLabel: storedRequest.success ? getCountyRuntimePresetLabel(storedRequest.data.runtimeOptions) : null,
+    runtimePresetLabel,
+    behavioralEvidenceStatusLabel,
+    behavioralComparisonStatusLabel,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }

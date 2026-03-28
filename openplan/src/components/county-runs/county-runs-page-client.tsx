@@ -293,6 +293,18 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     <p className="mt-1 text-muted-foreground">{item.runtimePresetLabel}</p>
                   </div>
                 ) : null}
+                {item.behavioralEvidenceStatusLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Behavioral evidence</div>
+                    <p className="mt-1 text-muted-foreground">{item.behavioralEvidenceStatusLabel}</p>
+                  </div>
+                ) : null}
+                {item.behavioralComparisonStatusLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Behavioral comparison</div>
+                    <p className="mt-1 text-muted-foreground">{item.behavioralComparisonStatusLabel}</p>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">

@@ -134,6 +134,8 @@ describe("/api/county-runs route", () => {
           enqueueStatus: "queued_stub",
           lastEnqueuedAt: "2026-03-24T23:05:00Z",
           runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+          behavioralEvidenceStatusLabel: "Validation-ready county state",
+          behavioralComparisonStatusLabel: "Open detail for behavioral readiness",
           updatedAt: "2026-03-24T23:00:00Z",
         },
       ],

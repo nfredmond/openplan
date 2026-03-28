@@ -76,6 +76,8 @@ describe("county onramp client helpers", () => {
               runName: "nevada-run",
               stage: "validated-screening",
               statusLabel: "bounded screening-ready",
+              behavioralEvidenceStatusLabel: "Validation-ready county state",
+              behavioralComparisonStatusLabel: "Open detail for behavioral readiness",
               updatedAt: "2026-03-24T23:00:00Z",
             },
           ],

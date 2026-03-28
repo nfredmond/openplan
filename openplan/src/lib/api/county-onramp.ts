@@ -42,6 +42,8 @@ export const countyRunListItemSchema = z.object({
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
   runtimePresetLabel: z.string().nullable().optional(),
+  behavioralEvidenceStatusLabel: z.string().nullable().optional(),
+  behavioralComparisonStatusLabel: z.string().nullable().optional(),
   updatedAt: z.string(),
 });
 
