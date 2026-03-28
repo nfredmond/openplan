@@ -96,6 +96,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     runtimePresetLabel,
     behavioralPipelineStatus: behavioral?.pipeline_status ?? null,
     behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
+    behavioralRuntimeMode: behavioral?.runtime_mode ?? null,
     behavioralEvidenceReady,
     behavioralComparisonReady,
     behavioralEvidenceStatusLabel,

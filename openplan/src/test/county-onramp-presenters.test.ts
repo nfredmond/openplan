@@ -118,6 +118,7 @@ describe("county onramp presenters", () => {
       runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
       behavioralPipelineStatus: "prototype_preflight_complete",
       behavioralRuntimeStatus: "behavioral_runtime_blocked",
+      behavioralRuntimeMode: "preflight_only",
       behavioralEvidenceReady: true,
       behavioralComparisonReady: false,
       behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",

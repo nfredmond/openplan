@@ -26,6 +26,12 @@ export type CountyBehavioralReadinessBadge = {
   tone: "neutral" | "info" | "warning" | "success";
 };
 
+export type CountyBehavioralRuntimeSummary = {
+  pipelineLabel: string | null;
+  runtimeLabel: string | null;
+  modeLabel: string | null;
+};
+
 export type CountyBehavioralPrototypeUiCard = {
   pipelineStatus: string | null;
   runtimeStatus: string | null;
@@ -193,6 +199,35 @@ export function buildCountyBehavioralPrototypeUiCard(
     comparisonSupportLabel: getBehavioralComparisonSupportLabel(summary),
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
+  };
+}
+
+function formatBehavioralRuntimeToken(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  const explicitLabels: Record<string, string> = {
+    prototype_preflight_complete: "Prototype preflight complete",
+    behavioral_runtime_succeeded: "Behavioral runtime succeeded",
+    behavioral_runtime_failed: "Behavioral runtime failed",
+    prototype_pipeline_failed: "Prototype pipeline failed",
+    prototype_pipeline_running: "Prototype pipeline running",
+    behavioral_runtime_blocked: "Behavioral runtime blocked",
+    preflight_only: "Preflight only",
+    containerized_activitysim: "Containerized ActivitySim",
+  };
+
+  return explicitLabels[value] ?? value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function buildCountyBehavioralRuntimeSummary(input: {
+  pipelineStatus?: string | null;
+  runtimeStatus?: string | null;
+  runtimeMode?: string | null;
+}): CountyBehavioralRuntimeSummary {
+  return {
+    pipelineLabel: formatBehavioralRuntimeToken(input.pipelineStatus),
+    runtimeLabel: formatBehavioralRuntimeToken(input.runtimeStatus),
+    modeLabel: formatBehavioralRuntimeToken(input.runtimeMode),
   };
 }
 

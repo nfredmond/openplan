@@ -20,6 +20,7 @@ let countyRunsItemsMock = [
     runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
     behavioralPipelineStatus: "prototype_preflight_complete",
     behavioralRuntimeStatus: "behavioral_runtime_blocked",
+    behavioralRuntimeMode: "preflight_only",
     behavioralEvidenceReady: true,
     behavioralComparisonReady: false,
     behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
@@ -36,6 +37,7 @@ let countyRunsItemsMock = [
     runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
     behavioralPipelineStatus: null,
     behavioralRuntimeStatus: null,
+    behavioralRuntimeMode: null,
     behavioralEvidenceReady: false,
     behavioralComparisonReady: false,
     behavioralEvidenceStatusLabel: "Behavioral lane requested",
@@ -95,6 +97,7 @@ describe("CountyRunsPageClient", () => {
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         behavioralPipelineStatus: "prototype_preflight_complete",
         behavioralRuntimeStatus: "behavioral_runtime_blocked",
+        behavioralRuntimeMode: "preflight_only",
         behavioralEvidenceReady: true,
         behavioralComparisonReady: false,
         behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
@@ -111,6 +114,7 @@ describe("CountyRunsPageClient", () => {
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         behavioralPipelineStatus: null,
         behavioralRuntimeStatus: null,
+        behavioralRuntimeMode: null,
         behavioralEvidenceReady: false,
         behavioralComparisonReady: false,
         behavioralEvidenceStatusLabel: "Behavioral lane requested",
@@ -139,6 +143,9 @@ describe("CountyRunsPageClient", () => {
 
     expect(screen.getByText("Preflight-only evidence")).toBeInTheDocument();
     expect(screen.getByText("Preflight-only behavioral evidence")).toBeInTheDocument();
+    expect(screen.getByText("Pipeline status: Prototype preflight complete")).toBeInTheDocument();
+    expect(screen.getByText("Runtime status: Behavioral runtime blocked")).toBeInTheDocument();
+    expect(screen.getByText("Runtime mode: Preflight only")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("County search"), { target: { value: "Nevada" } });
     fireEvent.click(screen.getByRole("button", { name: "Nevada County, CA FIPS 06057 · Prefix NEVADA" }));

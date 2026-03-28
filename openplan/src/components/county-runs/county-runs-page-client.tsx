@@ -18,7 +18,11 @@ import {
   COUNTY_RUNTIME_PRESET_DEFINITIONS,
   type CountyRuntimePresetKey,
 } from "@/lib/models/county-runtime-presets";
-import { buildCountyRunUiCard, getCountyBehavioralReadinessBadge } from "@/lib/ui/county-onramp";
+import {
+  buildCountyBehavioralRuntimeSummary,
+  buildCountyRunUiCard,
+  getCountyBehavioralReadinessBadge,
+} from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -347,6 +351,11 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             evidenceStatusLabel: item.behavioralEvidenceStatusLabel,
             comparisonStatusLabel: item.behavioralComparisonStatusLabel,
           });
+          const behavioralRuntime = buildCountyBehavioralRuntimeSummary({
+            pipelineStatus: item.behavioralPipelineStatus,
+            runtimeStatus: item.behavioralRuntimeStatus,
+            runtimeMode: item.behavioralRuntimeMode,
+          });
 
           return (
             <Card key={item.id}>
@@ -386,6 +395,16 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                   <div>
                     <div className="font-medium text-foreground">Runtime preset</div>
                     <p className="mt-1 text-muted-foreground">{item.runtimePresetLabel}</p>
+                  </div>
+                ) : null}
+                {behavioralRuntime.pipelineLabel || behavioralRuntime.runtimeLabel || behavioralRuntime.modeLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Behavioral runtime</div>
+                    <ul className="mt-1 space-y-1 text-muted-foreground">
+                      {behavioralRuntime.pipelineLabel ? <li>Pipeline status: {behavioralRuntime.pipelineLabel}</li> : null}
+                      {behavioralRuntime.runtimeLabel ? <li>Runtime status: {behavioralRuntime.runtimeLabel}</li> : null}
+                      {behavioralRuntime.modeLabel ? <li>Runtime mode: {behavioralRuntime.modeLabel}</li> : null}
+                    </ul>
                   </div>
                 ) : null}
                 {item.behavioralEvidenceStatusLabel ? (

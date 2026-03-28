@@ -44,6 +44,7 @@ export const countyRunListItemSchema = z.object({
   runtimePresetLabel: z.string().nullable().optional(),
   behavioralPipelineStatus: z.string().nullable().optional(),
   behavioralRuntimeStatus: z.string().nullable().optional(),
+  behavioralRuntimeMode: z.string().nullable().optional(),
   behavioralEvidenceReady: z.boolean().optional(),
   behavioralComparisonReady: z.boolean().optional(),
   behavioralEvidenceStatusLabel: z.string().nullable().optional(),
