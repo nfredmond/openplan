@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyGeographySearch, useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
@@ -35,6 +35,12 @@ const COUNTY_BEHAVIORAL_FILTER_OPTIONS = [
 
 type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
 
+function parseCountyBehavioralFilter(value: string | null | undefined): CountyBehavioralFilter {
+  return COUNTY_BEHAVIORAL_FILTER_OPTIONS.some((option) => option.value === value)
+    ? (value as CountyBehavioralFilter)
+    : "all";
+}
+
 function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBehavioralFilter): boolean {
   switch (filter) {
     case "comparison-ready":
@@ -59,6 +65,8 @@ function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBe
 
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { items, loading, error, refresh } = useCountyRuns({
     workspaceId,
     limit: 25,
@@ -69,7 +77,9 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [selectedCounty, setSelectedCounty] = useState<CountyGeographySearchItem | null>(null);
   const [runName, setRunName] = useState("");
   const [runtimePreset, setRuntimePreset] = useState<CountyRuntimePresetKey>("standard");
-  const [behavioralFilter, setBehavioralFilter] = useState<CountyBehavioralFilter>("all");
+  const [behavioralFilter, setBehavioralFilter] = useState<CountyBehavioralFilter>(() =>
+    parseCountyBehavioralFilter(searchParams.get("behavioral"))
+  );
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -91,6 +101,18 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     () => items.filter((item) => matchesCountyBehavioralFilter(item, behavioralFilter)),
     [behavioralFilter, items]
   );
+
+  const updateBehavioralFilter = (nextFilter: CountyBehavioralFilter) => {
+    setBehavioralFilter(nextFilter);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextFilter === "all") {
+      nextParams.delete("behavioral");
+    } else {
+      nextParams.set("behavioral", nextFilter);
+    }
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -137,7 +159,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               id="county-behavioral-filter"
               className="module-select min-w-[15rem]"
               value={behavioralFilter}
-              onChange={(event) => setBehavioralFilter(event.target.value as CountyBehavioralFilter)}
+              onChange={(event) => updateBehavioralFilter(event.target.value as CountyBehavioralFilter)}
             >
               {COUNTY_BEHAVIORAL_FILTER_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>

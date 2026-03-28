@@ -3,8 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ACTIVITYSIM_BEHAVIORAL_SMOKE_CLI_TEMPLATE } from "@/lib/models/county-runtime-presets";
 
 const routerPushMock = vi.fn();
+const routerReplaceMock = vi.fn();
 const refreshMock = vi.fn();
 const createMock = vi.fn();
+
+let searchParamsValue = "";
 
 let countyRunsItemsMock = [
   {
@@ -44,7 +47,10 @@ let countyRunsItemsMock = [
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPushMock,
+    replace: routerReplaceMock,
   }),
+  usePathname: () => "/county-runs",
+  useSearchParams: () => new URLSearchParams(searchParamsValue),
 }));
 
 vi.mock("@/lib/hooks/use-county-onramp", () => ({
@@ -112,7 +118,12 @@ describe("CountyRunsPageClient", () => {
         updatedAt: "2026-03-24T23:10:00Z",
       },
     ];
+    searchParamsValue = "";
     routerPushMock.mockReset();
+    routerReplaceMock.mockReset();
+    routerReplaceMock.mockImplementation((href: string) => {
+      searchParamsValue = href.split("?")[1] ?? "";
+    });
     refreshMock.mockReset();
     refreshMock.mockResolvedValue(null);
     createMock.mockReset();
@@ -147,7 +158,7 @@ describe("CountyRunsPageClient", () => {
     await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"));
   });
 
-  it("filters county runs by behavioral state", () => {
+  it("filters county runs by behavioral state and persists the filter in the URL", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
     expect(screen.getByText("Showing 2 of 2 county runs")).toBeInTheDocument();
@@ -158,6 +169,7 @@ describe("CountyRunsPageClient", () => {
       target: { value: "lane-requested" },
     });
 
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=lane-requested", { scroll: false });
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
     expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
@@ -166,9 +178,21 @@ describe("CountyRunsPageClient", () => {
       target: { value: "preflight-only" },
     });
 
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=preflight-only", { scroll: false });
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+  });
+
+  it("initializes the behavioral filter from the URL", () => {
+    searchParamsValue = "behavioral=lane-requested";
+
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    expect(screen.getByDisplayValue("Lane requested")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
+    expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
   });
 
   it("submits the containerized behavioral smoke preset and shows honest caveats", async () => {
