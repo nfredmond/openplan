@@ -25,6 +25,7 @@ export type CountyBehavioralPrototypeUiCard = {
   pipelineStatus: string | null;
   runtimeStatus: string | null;
   runtimeMode: string | null;
+  runtimePosture: string | null;
   claim: string;
   caveats: string[];
 };
@@ -107,6 +108,7 @@ export function buildCountyBehavioralPrototypeUiCard(
     pipelineStatus: summary?.pipeline_status ?? null,
     runtimeStatus: summary?.runtime_status ?? null,
     runtimeMode: summary?.runtime_mode ?? null,
+    runtimePosture: summary?.runtime_posture ?? null,
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
   };

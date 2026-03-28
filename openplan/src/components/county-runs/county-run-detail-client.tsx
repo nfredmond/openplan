@@ -181,6 +181,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <div>Pipeline status: {behavioral.pipelineStatus ?? "Not recorded"}</div>
             <div>Runtime status: {behavioral.runtimeStatus ?? "Not recorded"}</div>
             <div>Runtime mode: {behavioral.runtimeMode ?? "Not recorded"}</div>
+            <div>Runtime posture: {behavioral.runtimePosture ?? "Not recorded"}</div>
             <p>{behavioral.claim}</p>
             {behavioral.caveats.length > 0 ? (
               <ul className="list-disc space-y-1 pl-5">
@@ -245,6 +246,15 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                     <li>hbwScalar: {data.workerPayload.runtimeOptions.hbwScalar ?? "—"}</li>
                     <li>hboScalar: {data.workerPayload.runtimeOptions.hboScalar ?? "—"}</li>
                     <li>nhbScalar: {data.workerPayload.runtimeOptions.nhbScalar ?? "—"}</li>
+                    <li>
+                      activitysimContainerImage: {data.workerPayload.runtimeOptions.activitysimContainerImage ?? "—"}
+                    </li>
+                    <li>containerEngineCli: {data.workerPayload.runtimeOptions.containerEngineCli ?? "—"}</li>
+                    <li>
+                      activitysimContainerCliTemplate:{" "}
+                      {data.workerPayload.runtimeOptions.activitysimContainerCliTemplate ?? "—"}
+                    </li>
+                    <li>containerNetworkMode: {data.workerPayload.runtimeOptions.containerNetworkMode ?? "—"}</li>
                   </ul>
                 </div>
               </>

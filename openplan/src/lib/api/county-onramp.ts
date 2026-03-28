@@ -10,6 +10,10 @@ export const countyRuntimeOptionsSchema = z.object({
   hbwScalar: z.number().nullable().optional(),
   hboScalar: z.number().nullable().optional(),
   nhbScalar: z.number().nullable().optional(),
+  activitysimContainerImage: z.string().min(1).nullable().optional(),
+  containerEngineCli: z.string().min(1).nullable().optional(),
+  activitysimContainerCliTemplate: z.string().min(1).nullable().optional(),
+  containerNetworkMode: z.string().min(1).nullable().optional(),
 });
 
 export const createCountyRunRequestSchema = z.object({

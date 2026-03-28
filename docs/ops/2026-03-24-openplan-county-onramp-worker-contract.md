@@ -42,7 +42,11 @@ The worker should not need to know about the full UI or database schema. It only
     "externalDemandScalar": null,
     "hbwScalar": null,
     "hboScalar": null,
-    "nhbScalar": null
+    "nhbScalar": null,
+    "activitysimContainerImage": "python:3.11-slim",
+    "containerEngineCli": "docker",
+    "activitysimContainerCliTemplate": "python -m pip install activitysim && activitysim run",
+    "containerNetworkMode": "bridge"
   },
   "artifactTargets": {
     "scaffoldCsvPath": "data/pilot-placer-county/validation/placer_priority_count_scaffold_auto.csv",
@@ -68,6 +72,8 @@ The worker should ultimately call:
 - `scripts/modeling/bootstrap_county_validation_onramp.py`
 
 With explicit args derived from the job payload.
+
+Optional container runtime settings are passed through only when configured. If all four container fields are omitted or null, county onramp keeps the existing host/preflight behavior.
 
 ## Worker success callback
 

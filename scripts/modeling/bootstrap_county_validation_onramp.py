@@ -35,6 +35,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hbw-scalar", type=float, help="Optional HBW scalar")
     parser.add_argument("--hbo-scalar", type=float, help="Optional HBO scalar")
     parser.add_argument("--nhb-scalar", type=float, help="Optional NHB scalar")
+    parser.add_argument("--activitysim-container-image", help="Optional ActivitySim container image override")
+    parser.add_argument("--container-engine-cli", help="Optional container engine command, e.g. 'docker'")
+    parser.add_argument(
+        "--activitysim-container-cli-template",
+        help="Optional ActivitySim container CLI template passed through to the runtime worker",
+    )
+    parser.add_argument("--container-network-mode", help="Optional container network mode, e.g. 'bridge'")
     return parser.parse_args()
 
 
@@ -143,7 +150,34 @@ def summarize_behavioral_prototype_from_manifest(manifest: dict[str, Any]) -> di
     }
 
 
-def run_or_reuse_behavioral_prototype(run_dir: Path, *, force: bool) -> tuple[dict[str, Any], dict[str, Any] | None]:
+def behavioral_runtime_posture(
+    runtime_mode: str | None,
+    runtime_options: dict[str, Any],
+) -> str:
+    if runtime_mode == "activitysim_container_cli":
+        image = runtime_options.get("activitysim_container_image")
+        network_mode = runtime_options.get("container_network_mode")
+        if image and network_mode:
+            return f"containerized ActivitySim runtime requested via {image} on {network_mode} networking"
+        if image:
+            return f"containerized ActivitySim runtime requested via {image}"
+        return "containerized ActivitySim runtime requested"
+    if runtime_options.get("activitysim_container_image"):
+        image = runtime_options["activitysim_container_image"]
+        return f"containerized ActivitySim runtime configured via {image}, but not executed"
+    if runtime_mode == "activitysim_cli":
+        return "host ActivitySim CLI runtime executed"
+    if runtime_mode == "preflight_only":
+        return "preflight only; no executable ActivitySim runtime succeeded"
+    return "behavioral runtime posture not yet recorded"
+
+
+def run_or_reuse_behavioral_prototype(
+    run_dir: Path,
+    *,
+    force: bool,
+    runtime_options: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
     existing_manifest = read_json_if_exists(behavioral_manifest_path(run_dir))
     if existing_manifest and not force:
         return summarize_behavioral_prototype_from_manifest(existing_manifest), existing_manifest
@@ -152,6 +186,10 @@ def run_or_reuse_behavioral_prototype(run_dir: Path, *, force: bool) -> tuple[di
         screening_run_dir=str(run_dir),
         output_root=str(behavioral_output_root(run_dir)),
         force=force,
+        activitysim_container_image=runtime_options.get("activitysim_container_image"),
+        container_engine_cli=runtime_options.get("container_engine_cli"),
+        activitysim_container_cli_template=runtime_options.get("activitysim_container_cli_template"),
+        container_network_mode=runtime_options.get("container_network_mode"),
     )
     manifest = read_json_if_exists(Path(result["manifest_path"]))
     return result, manifest
@@ -215,8 +253,26 @@ def main() -> int:
     run_summary = read_json_if_exists(run_dir / "run_summary.json")
     validation_summary = read_json_if_exists(run_dir / "validation" / "validation_summary.json")
     bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
-    behavioral_prototype, behavioral_manifest = run_or_reuse_behavioral_prototype(run_dir, force=args.force)
+    runtime_options = {
+        "keep_project": bool(args.keep_project),
+        "force": bool(args.force),
+        "overall_demand_scalar": args.overall_demand_scalar,
+        "external_demand_scalar": args.external_demand_scalar,
+        "hbw_scalar": args.hbw_scalar,
+        "hbo_scalar": args.hbo_scalar,
+        "nhb_scalar": args.nhb_scalar,
+        "activitysim_container_image": args.activitysim_container_image,
+        "container_engine_cli": args.container_engine_cli,
+        "activitysim_container_cli_template": args.activitysim_container_cli_template,
+        "container_network_mode": args.container_network_mode,
+    }
+    behavioral_prototype, behavioral_manifest = run_or_reuse_behavioral_prototype(
+        run_dir,
+        force=args.force,
+        runtime_options=runtime_options,
+    )
     activitysim_bundle = summarize_activitysim_bundle(behavioral_manifest)
+    runtime_posture = behavioral_runtime_posture(behavioral_prototype.get("runtime_mode"), runtime_options)
 
     manifest = {
         "schema_version": "openplan.county_onramp_manifest.v1",
@@ -241,15 +297,7 @@ def main() -> int:
             "behavioral_kpi_summary_json": behavioral_prototype.get("kpi_summary_path"),
             "behavioral_kpi_packet_md": behavioral_prototype.get("kpi_packet_path"),
         },
-        "runtime": {
-            "keep_project": bool(args.keep_project),
-            "force": bool(args.force),
-            "overall_demand_scalar": args.overall_demand_scalar,
-            "external_demand_scalar": args.external_demand_scalar,
-            "hbw_scalar": args.hbw_scalar,
-            "hbo_scalar": args.hbo_scalar,
-            "nhb_scalar": args.nhb_scalar,
-        },
+        "runtime": runtime_options,
         "summary": {
             "run": {
                 "zone_count": get_nested(run_summary, "zones", "count") or get_nested(run_summary, "zone_count") or get_nested(run_summary, "zones"),
@@ -266,6 +314,7 @@ def main() -> int:
                 "pipeline_status": behavioral_prototype.get("pipeline_status"),
                 "runtime_status": behavioral_prototype.get("behavioral_runtime_status"),
                 "runtime_mode": behavioral_prototype.get("runtime_mode"),
+                "runtime_posture": runtime_posture,
                 "output_root": behavioral_prototype.get("output_root"),
                 "prototype_manifest_path": behavioral_prototype.get("manifest_path"),
                 "runtime_manifest_path": behavioral_prototype.get("runtime_manifest_path"),

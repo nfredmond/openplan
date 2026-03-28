@@ -135,6 +135,10 @@ Captures the bootstrap/runtime settings that materially shape the run.
 - `hbw_scalar: number | null`
 - `hbo_scalar: number | null`
 - `nhb_scalar: number | null`
+- `activitysim_container_image: string | null`
+- `container_engine_cli: string | null`
+- `activitysim_container_cli_template: string | null`
+- `container_network_mode: string | null`
 
 ## `summary` object
 
@@ -169,6 +173,7 @@ Expected fields:
   - `pipeline_status`
   - `runtime_status`
   - `runtime_mode`
+  - `runtime_posture`
   - `prototype_manifest_path`
   - `runtime_manifest_path`
   - `runtime_summary_path`
@@ -206,6 +211,7 @@ When consuming the manifest:
 - review packet present
 - scaffold present
 - behavioral prototype lane may still be only `prototype_preflight_complete`
+- if container runtime was requested, `runtime.activitysim_container_*` and `summary.behavioral_prototype.runtime_posture` should say so without overstating runtime success
 - county can be shown as locally truth-gated at the screening level
 
 ### Placer transfer-only run

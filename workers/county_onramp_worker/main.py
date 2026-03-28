@@ -65,6 +65,16 @@ def _require_runtime_options(container: dict[str, Any]) -> dict[str, Any]:
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError(f"Invalid runtime option '{key}'")
         parsed[key] = value
+    for key in (
+        "activitysimContainerImage",
+        "containerEngineCli",
+        "activitysimContainerCliTemplate",
+        "containerNetworkMode",
+    ):
+        value = runtime.get(key)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            raise ValueError(f"Invalid runtime option '{key}'")
+        parsed[key] = value.strip() if isinstance(value, str) and value.strip() else None
     return parsed
 
 
@@ -165,6 +175,16 @@ def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:
     for flag, value in scalar_flags.items():
         if value is not None:
             command.extend([flag, str(value)])
+
+    string_flags = {
+        "--activitysim-container-image": runtime_options["activitysimContainerImage"],
+        "--container-engine-cli": runtime_options["containerEngineCli"],
+        "--activitysim-container-cli-template": runtime_options["activitysimContainerCliTemplate"],
+        "--container-network-mode": runtime_options["containerNetworkMode"],
+    }
+    for flag, value in string_flags.items():
+        if value is not None:
+            command.extend([flag, value])
 
     return command, output_manifest
 

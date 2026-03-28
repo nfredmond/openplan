@@ -2,6 +2,20 @@ import { z } from "zod";
 import type { CreateCountyRunRequest } from "@/lib/api/county-onramp";
 import { buildCountyPrefix, buildCountySlug } from "@/lib/geographies/county-utils";
 
+const countyOnrampRuntimeOptionsSchema = z.object({
+  keepProject: z.boolean(),
+  force: z.boolean(),
+  overallDemandScalar: z.number().nullable(),
+  externalDemandScalar: z.number().nullable(),
+  hbwScalar: z.number().nullable(),
+  hboScalar: z.number().nullable(),
+  nhbScalar: z.number().nullable(),
+  activitysimContainerImage: z.string().min(1).nullable().optional(),
+  containerEngineCli: z.string().min(1).nullable().optional(),
+  activitysimContainerCliTemplate: z.string().min(1).nullable().optional(),
+  containerNetworkMode: z.string().min(1).nullable().optional(),
+});
+
 export const storedCountyOnrampRequestSchema = z.object({
   workspaceId: z.string().uuid(),
   geographyType: z.literal("county_fips"),
@@ -9,15 +23,7 @@ export const storedCountyOnrampRequestSchema = z.object({
   geographyLabel: z.string().min(1),
   runName: z.string().min(1),
   countyPrefix: z.string().min(1),
-  runtimeOptions: z.object({
-    keepProject: z.boolean(),
-    force: z.boolean(),
-    overallDemandScalar: z.number().nullable(),
-    externalDemandScalar: z.number().nullable(),
-    hbwScalar: z.number().nullable(),
-    hboScalar: z.number().nullable(),
-    nhbScalar: z.number().nullable(),
-  }),
+  runtimeOptions: countyOnrampRuntimeOptionsSchema,
 });
 
 export const countyOnrampWorkerPayloadSchema = z.object({
@@ -29,15 +35,7 @@ export const countyOnrampWorkerPayloadSchema = z.object({
   geographyId: z.string().min(1),
   geographyLabel: z.string().min(1),
   countyPrefix: z.string().min(1),
-  runtimeOptions: z.object({
-    keepProject: z.boolean(),
-    force: z.boolean(),
-    overallDemandScalar: z.number().nullable(),
-    externalDemandScalar: z.number().nullable(),
-    hbwScalar: z.number().nullable(),
-    hboScalar: z.number().nullable(),
-    nhbScalar: z.number().nullable(),
-  }),
+  runtimeOptions: countyOnrampRuntimeOptionsSchema,
   artifactTargets: z.object({
     scaffoldCsvPath: z.string().min(1),
     reviewPacketMdPath: z.string().min(1),
@@ -78,6 +76,10 @@ export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): Sto
       hbwScalar: input.runtimeOptions.hbwScalar ?? null,
       hboScalar: input.runtimeOptions.hboScalar ?? null,
       nhbScalar: input.runtimeOptions.nhbScalar ?? null,
+      activitysimContainerImage: input.runtimeOptions.activitysimContainerImage?.trim() || null,
+      containerEngineCli: input.runtimeOptions.containerEngineCli?.trim() || null,
+      activitysimContainerCliTemplate: input.runtimeOptions.activitysimContainerCliTemplate?.trim() || null,
+      containerNetworkMode: input.runtimeOptions.containerNetworkMode?.trim() || null,
     },
   });
 }

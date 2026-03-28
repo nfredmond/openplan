@@ -32,6 +32,10 @@ export const countyOnrampRuntimeSchema = z.object({
   hbw_scalar: z.number().nullable(),
   hbo_scalar: z.number().nullable(),
   nhb_scalar: z.number().nullable(),
+  activitysim_container_image: z.string().nullable().optional(),
+  container_engine_cli: z.string().nullable().optional(),
+  activitysim_container_cli_template: z.string().nullable().optional(),
+  container_network_mode: z.string().nullable().optional(),
 });
 
 export const countyOnrampRunSnapshotSchema = z.object({
@@ -100,6 +104,7 @@ export const countyOnrampBehavioralPrototypeSummarySchema = z
       .nullable()
       .optional(),
     runtime_mode: z.string().nullable().optional(),
+    runtime_posture: z.string().nullable().optional(),
     output_root: z.string().nullable().optional(),
     prototype_manifest_path: z.string().nullable().optional(),
     runtime_manifest_path: z.string().nullable().optional(),

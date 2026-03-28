@@ -52,6 +52,10 @@ const validatedManifestFixture = {
     hbw_scalar: null,
     hbo_scalar: null,
     nhb_scalar: null,
+    activitysim_container_image: "python:3.11-slim",
+    container_engine_cli: "docker",
+    activitysim_container_cli_template: "python -m pip install activitysim && activitysim run",
+    container_network_mode: "bridge",
   },
   summary: {
     run: {
@@ -87,6 +91,7 @@ const validatedManifestFixture = {
       pipeline_status: "prototype_preflight_complete",
       runtime_status: "behavioral_runtime_blocked",
       runtime_mode: "preflight_only",
+      runtime_posture: "containerized ActivitySim runtime configured via python:3.11-slim, but not executed",
       output_root: "/tmp/behavioral",
       prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
       runtime_manifest_path: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
@@ -176,6 +181,9 @@ describe("county onramp primitives", () => {
     });
     expect(behavioral.pipelineStatus).toBe("prototype_preflight_complete");
     expect(behavioral.runtimeStatus).toBe("behavioral_runtime_blocked");
+    expect(behavioral.runtimePosture).toBe(
+      "containerized ActivitySim runtime configured via python:3.11-slim, but not executed"
+    );
     expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");

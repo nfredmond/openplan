@@ -78,12 +78,18 @@ class BootstrapCountyValidationOnrampTests(unittest.TestCase):
             hbw_scalar=None,
             hbo_scalar=None,
             nhb_scalar=None,
+            activitysim_container_image=None,
+            container_engine_cli=None,
+            activitysim_container_cli_template=None,
+            container_network_mode=None,
         )
 
     def test_main_runs_behavioral_orchestrator_and_records_preflight_status(self) -> None:
         behavioral_manifest = self.run_dir / "behavioral_demand_prototype" / county_onramp.PIPELINE_MANIFEST_NAME
+        captured_kwargs: dict[str, object] = {}
 
-        def fake_run_behavioral_demand_prototype(**_: str) -> dict:
+        def fake_run_behavioral_demand_prototype(**kwargs: str) -> dict:
+            captured_kwargs.update(kwargs)
             write_json(
                 behavioral_manifest,
                 {
@@ -145,11 +151,19 @@ class BootstrapCountyValidationOnrampTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(mocked.call_count, 1)
+        self.assertIsNone(captured_kwargs["activitysim_container_image"])
+        self.assertIsNone(captured_kwargs["container_engine_cli"])
+        self.assertIsNone(captured_kwargs["activitysim_container_cli_template"])
+        self.assertIsNone(captured_kwargs["container_network_mode"])
 
         manifest = json.loads(self.output_manifest.read_text())
         self.assertEqual(manifest["summary"]["behavioral_prototype"]["pipeline_status"], "prototype_preflight_complete")
         self.assertEqual(manifest["summary"]["behavioral_prototype"]["runtime_status"], "behavioral_runtime_blocked")
         self.assertEqual(manifest["summary"]["behavioral_prototype"]["runtime_mode"], "preflight_only")
+        self.assertEqual(
+            manifest["summary"]["behavioral_prototype"]["runtime_posture"],
+            "preflight only; no executable ActivitySim runtime succeeded",
+        )
         self.assertEqual(
             manifest["artifacts"]["behavioral_prototype_manifest_json"],
             str(behavioral_manifest),
@@ -200,12 +214,114 @@ class BootstrapCountyValidationOnrampTests(unittest.TestCase):
         )
 
         with patch.object(county_onramp, "run_behavioral_demand_prototype") as mocked:
-            summary, manifest = county_onramp.run_or_reuse_behavioral_prototype(self.run_dir, force=False)
+            summary, manifest = county_onramp.run_or_reuse_behavioral_prototype(
+                self.run_dir,
+                force=False,
+                runtime_options={
+                    "activitysim_container_image": "python:3.11-slim",
+                    "container_engine_cli": "docker",
+                    "activitysim_container_cli_template": "activitysim run",
+                    "container_network_mode": "bridge",
+                },
+            )
 
         self.assertIsNotNone(manifest)
         self.assertEqual(summary["pipeline_status"], "behavioral_runtime_succeeded")
         self.assertEqual(summary["runtime_mode"], "activitysim_cli")
         mocked.assert_not_called()
+
+    def test_main_threads_container_runtime_options_into_behavioral_orchestrator_and_manifest(self) -> None:
+        args = self._args(force=True)
+        args.activitysim_container_image = "python:3.11-slim"
+        args.container_engine_cli = "docker"
+        args.activitysim_container_cli_template = "python -m pip install activitysim && activitysim run"
+        args.container_network_mode = "bridge"
+
+        behavioral_manifest = self.run_dir / "behavioral_demand_prototype" / county_onramp.PIPELINE_MANIFEST_NAME
+        captured_kwargs: dict[str, object] = {}
+
+        def fake_run_behavioral_demand_prototype(**kwargs: str) -> dict:
+            captured_kwargs.update(kwargs)
+            write_json(
+                behavioral_manifest,
+                {
+                    "pipeline_status": "behavioral_runtime_succeeded",
+                    "behavioral_runtime_status": "behavioral_runtime_succeeded",
+                    "runtime_mode": "activitysim_container_cli",
+                    "output_root": str(behavioral_manifest.parent),
+                    "artifacts": {
+                        "pipeline_manifest_path": str(behavioral_manifest),
+                        "bundle_manifest_path": str(behavioral_manifest.parent / "activitysim_bundle" / "bundle_manifest.json"),
+                        "runtime_manifest_path": str(behavioral_manifest.parent / "runtime" / "activitysim_runtime_manifest.json"),
+                        "runtime_summary_path": str(behavioral_manifest.parent / "runtime" / "activitysim_runtime_summary.json"),
+                        "ingestion_summary_path": str(behavioral_manifest.parent / "ingestion" / "activitysim_ingestion_summary.json"),
+                        "kpi_summary_path": str(behavioral_manifest.parent / "kpis" / "activitysim_behavioral_kpi_summary.json"),
+                        "kpi_packet_path": str(behavioral_manifest.parent / "kpis" / "activitysim_behavioral_kpi_packet.md"),
+                    },
+                    "steps": {
+                        "build_activitysim_input_bundle": {
+                            "status": "succeeded",
+                            "artifacts": {
+                                "bundle_dir": str(behavioral_manifest.parent / "activitysim_bundle"),
+                                "bundle_manifest_path": str(
+                                    behavioral_manifest.parent / "activitysim_bundle" / "bundle_manifest.json"
+                                ),
+                            },
+                            "metadata": {
+                                "land_use_rows": 26,
+                                "households": 41415,
+                                "persons": 102322,
+                                "skim_mode": "copy",
+                            },
+                        }
+                    },
+                    "caveats": [],
+                    "errors": [],
+                },
+            )
+            return {
+                "output_root": str(behavioral_manifest.parent),
+                "manifest_path": str(behavioral_manifest),
+                "pipeline_status": "behavioral_runtime_succeeded",
+                "behavioral_runtime_status": "behavioral_runtime_succeeded",
+                "runtime_mode": "activitysim_container_cli",
+                "bundle_manifest_path": str(behavioral_manifest.parent / "activitysim_bundle" / "bundle_manifest.json"),
+                "runtime_manifest_path": str(behavioral_manifest.parent / "runtime" / "activitysim_runtime_manifest.json"),
+                "runtime_summary_path": str(behavioral_manifest.parent / "runtime" / "activitysim_runtime_summary.json"),
+                "ingestion_summary_path": str(behavioral_manifest.parent / "ingestion" / "activitysim_ingestion_summary.json"),
+                "kpi_summary_path": str(behavioral_manifest.parent / "kpis" / "activitysim_behavioral_kpi_summary.json"),
+                "kpi_packet_path": str(behavioral_manifest.parent / "kpis" / "activitysim_behavioral_kpi_packet.md"),
+                "caveats": [],
+            }
+
+        with (
+            patch.object(county_onramp, "parse_args", return_value=args),
+            patch.object(county_onramp, "run_cmd"),
+            patch.object(county_onramp, "run_behavioral_demand_prototype", side_effect=fake_run_behavioral_demand_prototype),
+        ):
+            exit_code = county_onramp.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(captured_kwargs["activitysim_container_image"], "python:3.11-slim")
+        self.assertEqual(captured_kwargs["container_engine_cli"], "docker")
+        self.assertEqual(
+            captured_kwargs["activitysim_container_cli_template"],
+            "python -m pip install activitysim && activitysim run",
+        )
+        self.assertEqual(captured_kwargs["container_network_mode"], "bridge")
+
+        manifest = json.loads(self.output_manifest.read_text())
+        self.assertEqual(manifest["runtime"]["activitysim_container_image"], "python:3.11-slim")
+        self.assertEqual(manifest["runtime"]["container_engine_cli"], "docker")
+        self.assertEqual(
+            manifest["runtime"]["activitysim_container_cli_template"],
+            "python -m pip install activitysim && activitysim run",
+        )
+        self.assertEqual(manifest["runtime"]["container_network_mode"], "bridge")
+        self.assertEqual(
+            manifest["summary"]["behavioral_prototype"]["runtime_posture"],
+            "containerized ActivitySim runtime requested via python:3.11-slim on bridge networking",
+        )
 
 
 if __name__ == "__main__":
