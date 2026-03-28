@@ -45,18 +45,45 @@ export function parseCountyOnrampManifest(value: unknown): CountyOnrampManifest 
 export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListItem {
   const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
   const runtimePresetLabel = storedRequest.success ? getCountyRuntimePresetLabel(storedRequest.data.runtimeOptions) : null;
-  const behavioralEvidenceStatusLabel =
-    row.stage === "validated-screening"
-      ? "Validation-ready county state"
-      : runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)"
-      ? "Behavioral evidence lane requested"
-      : null;
-  const behavioralComparisonStatusLabel =
-    row.stage === "validated-screening"
-      ? "Open detail for behavioral readiness"
-      : runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)"
-      ? "Await detail-level runtime evidence"
-      : null;
+  const manifest = parseCountyOnrampManifest(row.manifest_json);
+  const behavioral = manifest?.summary?.behavioral_prototype;
+
+  const behavioralEvidenceReady = Boolean(
+    behavioral?.prototype_manifest_path || behavioral?.runtime_manifest_path || behavioral?.runtime_summary_path
+  );
+  const behavioralComparisonReady =
+    behavioral?.pipeline_status === "behavioral_runtime_succeeded" && Boolean(behavioral?.kpi_summary_path);
+
+  let behavioralEvidenceStatusLabel: string | null = null;
+  let behavioralComparisonStatusLabel: string | null = null;
+
+  if (behavioral?.pipeline_status === "behavioral_runtime_succeeded") {
+    behavioralEvidenceStatusLabel = behavioralEvidenceReady
+      ? "Recorded behavioral evidence available"
+      : "Behavioral runtime succeeded";
+    behavioralComparisonStatusLabel = behavioralComparisonReady
+      ? "Comparison-ready run"
+      : "Runtime succeeded; KPI comparison pending";
+  } else if (behavioral?.pipeline_status === "prototype_preflight_complete") {
+    behavioralEvidenceStatusLabel = behavioralEvidenceReady
+      ? "Preflight-only behavioral evidence"
+      : "Behavioral preflight recorded";
+    behavioralComparisonStatusLabel = "Comparison blocked: preflight only";
+  } else if (behavioral?.pipeline_status === "behavioral_runtime_failed") {
+    behavioralEvidenceStatusLabel = behavioralEvidenceReady
+      ? "Partial behavioral evidence only"
+      : "Behavioral runtime failed";
+    behavioralComparisonStatusLabel = "Comparison blocked: partial outputs only";
+  } else if (behavioral?.pipeline_status === "prototype_pipeline_failed") {
+    behavioralEvidenceStatusLabel = "Behavioral evidence blocked";
+    behavioralComparisonStatusLabel = "Comparison blocked: pipeline failed";
+  } else if (behavioral?.pipeline_status === "prototype_pipeline_running") {
+    behavioralEvidenceStatusLabel = "Behavioral pipeline running";
+    behavioralComparisonStatusLabel = "Comparison pending";
+  } else if (runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)") {
+    behavioralEvidenceStatusLabel = "Behavioral lane requested";
+    behavioralComparisonStatusLabel = "Await recorded behavioral state";
+  }
 
   return {
     id: row.id,
@@ -67,6 +94,10 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
     runtimePresetLabel,
+    behavioralPipelineStatus: behavioral?.pipeline_status ?? null,
+    behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
+    behavioralEvidenceReady,
+    behavioralComparisonReady,
     behavioralEvidenceStatusLabel,
     behavioralComparisonStatusLabel,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),

@@ -197,27 +197,41 @@ export function buildCountyBehavioralPrototypeUiCard(
 }
 
 export function getCountyBehavioralReadinessBadge(input: {
+  pipelineStatus?: string | null;
+  evidenceReady?: boolean;
+  comparisonReady?: boolean;
   evidenceStatusLabel?: string | null;
   comparisonStatusLabel?: string | null;
 }): CountyBehavioralReadinessBadge | null {
   const evidence = input.evidenceStatusLabel?.trim() ?? "";
   const comparison = input.comparisonStatusLabel?.trim() ?? "";
 
-  if (!evidence && !comparison) {
-    return null;
+  if (input.comparisonReady) {
+    return { label: "Comparison-ready run", tone: "success" };
   }
-
-  if (evidence === "Validation-ready county state") {
-    return { label: "Behavioral review ready", tone: "success" };
+  if (input.pipelineStatus === "behavioral_runtime_succeeded" && input.evidenceReady) {
+    return { label: "Evidence-ready run", tone: "success" };
   }
-  if (evidence === "Behavioral evidence lane requested") {
+  if (input.pipelineStatus === "prototype_preflight_complete") {
+    return { label: "Preflight-only evidence", tone: "warning" };
+  }
+  if (input.pipelineStatus === "behavioral_runtime_failed") {
+    return { label: "Partial behavioral evidence", tone: "warning" };
+  }
+  if (input.pipelineStatus === "prototype_pipeline_failed") {
+    return { label: "Behavioral pipeline failed", tone: "warning" };
+  }
+  if (input.pipelineStatus === "prototype_pipeline_running") {
+    return { label: "Behavioral pipeline running", tone: "info" };
+  }
+  if (evidence === "Behavioral lane requested") {
     return { label: "Behavioral lane requested", tone: "info" };
   }
-  if (comparison.includes("Await detail-level runtime evidence")) {
-    return { label: "Awaiting runtime evidence", tone: "warning" };
+  if (comparison.includes("Await recorded behavioral state")) {
+    return { label: "Awaiting recorded state", tone: "warning" };
   }
-  if (comparison.includes("Open detail")) {
-    return { label: "Open detail for readiness", tone: "info" };
+  if (!evidence && !comparison) {
+    return null;
   }
 
   return { label: "Behavioral status available", tone: "neutral" };

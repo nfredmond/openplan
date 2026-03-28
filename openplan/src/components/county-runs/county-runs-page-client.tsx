@@ -254,6 +254,9 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
           const enqueueTone = getCountyRunEnqueueStatusTone(item.enqueueStatus ?? "not-enqueued");
           const enqueueHelp = getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
           const behavioralBadge = getCountyBehavioralReadinessBadge({
+            pipelineStatus: item.behavioralPipelineStatus,
+            evidenceReady: item.behavioralEvidenceReady,
+            comparisonReady: item.behavioralComparisonReady,
             evidenceStatusLabel: item.behavioralEvidenceStatusLabel,
             comparisonStatusLabel: item.behavioralComparisonStatusLabel,
           });

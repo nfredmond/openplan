@@ -23,8 +23,12 @@ vi.mock("@/lib/hooks/use-county-onramp", () => ({
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        behavioralEvidenceStatusLabel: "Validation-ready county state",
-        behavioralComparisonStatusLabel: "Open detail for behavioral readiness",
+        behavioralPipelineStatus: "prototype_preflight_complete",
+        behavioralRuntimeStatus: "behavioral_runtime_blocked",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: false,
+        behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
+        behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
         updatedAt: "2026-03-24T23:00:00Z",
       },
     ],
@@ -70,8 +74,8 @@ describe("CountyRunsPageClient", () => {
   it("shows behavioral readiness badges for list items and submits the standard runtime by default", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    expect(screen.getByText("Behavioral review ready")).toBeInTheDocument();
-    expect(screen.getByText("Validation-ready county state")).toBeInTheDocument();
+    expect(screen.getByText("Preflight-only evidence")).toBeInTheDocument();
+    expect(screen.getByText("Preflight-only behavioral evidence")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("County search"), { target: { value: "Nevada" } });
     fireEvent.click(screen.getByRole("button", { name: "Nevada County, CA FIPS 06057 · Prefix NEVADA" }));

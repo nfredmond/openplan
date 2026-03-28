@@ -69,7 +69,7 @@ describe("county onramp presenters", () => {
     expect(parseCountyOnrampManifest({ nope: true })).toBeNull();
   });
 
-  it("presents county run list items", () => {
+  it("presents county run list items from recorded behavioral manifest state", () => {
     expect(
       presentCountyRunListItem({
         id: "123e4567-e89b-12d3-a456-426614174000",
@@ -82,6 +82,29 @@ describe("county onramp presenters", () => {
         status_label: "bounded screening-ready",
         enqueue_status: "not-enqueued",
         last_enqueued_at: null,
+        requested_runtime_json: {
+          workspaceId: "123e4567-e89b-12d3-a456-426614174001",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "nevada-run",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            overallDemandScalar: null,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+            activitysimContainerImage: "python:3.11-slim",
+            containerEngineCli: "docker",
+            activitysimContainerCliTemplate:
+              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+            containerNetworkMode: "bridge",
+          },
+        },
+        manifest_json: manifest,
         updated_at: "2026-03-24T23:00:00Z",
       })
     ).toEqual({
@@ -92,7 +115,13 @@ describe("county onramp presenters", () => {
       statusLabel: "bounded screening-ready",
       enqueueStatus: "not-enqueued",
       lastEnqueuedAt: null,
-      runtimePresetLabel: null,
+      runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+      behavioralPipelineStatus: "prototype_preflight_complete",
+      behavioralRuntimeStatus: "behavioral_runtime_blocked",
+      behavioralEvidenceReady: true,
+      behavioralComparisonReady: false,
+      behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
+      behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
       updatedAt: "2026-03-24T23:00:00Z",
     });
   });
