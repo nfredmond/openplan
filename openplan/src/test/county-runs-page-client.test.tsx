@@ -27,6 +27,10 @@ let countyRunsItemsMock = [
     behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
     artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
     metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
+    zoneCount: 26,
+    loadedLinks: 3174,
+    finalGap: 0.0091,
+    medianApe: 16.01,
     updatedAt: "2026-03-24T23:00:00Z",
   },
   {
@@ -45,6 +49,10 @@ let countyRunsItemsMock = [
     behavioralEvidenceStatusLabel: "Behavioral lane requested",
     behavioralComparisonStatusLabel: "Await recorded behavioral state",
     artifactAvailabilityLabels: [],
+    zoneCount: null,
+    loadedLinks: null,
+    finalGap: null,
+    medianApe: null,
     updatedAt: "2026-03-24T23:10:00Z",
   },
 ];
@@ -107,6 +115,10 @@ describe("CountyRunsPageClient", () => {
         behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
         artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
         metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
+        zoneCount: 26,
+        loadedLinks: 3174,
+        finalGap: 0.0091,
+        medianApe: 16.01,
         updatedAt: "2026-03-24T23:00:00Z",
       },
       {
@@ -125,6 +137,10 @@ describe("CountyRunsPageClient", () => {
         behavioralEvidenceStatusLabel: "Behavioral lane requested",
         behavioralComparisonStatusLabel: "Await recorded behavioral state",
         artifactAvailabilityLabels: [],
+        zoneCount: null,
+        loadedLinks: null,
+        finalGap: null,
+        medianApe: null,
         updatedAt: "2026-03-24T23:10:00Z",
       },
     ];
@@ -249,6 +265,25 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+  });
+
+  it("persists county sorting in the URL", () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.change(screen.getByLabelText("Sort by"), {
+      target: { value: "final-gap-asc" },
+    });
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?sort=final-gap-asc", { scroll: false });
+    expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
+  });
+
+  it("initializes county sorting from the URL", () => {
+    searchParamsValue = "sort=median-ape-asc";
+
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    expect(screen.getByDisplayValue("Lowest median APE")).toBeInTheDocument();
   });
 
   it("submits the containerized behavioral smoke preset and shows honest caveats", async () => {

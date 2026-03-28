@@ -22,6 +22,8 @@ import {
   buildCountyBehavioralRuntimeSummary,
   buildCountyRunUiCard,
   getCountyBehavioralReadinessBadge,
+  sortCountyRunListItems,
+  type CountyRunSort,
 } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,13 @@ const COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS = [
   { value: "containerized_activitysim", label: "Containerized ActivitySim" },
 ] as const;
 
+const COUNTY_RUN_SORT_OPTIONS: { value: CountyRunSort; label: string }[] = [
+  { value: "updated-desc", label: "Recently updated" },
+  { value: "stage-desc", label: "Most complete stage" },
+  { value: "final-gap-asc", label: "Lowest final gap" },
+  { value: "median-ape-asc", label: "Lowest median APE" },
+];
+
 type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeStatusFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeModeFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS)[number]["value"];
@@ -74,6 +83,12 @@ function parseCountyBehavioralRuntimeModeFilter(
   return COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS.some((option) => option.value === value)
     ? (value as CountyBehavioralRuntimeModeFilter)
     : "all";
+}
+
+function parseCountyRunSort(value: string | null | undefined): CountyRunSort {
+  return COUNTY_RUN_SORT_OPTIONS.some((option) => option.value === value)
+    ? (value as CountyRunSort)
+    : "updated-desc";
 }
 
 function getCountyFilterOptionLabel(
@@ -145,6 +160,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [behavioralRuntimeModeFilter, setBehavioralRuntimeModeFilter] = useState<CountyBehavioralRuntimeModeFilter>(() =>
     parseCountyBehavioralRuntimeModeFilter(searchParams.get("runtimeMode"))
   );
+  const [countyRunSort, setCountyRunSort] = useState<CountyRunSort>(() => parseCountyRunSort(searchParams.get("sort")));
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -172,12 +188,24 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       ),
     [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, items]
   );
+  const sortedItems = useMemo(() => sortCountyRunListItems(filteredItems, countyRunSort), [countyRunSort, filteredItems]);
   const hasActiveFilters =
     behavioralFilter !== "all" || behavioralRuntimeStatusFilter !== "all" || behavioralRuntimeModeFilter !== "all";
 
   const replaceCountyRunsUrl = (params: URLSearchParams) => {
     const nextQuery = params.toString();
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
+
+  const updateCountyRunSort = (nextSort: CountyRunSort) => {
+    setCountyRunSort(nextSort);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextSort === "updated-desc") {
+      nextParams.delete("sort");
+    } else {
+      nextParams.set("sort", nextSort);
+    }
+    replaceCountyRunsUrl(nextParams);
   };
 
   const applyCountyRunsFilters = (next: {
@@ -333,8 +361,25 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               ))}
             </select>
           </div>
+          <div className="space-y-1">
+            <label htmlFor="county-sort" className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Sort by
+            </label>
+            <select
+              id="county-sort"
+              className="module-select min-w-[15rem]"
+              value={countyRunSort}
+              onChange={(event) => updateCountyRunSort(event.target.value as CountyRunSort)}
+            >
+              {COUNTY_RUN_SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="text-sm text-muted-foreground">
-            Showing {filteredItems.length} of {items.length} county runs
+            Showing {sortedItems.length} of {items.length} county runs
           </div>
         </div>
         {hasActiveFilters ? (
@@ -544,15 +589,15 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         />
       ) : null}
 
-      {!error && !loading && items.length > 0 && filteredItems.length === 0 ? (
+      {!error && !loading && items.length > 0 && sortedItems.length === 0 ? (
         <EmptyState
           title="No county runs match this behavioral filter"
-          description="Try a broader behavioral-state filter to see more county runs."
+          description="Try broader county behavioral filters to see more runs."
         />
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {filteredItems.map((item) => {
+        {sortedItems.map((item) => {
           const card = buildCountyRunUiCard({
             geographyLabel: item.geographyLabel,
             manifest: null,

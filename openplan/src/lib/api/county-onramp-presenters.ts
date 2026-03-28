@@ -117,6 +117,10 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralComparisonStatusLabel,
     artifactAvailabilityLabels,
     metricAvailabilityLabels,
+    zoneCount: manifest?.summary?.run?.zone_count ?? null,
+    loadedLinks: manifest?.summary?.run?.loaded_links ?? null,
+    finalGap: manifest?.summary?.run?.final_gap ?? null,
+    medianApe: manifest?.summary?.validation?.metrics?.median_absolute_percent_error ?? null,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }

@@ -12,6 +12,7 @@ import {
 import {
   createCountyRunRequestSchema,
   ingestCountyRunManifestRequestSchema,
+  type CountyRunListItem,
 } from "@/lib/api/county-onramp";
 import {
   buildCountyBehavioralPrototypeUiCard,
@@ -19,6 +20,7 @@ import {
   getCountyRunMetricHighlights,
   getCountyRunNextAction,
   getCountyRunStatusLabel,
+  sortCountyRunListItems,
 } from "@/lib/ui/county-onramp";
 
 const validatedManifestFixture = {
@@ -164,6 +166,59 @@ describe("county onramp primitives", () => {
     expect(card.allowedClaim).toContain("bounded screening-ready");
     expect(card.caveats).toContain("Screening-grade only");
     expect(card.nextAction).toContain("validation report");
+  });
+
+  it("sorts county list items by recency, stage, and validation metrics", () => {
+    const items: CountyRunListItem[] = [
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-run",
+        stage: "validated-screening",
+        updatedAt: "2026-03-24T23:00:00Z",
+        finalGap: 0.0091,
+        medianApe: 16.01,
+      },
+      {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+        stage: "runtime-complete",
+        updatedAt: "2026-03-24T23:10:00Z",
+        finalGap: 0.0042,
+        medianApe: 12.5,
+      },
+      {
+        id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        geographyLabel: "Yuba County, CA",
+        runName: "yuba-run",
+        stage: "bootstrap-incomplete",
+        updatedAt: "2026-03-24T22:00:00Z",
+        finalGap: null,
+        medianApe: null,
+      },
+    ];
+
+    expect(sortCountyRunListItems(items, "updated-desc").map((item) => item.id)).toEqual([
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ]);
+    expect(sortCountyRunListItems(items, "stage-desc").map((item) => item.id)).toEqual([
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ]);
+    expect(sortCountyRunListItems(items, "final-gap-asc").map((item) => item.id)).toEqual([
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ]);
+    expect(sortCountyRunListItems(items, "median-ape-asc").map((item) => item.id)).toEqual([
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ]);
   });
 
   it("exposes metric highlights and basic stage helpers", () => {

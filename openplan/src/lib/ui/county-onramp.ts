@@ -3,6 +3,7 @@ import type {
   CountyOnrampManifest,
   CountyRunStage,
 } from "@/lib/models/county-onramp";
+import type { CountyRunListItem } from "@/lib/api/county-onramp";
 import {
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
@@ -46,6 +47,8 @@ export type CountyBehavioralPrototypeUiCard = {
   claim: string;
   caveats: string[];
 };
+
+export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
 
 export function getCountyRunNextAction(stage: CountyRunStage): string {
   switch (stage) {
@@ -229,6 +232,51 @@ export function buildCountyBehavioralRuntimeSummary(input: {
     runtimeLabel: formatBehavioralRuntimeToken(input.runtimeStatus),
     modeLabel: formatBehavioralRuntimeToken(input.runtimeMode),
   };
+}
+
+const COUNTY_STAGE_SORT_RANK: Record<CountyRunStage, number> = {
+  "bootstrap-incomplete": 0,
+  "runtime-complete": 1,
+  "validation-scaffolded": 2,
+  "validated-screening": 3,
+};
+
+function compareNullableNumberAsc(a: number | null | undefined, b: number | null | undefined): number {
+  const leftMissing = a == null;
+  const rightMissing = b == null;
+  if (leftMissing && rightMissing) return 0;
+  if (leftMissing) return 1;
+  if (rightMissing) return -1;
+  return a - b;
+}
+
+function compareUpdatedDesc(a: CountyRunListItem, b: CountyRunListItem): number {
+  return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+}
+
+export function sortCountyRunListItems(items: CountyRunListItem[], sort: CountyRunSort): CountyRunListItem[] {
+  const next = [...items];
+
+  next.sort((a, b) => {
+    if (sort === "stage-desc") {
+      const stageDelta = COUNTY_STAGE_SORT_RANK[b.stage] - COUNTY_STAGE_SORT_RANK[a.stage];
+      return stageDelta || compareUpdatedDesc(a, b);
+    }
+
+    if (sort === "final-gap-asc") {
+      const gapDelta = compareNullableNumberAsc(a.finalGap, b.finalGap);
+      return gapDelta || compareUpdatedDesc(a, b);
+    }
+
+    if (sort === "median-ape-asc") {
+      const apeDelta = compareNullableNumberAsc(a.medianApe, b.medianApe);
+      return apeDelta || compareUpdatedDesc(a, b);
+    }
+
+    return compareUpdatedDesc(a, b);
+  });
+
+  return next;
 }
 
 export function getCountyBehavioralReadinessBadge(input: {
