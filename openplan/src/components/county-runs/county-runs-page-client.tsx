@@ -287,6 +287,12 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     </p>
                   ) : null}
                 </div>
+                {item.runtimePresetLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Runtime preset</div>
+                    <p className="mt-1 text-muted-foreground">{item.runtimePresetLabel}</p>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">

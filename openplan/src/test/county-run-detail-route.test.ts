@@ -72,6 +72,11 @@ describe("GET /api/county-runs/[countyRunId]", () => {
             hbwScalar: null,
             hboScalar: null,
             nhbScalar: null,
+            activitysimContainerImage: "python:3.11-slim",
+            containerEngineCli: "docker",
+            activitysimContainerCliTemplate:
+              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+            containerNetworkMode: "bridge",
           },
         },
         manifest_json: {
@@ -170,6 +175,7 @@ describe("GET /api/county-runs/[countyRunId]", () => {
     expect(payload.statusLabel).toBe("bounded screening-ready");
     expect(payload.enqueueStatus).toBe("queued_stub");
     expect(payload.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
+    expect(payload.runtimePresetLabel).toBe("Containerized behavioral smoke runtime (prototype)");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.artifacts).toEqual([
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },

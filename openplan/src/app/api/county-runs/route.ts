@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("county_runs")
-      .select("id, geography_label, geography_id, run_name, stage, status_label, enqueue_status, last_enqueued_at, updated_at")
+      .select("id, geography_label, geography_id, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(limit);
@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
           status_label: row.status_label,
           enqueue_status: row.enqueue_status,
           last_enqueued_at: row.last_enqueued_at,
+          requested_runtime_json: row.requested_runtime_json,
           updated_at: row.updated_at,
         })
       ),

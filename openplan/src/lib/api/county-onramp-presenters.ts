@@ -8,6 +8,7 @@ import {
   sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
+import { getCountyRuntimePresetLabel } from "@/lib/models/county-runtime-presets";
 import type {
   CountyRunArtifact,
   CountyRunDetailResponse,
@@ -42,6 +43,8 @@ export function parseCountyOnrampManifest(value: unknown): CountyOnrampManifest 
 }
 
 export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListItem {
+  const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
+
   return {
     id: row.id,
     geographyLabel: row.geography_label ?? row.geography_id,
@@ -50,6 +53,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     statusLabel: row.status_label,
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
+    runtimePresetLabel: storedRequest.success ? getCountyRuntimePresetLabel(storedRequest.data.runtimeOptions) : null,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }
@@ -92,6 +96,7 @@ export function presentCountyRunDetail(params: {
     statusLabel: row.status_label,
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
+    runtimePresetLabel: storedRequest.success ? getCountyRuntimePresetLabel(storedRequest.data.runtimeOptions) : null,
     workerPayload,
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),

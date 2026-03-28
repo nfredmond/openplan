@@ -41,6 +41,7 @@ export const countyRunListItemSchema = z.object({
   statusLabel: z.string().nullable().optional(),
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
+  runtimePresetLabel: z.string().nullable().optional(),
   updatedAt: z.string(),
 });
 
@@ -64,6 +65,7 @@ export const countyRunDetailResponseSchema = z.object({
   statusLabel: z.string().nullable().optional(),
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
+  runtimePresetLabel: z.string().nullable().optional(),
   workerPayload: countyOnrampWorkerPayloadSchema.nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),

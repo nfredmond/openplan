@@ -41,3 +41,21 @@ export function buildCountyRuntimeOptions(preset: CountyRuntimePresetKey): Count
 
   return { keepProject: true };
 }
+
+export function inferCountyRuntimePresetKey(runtimeOptions: CountyRuntimeOptions | null | undefined): CountyRuntimePresetKey {
+  if (
+    runtimeOptions?.activitysimContainerImage?.trim() === "python:3.11-slim" &&
+    runtimeOptions?.containerEngineCli?.trim() === "docker" &&
+    runtimeOptions?.activitysimContainerCliTemplate?.trim() === ACTIVITYSIM_BEHAVIORAL_SMOKE_CLI_TEMPLATE &&
+    runtimeOptions?.containerNetworkMode?.trim() === "bridge"
+  ) {
+    return "activitysim_behavioral_smoke";
+  }
+
+  return "standard";
+}
+
+export function getCountyRuntimePresetLabel(runtimeOptions: CountyRuntimeOptions | null | undefined): string {
+  const presetKey = inferCountyRuntimePresetKey(runtimeOptions);
+  return COUNTY_RUNTIME_PRESET_DEFINITIONS.find((preset) => preset.key === presetKey)?.label ?? "Standard county onboarding runtime";
+}

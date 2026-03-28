@@ -225,6 +225,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                   <div className="mt-1">{data.workerPayload.countyPrefix}</div>
                 </div>
                 <div>
+                  <div className="font-medium text-foreground">Runtime preset</div>
+                  <div className="mt-1">{data.runtimePresetLabel ?? "Standard county onboarding runtime"}</div>
+                </div>
+                <div>
                   <div className="font-medium text-foreground">Callback URL</div>
                   <div className="mt-1 break-all">{data.workerPayload.callback.manifestIngestUrl}</div>
                 </div>

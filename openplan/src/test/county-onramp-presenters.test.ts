@@ -92,6 +92,7 @@ describe("county onramp presenters", () => {
       statusLabel: "bounded screening-ready",
       enqueueStatus: "not-enqueued",
       lastEnqueuedAt: null,
+      runtimePresetLabel: null,
       updatedAt: "2026-03-24T23:00:00Z",
     });
   });
@@ -133,6 +134,11 @@ describe("county onramp presenters", () => {
             hbwScalar: null,
             hboScalar: null,
             nhbScalar: null,
+            activitysimContainerImage: "python:3.11-slim",
+            containerEngineCli: "docker",
+            activitysimContainerCliTemplate:
+              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+            containerNetworkMode: "bridge",
           },
         },
         manifest_json: manifest,
@@ -145,6 +151,7 @@ describe("county onramp presenters", () => {
     expect(detail.geographyLabel).toBe("Nevada County, CA");
     expect(detail.enqueueStatus).toBe("queued_stub");
     expect(detail.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
+    expect(detail.runtimePresetLabel).toBe("Containerized behavioral smoke runtime (prototype)");
     expect(detail.manifest?.stage).toBe("validated-screening");
     expect(detail.workerPayload?.callback.manifestIngestUrl).toBe(
       "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174000/manifest"
