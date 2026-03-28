@@ -348,6 +348,7 @@ def build_bundle_readme(source_manifest: dict[str, Any], skim_mode: str) -> str:
         f"- `configs/settings.yaml`: starter ActivitySim settings kit `{CONFIG_STARTER_VERSION}`\n"
         f"- `configs/constants.yaml`: starter constants kit `{CONFIG_STARTER_VERSION}`\n"
         f"- `configs/{CONFIG_PACKAGE_DESCRIPTOR_NAME}`: config package posture metadata\n"
+        "- `configs/network_los.yaml`: placeholder LOS settings inherited from ActivitySim defaults\n"
         "- `configs/README.md`: starter kit notes and handoff caveats\n"
         "- `metadata/source_screening_bundle_manifest.json`: copied source screening manifest\n\n"
         "## Caveats\n\n"
@@ -364,6 +365,7 @@ def build_configs_readme() -> str:
         "Included starter files:\n"
         "- `settings.yaml`: minimal model/input wiring scaffold\n"
         "- `constants.yaml`: placeholder constants referenced by the settings scaffold\n"
+        "- `network_los.yaml`: minimal LOS placeholder inheriting ActivitySim defaults\n"
         f"- `{CONFIG_PACKAGE_DESCRIPTOR_NAME}`: machine-readable posture metadata\n\n"
         "What is still missing before true pilot execution:\n"
         "- calibrated model settings, coefficients, and estimation outputs\n"
@@ -382,11 +384,11 @@ def build_config_settings() -> str:
         "households_sample_size: 0\n"
         "want_dest_choice_sample_tables: false\n"
         "input_table_list:\n"
-        "  - table_name: land_use\n"
+        "  - tablename: land_use\n"
         "    filename: land_use.csv\n"
-        "  - table_name: households\n"
+        "  - tablename: households\n"
         "    filename: households.csv\n"
-        "  - table_name: persons\n"
+        "  - tablename: persons\n"
         "    filename: persons.csv\n"
         "constants:\n"
         "  source_file_paths:\n"
@@ -400,6 +402,21 @@ def build_config_constants() -> str:
         "openplan_bundle_profile: screening_to_activitysim_handoff\n"
         "openplan_config_starter_version: v0\n"
         "openplan_population_status: prototype_scaffold\n"
+    )
+
+
+def build_network_los_settings() -> str:
+    return (
+        "inherit_settings: False\n"
+        "zone_system: 1\n"
+        "read_skim_cache: False\n"
+        "write_skim_cache: False\n"
+        "taz_skims: skims/travel_time_skims.omx\n"
+        "skim_time_periods:\n"
+        "  time_window: 1440\n"
+        "  period_minutes: 60\n"
+        "  periods: [0, 6, 11, 16, 20, 24]\n"
+        "  labels: ['EA', 'AM', 'MD', 'PM', 'EV']\n"
     )
 
 
@@ -418,6 +435,7 @@ def build_config_package_descriptor() -> dict[str, Any]:
             "README.md",
             "settings.yaml",
             "constants.yaml",
+            "network_los.yaml",
             CONFIG_PACKAGE_DESCRIPTOR_NAME,
         ],
     }
@@ -457,6 +475,7 @@ def build_manifest_payload(
             "readme": "README.md",
             "config_settings": "configs/settings.yaml",
             "config_constants": "configs/constants.yaml",
+            "config_network_los": "configs/network_los.yaml",
             "config_readme": "configs/README.md",
             "config_package_descriptor": f"configs/{CONFIG_PACKAGE_DESCRIPTOR_NAME}",
             "source_screening_manifest": "metadata/source_screening_bundle_manifest.json",
@@ -541,6 +560,7 @@ def build_activitysim_input_bundle(
     (output_path / "configs" / "README.md").write_text(build_configs_readme())
     (output_path / "configs" / "settings.yaml").write_text(build_config_settings())
     (output_path / "configs" / "constants.yaml").write_text(build_config_constants())
+    (output_path / "configs" / "network_los.yaml").write_text(build_network_los_settings())
     write_json(output_path / "configs" / CONFIG_PACKAGE_DESCRIPTOR_NAME, build_config_package_descriptor())
 
     manifest = build_manifest_payload(

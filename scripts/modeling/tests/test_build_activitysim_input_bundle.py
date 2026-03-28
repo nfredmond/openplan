@@ -107,6 +107,7 @@ class BuildActivitySimInputBundleTests(unittest.TestCase):
         self.assertTrue((output_dir / "configs" / "README.md").exists())
         self.assertTrue((output_dir / "configs" / "settings.yaml").exists())
         self.assertTrue((output_dir / "configs" / "constants.yaml").exists())
+        self.assertTrue((output_dir / "configs" / "network_los.yaml").exists())
         self.assertTrue((output_dir / "configs" / "openplan_config_package.json").exists())
         self.assertTrue((output_dir / "metadata" / "source_screening_bundle_manifest.json").exists())
         self.assertTrue((output_dir / "skims" / "travel_time_skims.omx").exists())
@@ -123,6 +124,7 @@ class BuildActivitySimInputBundleTests(unittest.TestCase):
         self.assertGreater(manifest["synthetic_population"]["persons"], 0)
         self.assertEqual(manifest["files"]["config_settings"], "configs/settings.yaml")
         self.assertEqual(manifest["files"]["config_constants"], "configs/constants.yaml")
+        self.assertEqual(manifest["files"]["config_network_los"], "configs/network_los.yaml")
 
         with (output_dir / "households.csv").open(newline="") as handle:
             households = list(csv.DictReader(handle))
@@ -134,6 +136,14 @@ class BuildActivitySimInputBundleTests(unittest.TestCase):
         settings_text = (output_dir / "configs" / "settings.yaml").read_text()
         self.assertIn("models: []", settings_text)
         self.assertIn("input_table_list:", settings_text)
+        self.assertIn("tablename: land_use", settings_text)
+        self.assertIn("tablename: households", settings_text)
+        self.assertIn("tablename: persons", settings_text)
+
+        network_los_text = (output_dir / "configs" / "network_los.yaml").read_text()
+        self.assertIn("zone_system: 1", network_los_text)
+        self.assertIn("taz_skims: skims/travel_time_skims.omx", network_los_text)
+        self.assertIn("skim_time_periods:", network_los_text)
 
     def test_builds_bundle_from_manifest_and_can_symlink_skim(self) -> None:
         output_dir = self.root / "activitysim-bundle-symlink"

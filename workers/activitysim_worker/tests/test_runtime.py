@@ -92,9 +92,23 @@ class ActivitySimRuntimeTests(unittest.TestCase):
         self.assertEqual(runtime_manifest["config_package"]["package_status"], "starter_executable_kit")
         self.assertIn("starter executable config kit", " ".join(runtime_manifest["caveats"]))
 
-    def test_real_cli_mode_runs_when_command_and_settings_exist(self) -> None:
+    def test_starter_config_can_run_with_real_cli_template(self) -> None:
         bundle_dir = build_bundle(self.root)
         (bundle_dir / "configs" / "settings.yaml").write_text("models: []\n")
+        (bundle_dir / "configs" / "constants.yaml").write_text("starter: true\n")
+        (bundle_dir / "configs" / "network_los.yaml").write_text("zone_system: 1\n")
+        (bundle_dir / "configs" / "openplan_config_package.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "openplan.activitysim_config_package.v0",
+                    "package_type": "activitysim_config_package",
+                    "package_status": "starter_executable_kit",
+                    "starter_version": "v0",
+                    "runnable": False,
+                },
+                indent=2,
+            )
+        )
 
         fake_cli = self.root / "fake_activitysim.py"
         fake_cli.write_text(
@@ -132,7 +146,8 @@ class ActivitySimRuntimeTests(unittest.TestCase):
 
         runtime_manifest = json.loads(Path(summary["runtime_manifest_path"]).read_text())
         self.assertEqual(runtime_manifest["status"], "succeeded")
-        self.assertEqual(runtime_manifest["config_package"]["package_status"], "runnable_config_package")
+        self.assertEqual(runtime_manifest["config_package"]["package_status"], "starter_executable_kit")
+        self.assertIn("starter executable config kit", " ".join(runtime_manifest["caveats"]))
         collected_paths = runtime_manifest["artifacts"]["collected_outputs"]
         self.assertIn("output/final_trips.csv", collected_paths)
 

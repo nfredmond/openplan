@@ -254,9 +254,6 @@ def detect_activitysim_capability(
     if config_package["package_status"] == CONFIG_PACKAGE_STATUS_PLACEHOLDER:
         capability["reason"] = config_package["notes"][0]
         return capability
-    if config_package["package_status"] == CONFIG_PACKAGE_STATUS_STARTER:
-        capability["reason"] = config_package["notes"][0]
-        return capability
 
     if cli_template:
         if not cli_template.strip():
@@ -411,6 +408,9 @@ def run_activitysim_runtime(
                         stage.notes.append(capability["reason"])
                         runtime_manifest["caveats"].append(capability["reason"])
                     runtime_manifest["config_package"] = capability["config_package"]
+                    for note in capability["config_package"].get("notes", []):
+                        if note not in runtime_manifest["caveats"]:
+                            runtime_manifest["caveats"].append(note)
                     stage.status = "succeeded"
 
                 elif stage.stage_key == "prepare_activitysim_inputs":
