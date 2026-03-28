@@ -168,6 +168,7 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getAllByText("Prototype blocked").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Comparison-ready").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Validated screening").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Viewing: All runs · sorted by Recently updated")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Needs attention (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();
@@ -254,6 +255,11 @@ describe("CountyRunsPageClient", () => {
     );
     expect(screen.getByRole("button", { name: "Runtime status: Runtime blocked ×" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Runtime mode: Preflight only ×" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Viewing: All runs · sorted by Recently updated · behavioral state Preflight only · runtime status Runtime blocked · runtime mode Preflight only"
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
 
@@ -312,6 +318,7 @@ describe("CountyRunsPageClient", () => {
       scroll: false,
     });
     expect(screen.getByDisplayValue("Lowest median APE")).toBeInTheDocument();
+    expect(screen.getByText("Viewing: Best validated · sorted by Lowest median APE")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View: Best validated ×" })).toBeInTheDocument();
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();

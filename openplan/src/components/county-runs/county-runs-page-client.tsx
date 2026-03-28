@@ -267,6 +267,26 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, quickViewItems]
   );
   const sortedItems = useMemo(() => sortCountyRunListItems(filteredItems, countyRunSort), [countyRunSort, filteredItems]);
+  const dashboardContextLabel = useMemo(() => {
+    const parts = [
+      `Viewing: ${getCountyFilterOptionLabel(COUNTY_RUN_QUICK_VIEW_OPTIONS, countyRunQuickView)}`,
+      `sorted by ${getCountyFilterOptionLabel(COUNTY_RUN_SORT_OPTIONS, countyRunSort)}`,
+    ];
+
+    if (behavioralFilter !== "all") {
+      parts.push(`behavioral state ${getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_FILTER_OPTIONS, behavioralFilter)}`);
+    }
+    if (behavioralRuntimeStatusFilter !== "all") {
+      parts.push(
+        `runtime status ${getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS, behavioralRuntimeStatusFilter)}`
+      );
+    }
+    if (behavioralRuntimeModeFilter !== "all") {
+      parts.push(`runtime mode ${getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS, behavioralRuntimeModeFilter)}`);
+    }
+
+    return parts.join(" · ");
+  }, [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, countyRunQuickView, countyRunSort]);
   const hasActiveFilters =
     countyRunQuickView !== "all" ||
     behavioralFilter !== "all" ||
@@ -444,6 +464,10 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               {option.label} ({quickViewCounts[option.value] ?? 0})
             </Button>
           ))}
+        </div>
+
+        <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+          {dashboardContextLabel}
         </div>
 
         <div className="mt-4 flex flex-wrap items-end gap-3">
