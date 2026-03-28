@@ -285,6 +285,10 @@ describe("county onramp primitives", () => {
     expect(behavioral.evidencePacketReady).toBe(true);
     expect(behavioral.comparisonReady).toBe(false);
     expect(behavioral.evidencePacketPath).toBe("/tmp/behavioral/behavioral_demand_prototype_manifest.json");
+    expect(behavioral.runtimeSummaryPath).toBe("/tmp/behavioral/runtime/activitysim_runtime_summary.json");
+    expect(behavioral.ingestionSummaryPath).toBe("/tmp/behavioral/ingestion/activitysim_ingestion_summary.json");
+    expect(behavioral.comparisonSummaryPath).toBe("/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json");
+    expect(behavioral.comparisonPacketPath).toBe("/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md");
     expect(behavioral.comparisonSupportLabel).toContain("only reached preflight depth");
     expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");

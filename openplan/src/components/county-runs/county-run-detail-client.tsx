@@ -256,6 +256,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <p>{behavioral.evidenceSupportLabel}</p>
             <p>{behavioral.comparisonSupportLabel}</p>
             {behavioral.evidencePacketPath ? <div>Evidence source: {behavioral.evidencePacketPath}</div> : null}
+            {behavioral.runtimeSummaryPath ? <div>Runtime summary: {behavioral.runtimeSummaryPath}</div> : null}
+            {behavioral.ingestionSummaryPath ? <div>Ingestion summary: {behavioral.ingestionSummaryPath}</div> : null}
+            {behavioral.comparisonSummaryPath ? <div>Comparison summary: {behavioral.comparisonSummaryPath}</div> : null}
+            {behavioral.comparisonPacketPath ? <div>Comparison packet: {behavioral.comparisonPacketPath}</div> : null}
             {behavioral.caveats.length > 0 ? (
               <ul className="list-disc space-y-1 pl-5">
                 {behavioral.caveats.map((caveat) => (

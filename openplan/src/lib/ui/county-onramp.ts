@@ -43,6 +43,10 @@ export type CountyBehavioralPrototypeUiCard = {
   evidencePacketReady: boolean;
   comparisonReady: boolean;
   evidencePacketPath: string | null;
+  runtimeSummaryPath: string | null;
+  ingestionSummaryPath: string | null;
+  comparisonSummaryPath: string | null;
+  comparisonPacketPath: string | null;
   comparisonSupportLabel: string;
   claim: string;
   caveats: string[];
@@ -304,6 +308,10 @@ export function buildCountyBehavioralPrototypeUiCard(
     evidencePacketReady: isBehavioralEvidencePacketReady(summary),
     comparisonReady: isBehavioralComparisonReady(summary),
     evidencePacketPath: summary?.prototype_manifest_path ?? summary?.runtime_manifest_path ?? null,
+    runtimeSummaryPath: summary?.runtime_summary_path ?? null,
+    ingestionSummaryPath: summary?.ingestion_summary_path ?? null,
+    comparisonSummaryPath: summary?.kpi_summary_path ?? null,
+    comparisonPacketPath: summary?.kpi_packet_path ?? null,
     comparisonSupportLabel: getBehavioralComparisonSupportLabel(summary),
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
