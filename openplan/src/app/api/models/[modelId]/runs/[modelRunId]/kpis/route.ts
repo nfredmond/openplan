@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { loadModelAccess } from "@/lib/models/api";
+import {
+  buildBehavioralDemandComparison,
+  normalizeBehavioralComparisonSource,
+} from "@/lib/models/behavioral-kpi-comparison";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -39,7 +44,7 @@ async function loadAuthorizedRun(
 
   const { data: run, error: runError } = await supabase
     .from("model_runs")
-    .select("id, model_id")
+    .select("id, model_id, engine_key, status")
     .eq("id", modelRunId)
     .eq("model_id", access.model.id)
     .maybeSingle();
@@ -52,6 +57,63 @@ async function loadAuthorizedRun(
   }
 
   return { supabase, access, run } as const;
+}
+
+async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
+  if (fileUrl.startsWith("local://")) {
+    const payload = await readFile(fileUrl.slice("local://".length), "utf8");
+    return JSON.parse(payload);
+  }
+
+  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+    const res = await fetch(fileUrl, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error(`Artifact fetch failed (${res.status})`);
+    }
+    return res.json();
+  }
+
+  const payload = await readFile(fileUrl, "utf8");
+  return JSON.parse(payload);
+}
+
+async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof createClient>>, runId: string) {
+  const { data: artifacts, error } = await supabase
+    .from("model_run_artifacts")
+    .select("artifact_type, file_url")
+    .eq("run_id", runId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows = (artifacts ?? []) as Array<{ artifact_type: string; file_url: string | null }>;
+  const candidates = rows.filter(
+    (artifact) =>
+      typeof artifact.file_url === "string" &&
+      Boolean(artifact.file_url) &&
+      (artifact.artifact_type === "activitysim_behavioral_kpi_summary" || artifact.artifact_type === "evidence_packet")
+  );
+
+  for (const candidate of candidates) {
+    try {
+      const payload = await loadJsonArtifact(candidate.file_url as string);
+      const normalized = normalizeBehavioralComparisonSource(payload);
+      if (normalized) {
+        return normalized;
+      }
+    } catch (error) {
+      console.warn("Failed to load behavioral comparison artifact", {
+        runId,
+        artifactType: candidate.artifact_type,
+        fileUrl: candidate.file_url,
+        error,
+      });
+    }
+  }
+
+  return null;
 }
 
 // GET /api/models/[modelId]/runs/[modelRunId]/kpis
@@ -88,7 +150,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
   if (baselineRunId) {
     const { data: baselineRun, error: baselineRunError } = await auth.supabase
       .from("model_runs")
-      .select("id")
+      .select("id, engine_key, status")
       .eq("id", baselineRunId)
       .eq("model_id", auth.access.model.id)
       .maybeSingle();
@@ -101,6 +163,42 @@ export async function GET(req: NextRequest, context: RouteContext) {
         { error: "Baseline run not found for this model" },
         { status: 404 }
       );
+    }
+
+    if (auth.run.engine_key === "behavioral_demand") {
+      if (baselineRun.engine_key !== "behavioral_demand") {
+        const blockedComparison = buildBehavioralDemandComparison(null, null);
+        return NextResponse.json({
+          run_id: parsedParams.data.modelRunId,
+          baseline_run_id: baselineRunId,
+          comparison: [],
+          behavioral_comparison: {
+            ...blockedComparison,
+            support: {
+              ...blockedComparison.support,
+              message:
+                "Behavioral comparison is only supportable when both runs come from the behavioral-demand lane.",
+              reason_codes: ["baseline_engine_mismatch"],
+            },
+          },
+        });
+      }
+
+      const [currentBehavioralSource, baselineBehavioralSource] = await Promise.all([
+        loadBehavioralArtifactSource(auth.supabase, parsedParams.data.modelRunId),
+        loadBehavioralArtifactSource(auth.supabase, baselineRunId),
+      ]);
+      const behavioralComparison = buildBehavioralDemandComparison(
+        currentBehavioralSource,
+        baselineBehavioralSource
+      );
+
+      return NextResponse.json({
+        run_id: parsedParams.data.modelRunId,
+        baseline_run_id: baselineRunId,
+        comparison: behavioralComparison.comparison.rows,
+        behavioral_comparison: behavioralComparison,
+      });
     }
 
     const { data: baselineKpis, error: baselineError } = await auth.supabase

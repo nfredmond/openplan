@@ -19,6 +19,7 @@ import {
   formatModelRunKpiPercentDelta,
   formatModelRunKpiValue,
 } from "@/lib/models/kpi-comparison";
+import type { BehavioralDemandComparison } from "@/lib/models/behavioral-kpi-comparison";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 type ModelRunComparisonCandidate = {
@@ -55,6 +56,7 @@ export function ModelRunEvidencePanel({
   const [selectedBaselineRunId, setSelectedBaselineRunId] = useState("");
   const [evidence, setEvidence] = useState<NormalizedEvidencePacket | null>(null);
   const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
+  const [behavioralComparison, setBehavioralComparison] = useState<BehavioralDemandComparison | null>(null);
 
   const canInspect = runStatus === "succeeded";
   const canRelaunch = engineKey === "aequilibrae" && runStatus !== "running" && runStatus !== "succeeded";
@@ -115,6 +117,7 @@ export function ModelRunEvidencePanel({
   async function loadComparison(baselineRunId: string) {
     if (!baselineRunId) {
       setComparisonRows(null);
+      setBehavioralComparison(null);
       setComparisonError(null);
       return;
     }
@@ -126,14 +129,20 @@ export function ModelRunEvidencePanel({
         `/api/models/${modelId}/runs/${modelRunId}/kpis?baseline_run_id=${baselineRunId}`,
         { cache: "no-store" }
       );
-      const payload = (await response.json()) as { comparison?: Array<Record<string, unknown>>; error?: string };
+      const payload = (await response.json()) as {
+        comparison?: Array<Record<string, unknown>>;
+        behavioral_comparison?: BehavioralDemandComparison;
+        error?: string;
+      };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to load KPI comparison");
       }
 
       setComparisonRows(payload.comparison ?? []);
+      setBehavioralComparison(payload.behavioral_comparison ?? null);
     } catch (comparisonLoadError) {
       setComparisonRows(null);
+      setBehavioralComparison(null);
       setComparisonError(
         comparisonLoadError instanceof Error ? comparisonLoadError.message : "Failed to load KPI comparison"
       );
@@ -328,12 +337,24 @@ export function ModelRunEvidencePanel({
                         </p>
                       </div>
                       {comparisonSummary ? (
-                        <StatusBadge tone={comparisonSummary.changedCount > 0 ? "info" : "neutral"}>
-                          {comparisonSummary.changedCount > 0
-                            ? `${comparisonSummary.changedCount} KPI shifts`
-                            : comparisonSummary.comparableCount > 0
-                              ? "All compared KPIs flat"
-                              : "Awaiting comparable KPIs"}
+                        <StatusBadge
+                          tone={
+                            behavioralComparison?.support.status === "behavioral_comparison_blocked"
+                              ? "warning"
+                              : comparisonSummary.changedCount > 0
+                                ? "info"
+                                : "neutral"
+                          }
+                        >
+                          {behavioralComparison?.support.status === "behavioral_comparison_blocked"
+                            ? "Behavioral comparison blocked"
+                            : behavioralComparison?.support.status === "behavioral_comparison_partial_only"
+                              ? "Partial-output comparison"
+                              : comparisonSummary.changedCount > 0
+                                ? `${comparisonSummary.changedCount} KPI shifts`
+                                : comparisonSummary.comparableCount > 0
+                                  ? "All compared KPIs flat"
+                                  : "Awaiting comparable KPIs"}
                         </StatusBadge>
                       ) : null}
                     </div>
@@ -382,6 +403,33 @@ export function ModelRunEvidencePanel({
                           </p>
                         ) : null}
 
+                        {behavioralComparison ? (
+                          <div className="mt-3 rounded-[16px] border border-amber-300/60 bg-amber-50/70 px-3 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+                            <p className="font-semibold">
+                              {behavioralComparison.support.status === "behavioral_comparison_available"
+                                ? "Behavioral comparison available"
+                                : behavioralComparison.support.status === "behavioral_comparison_partial_only"
+                                  ? "Partial-output behavioral comparison only"
+                                  : "Behavioral comparison blocked"}
+                            </p>
+                            <p className="mt-1">{behavioralComparison.support.message}</p>
+                            {behavioralComparison.exclusions.length > 0 ? (
+                              <ul className="mt-2 space-y-1 text-xs">
+                                {behavioralComparison.exclusions.map((exclusion) => (
+                                  <li key={exclusion}>{exclusion}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                            {behavioralComparison.caveats.length > 0 ? (
+                              <ul className="mt-2 space-y-1 text-xs">
+                                {behavioralComparison.caveats.slice(0, 3).map((caveat) => (
+                                  <li key={caveat}>{caveat}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        ) : null}
+
                         {comparisonError ? <p className="mt-3 text-xs text-red-600 dark:text-red-300">{comparisonError}</p> : null}
 
                         {isComparisonLoading ? (
@@ -395,7 +443,11 @@ export function ModelRunEvidencePanel({
                               <div className="module-summary-card">
                                 <p className="module-summary-label">Comparable KPIs</p>
                                 <p className="module-summary-value text-base">{comparisonSummary.comparableCount}</p>
-                                <p className="module-summary-detail">Metrics with values on both the current and baseline runs.</p>
+                                <p className="module-summary-detail">
+                                  {runMode.key === "behavioral_demand"
+                                    ? "Shared behavioral KPI rows discovered on both prototype runs."
+                                    : "Metrics with values on both the current and baseline runs."}
+                                </p>
                               </div>
                               <div className="module-summary-card">
                                 <p className="module-summary-label">Changed KPIs</p>
@@ -410,7 +462,11 @@ export function ModelRunEvidencePanel({
                               <div className="module-summary-card">
                                 <p className="module-summary-label">Missing baseline match</p>
                                 <p className="module-summary-value text-base">{comparisonSummary.missingBaselineCount}</p>
-                                <p className="module-summary-detail">Current-run KPIs that did not find a matching baseline row.</p>
+                                <p className="module-summary-detail">
+                                  {runMode.key === "behavioral_demand"
+                                    ? "Behavioral KPI rows excluded because they were not shared across both runs."
+                                    : "Current-run KPIs that did not find a matching baseline row."}
+                                </p>
                               </div>
                             </div>
 
@@ -438,7 +494,8 @@ export function ModelRunEvidencePanel({
                                 {comparisonSummary.comparableCount > 0
                                   ? "Compared KPI rows are currently flat versus the selected baseline."
                                   : runMode.key === "behavioral_demand"
-                                    ? "No comparison-ready behavioral KPI rows were registered for this run pair yet. Review the prototype artifacts and caveats before treating the pair as analytically comparable."
+                                    ? behavioralComparison?.support.message ??
+                                      "No comparison-ready behavioral KPI rows were registered for this run pair yet. Review the prototype artifacts and caveats before treating the pair as analytically comparable."
                                     : "No comparable KPI rows were available for this run pair yet."}
                               </div>
                             )}
