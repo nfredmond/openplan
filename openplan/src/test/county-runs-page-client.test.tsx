@@ -26,6 +26,7 @@ let countyRunsItemsMock = [
     behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
     behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
     artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
+    metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
     updatedAt: "2026-03-24T23:00:00Z",
   },
   {
@@ -105,6 +106,7 @@ describe("CountyRunsPageClient", () => {
         behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
         behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
         artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
+        metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
         updatedAt: "2026-03-24T23:00:00Z",
       },
       {
@@ -154,6 +156,11 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Scaffold CSV")).toBeInTheDocument();
     expect(screen.getByText("Validation summary")).toBeInTheDocument();
     expect(screen.getByText("Behavioral prototype")).toBeInTheDocument();
+    expect(screen.getByText("Metrics")).toBeInTheDocument();
+    expect(screen.getByText("Zones 26")).toBeInTheDocument();
+    expect(screen.getByText("Links 3174")).toBeInTheDocument();
+    expect(screen.getByText("Gap 0.0091")).toBeInTheDocument();
+    expect(screen.getByText("Median APE 16.01%")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("County search"), { target: { value: "Nevada" } });
     fireEvent.click(screen.getByRole("button", { name: "Nevada County, CA FIPS 06057 · Prefix NEVADA" }));

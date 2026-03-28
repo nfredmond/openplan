@@ -198,6 +198,7 @@ describe("/api/county-runs route", () => {
           behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
           behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
           artifactAvailabilityLabels: ["Scaffold CSV", "Review packet", "Validation summary", "Behavioral prototype"],
+          metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
           updatedAt: "2026-03-24T23:00:00Z",
         },
       ],

@@ -648,6 +648,18 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     </div>
                   </div>
                 ) : null}
+                {item.metricAvailabilityLabels && item.metricAvailabilityLabels.length > 0 ? (
+                  <div>
+                    <div className="font-medium text-foreground">Metrics</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {item.metricAvailabilityLabels.map((label) => (
+                        <StatusBadge key={label} tone="neutral">
+                          {label}
+                        </StatusBadge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">

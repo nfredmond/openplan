@@ -59,6 +59,14 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     manifest?.artifacts?.validation_summary_json ? "Validation summary" : null,
     manifest?.artifacts?.behavioral_prototype_manifest_json ? "Behavioral prototype" : null,
   ].filter((value): value is string => Boolean(value));
+  const metricAvailabilityLabels = [
+    manifest?.summary?.run?.zone_count != null ? `Zones ${manifest.summary.run.zone_count}` : null,
+    manifest?.summary?.run?.loaded_links != null ? `Links ${manifest.summary.run.loaded_links}` : null,
+    manifest?.summary?.run?.final_gap != null ? `Gap ${manifest.summary.run.final_gap.toFixed(4)}` : null,
+    manifest?.summary?.validation?.metrics?.median_absolute_percent_error != null
+      ? `Median APE ${manifest.summary.validation.metrics.median_absolute_percent_error.toFixed(2)}%`
+      : null,
+  ].filter((value): value is string => Boolean(value));
 
   let behavioralEvidenceStatusLabel: string | null = null;
   let behavioralComparisonStatusLabel: string | null = null;
@@ -108,6 +116,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralEvidenceStatusLabel,
     behavioralComparisonStatusLabel,
     artifactAvailabilityLabels,
+    metricAvailabilityLabels,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }
