@@ -21,6 +21,7 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
+    activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
     behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
   },
   runtime: {
@@ -52,6 +53,15 @@ const manifest = {
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
+    },
+    activitysim_bundle: {
+      status: "completed",
+      output_dir: "/tmp/activitysim",
+      manifest_path: "/tmp/activitysim/bundle_manifest.json",
+      land_use_rows: 26,
+      households: 41415,
+      persons: 102322,
+      skim_mode: "copy",
     },
     behavioral_prototype: {
       pipeline_status: "prototype_preflight_complete",
@@ -123,7 +133,13 @@ describe("county onramp presenters", () => {
       behavioralComparisonReady: false,
       behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
       behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-      artifactAvailabilityLabels: ["Scaffold CSV", "Review packet", "Validation summary", "Behavioral prototype"],
+      artifactAvailabilityLabels: [
+        "Scaffold CSV",
+        "Review packet",
+        "Validation summary",
+        "ActivitySim bundle",
+        "Behavioral prototype",
+      ],
       metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
       zoneCount: 26,
       loadedLinks: 3174,

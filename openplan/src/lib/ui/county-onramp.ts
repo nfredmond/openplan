@@ -48,6 +48,21 @@ export type CountyBehavioralPrototypeUiCard = {
   caveats: string[];
 };
 
+export type CountyActivitySimBundleUiCard = {
+  statusLabel: string;
+  tone: "neutral" | "info" | "warning" | "success";
+  ready: boolean;
+  claim: string;
+  outputDir: string | null;
+  manifestPath: string | null;
+  landUseRows: number | null;
+  households: number | null;
+  persons: number | null;
+  skimModeLabel: string | null;
+  errorMessage: string | null;
+  errorKind: string | null;
+};
+
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
 export type CountyRunQuickView = "all" | "needs-attention" | "best-validated" | "prototype-blocked" | "comparison-ready";
 
@@ -107,6 +122,87 @@ export function getCountyRunMetricHighlights(manifest: CountyOnrampManifest | nu
     finalGap: run?.final_gap ?? null,
     medianApe: validation?.median_absolute_percent_error ?? null,
     maxApe: validation?.max_absolute_percent_error ?? null,
+  };
+}
+
+function formatActivitySimSkimMode(value: string | null | undefined): string | null {
+  if (!value) return null;
+  if (value === "copy") return "Copied skims";
+  if (value === "symlink") return "Symlinked skims";
+  return value;
+}
+
+export function buildCountyActivitySimBundleUiCard(
+  manifest: CountyOnrampManifest | null | undefined
+): CountyActivitySimBundleUiCard {
+  const bundle = manifest?.summary?.activitysim_bundle;
+  const manifestPath = bundle?.manifest_path ?? manifest?.artifacts?.activitysim_bundle_manifest_json ?? null;
+
+  if (!bundle) {
+    return {
+      statusLabel: "Not recorded",
+      tone: "neutral",
+      ready: false,
+      claim: "No ActivitySim handoff bundle state has been recorded for this county run.",
+      outputDir: null,
+      manifestPath,
+      landUseRows: null,
+      households: null,
+      persons: null,
+      skimModeLabel: null,
+      errorMessage: null,
+      errorKind: null,
+    };
+  }
+
+  if (bundle.status === "completed") {
+    return {
+      statusLabel: "Bundle ready",
+      tone: "info",
+      ready: true,
+      claim:
+        "Prototype ActivitySim handoff bundle was built from county screening outputs. This indicates scaffold availability only, not calibrated behavioral demand or client-ready forecasting.",
+      outputDir: bundle.output_dir ?? null,
+      manifestPath,
+      landUseRows: bundle.land_use_rows ?? null,
+      households: bundle.households ?? null,
+      persons: bundle.persons ?? null,
+      skimModeLabel: formatActivitySimSkimMode(bundle.skim_mode),
+      errorMessage: null,
+      errorKind: null,
+    };
+  }
+
+  if (bundle.status === "failed") {
+    return {
+      statusLabel: "Bundle failed",
+      tone: "warning",
+      ready: false,
+      claim: "ActivitySim handoff bundle generation failed. Behavioral runtime availability should not be assumed from this county run.",
+      outputDir: bundle.output_dir ?? null,
+      manifestPath,
+      landUseRows: bundle.land_use_rows ?? null,
+      households: bundle.households ?? null,
+      persons: bundle.persons ?? null,
+      skimModeLabel: formatActivitySimSkimMode(bundle.skim_mode),
+      errorMessage: bundle.error?.message ?? null,
+      errorKind: bundle.error?.kind ?? null,
+    };
+  }
+
+  return {
+    statusLabel: "Not built",
+    tone: "neutral",
+    ready: false,
+    claim: "No ActivitySim handoff bundle was generated for this county run yet.",
+    outputDir: bundle.output_dir ?? null,
+    manifestPath,
+    landUseRows: bundle.land_use_rows ?? null,
+    households: bundle.households ?? null,
+    persons: bundle.persons ?? null,
+    skimModeLabel: formatActivitySimSkimMode(bundle.skim_mode),
+    errorMessage: bundle.error?.message ?? null,
+    errorKind: bundle.error?.kind ?? null,
   };
 }
 

@@ -57,6 +57,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     manifest?.artifacts?.scaffold_csv ? "Scaffold CSV" : null,
     manifest?.artifacts?.review_packet_md ? "Review packet" : null,
     manifest?.artifacts?.validation_summary_json ? "Validation summary" : null,
+    manifest?.artifacts?.activitysim_bundle_manifest_json ? "ActivitySim bundle" : null,
     manifest?.artifacts?.behavioral_prototype_manifest_json ? "Behavioral prototype" : null,
   ].filter((value): value is string => Boolean(value));
   const metricAvailabilityLabels = [

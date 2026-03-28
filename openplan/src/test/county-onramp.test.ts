@@ -15,6 +15,7 @@ import {
   type CountyRunListItem,
 } from "@/lib/api/county-onramp";
 import {
+  buildCountyActivitySimBundleUiCard,
   buildCountyBehavioralPrototypeUiCard,
   buildCountyRunSummaryCounts,
   buildCountyRunUiCard,
@@ -258,6 +259,7 @@ describe("county onramp primitives", () => {
   it("exposes metric highlights and basic stage helpers", () => {
     const manifest = countyOnrampManifestSchema.parse(validatedManifestFixture);
     const metrics = getCountyRunMetricHighlights(manifest);
+    const activitysimBundle = buildCountyActivitySimBundleUiCard(manifest);
     const behavioral = buildCountyBehavioralPrototypeUiCard(manifest);
 
     expect(metrics).toEqual({
@@ -268,6 +270,11 @@ describe("county onramp primitives", () => {
       medianApe: 16.01,
       maxApe: 49.48,
     });
+    expect(activitysimBundle.statusLabel).toBe("Bundle ready");
+    expect(activitysimBundle.ready).toBe(true);
+    expect(activitysimBundle.claim).toContain("scaffold availability only");
+    expect(activitysimBundle.manifestPath).toBe("/tmp/activitysim/bundle_manifest.json");
+    expect(activitysimBundle.skimModeLabel).toBe("Copied skims");
     expect(behavioral.pipelineStatus).toBe("prototype_preflight_complete");
     expect(behavioral.runtimeStatus).toBe("behavioral_runtime_blocked");
     expect(behavioral.runtimePosture).toBe(

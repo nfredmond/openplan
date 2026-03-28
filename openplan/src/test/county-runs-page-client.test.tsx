@@ -26,7 +26,7 @@ let countyRunsItemsMock = [
     behavioralComparisonReady: false,
     behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
     behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-    artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
+    artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "ActivitySim bundle", "Behavioral prototype"],
     metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
     zoneCount: 26,
     loadedLinks: 3174,
@@ -121,7 +121,7 @@ describe("CountyRunsPageClient", () => {
         behavioralComparisonReady: false,
         behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
         behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-        artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "Behavioral prototype"],
+        artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "ActivitySim bundle", "Behavioral prototype"],
         metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
         zoneCount: 26,
         loadedLinks: 3174,
@@ -192,6 +192,7 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Artifacts")).toBeInTheDocument();
     expect(screen.getByText("Scaffold CSV")).toBeInTheDocument();
     expect(screen.getByText("Validation summary")).toBeInTheDocument();
+    expect(screen.getByText("ActivitySim bundle")).toBeInTheDocument();
     expect(screen.getByText("Behavioral prototype")).toBeInTheDocument();
     expect(screen.getByText("Metrics")).toBeInTheDocument();
     expect(screen.getByText("Zones 26")).toBeInTheDocument();

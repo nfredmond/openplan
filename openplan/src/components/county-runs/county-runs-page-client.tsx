@@ -906,7 +906,10 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     <div className="font-medium text-foreground">Artifacts</div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {item.artifactAvailabilityLabels.map((label) => (
-                        <StatusBadge key={label} tone={label === "Behavioral prototype" ? "info" : "neutral"}>
+                        <StatusBadge
+                          key={label}
+                          tone={label === "Behavioral prototype" || label === "ActivitySim bundle" ? "info" : "neutral"}
+                        >
                           {label}
                         </StatusBadge>
                       ))}

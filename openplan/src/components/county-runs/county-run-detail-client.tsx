@@ -11,6 +11,7 @@ import {
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
 import {
+  buildCountyActivitySimBundleUiCard,
   buildCountyBehavioralPrototypeUiCard,
   buildCountyRunUiCard,
   getCountyRunMetricHighlights,
@@ -73,6 +74,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     stage: data.stage,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
+  const activitysimBundle = buildCountyActivitySimBundleUiCard(data.manifest);
   const behavioral = buildCountyBehavioralPrototypeUiCard(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
   const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
@@ -217,6 +219,26 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>ActivitySim handoff</CardTitle>
+            <CardDescription>Intermediate bundle state between screening outputs and the prototype behavioral lane.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <StatusBadge tone={activitysimBundle.tone}>{activitysimBundle.statusLabel}</StatusBadge>
+            <div>Bundle ready: {activitysimBundle.ready ? "Yes" : "No"}</div>
+            <p>{activitysimBundle.claim}</p>
+            <div>Land-use rows: {activitysimBundle.landUseRows ?? "—"}</div>
+            <div>Households: {activitysimBundle.households ?? "—"}</div>
+            <div>Persons: {activitysimBundle.persons ?? "—"}</div>
+            <div>Skim posture: {activitysimBundle.skimModeLabel ?? "—"}</div>
+            {activitysimBundle.outputDir ? <div>Output root: {activitysimBundle.outputDir}</div> : null}
+            {activitysimBundle.manifestPath ? <div>Bundle manifest: {activitysimBundle.manifestPath}</div> : null}
+            {activitysimBundle.errorMessage ? <div>Error: {activitysimBundle.errorMessage}</div> : null}
+            {activitysimBundle.errorKind ? <div>Error kind: {activitysimBundle.errorKind}</div> : null}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Behavioral prototype</CardTitle>
