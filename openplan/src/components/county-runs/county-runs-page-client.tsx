@@ -11,6 +11,12 @@ import {
   getCountyRunEnqueueStatusLabel,
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
+import {
+  ACTIVITYSIM_BEHAVIORAL_SMOKE_CLI_TEMPLATE,
+  buildCountyRuntimeOptions,
+  COUNTY_RUNTIME_PRESET_DEFINITIONS,
+  type CountyRuntimePresetKey,
+} from "@/lib/models/county-runtime-presets";
 import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +35,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [countyQuery, setCountyQuery] = useState("");
   const [selectedCounty, setSelectedCounty] = useState<CountyGeographySearchItem | null>(null);
   const [runName, setRunName] = useState("");
+  const [runtimePreset, setRuntimePreset] = useState<CountyRuntimePresetKey>("standard");
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -42,6 +49,10 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   }, [countyQuery, selectedCounty]);
 
   const suggestedRunName = useMemo(() => activeCounty?.suggestedRunName ?? "", [activeCounty]);
+  const selectedRuntimePreset = useMemo(
+    () => COUNTY_RUNTIME_PRESET_DEFINITIONS.find((preset) => preset.key === runtimePreset) ?? COUNTY_RUNTIME_PRESET_DEFINITIONS[0],
+    [runtimePreset]
+  );
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,7 +66,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       geographyLabel: activeCounty.geographyLabel,
       runName: nextRunName,
       countyPrefix: activeCounty.countyPrefix,
-      runtimeOptions: { keepProject: true },
+      runtimeOptions: buildCountyRuntimeOptions(runtimePreset),
     });
 
     if (created?.countyRunId) {
@@ -93,8 +104,11 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         <CardContent>
           <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" onSubmit={submitCreate}>
             <div className="space-y-2 md:col-span-2 xl:col-span-2">
-              <label className="text-sm font-medium text-foreground">County search</label>
+              <label htmlFor="county-search" className="text-sm font-medium text-foreground">
+                County search
+              </label>
               <Input
+                id="county-search"
                 value={countyQuery}
                 onChange={(e) => setCountyQuery(e.target.value)}
                 placeholder="Nevada County, CA or 06057"
@@ -103,13 +117,64 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             </div>
 
             <div className="space-y-2 md:col-span-2 xl:col-span-2">
-              <label className="text-sm font-medium text-foreground">Run name</label>
+              <label htmlFor="county-run-name" className="text-sm font-medium text-foreground">
+                Run name
+              </label>
               <Input
+                id="county-run-name"
                 value={runName}
                 onChange={(e) => setRunName(e.target.value)}
                 placeholder={suggestedRunName || "county-runtime"}
               />
               <p className="text-xs text-muted-foreground">Leave blank to use the suggested run name derived from the selected county.</p>
+            </div>
+
+            <div className="md:col-span-2 xl:col-span-4 rounded-xl border border-border/70 bg-muted/20 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-foreground">Advanced runtime</div>
+                  <p className="text-xs text-muted-foreground">
+                    Choose whether this county bootstrap should stay on the standard path or request the shipped containerized ActivitySim smoke path.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,20rem)_1fr]">
+                <div className="space-y-2">
+                  <label htmlFor="county-runtime-preset" className="text-sm font-medium text-foreground">
+                    Runtime preset
+                  </label>
+                  <select
+                    id="county-runtime-preset"
+                    className="module-select w-full"
+                    value={runtimePreset}
+                    onChange={(event) => setRuntimePreset(event.target.value as CountyRuntimePresetKey)}
+                  >
+                    {COUNTY_RUNTIME_PRESET_DEFINITIONS.map((preset) => (
+                      <option key={preset.key} value={preset.key}>
+                        {preset.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="rounded-xl border border-border/70 bg-background/80 p-3 text-sm">
+                  <div className="font-medium text-foreground">{selectedRuntimePreset.label}</div>
+                  <p className="mt-1 text-muted-foreground">{selectedRuntimePreset.summary}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{selectedRuntimePreset.caveat}</p>
+                  {runtimePreset === "activitysim_behavioral_smoke" ? (
+                    <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-muted-foreground">
+                      <div className="font-medium text-foreground">Prototype runtime options sent on create</div>
+                      <ul className="mt-2 space-y-1 font-mono">
+                        <li>activitysimContainerImage: python:3.11-slim</li>
+                        <li>containerEngineCli: docker</li>
+                        <li>containerNetworkMode: bridge</li>
+                        <li>activitysimContainerCliTemplate: {ACTIVITYSIM_BEHAVIORAL_SMOKE_CLI_TEMPLATE}</li>
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
 
             <div className="md:col-span-2 xl:col-span-4 space-y-3">

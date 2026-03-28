@@ -180,6 +180,16 @@ python3 scripts/modeling/bootstrap_county_validation_onramp.py \
 
 For a brand-new county, use a fresh `--name` and county-specific output paths.
 
+Web launcher note:
+- the county run launcher now keeps the standard bootstrap as the default preset
+- an advanced runtime preset can opt into the internal `Containerized behavioral smoke runtime (prototype)` path
+- that preset sends the proven ActivitySim container profile:
+  - `activitysimContainerImage: python:3.11-slim`
+  - `containerEngineCli: docker`
+  - `containerNetworkMode: bridge`
+  - `activitysimContainerCliTemplate: bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run ...'`
+- this remains prototype-only and must not be described as calibrated production behavioral demand
+
 ## Products created by this workflow
 A county that follows this workflow should accumulate:
 - completed screening run directory
