@@ -70,6 +70,44 @@ const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string 
   { value: "comparison-ready", label: "Comparison-ready" },
 ];
 
+const COUNTY_SUMMARY_TILES: {
+  key: "totalRuns" | "needsAttention" | "prototypeBlocked" | "comparisonReady" | "validatedScreening";
+  label: string;
+  quickView: CountyRunQuickView;
+  className: string;
+}[] = [
+  {
+    key: "totalRuns",
+    label: "Total runs",
+    quickView: "all",
+    className: "border border-border/70 bg-background/70",
+  },
+  {
+    key: "needsAttention",
+    label: "Needs attention",
+    quickView: "needs-attention",
+    className: "border border-amber-500/30 bg-amber-500/10",
+  },
+  {
+    key: "prototypeBlocked",
+    label: "Prototype blocked",
+    quickView: "prototype-blocked",
+    className: "border border-amber-500/30 bg-amber-500/10",
+  },
+  {
+    key: "comparisonReady",
+    label: "Comparison-ready",
+    quickView: "comparison-ready",
+    className: "border border-emerald-500/30 bg-emerald-500/10",
+  },
+  {
+    key: "validatedScreening",
+    label: "Validated screening",
+    quickView: "best-validated",
+    className: "border border-sky-500/30 bg-sky-500/10",
+  },
+];
+
 type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeStatusFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS)[number]["value"];
 type CountyBehavioralRuntimeModeFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS)[number]["value"];
@@ -372,26 +410,25 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
           </p>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-xl border border-border/70 bg-background/70 p-3">
-            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Total runs</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.totalRuns}</div>
-          </div>
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
-            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Needs attention</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.needsAttention}</div>
-          </div>
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
-            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Prototype blocked</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.prototypeBlocked}</div>
-          </div>
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Comparison-ready</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.comparisonReady}</div>
-          </div>
-          <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3">
-            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Validated screening</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.validatedScreening}</div>
-          </div>
+          {COUNTY_SUMMARY_TILES.map((tile) => {
+            const count = summaryCounts[tile.key];
+            const active = countyRunQuickView === tile.quickView;
+
+            return (
+              <button
+                key={tile.key}
+                type="button"
+                aria-label={`Summary tile: ${tile.label}`}
+                onClick={() => updateCountyRunQuickView(tile.quickView)}
+                className={`rounded-xl p-3 text-left transition hover:border-primary/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${tile.className} ${
+                  active ? "ring-2 ring-primary/40" : ""
+                }`}
+              >
+                <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{tile.label}</div>
+                <div className="mt-2 text-2xl font-semibold text-foreground">{count}</div>
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">

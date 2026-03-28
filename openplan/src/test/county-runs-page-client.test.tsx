@@ -288,6 +288,21 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
   });
 
+  it("lets summary tiles drive quick-view presets", () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Summary tile: Prototype blocked" }));
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?view=prototype-blocked&sort=final-gap-asc", {
+      scroll: false,
+    });
+    expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "View: Prototype blocked ×" })).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+  });
+
   it("applies quick-view presets with URL-backed sort defaults", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
