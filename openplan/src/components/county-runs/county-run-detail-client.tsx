@@ -15,7 +15,7 @@ import {
   buildCountyRunUiCard,
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
-import { getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
+import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
@@ -76,7 +76,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
-  const countyRunsBackHref = getSafeCountyRunsBackHref(searchParams.get("backTo"));
+  const requestedBackTo = searchParams.get("backTo");
+  const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
+  const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
@@ -113,6 +115,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <Link href={countyRunsBackHref}>Back to county runs</Link>
           </Button>
         </div>
+        {countyRunsBackContextLabel ? (
+          <div className="mt-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Saved dashboard view</span>
+            <span className="ml-2">{countyRunsBackContextLabel}</span>
+          </div>
+        ) : null}
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
         {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
         {enqueueState ? (
