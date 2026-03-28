@@ -105,17 +105,24 @@ class BuildActivitySimInputBundleTests(unittest.TestCase):
         self.assertTrue((output_dir / "persons.csv").exists())
         self.assertTrue((output_dir / "README.md").exists())
         self.assertTrue((output_dir / "configs" / "README.md").exists())
+        self.assertTrue((output_dir / "configs" / "settings.yaml").exists())
+        self.assertTrue((output_dir / "configs" / "constants.yaml").exists())
+        self.assertTrue((output_dir / "configs" / "openplan_config_package.json").exists())
         self.assertTrue((output_dir / "metadata" / "source_screening_bundle_manifest.json").exists())
         self.assertTrue((output_dir / "skims" / "travel_time_skims.omx").exists())
 
         manifest = json.loads((output_dir / "manifest.json").read_text())
         self.assertEqual(manifest["bundle_type"], "activitysim_input_bundle")
         self.assertEqual(manifest["synthetic_population"]["status"], "prototype_scaffold")
+        self.assertEqual(manifest["config_package"]["package_status"], "starter_executable_kit")
+        self.assertEqual(manifest["config_package"]["starter_version"], "v0")
         self.assertEqual(manifest["skims"]["artifact"]["mode"], "copy")
         self.assertIn("not contain a calibrated IPF", " ".join(manifest["caveats"]))
         self.assertEqual(manifest["land_use"]["rows"], 2)
         self.assertGreater(manifest["synthetic_population"]["households"], 0)
         self.assertGreater(manifest["synthetic_population"]["persons"], 0)
+        self.assertEqual(manifest["files"]["config_settings"], "configs/settings.yaml")
+        self.assertEqual(manifest["files"]["config_constants"], "configs/constants.yaml")
 
         with (output_dir / "households.csv").open(newline="") as handle:
             households = list(csv.DictReader(handle))
@@ -123,6 +130,10 @@ class BuildActivitySimInputBundleTests(unittest.TestCase):
             persons = list(csv.DictReader(handle))
         self.assertEqual(len(households), manifest["synthetic_population"]["households"])
         self.assertEqual(len(persons), manifest["synthetic_population"]["persons"])
+
+        settings_text = (output_dir / "configs" / "settings.yaml").read_text()
+        self.assertIn("models: []", settings_text)
+        self.assertIn("input_table_list:", settings_text)
 
     def test_builds_bundle_from_manifest_and_can_symlink_skim(self) -> None:
         output_dir = self.root / "activitysim-bundle-symlink"

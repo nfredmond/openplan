@@ -16,6 +16,8 @@ MANIFEST_NAME = "manifest.json"
 DEFAULT_SKIM_RELATIVE_PATH = Path("run_output") / "travel_time_skims.omx"
 DEFAULT_ZONE_ATTRIBUTES_RELATIVE_PATH = Path("package") / "zone_attributes.csv"
 SOURCE_MANIFEST_RELATIVE_PATH = Path("bundle_manifest.json")
+CONFIG_STARTER_VERSION = "v0"
+CONFIG_PACKAGE_DESCRIPTOR_NAME = "openplan_config_package.json"
 
 POPULATION_CAVEATS = [
     "Prototype synthetic population only; this bundle does not contain a calibrated IPF or PopulationSim population.",
@@ -343,7 +345,10 @@ def build_bundle_readme(source_manifest: dict[str, Any], skim_mode: str) -> str:
         "- `persons.csv`: prototype person scaffold generated from zone attributes\n"
         "- `skims/travel_time_skims.omx`: screening skim OMX materialized via "
         f"`{skim_mode}`\n"
-        "- `configs/README.md`: placeholder config notes for a future ActivitySim worker\n"
+        f"- `configs/settings.yaml`: starter ActivitySim settings kit `{CONFIG_STARTER_VERSION}`\n"
+        f"- `configs/constants.yaml`: starter constants kit `{CONFIG_STARTER_VERSION}`\n"
+        f"- `configs/{CONFIG_PACKAGE_DESCRIPTOR_NAME}`: config package posture metadata\n"
+        "- `configs/README.md`: starter kit notes and handoff caveats\n"
         "- `metadata/source_screening_bundle_manifest.json`: copied source screening manifest\n\n"
         "## Caveats\n\n"
         f"{caveats}\n"
@@ -352,14 +357,70 @@ def build_bundle_readme(source_manifest: dict[str, Any], skim_mode: str) -> str:
 
 def build_configs_readme() -> str:
     return (
-        "# Future ActivitySim Worker Config Scaffold\n\n"
-        "This directory is intentionally minimal. The current bundle builder does not ship an executable "
-        "ActivitySim config set.\n\n"
-        "Expected follow-on work:\n"
-        "- map OpenPlan prototype household/person columns to the final ActivitySim schema\n"
-        "- define model settings, coefficients, and estimation/calibration inputs\n"
-        "- formalize skim period/mode naming and OMX lookup conventions\n"
+        "# OpenPlan ActivitySim Starter Config Kit\n\n"
+        f"Starter kit version: `{CONFIG_STARTER_VERSION}`\n\n"
+        "This is a versioned starter config posture for worker integration and contract testing. "
+        "It is not a production-calibrated ActivitySim config package and should not be represented as pilot-ready.\n\n"
+        "Included starter files:\n"
+        "- `settings.yaml`: minimal model/input wiring scaffold\n"
+        "- `constants.yaml`: placeholder constants referenced by the settings scaffold\n"
+        f"- `{CONFIG_PACKAGE_DESCRIPTOR_NAME}`: machine-readable posture metadata\n\n"
+        "What is still missing before true pilot execution:\n"
+        "- calibrated model settings, coefficients, and estimation outputs\n"
+        "- final schema alignment for OpenPlan prototype household/person tables\n"
+        "- validated skim period/mode naming and OMX lookup conventions\n"
+        "- a confirmed end-to-end ActivitySim run against county-specific inputs\n"
     )
+
+
+def build_config_settings() -> str:
+    return (
+        "# OpenPlan ActivitySim starter config kit\n"
+        "# This file exists so the worker can stage a config-shaped package, but it is not a calibrated county run config.\n"
+        "models: []\n"
+        "multiprocess: false\n"
+        "households_sample_size: 0\n"
+        "want_dest_choice_sample_tables: false\n"
+        "input_table_list:\n"
+        "  - table_name: land_use\n"
+        "    filename: land_use.csv\n"
+        "  - table_name: households\n"
+        "    filename: households.csv\n"
+        "  - table_name: persons\n"
+        "    filename: persons.csv\n"
+        "constants:\n"
+        "  source_file_paths:\n"
+        "    - constants.yaml\n"
+    )
+
+
+def build_config_constants() -> str:
+    return (
+        "# OpenPlan ActivitySim starter constants\n"
+        "openplan_bundle_profile: screening_to_activitysim_handoff\n"
+        "openplan_config_starter_version: v0\n"
+        "openplan_population_status: prototype_scaffold\n"
+    )
+
+
+def build_config_package_descriptor() -> dict[str, Any]:
+    return {
+        "schema_version": "openplan.activitysim_config_package.v0",
+        "package_type": "activitysim_config_package",
+        "package_status": "starter_executable_kit",
+        "starter_version": CONFIG_STARTER_VERSION,
+        "runnable": False,
+        "notes": [
+            "This starter kit is intended for worker/runtime contract enablement only.",
+            "It is not a calibrated or pilot-ready ActivitySim configuration package.",
+        ],
+        "expected_files": [
+            "README.md",
+            "settings.yaml",
+            "constants.yaml",
+            CONFIG_PACKAGE_DESCRIPTOR_NAME,
+        ],
+    }
 
 
 def build_manifest_payload(
@@ -394,9 +455,13 @@ def build_manifest_payload(
             "persons": "persons.csv",
             "skim_omx": "skims/travel_time_skims.omx",
             "readme": "README.md",
+            "config_settings": "configs/settings.yaml",
+            "config_constants": "configs/constants.yaml",
             "config_readme": "configs/README.md",
+            "config_package_descriptor": f"configs/{CONFIG_PACKAGE_DESCRIPTOR_NAME}",
             "source_screening_manifest": "metadata/source_screening_bundle_manifest.json",
         },
+        "config_package": build_config_package_descriptor(),
         "land_use": {
             "rows": len(land_use_rows),
             "total_households": sum(int(row["households"]) for row in land_use_rows),
@@ -474,6 +539,9 @@ def build_activitysim_input_bundle(
     shutil.copy2(source_manifest_path, output_path / "metadata" / "source_screening_bundle_manifest.json")
     (output_path / "README.md").write_text(build_bundle_readme(source_manifest, skim_mode))
     (output_path / "configs" / "README.md").write_text(build_configs_readme())
+    (output_path / "configs" / "settings.yaml").write_text(build_config_settings())
+    (output_path / "configs" / "constants.yaml").write_text(build_config_constants())
+    write_json(output_path / "configs" / CONFIG_PACKAGE_DESCRIPTOR_NAME, build_config_package_descriptor())
 
     manifest = build_manifest_payload(
         output_dir=output_path,

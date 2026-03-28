@@ -31,6 +31,10 @@ REQUIRED_BUNDLE_FILES = {
     "persons": "persons.csv",
     "skim_omx": "skims/travel_time_skims.omx",
 }
+CONFIG_PACKAGE_DESCRIPTOR_NAME = "openplan_config_package.json"
+CONFIG_PACKAGE_STATUS_PLACEHOLDER = "placeholder_only"
+CONFIG_PACKAGE_STATUS_STARTER = "starter_executable_kit"
+CONFIG_PACKAGE_STATUS_RUNNABLE = "runnable_config_package"
 
 
 def _utc_now() -> str:
@@ -166,6 +170,68 @@ def validate_bundle_contract(bundle_dir: Path, manifest_path: Path) -> dict[str,
     }
 
 
+def inspect_config_package(config_dir: Path) -> dict[str, Any]:
+    descriptor_path = config_dir / CONFIG_PACKAGE_DESCRIPTOR_NAME
+    settings_path = config_dir / "settings.yaml"
+    constants_path = config_dir / "constants.yaml"
+    readme_path = config_dir / "README.md"
+
+    descriptor: dict[str, Any] | None = None
+    if descriptor_path.exists():
+        descriptor = _read_json(descriptor_path)
+
+    package_status = (
+        descriptor.get("package_status")
+        if isinstance(descriptor, dict) and isinstance(descriptor.get("package_status"), str)
+        else None
+    )
+    starter_version = (
+        descriptor.get("starter_version")
+        if isinstance(descriptor, dict) and isinstance(descriptor.get("starter_version"), str)
+        else None
+    )
+
+    if package_status not in {
+        CONFIG_PACKAGE_STATUS_PLACEHOLDER,
+        CONFIG_PACKAGE_STATUS_STARTER,
+        CONFIG_PACKAGE_STATUS_RUNNABLE,
+    }:
+        if not settings_path.exists():
+            package_status = CONFIG_PACKAGE_STATUS_PLACEHOLDER
+        elif descriptor_path.exists():
+            package_status = CONFIG_PACKAGE_STATUS_STARTER
+        else:
+            package_status = CONFIG_PACKAGE_STATUS_RUNNABLE
+
+    notes: list[str] = []
+    if package_status == CONFIG_PACKAGE_STATUS_PLACEHOLDER:
+        notes.append(
+            "Bundle config directory is placeholder-only; no executable ActivitySim settings.yaml was found"
+        )
+    elif package_status == CONFIG_PACKAGE_STATUS_STARTER:
+        version_note = f" `{starter_version}`" if starter_version else ""
+        notes.append(
+            "Bundle config directory contains the OpenPlan starter executable config kit"
+            f"{version_note}; it is not a calibrated or pilot-ready ActivitySim package"
+        )
+    else:
+        notes.append(
+            "Config directory appears to be a runnable ActivitySim config package candidate; "
+            "the runtime will only confirm execution after a real CLI run succeeds"
+        )
+
+    return {
+        "config_dir": str(config_dir),
+        "descriptor_path": str(descriptor_path) if descriptor_path.exists() else None,
+        "settings_path": str(settings_path),
+        "constants_path": str(constants_path) if constants_path.exists() else None,
+        "readme_path": str(readme_path) if readme_path.exists() else None,
+        "package_status": package_status,
+        "starter_version": starter_version,
+        "notes": notes,
+    }
+
+
 def detect_activitysim_capability(
     *,
     bundle_dir: Path,
@@ -173,14 +239,24 @@ def detect_activitysim_capability(
     cli_command: list[str] | None,
     cli_template: str | None,
 ) -> dict[str, Any]:
+    config_package = inspect_config_package(config_dir)
     capability = {
         "mode": "preflight_only",
         "available": False,
         "reason": None,
         "command": None,
         "config_dir": str(config_dir),
-        "settings_path": str(config_dir / "settings.yaml"),
+        "settings_path": config_package["settings_path"],
+        "config_package_status": config_package["package_status"],
+        "config_package": config_package,
     }
+
+    if config_package["package_status"] == CONFIG_PACKAGE_STATUS_PLACEHOLDER:
+        capability["reason"] = config_package["notes"][0]
+        return capability
+    if config_package["package_status"] == CONFIG_PACKAGE_STATUS_STARTER:
+        capability["reason"] = config_package["notes"][0]
+        return capability
 
     if cli_template:
         if not cli_template.strip():
@@ -213,14 +289,6 @@ def detect_activitysim_capability(
             capability["reason"] = "ActivitySim CLI is not installed or not on PATH"
             return capability
         capability["command"] = [resolved]
-
-    settings_path = config_dir / "settings.yaml"
-    if not settings_path.exists():
-        capability["reason"] = (
-            "ActivitySim config scaffold is present but missing settings.yaml; "
-            "the bundle is preflight-capable only until a real config package is supplied"
-        )
-        return capability
 
     capability["available"] = True
     capability["mode"] = "activitysim_cli"
@@ -331,6 +399,7 @@ def run_activitysim_runtime(
                         "bundle_type": validated_bundle["bundle_manifest"]["bundle_type"],
                         "config_dir": str(config_path),
                         "detected_mode": capability["mode"],
+                        "config_package_status": capability["config_package_status"],
                     }
                     stage.artifacts.append(
                         {
@@ -341,6 +410,7 @@ def run_activitysim_runtime(
                     if capability["reason"]:
                         stage.notes.append(capability["reason"])
                         runtime_manifest["caveats"].append(capability["reason"])
+                    runtime_manifest["config_package"] = capability["config_package"]
                     stage.status = "succeeded"
 
                 elif stage.stage_key == "prepare_activitysim_inputs":
@@ -361,10 +431,12 @@ def run_activitysim_runtime(
                             {"artifact_type": "runtime_scaffold", "path": str(stage_dir / "runtime_scaffold.json")},
                         ]
                     )
-                    if not (config_path / "settings.yaml").exists():
-                        stage.notes.append(
-                            "Bundle config directory only contains a scaffold; no executable ActivitySim settings.yaml was found"
-                        )
+                    if capability and capability["config_package"]["notes"]:
+                        stage.notes.extend(capability["config_package"]["notes"])
+                    stage.metadata = {
+                        "config_package_status": capability["config_package_status"] if capability else None,
+                        "settings_path": str(config_path / "settings.yaml"),
+                    }
                     stage.status = "succeeded"
 
                 elif stage.stage_key == "run_activitysim":

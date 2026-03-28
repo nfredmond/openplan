@@ -49,7 +49,7 @@ class ActivitySimRuntimeTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
 
-    def test_preflight_only_when_cli_or_settings_are_missing(self) -> None:
+    def test_preflight_only_when_config_is_placeholder_only(self) -> None:
         bundle_dir = build_bundle(self.root)
 
         summary = run_activitysim_runtime(bundle_path=str(bundle_dir))
@@ -62,7 +62,35 @@ class ActivitySimRuntimeTests(unittest.TestCase):
         self.assertEqual(summary["stage_statuses"]["collect_outputs"], "succeeded")
 
         runtime_manifest = json.loads(Path(summary["runtime_manifest_path"]).read_text())
-        self.assertIn("ActivitySim CLI is not installed or not on PATH", " ".join(runtime_manifest["caveats"]))
+        self.assertEqual(runtime_manifest["config_package"]["package_status"], "placeholder_only")
+        self.assertIn("placeholder-only", " ".join(runtime_manifest["caveats"]))
+
+    def test_preflight_only_when_bundle_contains_starter_config_kit(self) -> None:
+        bundle_dir = build_bundle(self.root)
+        (bundle_dir / "configs" / "settings.yaml").write_text("models: []\n")
+        (bundle_dir / "configs" / "constants.yaml").write_text("starter: true\n")
+        (bundle_dir / "configs" / "openplan_config_package.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "openplan.activitysim_config_package.v0",
+                    "package_type": "activitysim_config_package",
+                    "package_status": "starter_executable_kit",
+                    "starter_version": "v0",
+                    "runnable": False,
+                },
+                indent=2,
+            )
+        )
+
+        summary = run_activitysim_runtime(bundle_path=str(bundle_dir))
+
+        self.assertEqual(summary["mode"], "preflight_only")
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["stage_statuses"]["run_activitysim"], "blocked")
+
+        runtime_manifest = json.loads(Path(summary["runtime_manifest_path"]).read_text())
+        self.assertEqual(runtime_manifest["config_package"]["package_status"], "starter_executable_kit")
+        self.assertIn("starter executable config kit", " ".join(runtime_manifest["caveats"]))
 
     def test_real_cli_mode_runs_when_command_and_settings_exist(self) -> None:
         bundle_dir = build_bundle(self.root)
@@ -104,6 +132,7 @@ class ActivitySimRuntimeTests(unittest.TestCase):
 
         runtime_manifest = json.loads(Path(summary["runtime_manifest_path"]).read_text())
         self.assertEqual(runtime_manifest["status"], "succeeded")
+        self.assertEqual(runtime_manifest["config_package"]["package_status"], "runnable_config_package")
         collected_paths = runtime_manifest["artifacts"]["collected_outputs"]
         self.assertIn("output/final_trips.csv", collected_paths)
 
