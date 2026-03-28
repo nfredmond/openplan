@@ -184,6 +184,8 @@ describe("county onramp primitives", () => {
     expect(behavioral.runtimePosture).toBe(
       "containerized ActivitySim runtime configured via python:3.11-slim, but not executed"
     );
+    expect(behavioral.evidenceStatusLabel).toBe("Preflight only");
+    expect(behavioral.evidenceSupportLabel).toContain("preflight-depth prototype artifacts only");
     expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");

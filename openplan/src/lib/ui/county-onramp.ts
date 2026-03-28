@@ -26,6 +26,8 @@ export type CountyBehavioralPrototypeUiCard = {
   runtimeStatus: string | null;
   runtimeMode: string | null;
   runtimePosture: string | null;
+  evidenceStatusLabel: string;
+  evidenceSupportLabel: string;
   claim: string;
   caveats: string[];
 };
@@ -100,6 +102,44 @@ function getBehavioralClaim(summary: CountyOnrampBehavioralPrototypeSummary | nu
   return "Behavioral prototype lane is still in progress.";
 }
 
+function getBehavioralEvidenceStatusLabel(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): string {
+  if (!summary?.pipeline_status) {
+    return "Not recorded";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_succeeded") {
+    return "Runtime succeeded";
+  }
+  if (summary.pipeline_status === "prototype_preflight_complete") {
+    return "Preflight only";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_failed") {
+    return "Runtime failed";
+  }
+  if (summary.pipeline_status === "prototype_pipeline_failed") {
+    return "Pipeline failed";
+  }
+  return "In progress";
+}
+
+function getBehavioralEvidenceSupportLabel(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): string {
+  if (!summary?.pipeline_status) {
+    return "No behavioral evidence packet posture available yet.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_succeeded") {
+    return "Prototype behavioral artifacts are available for internal evidence review, but not for client-ready forecasting claims.";
+  }
+  if (summary.pipeline_status === "prototype_preflight_complete") {
+    return "Evidence is limited to preflight-depth prototype artifacts only; comparison/validation claims remain blocked.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_failed") {
+    return "Any behavioral artifacts should be treated as partial-output evidence only.";
+  }
+  if (summary.pipeline_status === "prototype_pipeline_failed") {
+    return "Behavioral evidence support is blocked because the prototype chain did not complete.";
+  }
+  return "Behavioral evidence support is still being determined.";
+}
+
 export function buildCountyBehavioralPrototypeUiCard(
   manifest: CountyOnrampManifest | null | undefined
 ): CountyBehavioralPrototypeUiCard {
@@ -109,6 +149,8 @@ export function buildCountyBehavioralPrototypeUiCard(
     runtimeStatus: summary?.runtime_status ?? null,
     runtimeMode: summary?.runtime_mode ?? null,
     runtimePosture: summary?.runtime_posture ?? null,
+    evidenceStatusLabel: getBehavioralEvidenceStatusLabel(summary),
+    evidenceSupportLabel: getBehavioralEvidenceSupportLabel(summary),
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
   };
