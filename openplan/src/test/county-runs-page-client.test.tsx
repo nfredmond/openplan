@@ -163,6 +163,11 @@ describe("CountyRunsPageClient", () => {
   it("shows behavioral readiness badges for list items and submits the standard runtime by default", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
+    expect(screen.getByText("Total runs")).toBeInTheDocument();
+    expect(screen.getAllByText("Needs attention").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Prototype blocked").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Comparison-ready").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Validated screening").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Needs attention (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();

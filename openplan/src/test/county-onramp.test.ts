@@ -16,6 +16,7 @@ import {
 } from "@/lib/api/county-onramp";
 import {
   buildCountyBehavioralPrototypeUiCard,
+  buildCountyRunSummaryCounts,
   buildCountyRunUiCard,
   filterCountyRunListItemsByQuickView,
   getCountyRunMetricHighlights,
@@ -245,6 +246,13 @@ describe("county onramp primitives", () => {
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
     ]);
+    expect(buildCountyRunSummaryCounts(items)).toEqual({
+      totalRuns: 3,
+      needsAttention: 2,
+      prototypeBlocked: 1,
+      comparisonReady: 1,
+      validatedScreening: 1,
+    });
   });
 
   it("exposes metric highlights and basic stage helpers", () => {

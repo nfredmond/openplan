@@ -51,6 +51,14 @@ export type CountyBehavioralPrototypeUiCard = {
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
 export type CountyRunQuickView = "all" | "needs-attention" | "best-validated" | "prototype-blocked" | "comparison-ready";
 
+export type CountyRunSummaryCounts = {
+  totalRuns: number;
+  needsAttention: number;
+  prototypeBlocked: number;
+  comparisonReady: number;
+  validatedScreening: number;
+};
+
 export function getCountyRunNextAction(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
@@ -241,6 +249,16 @@ const COUNTY_STAGE_SORT_RANK: Record<CountyRunStage, number> = {
   "validation-scaffolded": 2,
   "validated-screening": 3,
 };
+
+export function buildCountyRunSummaryCounts(items: CountyRunListItem[]): CountyRunSummaryCounts {
+  return {
+    totalRuns: items.length,
+    needsAttention: filterCountyRunListItemsByQuickView(items, "needs-attention").length,
+    prototypeBlocked: filterCountyRunListItemsByQuickView(items, "prototype-blocked").length,
+    comparisonReady: filterCountyRunListItemsByQuickView(items, "comparison-ready").length,
+    validatedScreening: items.filter((item) => item.stage === "validated-screening").length,
+  };
+}
 
 export function filterCountyRunListItemsByQuickView(
   items: CountyRunListItem[],

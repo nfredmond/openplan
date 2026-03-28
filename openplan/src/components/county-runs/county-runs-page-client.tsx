@@ -20,6 +20,7 @@ import {
 } from "@/lib/models/county-runtime-presets";
 import {
   buildCountyBehavioralRuntimeSummary,
+  buildCountyRunSummaryCounts,
   buildCountyRunUiCard,
   filterCountyRunListItemsByQuickView,
   getCountyBehavioralReadinessBadge,
@@ -212,6 +213,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       ) as Record<CountyRunQuickView, number>,
     [items]
   );
+  const summaryCounts = useMemo(() => buildCountyRunSummaryCounts(items), [items]);
   const quickViewItems = useMemo(
     () => filterCountyRunListItemsByQuickView(items, countyRunQuickView),
     [countyRunQuickView, items]
@@ -369,7 +371,30 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             screening status.
           </p>
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="rounded-xl border border-border/70 bg-background/70 p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Total runs</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.totalRuns}</div>
+          </div>
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Needs attention</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.needsAttention}</div>
+          </div>
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Prototype blocked</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.prototypeBlocked}</div>
+          </div>
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Comparison-ready</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.comparisonReady}</div>
+          </div>
+          <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Validated screening</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{summaryCounts.validatedScreening}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Quick views</span>
           {COUNTY_RUN_QUICK_VIEW_OPTIONS.map((option) => (
             <Button
