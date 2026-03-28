@@ -205,6 +205,13 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     () => COUNTY_RUNTIME_PRESET_DEFINITIONS.find((preset) => preset.key === runtimePreset) ?? COUNTY_RUNTIME_PRESET_DEFINITIONS[0],
     [runtimePreset]
   );
+  const quickViewCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        COUNTY_RUN_QUICK_VIEW_OPTIONS.map((option) => [option.value, filterCountyRunListItemsByQuickView(items, option.value).length])
+      ) as Record<CountyRunQuickView, number>,
+    [items]
+  );
   const quickViewItems = useMemo(
     () => filterCountyRunListItemsByQuickView(items, countyRunQuickView),
     [countyRunQuickView, items]
@@ -372,7 +379,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               size="sm"
               onClick={() => updateCountyRunQuickView(option.value)}
             >
-              {option.label}
+              {option.label} ({quickViewCounts[option.value] ?? 0})
             </Button>
           ))}
         </div>

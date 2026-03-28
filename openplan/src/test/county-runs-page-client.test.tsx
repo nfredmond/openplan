@@ -163,6 +163,11 @@ describe("CountyRunsPageClient", () => {
   it("shows behavioral readiness badges for list items and submits the standard runtime by default", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
+    expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Needs attention (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Prototype blocked (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Comparison-ready (0)" })).toBeInTheDocument();
     expect(screen.getByText("Preflight-only evidence")).toBeInTheDocument();
     expect(screen.getByText("Preflight-only behavioral evidence")).toBeInTheDocument();
     expect(screen.getByText("Pipeline status: Prototype preflight complete")).toBeInTheDocument();
@@ -281,7 +286,7 @@ describe("CountyRunsPageClient", () => {
   it("applies quick-view presets with URL-backed sort defaults", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Best validated" }));
+    fireEvent.click(screen.getByRole("button", { name: "Best validated (1)" }));
 
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?view=best-validated&sort=median-ape-asc", {
       scroll: false,
