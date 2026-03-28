@@ -1,13 +1,22 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let searchParamsValue = "";
 const refreshMock = vi.fn();
 const enqueueMock = vi.fn();
+const clipboardWriteTextMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   useSearchParams: () => new URLSearchParams(searchParamsValue),
 }));
+
+Object.defineProperty(globalThis.navigator, "clipboard", {
+  value: {
+    writeText: clipboardWriteTextMock,
+  },
+  configurable: true,
+});
 
 vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRunDetail: () => ({
@@ -46,6 +55,8 @@ describe("CountyRunDetailClient", () => {
     searchParamsValue = "";
     refreshMock.mockReset();
     enqueueMock.mockReset();
+    clipboardWriteTextMock.mockReset();
+    clipboardWriteTextMock.mockResolvedValue(undefined);
   });
 
   it("surfaces the saved county dashboard view context on detail pages", () => {
@@ -64,6 +75,22 @@ describe("CountyRunDetailClient", () => {
       "href",
       "/county-runs?view=needs-attention&runtimeStatus=behavioral_runtime_blocked&runtimeMode=preflight_only"
     );
+  });
+
+  it("copies the current county detail link with the preserved dashboard context", async () => {
+    searchParamsValue =
+      "backTo=%2Fcounty-runs%3Fview%3Dneeds-attention%26runtimeStatus%3Dbehavioral_runtime_blocked%26runtimeMode%3Dpreflight_only";
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy detail link" }));
+
+    await waitFor(() => expect(clipboardWriteTextMock).toHaveBeenCalled());
+    expect(String(clipboardWriteTextMock.mock.calls[0]?.[0] ?? "")).toContain(
+      "/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?backTo=%2Fcounty-runs%3Fview%3Dneeds-attention%26runtimeStatus%3Dbehavioral_runtime_blocked%26runtimeMode%3Dpreflight_only"
+    );
+    expect(screen.getByText("Copied detail link")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
   });
 
   it("falls back to the default county runs page when no saved dashboard view is present", () => {

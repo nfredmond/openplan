@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import {
@@ -22,6 +22,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-bloc
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
@@ -31,6 +32,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
+  const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
+  const [shareLinkError, setShareLinkError] = useState(false);
 
   if (error) {
     return (
@@ -79,6 +82,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
   const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
+  const currentCountyRunRelativeUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+  const shareLinkState: "idle" | "copied" | "error" = shareLinkError
+    ? "error"
+    : copiedDetailRelativeUrl === currentCountyRunRelativeUrl
+    ? "copied"
+    : "idle";
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
@@ -89,6 +98,21 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
         manifestPath: result.workerPayload.artifactTargets.manifestPath,
       });
+    }
+  };
+
+  const copyCurrentDetailLink = async () => {
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setShareLinkError(true);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${currentCountyRunRelativeUrl}`);
+      setCopiedDetailRelativeUrl(currentCountyRunRelativeUrl);
+      setShareLinkError(false);
+    } catch {
+      setShareLinkError(true);
     }
   };
 
@@ -111,14 +135,23 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
             {data.enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
           </Button>
+          <Button type="button" variant="outline" onClick={() => void copyCurrentDetailLink()}>
+            {shareLinkState === "copied" ? "Copied" : "Copy detail link"}
+          </Button>
           <Button asChild variant="outline">
             <Link href={countyRunsBackHref}>Back to county runs</Link>
           </Button>
         </div>
-        {countyRunsBackContextLabel ? (
+        {countyRunsBackContextLabel || shareLinkState !== "idle" ? (
           <div className="mt-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Saved dashboard view</span>
-            <span className="ml-2">{countyRunsBackContextLabel}</span>
+            {countyRunsBackContextLabel ? (
+              <div>
+                <span className="font-medium text-foreground">Saved dashboard view</span>
+                <span className="ml-2">{countyRunsBackContextLabel}</span>
+              </div>
+            ) : null}
+            {shareLinkState === "copied" ? <div className="text-emerald-600">Copied detail link</div> : null}
+            {shareLinkState === "error" ? <div className="text-destructive">Unable to copy detail link</div> : null}
           </div>
         ) : null}
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
