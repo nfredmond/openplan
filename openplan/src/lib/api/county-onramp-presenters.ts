@@ -53,6 +53,12 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
   );
   const behavioralComparisonReady =
     behavioral?.pipeline_status === "behavioral_runtime_succeeded" && Boolean(behavioral?.kpi_summary_path);
+  const artifactAvailabilityLabels = [
+    manifest?.artifacts?.scaffold_csv ? "Scaffold CSV" : null,
+    manifest?.artifacts?.review_packet_md ? "Review packet" : null,
+    manifest?.artifacts?.validation_summary_json ? "Validation summary" : null,
+    manifest?.artifacts?.behavioral_prototype_manifest_json ? "Behavioral prototype" : null,
+  ].filter((value): value is string => Boolean(value));
 
   let behavioralEvidenceStatusLabel: string | null = null;
   let behavioralComparisonStatusLabel: string | null = null;
@@ -101,6 +107,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralComparisonReady,
     behavioralEvidenceStatusLabel,
     behavioralComparisonStatusLabel,
+    artifactAvailabilityLabels,
     updatedAt: row.updated_at ?? new Date(0).toISOString(),
   };
 }

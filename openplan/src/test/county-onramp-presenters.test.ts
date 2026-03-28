@@ -123,6 +123,7 @@ describe("county onramp presenters", () => {
       behavioralComparisonReady: false,
       behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
       behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+      artifactAvailabilityLabels: ["Scaffold CSV", "Review packet", "Validation summary", "Behavioral prototype"],
       updatedAt: "2026-03-24T23:00:00Z",
     });
   });

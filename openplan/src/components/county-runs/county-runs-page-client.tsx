@@ -636,6 +636,18 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     <p className="mt-1 text-muted-foreground">{item.behavioralComparisonStatusLabel}</p>
                   </div>
                 ) : null}
+                {item.artifactAvailabilityLabels && item.artifactAvailabilityLabels.length > 0 ? (
+                  <div>
+                    <div className="font-medium text-foreground">Artifacts</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {item.artifactAvailabilityLabels.map((label) => (
+                        <StatusBadge key={label} tone={label === "Behavioral prototype" ? "info" : "neutral"}>
+                          {label}
+                        </StatusBadge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">
