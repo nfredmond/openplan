@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { loadModelAccess } from "@/lib/models/api";
 import { normalizeEvidencePacket } from "@/lib/models/evidence-packet";
+import { getBehavioralDemandDefaultCaveats, getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -114,9 +115,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
       Boolean(artifact.file_url)
   ) as ArtifactRow | undefined;
 
-  const caveats: string[] = [
-    "Model outputs are from an uncalibrated prototype engine.",
-  ];
+  const runRecord = run as Record<string, unknown>;
+  const runMode = getManagedRunModeDefinition(typeof runRecord.engine_key === "string" ? runRecord.engine_key : null);
+  const caveats: string[] = ["Model outputs are from an uncalibrated prototype engine."];
+
+  if (runRecord.engine_key === "behavioral_demand") {
+    caveats.push(runMode.runtimeExpectation, runMode.caveatSummary, ...getBehavioralDemandDefaultCaveats());
+  }
 
   const hasTransitSkims = artifactRows.some(
     (artifact) =>
@@ -161,7 +166,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
     fallbackReason = "No stored evidence artifact was available; synthesized fallback returned.";
   }
 
-  const runRecord = run as Record<string, unknown>;
   const evidencePacket = normalizeEvidencePacket({
     rawPacket: storedPacket,
     modelId: parsedParams.data.modelId,

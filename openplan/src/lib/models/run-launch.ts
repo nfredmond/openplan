@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ManagedRunModeKey } from "@/lib/models/run-modes";
 
 const positionSchema = z.tuple([z.number(), z.number()]);
 const ringSchema = z.array(positionSchema).min(4);
@@ -95,7 +96,7 @@ export function mergeScenarioLaunchPayload({
     queryText,
     corridorGeojson,
     assumptionSnapshot: assumptions,
-    engineKey: "deterministic" as string,
+    engineKey: "deterministic_corridor_v1" as ManagedRunModeKey,
   };
 }
 

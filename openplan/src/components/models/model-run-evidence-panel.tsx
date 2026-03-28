@@ -19,6 +19,7 @@ import {
   formatModelRunKpiPercentDelta,
   formatModelRunKpiValue,
 } from "@/lib/models/kpi-comparison";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 type ModelRunComparisonCandidate = {
   id: string;
@@ -58,6 +59,7 @@ export function ModelRunEvidencePanel({
   const canInspect = runStatus === "succeeded";
   const canRelaunch = engineKey === "aequilibrae" && runStatus !== "running" && runStatus !== "succeeded";
   const packetHref = `/api/models/${modelId}/runs/${modelRunId}/evidence-packet`;
+  const runMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
 
   const highlights = useMemo(() => (evidence ? buildEvidenceHighlights(evidence) : []), [evidence]);
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
@@ -181,6 +183,7 @@ export function ModelRunEvidencePanel({
                 ? "This worker run can be reset and queued again without leaving the model page."
                 : "Evidence becomes available after the run completes successfully."}
           </p>
+          <p className="mt-2 text-xs text-muted-foreground">{runMode.runtimeExpectation}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -211,6 +214,7 @@ export function ModelRunEvidencePanel({
                 <StatusBadge tone="neutral">Packet {evidence.packet_version}</StatusBadge>
                 <StatusBadge tone="neutral">{evidence.provenance.source_packet_format}</StatusBadge>
                 {evidence.provenance.fallback_reason ? <StatusBadge tone="warning">Synthesized fallback</StatusBadge> : null}
+                {runMode.availability !== "launchable" ? <StatusBadge tone="warning">Prototype / preflight</StatusBadge> : null}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -336,10 +340,17 @@ export function ModelRunEvidencePanel({
 
                     {comparisonCandidates.length === 0 ? (
                       <p className="mt-3 text-sm text-muted-foreground">
-                        Launch or retain at least one other succeeded managed run to unlock direct KPI comparison here.
+                        {runMode.key === "behavioral_demand"
+                          ? runMode.comparisonMessage
+                          : "Launch or retain at least one other succeeded managed run to unlock direct KPI comparison here."}
                       </p>
                     ) : (
                       <>
+                        {runMode.key === "behavioral_demand" ? (
+                          <div className="mt-3 rounded-[16px] border border-amber-300/60 bg-amber-50/70 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+                            {runMode.comparisonMessage}
+                          </div>
+                        ) : null}
                         <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center">
                           <select
                             className="module-select md:max-w-sm"
@@ -426,7 +437,9 @@ export function ModelRunEvidencePanel({
                               <div className="rounded-[16px] border border-border/60 bg-background/90 px-3 py-2.5 text-sm text-muted-foreground">
                                 {comparisonSummary.comparableCount > 0
                                   ? "Compared KPI rows are currently flat versus the selected baseline."
-                                  : "No comparable KPI rows were available for this run pair yet."}
+                                  : runMode.key === "behavioral_demand"
+                                    ? "No comparison-ready behavioral KPI rows were registered for this run pair yet. Review the prototype artifacts and caveats before treating the pair as analytically comparable."
+                                    : "No comparable KPI rows were available for this run pair yet."}
                               </div>
                             )}
 

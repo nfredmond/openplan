@@ -1,3 +1,5 @@
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+
 type EvidencePacketKpiItem = {
   name?: string;
   label?: string;
@@ -371,18 +373,19 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
 }
 
 export function labelForEngineKey(engineKey: string | null | undefined) {
-  if (engineKey === "aequilibrae") return "AequilibraE";
-  if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
   if (!engineKey) return "Unknown engine";
-  return engineKey
-    .split(/[_-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return getManagedRunModeDefinition(engineKey).engineLabel;
 }
 
 export function labelForArtifactType(artifactType: string | null | undefined) {
   if (!artifactType) return "Artifact";
+  if (artifactType === "behavioral_prototype_manifest_json") return "Behavioral Prototype Manifest";
+  if (artifactType === "behavioral_runtime_manifest_json") return "Behavioral Runtime Manifest";
+  if (artifactType === "behavioral_runtime_summary_json") return "Behavioral Runtime Summary";
+  if (artifactType === "behavioral_ingestion_summary_json") return "Behavioral Ingestion Summary";
+  if (artifactType === "behavioral_kpi_summary_json") return "Behavioral KPI Summary";
+  if (artifactType === "behavioral_kpi_packet_md") return "Behavioral KPI Packet";
+  if (artifactType === "activitysim_bundle_manifest_json") return "ActivitySim Bundle Manifest";
   return artifactType
     .split(/[_-]+/)
     .filter(Boolean)

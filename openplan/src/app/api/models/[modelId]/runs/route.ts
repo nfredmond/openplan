@@ -10,6 +10,7 @@ import {
   looksLikePendingSchema,
   mergeScenarioLaunchPayload,
 } from "@/lib/models/run-launch";
+import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -21,7 +22,7 @@ const launchModelRunSchema = z.object({
   queryText: z.string().trim().min(1).max(5000).optional(),
   corridorGeojson: corridorGeojsonSchema.optional(),
   attachToScenarioEntry: z.boolean().optional(),
-  engineKey: z.enum(['deterministic_corridor_v1', 'aequilibrae']).optional().default('deterministic_corridor_v1'),
+  engineKey: z.enum(MANAGED_RUN_MODE_KEYS).optional().default("deterministic_corridor_v1"),
 });
 
 type RouteContext = {
@@ -187,6 +188,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       overrideCorridorGeojson: parsed.data.corridorGeojson,
     });
     launchPayload.engineKey = parsed.data.engineKey;
+    const runMode = getManagedRunModeDefinition(launchPayload.engineKey);
 
     if (!launchPayload.queryText || !launchPayload.corridorGeojson) {
       return NextResponse.json(
@@ -205,6 +207,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
       `${access.model.title} run`;
     const launchedAt = new Date().toISOString();
     const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
+    const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
+
+    if (isBehavioralDemandRun) {
+      audit.info("behavioral_demand_launch_blocked", {
+        modelId: access.model.id,
+        userId: user.id,
+        runMode: launchPayload.engineKey,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "Behavioral Demand is currently surfaced as a prototype/preflight-backed run mode. Managed launch from this form is not wired through the production model-run API yet.",
+          runMode: runMode.label,
+          runtimeExpectation: runMode.runtimeExpectation,
+          caveat: runMode.caveatSummary,
+        },
+        { status: 409 }
+      );
+    }
 
     const { error: createModelRunError } = await supabase.from("model_runs").insert({
       id: modelRunId,

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
+import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -196,7 +197,7 @@ export function ModelRunManager({
   const [corridorText, setCorridorText] = useState(defaultCorridorText);
   const [scenarioEntryId, setScenarioEntryId] = useState("");
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
-  const [engineKey, setEngineKey] = useState("deterministic_corridor_v1");
+  const [engineKey, setEngineKey] = useState<ManagedRunModeKey>("deterministic_corridor_v1");
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -204,6 +205,8 @@ export function ModelRunManager({
     () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
     [scenarioEntries, scenarioEntryId]
   );
+  const selectedRunMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
+  const launchDisabled = isLaunching || schemaPending || selectedRunMode.availability !== "launchable";
 
   async function handleLaunch() {
     setError(null);
@@ -260,7 +263,7 @@ export function ModelRunManager({
         </span>
       </div>
 
-      <div className="module-summary-grid cols-4 mt-5">
+        <div className="module-summary-grid cols-4 mt-5">
         <div className="module-summary-card">
           <p className="module-summary-label">Managed runs</p>
           <p className="module-summary-value">{modelRuns.length}</p>
@@ -277,9 +280,9 @@ export function ModelRunManager({
           <p className="module-summary-detail">Scenario entries available for direct evidence promotion.</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Engines available</p>
-          <p className="module-summary-value text-base">2</p>
-          <p className="module-summary-detail">Deterministic Corridor (sync) · AequilibraE (async worker)</p>
+          <p className="module-summary-label">Run modes available</p>
+          <p className="module-summary-value text-base">{MANAGED_RUN_MODE_DEFINITIONS.length}</p>
+          <p className="module-summary-detail">Deterministic Corridor · Fast Screening · Behavioral Demand</p>
         </div>
       </div>
 
@@ -300,17 +303,35 @@ export function ModelRunManager({
 
           <div className="space-y-1.5">
             <label htmlFor="managed-run-engine" className="text-[0.82rem] font-semibold">
-              Execution Engine
+              Run mode
             </label>
             <select
               id="managed-run-engine"
               className="module-select"
               value={engineKey}
-              onChange={(event) => setEngineKey(event.target.value)}
+              onChange={(event) => setEngineKey(event.target.value as ManagedRunModeKey)}
             >
-              <option value="deterministic_corridor_v1">Deterministic Corridor (Synchronous)</option>
-              <option value="aequilibrae">AequilibraE (Asynchronous Worker Prototype)</option>
+              {MANAGED_RUN_MODE_DEFINITIONS.map((mode) => (
+                <option key={mode.key} value={mode.key}>
+                  {mode.launchLabel}
+                </option>
+              ))}
             </select>
+            <div className="rounded-[18px] border border-border/60 bg-background/80 p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-semibold text-foreground">{selectedRunMode.label}</p>
+                <StatusBadge tone={selectedRunMode.availability === "launchable" ? "info" : "warning"}>
+                  {selectedRunMode.availability === "launchable" ? "Launchable" : "Prototype surface"}
+                </StatusBadge>
+              </div>
+              <p className="mt-2 text-muted-foreground">{selectedRunMode.summaryDetail}</p>
+              <p className="mt-2 text-muted-foreground">
+                <span className="text-foreground">Expected runtime:</span> {selectedRunMode.runtimeExpectation}
+              </p>
+              <p className="mt-2 text-muted-foreground">
+                <span className="text-foreground">Caveat:</span> {selectedRunMode.caveatSummary}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -388,9 +409,15 @@ export function ModelRunManager({
             </p>
           ) : null}
 
-          <Button type="button" onClick={() => void handleLaunch()} disabled={isLaunching || schemaPending}>
+          {selectedRunMode.availability !== "launchable" ? (
+            <div className="rounded-2xl border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+              Behavioral demand is available here as an honest planner-facing run class, but this form is still prototype/preflight-backed. Managed launch wiring for a full ActivitySim runtime has not been enabled through the model-run API yet.
+            </div>
+          ) : null}
+
+          <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Launch managed run
+            {selectedRunMode.availability === "launchable" ? "Launch managed run" : "Behavioral demand launch not yet available"}
           </Button>
         </div>
 
@@ -432,6 +459,7 @@ export function ModelRunManager({
                 const overallScore = typeof resultSummary.overallScore === "number" ? resultSummary.overallScore : null;
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
+                const runMode = getManagedRunModeDefinition(run.engine_key);
                 const comparisonCandidates = modelRuns
                   .filter((candidate) => candidate.id !== run.id && candidate.status === "succeeded")
                   .map((candidate) => ({
@@ -449,6 +477,7 @@ export function ModelRunManager({
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
+                        {runMode.availability !== "launchable" ? <StatusBadge tone="warning">Prototype / preflight</StatusBadge> : null}
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -461,6 +490,8 @@ export function ModelRunManager({
                               ? `Backed by analysis run ${run.source_analysis_run_id}.`
                               : "Managed execution record created without a linked analysis run yet.")}
                         </p>
+                        <p className="text-sm text-muted-foreground">{runMode.runtimeExpectation}</p>
+                        <p className="text-sm text-muted-foreground">{runMode.caveatSummary}</p>
                       </div>
                       {runLink ? (
                         <div className="mt-3 flex flex-wrap gap-2">
