@@ -28,6 +28,10 @@ export type CountyBehavioralPrototypeUiCard = {
   runtimePosture: string | null;
   evidenceStatusLabel: string;
   evidenceSupportLabel: string;
+  evidencePacketReady: boolean;
+  comparisonReady: boolean;
+  evidencePacketPath: string | null;
+  comparisonSupportLabel: string;
   claim: string;
   caveats: string[];
 };
@@ -140,6 +144,33 @@ function getBehavioralEvidenceSupportLabel(summary: CountyOnrampBehavioralProtot
   return "Behavioral evidence support is still being determined.";
 }
 
+function isBehavioralEvidencePacketReady(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): boolean {
+  return Boolean(summary?.prototype_manifest_path || summary?.runtime_manifest_path || summary?.runtime_summary_path);
+}
+
+function isBehavioralComparisonReady(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): boolean {
+  return summary?.pipeline_status === "behavioral_runtime_succeeded" && Boolean(summary?.kpi_summary_path);
+}
+
+function getBehavioralComparisonSupportLabel(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): string {
+  if (!summary?.pipeline_status) {
+    return "Comparison support is not available because no behavioral prototype record exists yet.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_succeeded" && summary.kpi_summary_path) {
+    return "This run has enough behavioral artifact coverage for internal comparison against another comparison-ready run.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_failed") {
+    return "Comparison is not supportable yet; failed runtime artifacts should be treated as partial-output evidence only.";
+  }
+  if (summary.pipeline_status === "prototype_preflight_complete") {
+    return "Comparison is blocked because this run only reached preflight depth and does not have comparison-ready behavioral outputs.";
+  }
+  if (summary.pipeline_status === "prototype_pipeline_failed") {
+    return "Comparison is blocked because the behavioral prototype pipeline did not complete.";
+  }
+  return "Comparison readiness is still being determined.";
+}
+
 export function buildCountyBehavioralPrototypeUiCard(
   manifest: CountyOnrampManifest | null | undefined
 ): CountyBehavioralPrototypeUiCard {
@@ -151,6 +182,10 @@ export function buildCountyBehavioralPrototypeUiCard(
     runtimePosture: summary?.runtime_posture ?? null,
     evidenceStatusLabel: getBehavioralEvidenceStatusLabel(summary),
     evidenceSupportLabel: getBehavioralEvidenceSupportLabel(summary),
+    evidencePacketReady: isBehavioralEvidencePacketReady(summary),
+    comparisonReady: isBehavioralComparisonReady(summary),
+    evidencePacketPath: summary?.prototype_manifest_path ?? summary?.runtime_manifest_path ?? null,
+    comparisonSupportLabel: getBehavioralComparisonSupportLabel(summary),
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
   };

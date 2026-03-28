@@ -183,8 +183,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <div>Runtime mode: {behavioral.runtimeMode ?? "Not recorded"}</div>
             <div>Runtime posture: {behavioral.runtimePosture ?? "Not recorded"}</div>
             <div>Evidence status: {behavioral.evidenceStatusLabel}</div>
+            <div>Evidence packet ready: {behavioral.evidencePacketReady ? "Yes" : "No"}</div>
+            <div>Comparison ready: {behavioral.comparisonReady ? "Yes" : "No"}</div>
             <p>{behavioral.claim}</p>
             <p>{behavioral.evidenceSupportLabel}</p>
+            <p>{behavioral.comparisonSupportLabel}</p>
+            {behavioral.evidencePacketPath ? <div>Evidence source: {behavioral.evidencePacketPath}</div> : null}
             {behavioral.caveats.length > 0 ? (
               <ul className="list-disc space-y-1 pl-5">
                 {behavioral.caveats.map((caveat) => (

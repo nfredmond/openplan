@@ -186,6 +186,10 @@ describe("county onramp primitives", () => {
     );
     expect(behavioral.evidenceStatusLabel).toBe("Preflight only");
     expect(behavioral.evidenceSupportLabel).toContain("preflight-depth prototype artifacts only");
+    expect(behavioral.evidencePacketReady).toBe(true);
+    expect(behavioral.comparisonReady).toBe(false);
+    expect(behavioral.evidencePacketPath).toBe("/tmp/behavioral/behavioral_demand_prototype_manifest.json");
+    expect(behavioral.comparisonSupportLabel).toContain("only reached preflight depth");
     expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
