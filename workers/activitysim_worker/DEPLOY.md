@@ -2,10 +2,11 @@
 
 This worker accepts a built OpenPlan ActivitySim input bundle, validates the handoff contract, stages a runtime working directory, and records an honest runtime result.
 
-It supports two runtime modes:
+It supports three runtime modes:
 
 - `preflight_only`: bundle validation and runtime staging succeed, but full ActivitySim execution is unavailable or not supportable yet
 - `activitysim_cli`: a real ActivitySim CLI and executable config package are available, so the worker attempts a real run
+- `activitysim_container_cli`: a real containerized command is launched through a configured engine such as Docker, with explicit bundle/config/runtime mounts
 
 The worker does not fabricate a successful behavioral run when the CLI or config package is missing.
 
@@ -51,6 +52,24 @@ python3 workers/activitysim_worker/main.py \
   --activitysim-cli-template "activitysim run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}"
 ```
 
+To reproduce the proven Python 3.11 smoke path in a managed container, point the worker at a container image and let it drive Docker explicitly:
+
+```bash
+python3 workers/activitysim_worker/main.py \
+  --bundle-path data/activitysim-bundles/nevada-county-prototype \
+  --activitysim-container-image python:3.11-slim \
+  --container-network-mode bridge \
+  --activitysim-container-cli-template "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && activitysim run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'"
+```
+
+Container behavior:
+
+- bundle and config directories are mounted read-only into the container
+- the runtime directory is mounted read-write at `/openplan/runtime`
+- the worker defaults to `--network none` and, on Unix-like hosts, `--user <uid>:<gid>` for safer local output ownership
+- use `--container-network-mode bridge` (or payload `containerNetworkMode`) when the container must install or fetch dependencies at runtime
+- a plain image such as `python:3.11-slim` still needs an inner command that installs or already contains ActivitySim; a future dedicated image can omit that bootstrap
+
 ## HTTP Wrapper
 
 Start the HTTP worker:
@@ -83,6 +102,10 @@ Optional payload fields:
 - `configDir`
 - `activitysimCli`
 - `activitysimCliTemplate`
+- `activitysimContainerImage`
+- `containerEngineCli`
+- `activitysimContainerCliTemplate`
+- `containerNetworkMode`
 
 ## Runtime Output Structure
 
@@ -105,6 +128,8 @@ Files emitted there:
 When the CLI actually runs, worker-collected outputs are registered from:
 
 - `output/`
+
+`runtime_manifest.json` also records the execution backend, selected mode, container image, container mount plan, and command details so host CLI and container CLI runs remain distinguishable in downstream evidence.
 
 ## Docker
 

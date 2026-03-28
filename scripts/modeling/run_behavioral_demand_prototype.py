@@ -31,6 +31,7 @@ STEP_SEQUENCE = [
     "ingest_activitysim_runtime_outputs",
     "extract_activitysim_behavioral_kpis",
 ]
+EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
 
 
 def _utc_now() -> str:
@@ -60,6 +61,20 @@ def parse_args() -> argparse.Namespace:
             "Optional ActivitySim command template with placeholders such as "
             "{config_dir}, {data_dir}, {output_dir}, {working_dir}, {bundle_dir}, {runtime_dir}"
         ),
+    )
+    parser.add_argument("--activitysim-container-image", help="Optional container image override for the runtime step")
+    parser.add_argument("--container-engine-cli", help="Optional container engine command override")
+    parser.add_argument(
+        "--activitysim-container-cli-template",
+        help=(
+            "Optional ActivitySim command template executed inside the container with placeholders such as "
+            "{config_dir}, {data_dir}, {output_dir}, {working_dir}, {bundle_dir}, {runtime_dir}"
+        ),
+    )
+    parser.add_argument(
+        "--container-network-mode",
+        default="none",
+        help="Optional container network mode for the ActivitySim runtime step. Defaults to 'none'.",
     )
     parser.add_argument("--run-label", help="Optional label recorded in the runtime metadata")
     parser.add_argument("--force", action="store_true", help="Replace an existing output root")
@@ -95,7 +110,7 @@ def behavioral_runtime_status(runtime_summary: dict[str, Any] | None) -> str | N
         return None
     runtime_mode = runtime_summary.get("mode")
     runtime_status = runtime_summary.get("status")
-    if runtime_status == "succeeded" and runtime_mode == "activitysim_cli":
+    if runtime_status == "succeeded" and runtime_mode in EXECUTED_RUNTIME_MODES:
         return "behavioral_runtime_succeeded"
     if runtime_status == "blocked" or runtime_mode == "preflight_only":
         return "behavioral_runtime_blocked"
@@ -218,6 +233,10 @@ def run_behavioral_demand_prototype(
     config_dir: str | None = None,
     activitysim_cli: str | None = None,
     activitysim_cli_template: str | None = None,
+    activitysim_container_image: str | None = None,
+    container_engine_cli: str | None = None,
+    activitysim_container_cli_template: str | None = None,
+    container_network_mode: str | None = "none",
     run_label: str | None = None,
     force: bool = False,
 ) -> dict[str, Any]:
@@ -294,6 +313,10 @@ def run_behavioral_demand_prototype(
             config_dir=config_dir,
             cli_command=shlex.split(activitysim_cli) if activitysim_cli else None,
             cli_template=activitysim_cli_template,
+            container_image=activitysim_container_image,
+            container_engine_command=shlex.split(container_engine_cli) if container_engine_cli else None,
+            container_template=activitysim_container_cli_template,
+            container_network_mode=container_network_mode,
             run_label=run_label,
             force=False,
         )
@@ -417,6 +440,10 @@ def main() -> int:
         config_dir=args.config_dir,
         activitysim_cli=args.activitysim_cli,
         activitysim_cli_template=args.activitysim_cli_template,
+        activitysim_container_image=args.activitysim_container_image,
+        container_engine_cli=args.container_engine_cli,
+        activitysim_container_cli_template=args.activitysim_container_cli_template,
+        container_network_mode=args.container_network_mode,
         run_label=args.run_label,
         force=args.force,
     )

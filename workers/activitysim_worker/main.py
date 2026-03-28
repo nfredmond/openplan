@@ -57,6 +57,10 @@ def _parse_payload(payload: Any) -> dict[str, Any]:
         "config_dir": _coerce_string(payload, "configDir"),
         "cli_template": _coerce_string(payload, "activitysimCliTemplate"),
         "cli_command": _split_cli_command(_coerce_string(payload, "activitysimCli")),
+        "container_image": _coerce_string(payload, "activitysimContainerImage"),
+        "container_engine_command": _split_cli_command(_coerce_string(payload, "containerEngineCli")),
+        "container_template": _coerce_string(payload, "activitysimContainerCliTemplate"),
+        "container_network_mode": _coerce_string(payload, "containerNetworkMode"),
         "run_label": _coerce_string(payload, "runLabel"),
         "force": bool(payload.get("force")),
     }
@@ -70,6 +74,10 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
         config_dir=payload["config_dir"],
         cli_command=payload["cli_command"],
         cli_template=payload["cli_template"],
+        container_image=payload["container_image"],
+        container_engine_command=payload["container_engine_command"],
+        container_template=payload["container_template"],
+        container_network_mode=payload["container_network_mode"],
         run_label=payload["run_label"],
         force=payload["force"],
     )
@@ -125,6 +133,26 @@ def parse_args() -> argparse.Namespace:
             "{config_dir}, {data_dir}, {output_dir}, {working_dir}, {bundle_dir}, {runtime_dir}"
         ),
     )
+    parser.add_argument(
+        "--activitysim-container-image",
+        help="Optional container image for managed ActivitySim execution, for example 'python:3.11-slim'",
+    )
+    parser.add_argument(
+        "--container-engine-cli",
+        help="Optional container engine command, for example 'docker' or '/usr/bin/docker'",
+    )
+    parser.add_argument(
+        "--activitysim-container-cli-template",
+        help=(
+            "Optional command template executed inside the container with placeholders such as "
+            "{config_dir}, {data_dir}, {output_dir}, {working_dir}, {bundle_dir}, {runtime_dir}"
+        ),
+    )
+    parser.add_argument(
+        "--container-network-mode",
+        default="none",
+        help="Optional container network mode. Defaults to 'none'; use 'bridge' when the container must install or fetch dependencies.",
+    )
     parser.add_argument("--run-label", help="Optional label used in the default runtime output directory")
     parser.add_argument("--force", action="store_true", help="Replace an existing runtime output directory")
     parser.add_argument(
@@ -151,6 +179,10 @@ def main() -> int:
             config_dir=args.config_dir,
             cli_command=_split_cli_command(args.activitysim_cli),
             cli_template=args.activitysim_cli_template,
+            container_image=args.activitysim_container_image,
+            container_engine_command=_split_cli_command(args.container_engine_cli),
+            container_template=args.activitysim_container_cli_template,
+            container_network_mode=args.container_network_mode,
             run_label=args.run_label,
             force=args.force,
         )

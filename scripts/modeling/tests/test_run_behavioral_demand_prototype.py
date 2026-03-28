@@ -11,7 +11,7 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from run_behavioral_demand_prototype import run_behavioral_demand_prototype
+from run_behavioral_demand_prototype import behavioral_runtime_status, run_behavioral_demand_prototype
 
 
 def write_json(path: Path, payload: dict) -> None:
@@ -120,6 +120,12 @@ class RunBehavioralDemandPrototypeTests(unittest.TestCase):
 
         kpi_summary = json.loads(Path(result["kpi_summary_path"]).read_text())
         self.assertEqual(kpi_summary["availability"]["status"], "not_enough_behavioral_outputs")
+
+    def test_recognizes_container_cli_runtime_as_behavioral_success(self) -> None:
+        self.assertEqual(
+            behavioral_runtime_status({"mode": "activitysim_container_cli", "status": "succeeded"}),
+            "behavioral_runtime_succeeded",
+        )
 
     def test_marks_pipeline_as_behavioral_runtime_succeeded_when_fake_cli_outputs_tables(self) -> None:
         output_root = self.root / "behavioral-demand-success"

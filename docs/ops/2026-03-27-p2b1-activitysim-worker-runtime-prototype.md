@@ -34,6 +34,10 @@ It intentionally does not claim that OpenPlan already has a production-calibrate
 - `activitysim_cli`
   - a real command was executed
   - the runtime records the command, return code, logs, and collected output artifacts
+- `activitysim_container_cli`
+  - a real containerized command was executed through a configured engine such as Docker
+  - the runtime records the image, mount plan, command, return code, logs, and collected output artifacts
+  - this is currently the most credible path for real execution on BlackOpal because `activitysim==1.5.1` installs and runs successfully in a Python 3.11 container even though the host Python 3.12 path is not yet dependable
 
 ## Stage Keys
 
@@ -76,6 +80,8 @@ output/
 - It does not prove the current bundle builder emits final production-ready ActivitySim household/person schemas.
 - It does not prove cloud orchestration, callbacks, storage registration, or downstream ingestion are complete.
 - It does not guarantee the default `activitysim run ...` command shape matches every future runtime image; the worker therefore supports an explicit CLI template override.
+- It does not claim that a generic image like `python:3.11-slim` is sufficient by itself; operators still need either an image that already contains ActivitySim or a container command template that installs/launches it honestly.
+- It does not yet prove a calibrated pilot geography with real ActivitySim models beyond the zero-model/starter smoke posture.
 
 ## Why This Is Honest
 

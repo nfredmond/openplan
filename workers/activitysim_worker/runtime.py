@@ -16,6 +16,11 @@ RUNTIME_MANIFEST_NAME = "runtime_manifest.json"
 RUNTIME_SUMMARY_NAME = "runtime_summary.json"
 DEFAULT_RUNTIME_PARENT = "runtime"
 DEFAULT_OUTPUT_SUBDIR = "output"
+DEFAULT_CONTAINER_ENGINE = "docker"
+DEFAULT_CONTAINER_BUNDLE_DIR = "/openplan/bundle"
+DEFAULT_CONTAINER_CONFIG_DIR = "/openplan/configs"
+DEFAULT_CONTAINER_RUNTIME_DIR = "/openplan/runtime"
+EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
 
 STAGE_SEQUENCE = [
     ("validate_inputs", 10),
@@ -82,6 +87,141 @@ def _tail_text(path: Path, max_chars: int = 4000) -> str | None:
     if not text:
         return None
     return text[-max_chars:]
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+    except ValueError:
+        return False
+    return True
+
+
+def _resolve_cli_command(cli_command: list[str] | None) -> list[str] | None:
+    if not cli_command:
+        return None
+    executable = cli_command[0]
+    if os.path.sep not in executable:
+        resolved = shutil.which(executable)
+        if not resolved:
+            return None
+        return [resolved, *cli_command[1:]]
+    return cli_command
+
+
+def _default_host_cli_command(*, cli_command: list[str] | None, cli_template: str | None) -> list[str] | None:
+    if cli_template:
+        if not cli_template.strip():
+            return None
+        parts = shlex.split(cli_template)
+        if not parts:
+            return None
+        resolved = shutil.which(parts[0])
+        if not resolved:
+            return None
+        return [resolved]
+    if cli_command:
+        return _resolve_cli_command(cli_command)
+    resolved = shutil.which("activitysim")
+    if not resolved:
+        return None
+    return [resolved]
+
+
+def _container_path_mapping(*, bundle_dir: Path, config_dir: Path, runtime_dir: Path) -> dict[str, str]:
+    bundle_mount = DEFAULT_CONTAINER_BUNDLE_DIR
+    config_mount = DEFAULT_CONTAINER_CONFIG_DIR
+    runtime_mount = DEFAULT_CONTAINER_RUNTIME_DIR
+    mapping = {
+        "bundle_dir": bundle_mount,
+        "config_dir": config_mount,
+        "data_dir": bundle_mount,
+        "runtime_dir": runtime_mount,
+        "working_dir": f"{runtime_mount}/workdir",
+        "output_dir": f"{runtime_mount}/{DEFAULT_OUTPUT_SUBDIR}",
+        "home_dir": f"{runtime_mount}/home",
+    }
+    if _is_relative_to(config_dir, bundle_dir):
+        mapping["config_dir"] = f"{bundle_mount}/{config_dir.relative_to(bundle_dir).as_posix()}"
+    return mapping
+
+
+def build_container_command(
+    *,
+    bundle_dir: Path,
+    config_dir: Path,
+    runtime_dir: Path,
+    image: str,
+    engine_command: list[str] | None = None,
+    container_template: str | None = None,
+    network_mode: str | None = "none",
+) -> tuple[list[str], dict[str, Any]]:
+    engine = _resolve_cli_command(engine_command or [DEFAULT_CONTAINER_ENGINE])
+    if not engine:
+        raise RuntimeError("Container engine executable is not available")
+
+    host_bundle_dir = bundle_dir.resolve()
+    host_config_dir = config_dir.resolve()
+    host_runtime_dir = runtime_dir.resolve()
+    container_mapping = _container_path_mapping(
+        bundle_dir=host_bundle_dir,
+        config_dir=host_config_dir,
+        runtime_dir=host_runtime_dir,
+    )
+
+    mounts = [
+        {"source": str(host_bundle_dir), "target": DEFAULT_CONTAINER_BUNDLE_DIR, "read_only": True},
+        {"source": str(host_runtime_dir), "target": DEFAULT_CONTAINER_RUNTIME_DIR, "read_only": False},
+    ]
+    if _is_relative_to(host_config_dir, host_bundle_dir):
+        mounts.append(
+            {
+                "source": str(host_config_dir),
+                "target": container_mapping["config_dir"],
+                "read_only": True,
+            }
+        )
+    else:
+        mounts.append(
+            {"source": str(host_config_dir), "target": DEFAULT_CONTAINER_CONFIG_DIR, "read_only": True}
+        )
+
+    command: list[str] = [*engine, "run", "--rm"]
+    if network_mode:
+        command.extend(["--network", network_mode])
+    if hasattr(os, "getuid") and hasattr(os, "getgid"):
+        command.extend(["--user", f"{os.getuid()}:{os.getgid()}"])
+    for mount in mounts:
+        volume = f"{mount['source']}:{mount['target']}"
+        if mount["read_only"]:
+            volume = f"{volume}:ro"
+        command.extend(["-v", volume])
+    command.extend(["-e", f"HOME={container_mapping['home_dir']}"])
+    command.extend(["-w", container_mapping["working_dir"], image])
+    if container_template:
+        inner_command = _format_command(container_template, container_mapping)
+    else:
+        inner_command = [
+            "activitysim",
+            "run",
+            "-c",
+            container_mapping["config_dir"],
+            "-d",
+            container_mapping["data_dir"],
+            "-o",
+            container_mapping["output_dir"],
+            "-w",
+            container_mapping["working_dir"],
+        ]
+    command.extend(inner_command)
+    return command, {
+        "engine_command": engine,
+        "image": image,
+        "mounts": mounts,
+        "container_paths": container_mapping,
+        "inner_command": inner_command,
+        "network_mode": network_mode,
+    }
 
 
 class BundleContractError(RuntimeError):
@@ -238,6 +378,10 @@ def detect_activitysim_capability(
     config_dir: Path,
     cli_command: list[str] | None,
     cli_template: str | None,
+    container_image: str | None,
+    container_engine_command: list[str] | None,
+    container_template: str | None,
+    container_network_mode: str | None,
 ) -> dict[str, Any]:
     config_package = inspect_config_package(config_dir)
     capability = {
@@ -245,50 +389,58 @@ def detect_activitysim_capability(
         "available": False,
         "reason": None,
         "command": None,
+        "execution_backend": "none",
         "config_dir": str(config_dir),
         "settings_path": config_package["settings_path"],
         "config_package_status": config_package["package_status"],
         "config_package": config_package,
+        "container_image": container_image,
+        "container_engine_command": None,
+        "container_template": container_template,
+        "container_network_mode": container_network_mode,
     }
 
     if config_package["package_status"] == CONFIG_PACKAGE_STATUS_PLACEHOLDER:
         capability["reason"] = config_package["notes"][0]
         return capability
 
-    if cli_template:
-        if not cli_template.strip():
-            capability["reason"] = "Empty ActivitySim CLI template"
+    if container_image:
+        container_image = container_image.strip()
+        if not container_image:
+            capability["reason"] = "Empty ActivitySim container image"
             return capability
-        command = None
-        if cli_command:
-            command = cli_command
-        else:
-            first_token = shlex.split(cli_template)[0]
-            resolved = shutil.which(first_token)
-            if resolved:
-                command = [resolved]
-        if not command:
+        resolved_engine = _resolve_cli_command(container_engine_command or [DEFAULT_CONTAINER_ENGINE])
+        if not resolved_engine:
+            engine_name = (container_engine_command or [DEFAULT_CONTAINER_ENGINE])[0]
+            capability["reason"] = f"Configured container engine not found on PATH: {engine_name}"
+            return capability
+        capability["available"] = True
+        capability["mode"] = "activitysim_container_cli"
+        capability["execution_backend"] = "container_cli"
+        capability["container_image"] = container_image
+        capability["container_engine_command"] = resolved_engine
+        capability["container_network_mode"] = container_network_mode
+        capability["command"] = resolved_engine
+        return capability
+
+    if cli_template and not cli_template.strip():
+        capability["reason"] = "Empty ActivitySim CLI template"
+        return capability
+
+    command = _default_host_cli_command(cli_command=cli_command, cli_template=cli_template)
+    if not command:
+        if cli_template:
             capability["reason"] = "ActivitySim CLI template provided, but its executable is not available"
-            return capability
-        capability["command"] = command
-    elif cli_command:
-        executable = cli_command[0]
-        if os.path.sep not in executable:
-            resolved = shutil.which(executable)
-            if not resolved:
-                capability["reason"] = f"Configured ActivitySim executable not found on PATH: {executable}"
-                return capability
-            cli_command = [resolved, *cli_command[1:]]
-        capability["command"] = cli_command
-    else:
-        resolved = shutil.which("activitysim")
-        if not resolved:
+        elif cli_command:
+            capability["reason"] = f"Configured ActivitySim executable not found on PATH: {cli_command[0]}"
+        else:
             capability["reason"] = "ActivitySim CLI is not installed or not on PATH"
-            return capability
-        capability["command"] = [resolved]
+        return capability
 
     capability["available"] = True
     capability["mode"] = "activitysim_cli"
+    capability["execution_backend"] = "host_cli"
+    capability["command"] = command
     return capability
 
 
@@ -337,6 +489,10 @@ def run_activitysim_runtime(
     config_dir: str | None = None,
     cli_command: list[str] | None = None,
     cli_template: str | None = None,
+    container_image: str | None = None,
+    container_engine_command: list[str] | None = None,
+    container_template: str | None = None,
+    container_network_mode: str | None = "none",
     run_label: str | None = None,
     force: bool = False,
 ) -> dict[str, Any]:
@@ -366,6 +522,15 @@ def run_activitysim_runtime(
         "status": "running",
         "caveats": [],
         "errors": [],
+        "execution": {
+            "backend": "none",
+            "requested_container_image": container_image,
+            "container_engine_command": container_engine_command,
+            "container_template": container_template,
+            "container_network_mode": container_network_mode,
+            "host_cli_command": cli_command,
+            "host_cli_template": cli_template,
+        },
         "artifacts": {},
         "stages": [asdict(stage) for stage in stages],
     }
@@ -390,12 +555,17 @@ def run_activitysim_runtime(
                         config_dir=config_path,
                         cli_command=cli_command,
                         cli_template=cli_template,
+                        container_image=container_image,
+                        container_engine_command=container_engine_command,
+                        container_template=container_template,
+                        container_network_mode=container_network_mode,
                     )
                     stage.metadata = {
                         "bundle_schema_version": validated_bundle["bundle_manifest"]["schema_version"],
                         "bundle_type": validated_bundle["bundle_manifest"]["bundle_type"],
                         "config_dir": str(config_path),
                         "detected_mode": capability["mode"],
+                        "execution_backend": capability["execution_backend"],
                         "config_package_status": capability["config_package_status"],
                     }
                     stage.artifacts.append(
@@ -408,6 +578,16 @@ def run_activitysim_runtime(
                         stage.notes.append(capability["reason"])
                         runtime_manifest["caveats"].append(capability["reason"])
                     runtime_manifest["config_package"] = capability["config_package"]
+                    runtime_manifest["execution"] = {
+                        "backend": capability["execution_backend"],
+                        "mode": capability["mode"],
+                        "host_cli_command": capability["command"] if capability["mode"] == "activitysim_cli" else None,
+                        "host_cli_template": cli_template,
+                        "container_image": capability["container_image"],
+                        "container_engine_command": capability["container_engine_command"],
+                        "container_template": capability["container_template"],
+                        "container_network_mode": capability.get("container_network_mode"),
+                    }
                     for note in capability["config_package"].get("notes", []):
                         if note not in runtime_manifest["caveats"]:
                             runtime_manifest["caveats"].append(note)
@@ -446,11 +626,12 @@ def run_activitysim_runtime(
                         stage.status = "blocked"
                         stage.metadata = {
                             "mode": capability["mode"],
+                            "execution_backend": capability["execution_backend"],
                             "reason": capability["reason"],
                         }
                         stage.notes.append(capability["reason"] or "ActivitySim execution is unavailable")
                     else:
-                        command_mapping = {
+                        host_command_mapping = {
                             "bundle_dir": str(bundle_dir),
                             "config_dir": str(config_path),
                             "data_dir": str(bundle_dir),
@@ -458,8 +639,42 @@ def run_activitysim_runtime(
                             "working_dir": str(output_dir / "workdir"),
                             "output_dir": str(output_dir / DEFAULT_OUTPUT_SUBDIR),
                         }
-                        if cli_template:
-                            command = _format_command(cli_template, command_mapping)
+                        if capability["mode"] == "activitysim_container_cli":
+                            command, container_execution = build_container_command(
+                                bundle_dir=bundle_dir,
+                                config_dir=config_path,
+                                runtime_dir=output_dir,
+                                image=capability["container_image"],
+                                engine_command=capability["container_engine_command"],
+                                container_template=container_template,
+                                network_mode=capability.get("container_network_mode"),
+                            )
+                            runtime_manifest["execution"].update(
+                                {
+                                    "container_image": container_execution["image"],
+                                    "container_engine_command": container_execution["engine_command"],
+                                    "container_network_mode": container_execution["network_mode"],
+                                    "container_mounts": container_execution["mounts"],
+                                    "container_paths": container_execution["container_paths"],
+                                    "container_inner_command": container_execution["inner_command"],
+                                }
+                            )
+                            stage.metadata = {
+                                "mode": capability["mode"],
+                                "execution_backend": capability["execution_backend"],
+                                "command": command,
+                                "container_image": container_execution["image"],
+                                "container_network_mode": container_execution["network_mode"],
+                                "container_mounts": container_execution["mounts"],
+                                "container_paths": container_execution["container_paths"],
+                            }
+                        elif cli_template:
+                            command = _format_command(cli_template, host_command_mapping)
+                            stage.metadata = {
+                                "mode": capability["mode"],
+                                "execution_backend": capability["execution_backend"],
+                                "command": command,
+                            }
                         else:
                             command = [
                                 *capability["command"],
@@ -473,6 +688,11 @@ def run_activitysim_runtime(
                                 "-w",
                                 str(output_dir / "workdir"),
                             ]
+                            stage.metadata = {
+                                "mode": capability["mode"],
+                                "execution_backend": capability["execution_backend"],
+                                "command": command,
+                            }
                         (output_dir / DEFAULT_OUTPUT_SUBDIR).mkdir(parents=True, exist_ok=True)
                         logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
                         completed = subprocess.run(
@@ -488,14 +708,10 @@ def run_activitysim_runtime(
                             + (completed.stderr or "")
                         )
                         stage.artifacts.append({"artifact_type": "activitysim_stdout_log", "path": str(run_log_path)})
-                        stage.metadata = {
-                            "mode": capability["mode"],
-                            "command": command,
-                            "returncode": completed.returncode,
-                        }
+                        stage.metadata["returncode"] = completed.returncode
                         if completed.returncode == 0:
                             stage.status = "succeeded"
-                            runtime_manifest["mode"] = "activitysim_cli"
+                            runtime_manifest["mode"] = capability["mode"]
                         else:
                             stage.status = "failed"
                             stage.errors.append(
@@ -552,7 +768,9 @@ def run_activitysim_runtime(
         else:
             runtime_manifest["status"] = "succeeded"
         if runtime_manifest["status"] != "succeeded":
-            runtime_manifest["mode"] = "preflight_only" if runtime_manifest["mode"] != "activitysim_cli" else runtime_manifest["mode"]
+            runtime_manifest["mode"] = (
+                "preflight_only" if runtime_manifest["mode"] not in EXECUTED_RUNTIME_MODES else runtime_manifest["mode"]
+            )
         _write_json(output_dir / RUNTIME_MANIFEST_NAME, runtime_manifest)
 
         summary = {
