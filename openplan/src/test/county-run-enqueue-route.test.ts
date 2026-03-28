@@ -140,6 +140,84 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preserves behavioral smoke runtime options in the dispatched worker payload", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL = "https://worker.example.com/jobs";
+    process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN = "secret-token";
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+
+    countyRunMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        requested_runtime_json: {
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "nevada-behavioral-smoke",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            overallDemandScalar: null,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+            activitysimContainerImage: "python:3.11-slim",
+            containerEngineCli: "docker",
+            activitysimContainerCliTemplate:
+              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+            containerNetworkMode: "bridge",
+          },
+        },
+      },
+      error: null,
+    });
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 202 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await postCountyRunEnqueue(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://worker.example.com/jobs",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ authorization: "Bearer secret-token" }),
+        body: expect.stringContaining('"activitysimContainerImage":"python:3.11-slim"'),
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://worker.example.com/jobs",
+      expect.objectContaining({
+        body: expect.stringContaining('"containerEngineCli":"docker"'),
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://worker.example.com/jobs",
+      expect.objectContaining({
+        body: expect.stringContaining('"containerNetworkMode":"bridge"'),
+      })
+    );
+
+    expect(await response.json()).toMatchObject({
+      deliveryMode: "submitted",
+      workerPayload: {
+        runtimeOptions: {
+          activitysimContainerImage: "python:3.11-slim",
+          containerEngineCli: "docker",
+          activitysimContainerCliTemplate:
+            "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+          containerNetworkMode: "bridge",
+        },
+      },
+    });
+    vi.unstubAllGlobals();
+  });
+
   it("returns 409 when launch state is missing", async () => {
     countyRunMaybeSingleMock.mockResolvedValue({ data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", requested_runtime_json: {} }, error: null });
 

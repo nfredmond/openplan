@@ -167,6 +167,62 @@ describe("/api/county-runs route", () => {
     );
   });
 
+  it("persists behavioral smoke runtime options when creating a county run", async () => {
+    const response = await postCountyRuns(
+      jsonRequest("POST", "http://localhost/api/county-runs", {
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        geographyType: "county_fips",
+        geographyId: "06057",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-behavioral-smoke",
+        runtimeOptions: {
+          keepProject: true,
+          activitysimContainerImage: "python:3.11-slim",
+          containerEngineCli: "docker",
+          activitysimContainerCliTemplate:
+            "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+          containerNetworkMode: "bridge",
+        },
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requested_runtime_json: expect.objectContaining({
+          countyPrefix: "NEVADA",
+          runtimeOptions: expect.objectContaining({
+            keepProject: true,
+            force: true,
+            activitysimContainerImage: "python:3.11-slim",
+            containerEngineCli: "docker",
+            activitysimContainerCliTemplate:
+              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+            containerNetworkMode: "bridge",
+          }),
+        }),
+      })
+    );
+
+    expect(await response.json()).toMatchObject({
+      workerPayload: {
+        countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        geographyId: "06057",
+        geographyLabel: "Nevada County, CA",
+        countyPrefix: "NEVADA",
+        runtimeOptions: {
+          keepProject: true,
+          force: true,
+          activitysimContainerImage: "python:3.11-slim",
+          containerEngineCli: "docker",
+          activitysimContainerCliTemplate:
+            "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
+          containerNetworkMode: "bridge",
+        },
+      },
+    });
+  });
+
   it("returns 400 for invalid POST payload", async () => {
     const response = await postCountyRuns(
       jsonRequest("POST", "http://localhost/api/county-runs", {
