@@ -189,17 +189,40 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Runtime status"), {
+      target: { value: "behavioral_runtime_blocked" },
+    });
+
+    expect(routerReplaceMock).toHaveBeenCalledWith(
+      "/county-runs?behavioral=preflight-only&runtimeStatus=behavioral_runtime_blocked",
+      { scroll: false }
+    );
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Runtime mode"), {
+      target: { value: "preflight_only" },
+    });
+
+    expect(routerReplaceMock).toHaveBeenCalledWith(
+      "/county-runs?behavioral=preflight-only&runtimeStatus=behavioral_runtime_blocked&runtimeMode=preflight_only",
+      { scroll: false }
+    );
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
   });
 
-  it("initializes the behavioral filter from the URL", () => {
-    searchParamsValue = "behavioral=lane-requested";
+  it("initializes behavioral and runtime filters from the URL", () => {
+    searchParamsValue = "runtimeStatus=behavioral_runtime_blocked&runtimeMode=preflight_only";
 
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    expect(screen.getByDisplayValue("Lane requested")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Runtime blocked")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Preflight only")).toBeInTheDocument();
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
-    expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
-    expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
 
   it("submits the containerized behavioral smoke preset and shows honest caveats", async () => {

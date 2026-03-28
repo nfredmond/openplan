@@ -37,11 +37,42 @@ const COUNTY_BEHAVIORAL_FILTER_OPTIONS = [
   { value: "lane-requested", label: "Lane requested" },
 ] as const;
 
+const COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS = [
+  { value: "all", label: "All runtime statuses" },
+  { value: "behavioral_runtime_succeeded", label: "Runtime succeeded" },
+  { value: "behavioral_runtime_blocked", label: "Runtime blocked" },
+  { value: "behavioral_runtime_failed", label: "Runtime failed" },
+] as const;
+
+const COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS = [
+  { value: "all", label: "All runtime modes" },
+  { value: "preflight_only", label: "Preflight only" },
+  { value: "containerized_activitysim", label: "Containerized ActivitySim" },
+] as const;
+
 type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
+type CountyBehavioralRuntimeStatusFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS)[number]["value"];
+type CountyBehavioralRuntimeModeFilter = (typeof COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS)[number]["value"];
 
 function parseCountyBehavioralFilter(value: string | null | undefined): CountyBehavioralFilter {
   return COUNTY_BEHAVIORAL_FILTER_OPTIONS.some((option) => option.value === value)
     ? (value as CountyBehavioralFilter)
+    : "all";
+}
+
+function parseCountyBehavioralRuntimeStatusFilter(
+  value: string | null | undefined
+): CountyBehavioralRuntimeStatusFilter {
+  return COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS.some((option) => option.value === value)
+    ? (value as CountyBehavioralRuntimeStatusFilter)
+    : "all";
+}
+
+function parseCountyBehavioralRuntimeModeFilter(
+  value: string | null | undefined
+): CountyBehavioralRuntimeModeFilter {
+  return COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS.some((option) => option.value === value)
+    ? (value as CountyBehavioralRuntimeModeFilter)
     : "all";
 }
 
@@ -67,6 +98,22 @@ function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBe
   }
 }
 
+function matchesCountyBehavioralRuntimeStatusFilter(
+  item: CountyRunListItem,
+  filter: CountyBehavioralRuntimeStatusFilter
+): boolean {
+  if (filter === "all") return true;
+  return item.behavioralRuntimeStatus === filter;
+}
+
+function matchesCountyBehavioralRuntimeModeFilter(
+  item: CountyRunListItem,
+  filter: CountyBehavioralRuntimeModeFilter
+): boolean {
+  if (filter === "all") return true;
+  return item.behavioralRuntimeMode === filter;
+}
+
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -83,6 +130,13 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [runtimePreset, setRuntimePreset] = useState<CountyRuntimePresetKey>("standard");
   const [behavioralFilter, setBehavioralFilter] = useState<CountyBehavioralFilter>(() =>
     parseCountyBehavioralFilter(searchParams.get("behavioral"))
+  );
+  const [behavioralRuntimeStatusFilter, setBehavioralRuntimeStatusFilter] =
+    useState<CountyBehavioralRuntimeStatusFilter>(() =>
+      parseCountyBehavioralRuntimeStatusFilter(searchParams.get("runtimeStatus"))
+    );
+  const [behavioralRuntimeModeFilter, setBehavioralRuntimeModeFilter] = useState<CountyBehavioralRuntimeModeFilter>(() =>
+    parseCountyBehavioralRuntimeModeFilter(searchParams.get("runtimeMode"))
   );
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
@@ -102,9 +156,20 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     [runtimePreset]
   );
   const filteredItems = useMemo(
-    () => items.filter((item) => matchesCountyBehavioralFilter(item, behavioralFilter)),
-    [behavioralFilter, items]
+    () =>
+      items.filter(
+        (item) =>
+          matchesCountyBehavioralFilter(item, behavioralFilter) &&
+          matchesCountyBehavioralRuntimeStatusFilter(item, behavioralRuntimeStatusFilter) &&
+          matchesCountyBehavioralRuntimeModeFilter(item, behavioralRuntimeModeFilter)
+      ),
+    [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, items]
   );
+
+  const replaceCountyRunsUrl = (params: URLSearchParams) => {
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
 
   const updateBehavioralFilter = (nextFilter: CountyBehavioralFilter) => {
     setBehavioralFilter(nextFilter);
@@ -114,8 +179,29 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     } else {
       nextParams.set("behavioral", nextFilter);
     }
-    const nextQuery = nextParams.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    replaceCountyRunsUrl(nextParams);
+  };
+
+  const updateBehavioralRuntimeStatusFilter = (nextFilter: CountyBehavioralRuntimeStatusFilter) => {
+    setBehavioralRuntimeStatusFilter(nextFilter);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextFilter === "all") {
+      nextParams.delete("runtimeStatus");
+    } else {
+      nextParams.set("runtimeStatus", nextFilter);
+    }
+    replaceCountyRunsUrl(nextParams);
+  };
+
+  const updateBehavioralRuntimeModeFilter = (nextFilter: CountyBehavioralRuntimeModeFilter) => {
+    setBehavioralRuntimeModeFilter(nextFilter);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextFilter === "all") {
+      nextParams.delete("runtimeMode");
+    } else {
+      nextParams.set("runtimeMode", nextFilter);
+    }
+    replaceCountyRunsUrl(nextParams);
   };
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -166,6 +252,42 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               onChange={(event) => updateBehavioralFilter(event.target.value as CountyBehavioralFilter)}
             >
               {COUNTY_BEHAVIORAL_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="county-runtime-status-filter" className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Runtime status
+            </label>
+            <select
+              id="county-runtime-status-filter"
+              className="module-select min-w-[15rem]"
+              value={behavioralRuntimeStatusFilter}
+              onChange={(event) =>
+                updateBehavioralRuntimeStatusFilter(event.target.value as CountyBehavioralRuntimeStatusFilter)
+              }
+            >
+              {COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="county-runtime-mode-filter" className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Runtime mode
+            </label>
+            <select
+              id="county-runtime-mode-filter"
+              className="module-select min-w-[15rem]"
+              value={behavioralRuntimeModeFilter}
+              onChange={(event) => updateBehavioralRuntimeModeFilter(event.target.value as CountyBehavioralRuntimeModeFilter)}
+            >
+              {COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
