@@ -76,6 +76,13 @@ function parseCountyBehavioralRuntimeModeFilter(
     : "all";
 }
 
+function getCountyFilterOptionLabel(
+  options: readonly { value: string; label: string }[],
+  value: string
+): string {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBehavioralFilter): boolean {
   switch (filter) {
     case "comparison-ready":
@@ -165,43 +172,75 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       ),
     [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, items]
   );
+  const hasActiveFilters =
+    behavioralFilter !== "all" || behavioralRuntimeStatusFilter !== "all" || behavioralRuntimeModeFilter !== "all";
 
   const replaceCountyRunsUrl = (params: URLSearchParams) => {
     const nextQuery = params.toString();
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
   };
 
-  const updateBehavioralFilter = (nextFilter: CountyBehavioralFilter) => {
-    setBehavioralFilter(nextFilter);
+  const applyCountyRunsFilters = (next: {
+    behavioralFilter: CountyBehavioralFilter;
+    behavioralRuntimeStatusFilter: CountyBehavioralRuntimeStatusFilter;
+    behavioralRuntimeModeFilter: CountyBehavioralRuntimeModeFilter;
+  }) => {
+    setBehavioralFilter(next.behavioralFilter);
+    setBehavioralRuntimeStatusFilter(next.behavioralRuntimeStatusFilter);
+    setBehavioralRuntimeModeFilter(next.behavioralRuntimeModeFilter);
+
     const nextParams = new URLSearchParams(searchParams.toString());
-    if (nextFilter === "all") {
+    if (next.behavioralFilter === "all") {
       nextParams.delete("behavioral");
     } else {
-      nextParams.set("behavioral", nextFilter);
+      nextParams.set("behavioral", next.behavioralFilter);
     }
+
+    if (next.behavioralRuntimeStatusFilter === "all") {
+      nextParams.delete("runtimeStatus");
+    } else {
+      nextParams.set("runtimeStatus", next.behavioralRuntimeStatusFilter);
+    }
+
+    if (next.behavioralRuntimeModeFilter === "all") {
+      nextParams.delete("runtimeMode");
+    } else {
+      nextParams.set("runtimeMode", next.behavioralRuntimeModeFilter);
+    }
+
     replaceCountyRunsUrl(nextParams);
+  };
+
+  const updateBehavioralFilter = (nextFilter: CountyBehavioralFilter) => {
+    applyCountyRunsFilters({
+      behavioralFilter: nextFilter,
+      behavioralRuntimeStatusFilter,
+      behavioralRuntimeModeFilter,
+    });
   };
 
   const updateBehavioralRuntimeStatusFilter = (nextFilter: CountyBehavioralRuntimeStatusFilter) => {
-    setBehavioralRuntimeStatusFilter(nextFilter);
-    const nextParams = new URLSearchParams(searchParams.toString());
-    if (nextFilter === "all") {
-      nextParams.delete("runtimeStatus");
-    } else {
-      nextParams.set("runtimeStatus", nextFilter);
-    }
-    replaceCountyRunsUrl(nextParams);
+    applyCountyRunsFilters({
+      behavioralFilter,
+      behavioralRuntimeStatusFilter: nextFilter,
+      behavioralRuntimeModeFilter,
+    });
   };
 
   const updateBehavioralRuntimeModeFilter = (nextFilter: CountyBehavioralRuntimeModeFilter) => {
-    setBehavioralRuntimeModeFilter(nextFilter);
-    const nextParams = new URLSearchParams(searchParams.toString());
-    if (nextFilter === "all") {
-      nextParams.delete("runtimeMode");
-    } else {
-      nextParams.set("runtimeMode", nextFilter);
-    }
-    replaceCountyRunsUrl(nextParams);
+    applyCountyRunsFilters({
+      behavioralFilter,
+      behavioralRuntimeStatusFilter,
+      behavioralRuntimeModeFilter: nextFilter,
+    });
+  };
+
+  const clearAllCountyRunFilters = () => {
+    applyCountyRunsFilters({
+      behavioralFilter: "all",
+      behavioralRuntimeStatusFilter: "all",
+      behavioralRuntimeModeFilter: "all",
+    });
   };
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -298,6 +337,62 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             Showing {filteredItems.length} of {items.length} county runs
           </div>
         </div>
+        {hasActiveFilters ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Active filters</span>
+            {behavioralFilter !== "all" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  applyCountyRunsFilters({
+                    behavioralFilter: "all",
+                    behavioralRuntimeStatusFilter,
+                    behavioralRuntimeModeFilter,
+                  })
+                }
+              >
+                Behavioral: {getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_FILTER_OPTIONS, behavioralFilter)} ×
+              </Button>
+            ) : null}
+            {behavioralRuntimeStatusFilter !== "all" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  applyCountyRunsFilters({
+                    behavioralFilter,
+                    behavioralRuntimeStatusFilter: "all",
+                    behavioralRuntimeModeFilter,
+                  })
+                }
+              >
+                Runtime status: {getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_RUNTIME_STATUS_OPTIONS, behavioralRuntimeStatusFilter)} ×
+              </Button>
+            ) : null}
+            {behavioralRuntimeModeFilter !== "all" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  applyCountyRunsFilters({
+                    behavioralFilter,
+                    behavioralRuntimeStatusFilter,
+                    behavioralRuntimeModeFilter: "all",
+                  })
+                }
+              >
+                Runtime mode: {getCountyFilterOptionLabel(COUNTY_BEHAVIORAL_RUNTIME_MODE_OPTIONS, behavioralRuntimeModeFilter)} ×
+              </Button>
+            ) : null}
+            <Button type="button" variant="outline" size="sm" onClick={clearAllCountyRunFilters}>
+              Clear all filters
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <Card className="mb-4">

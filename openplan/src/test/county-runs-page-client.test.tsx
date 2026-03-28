@@ -177,6 +177,8 @@ describe("CountyRunsPageClient", () => {
     });
 
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=lane-requested", { scroll: false });
+    expect(screen.getByRole("button", { name: "Behavioral: Lane requested ×" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear all filters" })).toBeInTheDocument();
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
     expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
@@ -209,8 +211,17 @@ describe("CountyRunsPageClient", () => {
       "/county-runs?behavioral=preflight-only&runtimeStatus=behavioral_runtime_blocked&runtimeMode=preflight_only",
       { scroll: false }
     );
+    expect(screen.getByRole("button", { name: "Runtime status: Runtime blocked ×" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Runtime mode: Preflight only ×" })).toBeInTheDocument();
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs", { scroll: false });
+    expect(screen.getByText("Showing 2 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
   });
 
   it("initializes behavioral and runtime filters from the URL", () => {
