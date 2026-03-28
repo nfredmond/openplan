@@ -4,6 +4,7 @@ import { ACTIVITYSIM_BEHAVIORAL_SMOKE_CLI_TEMPLATE } from "@/lib/models/county-r
 
 const routerPushMock = vi.fn();
 const routerReplaceMock = vi.fn();
+const clipboardWriteTextMock = vi.fn();
 const refreshMock = vi.fn();
 const createMock = vi.fn();
 
@@ -65,6 +66,13 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/county-runs",
   useSearchParams: () => new URLSearchParams(searchParamsValue),
 }));
+
+Object.defineProperty(globalThis.navigator, "clipboard", {
+  value: {
+    writeText: clipboardWriteTextMock,
+  },
+  configurable: true,
+});
 
 vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRuns: () => ({
@@ -147,6 +155,8 @@ describe("CountyRunsPageClient", () => {
     searchParamsValue = "";
     routerPushMock.mockReset();
     routerReplaceMock.mockReset();
+    clipboardWriteTextMock.mockReset();
+    clipboardWriteTextMock.mockResolvedValue(undefined);
     routerReplaceMock.mockImplementation((href: string) => {
       searchParamsValue = href.split("?")[1] ?? "";
     });
@@ -281,6 +291,22 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+  });
+
+  it("copies the current county dashboard view link", async () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (1)" }));
+    await waitFor(() =>
+      expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy view link" }));
+
+    await waitFor(() => expect(clipboardWriteTextMock).toHaveBeenCalled());
+    expect(String(clipboardWriteTextMock.mock.calls[0]?.[0] ?? "")).toContain("/county-runs?view=needs-attention");
+    expect(screen.getByText("Copied view link")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
   });
 
   it("persists county sorting in the URL", () => {

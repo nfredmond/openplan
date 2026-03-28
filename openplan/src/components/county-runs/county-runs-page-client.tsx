@@ -227,6 +227,8 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   );
   const [countyRunSort, setCountyRunSort] = useState<CountyRunSort>(() => parseCountyRunSort(searchParams.get("sort")));
   const [countyRunQuickView, setCountyRunQuickView] = useState<CountyRunQuickView>(() => parseCountyRunQuickView(searchParams.get("view")));
+  const [copiedViewRelativeUrl, setCopiedViewRelativeUrl] = useState<string | null>(null);
+  const [shareLinkError, setShareLinkError] = useState(false);
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -267,6 +269,28 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     [behavioralFilter, behavioralRuntimeModeFilter, behavioralRuntimeStatusFilter, quickViewItems]
   );
   const sortedItems = useMemo(() => sortCountyRunListItems(filteredItems, countyRunSort), [countyRunSort, filteredItems]);
+  const currentCountyRunsRelativeUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    if (countyRunQuickView !== "all") params.set("view", countyRunQuickView);
+    if (countyRunSort !== "updated-desc") params.set("sort", countyRunSort);
+    if (behavioralFilter !== "all") params.set("behavioral", behavioralFilter);
+    if (behavioralRuntimeStatusFilter !== "all") params.set("runtimeStatus", behavioralRuntimeStatusFilter);
+    if (behavioralRuntimeModeFilter !== "all") params.set("runtimeMode", behavioralRuntimeModeFilter);
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [
+    behavioralFilter,
+    behavioralRuntimeModeFilter,
+    behavioralRuntimeStatusFilter,
+    countyRunQuickView,
+    countyRunSort,
+    pathname,
+  ]);
+  const shareLinkState: "idle" | "copied" | "error" = shareLinkError
+    ? "error"
+    : copiedViewRelativeUrl === currentCountyRunsRelativeUrl
+    ? "copied"
+    : "idle";
   const dashboardContextLabel = useMemo(() => {
     const parts = [
       `Viewing: ${getCountyFilterOptionLabel(COUNTY_RUN_QUICK_VIEW_OPTIONS, countyRunQuickView)}`,
@@ -294,8 +318,24 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     behavioralRuntimeModeFilter !== "all";
 
   const replaceCountyRunsUrl = (params: URLSearchParams) => {
+    setShareLinkError(false);
     const nextQuery = params.toString();
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  };
+
+  const copyCurrentViewLink = async () => {
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setShareLinkError(true);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${currentCountyRunsRelativeUrl}`);
+      setCopiedViewRelativeUrl(currentCountyRunsRelativeUrl);
+      setShareLinkError(false);
+    } catch {
+      setShareLinkError(true);
+    }
   };
 
   const updateCountyRunSort = (nextSort: CountyRunSort) => {
@@ -466,8 +506,15 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
           ))}
         </div>
 
-        <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-          {dashboardContextLabel}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+          <div>{dashboardContextLabel}</div>
+          <div className="flex items-center gap-2">
+            {shareLinkState === "copied" ? <span className="text-xs text-emerald-600">Copied view link</span> : null}
+            {shareLinkState === "error" ? <span className="text-xs text-destructive">Unable to copy link</span> : null}
+            <Button type="button" variant="outline" size="sm" onClick={() => void copyCurrentViewLink()}>
+              {shareLinkState === "copied" ? "Copied" : "Copy view link"}
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-end gap-3">
