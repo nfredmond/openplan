@@ -14,6 +14,7 @@ import {
   ingestCountyRunManifestRequestSchema,
 } from "@/lib/api/county-onramp";
 import {
+  buildCountyBehavioralPrototypeUiCard,
   buildCountyRunUiCard,
   getCountyRunMetricHighlights,
   getCountyRunNextAction,
@@ -35,6 +36,13 @@ const validatedManifestFixture = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
+    activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
+    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
+    behavioral_runtime_manifest_json: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
+    behavioral_runtime_summary_json: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
+    behavioral_ingestion_summary_json: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
+    behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
+    behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
   },
   runtime: {
     keep_project: true,
@@ -65,6 +73,28 @@ const validatedManifestFixture = {
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
+    },
+    activitysim_bundle: {
+      status: "completed",
+      output_dir: "/tmp/activitysim",
+      manifest_path: "/tmp/activitysim/bundle_manifest.json",
+      land_use_rows: 26,
+      households: 41415,
+      persons: 102322,
+      skim_mode: "copy",
+    },
+    behavioral_prototype: {
+      pipeline_status: "prototype_preflight_complete",
+      runtime_status: "behavioral_runtime_blocked",
+      runtime_mode: "preflight_only",
+      output_root: "/tmp/behavioral",
+      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
+      runtime_manifest_path: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
+      runtime_summary_path: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
+      ingestion_summary_path: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
+      kpi_summary_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
+      kpi_packet_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
+      caveats: ["ActivitySim CLI is not installed or not on PATH"],
     },
   },
 } as const;
@@ -134,6 +164,7 @@ describe("county onramp primitives", () => {
   it("exposes metric highlights and basic stage helpers", () => {
     const manifest = countyOnrampManifestSchema.parse(validatedManifestFixture);
     const metrics = getCountyRunMetricHighlights(manifest);
+    const behavioral = buildCountyBehavioralPrototypeUiCard(manifest);
 
     expect(metrics).toEqual({
       zoneCount: 26,
@@ -143,6 +174,9 @@ describe("county onramp primitives", () => {
       medianApe: 16.01,
       maxApe: 49.48,
     });
+    expect(behavioral.pipelineStatus).toBe("prototype_preflight_complete");
+    expect(behavioral.runtimeStatus).toBe("behavioral_runtime_blocked");
+    expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");

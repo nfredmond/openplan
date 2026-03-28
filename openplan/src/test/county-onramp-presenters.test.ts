@@ -21,6 +21,7 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
+    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
   },
   runtime: {
     keep_project: true,
@@ -51,6 +52,13 @@ const manifest = {
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
+    },
+    behavioral_prototype: {
+      pipeline_status: "prototype_preflight_complete",
+      runtime_status: "behavioral_runtime_blocked",
+      runtime_mode: "preflight_only",
+      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
+      caveats: ["ActivitySim CLI is not installed or not on PATH"],
     },
   },
 } as const;

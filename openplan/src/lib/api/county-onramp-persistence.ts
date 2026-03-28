@@ -78,6 +78,28 @@ export function buildCountyRunArtifacts(params: {
     manifest.artifacts.activitysim_bundle_manifest_json,
     "application/json"
   );
+  pushArtifact(
+    "behavioral_prototype_manifest_json",
+    manifest.artifacts.behavioral_prototype_manifest_json,
+    "application/json"
+  );
+  pushArtifact(
+    "behavioral_runtime_manifest_json",
+    manifest.artifacts.behavioral_runtime_manifest_json,
+    "application/json"
+  );
+  pushArtifact(
+    "behavioral_runtime_summary_json",
+    manifest.artifacts.behavioral_runtime_summary_json,
+    "application/json"
+  );
+  pushArtifact(
+    "behavioral_ingestion_summary_json",
+    manifest.artifacts.behavioral_ingestion_summary_json,
+    "application/json"
+  );
+  pushArtifact("behavioral_kpi_summary_json", manifest.artifacts.behavioral_kpi_summary_json, "application/json");
+  pushArtifact("behavioral_kpi_packet_md", manifest.artifacts.behavioral_kpi_packet_md, "text/markdown");
 
   return artifacts;
 }

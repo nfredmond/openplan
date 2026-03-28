@@ -113,6 +113,17 @@ Use when:
 - type: `string | null`
 - absolute path to `validation/validation_summary.json` when present
 
+### Behavioral prototype artifact pointers
+- `artifacts.activitysim_bundle_manifest_json: string | null`
+- `artifacts.behavioral_prototype_manifest_json: string | null`
+- `artifacts.behavioral_runtime_manifest_json: string | null`
+- `artifacts.behavioral_runtime_summary_json: string | null`
+- `artifacts.behavioral_ingestion_summary_json: string | null`
+- `artifacts.behavioral_kpi_summary_json: string | null`
+- `artifacts.behavioral_kpi_packet_md: string | null`
+
+These are optional, additive pointers for the county onramp's behavioral-demand prototype lane. They let the app surface the prototype artifact chain without changing the older screening/validation contract.
+
 ## `runtime` object
 Captures the bootstrap/runtime settings that materially shape the run.
 
@@ -147,6 +158,25 @@ Expected fields:
 - type: `object | null`
 - meaning: validation sub-object from `bundle_manifest.json` when available
 
+### `summary.activitysim_bundle`
+- type: `object | null`
+- meaning: lightweight summary of the ActivitySim input bundle generated through the behavioral prototype lane
+
+### `summary.behavioral_prototype`
+- type: `object | null`
+- meaning: honest status snapshot for the behavioral-demand prototype lane
+- important fields:
+  - `pipeline_status`
+  - `runtime_status`
+  - `runtime_mode`
+  - `prototype_manifest_path`
+  - `runtime_manifest_path`
+  - `runtime_summary_path`
+  - `ingestion_summary_path`
+  - `kpi_summary_path`
+  - `kpi_packet_path`
+  - `caveats`
+
 ## Stability expectations
 
 ### Safe to depend on now
@@ -159,6 +189,7 @@ Expected fields:
 - the precise contents of `summary.validation`
 - the precise contents of `summary.bundle_validation`
 - optional future fields such as timestamps, county name, geography metadata, or warning arrays
+- the internal detail inside `summary.activitysim_bundle` and `summary.behavioral_prototype`, though the top-level status/path fields above are now intended to be stable enough for app integration
 
 ## Recommended backend posture
 When consuming the manifest:
@@ -174,12 +205,14 @@ When consuming the manifest:
 - validation summary present
 - review packet present
 - scaffold present
+- behavioral prototype lane may still be only `prototype_preflight_complete`
 - county can be shown as locally truth-gated at the screening level
 
 ### Placer transfer-only run
 - likely `stage = runtime-complete`
 - run summary present
 - no validation summary yet
+- behavioral prototype manifest may still exist and show `behavioral_runtime_blocked`
 - county is runnable but not yet validated
 
 ## Product implication

@@ -70,7 +70,13 @@
         "run_summary_json": { "type": ["string", "null"] },
         "bundle_manifest_json": { "type": ["string", "null"] },
         "validation_summary_json": { "type": ["string", "null"] },
-        "activitysim_bundle_manifest_json": { "type": ["string", "null"] }
+        "activitysim_bundle_manifest_json": { "type": ["string", "null"] },
+        "behavioral_prototype_manifest_json": { "type": ["string", "null"] },
+        "behavioral_runtime_manifest_json": { "type": ["string", "null"] },
+        "behavioral_runtime_summary_json": { "type": ["string", "null"] },
+        "behavioral_ingestion_summary_json": { "type": ["string", "null"] },
+        "behavioral_kpi_summary_json": { "type": ["string", "null"] },
+        "behavioral_kpi_packet_md": { "type": ["string", "null"] }
       }
     },
     "runtime": {
@@ -140,6 +146,44 @@
             "persons": { "type": ["number", "null"] },
             "skim_mode": { "type": ["string", "null"], "enum": ["copy", "symlink", null] },
             "error": { "type": ["object", "null"], "additionalProperties": true }
+          }
+        },
+        "behavioral_prototype": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "pipeline_status": {
+              "type": ["string", "null"],
+              "enum": [
+                "prototype_preflight_complete",
+                "behavioral_runtime_succeeded",
+                "behavioral_runtime_failed",
+                "prototype_pipeline_failed",
+                "prototype_pipeline_running",
+                null
+              ]
+            },
+            "runtime_status": {
+              "type": ["string", "null"],
+              "enum": [
+                "behavioral_runtime_blocked",
+                "behavioral_runtime_succeeded",
+                "behavioral_runtime_failed",
+                null
+              ]
+            },
+            "runtime_mode": { "type": ["string", "null"] },
+            "output_root": { "type": ["string", "null"] },
+            "prototype_manifest_path": { "type": ["string", "null"] },
+            "runtime_manifest_path": { "type": ["string", "null"] },
+            "runtime_summary_path": { "type": ["string", "null"] },
+            "ingestion_summary_path": { "type": ["string", "null"] },
+            "kpi_summary_path": { "type": ["string", "null"] },
+            "kpi_packet_path": { "type": ["string", "null"] },
+            "caveats": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
           }
         }
       }

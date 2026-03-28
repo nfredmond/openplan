@@ -12,7 +12,14 @@
     "review_packet_md": "/tmp/nevada_example_review.md",
     "run_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/run_summary.json",
     "bundle_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/bundle_manifest.json",
-    "validation_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/validation/validation_summary.json"
+    "validation_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/validation/validation_summary.json",
+    "activitysim_bundle_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle/bundle_manifest.json",
+    "behavioral_prototype_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/behavioral_demand_prototype_manifest.json",
+    "behavioral_runtime_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_manifest.json",
+    "behavioral_runtime_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_summary.json",
+    "behavioral_ingestion_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/ingestion/activitysim_ingestion_summary.json",
+    "behavioral_kpi_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_summary.json",
+    "behavioral_kpi_packet_md": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_packet.md"
   },
   "runtime": {
     "keep_project": false,
@@ -116,6 +123,30 @@
         "max_absolute_percent_error": 49.48,
         "spearman_rho_facility_ranking": 1.0
       }
+    },
+    "activitysim_bundle": {
+      "status": "completed",
+      "output_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle",
+      "manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle/bundle_manifest.json",
+      "land_use_rows": 26,
+      "households": 41415,
+      "persons": 102322,
+      "skim_mode": "copy"
+    },
+    "behavioral_prototype": {
+      "pipeline_status": "prototype_preflight_complete",
+      "runtime_status": "behavioral_runtime_blocked",
+      "runtime_mode": "preflight_only",
+      "output_root": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype",
+      "prototype_manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/behavioral_demand_prototype_manifest.json",
+      "runtime_manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_manifest.json",
+      "runtime_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_summary.json",
+      "ingestion_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/ingestion/activitysim_ingestion_summary.json",
+      "kpi_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_summary.json",
+      "kpi_packet_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/nevada-county-runtime-scalar0369-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_packet.md",
+      "caveats": [
+        "ActivitySim CLI is not installed or not on PATH"
+      ]
     }
   }
 }

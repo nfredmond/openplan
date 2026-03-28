@@ -54,6 +54,10 @@ The manifest also records a lane-specific status:
 
 ## Intended Use
 
+County onramp integration:
+- `scripts/modeling/bootstrap_county_validation_onramp.py` now calls or reuses this orchestrator automatically after a successful screening bootstrap.
+- County manifests surface the prototype artifact chain and honest lane status so the web app can show whether the prototype stopped at preflight depth or achieved a real runtime success.
+
 Default output root:
 
 ```bash

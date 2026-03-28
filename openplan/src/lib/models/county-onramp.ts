@@ -16,6 +16,12 @@ export const countyOnrampArtifactsSchema = z.object({
   bundle_manifest_json: z.string().nullable(),
   validation_summary_json: z.string().nullable(),
   activitysim_bundle_manifest_json: z.string().nullable().optional(),
+  behavioral_prototype_manifest_json: z.string().nullable().optional(),
+  behavioral_runtime_manifest_json: z.string().nullable().optional(),
+  behavioral_runtime_summary_json: z.string().nullable().optional(),
+  behavioral_ingestion_summary_json: z.string().nullable().optional(),
+  behavioral_kpi_summary_json: z.string().nullable().optional(),
+  behavioral_kpi_packet_md: z.string().nullable().optional(),
 });
 
 export const countyOnrampRuntimeSchema = z.object({
@@ -77,6 +83,34 @@ export const countyOnrampActivitySimBundleSummarySchema = z
   })
   .passthrough();
 
+export const countyOnrampBehavioralPrototypeSummarySchema = z
+  .object({
+    pipeline_status: z
+      .enum([
+        "prototype_preflight_complete",
+        "behavioral_runtime_succeeded",
+        "behavioral_runtime_failed",
+        "prototype_pipeline_failed",
+        "prototype_pipeline_running",
+      ])
+      .nullable()
+      .optional(),
+    runtime_status: z
+      .enum(["behavioral_runtime_blocked", "behavioral_runtime_succeeded", "behavioral_runtime_failed"])
+      .nullable()
+      .optional(),
+    runtime_mode: z.string().nullable().optional(),
+    output_root: z.string().nullable().optional(),
+    prototype_manifest_path: z.string().nullable().optional(),
+    runtime_manifest_path: z.string().nullable().optional(),
+    runtime_summary_path: z.string().nullable().optional(),
+    ingestion_summary_path: z.string().nullable().optional(),
+    kpi_summary_path: z.string().nullable().optional(),
+    kpi_packet_path: z.string().nullable().optional(),
+    caveats: z.array(z.string()).optional(),
+  })
+  .passthrough();
+
 export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "queued_stub", "failed"]);
 
 export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
@@ -97,6 +131,7 @@ export const countyOnrampManifestSchema = z.object({
     validation: countyOnrampValidationSummarySchema.nullable(),
     bundle_validation: z.record(z.string(), z.unknown()).nullable(),
     activitysim_bundle: countyOnrampActivitySimBundleSummarySchema.nullable().optional(),
+    behavioral_prototype: countyOnrampBehavioralPrototypeSummarySchema.nullable().optional(),
   }),
 });
 
@@ -105,6 +140,7 @@ export type CountyOnrampRuntime = z.infer<typeof countyOnrampRuntimeSchema>;
 export type CountyOnrampRunSnapshot = z.infer<typeof countyOnrampRunSnapshotSchema>;
 export type CountyOnrampValidationSummary = z.infer<typeof countyOnrampValidationSummarySchema>;
 export type CountyOnrampActivitySimBundleSummary = z.infer<typeof countyOnrampActivitySimBundleSummarySchema>;
+export type CountyOnrampBehavioralPrototypeSummary = z.infer<typeof countyOnrampBehavioralPrototypeSummarySchema>;
 export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
 
 export function getCountyRunStageLabel(stage: CountyRunStage): string {

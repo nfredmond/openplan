@@ -1,4 +1,8 @@
-import type { CountyOnrampManifest, CountyRunStage } from "@/lib/models/county-onramp";
+import type {
+  CountyOnrampBehavioralPrototypeSummary,
+  CountyOnrampManifest,
+  CountyRunStage,
+} from "@/lib/models/county-onramp";
 import {
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
@@ -15,6 +19,14 @@ export type CountyRunUiCard = {
   allowedClaim: string;
   caveats: string[];
   nextAction: string;
+};
+
+export type CountyBehavioralPrototypeUiCard = {
+  pipelineStatus: string | null;
+  runtimeStatus: string | null;
+  runtimeMode: string | null;
+  claim: string;
+  caveats: string[];
 };
 
 export function getCountyRunNextAction(stage: CountyRunStage): string {
@@ -65,5 +77,37 @@ export function getCountyRunMetricHighlights(manifest: CountyOnrampManifest | nu
     finalGap: run?.final_gap ?? null,
     medianApe: validation?.median_absolute_percent_error ?? null,
     maxApe: validation?.max_absolute_percent_error ?? null,
+  };
+}
+
+function getBehavioralClaim(summary: CountyOnrampBehavioralPrototypeSummary | null | undefined): string {
+  if (!summary?.pipeline_status) {
+    return "Behavioral prototype lane has not been recorded for this county run.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_succeeded") {
+    return "Behavioral prototype runtime executed and downstream prototype artifacts were produced.";
+  }
+  if (summary.pipeline_status === "prototype_preflight_complete") {
+    return "Behavioral prototype orchestration completed only to preflight depth; no real ActivitySim runtime success is claimed.";
+  }
+  if (summary.pipeline_status === "behavioral_runtime_failed") {
+    return "Behavioral prototype attempted runtime execution and failed.";
+  }
+  if (summary.pipeline_status === "prototype_pipeline_failed") {
+    return "Behavioral prototype lane failed before completing the planned flow.";
+  }
+  return "Behavioral prototype lane is still in progress.";
+}
+
+export function buildCountyBehavioralPrototypeUiCard(
+  manifest: CountyOnrampManifest | null | undefined
+): CountyBehavioralPrototypeUiCard {
+  const summary = manifest?.summary?.behavioral_prototype;
+  return {
+    pipelineStatus: summary?.pipeline_status ?? null,
+    runtimeStatus: summary?.runtime_status ?? null,
+    runtimeMode: summary?.runtime_mode ?? null,
+    claim: getBehavioralClaim(summary),
+    caveats: summary?.caveats ?? [],
   };
 }

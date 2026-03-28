@@ -9,7 +9,11 @@ import {
   getCountyRunEnqueueStatusLabel,
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
-import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
+import {
+  buildCountyBehavioralPrototypeUiCard,
+  buildCountyRunUiCard,
+  getCountyRunMetricHighlights,
+} from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
@@ -63,6 +67,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     stage: data.stage,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
+  const behavioral = buildCountyBehavioralPrototypeUiCard(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
   const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
@@ -167,6 +172,26 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Behavioral prototype</CardTitle>
+            <CardDescription>End-to-end prototype lane status from the county onramp manifest.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <div>Pipeline status: {behavioral.pipelineStatus ?? "Not recorded"}</div>
+            <div>Runtime status: {behavioral.runtimeStatus ?? "Not recorded"}</div>
+            <div>Runtime mode: {behavioral.runtimeMode ?? "Not recorded"}</div>
+            <p>{behavioral.claim}</p>
+            {behavioral.caveats.length > 0 ? (
+              <ul className="list-disc space-y-1 pl-5">
+                {behavioral.caveats.map((caveat) => (
+                  <li key={caveat}>{caveat}</li>
+                ))}
+              </ul>
+            ) : null}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Artifacts</CardTitle>

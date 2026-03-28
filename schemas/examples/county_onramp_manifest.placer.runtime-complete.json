@@ -12,7 +12,14 @@
     "review_packet_md": "/tmp/placer_example_review.md",
     "run_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/run_summary.json",
     "bundle_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/bundle_manifest.json",
-    "validation_summary_json": null
+    "validation_summary_json": null,
+    "activitysim_bundle_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle/bundle_manifest.json",
+    "behavioral_prototype_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/behavioral_demand_prototype_manifest.json",
+    "behavioral_runtime_manifest_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_manifest.json",
+    "behavioral_runtime_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_summary.json",
+    "behavioral_ingestion_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/ingestion/activitysim_ingestion_summary.json",
+    "behavioral_kpi_summary_json": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_summary.json",
+    "behavioral_kpi_packet_md": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_packet.md"
   },
   "runtime": {
     "keep_project": false,
@@ -33,6 +40,30 @@
       "total_trips": 1723626.2
     },
     "validation": null,
-    "bundle_validation": null
+    "bundle_validation": null,
+    "activitysim_bundle": {
+      "status": "completed",
+      "output_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle",
+      "manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle/bundle_manifest.json",
+      "land_use_rows": 92,
+      "households": 145221,
+      "persons": 356117,
+      "skim_mode": "copy"
+    },
+    "behavioral_prototype": {
+      "pipeline_status": "prototype_preflight_complete",
+      "runtime_status": "behavioral_runtime_blocked",
+      "runtime_mode": "preflight_only",
+      "output_root": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype",
+      "prototype_manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/behavioral_demand_prototype_manifest.json",
+      "runtime_manifest_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_manifest.json",
+      "runtime_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/runtime/activitysim_runtime_summary.json",
+      "ingestion_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/ingestion/activitysim_ingestion_summary.json",
+      "kpi_summary_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_summary.json",
+      "kpi_packet_path": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/kpis/activitysim_behavioral_kpi_packet.md",
+      "caveats": [
+        "ActivitySim CLI is not installed or not on PATH"
+      ]
+    }
   }
 }

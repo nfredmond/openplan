@@ -8,8 +8,9 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-from build_activitysim_input_bundle import build_activitysim_input_bundle
+from run_behavioral_demand_prototype import PIPELINE_MANIFEST_NAME, run_behavioral_demand_prototype
 
 
 def parse_args() -> argparse.Namespace:
@@ -73,37 +74,87 @@ def get_nested(mapping: dict | None, *keys: str):
     return current
 
 
-def build_activitysim_bundle_summary(run_dir: Path) -> dict:
-    output_dir = run_dir / "activitysim_input_bundle"
-    try:
-        result = build_activitysim_input_bundle(
-            screening_run_dir=str(run_dir),
-            output_dir=str(output_dir),
-            force=True,
-        )
+def behavioral_output_root(run_dir: Path) -> Path:
+    return run_dir / "behavioral_demand_prototype"
+
+
+def behavioral_manifest_path(run_dir: Path) -> Path:
+    return behavioral_output_root(run_dir) / PIPELINE_MANIFEST_NAME
+
+
+def summarize_activitysim_bundle(behavioral_manifest: dict[str, Any] | None) -> dict[str, Any]:
+    bundle_step = ((behavioral_manifest or {}).get("steps") or {}).get("build_activitysim_input_bundle") or {}
+    bundle_artifacts = bundle_step.get("artifacts") or {}
+    bundle_metadata = bundle_step.get("metadata") or {}
+    bundle_status = bundle_step.get("status")
+    if bundle_status in {"succeeded", "completed"}:
         return {
             "status": "completed",
-            "output_dir": result["output_dir"],
-            "manifest_path": result["manifest_path"],
-            "land_use_rows": result["land_use_rows"],
-            "households": result["households"],
-            "persons": result["persons"],
-            "skim_mode": result["skim_mode"],
+            "output_dir": bundle_artifacts.get("bundle_dir"),
+            "manifest_path": bundle_artifacts.get("bundle_manifest_path"),
+            "land_use_rows": bundle_metadata.get("land_use_rows"),
+            "households": bundle_metadata.get("households"),
+            "persons": bundle_metadata.get("persons"),
+            "skim_mode": bundle_metadata.get("skim_mode"),
         }
-    except Exception as exc:
+
+    if bundle_status == "failed":
+        error = next(
+            (entry for entry in (behavioral_manifest or {}).get("errors", []) if entry.get("step_key") == "build_activitysim_input_bundle"),
+            None,
+        )
         return {
             "status": "failed",
-            "output_dir": str(output_dir.resolve()),
-            "manifest_path": None,
+            "output_dir": bundle_artifacts.get("bundle_dir"),
+            "manifest_path": bundle_artifacts.get("bundle_manifest_path"),
             "land_use_rows": None,
             "households": None,
             "persons": None,
             "skim_mode": None,
-            "error": {
-                "message": str(exc),
-                "kind": exc.__class__.__name__,
-            },
+            "error": error,
         }
+
+    return {
+        "status": "not-built",
+        "output_dir": None,
+        "manifest_path": None,
+        "land_use_rows": None,
+        "households": None,
+        "persons": None,
+        "skim_mode": None,
+    }
+
+
+def summarize_behavioral_prototype_from_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    artifacts = manifest.get("artifacts") or {}
+    return {
+        "output_root": manifest.get("output_root"),
+        "manifest_path": artifacts.get("pipeline_manifest_path"),
+        "pipeline_status": manifest.get("pipeline_status"),
+        "behavioral_runtime_status": manifest.get("behavioral_runtime_status"),
+        "runtime_mode": manifest.get("runtime_mode"),
+        "bundle_manifest_path": artifacts.get("bundle_manifest_path"),
+        "runtime_manifest_path": artifacts.get("runtime_manifest_path"),
+        "runtime_summary_path": artifacts.get("runtime_summary_path"),
+        "ingestion_summary_path": artifacts.get("ingestion_summary_path"),
+        "kpi_summary_path": artifacts.get("kpi_summary_path"),
+        "kpi_packet_path": artifacts.get("kpi_packet_path"),
+        "caveats": list(manifest.get("caveats") or []),
+    }
+
+
+def run_or_reuse_behavioral_prototype(run_dir: Path, *, force: bool) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    existing_manifest = read_json_if_exists(behavioral_manifest_path(run_dir))
+    if existing_manifest and not force:
+        return summarize_behavioral_prototype_from_manifest(existing_manifest), existing_manifest
+
+    result = run_behavioral_demand_prototype(
+        screening_run_dir=str(run_dir),
+        output_root=str(behavioral_output_root(run_dir)),
+        force=force,
+    )
+    manifest = read_json_if_exists(Path(result["manifest_path"]))
+    return result, manifest
 
 
 def main() -> int:
@@ -164,12 +215,8 @@ def main() -> int:
     run_summary = read_json_if_exists(run_dir / "run_summary.json")
     validation_summary = read_json_if_exists(run_dir / "validation" / "validation_summary.json")
     bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
-    activitysim_bundle = build_activitysim_bundle_summary(run_dir)
-    activitysim_bundle_manifest_path = (
-        Path(activitysim_bundle["manifest_path"]).expanduser().resolve()
-        if activitysim_bundle.get("manifest_path")
-        else None
-    )
+    behavioral_prototype, behavioral_manifest = run_or_reuse_behavioral_prototype(run_dir, force=args.force)
+    activitysim_bundle = summarize_activitysim_bundle(behavioral_manifest)
 
     manifest = {
         "schema_version": "openplan.county_onramp_manifest.v1",
@@ -186,7 +233,13 @@ def main() -> int:
             "run_summary_json": str((run_dir / 'run_summary.json').resolve()) if (run_dir / 'run_summary.json').exists() else None,
             "bundle_manifest_json": str((run_dir / 'bundle_manifest.json').resolve()) if (run_dir / 'bundle_manifest.json').exists() else None,
             "validation_summary_json": str((run_dir / 'validation' / 'validation_summary.json').resolve()) if (run_dir / 'validation' / 'validation_summary.json').exists() else None,
-            "activitysim_bundle_manifest_json": str(activitysim_bundle_manifest_path) if activitysim_bundle_manifest_path and activitysim_bundle_manifest_path.exists() else None,
+            "activitysim_bundle_manifest_json": activitysim_bundle.get("manifest_path"),
+            "behavioral_prototype_manifest_json": behavioral_prototype.get("manifest_path"),
+            "behavioral_runtime_manifest_json": behavioral_prototype.get("runtime_manifest_path"),
+            "behavioral_runtime_summary_json": behavioral_prototype.get("runtime_summary_path"),
+            "behavioral_ingestion_summary_json": behavioral_prototype.get("ingestion_summary_path"),
+            "behavioral_kpi_summary_json": behavioral_prototype.get("kpi_summary_path"),
+            "behavioral_kpi_packet_md": behavioral_prototype.get("kpi_packet_path"),
         },
         "runtime": {
             "keep_project": bool(args.keep_project),
@@ -209,6 +262,19 @@ def main() -> int:
             "validation": validation_summary,
             "bundle_validation": (bundle_manifest or {}).get("validation"),
             "activitysim_bundle": activitysim_bundle,
+            "behavioral_prototype": {
+                "pipeline_status": behavioral_prototype.get("pipeline_status"),
+                "runtime_status": behavioral_prototype.get("behavioral_runtime_status"),
+                "runtime_mode": behavioral_prototype.get("runtime_mode"),
+                "output_root": behavioral_prototype.get("output_root"),
+                "prototype_manifest_path": behavioral_prototype.get("manifest_path"),
+                "runtime_manifest_path": behavioral_prototype.get("runtime_manifest_path"),
+                "runtime_summary_path": behavioral_prototype.get("runtime_summary_path"),
+                "ingestion_summary_path": behavioral_prototype.get("ingestion_summary_path"),
+                "kpi_summary_path": behavioral_prototype.get("kpi_summary_path"),
+                "kpi_packet_path": behavioral_prototype.get("kpi_packet_path"),
+                "caveats": behavioral_prototype.get("caveats", []),
+            },
         },
     }
     if args.output_manifest:
