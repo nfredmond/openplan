@@ -21,6 +21,11 @@ export type CountyRunUiCard = {
   nextAction: string;
 };
 
+export type CountyBehavioralReadinessBadge = {
+  label: string;
+  tone: "neutral" | "info" | "warning" | "success";
+};
+
 export type CountyBehavioralPrototypeUiCard = {
   pipelineStatus: string | null;
   runtimeStatus: string | null;
@@ -189,4 +194,31 @@ export function buildCountyBehavioralPrototypeUiCard(
     claim: getBehavioralClaim(summary),
     caveats: summary?.caveats ?? [],
   };
+}
+
+export function getCountyBehavioralReadinessBadge(input: {
+  evidenceStatusLabel?: string | null;
+  comparisonStatusLabel?: string | null;
+}): CountyBehavioralReadinessBadge | null {
+  const evidence = input.evidenceStatusLabel?.trim() ?? "";
+  const comparison = input.comparisonStatusLabel?.trim() ?? "";
+
+  if (!evidence && !comparison) {
+    return null;
+  }
+
+  if (evidence === "Validation-ready county state") {
+    return { label: "Behavioral review ready", tone: "success" };
+  }
+  if (evidence === "Behavioral evidence lane requested") {
+    return { label: "Behavioral lane requested", tone: "info" };
+  }
+  if (comparison.includes("Await detail-level runtime evidence")) {
+    return { label: "Awaiting runtime evidence", tone: "warning" };
+  }
+  if (comparison.includes("Open detail")) {
+    return { label: "Open detail for readiness", tone: "info" };
+  }
+
+  return { label: "Behavioral status available", tone: "neutral" };
 }

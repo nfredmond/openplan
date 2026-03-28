@@ -17,7 +17,7 @@ import {
   COUNTY_RUNTIME_PRESET_DEFINITIONS,
   type CountyRuntimePresetKey,
 } from "@/lib/models/county-runtime-presets";
-import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
+import { buildCountyRunUiCard, getCountyBehavioralReadinessBadge } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -253,6 +253,10 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
           const enqueueLabel = getCountyRunEnqueueStatusLabel(item.enqueueStatus ?? "not-enqueued");
           const enqueueTone = getCountyRunEnqueueStatusTone(item.enqueueStatus ?? "not-enqueued");
           const enqueueHelp = getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
+          const behavioralBadge = getCountyBehavioralReadinessBadge({
+            evidenceStatusLabel: item.behavioralEvidenceStatusLabel,
+            comparisonStatusLabel: item.behavioralComparisonStatusLabel,
+          });
 
           return (
             <Card key={item.id}>
@@ -266,6 +270,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
                     {item.statusLabel ? <StatusBadge tone={card.tone}>{item.statusLabel}</StatusBadge> : null}
                     <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
+                    {behavioralBadge ? <StatusBadge tone={behavioralBadge.tone}>{behavioralBadge.label}</StatusBadge> : null}
                   </div>
                 </div>
               </CardHeader>

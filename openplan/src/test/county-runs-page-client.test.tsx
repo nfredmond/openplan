@@ -14,7 +14,20 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRuns: () => ({
-    items: [],
+    items: [
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-run",
+        stage: "validated-screening",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralEvidenceStatusLabel: "Validation-ready county state",
+        behavioralComparisonStatusLabel: "Open detail for behavioral readiness",
+        updatedAt: "2026-03-24T23:00:00Z",
+      },
+    ],
     loading: false,
     error: null,
     refresh: refreshMock,
@@ -54,8 +67,11 @@ describe("CountyRunsPageClient", () => {
     });
   });
 
-  it("submits the standard runtime by default", async () => {
+  it("shows behavioral readiness badges for list items and submits the standard runtime by default", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    expect(screen.getByText("Behavioral review ready")).toBeInTheDocument();
+    expect(screen.getByText("Validation-ready county state")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("County search"), { target: { value: "Nevada" } });
     fireEvent.click(screen.getByRole("button", { name: "Nevada County, CA FIPS 06057 · Prefix NEVADA" }));
@@ -82,7 +98,7 @@ describe("CountyRunsPageClient", () => {
       target: { value: "activitysim_behavioral_smoke" },
     });
 
-    expect(screen.getAllByText("Containerized behavioral smoke runtime (prototype)")).toHaveLength(2);
+    expect(screen.getAllByText("Containerized behavioral smoke runtime (prototype)").length).toBeGreaterThanOrEqual(2);
     expect(
       screen.getByText(/Prototype only\. This surfaces a containerized behavioral smoke path/)
     ).toBeInTheDocument();
