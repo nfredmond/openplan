@@ -6,6 +6,7 @@ import { type FormEvent, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyGeographySearch, useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
 import type { CountyGeographySearchItem } from "@/lib/api/county-geographies";
+import type { CountyRunListItem } from "@/lib/api/county-onramp";
 import {
   getCountyRunEnqueueHelpText,
   getCountyRunEnqueueStatusLabel,
@@ -24,6 +25,38 @@ import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
+const COUNTY_BEHAVIORAL_FILTER_OPTIONS = [
+  { value: "all", label: "All behavioral states" },
+  { value: "comparison-ready", label: "Comparison-ready" },
+  { value: "preflight-only", label: "Preflight only" },
+  { value: "runtime-failed", label: "Runtime failed" },
+  { value: "lane-requested", label: "Lane requested" },
+] as const;
+
+type CountyBehavioralFilter = (typeof COUNTY_BEHAVIORAL_FILTER_OPTIONS)[number]["value"];
+
+function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBehavioralFilter): boolean {
+  switch (filter) {
+    case "comparison-ready":
+      return Boolean(item.behavioralComparisonReady);
+    case "preflight-only":
+      return item.behavioralPipelineStatus === "prototype_preflight_complete";
+    case "runtime-failed":
+      return (
+        item.behavioralPipelineStatus === "behavioral_runtime_failed" ||
+        item.behavioralRuntimeStatus === "behavioral_runtime_failed"
+      );
+    case "lane-requested":
+      return (
+        item.runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)" &&
+        !item.behavioralPipelineStatus
+      );
+    case "all":
+    default:
+      return true;
+  }
+}
+
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
   const { items, loading, error, refresh } = useCountyRuns({
@@ -36,6 +69,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [selectedCounty, setSelectedCounty] = useState<CountyGeographySearchItem | null>(null);
   const [runName, setRunName] = useState("");
   const [runtimePreset, setRuntimePreset] = useState<CountyRuntimePresetKey>("standard");
+  const [behavioralFilter, setBehavioralFilter] = useState<CountyBehavioralFilter>("all");
   const { items: countyMatches, loading: searchLoading, error: searchError } = useCountyGeographySearch(countyQuery, {
     limit: 6,
   });
@@ -52,6 +86,10 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const selectedRuntimePreset = useMemo(
     () => COUNTY_RUNTIME_PRESET_DEFINITIONS.find((preset) => preset.key === runtimePreset) ?? COUNTY_RUNTIME_PRESET_DEFINITIONS[0],
     [runtimePreset]
+  );
+  const filteredItems = useMemo(
+    () => items.filter((item) => matchesCountyBehavioralFilter(item, behavioralFilter)),
+    [behavioralFilter, items]
   );
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
@@ -86,11 +124,31 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             screening status.
           </p>
         </div>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap items-end gap-3">
           <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
+          <div className="space-y-1">
+            <label htmlFor="county-behavioral-filter" className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Behavioral state
+            </label>
+            <select
+              id="county-behavioral-filter"
+              className="module-select min-w-[15rem]"
+              value={behavioralFilter}
+              onChange={(event) => setBehavioralFilter(event.target.value as CountyBehavioralFilter)}
+            >
+              {COUNTY_BEHAVIORAL_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredItems.length} of {items.length} county runs
+          </div>
         </div>
       </div>
 
@@ -243,8 +301,15 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         />
       ) : null}
 
+      {!error && !loading && items.length > 0 && filteredItems.length === 0 ? (
+        <EmptyState
+          title="No county runs match this behavioral filter"
+          description="Try a broader behavioral-state filter to see more county runs."
+        />
+      ) : null}
+
       <div className="grid gap-4 xl:grid-cols-2">
-        {items.map((item) => {
+        {filteredItems.map((item) => {
           const card = buildCountyRunUiCard({
             geographyLabel: item.geographyLabel,
             manifest: null,

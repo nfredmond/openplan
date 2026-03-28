@@ -6,6 +6,41 @@ const routerPushMock = vi.fn();
 const refreshMock = vi.fn();
 const createMock = vi.fn();
 
+let countyRunsItemsMock = [
+  {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    geographyLabel: "Nevada County, CA",
+    runName: "nevada-run",
+    stage: "validated-screening",
+    statusLabel: "bounded screening-ready",
+    enqueueStatus: "queued_stub",
+    runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+    behavioralPipelineStatus: "prototype_preflight_complete",
+    behavioralRuntimeStatus: "behavioral_runtime_blocked",
+    behavioralEvidenceReady: true,
+    behavioralComparisonReady: false,
+    behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
+    behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+    updatedAt: "2026-03-24T23:00:00Z",
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    geographyLabel: "Placer County, CA",
+    runName: "placer-run",
+    stage: "bootstrap-incomplete",
+    statusLabel: null,
+    enqueueStatus: "not-enqueued",
+    runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+    behavioralPipelineStatus: null,
+    behavioralRuntimeStatus: null,
+    behavioralEvidenceReady: false,
+    behavioralComparisonReady: false,
+    behavioralEvidenceStatusLabel: "Behavioral lane requested",
+    behavioralComparisonStatusLabel: "Await recorded behavioral state",
+    updatedAt: "2026-03-24T23:10:00Z",
+  },
+];
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPushMock,
@@ -14,24 +49,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRuns: () => ({
-    items: [
-      {
-        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        geographyLabel: "Nevada County, CA",
-        runName: "nevada-run",
-        stage: "validated-screening",
-        statusLabel: "bounded screening-ready",
-        enqueueStatus: "queued_stub",
-        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        behavioralPipelineStatus: "prototype_preflight_complete",
-        behavioralRuntimeStatus: "behavioral_runtime_blocked",
-        behavioralEvidenceReady: true,
-        behavioralComparisonReady: false,
-        behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
-        behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-        updatedAt: "2026-03-24T23:00:00Z",
-      },
-    ],
+    items: countyRunsItemsMock,
     loading: false,
     error: null,
     refresh: refreshMock,
@@ -60,6 +78,40 @@ import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-
 
 describe("CountyRunsPageClient", () => {
   beforeEach(() => {
+    countyRunsItemsMock = [
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-run",
+        stage: "validated-screening",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralPipelineStatus: "prototype_preflight_complete",
+        behavioralRuntimeStatus: "behavioral_runtime_blocked",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: false,
+        behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
+        behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+        updatedAt: "2026-03-24T23:00:00Z",
+      },
+      {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+        stage: "bootstrap-incomplete",
+        statusLabel: null,
+        enqueueStatus: "not-enqueued",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralPipelineStatus: null,
+        behavioralRuntimeStatus: null,
+        behavioralEvidenceReady: false,
+        behavioralComparisonReady: false,
+        behavioralEvidenceStatusLabel: "Behavioral lane requested",
+        behavioralComparisonStatusLabel: "Await recorded behavioral state",
+        updatedAt: "2026-03-24T23:10:00Z",
+      },
+    ];
     routerPushMock.mockReset();
     refreshMock.mockReset();
     refreshMock.mockResolvedValue(null);
@@ -93,6 +145,30 @@ describe("CountyRunsPageClient", () => {
       runtimeOptions: { keepProject: true },
     });
     await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"));
+  });
+
+  it("filters county runs by behavioral state", () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    expect(screen.getByText("Showing 2 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Behavioral state"), {
+      target: { value: "lane-requested" },
+    });
+
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
+    expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Behavioral state"), {
+      target: { value: "preflight-only" },
+    });
+
+    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
 
   it("submits the containerized behavioral smoke preset and shows honest caveats", async () => {
