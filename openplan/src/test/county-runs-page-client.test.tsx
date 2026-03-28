@@ -214,7 +214,11 @@ describe("CountyRunsPageClient", () => {
       countyPrefix: "NEVADA",
       runtimeOptions: { keepProject: true },
     });
-    await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"));
+    await waitFor(() =>
+      expect(routerPushMock).toHaveBeenCalledWith(
+        "/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb?backTo=%2Fcounty-runs"
+      )
+    );
   });
 
   it("filters county runs by behavioral state and persists the filter in the URL", () => {
@@ -307,6 +311,19 @@ describe("CountyRunsPageClient", () => {
     expect(String(clipboardWriteTextMock.mock.calls[0]?.[0] ?? "")).toContain("/county-runs?view=needs-attention");
     expect(screen.getByText("Copied view link")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
+  });
+
+  it("preserves the active county dashboard view in detail links", async () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (1)" }));
+    await waitFor(() =>
+      expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
+    );
+
+    for (const link of screen.getAllByRole("link", { name: "Open detail" })) {
+      expect(link).toHaveAttribute("href", expect.stringContaining("?backTo=%2Fcounty-runs%3Fview%3Dneeds-attention"));
+    }
   });
 
   it("persists county sorting in the URL", () => {

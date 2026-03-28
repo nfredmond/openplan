@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import {
@@ -14,12 +15,14 @@ import {
   buildCountyRunUiCard,
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
+import { getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
+  const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
@@ -73,6 +76,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
+  const countyRunsBackHref = getSafeCountyRunsBackHref(searchParams.get("backTo"));
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
@@ -106,7 +110,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             {data.enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
           </Button>
           <Button asChild variant="outline">
-            <Link href="/county-runs">Back to county runs</Link>
+            <Link href={countyRunsBackHref}>Back to county runs</Link>
           </Button>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>

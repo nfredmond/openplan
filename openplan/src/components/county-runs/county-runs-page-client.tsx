@@ -28,6 +28,7 @@ import {
   type CountyRunQuickView,
   type CountyRunSort,
 } from "@/lib/ui/county-onramp";
+import { buildCountyRunDetailHref } from "@/lib/ui/county-runs-navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -454,7 +455,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
 
     if (created?.countyRunId) {
       await refresh();
-      router.push(`/county-runs/${created.countyRunId}`);
+      router.push(buildCountyRunDetailHref(created.countyRunId, currentCountyRunsRelativeUrl));
     }
   };
 
@@ -927,7 +928,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/county-runs/${item.id}`}>Open detail</Link>
+                    <Link href={buildCountyRunDetailHref(item.id, currentCountyRunsRelativeUrl)}>Open detail</Link>
                   </Button>
                 </div>
               </CardContent>
