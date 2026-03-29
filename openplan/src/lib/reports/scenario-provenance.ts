@@ -3,7 +3,7 @@ import {
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
 
-type SupabaseLike = {
+export type ReportScenarioSupabaseLike = {
   from: (table: string) => {
     select: (query: string) => {
       in: (
@@ -148,7 +148,7 @@ export async function loadReportScenarioSetLinks({
   supabase,
   linkedRuns,
 }: {
-  supabase: SupabaseLike;
+  supabase: ReportScenarioSupabaseLike;
   linkedRuns: ReportRunLike[];
 }): Promise<{ data: ReportScenarioSetLink[]; error: { message: string; code?: string | null } | null }> {
   if (linkedRuns.length === 0) {

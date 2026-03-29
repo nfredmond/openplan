@@ -344,7 +344,9 @@ export function buildScenarioLinkedReports({
         matchedBaselineRun,
         matchedAlternativeEntryCount,
         comparisonReady,
-        linkageKind: comparisonReady ? "comparison-ready" : "run-linked-only",
+        linkageKind: comparisonReady
+          ? ("comparison-ready" as const)
+          : ("run-linked-only" as const),
       };
     })
     .filter((report) => report.matchedRunIds.length > 0)

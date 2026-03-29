@@ -28,6 +28,7 @@ import {
   type ProjectStageGateSummary,
   type ProjectStageGateSnapshot,
   type StageGateSnapshotGateSummary,
+  type StageGateWorkflowState,
 } from "@/lib/stage-gates/summary";
 
 type RouteParams = {
@@ -221,7 +222,7 @@ function asStageGateSnapshotGateSummary(
     return null;
   }
 
-  const workflowState = asNullableString(record.workflowState);
+  const workflowState = asNullableString(record.workflowState) as StageGateWorkflowState | null;
   const missingArtifacts = Array.isArray(record.missingArtifacts)
     ? record.missingArtifacts.filter(
         (item): item is string =>
@@ -481,36 +482,37 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   );
   const stageGateSnapshot = asStageGateSnapshot(sourceContext?.stageGateSnapshot);
   const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
+  const projectRecordsSnapshotSource = asRecord(sourceContext?.projectRecordsSnapshot);
   const projectRecordsSnapshot = [
     {
       key: "deliverables",
       label: "Deliverables",
       anchor: "project-deliverables",
-      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.deliverables),
+      value: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.deliverables),
     },
     {
       key: "risks",
       label: "Risks",
       anchor: "project-risks",
-      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.risks),
+      value: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.risks),
     },
     {
       key: "issues",
       label: "Issues",
       anchor: "project-issues",
-      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.issues),
+      value: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.issues),
     },
     {
       key: "decisions",
       label: "Decisions",
       anchor: "project-decisions",
-      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.decisions),
+      value: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.decisions),
     },
     {
       key: "meetings",
       label: "Meetings",
       anchor: "project-meetings",
-      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.meetings),
+      value: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.meetings),
     },
   ].filter(
     (

@@ -15,7 +15,10 @@ import {
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
-import { loadReportScenarioSetLinks } from "@/lib/reports/scenario-provenance";
+import {
+  loadReportScenarioSetLinks,
+  type ReportScenarioSupabaseLike,
+} from "@/lib/reports/scenario-provenance";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -303,9 +306,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       gate: evaluateReportArtifactGate(run),
       transparency: buildSourceTransparency(run.metrics ?? {}, typeof run.ai_interpretation === "string" ? "ai" : "fallback"),
     }));
+    const linkedRunContext = linkedRuns.map((run) => ({
+      id: run.id,
+      title: run.title ?? "Untitled run",
+      created_at: run.created_at ?? report.created_at,
+    }));
     const scenarioSetLinksResult = await loadReportScenarioSetLinks({
-      supabase,
-      linkedRuns,
+      supabase: supabase as unknown as ReportScenarioSupabaseLike,
+      linkedRuns: linkedRunContext,
     });
 
     if (scenarioSetLinksResult.error) {
