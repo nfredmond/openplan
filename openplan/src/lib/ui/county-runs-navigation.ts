@@ -18,6 +18,7 @@ const COUNTY_RUNS_SORT_LABELS: Record<string, string> = {
 
 const COUNTY_RUNS_BEHAVIORAL_LABELS: Record<string, string> = {
   all: "All behavioral states",
+  "evidence-ready": "Evidence-ready",
   "comparison-ready": "Comparison-ready",
   "preflight-only": "Preflight only",
   "runtime-failed": "Runtime failed",

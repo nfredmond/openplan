@@ -37,6 +37,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 
 const COUNTY_BEHAVIORAL_FILTER_OPTIONS = [
   { value: "all", label: "All behavioral states" },
+  { value: "evidence-ready", label: "Evidence-ready" },
   { value: "comparison-ready", label: "Comparison-ready" },
   { value: "preflight-only", label: "Preflight only" },
   { value: "runtime-failed", label: "Runtime failed" },
@@ -173,6 +174,13 @@ function getCountyFilterOptionLabel(
 
 function matchesCountyBehavioralFilter(item: CountyRunListItem, filter: CountyBehavioralFilter): boolean {
   switch (filter) {
+    case "evidence-ready":
+      return (
+        Boolean(item.behavioralEvidenceReady) &&
+        !Boolean(item.behavioralComparisonReady) &&
+        (item.behavioralPipelineStatus === "behavioral_runtime_succeeded" ||
+          item.behavioralRuntimeStatus === "behavioral_runtime_succeeded")
+      );
     case "comparison-ready":
       return Boolean(item.behavioralComparisonReady);
     case "preflight-only":

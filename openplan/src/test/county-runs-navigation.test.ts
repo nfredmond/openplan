@@ -31,6 +31,12 @@ describe("county-runs navigation helpers", () => {
     );
   });
 
+  it("describes the evidence-ready behavioral filter context", () => {
+    expect(
+      getCountyRunsBackContextLabel("/county-runs?behavioral=evidence-ready&runtimeMode=containerized_activitysim")
+    ).toBe("View: All runs · Sort: Recently updated · Behavioral: Evidence-ready · Mode: Containerized ActivitySim");
+  });
+
   it("does not describe the default county runs page as a saved dashboard context", () => {
     expect(getCountyRunsBackContextLabel("/county-runs")).toBeNull();
   });

@@ -489,6 +489,100 @@ describe("CountyRunsPageClient", () => {
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
 
+  it("filters evidence-ready runs through the behavioral state control", () => {
+    countyRunsItemsMock = [
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        geographyLabel: "Nevada County, CA",
+        runName: "nevada-run",
+        stage: "validated-screening",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralPipelineStatus: "prototype_preflight_complete",
+        behavioralRuntimeStatus: "behavioral_runtime_blocked",
+        behavioralRuntimeMode: "preflight_only",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: false,
+        behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
+        behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+        artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "ActivitySim bundle", "Behavioral prototype"],
+        metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
+        zoneCount: 26,
+        loadedLinks: 3174,
+        finalGap: 0.0091,
+        medianApe: 16.01,
+        updatedAt: "2026-03-24T23:00:00Z",
+      },
+      {
+        id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        geographyLabel: "Sutter County, CA",
+        runName: "sutter-run",
+        stage: "validated-screening",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralPipelineStatus: "behavioral_runtime_succeeded",
+        behavioralRuntimeStatus: "behavioral_runtime_succeeded",
+        behavioralRuntimeMode: "containerized_activitysim",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: false,
+        behavioralEvidenceStatusLabel: "Runtime succeeded",
+        behavioralComparisonStatusLabel: "Comparison blocked: awaiting KPI coverage",
+        artifactAvailabilityLabels: ["Scaffold CSV", "Validation summary", "ActivitySim bundle", "Behavioral prototype"],
+        metricAvailabilityLabels: ["Zones 24", "Links 2999", "Gap 0.0060", "Median APE 14.00%"],
+        zoneCount: 24,
+        loadedLinks: 2999,
+        finalGap: 0.006,
+        medianApe: 14,
+        updatedAt: "2026-03-24T23:05:00Z",
+      },
+      {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+        stage: "runtime-complete",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        behavioralPipelineStatus: "behavioral_runtime_succeeded",
+        behavioralRuntimeStatus: "behavioral_runtime_succeeded",
+        behavioralRuntimeMode: "containerized_activitysim",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: true,
+        behavioralEvidenceStatusLabel: "Runtime succeeded",
+        behavioralComparisonStatusLabel: "Comparison-ready run",
+        artifactAvailabilityLabels: [
+          "Scaffold CSV",
+          "Validation summary",
+          "ActivitySim bundle",
+          "Behavioral prototype",
+          "Behavioral KPI Summary",
+          "Behavioral KPI Packet",
+        ],
+        metricAvailabilityLabels: ["Zones 30", "Links 3550", "Gap 0.0042", "Median APE 12.50%"],
+        zoneCount: 30,
+        loadedLinks: 3550,
+        finalGap: 0.0042,
+        medianApe: 12.5,
+        updatedAt: "2026-03-24T23:10:00Z",
+      },
+    ];
+
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.change(screen.getByLabelText("Behavioral state"), {
+      target: { value: "evidence-ready" },
+    });
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=evidence-ready", { scroll: false });
+    expect(screen.getByRole("button", { name: "Behavioral: Evidence-ready ×" })).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Sutter County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
+  });
+
   it("initializes county sorting from the URL", () => {
     searchParamsValue = "sort=median-ape-asc";
 
