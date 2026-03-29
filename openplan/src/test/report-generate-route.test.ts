@@ -450,6 +450,28 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sort_order: 0,
           config_json: {
             campaignId: "99999999-9999-4999-8999-999999999999",
+            provenance: {
+              origin: "engagement_campaign_handoff",
+              reason:
+                "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
+              capturedAt: "2026-03-14T01:45:00.000Z",
+              campaign: {
+                id: "99999999-9999-4999-8999-999999999999",
+                projectId: "44444444-4444-4444-8444-444444444444",
+                title: "Downtown listening campaign",
+                summary: "Capture walking and crossing feedback.",
+                status: "active",
+                engagementType: "comment_collection",
+                createdAt: "2026-03-01T00:00:00.000Z",
+                updatedAt: "2026-03-14T01:30:00.000Z",
+              },
+              counts: {
+                totalItems: 14,
+                readyForHandoffCount: 9,
+                actionableCount: 2,
+                uncategorizedItems: 1,
+              },
+            },
           },
         },
       ],
@@ -473,7 +495,26 @@ describe("POST /api/reports/[reportId]/generate", () => {
         metadata_json: expect.objectContaining({
           htmlContent: expect.stringContaining("Downtown listening campaign"),
           sourceContext: expect.objectContaining({
+            reportOrigin: "engagement_campaign_handoff",
+            reportReason:
+              "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
             engagementCampaignId: "99999999-9999-4999-8999-999999999999",
+            engagementSnapshotCapturedAt: "2026-03-14T01:45:00.000Z",
+            engagementCampaignSnapshot: expect.objectContaining({
+              title: "Downtown listening campaign",
+              engagementType: "comment_collection",
+              updatedAt: "2026-03-14T01:30:00.000Z",
+            }),
+            engagementCountsSnapshot: expect.objectContaining({
+              totalItems: 14,
+              readyForHandoffCount: 9,
+              actionableCount: 2,
+              uncategorizedItems: 1,
+            }),
+            engagementCampaignCurrent: expect.objectContaining({
+              status: "active",
+              engagementType: "comment_collection",
+            }),
             engagementItemCount: 1,
             engagementReadyForHandoffCount: 1,
           }),

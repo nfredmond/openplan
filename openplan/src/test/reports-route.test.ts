@@ -232,4 +232,78 @@ describe("/api/reports", () => {
       },
     ]);
   });
+
+  it("POST preserves engagement handoff provenance in seeded section config", async () => {
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        sections: [
+          {
+            sectionKey: "status_snapshot",
+            title: "Campaign and project snapshot",
+            enabled: true,
+            sortOrder: 1,
+            configJson: {
+              campaignId: "77777777-7777-4777-8777-777777777777",
+              provenance: {
+                origin: "engagement_campaign_handoff",
+                reason: "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
+                capturedAt: "2026-03-28T15:00:00.000Z",
+                campaign: {
+                  id: "77777777-7777-4777-8777-777777777777",
+                  projectId: "33333333-3333-4333-8333-333333333333",
+                  title: "Downtown listening campaign",
+                  summary: "Collect downtown safety feedback.",
+                  status: "active",
+                  engagementType: "comment_collection",
+                  createdAt: "2026-03-01T09:00:00.000Z",
+                  updatedAt: "2026-03-28T14:45:00.000Z",
+                },
+                counts: {
+                  totalItems: 18,
+                  readyForHandoffCount: 11,
+                  actionableCount: 3,
+                  uncategorizedItems: 2,
+                },
+              },
+            },
+          },
+          {
+            sectionKey: "engagement_summary",
+            title: "Engagement campaign summary",
+            enabled: true,
+            sortOrder: 2,
+            configJson: {
+              campaignId: "77777777-7777-4777-8777-777777777777",
+            },
+          },
+        ],
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(reportSectionsInsertMock).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          section_key: "status_snapshot",
+          config_json: expect.objectContaining({
+            campaignId: "77777777-7777-4777-8777-777777777777",
+            provenance: expect.objectContaining({
+              origin: "engagement_campaign_handoff",
+              capturedAt: "2026-03-28T15:00:00.000Z",
+              campaign: expect.objectContaining({
+                title: "Downtown listening campaign",
+                status: "active",
+              }),
+              counts: expect.objectContaining({
+                readyForHandoffCount: 11,
+                uncategorizedItems: 2,
+              }),
+            }),
+          }),
+        }),
+      ])
+    );
+  });
 });

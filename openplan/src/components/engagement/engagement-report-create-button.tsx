@@ -4,13 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileStack, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { buildEngagementHandoffProvenance } from "@/lib/reports/engagement";
 
 type EngagementReportCreateButtonProps = {
   campaign: {
     id: string;
     title: string;
     summary: string | null;
+    status: string | null;
+    engagement_type: string | null;
     project_id: string | null;
+    created_at: string;
+    updated_at: string;
   };
   counts: {
     moderationQueue: {
@@ -68,6 +73,26 @@ export function EngagementReportCreateButton({
     setIsSubmitting(true);
 
     try {
+      const handoffProvenance = buildEngagementHandoffProvenance({
+        capturedAt: new Date().toISOString(),
+        campaign: {
+          id: campaign.id,
+          projectId: campaign.project_id,
+          title: campaign.title,
+          summary: campaign.summary,
+          status: campaign.status,
+          engagementType: campaign.engagement_type,
+          createdAt: campaign.created_at,
+          updatedAt: campaign.updated_at,
+        },
+        counts: {
+          totalItems: counts.totalItems,
+          readyForHandoffCount: counts.moderationQueue.readyForHandoffCount,
+          actionableCount: counts.moderationQueue.actionableCount,
+          uncategorizedItems: counts.uncategorizedItems,
+        },
+      });
+
       const response = await fetch("/api/reports", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -94,6 +119,10 @@ export function EngagementReportCreateButton({
               title: "Campaign and project snapshot",
               enabled: true,
               sortOrder: 1,
+              configJson: {
+                campaignId: campaign.id,
+                provenance: handoffProvenance,
+              },
             },
             {
               sectionKey: "engagement_summary",
@@ -102,6 +131,7 @@ export function EngagementReportCreateButton({
               sortOrder: 2,
               configJson: {
                 campaignId: campaign.id,
+                provenance: handoffProvenance,
               },
             },
             {

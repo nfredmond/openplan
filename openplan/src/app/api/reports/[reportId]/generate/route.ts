@@ -7,6 +7,7 @@ import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import {
   buildReportEngagementSummary,
+  extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const engagementCampaignId = extractEngagementCampaignId(sectionsResult.data ?? []);
+    const engagementProvenance = extractEngagementHandoffProvenance(sectionsResult.data ?? []);
     const [engagementCampaignResult, engagementCategoriesResult, engagementItemsResult] =
       engagementCampaignId
         ? await Promise.all([
@@ -310,6 +312,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         note: "This output assembles structured records and linked run evidence as a review packet with explicit provenance.",
       },
       sourceContext: {
+        reportOrigin: engagementProvenance?.origin ?? "report_builder",
+        reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectResult.data.updated_at,
         linkedRunCount: linkedRuns.length,
         deliverableCount: deliverablesResult.data?.length ?? 0,
@@ -317,7 +321,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
         issueCount: issuesResult.data?.length ?? 0,
         decisionCount: decisionsResult.data?.length ?? 0,
         meetingCount: meetingsResult.data?.length ?? 0,
-        engagementCampaignId: engagement?.campaign.id ?? null,
+        engagementCampaignId:
+          engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
+        engagementCampaignSnapshot: engagementProvenance?.campaign ?? null,
+        engagementSnapshotCapturedAt: engagementProvenance?.capturedAt || null,
+        engagementCountsSnapshot: engagementProvenance?.counts ?? null,
+        engagementCampaignCurrent:
+          engagement?.campaign
+            ? {
+                id: engagement.campaign.id,
+                title: engagement.campaign.title,
+                summary: engagement.campaign.summary,
+                status: engagement.campaign.status,
+                engagementType: engagement.campaign.engagement_type,
+                updatedAt: engagement.campaign.updated_at,
+              }
+            : null,
         engagementItemCount: engagement?.counts.totalItems ?? 0,
         engagementReadyForHandoffCount:
           engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
