@@ -5,6 +5,7 @@ import { PublicEngagementPortal } from "@/components/engagement/public-engagemen
 
 type CampaignRow = {
   id: string;
+  project_id: string | null;
   title: string;
   summary: string | null;
   public_description: string | null;
@@ -13,6 +14,12 @@ type CampaignRow = {
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
   updated_at: string;
+};
+
+type PublicProjectRow = {
+  id: string;
+  name: string;
+  summary: string | null;
 };
 
 type CategoryRow = {
@@ -49,7 +56,7 @@ export default async function PublicEngagementPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, updated_at")
+    .select("id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, updated_at")
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
@@ -60,7 +67,10 @@ export default async function PublicEngagementPage({
 
   const campaign = campaignData as CampaignRow;
 
-  const [{ data: categoriesData }, { data: approvedItemsData }] = await Promise.all([
+  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }] = await Promise.all([
+    campaign.project_id
+      ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase
       .from("engagement_categories")
       .select("id, label, slug, description, sort_order")
@@ -76,6 +86,7 @@ export default async function PublicEngagementPage({
       .limit(100),
   ]);
 
+  const project = (projectData ?? null) as PublicProjectRow | null;
   const categories = (categoriesData ?? []) as CategoryRow[];
   const approvedItems = (approvedItemsData ?? []) as ApprovedItemRow[];
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
@@ -83,15 +94,29 @@ export default async function PublicEngagementPage({
   return (
     <section className="module-page">
       <header className="mb-8">
-        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <MessageSquareText className="h-4 w-4" />
-          <span>Community Engagement</span>
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <MessageSquareText className="h-4 w-4" />
+            <span>Community Engagement</span>
+          </div>
+          {project ? (
+            <span className="rounded-full border border-border/70 bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+              Linked project: {project.name}
+            </span>
+          ) : null}
         </div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{campaign.title}</h1>
         {campaign.public_description ? (
           <p className="mt-3 max-w-2xl text-base text-muted-foreground leading-relaxed">{campaign.public_description}</p>
         ) : campaign.summary ? (
           <p className="mt-3 max-w-2xl text-base text-muted-foreground leading-relaxed">{campaign.summary}</p>
+        ) : null}
+        {project ? (
+          <div className="mt-4 max-w-3xl rounded-2xl border border-border/70 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">This input supports</p>
+            <p className="mt-1 text-base font-semibold text-foreground">{project.name}</p>
+            {project.summary ? <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{project.summary}</p> : null}
+          </div>
         ) : null}
       </header>
 
@@ -110,6 +135,7 @@ export default async function PublicEngagementPage({
           createdAt: item.created_at,
         }))}
         engagementType={campaign.engagement_type}
+        projectContext={project ? { name: project.name, summary: project.summary } : null}
       />
     </section>
   );

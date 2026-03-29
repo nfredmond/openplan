@@ -315,12 +315,17 @@ export function PublicEngagementPortal({
   categories,
   approvedItems,
   engagementType,
+  projectContext,
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
   categories: CategoryOption[];
   approvedItems: ApprovedItem[];
   engagementType: string;
+  projectContext?: {
+    name: string;
+    summary: string | null;
+  } | null;
 }) {
   const [activeTab, setActiveTab] = useState<"submit" | "feedback">(acceptingSubmissions ? "submit" : "feedback");
 
@@ -456,11 +461,18 @@ export function PublicEngagementPortal({
 
         <div className="mt-4 rounded-2xl border border-border/70 bg-card p-6">
           <h2 className="mb-2 text-lg font-semibold">About this engagement</h2>
-          <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm text-muted-foreground">
             <p>
               <span className="font-medium text-foreground">{engagementGuidance.modeLabel}.</span> This public engagement portal is managed through OpenPlan.
               All submissions are reviewed by the project team before they appear publicly.
             </p>
+            {projectContext ? (
+              <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Linked project</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{projectContext.name}</p>
+                {projectContext.summary ? <p className="mt-1 text-sm text-muted-foreground">{projectContext.summary}</p> : null}
+              </div>
+            ) : null}
             <p>
               Your feedback helps inform planning decisions and can be carried into engagement summaries, project reporting,
               and other traceable planning materials.
