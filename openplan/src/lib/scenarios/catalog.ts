@@ -41,6 +41,7 @@ export type ScenarioLinkedReportRecord = {
   report_type: string | null;
   generated_at: string | null;
   updated_at: string | null;
+  latest_artifact_kind?: string | null;
 };
 
 export type ScenarioLinkedReportRun = {

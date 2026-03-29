@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowRight, FileStack, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  formatReportStatusLabel,
+  formatReportTypeLabel,
+  getReportPacketActionLabel,
+  getReportPacketFreshness,
+  getReportPacketPriority,
+  reportStatusTone,
+} from "@/lib/reports/catalog";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -123,7 +131,7 @@ export default async function ScenarioSetDetailPage({
   });
   const { data: reportsData } = await supabase
     .from("reports")
-    .select("id, title, status, report_type, generated_at, updated_at")
+    .select("id, title, status, report_type, generated_at, updated_at, latest_artifact_kind")
     .eq("project_id", scenarioSet.project_id)
     .order("updated_at", { ascending: false });
   const reportIds = (reportsData ?? []).map((report) => report.id);
@@ -143,6 +151,7 @@ export default async function ScenarioSetDetailPage({
       report_type: string | null;
       generated_at: string | null;
       updated_at: string | null;
+      latest_artifact_kind?: string | null;
     }>,
     reportRuns: ((reportRunsData ?? []) as Array<{ report_id: string; run_id: string }>).filter((link) =>
       (reportsData ?? []).some((report) => report.id === link.report_id)
@@ -154,8 +163,37 @@ export default async function ScenarioSetDetailPage({
     })),
     baselineEntryId: baselineEntry?.id ?? null,
   });
-  const comparisonReadyReportCount = reportLinkage.linkedReports.filter((report) => report.comparisonReady).length;
-  const runLinkedOnlyReportCount = reportLinkage.linkedReports.length - comparisonReadyReportCount;
+  const linkedReportsWithFreshness = reportLinkage.linkedReports
+    .map((report) => ({
+      ...report,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    }))
+    .sort((left, right) => {
+      const freshnessPriority =
+        getReportPacketPriority(left.packetFreshness.label) -
+        getReportPacketPriority(right.packetFreshness.label);
+      if (freshnessPriority !== 0) {
+        return freshnessPriority;
+      }
+
+      const leftStamp = left.generated_at ?? left.updated_at ?? "";
+      const rightStamp = right.generated_at ?? right.updated_at ?? "";
+      return rightStamp.localeCompare(leftStamp);
+    });
+  const comparisonReadyReportCount = linkedReportsWithFreshness.filter((report) => report.comparisonReady).length;
+  const runLinkedOnlyReportCount = linkedReportsWithFreshness.length - comparisonReadyReportCount;
+  const refreshRecommendedReportCount = linkedReportsWithFreshness.filter(
+    (report) => report.packetFreshness.label === "Refresh recommended"
+  ).length;
+  const noPacketReportCount = linkedReportsWithFreshness.filter(
+    (report) => report.packetFreshness.label === "No packet"
+  ).length;
+  const linkedReportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
+  const recommendedLinkedReport = linkedReportsWithFreshness[0] ?? null;
 
   return (
     <section className="module-page">
@@ -288,14 +326,17 @@ export default async function ScenarioSetDetailPage({
                   Reports are surfaced when they already use this scenario set&apos;s attached runs. New comparison packets can be drafted from ready evidence.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <StatusBadge tone={reportLinkage.linkedReports.length > 0 ? "success" : "neutral"}>
-                    {reportLinkage.linkedReports.length} linked reports
+                  <StatusBadge tone={linkedReportsWithFreshness.length > 0 ? "success" : "neutral"}>
+                    {linkedReportsWithFreshness.length} linked reports
                   </StatusBadge>
                   <StatusBadge tone={comparisonReadyReportCount > 0 ? "success" : "info"}>
                     {comparisonReadyReportCount} comparison-ready
                   </StatusBadge>
                   <StatusBadge tone={runLinkedOnlyReportCount > 0 ? "warning" : "neutral"}>
                     {runLinkedOnlyReportCount} run-linked only
+                  </StatusBadge>
+                  <StatusBadge tone={linkedReportAttentionCount > 0 ? "warning" : "success"}>
+                    {linkedReportAttentionCount} packet issue{linkedReportAttentionCount === 1 ? "" : "s"}
                   </StatusBadge>
                 </div>
               </div>
@@ -416,54 +457,99 @@ export default async function ScenarioSetDetailPage({
               Lightweight linkage only: reports are shown when they already reference this scenario set&apos;s attached runs.
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <FileStack className="h-3.5 w-3.5" />
-            {reportLinkage.linkedReports.length} linked
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <FileStack className="h-3.5 w-3.5" />
+              {linkedReportsWithFreshness.length} linked
+            </span>
+            {linkedReportAttentionCount > 0 ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {linkedReportAttentionCount} need{linkedReportAttentionCount === 1 ? "s" : ""} packet attention
+              </span>
+            ) : null}
+          </div>
         </div>
 
-        {reportLinkage.linkedReports.length === 0 ? (
+        {linkedReportsWithFreshness.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">
             No linked reports yet. When comparison-ready evidence exists, create an analysis summary report from an alternative card.
           </div>
         ) : (
-          <div className="mt-5 module-record-list">
-            {reportLinkage.linkedReports.map((report) => (
-              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone={scenarioStatusTone(report.status ?? "draft")}>{titleizeScenarioValue(report.status)}</StatusBadge>
-                      <StatusBadge tone="info">{titleizeScenarioValue(report.report_type)}</StatusBadge>
-                      <StatusBadge tone={report.comparisonReady ? "success" : "warning"}>
-                        {report.comparisonReady ? "Comparison-ready" : "Run-linked only"}
-                      </StatusBadge>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title ?? "Untitled report"}</h3>
-                        <p className="module-record-stamp">Updated {report.updated_at ?? report.generated_at ?? "Unknown"}</p>
+          <>
+            <div
+              className={`mt-5 rounded-[22px] border p-5 ${
+                linkedReportAttentionCount > 0
+                  ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
+                  : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
+              }`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Scenario reporting posture
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
+                {linkedReportAttentionCount > 0 && recommendedLinkedReport
+                  ? `${recommendedLinkedReport.title ?? "Linked report"} needs packet attention`
+                  : "Linked packets look current"}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedLinkedReport
+                  ? getReportPacketActionLabel(recommendedLinkedReport.packetFreshness.label)
+                  : "Open reports to create the first packet tied to this scenario evidence."}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedLinkedReport?.packetFreshness.detail ??
+                  "No linked reports use this scenario set's runs yet."}
+              </p>
+            </div>
+
+            <div className="mt-5 module-record-list">
+              {linkedReportsWithFreshness.map((report) => (
+                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={reportStatusTone(report.status ?? "draft")}>
+                          {formatReportStatusLabel(report.status)}
+                        </StatusBadge>
+                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                        <StatusBadge tone={report.comparisonReady ? "success" : "warning"}>
+                          {report.comparisonReady ? "Comparison-ready" : "Run-linked only"}
+                        </StatusBadge>
+                        <StatusBadge tone={report.packetFreshness.tone}>
+                          {report.packetFreshness.label}
+                        </StatusBadge>
                       </div>
-                      <p className="module-record-summary line-clamp-2">
-                        {report.comparisonReady
-                          ? `Grounded by baseline + alternative runs from this set: ${report.matchedEntryLabels.join(" · ")}`
-                          : report.matchedBaselineRun
-                            ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
-                            : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
-                      </p>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title ?? "Untitled report"}</h3>
+                          <p className="module-record-stamp">Updated {report.updated_at ?? report.generated_at ?? "Unknown"}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {report.comparisonReady
+                            ? `Grounded by baseline + alternative runs from this set: ${report.matchedEntryLabels.join(" · ")}`
+                            : report.matchedBaselineRun
+                              ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
+                              : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{report.packetFreshness.detail}</p>
+                        <p className="text-sm font-medium text-foreground/80">
+                          {getReportPacketActionLabel(report.packetFreshness.label)}
+                        </p>
+                      </div>
                     </div>
+                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
-                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                </div>
-                <div className="module-record-meta">
-                  <span className="module-record-chip">{report.matchedRunIds.length} matching runs</span>
-                  <span className="module-record-chip">
-                    {report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">{report.matchedRunIds.length} matching runs</span>
+                    <span className="module-record-chip">
+                      {report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </article>
     </section>
