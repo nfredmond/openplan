@@ -1,0 +1,233 @@
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const createClientMock = vi.fn();
+const notFoundMock = vi.fn(() => {
+  throw new Error("notFound");
+});
+const redirectMock = vi.fn(() => {
+  throw new Error("redirect");
+});
+
+const reportMaybeSingleMock = vi.fn();
+const reportEqMock = vi.fn(() => ({ maybeSingle: reportMaybeSingleMock }));
+const reportSelectMock = vi.fn(() => ({ eq: reportEqMock }));
+
+const projectMaybeSingleMock = vi.fn();
+const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
+const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
+
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+
+const sectionsOrderMock = vi.fn();
+const sectionsEqMock = vi.fn(() => ({ order: sectionsOrderMock }));
+const sectionsSelectMock = vi.fn(() => ({ eq: sectionsEqMock }));
+
+const reportRunsOrderMock = vi.fn();
+const reportRunsEqMock = vi.fn(() => ({ order: reportRunsOrderMock }));
+const reportRunsSelectMock = vi.fn(() => ({ eq: reportRunsEqMock }));
+
+const artifactsOrderMock = vi.fn();
+const artifactsEqMock = vi.fn(() => ({ order: artifactsOrderMock }));
+const artifactsSelectMock = vi.fn(() => ({ eq: artifactsEqMock }));
+
+const runsInMock = vi.fn();
+const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
+
+const campaignMaybeSingleMock = vi.fn();
+const campaignEqIdMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
+const campaignEqWorkspaceMock = vi.fn(() => ({ eq: campaignEqIdMock }));
+const campaignSelectMock = vi.fn(() => ({ eq: campaignEqWorkspaceMock }));
+
+const authGetUserMock = vi.fn();
+
+const fromMock = vi.fn((table: string) => {
+  if (table === "reports") {
+    return { select: reportSelectMock };
+  }
+  if (table === "projects") {
+    return { select: projectSelectMock };
+  }
+  if (table === "workspaces") {
+    return { select: workspaceSelectMock };
+  }
+  if (table === "report_sections") {
+    return { select: sectionsSelectMock };
+  }
+  if (table === "report_runs") {
+    return { select: reportRunsSelectMock };
+  }
+  if (table === "report_artifacts") {
+    return { select: artifactsSelectMock };
+  }
+  if (table === "runs") {
+    return { select: runsSelectMock };
+  }
+  if (table === "engagement_campaigns") {
+    return { select: campaignSelectMock };
+  }
+  throw new Error(`Unexpected table: ${table}`);
+});
+
+vi.mock("next/navigation", () => ({
+  notFound: () => notFoundMock(),
+  redirect: (...args: unknown[]) => redirectMock(...args),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: (...args: unknown[]) => createClientMock(...args),
+}));
+
+vi.mock("@/components/reports/report-detail-controls", () => ({
+  ReportDetailControls: () => <div data-testid="report-detail-controls" />,
+}));
+
+import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
+
+describe("ReportDetailPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    authGetUserMock.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+        },
+      },
+    });
+
+    reportMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "report-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        title: "Downtown Safety Packet",
+        report_type: "project_status",
+        status: "generated",
+        summary: "Report packet summarizing planning evidence and engagement handoff.",
+        generated_at: "2026-03-28T18:00:00.000Z",
+        latest_artifact_url: null,
+        latest_artifact_kind: "html",
+        created_at: "2026-03-28T17:00:00.000Z",
+        updated_at: "2026-03-28T18:05:00.000Z",
+      },
+      error: null,
+    });
+
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "project-1",
+        workspace_id: "workspace-1",
+        name: "Downtown Mobility Plan",
+        summary: "Planning effort focused on corridor safety and access.",
+        status: "active",
+        plan_type: "corridor",
+        delivery_phase: "analysis",
+        updated_at: "2026-03-28T18:01:00.000Z",
+      },
+      error: null,
+    });
+
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        plan: "starter",
+        slug: "openplan-qa",
+      },
+      error: null,
+    });
+
+    sectionsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "section-1",
+          section_key: "engagement_summary",
+          title: "Engagement summary",
+          enabled: true,
+          sort_order: 0,
+          config_json: { campaignId: "campaign-1" },
+        },
+      ],
+      error: null,
+    });
+
+    reportRunsOrderMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+
+    artifactsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "artifact-1",
+          artifact_kind: "html",
+          generated_at: "2026-03-28T18:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              linkedRunCount: 0,
+              deliverableCount: 2,
+              decisionCount: 1,
+              projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              engagementReadyForHandoffCount: 4,
+              engagementItemCount: 9,
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    runsInMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+
+    campaignMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "campaign-1",
+        title: "Downtown listening campaign",
+        summary: "Capture walking and crossing feedback from residents and corridor users.",
+        public_description: null,
+        status: "active",
+        engagement_type: "comment_collection",
+        share_token: "share-token-12345",
+        allow_public_submissions: true,
+        submissions_closed_at: null,
+        updated_at: "2026-03-28T17:50:00.000Z",
+      },
+      error: null,
+    });
+
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      from: fromMock,
+    });
+  });
+
+  it("shows richer engagement traceability with public page access when available", async () => {
+    const page = await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+    });
+
+    render(page);
+
+    expect(screen.getByText("Engagement source")).toBeInTheDocument();
+    expect(screen.getByText("Downtown listening campaign")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Capture walking and crossing feedback from residents and corridor users\./i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Public page available/i)).toBeInTheDocument();
+    expect(screen.getByText(/Submissions open/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
+      "href",
+      "/engagement/campaign-1"
+    );
+    expect(screen.getByRole("link", { name: /Open public engagement page/i })).toHaveAttribute(
+      "href",
+      "/engage/share-token-12345"
+    );
+  });
+});

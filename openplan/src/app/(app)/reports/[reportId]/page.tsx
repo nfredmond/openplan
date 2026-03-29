@@ -43,7 +43,13 @@ type LinkedRunRow = {
 type EngagementCampaignLinkRow = {
   id: string;
   title: string;
+  summary: string | null;
+  public_description: string | null;
   status: string;
+  engagement_type: string;
+  share_token: string | null;
+  allow_public_submissions: boolean;
+  submissions_closed_at: string | null;
   updated_at: string;
 };
 
@@ -167,7 +173,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const engagementCampaignResult = engagementCampaignId
     ? await supabase
         .from("engagement_campaigns")
-        .select("id, title, status, updated_at")
+        .select(
+          "id, title, summary, public_description, status, engagement_type, share_token, allow_public_submissions, submissions_closed_at, updated_at"
+        )
         .eq("workspace_id", report.workspace_id)
         .eq("id", engagementCampaignId)
         .maybeSingle()
@@ -186,6 +194,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const sourceContext = asSourceContext(latestArtifact?.metadata_json);
   const engagementCampaign =
     (engagementCampaignResult.data as EngagementCampaignLinkRow | null) ?? null;
+  const engagementPublicHref =
+    engagementCampaign?.share_token && engagementCampaign.status === "active"
+      ? `/engage/${engagementCampaign.share_token}`
+      : null;
+  const engagementSummaryText =
+    engagementCampaign?.public_description ||
+    engagementCampaign?.summary ||
+    null;
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
@@ -531,7 +547,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 {engagementCampaign ? (
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Engagement source
                     </p>
@@ -539,7 +555,20 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {engagementCampaign.title}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {titleize(engagementCampaign.status)} · {String(sourceContext?.engagementReadyForHandoffCount ?? 0)} ready for handoff · {String(sourceContext?.engagementItemCount ?? 0)} items
+                      {titleize(engagementCampaign.status)} · {titleize(engagementCampaign.engagement_type)} · {String(sourceContext?.engagementReadyForHandoffCount ?? 0)} ready for handoff · {String(sourceContext?.engagementItemCount ?? 0)} items
+                    </p>
+                    {engagementSummaryText ? (
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {engagementSummaryText}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Updated {formatDateTime(engagementCampaign.updated_at)} · {engagementPublicHref ? "Public page available" : "Public page unavailable"}
+                      {engagementCampaign.allow_public_submissions
+                        ? engagementCampaign.submissions_closed_at
+                          ? " · Submissions closed"
+                          : " · Submissions open"
+                        : " · Public submissions disabled"}
                     </p>
                   </div>
                 ) : null}
@@ -579,6 +608,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 >
                   <Link2 className="h-4 w-4" />
                   Open engagement campaign
+                </Link>
+              ) : null}
+              {engagementPublicHref ? (
+                <Link
+                  href={engagementPublicHref}
+                  className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                >
+                  <Link2 className="h-4 w-4" />
+                  Open public engagement page
                 </Link>
               ) : null}
               <Link
