@@ -124,6 +124,62 @@ export default async function ReportsPage() {
   const distinctProjects = new Set(
     reports.map((report) => report.project_id).filter(Boolean)
   ).size;
+  const reportGuidanceByProject = reports.reduce<Record<string, {
+    reportCount: number;
+    refreshRecommendedCount: number;
+    noPacketCount: number;
+    recommendedReportId: string | null;
+    recommendedReportTitle: string | null;
+    latestReportId: string | null;
+    latestReportTitle: string | null;
+  }>>((acc, report) => {
+    const projectId = report.project_id;
+    if (!projectId) {
+      return acc;
+    }
+
+    const current =
+      acc[projectId] ??
+      {
+        reportCount: 0,
+        refreshRecommendedCount: 0,
+        noPacketCount: 0,
+        recommendedReportId: null,
+        recommendedReportTitle: null,
+        latestReportId: null,
+        latestReportTitle: null,
+      };
+
+    current.reportCount += 1;
+    if (!current.latestReportId) {
+      current.latestReportId = report.id;
+      current.latestReportTitle = report.title;
+    }
+    if (report.packetFreshness.label === "Refresh recommended") {
+      current.refreshRecommendedCount += 1;
+      if (!current.recommendedReportId) {
+        current.recommendedReportId = report.id;
+        current.recommendedReportTitle = report.title;
+      }
+    }
+    if (report.packetFreshness.label === "No packet") {
+      current.noPacketCount += 1;
+      if (!current.recommendedReportId) {
+        current.recommendedReportId = report.id;
+        current.recommendedReportTitle = report.title;
+      }
+    }
+
+    acc[projectId] = current;
+    return acc;
+  }, {});
+
+  for (const summary of Object.values(reportGuidanceByProject)) {
+    if (!summary.recommendedReportId) {
+      summary.recommendedReportId = summary.latestReportId;
+      summary.recommendedReportTitle = summary.latestReportTitle;
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -215,7 +271,11 @@ export default async function ReportsPage() {
 
       {/* ── Creator + catalog row ────────────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <ReportCreator projects={projectsData ?? []} runs={runsData ?? []} />
+        <ReportCreator
+          projects={projectsData ?? []}
+          runs={runsData ?? []}
+          reportGuidanceByProject={reportGuidanceByProject}
+        />
 
         {/* Report catalog */}
         <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">

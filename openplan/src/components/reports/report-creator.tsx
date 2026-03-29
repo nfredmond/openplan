@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, FilePlus2, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, FilePlus2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,12 +31,51 @@ type CreateResponse = {
   reportId: string;
 };
 
+type ProjectReportGuidance = {
+  reportCount: number;
+  refreshRecommendedCount: number;
+  noPacketCount: number;
+  recommendedReportId: string | null;
+  recommendedReportTitle: string | null;
+};
+
+function formatReportCountLabel(count: number) {
+  return `${count} report record${count === 1 ? "" : "s"}`;
+}
+
+function formatGuidanceCounts({
+  refreshRecommendedCount,
+  noPacketCount,
+}: Pick<ProjectReportGuidance, "refreshRecommendedCount" | "noPacketCount">) {
+  const parts: string[] = [];
+
+  if (refreshRecommendedCount > 0) {
+    parts.push(`${refreshRecommendedCount} refresh recommended`);
+  }
+
+  if (noPacketCount > 0) {
+    parts.push(`${noPacketCount} without packet`);
+  }
+
+  if (parts.length === 0) {
+    return "Latest packet looks current.";
+  }
+
+  if (parts.length === 1) {
+    return `${parts[0]}.`;
+  }
+
+  return `${parts[0]} and ${parts[1]}.`;
+}
+
 export function ReportCreator({
   projects,
   runs,
+  reportGuidanceByProject = {},
 }: {
   projects: ProjectOption[];
   runs: RunOption[];
+  reportGuidanceByProject?: Record<string, ProjectReportGuidance>;
 }) {
   const router = useRouter();
   const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
@@ -52,6 +92,9 @@ export function ReportCreator({
   const availableRuns = selectedProject
     ? runs.filter((run) => run.workspace_id === selectedProject.workspace_id)
     : [];
+  const selectedProjectGuidance = projectId
+    ? reportGuidanceByProject[projectId] ?? null
+    : null;
   const suggestedTitle = selectedProject
     ? defaultReportTitle(selectedProject.name, reportType)
     : "Select a project first";
@@ -171,6 +214,39 @@ export function ReportCreator({
               </option>
             ))}
           </select>
+          {selectedProjectGuidance ? (
+            <div
+              className={`rounded-2xl border px-4 py-3 text-sm ${
+                selectedProjectGuidance.refreshRecommendedCount > 0 ||
+                selectedProjectGuidance.noPacketCount > 0
+                  ? "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+                  : "border-border/70 bg-muted/35 text-foreground"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="font-semibold">
+                    This project already has {formatReportCountLabel(selectedProjectGuidance.reportCount)}.
+                  </p>
+                  <p className="text-xs leading-relaxed text-current/80">
+                    {formatGuidanceCounts(selectedProjectGuidance)}
+                    {selectedProjectGuidance.recommendedReportTitle
+                      ? ` Review ${selectedProjectGuidance.recommendedReportTitle} before creating another packet unless you need a separate report record.`
+                      : " Review the latest report before creating another packet unless you need a separate record."}
+                  </p>
+                  {selectedProjectGuidance.recommendedReportId ? (
+                    <Link
+                      href={`/reports/${selectedProjectGuidance.recommendedReportId}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-3 py-1 text-[0.72rem] font-medium text-current transition-colors hover:border-current/35"
+                    >
+                      Open existing report
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Title + type row */}
