@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildReportEngagementSummary,
+  collectReportIdsLinkedToEngagementCampaign,
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 
@@ -85,5 +86,45 @@ describe("report engagement helpers", () => {
     expect(summary?.campaign.title).toBe("Downtown listening campaign");
     expect(summary?.counts.totalItems).toBe(1);
     expect(summary?.counts.moderationQueue.readyForHandoffCount).toBe(1);
+  });
+
+  it("collects only report ids that explicitly reference the campaign in an engagement summary section", () => {
+    const linkedReportIds = collectReportIdsLinkedToEngagementCampaign(
+      [
+        {
+          report_id: "report-1",
+          section_key: "engagement_summary",
+          enabled: true,
+          config_json: {
+            campaignId: "campaign-1",
+          },
+        },
+        {
+          report_id: "report-1",
+          section_key: "project_overview",
+          enabled: true,
+          config_json: null,
+        },
+        {
+          report_id: "report-2",
+          section_key: "engagement_summary",
+          enabled: true,
+          config_json: {
+            campaignId: "campaign-2",
+          },
+        },
+        {
+          report_id: "report-3",
+          section_key: "engagement_summary",
+          enabled: false,
+          config_json: {
+            campaignId: "campaign-1",
+          },
+        },
+      ],
+      "campaign-1"
+    );
+
+    expect([...linkedReportIds]).toEqual(["report-1"]);
   });
 });

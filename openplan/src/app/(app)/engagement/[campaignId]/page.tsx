@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient } from "@/lib/supabase/server";
 
 type CampaignRow = {
@@ -39,6 +40,13 @@ type ReportRow = {
   status: string;
   generated_at: string | null;
   updated_at: string;
+};
+
+type ReportSectionLinkRow = {
+  report_id: string;
+  section_key: string;
+  enabled: boolean;
+  config_json: Record<string, unknown> | null;
 };
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -113,6 +121,21 @@ export default async function EngagementCampaignDetailPage({
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
+  const reportSectionLinksResult = reportRecords.length
+    ? await supabase
+        .from("report_sections")
+        .select("report_id, section_key, enabled, config_json")
+        .in(
+          "report_id",
+          reportRecords.map((report) => report.id)
+        )
+    : { data: [], error: null };
+  const reportIdsExplicitlyLinkedToCampaign = collectReportIdsLinkedToEngagementCampaign(
+    (reportSectionLinksResult.data ?? []) as ReportSectionLinkRow[],
+    campaign.id
+  );
+  const explicitlyLinkedReportCount = reportRecords.filter((report) => reportIdsExplicitlyLinkedToCampaign.has(report.id)).length;
+  const projectOnlyReportCount = reportRecords.length - explicitlyLinkedReportCount;
   const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
   const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
   const recentItems = (items ?? []).slice(0, 20);
@@ -570,25 +593,41 @@ export default async function EngagementCampaignDetailPage({
           </div>
         ) : (
           <div className="mt-5 space-y-3">
-            {reportRecords.slice(0, 4).map((report) => (
-              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                      <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                      {report.generated_at ? <StatusBadge tone="success">Generated</StatusBadge> : null}
+            <div className="module-record-meta">
+              <span className="module-record-chip">{explicitlyLinkedReportCount} explicit campaign-source reports</span>
+              <span className="module-record-chip">{projectOnlyReportCount} project-linked only</span>
+            </div>
+            {reportRecords.slice(0, 4).map((report) => {
+              const isExplicitCampaignSource = reportIdsExplicitlyLinkedToCampaign.has(report.id);
+
+              return (
+                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
+                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                        <StatusBadge tone={isExplicitCampaignSource ? "success" : "neutral"}>
+                          {isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
+                        </StatusBadge>
+                        {report.generated_at ? <StatusBadge tone="success">Generated</StatusBadge> : null}
+                      </div>
+                      <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                      <p className="module-record-summary">
+                        {isExplicitCampaignSource
+                          ? "This report explicitly includes this campaign as an engagement source section."
+                          : "This report shares the project context, but does not explicitly source this campaign yet."}
+                      </p>
+                      <p className="module-record-summary">
+                        Updated {fmtDateTime(report.updated_at)}
+                        {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
+                      </p>
                     </div>
-                    <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
-                    <p className="module-record-summary">
-                      Updated {fmtDateTime(report.updated_at)}
-                      {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
-                    </p>
+                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
-                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </article>

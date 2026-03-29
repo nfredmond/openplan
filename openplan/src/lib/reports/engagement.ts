@@ -67,3 +67,34 @@ export function buildReportEngagementSummary({
     categories,
   };
 }
+
+export function collectReportIdsLinkedToEngagementCampaign(
+  sections: Array<{
+    report_id: string;
+    section_key: string;
+    enabled: boolean;
+    config_json: Record<string, unknown> | null;
+  }>,
+  campaignId: string
+) {
+  const sectionsByReport = new Map<
+    string,
+    Array<{ section_key: string; enabled: boolean; config_json: Record<string, unknown> | null }>
+  >();
+
+  for (const section of sections) {
+    const existing = sectionsByReport.get(section.report_id) ?? [];
+    existing.push({
+      section_key: section.section_key,
+      enabled: section.enabled,
+      config_json: section.config_json,
+    });
+    sectionsByReport.set(section.report_id, existing);
+  }
+
+  return new Set(
+    [...sectionsByReport.entries()]
+      .filter(([, reportSections]) => extractEngagementCampaignId(reportSections) === campaignId)
+      .map(([reportId]) => reportId)
+  );
+}
