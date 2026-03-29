@@ -246,7 +246,10 @@ describe("/api/scenarios/[scenarioSetId]", () => {
       linkedReports: [
         expect.objectContaining({
           id: "99999999-9999-4999-8999-999999999999",
+          matchedBaselineRun: true,
+          matchedAlternativeEntryCount: 1,
           comparisonReady: true,
+          linkageKind: "comparison-ready",
           matchedEntryLabels: expect.arrayContaining(["Existing conditions", "Protected bike package"]),
         }),
       ],

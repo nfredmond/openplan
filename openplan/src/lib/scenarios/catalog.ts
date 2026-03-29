@@ -52,7 +52,10 @@ export type ScenarioLinkedReport = ScenarioLinkedReportRecord & {
   matchedRunIds: string[];
   matchedEntryIds: string[];
   matchedEntryLabels: string[];
+  matchedBaselineRun: boolean;
+  matchedAlternativeEntryCount: number;
   comparisonReady: boolean;
+  linkageKind: "comparison-ready" | "run-linked-only";
 };
 
 export type ScenarioEntryReportSummary = {
@@ -329,15 +332,19 @@ export function buildScenarioLinkedReports({
         new Set(matchedRunIds.flatMap((runId) => entryIdsByRunId.get(runId) ?? []))
       );
 
+      const matchedBaselineRun = Boolean(baselineRunId) && (baselineRunId ? matchedRunIds.includes(baselineRunId) : false);
+      const matchedAlternativeEntryCount = matchedEntryIds.filter((entryId) => entryId !== baselineEntryId).length;
+      const comparisonReady = Boolean(baselineRunId) && matchedBaselineRun && matchedAlternativeEntryCount > 0;
+
       return {
         ...report,
         matchedRunIds,
         matchedEntryIds,
         matchedEntryLabels: matchedEntryIds.map((entryId) => entryLabelsById.get(entryId) ?? entryId),
-        comparisonReady:
-          Boolean(baselineRunId) &&
-          (baselineRunId ? matchedRunIds.includes(baselineRunId) : false) &&
-          matchedEntryIds.some((entryId) => entryId !== baselineEntryId),
+        matchedBaselineRun,
+        matchedAlternativeEntryCount,
+        comparisonReady,
+        linkageKind: comparisonReady ? "comparison-ready" : "run-linked-only",
       };
     })
     .filter((report) => report.matchedRunIds.length > 0)

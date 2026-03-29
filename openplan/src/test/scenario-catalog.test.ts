@@ -96,7 +96,10 @@ describe("scenario comparison helpers", () => {
     expect(linkage.linkedReports).toHaveLength(1);
     expect(linkage.linkedReports[0]).toMatchObject({
       id: "report-1",
+      matchedBaselineRun: true,
+      matchedAlternativeEntryCount: 1,
       comparisonReady: true,
+      linkageKind: "comparison-ready",
       matchedEntryLabels: ["Existing conditions", "Protected bike package"],
     });
     expect(linkage.entryReportSummary.get("alternative-entry")).toEqual({

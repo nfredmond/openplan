@@ -154,6 +154,8 @@ export default async function ScenarioSetDetailPage({
     })),
     baselineEntryId: baselineEntry?.id ?? null,
   });
+  const comparisonReadyReportCount = reportLinkage.linkedReports.filter((report) => report.comparisonReady).length;
+  const runLinkedOnlyReportCount = reportLinkage.linkedReports.length - comparisonReadyReportCount;
 
   return (
     <section className="module-page">
@@ -289,8 +291,11 @@ export default async function ScenarioSetDetailPage({
                   <StatusBadge tone={reportLinkage.linkedReports.length > 0 ? "success" : "neutral"}>
                     {reportLinkage.linkedReports.length} linked reports
                   </StatusBadge>
-                  <StatusBadge tone={reportLinkage.linkedReports.some((report) => report.comparisonReady) ? "success" : "info"}>
-                    {reportLinkage.linkedReports.filter((report) => report.comparisonReady).length} comparison-ready
+                  <StatusBadge tone={comparisonReadyReportCount > 0 ? "success" : "info"}>
+                    {comparisonReadyReportCount} comparison-ready
+                  </StatusBadge>
+                  <StatusBadge tone={runLinkedOnlyReportCount > 0 ? "warning" : "neutral"}>
+                    {runLinkedOnlyReportCount} run-linked only
                   </StatusBadge>
                 </div>
               </div>
@@ -430,7 +435,9 @@ export default async function ScenarioSetDetailPage({
                     <div className="module-record-kicker">
                       <StatusBadge tone={scenarioStatusTone(report.status ?? "draft")}>{titleizeScenarioValue(report.status)}</StatusBadge>
                       <StatusBadge tone="info">{titleizeScenarioValue(report.report_type)}</StatusBadge>
-                      {report.comparisonReady ? <StatusBadge tone="success">Comparison-ready</StatusBadge> : null}
+                      <StatusBadge tone={report.comparisonReady ? "success" : "warning"}>
+                        {report.comparisonReady ? "Comparison-ready" : "Run-linked only"}
+                      </StatusBadge>
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -438,7 +445,11 @@ export default async function ScenarioSetDetailPage({
                         <p className="module-record-stamp">Updated {report.updated_at ?? report.generated_at ?? "Unknown"}</p>
                       </div>
                       <p className="module-record-summary line-clamp-2">
-                        Uses {report.matchedEntryLabels.join(" · ")}
+                        {report.comparisonReady
+                          ? `Grounded by baseline + alternative runs from this set: ${report.matchedEntryLabels.join(" · ")}`
+                          : report.matchedBaselineRun
+                            ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
+                            : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
                       </p>
                     </div>
                   </div>
