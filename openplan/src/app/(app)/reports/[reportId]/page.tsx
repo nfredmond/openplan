@@ -267,26 +267,31 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     {
       key: "deliverables",
       label: "Deliverables",
+      anchor: "project-deliverables",
       value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.deliverables),
     },
     {
       key: "risks",
       label: "Risks",
+      anchor: "project-risks",
       value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.risks),
     },
     {
       key: "issues",
       label: "Issues",
+      anchor: "project-issues",
       value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.issues),
     },
     {
       key: "decisions",
       label: "Decisions",
+      anchor: "project-decisions",
       value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.decisions),
     },
     {
       key: "meetings",
       label: "Meetings",
+      anchor: "project-meetings",
       value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.meetings),
     },
   ].filter(
@@ -295,6 +300,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     ): item is {
       key: string;
       label: string;
+      anchor: string;
       value: ProjectRecordSnapshotEntry;
     } => Boolean(item.value)
   );
@@ -716,13 +722,26 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       key={item.key}
                       className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
                     >
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {item.label}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">
-                        {item.value.count} attached
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            {item.label}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {item.value.count} attached
+                          </p>
+                        </div>
+                        {project ? (
+                          <Link
+                            href={`/projects/${project.id}#${item.anchor}`}
+                            className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                          >
+                            <Link2 className="h-3.5 w-3.5" />
+                            Open {item.label.toLowerCase()}
+                          </Link>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                         {item.value.latestTitle
                           ? `Latest: ${item.value.latestTitle}${
                               item.value.latestAt
@@ -790,6 +809,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                             : ""}
                         </p>
                       ) : null}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link
+                          href={`/scenarios/${link.scenarioSetId}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                        >
+                          <Link2 className="h-3.5 w-3.5" />
+                          Open scenario set
+                        </Link>
+                      </div>
                       <div className="mt-3 grid gap-2">
                         {link.matchedEntries.map((entry) => (
                           <div

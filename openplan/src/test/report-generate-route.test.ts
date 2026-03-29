@@ -662,6 +662,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Signal timing conflict");
     expect(generatedHtml).toContain("Advance quick-build crosswalk package");
     expect(generatedHtml).toContain("Operations review");
+    expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-deliverables');
+    expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-risks');
   });
 
   it("persists scenario-set provenance derived from linked report runs", async () => {
@@ -715,6 +717,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Downtown alternatives");
     expect(generatedHtml).toContain("Baseline: <strong>Existing conditions</strong> • Existing conditions baseline");
     expect(generatedHtml).toContain("Protected bike package");
+    expect(generatedHtml).toContain('/scenarios/scenario-set-1');
   });
 
   it("includes configured engagement handoff context when the section is enabled", async () => {

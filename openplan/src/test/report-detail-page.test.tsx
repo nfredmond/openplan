@@ -303,6 +303,14 @@ describe("ReportDetailPage", () => {
       screen.getByText(/Advance quick-build crosswalk package/i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Operations review/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open deliverables/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1#project-deliverables"
+    );
+    expect(screen.getByRole("link", { name: /Open risks/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1#project-risks"
+    );
     expect(screen.getByText("Scenario basis")).toBeInTheDocument();
     expect(screen.getByText("Downtown alternatives")).toBeInTheDocument();
     expect(
@@ -312,6 +320,10 @@ describe("ReportDetailPage", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByText("Protected bike package")).toBeInTheDocument();
     expect(screen.getAllByText("Ready to compare").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open scenario set/i })).toHaveAttribute(
+      "href",
+      "/scenarios/scenario-set-1"
+    );
     expect(
       screen.getByText(
         /Created from an engagement campaign to preserve handoff-ready public input context for project reporting\./i

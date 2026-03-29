@@ -964,7 +964,7 @@ export default async function ProjectDetailPage({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <article className="module-section-surface">
+        <article id="project-deliverables" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
@@ -1001,7 +1001,7 @@ export default async function ProjectDetailPage({
           )}
         </article>
 
-        <article className="module-section-surface">
+        <article id="project-risks" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
@@ -1040,7 +1040,7 @@ export default async function ProjectDetailPage({
           )}
         </article>
 
-        <article className="module-section-surface">
+        <article id="project-issues" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-700 dark:text-rose-300">
@@ -1077,7 +1077,7 @@ export default async function ProjectDetailPage({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <article className="module-section-surface">
+        <article id="project-decisions" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-300">
@@ -1118,7 +1118,7 @@ export default async function ProjectDetailPage({
           )}
         </article>
 
-        <article className="module-section-surface">
+        <article id="project-meetings" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">

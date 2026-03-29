@@ -211,13 +211,14 @@ function engagementHandoffMarkup(data: ReportGenerationData): string {
 function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
   const entries: Array<{
     label: string;
+    anchor: string;
     value: ProjectRecordSnapshotEntry;
   }> = [
-    { label: "Deliverables", value: data.projectRecordsSnapshot.deliverables },
-    { label: "Risks", value: data.projectRecordsSnapshot.risks },
-    { label: "Issues", value: data.projectRecordsSnapshot.issues },
-    { label: "Decisions", value: data.projectRecordsSnapshot.decisions },
-    { label: "Meetings", value: data.projectRecordsSnapshot.meetings },
+    { label: "Deliverables", anchor: "project-deliverables", value: data.projectRecordsSnapshot.deliverables },
+    { label: "Risks", anchor: "project-risks", value: data.projectRecordsSnapshot.risks },
+    { label: "Issues", anchor: "project-issues", value: data.projectRecordsSnapshot.issues },
+    { label: "Decisions", anchor: "project-decisions", value: data.projectRecordsSnapshot.decisions },
+    { label: "Meetings", anchor: "project-meetings", value: data.projectRecordsSnapshot.meetings },
   ];
 
   return `<section>
@@ -226,7 +227,7 @@ function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
     <div class="metrics-stack">
       ${entries
         .map(
-          ({ label, value }) => `<article class="metric-card">
+          ({ label, anchor, value }) => `<article class="metric-card">
             <span class="metric-label">${esc(label)}</span>
             <strong>${value.count}</strong>
             <p>${
@@ -236,6 +237,7 @@ function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
                   }`
                 : "No attached records in this snapshot."
             }</p>
+            <p><a href="/projects/${esc(data.project.id)}#${esc(anchor)}">Open ${esc(label.toLowerCase())}</a></p>
           </article>`
         )
         .join("")}
@@ -282,6 +284,7 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
               link.baselineRunTitle ? ` • ${esc(link.baselineRunTitle)}` : ""
             }</p>
             ${snapshotMeta ? `<p class="meta">${esc(snapshotMeta)}</p>` : ""}
+            <p><a href="/scenarios/${esc(link.scenarioSetId)}">Open scenario set</a></p>
             <ul class="record-list" style="margin-top: 12px;">${matchedEntries}</ul>
           </article>`;
         })
