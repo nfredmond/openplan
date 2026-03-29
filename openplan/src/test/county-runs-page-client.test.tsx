@@ -194,7 +194,7 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getAllByText("Validated screening").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Viewing: All runs · sorted by Recently updated")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Needs attention (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Needs attention (2)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Prototype blocked (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Evidence-ready (0)" })).toBeInTheDocument();
@@ -318,7 +318,7 @@ describe("CountyRunsPageClient", () => {
   it("copies the current county dashboard view link", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Needs attention (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (2)" }));
     await waitFor(() =>
       expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
     );
@@ -334,7 +334,7 @@ describe("CountyRunsPageClient", () => {
   it("preserves the active county dashboard view in detail links", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Needs attention (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (2)" }));
     await waitFor(() =>
       expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
     );

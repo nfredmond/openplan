@@ -269,7 +269,7 @@ describe("county onramp primitives", () => {
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     ]);
     expect(filterCountyRunListItemsByQuickView(items, "needs-attention").map((item) => item.id)).toEqual([
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(buildCountyRunSummaryCounts(items)).toEqual({

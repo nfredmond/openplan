@@ -408,11 +408,24 @@ export function filterCountyRunListItemsByQuickView(
     }
 
     if (quickView === "needs-attention") {
+      const evidenceReady =
+        Boolean(item.behavioralEvidenceReady) &&
+        !Boolean(item.behavioralComparisonReady) &&
+        (item.behavioralPipelineStatus === "behavioral_runtime_succeeded" ||
+          item.behavioralRuntimeStatus === "behavioral_runtime_succeeded");
+
+      if (item.behavioralComparisonReady || evidenceReady) {
+        return false;
+      }
+
       return (
         item.enqueueStatus === "failed" ||
-        item.stage !== "validated-screening" ||
+        item.stage === "bootstrap-incomplete" ||
+        item.stage === "validation-scaffolded" ||
+        item.behavioralRuntimeStatus === "behavioral_runtime_blocked" ||
         item.behavioralRuntimeStatus === "behavioral_runtime_failed" ||
         item.behavioralPipelineStatus === "prototype_pipeline_failed" ||
+        item.behavioralPipelineStatus === "prototype_preflight_complete" ||
         (item.runtimePresetLabel === "Containerized behavioral smoke runtime (prototype)" && !item.behavioralPipelineStatus)
       );
     }
