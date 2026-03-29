@@ -7,6 +7,7 @@ import {
   Database,
   FileClock,
   FileSpreadsheet,
+  FileStack,
   FolderKanban,
   MessagesSquare,
   Scale,
@@ -19,6 +20,14 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
+import {
+  formatReportStatusLabel,
+  formatReportTypeLabel,
+  getReportPacketActionLabel,
+  getReportPacketFreshness,
+  getReportPacketPriority,
+  reportStatusTone,
+} from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
@@ -32,6 +41,17 @@ type ProjectRow = {
   delivery_phase: string;
   created_at: string;
   updated_at: string;
+};
+
+type ProjectReportRow = {
+  id: string;
+  title: string;
+  summary: string | null;
+  report_type: string;
+  status: string;
+  updated_at: string;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
 };
 
 type TimelineItem = {
@@ -237,6 +257,19 @@ export default async function ProjectDetailPage({
     .order("created_at", { ascending: false })
     .limit(5);
 
+  const {
+    data: projectReportData,
+    count: projectReportCount,
+  } = await supabase
+    .from("reports")
+    .select(
+      "id, title, summary, report_type, status, updated_at, generated_at, latest_artifact_kind",
+      { count: "exact" }
+    )
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false })
+    .limit(4);
+
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
     .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
@@ -389,6 +422,34 @@ export default async function ProjectDetailPage({
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
   const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
+  const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
+    .map((report) => ({
+      ...report,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    }))
+    .sort((left, right) => {
+      const freshnessPriority =
+        getReportPacketPriority(left.packetFreshness.label) -
+        getReportPacketPriority(right.packetFreshness.label);
+      if (freshnessPriority !== 0) {
+        return freshnessPriority;
+      }
+
+      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+    });
+  const reportRecordCount = projectReportCount ?? projectReports.length;
+  const refreshRecommendedReportCount = projectReports.filter(
+    (report) => report.packetFreshness.label === "Refresh recommended"
+  ).length;
+  const noPacketReportCount = projectReports.filter(
+    (report) => report.packetFreshness.label === "No packet"
+  ).length;
+  const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
+  const recommendedReport = projectReports[0] ?? null;
 
   const timelineItems: TimelineItem[] = [
     ...milestones.map((item) => ({
@@ -579,6 +640,150 @@ export default async function ProjectDetailPage({
           </div>
         </article>
       </header>
+
+      <article id="project-reporting" className="module-section-surface scroll-mt-24">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+              <FileStack className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Reporting</p>
+              <h2 className="module-section-title">Packet freshness and regeneration cues</h2>
+              <p className="module-section-description">
+                Project-level reporting should tell the team whether they already have a usable packet, need to regenerate one, or still need the first report record.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="module-summary-grid cols-4 mt-5">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Report records</p>
+            <p className="module-summary-value">{reportRecordCount}</p>
+            <p className="module-summary-detail">Project-linked report packets and drafts.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Needs attention</p>
+            <p className="module-summary-value">{reportAttentionCount}</p>
+            <p className="module-summary-detail">Reports with stale or missing packets.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Refresh recommended</p>
+            <p className="module-summary-value">{refreshRecommendedReportCount}</p>
+            <p className="module-summary-detail">Report packets that drifted after generation.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Without packet</p>
+            <p className="module-summary-value">{noPacketReportCount}</p>
+            <p className="module-summary-detail">Report records that still need first-generation output.</p>
+          </div>
+        </div>
+
+        {projectReports.length === 0 ? (
+          <div className="module-empty-state mt-5 text-sm">
+            No report records linked to this project yet. Create the first packet in reports to establish a review trail.
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-4 md:grid-cols-[0.92fr_1.08fr]">
+            <div
+              className={`rounded-3xl border p-5 ${
+                reportAttentionCount > 0
+                  ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
+                  : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
+              }`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Reporting posture
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
+                {reportAttentionCount > 0 && recommendedReport
+                  ? `${recommendedReport.title} needs attention`
+                  : "Packet trail looks current"}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedReport
+                  ? getReportPacketActionLabel(recommendedReport.packetFreshness.label)
+                  : "Open reports to create the first packet for this project."}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedReport?.packetFreshness.detail ??
+                  "No project-linked report records exist yet."}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {recommendedReport ? (
+                  <Link
+                    href={`/reports/${recommendedReport.id}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                  >
+                    Open report
+                  </Link>
+                ) : null}
+                <Link
+                  href="/reports"
+                  className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                >
+                  Open reports
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Recent report records
+                  </p>
+                  <h3 className="mt-1 text-sm font-semibold text-foreground">
+                    {reportRecordCount > projectReports.length
+                      ? `Showing ${projectReports.length} most recent of ${reportRecordCount}`
+                      : `Showing ${projectReports.length} most recent report records`}
+                  </h3>
+                </div>
+                {reportAttentionCount > 0 ? (
+                  <StatusBadge tone="warning">{reportAttentionCount} need attention</StatusBadge>
+                ) : (
+                  <StatusBadge tone="success">Packets current</StatusBadge>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {projectReports.map((report) => (
+                  <Link
+                    key={report.id}
+                    href={`/reports/${report.id}`}
+                    className="block rounded-2xl border border-border/70 bg-card/70 p-4 transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1.5">
+                        <h4 className="text-sm font-semibold text-foreground">{report.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {report.summary || "No summary provided yet."}
+                        </p>
+                      </div>
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <StatusBadge tone={reportStatusTone(report.status)}>
+                        {formatReportStatusLabel(report.status)}
+                      </StatusBadge>
+                      <StatusBadge tone="info">
+                        {formatReportTypeLabel(report.report_type)}
+                      </StatusBadge>
+                      <StatusBadge tone={report.packetFreshness.tone}>
+                        {report.packetFreshness.label}
+                      </StatusBadge>
+                    </div>
+                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                      {report.packetFreshness.detail}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </article>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <ProjectRecordComposer projectId={project.id} />
