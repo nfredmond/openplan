@@ -90,14 +90,25 @@ function asRunAudit(metadata: Record<string, unknown> | null | undefined) {
   );
 }
 
-function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
-  if (!metadata) return null;
-  const sourceContext = metadata.sourceContext;
-  if (!sourceContext || typeof sourceContext !== "object") {
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
 
-  return sourceContext as Record<string, unknown>;
+  return value as Record<string, unknown>;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asNullableNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
+  if (!metadata) return null;
+  return asRecord(metadata.sourceContext);
 }
 
 export default async function ReportDetailPage({ params }: RouteParams) {
@@ -202,6 +213,18 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     engagementCampaign?.public_description ||
     engagementCampaign?.summary ||
     null;
+  const reportOrigin = asNullableString(sourceContext?.reportOrigin);
+  const reportReason = asNullableString(sourceContext?.reportReason);
+  const engagementCountsSnapshot = asRecord(sourceContext?.engagementCountsSnapshot);
+  const engagementSnapshotCapturedAt = asNullableString(
+    sourceContext?.engagementSnapshotCapturedAt
+  );
+  const engagementSnapshotTotalItems = asNullableNumber(
+    engagementCountsSnapshot?.totalItems
+  );
+  const engagementSnapshotReadyForHandoff = asNullableNumber(
+    engagementCountsSnapshot?.readyForHandoffCount
+  );
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
@@ -561,6 +584,36 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {engagementSummaryText}
                       </p>
+                    ) : null}
+                    {reportOrigin ? (
+                      <div className="mt-3 rounded-xl border border-border/60 bg-muted/35 p-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          Report origin
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-foreground">
+                          {titleize(reportOrigin)}
+                        </p>
+                        {reportReason ? (
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            {reportReason}
+                          </p>
+                        ) : null}
+                        {engagementSnapshotCapturedAt ||
+                        engagementSnapshotReadyForHandoff !== null ||
+                        engagementSnapshotTotalItems !== null ? (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {engagementSnapshotCapturedAt
+                              ? `Snapshot captured ${formatDateTime(engagementSnapshotCapturedAt)}`
+                              : "Snapshot timing unavailable"}
+                            {engagementSnapshotReadyForHandoff !== null
+                              ? ` · ${engagementSnapshotReadyForHandoff} ready for handoff`
+                              : ""}
+                            {engagementSnapshotTotalItems !== null
+                              ? ` · ${engagementSnapshotTotalItems} items`
+                              : ""}
+                          </p>
+                        ) : null}
+                      </div>
                     ) : null}
                     <p className="mt-2 text-xs text-muted-foreground">
                       Updated {formatDateTime(engagementCampaign.updated_at)} · {engagementPublicHref ? "Public page available" : "Public page unavailable"}

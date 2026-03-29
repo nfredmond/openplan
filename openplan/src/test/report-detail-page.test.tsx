@@ -171,8 +171,16 @@ describe("ReportDetailPage", () => {
               deliverableCount: 2,
               decisionCount: 1,
               projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              reportOrigin: "engagement_campaign_handoff",
+              reportReason:
+                "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
               engagementReadyForHandoffCount: 4,
               engagementItemCount: 9,
+              engagementSnapshotCapturedAt: "2026-03-28T17:45:00.000Z",
+              engagementCountsSnapshot: {
+                totalItems: 12,
+                readyForHandoffCount: 7,
+              },
             },
           },
         },
@@ -221,6 +229,16 @@ describe("ReportDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Public page available/i)).toBeInTheDocument();
     expect(screen.getByText(/Submissions open/i)).toBeInTheDocument();
+    expect(screen.getByText("Report origin")).toBeInTheDocument();
+    expect(screen.getByText("Engagement Campaign Handoff")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Created from an engagement campaign to preserve handoff-ready public input context for project reporting\./i
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Snapshot captured/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
+    expect(screen.getByText(/12 items/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
       "href",
       "/engagement/campaign-1"
