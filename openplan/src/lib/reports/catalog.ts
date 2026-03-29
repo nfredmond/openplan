@@ -25,6 +25,28 @@ export type ReportPacketFreshness = {
   detail: string;
 };
 
+export function getReportPacketActionLabel(freshnessLabel: string) {
+  switch (freshnessLabel) {
+    case "Refresh recommended":
+      return "Next action: open this report and regenerate the packet.";
+    case "No packet":
+      return "Next action: open this report and generate the first packet.";
+    default:
+      return "Next action: review the packet or create a new revision if scope changed.";
+  }
+}
+
+export function getReportPacketPriority(freshnessLabel: string) {
+  switch (freshnessLabel) {
+    case "Refresh recommended":
+      return 0;
+    case "No packet":
+      return 1;
+    default:
+      return 2;
+  }
+}
+
 export type ReportSectionTemplate = {
   sectionKey: string;
   title: string;

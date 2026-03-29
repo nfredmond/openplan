@@ -22,7 +22,9 @@ import {
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
+  getReportPacketActionLabel,
   getReportPacketFreshness,
+  getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
 
@@ -98,17 +100,28 @@ export default async function ReportsPage() {
         .limit(30),
     ]);
 
-  const reports = ((reportsData ?? []) as ReportRow[]).map((report) => ({
-    ...report,
-    project: Array.isArray(report.projects)
-      ? report.projects[0] ?? null
-      : report.projects ?? null,
-    packetFreshness: getReportPacketFreshness({
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
-      updatedAt: report.updated_at,
-    }),
-  }));
+  const reports = ((reportsData ?? []) as ReportRow[])
+    .map((report) => ({
+      ...report,
+      project: Array.isArray(report.projects)
+        ? report.projects[0] ?? null
+        : report.projects ?? null,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    }))
+    .sort((left, right) => {
+      const freshnessPriority =
+        getReportPacketPriority(left.packetFreshness.label) -
+        getReportPacketPriority(right.packetFreshness.label);
+      if (freshnessPriority !== 0) {
+        return freshnessPriority;
+      }
+
+      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+    });
   const generatedCount = reports.filter(
     (report) => report.status === "generated"
   ).length;
@@ -367,9 +380,14 @@ export default async function ReportsPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      {report.packetFreshness.detail}
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        {report.packetFreshness.detail}
+                      </p>
+                      <p className="text-xs font-medium leading-relaxed text-foreground/80">
+                        {getReportPacketActionLabel(report.packetFreshness.label)}
+                      </p>
+                    </div>
                   </div>
                 </Link>
               ))}
