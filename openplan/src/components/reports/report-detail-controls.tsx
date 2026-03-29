@@ -2,13 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileCog, Loader2, Save, WandSparkles } from "lucide-react";
+import { AlertTriangle, FileCog, Loader2, Save, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+function formatDriftLabelList(labels: string[]) {
+  if (labels.length <= 1) {
+    return labels[0] ?? "";
+  }
+
+  if (labels.length === 2) {
+    return `${labels[0]} and ${labels[1]}`;
+  }
+
+  return `${labels.slice(0, -1).join(", ")}, and ${labels.at(-1)}`;
+}
+
 export function ReportDetailControls({
   report,
+  driftSummary,
 }: {
   report: {
     id: string;
@@ -16,6 +29,11 @@ export function ReportDetailControls({
     summary: string | null;
     status: string;
     hasGeneratedArtifact: boolean;
+  };
+  driftSummary?: {
+    changedCount: number;
+    totalCount: number;
+    labels: string[];
   };
 }) {
   const router = useRouter();
@@ -26,6 +44,8 @@ export function ReportDetailControls({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warningCount, setWarningCount] = useState(0);
+  const driftedSources = driftSummary?.labels ?? [];
+  const hasDrift = (driftSummary?.changedCount ?? 0) > 0;
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -179,6 +199,25 @@ export function ReportDetailControls({
           </p>
         </div>
 
+        {hasDrift ? (
+          <div className="rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+              <div>
+                <p className="font-semibold">
+                  {driftSummary?.changedCount} live source change{driftSummary?.changedCount === 1 ? "" : "s"} detected since the current packet was generated.
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                  Regeneration is recommended so the packet reflects the latest evidence chain.
+                  {driftedSources.length > 0
+                    ? ` Changed sources: ${formatDriftLabelList(driftedSources)}.`
+                    : ""}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {/* Error banner */}
         {error ? (
           <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
@@ -224,7 +263,9 @@ export function ReportDetailControls({
             ) : (
               <span className="inline-flex items-center gap-2">
                 <WandSparkles className="h-4 w-4" />
-                Generate HTML packet
+                {hasDrift && report.hasGeneratedArtifact
+                  ? "Regenerate HTML packet"
+                  : "Generate HTML packet"}
               </span>
             )}
           </Button>

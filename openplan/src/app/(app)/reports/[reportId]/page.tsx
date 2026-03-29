@@ -819,6 +819,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
 
+  const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
+
   return (
     <section className="space-y-6">
       {/* ── Hero row ─────────────────────────────────────────── */}
@@ -914,6 +916,11 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             summary: report.summary,
             status: report.status,
             hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
+          }}
+          driftSummary={{
+            changedCount: driftedItems.length,
+            totalCount: driftItems.length,
+            labels: driftedItems.map((item) => item.label),
           }}
         />
       </header>
