@@ -171,6 +171,33 @@ describe("ReportDetailPage", () => {
               deliverableCount: 2,
               decisionCount: 1,
               projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              projectRecordsSnapshot: {
+                deliverables: {
+                  count: 2,
+                  latestTitle: "ADA curb ramp package",
+                  latestAt: "2026-03-27T12:00:00.000Z",
+                },
+                risks: {
+                  count: 1,
+                  latestTitle: "Grant match exposure",
+                  latestAt: "2026-03-26T16:30:00.000Z",
+                },
+                issues: {
+                  count: 1,
+                  latestTitle: "Signal timing conflict",
+                  latestAt: "2026-03-25T09:15:00.000Z",
+                },
+                decisions: {
+                  count: 1,
+                  latestTitle: "Advance quick-build crosswalk package",
+                  latestAt: "2026-03-24T18:00:00.000Z",
+                },
+                meetings: {
+                  count: 1,
+                  latestTitle: "Operations review",
+                  latestAt: "2026-03-23T17:00:00.000Z",
+                },
+              },
               scenarioSetLinks: [
                 {
                   scenarioSetId: "scenario-set-1",
@@ -268,6 +295,14 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Submissions open/i)).toBeInTheDocument();
     expect(screen.getByText("Report origin")).toBeInTheDocument();
     expect(screen.getByText("Engagement Campaign Handoff")).toBeInTheDocument();
+    expect(screen.getByText("Project records provenance")).toBeInTheDocument();
+    expect(screen.getByText(/ADA curb ramp package/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grant match exposure/i)).toBeInTheDocument();
+    expect(screen.getByText(/Signal timing conflict/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Advance quick-build crosswalk package/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Operations review/i)).toBeInTheDocument();
     expect(screen.getByText("Scenario basis")).toBeInTheDocument();
     expect(screen.getByText("Downtown alternatives")).toBeInTheDocument();
     expect(

@@ -25,6 +25,37 @@ type RouteContext = {
   params: Promise<{ reportId: string }>;
 };
 
+type ProjectRecordSnapshotEntry = {
+  count: number;
+  latestTitle: string | null;
+  latestAt: string | null;
+};
+
+function buildProjectRecordSnapshot(entries: {
+  deliverables: Array<{ title: string; due_date: string | null; created_at: string }>;
+  risks: Array<{ title: string; created_at: string }>;
+  issues: Array<{ title: string; created_at: string }>;
+  decisions: Array<{ title: string; decided_at: string | null; created_at: string }>;
+  meetings: Array<{ title: string; meeting_at: string | null; created_at: string }>;
+}) {
+  const buildEntry = <T extends { title: string; created_at: string }>(
+    items: T[],
+    getAt: (item: T) => string | null
+  ): ProjectRecordSnapshotEntry => ({
+    count: items.length,
+    latestTitle: items[0]?.title ?? null,
+    latestAt: items[0] ? getAt(items[0]) : null,
+  });
+
+  return {
+    deliverables: buildEntry(entries.deliverables, (item) => item.due_date ?? item.created_at),
+    risks: buildEntry(entries.risks, (item) => item.created_at),
+    issues: buildEntry(entries.issues, (item) => item.created_at),
+    decisions: buildEntry(entries.decisions, (item) => item.decided_at ?? item.created_at),
+    meetings: buildEntry(entries.meetings, (item) => item.meeting_at ?? item.created_at),
+  };
+}
+
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("reports.generate", request);
   const startedAt = Date.now();
@@ -276,6 +307,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const scenarioSetLinks = scenarioSetLinksResult.data;
 
+    const projectRecordsSnapshot = buildProjectRecordSnapshot({
+      deliverables: deliverablesResult.data ?? [],
+      risks: risksResult.data ?? [],
+      issues: issuesResult.data ?? [],
+      decisions: decisionsResult.data ?? [],
+      meetings: meetingsResult.data ?? [],
+    });
+
     const html = buildReportHtml({
       report,
       workspace: workspaceResult.data,
@@ -318,6 +357,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       })),
       engagement,
       scenarioSetLinks,
+      projectRecordsSnapshot,
     });
 
     const generatedAt = new Date().toISOString();
@@ -340,6 +380,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         issueCount: issuesResult.data?.length ?? 0,
         decisionCount: decisionsResult.data?.length ?? 0,
         meetingCount: meetingsResult.data?.length ?? 0,
+        projectRecordsSnapshot,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
         engagementCampaignSnapshot: engagementProvenance?.campaign ?? null,

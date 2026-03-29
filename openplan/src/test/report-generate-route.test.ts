@@ -541,6 +541,129 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
+  it("persists compact project-record provenance in artifact metadata and html", async () => {
+    deliverablesLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "deliverable-1",
+          title: "ADA curb ramp package",
+          summary: "Bundle for near-term accessibility fixes.",
+          status: "in_progress",
+          due_date: "2026-03-20T00:00:00.000Z",
+          created_at: "2026-03-14T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    risksLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "risk-1",
+          title: "Grant match exposure",
+          description: "Funding share remains unresolved.",
+          status: "open",
+          created_at: "2026-03-18T15:30:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    issuesLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "issue-1",
+          title: "Signal timing conflict",
+          description: "Peak phasing needs revision.",
+          status: "open",
+          created_at: "2026-03-19T09:45:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    decisionsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "decision-1",
+          title: "Advance quick-build crosswalk package",
+          rationale: "Near-term safety benefit is high.",
+          status: "approved",
+          decided_at: "2026-03-17T18:00:00.000Z",
+          created_at: "2026-03-16T12:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    meetingsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "meeting-1",
+          title: "Operations review",
+          notes: "Confirmed striping sequencing.",
+          meeting_at: "2026-03-15T17:00:00.000Z",
+          created_at: "2026-03-15T17:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({
+          sourceContext: expect.objectContaining({
+            projectRecordsSnapshot: {
+              deliverables: {
+                count: 1,
+                latestTitle: "ADA curb ramp package",
+                latestAt: "2026-03-20T00:00:00.000Z",
+              },
+              risks: {
+                count: 1,
+                latestTitle: "Grant match exposure",
+                latestAt: "2026-03-18T15:30:00.000Z",
+              },
+              issues: {
+                count: 1,
+                latestTitle: "Signal timing conflict",
+                latestAt: "2026-03-19T09:45:00.000Z",
+              },
+              decisions: {
+                count: 1,
+                latestTitle: "Advance quick-build crosswalk package",
+                latestAt: "2026-03-17T18:00:00.000Z",
+              },
+              meetings: {
+                count: 1,
+                latestTitle: "Operations review",
+                latestAt: "2026-03-15T17:00:00.000Z",
+              },
+            },
+          }),
+          htmlContent: expect.stringContaining("Project records provenance"),
+        }),
+      })
+    );
+
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
+
+    expect(generatedHtml).toContain("ADA curb ramp package");
+    expect(generatedHtml).toContain("Grant match exposure");
+    expect(generatedHtml).toContain("Signal timing conflict");
+    expect(generatedHtml).toContain("Advance quick-build crosswalk package");
+    expect(generatedHtml).toContain("Operations review");
+  });
+
   it("persists scenario-set provenance derived from linked report runs", async () => {
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {

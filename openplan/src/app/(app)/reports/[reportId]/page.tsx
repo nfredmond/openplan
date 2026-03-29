@@ -54,6 +54,12 @@ type EngagementCampaignLinkRow = {
   updated_at: string;
 };
 
+type ProjectRecordSnapshotEntry = {
+  count: number;
+  latestTitle: string | null;
+  latestAt: string | null;
+};
+
 function asHtmlContent(
   metadata: Record<string, unknown> | null | undefined
 ): string | null {
@@ -125,6 +131,21 @@ function asScenarioSetLinks(value: unknown): ReportScenarioSetLink[] {
       typeof (item as Record<string, unknown>).scenarioSetTitle === "string" &&
       Array.isArray((item as Record<string, unknown>).matchedEntries)
   );
+}
+
+function asProjectRecordSnapshotEntry(
+  value: unknown
+): ProjectRecordSnapshotEntry | null {
+  const record = asRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  return {
+    count: asNullableNumber(record.count) ?? 0,
+    latestTitle: asNullableString(record.latestTitle),
+    latestAt: asNullableString(record.latestAt),
+  };
 }
 
 export default async function ReportDetailPage({ params }: RouteParams) {
@@ -242,6 +263,41 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     engagementCountsSnapshot?.readyForHandoffCount
   );
   const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
+  const projectRecordsSnapshot = [
+    {
+      key: "deliverables",
+      label: "Deliverables",
+      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.deliverables),
+    },
+    {
+      key: "risks",
+      label: "Risks",
+      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.risks),
+    },
+    {
+      key: "issues",
+      label: "Issues",
+      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.issues),
+    },
+    {
+      key: "decisions",
+      label: "Decisions",
+      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.decisions),
+    },
+    {
+      key: "meetings",
+      label: "Meetings",
+      value: asProjectRecordSnapshotEntry(sourceContext?.projectRecordsSnapshot?.meetings),
+    },
+  ].filter(
+    (
+      item
+    ): item is {
+      key: string;
+      label: string;
+      value: ProjectRecordSnapshotEntry;
+    } => Boolean(item.value)
+  );
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
@@ -642,6 +698,42 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+            {projectRecordsSnapshot.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Project records provenance
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Latest attached records persisted with this artifact at generation time.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {projectRecordsSnapshot.map((item) => (
+                    <div
+                      key={item.key}
+                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    >
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        {item.value.count} attached
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {item.value.latestTitle
+                          ? `Latest: ${item.value.latestTitle}${
+                              item.value.latestAt
+                                ? ` · ${formatDateTime(item.value.latestAt)}`
+                                : ""
+                            }`
+                          : "No attached records in this artifact snapshot."}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
             {scenarioSetLinks.length > 0 ? (

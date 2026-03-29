@@ -36,6 +36,12 @@ type ProjectItem = {
   at?: string | null;
 };
 
+type ProjectRecordSnapshotEntry = {
+  count: number;
+  latestTitle: string | null;
+  latestAt: string | null;
+};
+
 type ReportSectionRecord = {
   id: string;
   section_key: string;
@@ -68,6 +74,13 @@ export type ReportGenerationData = {
   meetings: ProjectItem[];
   engagement: ReportEngagementSummary | null;
   scenarioSetLinks: ReportScenarioSetLink[];
+  projectRecordsSnapshot: {
+    deliverables: ProjectRecordSnapshotEntry;
+    risks: ProjectRecordSnapshotEntry;
+    issues: ProjectRecordSnapshotEntry;
+    decisions: ProjectRecordSnapshotEntry;
+    meetings: ProjectRecordSnapshotEntry;
+  };
 };
 
 function esc(value: string): string {
@@ -193,6 +206,41 @@ function engagementHandoffMarkup(data: ReportGenerationData): string {
         : ""
     }
   </div>`;
+}
+
+function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
+  const entries: Array<{
+    label: string;
+    value: ProjectRecordSnapshotEntry;
+  }> = [
+    { label: "Deliverables", value: data.projectRecordsSnapshot.deliverables },
+    { label: "Risks", value: data.projectRecordsSnapshot.risks },
+    { label: "Issues", value: data.projectRecordsSnapshot.issues },
+    { label: "Decisions", value: data.projectRecordsSnapshot.decisions },
+    { label: "Meetings", value: data.projectRecordsSnapshot.meetings },
+  ];
+
+  return `<section>
+    <h2 class="section-title">Project records provenance</h2>
+    <p>This artifact includes a compact snapshot of attached project records captured at generation time so reviewers can see the latest named evidence behind the packet.</p>
+    <div class="metrics-stack">
+      ${entries
+        .map(
+          ({ label, value }) => `<article class="metric-card">
+            <span class="metric-label">${esc(label)}</span>
+            <strong>${value.count}</strong>
+            <p>${
+              value.latestTitle
+                ? `Latest: ${esc(value.latestTitle)}${
+                    value.latestAt ? ` • ${esc(formatDateTime(value.latestAt))}` : ""
+                  }`
+                : "No attached records in this snapshot."
+            }</p>
+          </article>`
+        )
+        .join("")}
+    </div>
+  </section>`;
 }
 
 function scenarioBasisMarkup(data: ReportGenerationData): string {
@@ -481,6 +529,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
       </header>
+      ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}
       ${enabledSections
         .map(
