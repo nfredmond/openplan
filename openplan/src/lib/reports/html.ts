@@ -5,6 +5,7 @@ import {
   extractEngagementHandoffProvenance,
   type ReportEngagementSummary,
 } from "@/lib/reports/engagement";
+import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 
 type ProjectRecord = {
   id: string;
@@ -66,6 +67,7 @@ export type ReportGenerationData = {
   decisions: ProjectItem[];
   meetings: ProjectItem[];
   engagement: ReportEngagementSummary | null;
+  scenarioSetLinks: ReportScenarioSetLink[];
 };
 
 function esc(value: string): string {
@@ -191,6 +193,53 @@ function engagementHandoffMarkup(data: ReportGenerationData): string {
         : ""
     }
   </div>`;
+}
+
+function scenarioBasisMarkup(data: ReportGenerationData): string {
+  if (data.scenarioSetLinks.length === 0) {
+    return "";
+  }
+
+  return `<section>
+    <h2 class="section-title">Scenario basis</h2>
+    <p>This packet includes scenario provenance derived from report-linked runs and scenario entries.</p>
+    <div class="metrics-stack">
+      ${data.scenarioSetLinks
+        .map((link) => {
+          const matchedEntries = link.matchedEntries
+            .map((entry) => {
+              const runMeta = [entry.attachedRunTitle, entry.runCreatedAt ? `Run ${formatDateTime(entry.runCreatedAt)}` : null]
+                .filter(Boolean)
+                .join(" • ");
+
+              return `<li>
+                <strong>${esc(entry.label)}</strong>
+                <p>${esc(titleize(entry.entryType))} • ${esc(entry.comparisonLabel)}</p>
+                ${runMeta ? `<span class="meta">${esc(runMeta)}</span>` : ""}
+              </li>`;
+            })
+            .join("");
+
+          const snapshotMeta = [
+            link.scenarioSetUpdatedAt ? `Scenario set updated ${formatDateTime(link.scenarioSetUpdatedAt)}` : null,
+            link.latestMatchedEntryUpdatedAt ? `Matched entries updated ${formatDateTime(link.latestMatchedEntryUpdatedAt)}` : null,
+          ]
+            .filter(Boolean)
+            .join(" • ");
+
+          return `<article class="metric-card">
+            <h3>${esc(link.scenarioSetTitle)}</h3>
+            <p>Comparison posture: <strong>${esc(link.comparisonSummary.label)}</strong></p>
+            <p>Baseline: <strong>${esc(link.baselineLabel ?? "Not set")}</strong>${
+              link.baselineRunTitle ? ` • ${esc(link.baselineRunTitle)}` : ""
+            }</p>
+            ${snapshotMeta ? `<p class="meta">${esc(snapshotMeta)}</p>` : ""}
+            <ul class="record-list" style="margin-top: 12px;">${matchedEntries}</ul>
+          </article>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
 }
 
 function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
@@ -432,6 +481,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
       </header>
+      ${scenarioBasisMarkup(data)}
       ${enabledSections
         .map(
           (section) => `<section id="${esc(section.section_key)}">

@@ -57,6 +57,12 @@ const meetingsOrderMock = vi.fn(() => ({ limit: meetingsLimitMock }));
 const meetingsEqMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 
+const scenarioEntriesInMock = vi.fn();
+const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
+
+const scenarioSetsInMock = vi.fn();
+const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
+
 const runsInMock = vi.fn();
 const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
 
@@ -149,6 +155,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_meetings") {
     return {
       select: meetingsSelectMock,
+    };
+  }
+
+  if (table === "scenario_entries") {
+    return {
+      select: scenarioEntriesSelectMock,
+    };
+  }
+
+  if (table === "scenario_sets") {
+    return {
+      select: scenarioSetsSelectMock,
     };
   }
 
@@ -270,8 +288,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
     decisionsLimitMock.mockResolvedValue({ data: [], error: null });
     meetingsLimitMock.mockResolvedValue({ data: [], error: null });
 
-    runsInMock.mockResolvedValue({
-      data: [
+    const runRowsById = new Map([
+      [
+        "55555555-5555-4555-8555-555555555555",
         {
           id: "55555555-5555-4555-8555-555555555555",
           title: "Run A",
@@ -294,6 +313,89 @@ describe("POST /api/reports/[reportId]/generate", () => {
             },
           },
           created_at: "2026-03-12T00:00:00.000Z",
+        },
+      ],
+      [
+        "66666666-6666-4666-8666-666666666666",
+        {
+          id: "66666666-6666-4666-8666-666666666666",
+          title: "Existing conditions baseline",
+          query_text: "Assess current conditions",
+          summary_text: "Baseline summary",
+          ai_interpretation: "Baseline interpretation",
+          metrics: {
+            overallScore: 74,
+            confidence: "medium",
+          },
+          created_at: "2026-03-10T00:00:00.000Z",
+        },
+      ],
+    ]);
+
+    runsInMock.mockImplementation(async (_column: string, ids: string[]) => ({
+      data: ids
+        .map((id) => runRowsById.get(id))
+        .filter((value): value is NonNullable<ReturnType<typeof runRowsById.get>> => Boolean(value)),
+      error: null,
+    }));
+
+    scenarioEntriesInMock.mockImplementation(async (column: string) => {
+      if (column === "attached_run_id") {
+        return {
+          data: [
+            {
+              id: "scenario-entry-alt",
+              scenario_set_id: "scenario-set-1",
+              entry_type: "alternative",
+              label: "Protected bike package",
+              attached_run_id: "55555555-5555-4555-8555-555555555555",
+              sort_order: 1,
+              created_at: "2026-03-09T00:00:00.000Z",
+              updated_at: "2026-03-14T01:30:00.000Z",
+            },
+          ],
+          error: null,
+        };
+      }
+
+      if (column === "scenario_set_id") {
+        return {
+          data: [
+            {
+              id: "scenario-entry-baseline",
+              scenario_set_id: "scenario-set-1",
+              entry_type: "baseline",
+              label: "Existing conditions",
+              attached_run_id: "66666666-6666-4666-8666-666666666666",
+              sort_order: 0,
+              created_at: "2026-03-08T00:00:00.000Z",
+              updated_at: "2026-03-14T01:00:00.000Z",
+            },
+            {
+              id: "scenario-entry-alt",
+              scenario_set_id: "scenario-set-1",
+              entry_type: "alternative",
+              label: "Protected bike package",
+              attached_run_id: "55555555-5555-4555-8555-555555555555",
+              sort_order: 1,
+              created_at: "2026-03-09T00:00:00.000Z",
+              updated_at: "2026-03-14T01:30:00.000Z",
+            },
+          ],
+          error: null,
+        };
+      }
+
+      throw new Error(`Unexpected scenario_entries lookup column: ${column}`);
+    });
+
+    scenarioSetsInMock.mockResolvedValue({
+      data: [
+        {
+          id: "scenario-set-1",
+          title: "Downtown alternatives",
+          baseline_entry_id: "scenario-entry-baseline",
+          updated_at: "2026-03-14T01:15:00.000Z",
         },
       ],
       error: null,
@@ -437,6 +539,59 @@ describe("POST /api/reports/[reportId]/generate", () => {
         latest_artifact_kind: "html",
       })
     );
+  });
+
+  it("persists scenario-set provenance derived from linked report runs", async () => {
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({
+          sourceContext: expect.objectContaining({
+            scenarioSetLinkCount: 1,
+            scenarioSetLinks: [
+              expect.objectContaining({
+                scenarioSetId: "scenario-set-1",
+                scenarioSetTitle: "Downtown alternatives",
+                baselineLabel: "Existing conditions",
+                baselineRunTitle: "Existing conditions baseline",
+                comparisonSummary: expect.objectContaining({
+                  label: "Ready to compare",
+                  readyAlternatives: 1,
+                }),
+                matchedEntries: [
+                  expect.objectContaining({
+                    label: "Protected bike package",
+                    entryType: "alternative",
+                    comparisonLabel: "Ready to compare",
+                    comparisonReady: true,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          htmlContent: expect.stringContaining("Scenario basis"),
+        }),
+      })
+    );
+
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
+
+    expect(generatedHtml).toContain("Downtown alternatives");
+    expect(generatedHtml).toContain("Baseline: <strong>Existing conditions</strong> • Existing conditions baseline");
+    expect(generatedHtml).toContain("Protected bike package");
   });
 
   it("includes configured engagement handoff context when the section is enabled", async () => {

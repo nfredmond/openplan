@@ -21,6 +21,7 @@ import {
   titleize,
 } from "@/lib/reports/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
+import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 
 type RouteParams = {
   params: Promise<{ reportId: string }>;
@@ -109,6 +110,21 @@ function asNullableNumber(value: unknown): number | null {
 function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
   if (!metadata) return null;
   return asRecord(metadata.sourceContext);
+}
+
+function asScenarioSetLinks(value: unknown): ReportScenarioSetLink[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(
+    (item): item is ReportScenarioSetLink =>
+      Boolean(item) &&
+      typeof item === "object" &&
+      typeof (item as Record<string, unknown>).scenarioSetId === "string" &&
+      typeof (item as Record<string, unknown>).scenarioSetTitle === "string" &&
+      Array.isArray((item as Record<string, unknown>).matchedEntries)
+  );
 }
 
 export default async function ReportDetailPage({ params }: RouteParams) {
@@ -225,6 +241,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const engagementSnapshotReadyForHandoff = asNullableNumber(
     engagementCountsSnapshot?.readyForHandoffCount
   );
+  const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
@@ -625,6 +642,93 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+            {scenarioSetLinks.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Scenario basis
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Scenario-set provenance was derived from report-linked runs and persisted with this artifact.
+                  </p>
+                </div>
+                <div className="grid gap-3">
+                  {scenarioSetLinks.map((link) => (
+                    <div
+                      key={link.scenarioSetId}
+                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-4"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                            {link.scenarioSetTitle}
+                          </h3>
+                          <p className="mt-1 text-[0.75rem] uppercase tracking-[0.12em] text-muted-foreground">
+                            {link.comparisonSummary.label} · {link.matchedEntries.length} matched entr{link.matchedEntries.length === 1 ? "y" : "ies"}
+                          </p>
+                        </div>
+                        <StatusBadge
+                          tone={
+                            link.comparisonSummary.readyAlternatives > 0
+                              ? "success"
+                              : link.comparisonSummary.baselineEntryPresent
+                                ? "warning"
+                                : "neutral"
+                          }
+                        >
+                          {link.comparisonSummary.label}
+                        </StatusBadge>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Baseline:{" "}
+                        <span className="font-medium text-foreground">
+                          {link.baselineLabel ?? "Not set"}
+                        </span>
+                        {link.baselineRunTitle ? ` · ${link.baselineRunTitle}` : ""}
+                      </p>
+                      {(link.scenarioSetUpdatedAt || link.latestMatchedEntryUpdatedAt) ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {link.scenarioSetUpdatedAt
+                            ? `Scenario set updated ${formatDateTime(link.scenarioSetUpdatedAt)}`
+                            : "Scenario set timing unavailable"}
+                          {link.latestMatchedEntryUpdatedAt
+                            ? ` · Matched entries updated ${formatDateTime(link.latestMatchedEntryUpdatedAt)}`
+                            : ""}
+                        </p>
+                      ) : null}
+                      <div className="mt-3 grid gap-2">
+                        {link.matchedEntries.map((entry) => (
+                          <div
+                            key={entry.entryId}
+                            className="rounded-xl border border-border/70 bg-card px-3 py-2"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-medium text-foreground">
+                                {entry.label}
+                              </p>
+                              <StatusBadge
+                                tone={entry.comparisonReady ? "success" : "warning"}
+                              >
+                                {entry.comparisonLabel}
+                              </StatusBadge>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {titleize(entry.entryType)}
+                              {entry.attachedRunTitle
+                                ? ` · ${entry.attachedRunTitle}`
+                                : " · Run unavailable"}
+                              {entry.runCreatedAt
+                                ? ` · Run ${formatDateTime(entry.runCreatedAt)}`
+                                : ""}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </article>

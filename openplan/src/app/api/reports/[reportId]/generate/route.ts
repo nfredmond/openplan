@@ -11,6 +11,7 @@ import {
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
+import { loadReportScenarioSetLinks } from "@/lib/reports/scenario-provenance";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -259,6 +260,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       gate: evaluateReportArtifactGate(run),
       transparency: buildSourceTransparency(run.metrics ?? {}, typeof run.ai_interpretation === "string" ? "ai" : "fallback"),
     }));
+    const scenarioSetLinksResult = await loadReportScenarioSetLinks({
+      supabase,
+      linkedRuns,
+    });
+
+    if (scenarioSetLinksResult.error) {
+      audit.error("report_scenario_context_load_failed", {
+        reportId: report.id,
+        message: scenarioSetLinksResult.error.message,
+        code: scenarioSetLinksResult.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load scenario provenance" }, { status: 500 });
+    }
+
+    const scenarioSetLinks = scenarioSetLinksResult.data;
 
     const html = buildReportHtml({
       report,
@@ -301,6 +317,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         at: item.meeting_at ?? item.created_at,
       })),
       engagement,
+      scenarioSetLinks,
     });
 
     const generatedAt = new Date().toISOString();
@@ -316,6 +333,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectResult.data.updated_at,
         linkedRunCount: linkedRuns.length,
+        scenarioSetLinkCount: scenarioSetLinks.length,
+        scenarioSetLinks,
         deliverableCount: deliverablesResult.data?.length ?? 0,
         riskCount: risksResult.data?.length ?? 0,
         issueCount: issuesResult.data?.length ?? 0,

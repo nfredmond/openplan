@@ -171,6 +171,43 @@ describe("ReportDetailPage", () => {
               deliverableCount: 2,
               decisionCount: 1,
               projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  scenarioSetTitle: "Downtown alternatives",
+                  baselineEntryId: "scenario-entry-baseline",
+                  baselineLabel: "Existing conditions",
+                  baselineRunId: "run-baseline",
+                  baselineRunTitle: "Existing conditions baseline",
+                  baselineRunCreatedAt: "2026-03-10T00:00:00.000Z",
+                  matchedRunIds: ["run-alt"],
+                  matchedEntries: [
+                    {
+                      entryId: "scenario-entry-alt",
+                      entryType: "alternative",
+                      label: "Protected bike package",
+                      attachedRunId: "run-alt",
+                      attachedRunTitle: "Protected bike package run",
+                      comparisonStatus: "ready",
+                      comparisonLabel: "Ready to compare",
+                      comparisonReady: true,
+                      entryUpdatedAt: "2026-03-28T17:40:00.000Z",
+                      runCreatedAt: "2026-03-12T00:00:00.000Z",
+                    },
+                  ],
+                  comparisonSummary: {
+                    totalAlternatives: 1,
+                    readyAlternatives: 1,
+                    blockedAlternatives: 0,
+                    baselineEntryPresent: true,
+                    baselineRunPresent: true,
+                    label: "Ready to compare",
+                  },
+                  scenarioSetUpdatedAt: "2026-03-28T17:35:00.000Z",
+                  latestMatchedEntryUpdatedAt: "2026-03-28T17:40:00.000Z",
+                  latestMatchedRunCreatedAt: "2026-03-12T00:00:00.000Z",
+                },
+              ],
               reportOrigin: "engagement_campaign_handoff",
               reportReason:
                 "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
@@ -231,6 +268,15 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Submissions open/i)).toBeInTheDocument();
     expect(screen.getByText("Report origin")).toBeInTheDocument();
     expect(screen.getByText("Engagement Campaign Handoff")).toBeInTheDocument();
+    expect(screen.getByText("Scenario basis")).toBeInTheDocument();
+    expect(screen.getByText("Downtown alternatives")).toBeInTheDocument();
+    expect(
+      screen.getAllByText((_, element) =>
+        element?.textContent?.includes("Baseline: Existing conditions") ?? false
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Protected bike package")).toBeInTheDocument();
+    expect(screen.getAllByText("Ready to compare").length).toBeGreaterThan(0);
     expect(
       screen.getByText(
         /Created from an engagement campaign to preserve handoff-ready public input context for project reporting\./i
