@@ -103,6 +103,11 @@ describe("PublicEngagementPage", () => {
     expect(screen.getByText("Linked project: Downtown Mobility Plan")).toBeInTheDocument();
     expect(screen.getByText("This input supports")).toBeInTheDocument();
     expect(screen.getAllByText("Downtown Mobility Plan").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Submission status")).toBeInTheDocument();
+    expect(screen.getByText("Submissions open")).toBeInTheDocument();
+    expect(screen.getByText("Published feedback")).toBeInTheDocument();
+    expect(screen.getByText("Engagement mode")).toBeInTheDocument();
+    expect(screen.getByText("map feedback")).toBeInTheDocument();
     expect(
       screen.getAllByText(/A planning effort focused on safety, access, and street operations in the downtown core\./i).length
     ).toBeGreaterThanOrEqual(1);

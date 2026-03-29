@@ -118,6 +118,24 @@ export default async function PublicEngagementPage({
             {project.summary ? <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{project.summary}</p> : null}
           </div>
         ) : null}
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border/70 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Submission status</p>
+            <p className="mt-1 text-base font-semibold text-foreground">{acceptingSubmissions ? "Submissions open" : "Submissions closed"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">The project team reviews submissions before they are used in public-facing materials.</p>
+          </div>
+          <div className="rounded-2xl border border-border/70 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Published feedback</p>
+            <p className="mt-1 text-base font-semibold text-foreground">{approvedItems.length}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Approved community items currently visible on this campaign page.</p>
+          </div>
+          <div className="rounded-2xl border border-border/70 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Engagement mode</p>
+            <p className="mt-1 text-base font-semibold text-foreground">{campaign.engagement_type.replaceAll("_", " ")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Structured public input collected in a planning-grade workflow.</p>
+          </div>
+        </div>
       </header>
 
       <PublicEngagementPortal
