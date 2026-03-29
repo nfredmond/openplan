@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatDateTime,
@@ -23,6 +24,8 @@ import {
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import {
+  buildProjectStageGateSummary,
+  type ProjectStageGateSummary,
   type ProjectStageGateSnapshot,
   type StageGateSnapshotGateSummary,
 } from "@/lib/stage-gates/summary";
@@ -65,6 +68,62 @@ type ProjectRecordSnapshotEntry = {
 };
 
 type StageGateSnapshotControlHealth = ProjectStageGateSnapshot["controlHealth"];
+
+type CurrentProjectRecordEntry = ProjectRecordSnapshotEntry;
+
+type DriftStatus = "unchanged" | "updated" | "count changed" | "gate changed";
+
+type DriftItem = {
+  key: string;
+  label: string;
+  status: DriftStatus;
+  detail: string;
+};
+
+type ProjectRecordSnapshotKey =
+  | "deliverables"
+  | "risks"
+  | "issues"
+  | "decisions"
+  | "meetings";
+
+type EngagementCampaignSnapshot = {
+  id: string;
+  title: string;
+  status: string | null;
+  updatedAt: string | null;
+};
+
+type EngagementCategoryRow = {
+  id: string;
+  label: string | null;
+  slug: string | null;
+  description: string | null;
+  sort_order: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+type EngagementItemRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+type StageGateDecisionRow = {
+  gate_id: string;
+  decision: string;
+  rationale: string | null;
+  decided_at: string | null;
+  missing_artifacts?: string[] | null;
+};
 
 function asHtmlContent(
   metadata: Record<string, unknown> | null | undefined
@@ -230,6 +289,79 @@ function asStageGateSnapshot(
   };
 }
 
+function parseTimestamp(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function maxTimestamp(
+  ...values: Array<string | null | undefined>
+): string | null {
+  const timestamps = values
+    .map((value) => parseTimestamp(value))
+    .filter((value): value is number => value !== null);
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
+function formatCompactDateTime(value: string | null | undefined): string {
+  return value ? formatDateTime(value) : "Unavailable";
+}
+
+function asEngagementCampaignSnapshot(
+  value: unknown
+): EngagementCampaignSnapshot | null {
+  const record = asRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  const id = asNullableString(record.id);
+  const title = asNullableString(record.title);
+
+  if (!id || !title) {
+    return null;
+  }
+
+  return {
+    id,
+    title,
+    status: asNullableString(record.status),
+    updatedAt: asNullableString(record.updatedAt),
+  };
+}
+
+function buildCurrentProjectRecordEntry<T extends { title: string | null; created_at: string | null }>(
+  items: T[],
+  getAt: (item: T) => string | null
+): CurrentProjectRecordEntry {
+  return {
+    count: items.length,
+    latestTitle: items[0]?.title ?? null,
+    latestAt: items[0] ? getAt(items[0]) : null,
+  };
+}
+
+function summarizeProjectRecordDrift(changes: string[]): string {
+  if (changes.length === 0) {
+    return "Snapshot counts and latest record timing still match live project records.";
+  }
+
+  return changes.join(" ");
+}
+
+function driftTone(status: DriftStatus): "success" | "warning" | "neutral" | "info" {
+  if (status === "unchanged") return "success";
+  if (status === "gate changed" || status === "count changed") return "warning";
+  if (status === "updated") return "info";
+  return "neutral";
+}
+
 export default async function ReportDetailPage({ params }: RouteParams) {
   const { reportId } = await params;
   const supabase = await createClient();
@@ -344,6 +476,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const engagementSnapshotReadyForHandoff = asNullableNumber(
     engagementCountsSnapshot?.readyForHandoffCount
   );
+  const engagementCampaignSnapshot = asEngagementCampaignSnapshot(
+    sourceContext?.engagementCampaignSnapshot
+  );
   const stageGateSnapshot = asStageGateSnapshot(sourceContext?.stageGateSnapshot);
   const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
   const projectRecordsSnapshot = [
@@ -390,6 +525,297 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const artifactList = (artifacts ?? []) as ReportArtifact[];
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
+  const liveScenarioSetIds = scenarioSetLinks.map((item) => item.scenarioSetId);
+
+  const [
+    engagementCategoriesResult,
+    engagementItemsResult,
+    scenarioSetsResult,
+    stageGateDecisionsResult,
+    deliverablesResult,
+    risksResult,
+    issuesResult,
+    decisionsResult,
+    meetingsResult,
+  ] = await Promise.all([
+    engagementCampaign
+      ? supabase
+          .from("engagement_categories")
+          .select("id, label, slug, description, sort_order, created_at, updated_at")
+          .eq("campaign_id", engagementCampaign.id)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [], error: null }),
+    engagementCampaign
+      ? supabase
+          .from("engagement_items")
+          .select(
+            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+          )
+          .eq("campaign_id", engagementCampaign.id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    liveScenarioSetIds.length > 0
+      ? supabase
+          .from("scenario_sets")
+          .select("id, updated_at")
+          .in("id", liveScenarioSetIds)
+      : Promise.resolve({ data: [], error: null }),
+    stageGateSnapshot
+      ? supabase
+          .from("stage_gate_decisions")
+          .select("gate_id, decision, rationale, decided_at, missing_artifacts")
+          .eq("workspace_id", report.workspace_id)
+          .order("decided_at", { ascending: false })
+          .limit(200)
+      : Promise.resolve({ data: [], error: null }),
+    projectRecordsSnapshot.some((item) => item.key === "deliverables")
+      ? supabase
+          .from("project_deliverables")
+          .select("id, title, due_date, created_at")
+          .eq("project_id", report.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    projectRecordsSnapshot.some((item) => item.key === "risks")
+      ? supabase
+          .from("project_risks")
+          .select("id, title, created_at")
+          .eq("project_id", report.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    projectRecordsSnapshot.some((item) => item.key === "issues")
+      ? supabase
+          .from("project_issues")
+          .select("id, title, created_at")
+          .eq("project_id", report.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    projectRecordsSnapshot.some((item) => item.key === "decisions")
+      ? supabase
+          .from("project_decisions")
+          .select("id, title, decided_at, created_at")
+          .eq("project_id", report.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    projectRecordsSnapshot.some((item) => item.key === "meetings")
+      ? supabase
+          .from("project_meetings")
+          .select("id, title, meeting_at, created_at")
+          .eq("project_id", report.project_id)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const liveEngagementCounts = engagementCampaign
+    ? summarizeEngagementItems(
+        (engagementCategoriesResult.data ?? []) as EngagementCategoryRow[],
+        (engagementItemsResult.data ?? []) as EngagementItemRow[]
+      )
+    : null;
+  const liveScenarioSetsById = new Map(
+    (((scenarioSetsResult.data ?? []) as Array<{ id: string; updated_at: string | null }>)).map((item) => [
+      item.id,
+      item.updated_at,
+    ])
+  );
+  const currentStageGateSummary: ProjectStageGateSummary | null = stageGateSnapshot
+    ? buildProjectStageGateSummary(
+        (stageGateDecisionsResult.data ?? []) as StageGateDecisionRow[]
+      )
+    : null;
+  const currentProjectRecordsByKey = new Map<ProjectRecordSnapshotKey, CurrentProjectRecordEntry>([
+    [
+      "deliverables",
+      buildCurrentProjectRecordEntry(
+        (deliverablesResult.data ?? []) as Array<{
+          title: string | null;
+          due_date: string | null;
+          created_at: string | null;
+        }>,
+        (item) => item.due_date ?? item.created_at
+      ),
+    ],
+    [
+      "risks",
+      buildCurrentProjectRecordEntry(
+        (risksResult.data ?? []) as Array<{
+          title: string | null;
+          created_at: string | null;
+        }>,
+        (item) => item.created_at
+      ),
+    ],
+    [
+      "issues",
+      buildCurrentProjectRecordEntry(
+        (issuesResult.data ?? []) as Array<{
+          title: string | null;
+          created_at: string | null;
+        }>,
+        (item) => item.created_at
+      ),
+    ],
+    [
+      "decisions",
+      buildCurrentProjectRecordEntry(
+        (decisionsResult.data ?? []) as Array<{
+          title: string | null;
+          decided_at: string | null;
+          created_at: string | null;
+        }>,
+        (item) => item.decided_at ?? item.created_at
+      ),
+    ],
+    [
+      "meetings",
+      buildCurrentProjectRecordEntry(
+        (meetingsResult.data ?? []) as Array<{
+          title: string | null;
+          meeting_at: string | null;
+          created_at: string | null;
+        }>,
+        (item) => item.meeting_at ?? item.created_at
+      ),
+    ],
+  ]);
+
+  const driftItems: DriftItem[] = [];
+
+  if (
+    engagementCampaign &&
+    liveEngagementCounts &&
+    (engagementCampaignSnapshot ||
+      engagementSnapshotCapturedAt ||
+      engagementSnapshotTotalItems !== null ||
+      engagementSnapshotReadyForHandoff !== null)
+  ) {
+    const snapshotStatus = engagementCampaignSnapshot?.status ?? null;
+    const snapshotUpdatedAt =
+      engagementCampaignSnapshot?.updatedAt ?? engagementSnapshotCapturedAt;
+    const liveReadyForHandoff =
+      liveEngagementCounts.moderationQueue.readyForHandoffCount;
+    const liveTotalItems = liveEngagementCounts.totalItems;
+
+    const status: DriftStatus =
+      engagementSnapshotTotalItems !== null &&
+      engagementSnapshotReadyForHandoff !== null &&
+      (engagementSnapshotTotalItems !== liveTotalItems ||
+        engagementSnapshotReadyForHandoff !== liveReadyForHandoff)
+        ? "count changed"
+        : snapshotStatus !== null && snapshotStatus !== engagementCampaign.status
+          ? "updated"
+          : snapshotUpdatedAt !== null &&
+              snapshotUpdatedAt !== engagementCampaign.updated_at
+            ? "updated"
+            : "unchanged";
+
+    driftItems.push({
+      key: "engagement",
+      label: "Engagement handoff",
+      status,
+      detail:
+        `Snapshot ${snapshotStatus ? `${titleize(snapshotStatus)} · ` : ""}${engagementSnapshotReadyForHandoff ?? 0} ready / ${engagementSnapshotTotalItems ?? 0} items · ${formatCompactDateTime(snapshotUpdatedAt)}. ` +
+        `Live ${titleize(engagementCampaign.status)} · ${liveReadyForHandoff} ready / ${liveTotalItems} items · ${formatCompactDateTime(engagementCampaign.updated_at)}.`,
+    });
+  }
+
+  if (scenarioSetLinks.length > 0) {
+    const scenarioChanges = scenarioSetLinks
+      .map((link) => {
+        const snapshotAt = maxTimestamp(
+          link.scenarioSetUpdatedAt,
+          link.latestMatchedEntryUpdatedAt
+        );
+        const currentAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
+        if (!currentAt || !snapshotAt || currentAt === snapshotAt) {
+          return null;
+        }
+
+        return `${link.scenarioSetTitle}: ${formatCompactDateTime(snapshotAt)} -> ${formatCompactDateTime(currentAt)}.`;
+      })
+      .filter((item): item is string => Boolean(item));
+
+    driftItems.push({
+      key: "scenario-basis",
+      label: "Scenario basis",
+      status: scenarioChanges.length > 0 ? "updated" : "unchanged",
+      detail:
+        scenarioChanges.length > 0
+          ? scenarioChanges.join(" ")
+          : "Scenario-set update timing still matches the artifact snapshot.",
+    });
+  }
+
+  if (projectRecordsSnapshot.length > 0) {
+    const countChanges: string[] = [];
+    const timingChanges: string[] = [];
+
+    for (const item of projectRecordsSnapshot) {
+      const currentEntry = currentProjectRecordsByKey.get(
+        item.key as ProjectRecordSnapshotKey
+      );
+
+      if (!currentEntry) {
+        continue;
+      }
+
+      if (item.value.count !== currentEntry.count) {
+        countChanges.push(
+          `${item.label}: ${item.value.count} -> ${currentEntry.count}.`
+        );
+        continue;
+      }
+
+      if (item.value.latestAt !== currentEntry.latestAt) {
+        timingChanges.push(
+          `${item.label}: ${formatCompactDateTime(item.value.latestAt)} -> ${formatCompactDateTime(currentEntry.latestAt)}.`
+        );
+      }
+    }
+
+    driftItems.push({
+      key: "project-records",
+      label: "Project records",
+      status:
+        countChanges.length > 0
+          ? "count changed"
+          : timingChanges.length > 0
+            ? "updated"
+            : "unchanged",
+      detail: summarizeProjectRecordDrift(
+        countChanges.length > 0 ? countChanges : timingChanges
+      ),
+    });
+  }
+
+  if (stageGateSnapshot && currentStageGateSummary) {
+    const snapshotBlockedGateId = stageGateSnapshot.blockedGate?.gateId ?? null;
+    const currentBlockedGateId = currentStageGateSummary.blockedGate?.gateId ?? null;
+    const snapshotNextGateId = stageGateSnapshot.nextGate?.gateId ?? null;
+    const currentNextGateId = currentStageGateSummary.nextGate?.gateId ?? null;
+    const countsChanged =
+      stageGateSnapshot.passCount !== currentStageGateSummary.passCount ||
+      stageGateSnapshot.holdCount !== currentStageGateSummary.holdCount ||
+      stageGateSnapshot.notStartedCount !== currentStageGateSummary.notStartedCount;
+    const gatesChanged =
+      snapshotBlockedGateId !== currentBlockedGateId ||
+      snapshotNextGateId !== currentNextGateId;
+
+    driftItems.push({
+      key: "stage-gates",
+      label: "Stage gates",
+      status: gatesChanged
+        ? "gate changed"
+        : countsChanged
+          ? "count changed"
+          : "unchanged",
+      detail: gatesChanged
+        ? `Blocked ${snapshotBlockedGateId ?? "none"} -> ${currentBlockedGateId ?? "none"}. Next ${snapshotNextGateId ?? "complete"} -> ${currentNextGateId ?? "complete"}.`
+        : countsChanged
+          ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} not started. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} not started.`
+          : "Stage-gate counts, blocked gate, and next gate still match the artifact snapshot.",
+    });
+  }
 
   return (
     <section className="space-y-6">
@@ -787,6 +1213,40 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+            {driftItems.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Drift since generation
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Compact live-vs-snapshot checks for the latest artifact source context.
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  {driftItems.map((item) => (
+                    <div
+                      key={item.key}
+                      className="flex flex-col gap-2 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold tracking-tight text-foreground">
+                            {item.label}
+                          </p>
+                          <StatusBadge tone={driftTone(item.status)}>
+                            {item.status}
+                          </StatusBadge>
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {item.detail}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
             {stageGateSnapshot ? (

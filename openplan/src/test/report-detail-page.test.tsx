@@ -41,6 +41,43 @@ const campaignEqIdMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }))
 const campaignEqWorkspaceMock = vi.fn(() => ({ eq: campaignEqIdMock }));
 const campaignSelectMock = vi.fn(() => ({ eq: campaignEqWorkspaceMock }));
 
+const engagementCategoriesOrderCreatedMock = vi.fn();
+const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCategoriesOrderCreatedMock }));
+const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
+const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
+
+const engagementItemsOrderMock = vi.fn();
+const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
+const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMock }));
+
+const scenarioSetsInMock = vi.fn();
+const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
+
+const stageGateLimitMock = vi.fn();
+const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
+const stageGateEqWorkspaceMock = vi.fn(() => ({ order: stageGateOrderMock }));
+const stageGateSelectMock = vi.fn(() => ({ eq: stageGateEqWorkspaceMock }));
+
+const deliverablesOrderMock = vi.fn();
+const deliverablesEqProjectMock = vi.fn(() => ({ order: deliverablesOrderMock }));
+const deliverablesSelectMock = vi.fn(() => ({ eq: deliverablesEqProjectMock }));
+
+const risksOrderMock = vi.fn();
+const risksEqProjectMock = vi.fn(() => ({ order: risksOrderMock }));
+const risksSelectMock = vi.fn(() => ({ eq: risksEqProjectMock }));
+
+const issuesOrderMock = vi.fn();
+const issuesEqProjectMock = vi.fn(() => ({ order: issuesOrderMock }));
+const issuesSelectMock = vi.fn(() => ({ eq: issuesEqProjectMock }));
+
+const decisionsOrderMock = vi.fn();
+const decisionsEqProjectMock = vi.fn(() => ({ order: decisionsOrderMock }));
+const decisionsSelectMock = vi.fn(() => ({ eq: decisionsEqProjectMock }));
+
+const meetingsOrderMock = vi.fn();
+const meetingsEqProjectMock = vi.fn(() => ({ order: meetingsOrderMock }));
+const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqProjectMock }));
+
 const authGetUserMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
@@ -67,6 +104,33 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
+  }
+  if (table === "engagement_categories") {
+    return { select: engagementCategoriesSelectMock };
+  }
+  if (table === "engagement_items") {
+    return { select: engagementItemsSelectMock };
+  }
+  if (table === "scenario_sets") {
+    return { select: scenarioSetsSelectMock };
+  }
+  if (table === "stage_gate_decisions") {
+    return { select: stageGateSelectMock };
+  }
+  if (table === "project_deliverables") {
+    return { select: deliverablesSelectMock };
+  }
+  if (table === "project_risks") {
+    return { select: risksSelectMock };
+  }
+  if (table === "project_issues") {
+    return { select: issuesSelectMock };
+  }
+  if (table === "project_decisions") {
+    return { select: decisionsSelectMock };
+  }
+  if (table === "project_meetings") {
+    return { select: meetingsSelectMock };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -269,6 +333,12 @@ describe("ReportDetailPage", () => {
               reportOrigin: "engagement_campaign_handoff",
               reportReason:
                 "Created from an engagement campaign to preserve handoff-ready public input context for project reporting.",
+              engagementCampaignSnapshot: {
+                id: "campaign-1",
+                title: "Downtown listening campaign",
+                status: "draft",
+                updatedAt: "2026-03-28T17:45:00.000Z",
+              },
               engagementReadyForHandoffCount: 4,
               engagementItemCount: 9,
               engagementSnapshotCapturedAt: "2026-03-28T17:45:00.000Z",
@@ -301,6 +371,134 @@ describe("ReportDetailPage", () => {
         submissions_closed_at: null,
         updated_at: "2026-03-28T17:50:00.000Z",
       },
+      error: null,
+    });
+
+    engagementCategoriesOrderCreatedMock.mockResolvedValue({
+      data: [
+        {
+          id: "category-1",
+          label: "Safety",
+          slug: "safety",
+          description: "Crossings and speed management",
+          sort_order: 0,
+          created_at: "2026-03-20T10:00:00.000Z",
+          updated_at: "2026-03-27T10:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    engagementItemsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "item-1",
+          campaign_id: "campaign-1",
+          category_id: "category-1",
+          status: "approved",
+          source_type: "map_pin",
+          latitude: 39.12,
+          longitude: -121.65,
+          moderation_notes: null,
+          created_at: "2026-03-28T17:20:00.000Z",
+          updated_at: "2026-03-28T18:10:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    scenarioSetsInMock.mockResolvedValue({
+      data: [{ id: "scenario-set-1", updated_at: "2026-03-28T18:20:00.000Z" }],
+      error: null,
+    });
+
+    stageGateLimitMock.mockResolvedValue({
+      data: [
+        {
+          gate_id: "G01",
+          decision: "pass",
+          rationale: "Ready",
+          decided_at: "2026-03-28T16:00:00.000Z",
+          missing_artifacts: [],
+        },
+        {
+          gate_id: "G03",
+          decision: "hold",
+          rationale: "Contracting packet needs signature",
+          decided_at: "2026-03-28T18:12:00.000Z",
+          missing_artifacts: ["G03_E01"],
+        },
+      ],
+      error: null,
+    });
+
+    deliverablesOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "deliverable-1",
+          title: "ADA curb ramp package",
+          due_date: "2026-03-30T00:00:00.000Z",
+          created_at: "2026-03-27T12:00:00.000Z",
+        },
+        {
+          id: "deliverable-2",
+          title: "Signal retiming memo",
+          due_date: "2026-03-21T00:00:00.000Z",
+          created_at: "2026-03-20T00:00:00.000Z",
+        },
+        {
+          id: "deliverable-3",
+          title: "Transit stop access packet",
+          due_date: "2026-03-19T00:00:00.000Z",
+          created_at: "2026-03-18T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    risksOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "risk-1",
+          title: "Grant match exposure",
+          created_at: "2026-03-27T16:30:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    issuesOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "issue-1",
+          title: "Signal timing conflict",
+          created_at: "2026-03-25T09:15:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    decisionsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "decision-1",
+          title: "Advance quick-build crosswalk package",
+          decided_at: "2026-03-28T19:00:00.000Z",
+          created_at: "2026-03-24T18:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    meetingsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "meeting-1",
+          title: "Operations review",
+          meeting_at: "2026-03-29T09:00:00.000Z",
+          created_at: "2026-03-23T17:00:00.000Z",
+        },
+      ],
       error: null,
     });
 
@@ -357,7 +555,7 @@ describe("ReportDetailPage", () => {
       "href",
       "/projects/project-1#project-risks"
     );
-    expect(screen.getByText("Scenario basis")).toBeInTheDocument();
+    expect(screen.getAllByText("Scenario basis").length).toBeGreaterThan(0);
     expect(screen.getByText("Downtown alternatives")).toBeInTheDocument();
     expect(
       screen.getAllByText((_, element) =>
@@ -377,7 +575,7 @@ describe("ReportDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Snapshot captured/i)).toBeInTheDocument();
     expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
-    expect(screen.getByText(/12 items/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/12 items/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
       "href",
       "/engagement/campaign-1"
@@ -386,5 +584,24 @@ describe("ReportDetailPage", () => {
       "href",
       "/engage/share-token-12345"
     );
+    expect(screen.getByText("Drift since generation")).toBeInTheDocument();
+    expect(screen.getByText("Engagement handoff")).toBeInTheDocument();
+    expect(screen.getAllByText("Scenario basis").length).toBeGreaterThan(1);
+    expect(screen.getByText("Project records")).toBeInTheDocument();
+    expect(screen.getByText("Stage gates")).toBeInTheDocument();
+    expect(screen.getAllByText(/count changed/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/gate changed/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/Snapshot Draft · 7 ready \/ 12 items/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Downtown alternatives: 3\/28\/2026.*3\/28\/2026/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Deliverables: 2 -> 3\./i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Blocked .* -> .*\. Next .* -> .*\./i)
+    ).toBeInTheDocument();
   });
 });
