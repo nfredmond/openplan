@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileStack, Loader2 } from "lucide-react";
+import { AlertTriangle, FileStack, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildEngagementHandoffProvenance } from "@/lib/reports/engagement";
 
@@ -25,6 +26,14 @@ type EngagementReportCreateButtonProps = {
     uncategorizedItems: number;
     totalItems: number;
   };
+  existingReportGuidance?: {
+    reportCount: number;
+    packetAttentionCount: number;
+    recommendedReportId: string;
+    recommendedReportTitle: string;
+    recommendedAction: string;
+    recommendedDetail: string;
+  } | null;
 };
 
 function buildReportSummary({
@@ -72,6 +81,7 @@ function buildSnapshotPreview({
 export function EngagementReportCreateButton({
   campaign,
   counts,
+  existingReportGuidance = null,
 }: EngagementReportCreateButtonProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,6 +197,33 @@ export function EngagementReportCreateButton({
             uncategorizedItems: counts.uncategorizedItems,
           })}
         </p>
+        {existingReportGuidance ? (
+          <div
+            className={`mt-3 rounded-xl border px-3 py-2 ${
+              existingReportGuidance.packetAttentionCount > 0
+                ? "border-amber-400/40 bg-amber-50/80 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"
+                : "border-border/70 bg-background/70 text-foreground"
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-semibold">
+                  This project already has {existingReportGuidance.reportCount} report record{existingReportGuidance.reportCount === 1 ? "" : "s"}.
+                </p>
+                <p className="text-[0.72rem] leading-relaxed text-current/80">
+                  {existingReportGuidance.recommendedAction} {existingReportGuidance.recommendedDetail}
+                </p>
+                <Link
+                  href={`/reports/${existingReportGuidance.recommendedReportId}`}
+                  className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-2.5 py-1 text-[0.68rem] font-medium text-current transition-colors hover:border-current/35"
+                >
+                  Open {existingReportGuidance.recommendedReportTitle}
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : null}
         {!campaign.project_id ? (
           <p className="mt-1 text-red-600 dark:text-red-300">
             Link this campaign to a project before creating a handoff report.

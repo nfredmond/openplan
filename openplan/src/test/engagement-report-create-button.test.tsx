@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentPropsWithoutRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const pushMock = vi.fn();
@@ -9,6 +10,14 @@ vi.mock("next/navigation", () => ({
     push: pushMock,
     refresh: refreshMock,
   }),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
@@ -54,6 +63,46 @@ describe("EngagementReportCreateButton", () => {
     expect(
       screen.getByText("11 ready for handoff • 18 total items • 3 actionable review • 2 uncategorized")
     ).toBeInTheDocument();
+  });
+
+  it("shows existing report guidance when a linked packet already needs attention", () => {
+    render(
+      <EngagementReportCreateButton
+        campaign={{
+          id: "campaign-1",
+          title: "Downtown listening campaign",
+          summary: "Collect downtown safety feedback.",
+          status: "active",
+          engagement_type: "comment_collection",
+          project_id: "project-1",
+          created_at: "2026-03-01T00:00:00.000Z",
+          updated_at: "2026-03-28T18:30:00.000Z",
+        }}
+        counts={{
+          moderationQueue: {
+            actionableCount: 3,
+            readyForHandoffCount: 11,
+          },
+          uncategorizedItems: 2,
+          totalItems: 18,
+        }}
+        existingReportGuidance={{
+          reportCount: 2,
+          packetAttentionCount: 1,
+          recommendedReportId: "report-77",
+          recommendedReportTitle: "Downtown Safety Packet",
+          recommendedAction: "Next action: open this report and regenerate the packet.",
+          recommendedDetail: "The packet predates the latest campaign changes.",
+        }}
+      />
+    );
+
+    expect(screen.getByText(/This project already has 2 report records\./i)).toBeInTheDocument();
+    expect(screen.getByText(/The packet predates the latest campaign changes\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open Downtown Safety Packet/i })).toHaveAttribute(
+      "href",
+      "/reports/report-77"
+    );
   });
 
   it("submits seeded provenance when creating the handoff report", async () => {

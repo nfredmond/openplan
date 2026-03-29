@@ -12,7 +12,14 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+import {
+  formatReportStatusLabel,
+  formatReportTypeLabel,
+  getReportPacketActionLabel,
+  getReportPacketFreshness,
+  getReportPacketPriority,
+  reportStatusTone,
+} from "@/lib/reports/catalog";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,6 +47,7 @@ type ReportRow = {
   status: string;
   generated_at: string | null;
   updated_at: string;
+  latest_artifact_kind: string | null;
 };
 
 type ReportSectionLinkRow = {
@@ -111,7 +119,7 @@ export default async function EngagementCampaignDetailPage({
     campaign.project_id
       ? supabase
           .from("reports")
-          .select("id, project_id, title, report_type, status, generated_at, updated_at")
+          .select("id, project_id, title, report_type, status, generated_at, updated_at, latest_artifact_kind")
           .eq("project_id", campaign.project_id)
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [] }),
@@ -134,8 +142,42 @@ export default async function EngagementCampaignDetailPage({
     (reportSectionLinksResult.data ?? []) as ReportSectionLinkRow[],
     campaign.id
   );
-  const explicitlyLinkedReportCount = reportRecords.filter((report) => reportIdsExplicitlyLinkedToCampaign.has(report.id)).length;
-  const projectOnlyReportCount = reportRecords.length - explicitlyLinkedReportCount;
+  const campaignLinkedReports = reportRecords
+    .map((report) => ({
+      ...report,
+      isExplicitCampaignSource: reportIdsExplicitlyLinkedToCampaign.has(report.id),
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    }))
+    .sort((left, right) => {
+      const explicitSourcePriority = Number(right.isExplicitCampaignSource) - Number(left.isExplicitCampaignSource);
+      if (explicitSourcePriority !== 0) {
+        return explicitSourcePriority;
+      }
+
+      const freshnessPriority =
+        getReportPacketPriority(left.packetFreshness.label) -
+        getReportPacketPriority(right.packetFreshness.label);
+      if (freshnessPriority !== 0) {
+        return freshnessPriority;
+      }
+
+      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+    });
+  const explicitlyLinkedReportCount = campaignLinkedReports.filter((report) => report.isExplicitCampaignSource).length;
+  const projectOnlyReportCount = campaignLinkedReports.length - explicitlyLinkedReportCount;
+  const refreshRecommendedReportCount = campaignLinkedReports.filter(
+    (report) => report.packetFreshness.label === "Refresh recommended"
+  ).length;
+  const noPacketReportCount = campaignLinkedReports.filter(
+    (report) => report.packetFreshness.label === "No packet"
+  ).length;
+  const packetAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
+  const recommendedCampaignReport =
+    campaignLinkedReports.find((report) => report.isExplicitCampaignSource) ?? campaignLinkedReports[0] ?? null;
   const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
   const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
   const recentItems = (items ?? []).slice(0, 20);
@@ -392,8 +434,26 @@ export default async function EngagementCampaignDetailPage({
                     <span className="module-record-chip">{counts.totalItems} total items</span>
                     <span className="module-record-chip">{counts.moderationQueue.actionableCount} actionable review items</span>
                     <span className="module-record-chip">{reportRecords.length} existing project reports</span>
+                    <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
                   </div>
-                  <EngagementReportCreateButton campaign={campaign} counts={counts} />
+                  <EngagementReportCreateButton
+                    campaign={campaign}
+                    counts={counts}
+                    existingReportGuidance={
+                      recommendedCampaignReport
+                        ? {
+                            reportCount: campaignLinkedReports.length,
+                            packetAttentionCount,
+                            recommendedReportId: recommendedCampaignReport.id,
+                            recommendedReportTitle: recommendedCampaignReport.title,
+                            recommendedAction: getReportPacketActionLabel(
+                              recommendedCampaignReport.packetFreshness.label
+                            ),
+                            recommendedDetail: recommendedCampaignReport.packetFreshness.detail,
+                          }
+                        : null
+                    }
+                  />
                 </div>
               </article>
             </div>
@@ -596,38 +656,64 @@ export default async function EngagementCampaignDetailPage({
             <div className="module-record-meta">
               <span className="module-record-chip">{explicitlyLinkedReportCount} explicit campaign-source reports</span>
               <span className="module-record-chip">{projectOnlyReportCount} project-linked only</span>
+              <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
             </div>
-            {reportRecords.slice(0, 4).map((report) => {
-              const isExplicitCampaignSource = reportIdsExplicitlyLinkedToCampaign.has(report.id);
 
-              return (
-                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                        <StatusBadge tone={isExplicitCampaignSource ? "success" : "neutral"}>
-                          {isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
-                        </StatusBadge>
-                        {report.generated_at ? <StatusBadge tone="success">Generated</StatusBadge> : null}
-                      </div>
-                      <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
-                      <p className="module-record-summary">
-                        {isExplicitCampaignSource
-                          ? "This report explicitly includes this campaign as an engagement source section."
-                          : "This report shares the project context, but does not explicitly source this campaign yet."}
-                      </p>
-                      <p className="module-record-summary">
-                        Updated {fmtDateTime(report.updated_at)}
-                        {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
-                      </p>
+            <div
+              className={`rounded-[22px] border p-5 ${
+                packetAttentionCount > 0
+                  ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
+                  : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
+              }`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Campaign reporting posture
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
+                {packetAttentionCount > 0 && recommendedCampaignReport
+                  ? `${recommendedCampaignReport.title} needs packet attention`
+                  : "Linked campaign packets look current"}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedCampaignReport
+                  ? getReportPacketActionLabel(recommendedCampaignReport.packetFreshness.label)
+                  : "Open reports to create the first linked packet for this campaign's project context."}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {recommendedCampaignReport?.packetFreshness.detail ??
+                  "No project-linked reports are available for this campaign yet."}
+              </p>
+            </div>
+
+            {campaignLinkedReports.slice(0, 4).map((report) => (
+              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
+                      <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                      <StatusBadge tone={report.isExplicitCampaignSource ? "success" : "neutral"}>
+                        {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
+                      </StatusBadge>
+                      <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                     </div>
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                    <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                    <p className="module-record-summary">
+                      {report.isExplicitCampaignSource
+                        ? "This report explicitly includes this campaign as an engagement source section."
+                        : "This report shares the project context, but does not explicitly source this campaign yet."}
+                    </p>
+                    <p className="module-record-summary">{report.packetFreshness.detail}</p>
+                    <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
+                    <p className="module-record-summary">
+                      Updated {fmtDateTime(report.updated_at)}
+                      {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
+                    </p>
                   </div>
-                </Link>
-              );
-            })}
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+              </Link>
+            ))}
           </div>
         )}
       </article>
