@@ -55,6 +55,20 @@ function buildReportSummary({
     .join(" ");
 }
 
+function buildSnapshotPreview({
+  readyForHandoffCount,
+  totalItems,
+  actionableCount,
+  uncategorizedItems,
+}: {
+  readyForHandoffCount: number;
+  totalItems: number;
+  actionableCount: number;
+  uncategorizedItems: number;
+}) {
+  return `${readyForHandoffCount} ready for handoff • ${totalItems} total items • ${actionableCount} actionable review • ${uncategorizedItems} uncategorized`;
+}
+
 export function EngagementReportCreateButton({
   campaign,
   counts,
@@ -159,7 +173,26 @@ export function EngagementReportCreateButton({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-border/60 bg-muted/35 p-3 text-xs text-muted-foreground">
+        <p className="font-semibold text-foreground">What this creates</p>
+        <p className="mt-1">
+          A project status packet with a frozen engagement handoff snapshot tied to this campaign.
+        </p>
+        <p className="mt-1">
+          {buildSnapshotPreview({
+            readyForHandoffCount: counts.moderationQueue.readyForHandoffCount,
+            totalItems: counts.totalItems,
+            actionableCount: counts.moderationQueue.actionableCount,
+            uncategorizedItems: counts.uncategorizedItems,
+          })}
+        </p>
+        {!campaign.project_id ? (
+          <p className="mt-1 text-red-600 dark:text-red-300">
+            Link this campaign to a project before creating a handoff report.
+          </p>
+        ) : null}
+      </div>
       <Button type="button" variant="outline" onClick={() => void handleCreateReport()} disabled={isSubmitting || !campaign.project_id}>
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileStack className="h-4 w-4" />}
         Create handoff report
