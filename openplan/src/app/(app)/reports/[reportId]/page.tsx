@@ -22,6 +22,10 @@ import {
 } from "@/lib/reports/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
+import {
+  type ProjectStageGateSnapshot,
+  type StageGateSnapshotGateSummary,
+} from "@/lib/stage-gates/summary";
 
 type RouteParams = {
   params: Promise<{ reportId: string }>;
@@ -59,6 +63,8 @@ type ProjectRecordSnapshotEntry = {
   latestTitle: string | null;
   latestAt: string | null;
 };
+
+type StageGateSnapshotControlHealth = ProjectStageGateSnapshot["controlHealth"];
 
 function asHtmlContent(
   metadata: Record<string, unknown> | null | undefined
@@ -145,6 +151,82 @@ function asProjectRecordSnapshotEntry(
     count: asNullableNumber(record.count) ?? 0,
     latestTitle: asNullableString(record.latestTitle),
     latestAt: asNullableString(record.latestAt),
+  };
+}
+
+function asStageGateSnapshotGateSummary(
+  value: unknown
+): StageGateSnapshotGateSummary | null {
+  const record = asRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  const workflowState = asNullableString(record.workflowState);
+  const missingArtifacts = Array.isArray(record.missingArtifacts)
+    ? record.missingArtifacts.filter(
+        (item): item is string =>
+          typeof item === "string" && item.trim().length > 0
+      )
+    : [];
+
+  if (
+    !workflowState ||
+    !["pass", "hold", "not_started"].includes(workflowState)
+  ) {
+    return null;
+  }
+
+  return {
+    gateId: asNullableString(record.gateId) ?? "Unknown gate",
+    sequence: asNullableNumber(record.sequence) ?? 0,
+    name: asNullableString(record.name) ?? "Unknown gate",
+    workflowState,
+    rationale: asNullableString(record.rationale) ?? "No rationale recorded.",
+    missingArtifacts,
+    requiredEvidenceCount: asNullableNumber(record.requiredEvidenceCount) ?? 0,
+    operatorControlEvidenceCount:
+      asNullableNumber(record.operatorControlEvidenceCount) ?? 0,
+  };
+}
+
+function asStageGateSnapshotControlHealth(
+  value: unknown
+): StageGateSnapshotControlHealth {
+  const record = asRecord(value);
+
+  return {
+    totalOperatorControlEvidenceCount:
+      asNullableNumber(record?.totalOperatorControlEvidenceCount) ?? 0,
+    gatesWithOperatorControlsCount:
+      asNullableNumber(record?.gatesWithOperatorControlsCount) ?? 0,
+  };
+}
+
+function asStageGateSnapshot(
+  value: unknown
+): ProjectStageGateSnapshot | null {
+  const record = asRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  const templateId = asNullableString(record.templateId);
+  const templateVersion = asNullableString(record.templateVersion);
+
+  if (!templateId || !templateVersion) {
+    return null;
+  }
+
+  return {
+    templateId,
+    templateVersion,
+    passCount: asNullableNumber(record.passCount) ?? 0,
+    holdCount: asNullableNumber(record.holdCount) ?? 0,
+    notStartedCount: asNullableNumber(record.notStartedCount) ?? 0,
+    blockedGate: asStageGateSnapshotGateSummary(record.blockedGate),
+    nextGate: asStageGateSnapshotGateSummary(record.nextGate),
+    controlHealth: asStageGateSnapshotControlHealth(record.controlHealth),
   };
 }
 
@@ -262,6 +344,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const engagementSnapshotReadyForHandoff = asNullableNumber(
     engagementCountsSnapshot?.readyForHandoffCount
   );
+  const stageGateSnapshot = asStageGateSnapshot(sourceContext?.stageGateSnapshot);
   const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
   const projectRecordsSnapshot = [
     {
@@ -704,6 +787,80 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+            {stageGateSnapshot ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Governance and stage-gate provenance
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Compact stage-gate snapshot persisted with this artifact using the active OpenPlan summary.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Template
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {stageGateSnapshot.templateId}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Version {stageGateSnapshot.templateVersion} · {stageGateSnapshot.passCount} pass · {stageGateSnapshot.holdCount} hold · {stageGateSnapshot.notStartedCount} not started
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Control health
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {stageGateSnapshot.controlHealth.totalOperatorControlEvidenceCount} operator control evidence items
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount} gate{stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount === 1 ? "" : "s"} in the active template include operator control evidence.
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Blocked gate
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {stageGateSnapshot.blockedGate
+                        ? `${stageGateSnapshot.blockedGate.gateId} · ${stageGateSnapshot.blockedGate.name}`
+                        : "No gate on hold"}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {stageGateSnapshot.blockedGate
+                        ? `${stageGateSnapshot.blockedGate.rationale}${
+                            stageGateSnapshot.blockedGate.missingArtifacts.length > 0
+                              ? ` Missing artifacts: ${stageGateSnapshot.blockedGate.missingArtifacts.join(", ")}.`
+                              : ""
+                          }`
+                        : "No formal HOLD decision is recorded in this artifact snapshot."}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Next gate
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {stageGateSnapshot.nextGate
+                        ? `${stageGateSnapshot.nextGate.gateId} · ${stageGateSnapshot.nextGate.name}`
+                        : "Gate sequence complete"}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {stageGateSnapshot.nextGate
+                        ? `${stageGateSnapshot.nextGate.requiredEvidenceCount} required evidence item${
+                            stageGateSnapshot.nextGate.requiredEvidenceCount === 1 ? "" : "s"
+                          } · ${stageGateSnapshot.nextGate.operatorControlEvidenceCount} operator control profile${
+                            stageGateSnapshot.nextGate.operatorControlEvidenceCount === 1 ? "" : "s"
+                          }`
+                        : "Every gate in the active template currently has a recorded PASS decision."}
+                    </p>
+                  </div>
+                </div>
               </div>
             ) : null}
             {projectRecordsSnapshot.length > 0 ? (

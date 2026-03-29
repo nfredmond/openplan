@@ -1,5 +1,6 @@
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
+import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
 import {
   extractEngagementHandoffProvenance,
@@ -81,6 +82,7 @@ export type ReportGenerationData = {
     decisions: ProjectRecordSnapshotEntry;
     meetings: ProjectRecordSnapshotEntry;
   };
+  stageGateSnapshot: ProjectStageGateSnapshot;
 };
 
 function esc(value: string): string {
@@ -241,6 +243,57 @@ function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
           </article>`
         )
         .join("")}
+    </div>
+  </section>`;
+}
+
+function stageGateProvenanceMarkup(data: ReportGenerationData): string {
+  const { stageGateSnapshot } = data;
+  const blockedGate = stageGateSnapshot.blockedGate;
+  const nextGate = stageGateSnapshot.nextGate;
+
+  return `<section>
+    <h2 class="section-title">Governance and stage-gate provenance</h2>
+    <p>This artifact includes a compact stage-gate snapshot captured at generation time using the active OpenPlan stage-gate summary.</p>
+    <div class="metrics-stack">
+      <article class="metric-card">
+        <span class="metric-label">Template</span>
+        <strong>${esc(stageGateSnapshot.templateId)}</strong>
+        <p>Version ${esc(stageGateSnapshot.templateVersion)} • ${stageGateSnapshot.passCount} pass • ${stageGateSnapshot.holdCount} hold • ${stageGateSnapshot.notStartedCount} not started</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Blocked gate</span>
+        <strong>${esc(blockedGate ? `${blockedGate.gateId} · ${blockedGate.name}` : "No gate on hold")}</strong>
+        <p>${
+          blockedGate
+            ? `${esc(blockedGate.rationale)}${
+                blockedGate.missingArtifacts.length > 0
+                  ? ` Missing artifacts: ${esc(blockedGate.missingArtifacts.join(", "))}.`
+                  : ""
+              }`
+            : "No formal HOLD decision is recorded in this snapshot."
+        }</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Next gate</span>
+        <strong>${esc(nextGate ? `${nextGate.gateId} · ${nextGate.name}` : "Gate sequence complete")}</strong>
+        <p>${
+          nextGate
+            ? `${nextGate.requiredEvidenceCount} required evidence item${
+                nextGate.requiredEvidenceCount === 1 ? "" : "s"
+              } • ${nextGate.operatorControlEvidenceCount} operator control profile${
+                nextGate.operatorControlEvidenceCount === 1 ? "" : "s"
+              }`
+            : "Every gate in the active template currently has a recorded PASS decision."
+        }</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Control health</span>
+        <strong>${stageGateSnapshot.controlHealth.totalOperatorControlEvidenceCount}</strong>
+        <p>${stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount} gate${
+          stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount === 1 ? "" : "s"
+        } in this template include operator control evidence.</p>
+      </article>
     </div>
   </section>`;
 }
@@ -532,6 +585,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
       </header>
+      ${stageGateProvenanceMarkup(data)}
       ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}
       ${enabledSections

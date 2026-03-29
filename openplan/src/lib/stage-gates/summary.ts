@@ -77,6 +77,31 @@ export type ProjectStageGateSummary = {
   gates: StageGateSummaryItem[];
 };
 
+export type StageGateSnapshotGateSummary = {
+  gateId: string;
+  sequence: number;
+  name: string;
+  workflowState: StageGateWorkflowState;
+  rationale: string;
+  missingArtifacts: string[];
+  requiredEvidenceCount: number;
+  operatorControlEvidenceCount: number;
+};
+
+export type ProjectStageGateSnapshot = {
+  templateId: string;
+  templateVersion: string;
+  passCount: number;
+  holdCount: number;
+  notStartedCount: number;
+  blockedGate: StageGateSnapshotGateSummary | null;
+  nextGate: StageGateSnapshotGateSummary | null;
+  controlHealth: {
+    totalOperatorControlEvidenceCount: number;
+    gatesWithOperatorControlsCount: number;
+  };
+};
+
 const template = caStageGatesTemplate as StageGateTemplate;
 
 function normalizeDecisionState(value: string | null | undefined): StageGateWorkflowState {
@@ -166,5 +191,47 @@ export function buildProjectStageGateSummary(
     nextGate,
     blockedGate,
     gates,
+  };
+}
+
+function toSnapshotGateSummary(
+  gate: StageGateSummaryItem | null
+): StageGateSnapshotGateSummary | null {
+  if (!gate) {
+    return null;
+  }
+
+  return {
+    gateId: gate.gateId,
+    sequence: gate.sequence,
+    name: gate.name,
+    workflowState: gate.workflowState,
+    rationale: gate.rationale,
+    missingArtifacts: gate.missingArtifacts,
+    requiredEvidenceCount: gate.requiredEvidenceCount,
+    operatorControlEvidenceCount: gate.operatorControlEvidenceCount,
+  };
+}
+
+export function buildProjectStageGateSnapshot(
+  summary: ProjectStageGateSummary
+): ProjectStageGateSnapshot {
+  return {
+    templateId: summary.templateId,
+    templateVersion: summary.templateVersion,
+    passCount: summary.passCount,
+    holdCount: summary.holdCount,
+    notStartedCount: summary.notStartedCount,
+    blockedGate: toSnapshotGateSummary(summary.blockedGate),
+    nextGate: toSnapshotGateSummary(summary.nextGate),
+    controlHealth: {
+      totalOperatorControlEvidenceCount: summary.gates.reduce(
+        (count, gate) => count + gate.operatorControlEvidenceCount,
+        0
+      ),
+      gatesWithOperatorControlsCount: summary.gates.filter(
+        (gate) => gate.operatorControlEvidenceCount > 0
+      ).length,
+    },
   };
 }

@@ -32,6 +32,11 @@ const reportRunsOrderMock = vi.fn();
 const reportRunsEqMock = vi.fn(() => ({ order: reportRunsOrderMock }));
 const reportRunsSelectMock = vi.fn(() => ({ eq: reportRunsEqMock }));
 
+const stageGateDecisionsLimitMock = vi.fn();
+const stageGateDecisionsOrderMock = vi.fn(() => ({ limit: stageGateDecisionsLimitMock }));
+const stageGateDecisionsEqMock = vi.fn(() => ({ order: stageGateDecisionsOrderMock }));
+const stageGateDecisionsSelectMock = vi.fn(() => ({ eq: stageGateDecisionsEqMock }));
+
 const deliverablesLimitMock = vi.fn();
 const deliverablesOrderMock = vi.fn(() => ({ limit: deliverablesLimitMock }));
 const deliverablesEqMock = vi.fn(() => ({ order: deliverablesOrderMock }));
@@ -125,6 +130,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "report_runs") {
     return {
       select: reportRunsSelectMock,
+    };
+  }
+
+  if (table === "stage_gate_decisions") {
+    return {
+      select: stageGateDecisionsSelectMock,
     };
   }
 
@@ -281,6 +292,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [{ id: "report-run-1", run_id: "55555555-5555-4555-8555-555555555555", sort_order: 0 }],
       error: null,
     });
+    stageGateDecisionsLimitMock.mockResolvedValue({ data: [], error: null });
 
     deliverablesLimitMock.mockResolvedValue({ data: [], error: null });
     risksLimitMock.mockResolvedValue({ data: [], error: null });
@@ -664,6 +676,81 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Operations review");
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-deliverables');
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-risks');
+  });
+
+  it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {
+    stageGateDecisionsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "stage-gate-1",
+          gate_id: "G01_INITIATION_AUTHORIZATION",
+          decision: "PASS",
+          rationale: "Charter is approved.",
+          decided_at: "2026-03-13T16:00:00.000Z",
+          missing_artifacts: [],
+        },
+        {
+          id: "stage-gate-2",
+          gate_id: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+          decision: "HOLD",
+          rationale: "Civil rights plan is still missing.",
+          decided_at: "2026-03-14T01:00:00.000Z",
+          missing_artifacts: ["G02_E03"],
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({
+          sourceContext: expect.objectContaining({
+            stageGateSnapshot: expect.objectContaining({
+              templateId: "ca_stage_gates_v0_1",
+              templateVersion: "0.1.0",
+              passCount: 1,
+              holdCount: 1,
+              notStartedCount: 7,
+              blockedGate: expect.objectContaining({
+                gateId: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+                name: "Agreements, Procurement, and Civil Rights Setup",
+                missingArtifacts: ["G02_E03"],
+              }),
+              nextGate: expect.objectContaining({
+                gateId: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+              }),
+              controlHealth: expect.objectContaining({
+                totalOperatorControlEvidenceCount: expect.any(Number),
+                gatesWithOperatorControlsCount: expect.any(Number),
+              }),
+            }),
+          }),
+          htmlContent: expect.stringContaining("Governance and stage-gate provenance"),
+        }),
+      })
+    );
+
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
+
+    expect(generatedHtml).toContain("ca_stage_gates_v0_1");
+    expect(generatedHtml).toContain("1 pass");
+    expect(generatedHtml).toContain("1 hold");
+    expect(generatedHtml).toContain("Civil rights plan is still missing.");
+    expect(generatedHtml).toContain("Missing artifacts: G02_E03.");
+    expect(generatedHtml).toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
   });
 
   it("persists scenario-set provenance derived from linked report runs", async () => {

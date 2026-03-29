@@ -171,6 +171,37 @@ describe("ReportDetailPage", () => {
               deliverableCount: 2,
               decisionCount: 1,
               projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+              stageGateSnapshot: {
+                templateId: "ca_stage_gates_v0_1",
+                templateVersion: "0.1.0",
+                passCount: 1,
+                holdCount: 1,
+                notStartedCount: 7,
+                blockedGate: {
+                  gateId: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+                  sequence: 2,
+                  name: "Agreements, Procurement, and Civil Rights Setup",
+                  workflowState: "hold",
+                  rationale: "Civil rights plan is still missing.",
+                  missingArtifacts: ["G02_E03"],
+                  requiredEvidenceCount: 4,
+                  operatorControlEvidenceCount: 1,
+                },
+                nextGate: {
+                  gateId: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+                  sequence: 2,
+                  name: "Agreements, Procurement, and Civil Rights Setup",
+                  workflowState: "hold",
+                  rationale: "Civil rights plan is still missing.",
+                  missingArtifacts: ["G02_E03"],
+                  requiredEvidenceCount: 4,
+                  operatorControlEvidenceCount: 1,
+                },
+                controlHealth: {
+                  totalOperatorControlEvidenceCount: 3,
+                  gatesWithOperatorControlsCount: 2,
+                },
+              },
               projectRecordsSnapshot: {
                 deliverables: {
                   count: 2,
@@ -296,6 +327,17 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText("Report origin")).toBeInTheDocument();
     expect(screen.getByText("Engagement Campaign Handoff")).toBeInTheDocument();
     expect(screen.getByText("Project records provenance")).toBeInTheDocument();
+    expect(
+      screen.getByText("Governance and stage-gate provenance")
+    ).toBeInTheDocument();
+    expect(screen.getByText("ca_stage_gates_v0_1")).toBeInTheDocument();
+    expect(screen.getByText(/Version 0.1.0/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/Civil rights plan is still missing\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Missing artifacts: G02_E03\./i)).toBeInTheDocument();
+    expect(screen.getByText(/3 operator control evidence items/i)).toBeInTheDocument();
     expect(screen.getByText(/ADA curb ramp package/i)).toBeInTheDocument();
     expect(screen.getByText(/Grant match exposure/i)).toBeInTheDocument();
     expect(screen.getByText(/Signal timing conflict/i)).toBeInTheDocument();

@@ -6,6 +6,10 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import {
+  buildProjectStageGateSnapshot,
+  buildProjectStageGateSummary,
+} from "@/lib/stage-gates/summary";
+import {
   buildReportEngagementSummary,
   extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
@@ -136,6 +140,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectResult,
       sectionsResult,
       reportRunsResult,
+      stageGateDecisionsResult,
       deliverablesResult,
       risksResult,
       issuesResult,
@@ -158,6 +163,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .select("id, run_id, sort_order")
         .eq("report_id", report.id)
         .order("sort_order", { ascending: true }),
+      supabase
+        .from("stage_gate_decisions")
+        .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
+        .eq("workspace_id", report.workspace_id)
+        .order("decided_at", { ascending: false })
+        .limit(200),
       supabase
         .from("project_deliverables")
         .select("id, title, summary, status, due_date, created_at")
@@ -195,6 +206,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectResult.error,
       sectionsResult.error,
       reportRunsResult.error,
+      stageGateDecisionsResult.error,
       deliverablesResult.error,
       risksResult.error,
       issuesResult.error,
@@ -314,6 +326,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       decisions: decisionsResult.data ?? [],
       meetings: meetingsResult.data ?? [],
     });
+    const stageGateSnapshot = buildProjectStageGateSnapshot(
+      buildProjectStageGateSummary(
+        (stageGateDecisionsResult.data ?? []) as Array<{
+          gate_id: string;
+          decision: string;
+          rationale: string | null;
+          decided_at: string | null;
+          missing_artifacts?: string[] | null;
+        }>
+      )
+    );
 
     const html = buildReportHtml({
       report,
@@ -358,6 +381,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       engagement,
       scenarioSetLinks,
       projectRecordsSnapshot,
+      stageGateSnapshot,
     });
 
     const generatedAt = new Date().toISOString();
@@ -380,6 +404,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         issueCount: issuesResult.data?.length ?? 0,
         decisionCount: decisionsResult.data?.length ?? 0,
         meetingCount: meetingsResult.data?.length ?? 0,
+        stageGateSnapshot,
         projectRecordsSnapshot,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
