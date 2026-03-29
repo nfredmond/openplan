@@ -68,11 +68,12 @@ const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string 
   { value: "needs-attention", label: "Needs attention" },
   { value: "best-validated", label: "Best validated" },
   { value: "prototype-blocked", label: "Prototype blocked" },
+  { value: "evidence-ready", label: "Evidence-ready" },
   { value: "comparison-ready", label: "Comparison-ready" },
 ];
 
 const COUNTY_SUMMARY_TILES: {
-  key: "totalRuns" | "needsAttention" | "prototypeBlocked" | "comparisonReady" | "validatedScreening";
+  key: "totalRuns" | "needsAttention" | "prototypeBlocked" | "evidenceReady" | "comparisonReady" | "validatedScreening";
   label: string;
   quickView: CountyRunQuickView;
   className: string;
@@ -94,6 +95,12 @@ const COUNTY_SUMMARY_TILES: {
     label: "Prototype blocked",
     quickView: "prototype-blocked",
     className: "border border-amber-500/30 bg-amber-500/10",
+  },
+  {
+    key: "evidenceReady",
+    label: "Evidence-ready",
+    quickView: "evidence-ready",
+    className: "border border-indigo-500/30 bg-indigo-500/10",
   },
   {
     key: "comparisonReady",
@@ -148,7 +155,7 @@ function parseCountyRunQuickView(value: string | null | undefined): CountyRunQui
 }
 
 function getCountyQuickViewDefaultSort(view: CountyRunQuickView): CountyRunSort {
-  if (view === "best-validated" || view === "comparison-ready") {
+  if (view === "best-validated" || view === "evidence-ready" || view === "comparison-ready") {
     return "median-ape-asc";
   }
   if (view === "prototype-blocked") {

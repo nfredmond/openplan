@@ -180,6 +180,7 @@ describe("county onramp primitives", () => {
         stage: "validated-screening",
         behavioralPipelineStatus: "prototype_preflight_complete",
         behavioralRuntimeStatus: "behavioral_runtime_blocked",
+        behavioralEvidenceReady: true,
         behavioralComparisonReady: false,
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         updatedAt: "2026-03-24T23:00:00Z",
@@ -193,6 +194,7 @@ describe("county onramp primitives", () => {
         stage: "runtime-complete",
         behavioralPipelineStatus: "behavioral_runtime_succeeded",
         behavioralRuntimeStatus: "behavioral_runtime_succeeded",
+        behavioralEvidenceReady: true,
         behavioralComparisonReady: true,
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         updatedAt: "2026-03-24T23:10:00Z",
@@ -201,11 +203,26 @@ describe("county onramp primitives", () => {
       },
       {
         id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        geographyLabel: "Sutter County, CA",
+        runName: "sutter-run",
+        stage: "validated-screening",
+        behavioralPipelineStatus: "behavioral_runtime_succeeded",
+        behavioralRuntimeStatus: "behavioral_runtime_succeeded",
+        behavioralEvidenceReady: true,
+        behavioralComparisonReady: false,
+        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
+        updatedAt: "2026-03-24T23:05:00Z",
+        finalGap: 0.006,
+        medianApe: 14,
+      },
+      {
+        id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
         geographyLabel: "Yuba County, CA",
         runName: "yuba-run",
         stage: "bootstrap-incomplete",
         behavioralPipelineStatus: null,
         behavioralRuntimeStatus: null,
+        behavioralEvidenceReady: false,
         behavioralComparisonReady: false,
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         updatedAt: "2026-03-24T22:00:00Z",
@@ -216,43 +233,52 @@ describe("county onramp primitives", () => {
 
     expect(sortCountyRunListItems(items, "updated-desc").map((item) => item.id)).toEqual([
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(sortCountyRunListItems(items, "stage-desc").map((item) => item.id)).toEqual([
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(sortCountyRunListItems(items, "final-gap-asc").map((item) => item.id)).toEqual([
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(sortCountyRunListItems(items, "median-ape-asc").map((item) => item.id)).toEqual([
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(filterCountyRunListItemsByQuickView(items, "comparison-ready").map((item) => item.id)).toEqual([
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
     ]);
+    expect(filterCountyRunListItemsByQuickView(items, "evidence-ready").map((item) => item.id)).toEqual([
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    ]);
     expect(filterCountyRunListItemsByQuickView(items, "best-validated").map((item) => item.id)).toEqual([
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
     ]);
     expect(filterCountyRunListItemsByQuickView(items, "prototype-blocked").map((item) => item.id)).toEqual([
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     ]);
     expect(filterCountyRunListItemsByQuickView(items, "needs-attention").map((item) => item.id)).toEqual([
       "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
     expect(buildCountyRunSummaryCounts(items)).toEqual({
-      totalRuns: 3,
+      totalRuns: 4,
       needsAttention: 2,
       prototypeBlocked: 1,
+      evidenceReady: 1,
       comparisonReady: 1,
-      validatedScreening: 1,
+      validatedScreening: 2,
     });
   });
 

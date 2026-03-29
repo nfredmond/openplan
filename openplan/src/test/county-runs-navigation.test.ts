@@ -25,6 +25,12 @@ describe("county-runs navigation helpers", () => {
     ).toBe("View: Needs attention · Sort: Recently updated · Runtime: Runtime blocked · Mode: Preflight only");
   });
 
+  it("describes the evidence-ready county dashboard context", () => {
+    expect(getCountyRunsBackContextLabel("/county-runs?view=evidence-ready&sort=median-ape-asc")).toBe(
+      "View: Evidence-ready · Sort: Lowest median APE"
+    );
+  });
+
   it("does not describe the default county runs page as a saved dashboard context", () => {
     expect(getCountyRunsBackContextLabel("/county-runs")).toBeNull();
   });

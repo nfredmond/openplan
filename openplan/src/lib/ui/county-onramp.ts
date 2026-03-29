@@ -68,12 +68,19 @@ export type CountyActivitySimBundleUiCard = {
 };
 
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
-export type CountyRunQuickView = "all" | "needs-attention" | "best-validated" | "prototype-blocked" | "comparison-ready";
+export type CountyRunQuickView =
+  | "all"
+  | "needs-attention"
+  | "best-validated"
+  | "prototype-blocked"
+  | "evidence-ready"
+  | "comparison-ready";
 
 export type CountyRunSummaryCounts = {
   totalRuns: number;
   needsAttention: number;
   prototypeBlocked: number;
+  evidenceReady: number;
   comparisonReady: number;
   validatedScreening: number;
 };
@@ -359,6 +366,7 @@ export function buildCountyRunSummaryCounts(items: CountyRunListItem[]): CountyR
     totalRuns: items.length,
     needsAttention: filterCountyRunListItemsByQuickView(items, "needs-attention").length,
     prototypeBlocked: filterCountyRunListItemsByQuickView(items, "prototype-blocked").length,
+    evidenceReady: filterCountyRunListItemsByQuickView(items, "evidence-ready").length,
     comparisonReady: filterCountyRunListItemsByQuickView(items, "comparison-ready").length,
     validatedScreening: items.filter((item) => item.stage === "validated-screening").length,
   };
@@ -375,6 +383,15 @@ export function filterCountyRunListItemsByQuickView(
   return items.filter((item) => {
     if (quickView === "comparison-ready") {
       return Boolean(item.behavioralComparisonReady);
+    }
+
+    if (quickView === "evidence-ready") {
+      return (
+        Boolean(item.behavioralEvidenceReady) &&
+        !Boolean(item.behavioralComparisonReady) &&
+        (item.behavioralPipelineStatus === "behavioral_runtime_succeeded" ||
+          item.behavioralRuntimeStatus === "behavioral_runtime_succeeded")
+      );
     }
 
     if (quickView === "best-validated") {

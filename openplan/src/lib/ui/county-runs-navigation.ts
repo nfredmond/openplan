@@ -5,6 +5,7 @@ const COUNTY_RUNS_VIEW_LABELS: Record<string, string> = {
   "needs-attention": "Needs attention",
   "best-validated": "Best validated",
   "prototype-blocked": "Prototype blocked",
+  "evidence-ready": "Evidence-ready",
   "comparison-ready": "Comparison-ready",
 };
 
