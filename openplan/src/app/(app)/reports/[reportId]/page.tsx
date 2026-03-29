@@ -820,6 +820,22 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   }
 
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
+  const driftActionByKey: Record<string, { href: string; label: string } | null> = {
+    engagement: engagementCampaign
+      ? { href: `/engagement/${engagementCampaign.id}`, label: "Review engagement source" }
+      : engagementPublicHref
+        ? { href: engagementPublicHref, label: "Review public engagement" }
+        : null,
+    "scenario-basis": scenarioSetLinks[0]
+      ? { href: `/scenarios/${scenarioSetLinks[0].scenarioSetId}`, label: "Review scenario set" }
+      : null,
+    "project-records": project
+      ? { href: `/projects/${project.id}`, label: "Review project records" }
+      : null,
+    "stage-gates": project
+      ? { href: `/projects/${project.id}#project-governance`, label: "Review governance" }
+      : null,
+  };
 
   return (
     <section className="space-y-6">
@@ -1235,26 +1251,39 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 <div className="grid gap-2">
-                  {driftItems.map((item) => (
-                    <div
-                      key={item.key}
-                      className="flex flex-col gap-2 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold tracking-tight text-foreground">
-                            {item.label}
+                  {driftItems.map((item) => {
+                    const driftAction = driftActionByKey[item.key] ?? null;
+
+                    return (
+                      <div
+                        key={item.key}
+                        className="flex flex-col gap-2 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold tracking-tight text-foreground">
+                              {item.label}
+                            </p>
+                            <StatusBadge tone={driftTone(item.status)}>
+                              {item.status}
+                            </StatusBadge>
+                          </div>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            {item.detail}
                           </p>
-                          <StatusBadge tone={driftTone(item.status)}>
-                            {item.status}
-                          </StatusBadge>
                         </div>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          {item.detail}
-                        </p>
+                        {driftAction ? (
+                          <Link
+                            href={driftAction.href}
+                            className="inline-flex items-center gap-1 self-start rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                          >
+                            <Link2 className="h-3.5 w-3.5" />
+                            {driftAction.label}
+                          </Link>
+                        ) : null}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : null}

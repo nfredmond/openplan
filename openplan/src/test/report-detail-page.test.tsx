@@ -603,5 +603,21 @@ describe("ReportDetailPage", () => {
     expect(
       screen.getByText(/Blocked .* -> .*\. Next .* -> .*\./i)
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Review engagement source/i })).toHaveAttribute(
+      "href",
+      "/engagement/campaign-1"
+    );
+    expect(screen.getByRole("link", { name: /Review scenario set/i })).toHaveAttribute(
+      "href",
+      "/scenarios/scenario-set-1"
+    );
+    expect(screen.getByRole("link", { name: /Review project records/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1"
+    );
+    expect(screen.getByRole("link", { name: /Review governance/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1#project-governance"
+    );
   });
 });
