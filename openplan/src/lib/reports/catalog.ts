@@ -19,6 +19,12 @@ export type ReportStatusTone =
   | "danger"
   | "neutral";
 
+export type ReportPacketFreshness = {
+  label: string;
+  tone: ReportStatusTone;
+  detail: string;
+};
+
 export type ReportSectionTemplate = {
   sectionKey: string;
   title: string;
@@ -170,6 +176,41 @@ export function reportStatusTone(
   if (status === "generated") return "success";
   if (status === "archived") return "warning";
   return "neutral";
+}
+
+export function getReportPacketFreshness({
+  latestArtifactKind,
+  generatedAt,
+  updatedAt,
+}: {
+  latestArtifactKind: string | null | undefined;
+  generatedAt: string | null | undefined;
+  updatedAt: string | null | undefined;
+}): ReportPacketFreshness {
+  if (!latestArtifactKind || !generatedAt) {
+    return {
+      label: "No packet",
+      tone: "warning",
+      detail: "No generated packet is attached to this report yet.",
+    };
+  }
+
+  const generatedAtMs = new Date(generatedAt).getTime();
+  const updatedAtMs = new Date(updatedAt ?? generatedAt).getTime();
+
+  if (Number.isFinite(generatedAtMs) && Number.isFinite(updatedAtMs) && updatedAtMs > generatedAtMs) {
+    return {
+      label: "Refresh recommended",
+      tone: "warning",
+      detail: "The report record changed after the latest packet was generated.",
+    };
+  }
+
+  return {
+    label: "Packet current",
+    tone: "success",
+    detail: "The latest packet is current with the saved report record.",
+  };
 }
 
 export function formatDateTime(value: string | null | undefined): string {

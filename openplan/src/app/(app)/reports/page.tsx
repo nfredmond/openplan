@@ -22,6 +22,7 @@ import {
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
+  getReportPacketFreshness,
   reportStatusTone,
 } from "@/lib/reports/catalog";
 
@@ -102,12 +103,23 @@ export default async function ReportsPage() {
     project: Array.isArray(report.projects)
       ? report.projects[0] ?? null
       : report.projects ?? null,
+    packetFreshness: getReportPacketFreshness({
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+    }),
   }));
   const generatedCount = reports.filter(
     (report) => report.status === "generated"
   ).length;
   const draftCount = reports.filter(
     (report) => report.status === "draft"
+  ).length;
+  const refreshRecommendedCount = reports.filter(
+    (report) => report.packetFreshness.label === "Refresh recommended"
+  ).length;
+  const noPacketCount = reports.filter(
+    (report) => report.packetFreshness.label === "No packet"
   ).length;
   const distinctProjects = new Set(
     reports.map((report) => report.project_id).filter(Boolean)
@@ -133,7 +145,7 @@ export default async function ReportsPage() {
             and audit provenance.
           </p>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-4">
             <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Total reports
@@ -148,6 +160,14 @@ export default async function ReportsPage() {
               </p>
               <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
                 {generatedCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Refresh recommended
+              </p>
+              <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
+                {refreshRecommendedCount}
               </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
@@ -213,12 +233,20 @@ export default async function ReportsPage() {
                 </h2>
               </div>
             </div>
-            {draftCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                <Sparkles className="h-3 w-3" />
-                {draftCount} draft{draftCount !== 1 ? "s" : ""}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {draftCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <Sparkles className="h-3 w-3" />
+                  {draftCount} draft{draftCount !== 1 ? "s" : ""}
+                </span>
+              )}
+              {noPacketCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-800 dark:text-amber-200">
+                  <Sparkles className="h-3 w-3" />
+                  {noPacketCount} without packet
+                </span>
+              )}
+            </div>
           </div>
 
           {reports.length === 0 ? (
@@ -257,23 +285,31 @@ export default async function ReportsPage() {
                             {report.latest_artifact_kind.toUpperCase()}
                           </StatusBadge>
                         ) : null}
+                        <StatusBadge tone={report.packetFreshness.tone}>
+                          {report.packetFreshness.label}
+                        </StatusBadge>
                       </div>
                     </div>
                     <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground/60 transition group-hover:translate-x-0.5 group-hover:text-primary" />
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-                    <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                      {report.project?.name ?? "Unknown project"}
-                    </span>
-                    <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                      Updated {formatDateTime(report.updated_at)}
-                    </span>
-                    {report.generated_at && (
+                  <div className="mt-4 space-y-2 border-t border-border/50 pt-3">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
                       <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                        Generated {formatDateTime(report.generated_at)}
+                        {report.project?.name ?? "Unknown project"}
                       </span>
-                    )}
+                      <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
+                        Updated {formatDateTime(report.updated_at)}
+                      </span>
+                      {report.generated_at && (
+                        <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
+                          Generated {formatDateTime(report.generated_at)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      {report.packetFreshness.detail}
+                    </p>
                   </div>
                 </Link>
               ))}
