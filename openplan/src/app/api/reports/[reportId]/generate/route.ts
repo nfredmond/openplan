@@ -231,7 +231,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? await Promise.all([
             supabase
               .from("engagement_campaigns")
-              .select("id, title, summary, status, engagement_type, updated_at")
+              .select("id, title, summary, status, engagement_type, share_token, updated_at")
               .eq("workspace_id", report.workspace_id)
               .eq("id", engagementCampaignId)
               .maybeSingle(),

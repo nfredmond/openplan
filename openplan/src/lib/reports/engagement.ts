@@ -6,6 +6,7 @@ export type ReportEngagementCampaignRecord = {
   summary: string | null;
   status: string;
   engagement_type: string;
+  share_token: string | null;
   updated_at: string;
 };
 

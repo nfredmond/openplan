@@ -420,6 +420,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
         summary: "Capture walking and crossing feedback.",
         status: "active",
         engagement_type: "comment_collection",
+        share_token: "share-token-12345",
         updated_at: "2026-03-14T02:30:00.000Z",
       },
       error: null,
@@ -900,5 +901,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
     expect(generatedHtml).toContain("Handoff snapshot: 9 ready for handoff • 14 total items");
     expect(generatedHtml).toContain("Current live campaign counts: 1 ready for handoff • 1 total items.");
+    expect(generatedHtml).toContain('/engagement/99999999-9999-4999-8999-999999999999');
+    expect(generatedHtml).toContain('/engage/share-token-12345');
   });
 });

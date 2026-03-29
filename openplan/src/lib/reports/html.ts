@@ -467,6 +467,9 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <div>
         <h3>${esc(campaign.title)}</h3>
         <p>${esc(campaign.summary || "No campaign summary recorded yet.")}</p>
+        <p><a href="/engagement/${esc(campaign.id)}">Open engagement campaign</a>${
+          campaign.share_token ? ` • <a href="/engage/${esc(campaign.share_token)}">Open public engagement page</a>` : ""
+        }</p>
         <div class="metrics-grid" style="margin-top: 14px;">
           <div><span class="metric-label">Campaign status</span><strong>${esc(titleize(campaign.status))}</strong></div>
           <div><span class="metric-label">Engagement type</span><strong>${esc(titleize(campaign.engagement_type))}</strong></div>
