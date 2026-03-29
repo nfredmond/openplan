@@ -1,7 +1,10 @@
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
-import type { ReportEngagementSummary } from "@/lib/reports/engagement";
+import {
+  extractEngagementHandoffProvenance,
+  type ReportEngagementSummary,
+} from "@/lib/reports/engagement";
 
 type ProjectRecord = {
   id: string;
@@ -167,6 +170,29 @@ function runMarkup(run: RunRecord): string {
   </article>`;
 }
 
+function engagementHandoffMarkup(data: ReportGenerationData): string {
+  const provenance = extractEngagementHandoffProvenance(data.sections);
+  if (!provenance) {
+    return "";
+  }
+
+  const currentCounts = data.engagement?.counts ?? null;
+
+  return `<div class="warning-box" style="margin-top: 18px;">
+    <strong>Report origin: ${esc(titleize(provenance.origin))}</strong>
+    <p>${esc(provenance.reason)}</p>
+    <p>Created from <strong>${esc(provenance.campaign.title)}</strong> and snapshot captured ${esc(
+      formatDateTime(provenance.capturedAt)
+    )}.</p>
+    <p>Handoff snapshot: ${provenance.counts.readyForHandoffCount} ready for handoff • ${provenance.counts.totalItems} total items • ${provenance.counts.actionableCount} actionable review • ${provenance.counts.uncategorizedItems} uncategorized.</p>
+    ${
+      currentCounts
+        ? `<p>Current live campaign counts: ${currentCounts.moderationQueue.readyForHandoffCount} ready for handoff • ${currentCounts.totalItems} total items.</p>`
+        : ""
+    }
+  </div>`;
+}
+
 function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   if (sectionKey === "project_overview" || sectionKey === "cover_page") {
     return `<div class="two-col">
@@ -190,7 +216,8 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <div><span class="metric-label">Delivery phase</span><strong>${esc(titleize(data.project.delivery_phase))}</strong></div>
       <div><span class="metric-label">Linked runs</span><strong>${data.runs.length}</strong></div>
     </div>
-    <p>${esc(data.report.summary || data.project.summary || "No executive summary has been authored yet. This packet reflects current structured records and linked run evidence only.")}</p>`;
+    <p>${esc(data.report.summary || data.project.summary || "No executive summary has been authored yet. This packet reflects current structured records and linked run evidence only.")}</p>
+    ${engagementHandoffMarkup(data)}`;
   }
 
   if (sectionKey === "deliverables") {
@@ -312,6 +339,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
         }</p>
       </div>
     </div>
+    ${engagementHandoffMarkup(data)}
     <div class="two-col" style="margin-top: 18px;">
       <div>
         <h3>Top categories</h3>

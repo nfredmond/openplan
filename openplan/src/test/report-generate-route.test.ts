@@ -521,5 +521,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
         }),
       })
     );
+
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
+
+    expect(generatedHtml).toContain("Report origin: Engagement Campaign Handoff");
+    expect(generatedHtml).toContain(
+      "Created from an engagement campaign to preserve handoff-ready public input context for project reporting."
+    );
+    expect(generatedHtml).toContain("Handoff snapshot: 9 ready for handoff • 14 total items");
+    expect(generatedHtml).toContain("Current live campaign counts: 1 ready for handoff • 1 total items.");
   });
 });
