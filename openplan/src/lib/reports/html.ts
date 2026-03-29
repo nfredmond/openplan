@@ -260,6 +260,7 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
         <span class="metric-label">Template</span>
         <strong>${esc(stageGateSnapshot.templateId)}</strong>
         <p>Version ${esc(stageGateSnapshot.templateVersion)} • ${stageGateSnapshot.passCount} pass • ${stageGateSnapshot.holdCount} hold • ${stageGateSnapshot.notStartedCount} not started</p>
+        <p><a href="/projects/${esc(data.project.id)}#project-governance">Open governance</a></p>
       </article>
       <article class="metric-card">
         <span class="metric-label">Blocked gate</span>

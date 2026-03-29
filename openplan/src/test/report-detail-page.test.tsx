@@ -338,6 +338,10 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Civil rights plan is still missing\./i)).toBeInTheDocument();
     expect(screen.getByText(/Missing artifacts: G02_E03\./i)).toBeInTheDocument();
     expect(screen.getByText(/3 operator control evidence items/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open governance/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1#project-governance"
+    );
     expect(screen.getByText(/ADA curb ramp package/i)).toBeInTheDocument();
     expect(screen.getByText(/Grant match exposure/i)).toBeInTheDocument();
     expect(screen.getByText(/Signal timing conflict/i)).toBeInTheDocument();

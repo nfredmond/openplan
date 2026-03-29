@@ -583,7 +583,7 @@ export default async function ProjectDetailPage({
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <ProjectRecordComposer projectId={project.id} />
 
-        <article className="module-section-surface">
+        <article id="project-governance" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">

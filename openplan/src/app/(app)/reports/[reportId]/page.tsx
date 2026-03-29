@@ -801,12 +801,25 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Template
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {stageGateSnapshot.templateId}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                          Template
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-foreground">
+                          {stageGateSnapshot.templateId}
+                        </p>
+                      </div>
+                      {project ? (
+                        <Link
+                          href={`/projects/${project.id}#project-governance`}
+                          className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                        >
+                          <Link2 className="h-3.5 w-3.5" />
+                          Open governance
+                        </Link>
+                      ) : null}
+                    </div>
                     <p className="mt-2 text-xs text-muted-foreground">
                       Version {stageGateSnapshot.templateVersion} · {stageGateSnapshot.passCount} pass · {stageGateSnapshot.holdCount} hold · {stageGateSnapshot.notStartedCount} not started
                     </p>

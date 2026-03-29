@@ -751,6 +751,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Civil rights plan is still missing.");
     expect(generatedHtml).toContain("Missing artifacts: G02_E03.");
     expect(generatedHtml).toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
+    expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-governance');
   });
 
   it("persists scenario-set provenance derived from linked report runs", async () => {
