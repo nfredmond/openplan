@@ -30,6 +30,10 @@ const reportsOrderMock = vi.fn(() => ({ limit: reportsLimitMock }));
 const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
 const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
 
+const reportArtifactsOrderMock = vi.fn();
+const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
+const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
 const stageGateEqMock = vi.fn(() => ({ order: stageGateOrderMock }));
@@ -95,6 +99,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "reports") {
     return { select: reportsSelectMock };
+  }
+  if (table === "report_artifacts") {
+    return { select: reportArtifactsSelectMock };
   }
   if (table === "stage_gate_decisions") {
     return { select: stageGateSelectMock };
@@ -214,6 +221,54 @@ describe("ProjectDetailPage", () => {
     });
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
+    reportArtifactsOrderMock.mockResolvedValue({
+      data: [
+        {
+          report_id: "report-1",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              evidenceChainSummary: {
+                linkedRunCount: 2,
+                scenarioSetLinkCount: 1,
+                projectRecordGroupCount: 3,
+                totalProjectRecordCount: 5,
+                engagementLabel: "Active",
+                engagementItemCount: 9,
+                engagementReadyForHandoffCount: 4,
+                stageGateLabel: "Hold present",
+                stageGatePassCount: 1,
+                stageGateHoldCount: 1,
+                stageGateBlockedGateLabel:
+                  "G02 · Agreements, Procurement, and Civil Rights Setup",
+              },
+            },
+          },
+        },
+        {
+          report_id: "report-2",
+          generated_at: "2026-03-28T19:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              evidenceChainSummary: {
+                linkedRunCount: 1,
+                scenarioSetLinkCount: 1,
+                projectRecordGroupCount: 2,
+                totalProjectRecordCount: 3,
+                engagementLabel: "Active",
+                engagementItemCount: 4,
+                engagementReadyForHandoffCount: 4,
+                stageGateLabel: "Complete",
+                stageGatePassCount: 2,
+                stageGateHoldCount: 0,
+                stageGateBlockedGateLabel: null,
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
     stageGateLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     submittalsLimitMock.mockResolvedValue({ data: [], error: null });
@@ -297,9 +352,13 @@ describe("ProjectDetailPage", () => {
       screen.getByText(/Next action: open this report and regenerate the packet\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Showing 2 most recent report records/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Evidence-backed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
+    expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^Open report$/i })).toHaveAttribute(
       "href",
-      "/reports/report-1"
+      "/reports/report-1#drift-since-generation"
     );
   });
 

@@ -21,13 +21,16 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
+  describeEvidenceChainSummary,
   formatReportStatusLabel,
   formatReportTypeLabel,
+  getReportNavigationHref,
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
@@ -52,6 +55,12 @@ type ProjectReportRow = {
   updated_at: string;
   generated_at: string | null;
   latest_artifact_kind: string | null;
+};
+
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
 };
 
 type TimelineItem = {
@@ -214,6 +223,47 @@ function toneForControlHealth(health: string): "info" | "success" | "warning" | 
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asNullableNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asEvidenceChainSummary(
+  metadata: Record<string, unknown> | null | undefined
+): EvidenceChainSummary | null {
+  const sourceContext = asRecord(metadata?.sourceContext);
+  const summary = asRecord(sourceContext?.evidenceChainSummary);
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
+    scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
+    projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
+    totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
+    engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",
+    engagementItemCount: asNullableNumber(summary.engagementItemCount) ?? 0,
+    engagementReadyForHandoffCount:
+      asNullableNumber(summary.engagementReadyForHandoffCount) ?? 0,
+    stageGateLabel: asNullableString(summary.stageGateLabel) ?? "Unknown",
+    stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
+    stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
+    stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
+  };
 }
 
 export default async function ProjectDetailPage({
@@ -422,15 +472,41 @@ export default async function ProjectDetailPage({
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
   const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
+  const projectReportIds = ((projectReportData ?? []) as ProjectReportRow[]).map(
+    (report) => report.id
+  );
+  const reportArtifactsResult = projectReportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", projectReportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const artifact of (reportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) {
+      latestArtifactByReportId.set(artifact.report_id, artifact);
+    }
+  }
+
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
-    .map((report) => ({
-      ...report,
-      packetFreshness: getReportPacketFreshness({
-        latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
-        updatedAt: report.updated_at,
-      }),
-    }))
+    .map((report) => {
+      const evidenceChainDigest = describeEvidenceChainSummary(
+        asEvidenceChainSummary(
+          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+        )
+      );
+
+      return {
+        ...report,
+        packetFreshness: getReportPacketFreshness({
+          latestArtifactKind: report.latest_artifact_kind,
+          generatedAt: report.generated_at,
+          updatedAt: report.updated_at,
+        }),
+        evidenceChainDigest,
+      };
+    })
     .sort((left, right) => {
       const freshnessPriority =
         getReportPacketPriority(left.packetFreshness.label) -
@@ -447,6 +523,12 @@ export default async function ProjectDetailPage({
   ).length;
   const noPacketReportCount = projectReports.filter(
     (report) => report.packetFreshness.label === "No packet"
+  ).length;
+  const evidenceBackedReportCount = projectReports.filter(
+    (report) => Boolean(report.evidenceChainDigest)
+  ).length;
+  const governanceHoldReportCount = projectReports.filter(
+    (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
   const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedReport = projectReports[0] ?? null;
@@ -657,7 +739,7 @@ export default async function ProjectDetailPage({
           </div>
         </div>
 
-        <div className="module-summary-grid cols-4 mt-5">
+        <div className="module-summary-grid cols-5 mt-5">
           <div className="module-summary-card">
             <p className="module-summary-label">Report records</p>
             <p className="module-summary-value">{reportRecordCount}</p>
@@ -669,14 +751,19 @@ export default async function ProjectDetailPage({
             <p className="module-summary-detail">Reports with stale or missing packets.</p>
           </div>
           <div className="module-summary-card">
+            <p className="module-summary-label">Evidence-backed</p>
+            <p className="module-summary-value">{evidenceBackedReportCount}</p>
+            <p className="module-summary-detail">Reports carrying evidence-chain summary metadata.</p>
+          </div>
+          <div className="module-summary-card">
             <p className="module-summary-label">Refresh recommended</p>
             <p className="module-summary-value">{refreshRecommendedReportCount}</p>
             <p className="module-summary-detail">Report packets that drifted after generation.</p>
           </div>
           <div className="module-summary-card">
-            <p className="module-summary-label">Without packet</p>
-            <p className="module-summary-value">{noPacketReportCount}</p>
-            <p className="module-summary-detail">Report records that still need first-generation output.</p>
+            <p className="module-summary-label">Governance holds</p>
+            <p className="module-summary-value">{governanceHoldReportCount}</p>
+            <p className="module-summary-detail">Packets that surfaced a blocked gate in the latest evidence snapshot.</p>
           </div>
         </div>
 
@@ -713,7 +800,10 @@ export default async function ProjectDetailPage({
               <div className="mt-4 flex flex-wrap gap-2">
                 {recommendedReport ? (
                   <Link
-                    href={`/reports/${recommendedReport.id}`}
+                    href={getReportNavigationHref(
+                      recommendedReport.id,
+                      recommendedReport.packetFreshness.label
+                    )}
                     className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
                   >
                     Open report
@@ -777,6 +867,24 @@ export default async function ProjectDetailPage({
                     <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                       {report.packetFreshness.detail}
                     </p>
+                    {report.evidenceChainDigest ? (
+                      <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                          Evidence posture
+                        </p>
+                        <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
+                          {report.evidenceChainDigest.headline}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {report.evidenceChainDigest.detail}
+                        </p>
+                        {report.evidenceChainDigest.blockedGateDetail ? (
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            {report.evidenceChainDigest.blockedGateDetail}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </Link>
                 ))}
               </div>
