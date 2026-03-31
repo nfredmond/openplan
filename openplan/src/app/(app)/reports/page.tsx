@@ -27,9 +27,16 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  matchesReportFreshnessFilter,
+  normalizeReportFreshnessFilter,
   reportStatusTone,
+  type ReportFreshnessFilter,
 } from "@/lib/reports/catalog";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
+
+type ReportsPageSearchParams = Promise<{
+  freshness?: string;
+}>;
 
 type ReportRow = {
   id: string;
@@ -102,7 +109,13 @@ function asEvidenceChainSummary(
   };
 }
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: ReportsPageSearchParams;
+}) {
+  const filters = await searchParams;
+  const selectedFreshnessFilter = normalizeReportFreshnessFilter(filters.freshness);
   const supabase = await createClient();
   const {
     data: { user },
@@ -206,9 +219,47 @@ export default async function ReportsPage() {
   const noPacketCount = reports.filter(
     (report) => report.packetFreshness.label === "No packet"
   ).length;
+  const currentPacketCount = reports.filter(
+    (report) => report.packetFreshness.label === "Packet current"
+  ).length;
+  const filteredReports = reports.filter((report) =>
+    matchesReportFreshnessFilter(selectedFreshnessFilter, report.packetFreshness.label)
+  );
   const distinctProjects = new Set(
     reports.map((report) => report.project_id).filter(Boolean)
   ).size;
+  const freshnessFilters: Array<{
+    value: ReportFreshnessFilter;
+    label: string;
+    count: number;
+    href: string;
+  }> = [
+    {
+      value: "all",
+      label: "All packets",
+      count: reports.length,
+      href: "/reports",
+    },
+    {
+      value: "refresh",
+      label: "Refresh recommended",
+      count: refreshRecommendedCount,
+      href: "/reports?freshness=refresh",
+    },
+    {
+      value: "missing",
+      label: "No packet",
+      count: noPacketCount,
+      href: "/reports?freshness=missing",
+    },
+    {
+      value: "current",
+      label: "Packet current",
+      count: currentPacketCount,
+      href: "/reports?freshness=current",
+    },
+  ];
+
   const reportGuidanceByProject = reports.reduce<Record<string, {
     reportCount: number;
     refreshRecommendedCount: number;
@@ -394,6 +445,29 @@ export default async function ReportsPage() {
             </div>
           </div>
 
+          <div className="mt-5 flex flex-wrap gap-2">
+            {freshnessFilters.map((filter) => {
+              const active = filter.value === selectedFreshnessFilter;
+
+              return (
+                <Link
+                  key={filter.value}
+                  href={filter.href}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
+                    active
+                      ? "border-primary/35 bg-primary/10 text-primary"
+                      : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
+                  }`}
+                >
+                  <span>{filter.label}</span>
+                  <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
+                    {filter.count}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
           {reports.length === 0 ? (
             <div className="mt-5">
               <EmptyState
@@ -401,9 +475,16 @@ export default async function ReportsPage() {
                 description="Create a report packet to establish project-linked records, section structure, and artifact history."
               />
             </div>
+          ) : filteredReports.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No reports match this filter"
+                description="Try a different packet freshness filter or open all packets to resume catalog review."
+              />
+            </div>
           ) : (
             <div className="mt-5 space-y-3">
-              {reports.map((report) => (
+              {filteredReports.map((report) => (
                 <Link
                   key={report.id}
                   href={getReportNavigationHref(report.id, report.packetFreshness.label)}

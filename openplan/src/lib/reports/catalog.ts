@@ -27,6 +27,8 @@ export type ReportPacketFreshness = {
   detail: string;
 };
 
+export type ReportFreshnessFilter = "all" | "refresh" | "missing" | "current";
+
 export type ReportEvidenceChainDigest = {
   headline: string;
   detail: string;
@@ -63,6 +65,35 @@ export function getReportNavigationHref(reportId: string, freshnessLabel: string
       return `/reports/${reportId}#report-controls`;
     default:
       return `/reports/${reportId}#evidence-chain-summary`;
+  }
+}
+
+export function normalizeReportFreshnessFilter(
+  value: string | null | undefined
+): ReportFreshnessFilter {
+  switch (value) {
+    case "refresh":
+    case "missing":
+    case "current":
+      return value;
+    default:
+      return "all";
+  }
+}
+
+export function matchesReportFreshnessFilter(
+  filter: ReportFreshnessFilter,
+  freshnessLabel: string
+) {
+  switch (filter) {
+    case "refresh":
+      return freshnessLabel === "Refresh recommended";
+    case "missing":
+      return freshnessLabel === "No packet";
+    case "current":
+      return freshnessLabel === "Packet current";
+    default:
+      return true;
   }
 }
 

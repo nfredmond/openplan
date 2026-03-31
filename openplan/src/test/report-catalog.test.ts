@@ -5,6 +5,8 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  matchesReportFreshnessFilter,
+  normalizeReportFreshnessFilter,
 } from "@/lib/reports/catalog";
 
 describe("getReportPacketFreshness", () => {
@@ -81,5 +83,17 @@ describe("getReportPacketFreshness", () => {
     expect(getReportNavigationHref("report-1", "Packet current")).toBe(
       "/reports/report-1#evidence-chain-summary"
     );
+  });
+
+  it("normalizes and applies packet freshness filters", () => {
+    expect(normalizeReportFreshnessFilter(undefined)).toBe("all");
+    expect(normalizeReportFreshnessFilter("refresh")).toBe("refresh");
+    expect(normalizeReportFreshnessFilter("nope")).toBe("all");
+
+    expect(matchesReportFreshnessFilter("all", "Packet current")).toBe(true);
+    expect(matchesReportFreshnessFilter("refresh", "Refresh recommended")).toBe(true);
+    expect(matchesReportFreshnessFilter("refresh", "No packet")).toBe(false);
+    expect(matchesReportFreshnessFilter("missing", "No packet")).toBe(true);
+    expect(matchesReportFreshnessFilter("current", "Packet current")).toBe(true);
   });
 });
