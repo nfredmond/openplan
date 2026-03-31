@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeEvidenceChainSummary,
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
@@ -45,5 +46,27 @@ describe("getReportPacketFreshness", () => {
   it("prioritizes stale and missing packets ahead of current ones", () => {
     expect(getReportPacketPriority("Refresh recommended")).toBeLessThan(getReportPacketPriority("No packet"));
     expect(getReportPacketPriority("No packet")).toBeLessThan(getReportPacketPriority("Packet current"));
+  });
+
+  it("formats compact evidence-chain posture for report surfaces", () => {
+    expect(
+      describeEvidenceChainSummary({
+        linkedRunCount: 2,
+        scenarioSetLinkCount: 1,
+        projectRecordGroupCount: 4,
+        totalProjectRecordCount: 6,
+        engagementLabel: "Active",
+        engagementItemCount: 9,
+        engagementReadyForHandoffCount: 4,
+        stageGateLabel: "Hold present",
+        stageGatePassCount: 1,
+        stageGateHoldCount: 1,
+        stageGateBlockedGateLabel: "G02 · Agreements, Procurement, and Civil Rights Setup",
+      })
+    ).toMatchObject({
+      headline: "2 linked runs · 1 scenario set · 6 project records",
+      detail: "Active engagement · 4/9 handoff-ready · Hold present governance",
+      blockedGateDetail: "Blocked gate: G02 · Agreements, Procurement, and Civil Rights Setup",
+    });
   });
 });

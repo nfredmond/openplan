@@ -22,6 +22,7 @@ function formatDriftLabelList(labels: string[]) {
 export function ReportDetailControls({
   report,
   driftSummary,
+  evidenceSummary,
 }: {
   report: {
     id: string;
@@ -35,6 +36,11 @@ export function ReportDetailControls({
     totalCount: number;
     labels: string[];
   };
+  evidenceSummary?: {
+    headline: string;
+    detail: string;
+    blockedGateDetail?: string | null;
+  } | null;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(report.title);
@@ -198,6 +204,23 @@ export function ReportDetailControls({
               : ""}
           </p>
         </div>
+
+        {evidenceSummary ? (
+          <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Evidence chain posture
+            </p>
+            <p className="mt-1 font-semibold">{evidenceSummary.headline}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {evidenceSummary.detail}
+            </p>
+            {evidenceSummary.blockedGateDetail ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {evidenceSummary.blockedGateDetail}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {hasDrift ? (
           <div className="rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">

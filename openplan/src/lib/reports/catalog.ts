@@ -1,3 +1,5 @@
+import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
+
 export const REPORT_TYPE_OPTIONS = [
   { value: "project_status", label: "Project Status Packet" },
   { value: "analysis_summary", label: "Analysis Summary Packet" },
@@ -23,6 +25,12 @@ export type ReportPacketFreshness = {
   label: string;
   tone: ReportStatusTone;
   detail: string;
+};
+
+export type ReportEvidenceChainDigest = {
+  headline: string;
+  detail: string;
+  blockedGateDetail: string | null;
 };
 
 export function getReportPacketActionLabel(freshnessLabel: string) {
@@ -232,6 +240,26 @@ export function getReportPacketFreshness({
     label: "Packet current",
     tone: "success",
     detail: "The latest packet is current with the saved report record.",
+  };
+}
+
+export function describeEvidenceChainSummary(
+  summary: EvidenceChainSummary | null | undefined
+): ReportEvidenceChainDigest | null {
+  if (!summary) {
+    return null;
+  }
+
+  const scenarioLabel = `${summary.scenarioSetLinkCount} scenario set${summary.scenarioSetLinkCount === 1 ? "" : "s"}`;
+  const projectRecordLabel = `${summary.totalProjectRecordCount} project record${summary.totalProjectRecordCount === 1 ? "" : "s"}`;
+  const linkedRunLabel = `${summary.linkedRunCount} linked run${summary.linkedRunCount === 1 ? "" : "s"}`;
+
+  return {
+    headline: `${linkedRunLabel} · ${scenarioLabel} · ${projectRecordLabel}`,
+    detail: `${summary.engagementLabel} engagement · ${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready · ${summary.stageGateLabel} governance`,
+    blockedGateDetail: summary.stageGateBlockedGateLabel
+      ? `Blocked gate: ${summary.stageGateBlockedGateLabel}`
+      : null,
   };
 }
 

@@ -19,6 +19,7 @@ import {
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
 import {
+  describeEvidenceChainSummary,
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
@@ -27,6 +28,7 @@ import {
   getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 
 type ReportRow = {
   id: string;
@@ -51,6 +53,53 @@ type ReportRow = {
       }>
     | null;
 };
+
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asNullableNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asEvidenceChainSummary(
+  metadata: Record<string, unknown> | null | undefined
+): EvidenceChainSummary | null {
+  const sourceContext = asRecord(metadata?.sourceContext);
+  const summary = asRecord(sourceContext?.evidenceChainSummary);
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
+    scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
+    projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
+    totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
+    engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",
+    engagementItemCount: asNullableNumber(summary.engagementItemCount) ?? 0,
+    engagementReadyForHandoffCount:
+      asNullableNumber(summary.engagementReadyForHandoffCount) ?? 0,
+    stageGateLabel: asNullableString(summary.stageGateLabel) ?? "Unknown",
+    stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
+    stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
+    stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
+  };
+}
 
 export default async function ReportsPage() {
   const supabase = await createClient();
@@ -100,18 +149,40 @@ export default async function ReportsPage() {
         .limit(30),
     ]);
 
+  const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
+  const { data: artifactsData } = reportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", reportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [] };
+
+  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const artifact of (artifactsData ?? []) as ReportArtifactRow[]) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) {
+      latestArtifactByReportId.set(artifact.report_id, artifact);
+    }
+  }
+
   const reports = ((reportsData ?? []) as ReportRow[])
-    .map((report) => ({
-      ...report,
-      project: Array.isArray(report.projects)
-        ? report.projects[0] ?? null
-        : report.projects ?? null,
-      packetFreshness: getReportPacketFreshness({
-        latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
-        updatedAt: report.updated_at,
-      }),
-    }))
+    .map((report) => {
+      const latestArtifact = latestArtifactByReportId.get(report.id) ?? null;
+      const evidenceChainSummary = asEvidenceChainSummary(latestArtifact?.metadata_json ?? null);
+
+      return {
+        ...report,
+        project: Array.isArray(report.projects)
+          ? report.projects[0] ?? null
+          : report.projects ?? null,
+        packetFreshness: getReportPacketFreshness({
+          latestArtifactKind: report.latest_artifact_kind,
+          generatedAt: report.generated_at,
+          updatedAt: report.updated_at,
+        }),
+        evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
+      };
+    })
     .sort((left, right) => {
       const freshnessPriority =
         getReportPacketPriority(left.packetFreshness.label) -
@@ -388,6 +459,24 @@ export default async function ReportsPage() {
                         {getReportPacketActionLabel(report.packetFreshness.label)}
                       </p>
                     </div>
+                    {report.evidenceChainDigest ? (
+                      <div className="rounded-2xl border border-border/60 bg-card/70 px-3 py-2.5">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                          Evidence chain posture
+                        </p>
+                        <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
+                          {report.evidenceChainDigest.headline}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {report.evidenceChainDigest.detail}
+                        </p>
+                        {report.evidenceChainDigest.blockedGateDetail ? (
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            {report.evidenceChainDigest.blockedGateDetail}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </Link>
               ))}

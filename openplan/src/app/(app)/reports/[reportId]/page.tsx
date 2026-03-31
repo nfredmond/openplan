@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
 import {
+  describeEvidenceChainSummary,
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
@@ -737,6 +738,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     ],
   ]);
 
+  const evidenceSummaryDigest = describeEvidenceChainSummary(
+    sourceContext ? evidenceChainSummary : null
+  );
   const driftItems: DriftItem[] = [];
 
   if (
@@ -994,6 +998,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             totalCount: driftItems.length,
             labels: driftedItems.map((item) => item.label),
           }}
+          evidenceSummary={evidenceSummaryDigest}
         />
       </header>
 

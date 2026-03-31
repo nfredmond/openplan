@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 
 describe("ReportDetailControls", () => {
-  it("shows a regeneration recommendation when drift is detected", () => {
+  it("shows compact evidence posture alongside regeneration guidance", () => {
     render(
       <ReportDetailControls
         report={{
@@ -21,6 +21,11 @@ describe("ReportDetailControls", () => {
           status: "generated",
           hasGeneratedArtifact: true,
         }}
+        evidenceSummary={{
+          headline: "2 linked runs · 1 scenario set · 6 project records",
+          detail: "Active engagement · 4/9 handoff-ready · Hold present governance",
+          blockedGateDetail: "Blocked gate: G02 · Agreements, Procurement, and Civil Rights Setup",
+        }}
         driftSummary={{
           changedCount: 3,
           totalCount: 4,
@@ -29,6 +34,10 @@ describe("ReportDetailControls", () => {
       />
     );
 
+    expect(screen.getByText(/Evidence chain posture/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 linked runs · 1 scenario set · 6 project records/i)).toBeInTheDocument();
+    expect(screen.getByText(/4\/9 handoff-ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
     expect(screen.getByText(/3 live source changes detected since the current packet was generated\./i)).toBeInTheDocument();
     expect(screen.getByText(/Engagement handoff, Project records, and Stage gates/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Regenerate HTML packet/i })).toBeInTheDocument();
