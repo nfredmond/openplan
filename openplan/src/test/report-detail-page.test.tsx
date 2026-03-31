@@ -584,11 +584,17 @@ describe("ReportDetailPage", () => {
       "href",
       "/engage/share-token-12345"
     );
+    expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
+    expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
+    expect(screen.queryByText(/0 linked set/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/1 linked set/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hold present · 1 pass \/ 1 hold/i)).toBeInTheDocument();
     expect(screen.getByText("Drift since generation")).toBeInTheDocument();
     expect(screen.getByText("Engagement handoff")).toBeInTheDocument();
     expect(screen.getAllByText("Scenario basis").length).toBeGreaterThan(1);
-    expect(screen.getByText("Project records")).toBeInTheDocument();
-    expect(screen.getByText("Stage gates")).toBeInTheDocument();
+    expect(screen.getAllByText("Project records").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Stage gates").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/count changed/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/gate changed/i).length).toBeGreaterThan(0);
     expect(

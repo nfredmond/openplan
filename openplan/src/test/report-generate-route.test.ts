@@ -542,6 +542,10 @@ describe("POST /api/reports/[reportId]/generate", () => {
           generationMode: "structured_html_packet",
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
+            evidenceChainSummary: expect.objectContaining({
+              linkedRunCount: 1,
+              scenarioSetLinkCount: 1,
+            }),
           }),
         }),
       })
@@ -746,6 +750,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
     const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
 
+    expect(generatedHtml).toContain("Evidence chain summary");
     expect(generatedHtml).toContain("ca_stage_gates_v0_1");
     expect(generatedHtml).toContain("1 pass");
     expect(generatedHtml).toContain("1 hold");

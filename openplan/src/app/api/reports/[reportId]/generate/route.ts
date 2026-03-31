@@ -15,6 +15,7 @@ import {
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
+import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
@@ -346,6 +347,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       )
     );
 
+    const evidenceChainSummary = buildEvidenceChainSummary({
+      linkedRunCount: linkedRuns.length,
+      scenarioSetLinks,
+      projectRecordsSnapshot,
+      engagementCampaignCurrent: engagement
+        ? {
+            status: engagement.campaign.status,
+          }
+        : null,
+      engagementItemCount: engagement?.counts.totalItems ?? 0,
+      engagementReadyForHandoffCount:
+        engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
+      stageGateSnapshot,
+    });
+
     const html = buildReportHtml({
       report,
       workspace: workspaceResult.data,
@@ -414,6 +430,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         meetingCount: meetingsResult.data?.length ?? 0,
         stageGateSnapshot,
         projectRecordsSnapshot,
+        evidenceChainSummary,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
         engagementCampaignSnapshot: engagementProvenance?.campaign ?? null,

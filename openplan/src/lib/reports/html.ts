@@ -6,6 +6,10 @@ import {
   extractEngagementHandoffProvenance,
   type ReportEngagementSummary,
 } from "@/lib/reports/engagement";
+import {
+  buildEvidenceChainSummary,
+  type EvidenceChainSummary,
+} from "@/lib/reports/evidence-chain";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 
 type ProjectRecord = {
@@ -299,6 +303,28 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
   </section>`;
 }
 
+function evidenceChainMarkup(summary: EvidenceChainSummary): string {
+  return `<section>
+    <h2 class="section-title">Evidence chain summary</h2>
+    <p>This packet summarizes the current planning evidence chain captured at generation time so reviewers can quickly see what source surfaces support the artifact.</p>
+    <div class="metrics-grid">
+      <div><span class="metric-label">Linked runs</span><strong>${summary.linkedRunCount}</strong></div>
+      <div><span class="metric-label">Scenario sets</span><strong>${summary.scenarioSetLinkCount}</strong></div>
+      <div><span class="metric-label">Project record groups</span><strong>${summary.projectRecordGroupCount}</strong></div>
+      <div><span class="metric-label">Project records</span><strong>${summary.totalProjectRecordCount}</strong></div>
+      <div><span class="metric-label">Engagement posture</span><strong>${esc(summary.engagementLabel)}</strong></div>
+      <div><span class="metric-label">Handoff-ready input</span><strong>${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount}</strong></div>
+      <div><span class="metric-label">Stage-gate posture</span><strong>${esc(summary.stageGateLabel)}</strong></div>
+      <div><span class="metric-label">Governance counts</span><strong>${summary.stageGatePassCount} pass • ${summary.stageGateHoldCount} hold</strong></div>
+    </div>
+    ${
+      summary.stageGateBlockedGateLabel
+        ? `<p class="meta" style="margin-top: 14px;">Blocked gate at generation: ${esc(summary.stageGateBlockedGateLabel)}</p>`
+        : ""
+    }
+  </section>`;
+}
+
 function scenarioBasisMarkup(data: ReportGenerationData): string {
   if (data.scenarioSetLinks.length === 0) {
     return "";
@@ -539,6 +565,20 @@ export function buildReportHtml(data: ReportGenerationData): string {
   const enabledSections = data.sections
     .filter((section) => section.enabled)
     .sort((left, right) => left.sort_order - right.sort_order);
+  const evidenceChainSummary = buildEvidenceChainSummary({
+    linkedRunCount: data.runs.length,
+    scenarioSetLinks: data.scenarioSetLinks,
+    projectRecordsSnapshot: data.projectRecordsSnapshot,
+    engagementCampaignCurrent: data.engagement
+      ? {
+          status: data.engagement.campaign.status,
+        }
+      : null,
+    engagementItemCount: data.engagement?.counts.totalItems ?? 0,
+    engagementReadyForHandoffCount:
+      data.engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
+    stageGateSnapshot: data.stageGateSnapshot,
+  });
 
   return `<!doctype html>
 <html lang="en">
@@ -589,6 +629,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
       </header>
+      ${evidenceChainMarkup(evidenceChainSummary)}
       ${stageGateProvenanceMarkup(data)}
       ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}

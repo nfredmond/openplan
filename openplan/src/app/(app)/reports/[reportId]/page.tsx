@@ -21,6 +21,7 @@ import {
   reportStatusTone,
   titleize,
 } from "@/lib/reports/catalog";
+import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import {
@@ -528,6 +529,61 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
   const liveScenarioSetIds = scenarioSetLinks.map((item) => item.scenarioSetId);
+  const evidenceChainSummary = buildEvidenceChainSummary({
+    linkedRunCount: runs.length,
+    scenarioSetLinks,
+    projectRecordsSnapshot: {
+      deliverables:
+        asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.deliverables) ?? {
+          count: 0,
+          latestTitle: null,
+          latestAt: null,
+        },
+      risks: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.risks) ?? {
+        count: 0,
+        latestTitle: null,
+        latestAt: null,
+      },
+      issues: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.issues) ?? {
+        count: 0,
+        latestTitle: null,
+        latestAt: null,
+      },
+      decisions:
+        asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.decisions) ?? {
+          count: 0,
+          latestTitle: null,
+          latestAt: null,
+        },
+      meetings: asProjectRecordSnapshotEntry(projectRecordsSnapshotSource?.meetings) ?? {
+        count: 0,
+        latestTitle: null,
+        latestAt: null,
+      },
+    },
+    engagementCampaignCurrent: engagementCampaign
+      ? {
+          status: engagementCampaign.status,
+        }
+      : null,
+    engagementItemCount: asNullableNumber(sourceContext?.engagementItemCount) ?? 0,
+    engagementReadyForHandoffCount:
+      asNullableNumber(sourceContext?.engagementReadyForHandoffCount) ?? 0,
+    stageGateSnapshot:
+      stageGateSnapshot ?? {
+        templateId: "unknown",
+        templateVersion: "unknown",
+        passCount: 0,
+        holdCount: 0,
+        notStartedCount: 0,
+        blockedGate: null,
+        nextGate: null,
+        controlHealth: {
+          totalOperatorControlEvidenceCount: 0,
+          gatesWithOperatorControlsCount: 0,
+        },
+      },
+  });
 
   const [
     engagementCategoriesResult,
@@ -1159,85 +1215,142 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               )}
             </div>
             {sourceContext || engagementCampaign ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Linked evidence
+                    Evidence chain summary
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">
-                    {String(sourceContext?.linkedRunCount ?? runs.length)} runs,{" "}
-                    {String(sourceContext?.deliverableCount ?? 0)} deliverables,{" "}
-                    {String(sourceContext?.decisionCount ?? 0)} decisions
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Quick scan of the source surfaces captured in the latest packet.
                   </p>
                 </div>
-                <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Source snapshot
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">
-                    {formatDateTime(
-                      typeof sourceContext?.projectUpdatedAt === "string"
-                        ? sourceContext.projectUpdatedAt
-                        : project?.updated_at ?? null
-                    )}
-                  </p>
-                </div>
-                {engagementCampaign ? (
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Engagement source
+                      Linked runs
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      {engagementCampaign.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {titleize(engagementCampaign.status)} · {titleize(engagementCampaign.engagement_type)} · {String(sourceContext?.engagementReadyForHandoffCount ?? 0)} ready for handoff · {String(sourceContext?.engagementItemCount ?? 0)} items
-                    </p>
-                    {engagementSummaryText ? (
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {engagementSummaryText}
-                      </p>
-                    ) : null}
-                    {reportOrigin ? (
-                      <div className="mt-3 rounded-xl border border-border/60 bg-muted/35 p-3">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Report origin
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-foreground">
-                          {titleize(reportOrigin)}
-                        </p>
-                        {reportReason ? (
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {reportReason}
-                          </p>
-                        ) : null}
-                        {engagementSnapshotCapturedAt ||
-                        engagementSnapshotReadyForHandoff !== null ||
-                        engagementSnapshotTotalItems !== null ? (
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            {engagementSnapshotCapturedAt
-                              ? `Snapshot captured ${formatDateTime(engagementSnapshotCapturedAt)}`
-                              : "Snapshot timing unavailable"}
-                            {engagementSnapshotReadyForHandoff !== null
-                              ? ` · ${engagementSnapshotReadyForHandoff} ready for handoff`
-                              : ""}
-                            {engagementSnapshotTotalItems !== null
-                              ? ` · ${engagementSnapshotTotalItems} items`
-                              : ""}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Updated {formatDateTime(engagementCampaign.updated_at)} · {engagementPublicHref ? "Public page available" : "Public page unavailable"}
-                      {engagementCampaign.allow_public_submissions
-                        ? engagementCampaign.submissions_closed_at
-                          ? " · Submissions closed"
-                          : " · Submissions open"
-                        : " · Public submissions disabled"}
+                      {evidenceChainSummary.linkedRunCount}
                     </p>
                   </div>
-                ) : null}
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Scenario basis
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {evidenceChainSummary.scenarioSetLinkCount} linked set{evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Project records
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {evidenceChainSummary.totalProjectRecordCount} across {evidenceChainSummary.projectRecordGroupCount} group{evidenceChainSummary.projectRecordGroupCount === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Governance
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {evidenceChainSummary.stageGateLabel} · {evidenceChainSummary.stageGatePassCount} pass / {evidenceChainSummary.stageGateHoldCount} hold
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Engagement posture
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {evidenceChainSummary.engagementLabel} · {evidenceChainSummary.engagementReadyForHandoffCount}/{evidenceChainSummary.engagementItemCount} handoff-ready items
+                    </p>
+                    {evidenceChainSummary.stageGateBlockedGateLabel ? (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Blocked gate at generation: {evidenceChainSummary.stageGateBlockedGateLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Linked evidence
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {String(sourceContext?.linkedRunCount ?? runs.length)} runs,{" "}
+                      {String(sourceContext?.deliverableCount ?? 0)} deliverables,{" "}
+                      {String(sourceContext?.decisionCount ?? 0)} decisions
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Source snapshot
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {formatDateTime(
+                        typeof sourceContext?.projectUpdatedAt === "string"
+                          ? sourceContext.projectUpdatedAt
+                          : project?.updated_at ?? null
+                      )}
+                    </p>
+                  </div>
+                  {engagementCampaign ? (
+                    <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Engagement source
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        {engagementCampaign.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {titleize(engagementCampaign.status)} · {titleize(engagementCampaign.engagement_type)} · {String(sourceContext?.engagementReadyForHandoffCount ?? 0)} ready for handoff · {String(sourceContext?.engagementItemCount ?? 0)} items
+                      </p>
+                      {engagementSummaryText ? (
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                          {engagementSummaryText}
+                        </p>
+                      ) : null}
+                      {reportOrigin ? (
+                        <div className="mt-3 rounded-xl border border-border/60 bg-muted/35 p-3">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            Report origin
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {titleize(reportOrigin)}
+                          </p>
+                          {reportReason ? (
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              {reportReason}
+                            </p>
+                          ) : null}
+                          {engagementSnapshotCapturedAt ||
+                          engagementSnapshotReadyForHandoff !== null ||
+                          engagementSnapshotTotalItems !== null ? (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {engagementSnapshotCapturedAt
+                                ? `Snapshot captured ${formatDateTime(engagementSnapshotCapturedAt)}`
+                                : "Snapshot timing unavailable"}
+                              {engagementSnapshotReadyForHandoff !== null
+                                ? ` · ${engagementSnapshotReadyForHandoff} ready for handoff`
+                                : ""}
+                              {engagementSnapshotTotalItems !== null
+                                ? ` · ${engagementSnapshotTotalItems} items`
+                                : ""}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Updated {formatDateTime(engagementCampaign.updated_at)} · {engagementPublicHref ? "Public page available" : "Public page unavailable"}
+                        {engagementCampaign.allow_public_submissions
+                          ? engagementCampaign.submissions_closed_at
+                            ? " · Submissions closed"
+                            : " · Submissions open"
+                          : " · Public submissions disabled"}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : null}
             {driftItems.length > 0 ? (
