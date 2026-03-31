@@ -985,21 +985,23 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         </article>
 
         {/* Right: controls */}
-        <ReportDetailControls
-          report={{
-            id: report.id,
-            title: report.title,
-            summary: report.summary,
-            status: report.status,
-            hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
-          }}
-          driftSummary={{
-            changedCount: driftedItems.length,
-            totalCount: driftItems.length,
-            labels: driftedItems.map((item) => item.label),
-          }}
-          evidenceSummary={evidenceSummaryDigest}
-        />
+        <div id="report-controls">
+          <ReportDetailControls
+            report={{
+              id: report.id,
+              title: report.title,
+              summary: report.summary,
+              status: report.status,
+              hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
+            }}
+            driftSummary={{
+              changedCount: driftedItems.length,
+              totalCount: driftItems.length,
+              labels: driftedItems.map((item) => item.label),
+            }}
+            evidenceSummary={evidenceSummaryDigest}
+          />
+        </div>
       </header>
 
       {/* ── Composition + provenance row ─────────────────────── */}
@@ -1220,7 +1222,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               )}
             </div>
             {sourceContext || engagementCampaign ? (
-              <div className="mt-4 space-y-3">
+              <div id="evidence-chain-summary" className="mt-4 space-y-3">
                 <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Evidence chain summary
@@ -1359,7 +1361,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               </div>
             ) : null}
             {driftItems.length > 0 ? (
-              <div className="mt-4 space-y-3">
+              <div id="drift-since-generation" className="mt-4 space-y-3">
                 <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Drift since generation

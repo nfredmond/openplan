@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeEvidenceChainSummary,
+  getReportNavigationHref,
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
@@ -68,5 +69,17 @@ describe("getReportPacketFreshness", () => {
       detail: "Active engagement · 4/9 handoff-ready · Hold present governance",
       blockedGateDetail: "Blocked gate: G02 · Agreements, Procurement, and Civil Rights Setup",
     });
+  });
+
+  it("routes report links to the most relevant detail section", () => {
+    expect(getReportNavigationHref("report-1", "Refresh recommended")).toBe(
+      "/reports/report-1#drift-since-generation"
+    );
+    expect(getReportNavigationHref("report-1", "No packet")).toBe(
+      "/reports/report-1#report-controls"
+    );
+    expect(getReportNavigationHref("report-1", "Packet current")).toBe(
+      "/reports/report-1#evidence-chain-summary"
+    );
   });
 });

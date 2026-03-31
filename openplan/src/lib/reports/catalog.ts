@@ -55,6 +55,17 @@ export function getReportPacketPriority(freshnessLabel: string) {
   }
 }
 
+export function getReportNavigationHref(reportId: string, freshnessLabel: string) {
+  switch (freshnessLabel) {
+    case "Refresh recommended":
+      return `/reports/${reportId}#drift-since-generation`;
+    case "No packet":
+      return `/reports/${reportId}#report-controls`;
+    default:
+      return `/reports/${reportId}#evidence-chain-summary`;
+  }
+}
+
 export type ReportSectionTemplate = {
   sectionKey: string;
   title: string;

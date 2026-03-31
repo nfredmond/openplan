@@ -23,6 +23,7 @@ import {
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
+  getReportNavigationHref,
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
@@ -405,7 +406,7 @@ export default async function ReportsPage() {
               {reports.map((report) => (
                 <Link
                   key={report.id}
-                  href={`/reports/${report.id}`}
+                  href={getReportNavigationHref(report.id, report.packetFreshness.label)}
                   className="group block rounded-[22px] border border-border/80 bg-background/80 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
                 >
                   <div className="flex items-start justify-between gap-3">
