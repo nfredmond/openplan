@@ -28,14 +28,18 @@ import {
   getReportPacketFreshness,
   getReportPacketPriority,
   matchesReportFreshnessFilter,
+  matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
+  normalizeReportPostureFilter,
   reportStatusTone,
   type ReportFreshnessFilter,
+  type ReportPostureFilter,
 } from "@/lib/reports/catalog";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
+  posture?: string;
 }>;
 
 type ReportRow = {
@@ -84,6 +88,22 @@ function asNullableNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+function buildReportsFilterHref(filters: {
+  freshness: ReportFreshnessFilter;
+  posture: ReportPostureFilter;
+}) {
+  const params = new URLSearchParams();
+  if (filters.freshness !== "all") {
+    params.set("freshness", filters.freshness);
+  }
+  if (filters.posture !== "all") {
+    params.set("posture", filters.posture);
+  }
+
+  const query = params.toString();
+  return query ? `/reports?${query}` : "/reports";
+}
+
 function asEvidenceChainSummary(
   metadata: Record<string, unknown> | null | undefined
 ): EvidenceChainSummary | null {
@@ -116,6 +136,7 @@ export default async function ReportsPage({
 }) {
   const filters = await searchParams;
   const selectedFreshnessFilter = normalizeReportFreshnessFilter(filters.freshness);
+  const selectedPostureFilter = normalizeReportPostureFilter(filters.posture);
   const supabase = await createClient();
   const {
     data: { user },
@@ -228,8 +249,16 @@ export default async function ReportsPage({
   const blockedGovernanceCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
-  const filteredReports = reports.filter((report) =>
-    matchesReportFreshnessFilter(selectedFreshnessFilter, report.packetFreshness.label)
+  const filteredReports = reports.filter(
+    (report) =>
+      matchesReportFreshnessFilter(
+        selectedFreshnessFilter,
+        report.packetFreshness.label
+      ) &&
+      matchesReportPostureFilter(selectedPostureFilter, {
+        hasEvidenceChain: Boolean(report.evidenceChainDigest),
+        hasBlockedGovernance: Boolean(report.evidenceChainDigest?.blockedGateDetail),
+      })
   );
   const distinctProjects = new Set(
     reports.map((report) => report.project_id).filter(Boolean)
@@ -244,25 +273,81 @@ export default async function ReportsPage({
       value: "all",
       label: "All packets",
       count: reports.length,
-      href: "/reports",
+      href: buildReportsFilterHref({
+        freshness: "all",
+        posture: selectedPostureFilter,
+      }),
     },
     {
       value: "refresh",
       label: "Refresh recommended",
       count: refreshRecommendedCount,
-      href: "/reports?freshness=refresh",
+      href: buildReportsFilterHref({
+        freshness: "refresh",
+        posture: selectedPostureFilter,
+      }),
     },
     {
       value: "missing",
       label: "No packet",
       count: noPacketCount,
-      href: "/reports?freshness=missing",
+      href: buildReportsFilterHref({
+        freshness: "missing",
+        posture: selectedPostureFilter,
+      }),
     },
     {
       value: "current",
       label: "Packet current",
       count: currentPacketCount,
-      href: "/reports?freshness=current",
+      href: buildReportsFilterHref({
+        freshness: "current",
+        posture: selectedPostureFilter,
+      }),
+    },
+  ];
+
+  const postureFilters: Array<{
+    value: ReportPostureFilter;
+    label: string;
+    count: number;
+    href: string;
+  }> = [
+    {
+      value: "all",
+      label: "All posture",
+      count: reports.length,
+      href: buildReportsFilterHref({
+        freshness: selectedFreshnessFilter,
+        posture: "all",
+      }),
+    },
+    {
+      value: "evidence-backed",
+      label: "Evidence-backed",
+      count: evidenceBackedCount,
+      href: buildReportsFilterHref({
+        freshness: selectedFreshnessFilter,
+        posture: "evidence-backed",
+      }),
+    },
+    {
+      value: "governance-hold",
+      label: "Governance hold",
+      count: blockedGovernanceCount,
+      href: buildReportsFilterHref({
+        freshness: selectedFreshnessFilter,
+        posture: "governance-hold",
+      }),
+    },
+    {
+      value: "no-evidence",
+      label: "No evidence summary",
+      count: reports.length - evidenceBackedCount,
+      href: buildReportsFilterHref({
+        freshness: selectedFreshnessFilter,
+        posture: "no-evidence",
+      }),
     },
   ];
 
@@ -489,33 +574,76 @@ export default async function ReportsPage({
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            {freshnessFilters.map((filter) => {
-              const active = filter.value === selectedFreshnessFilter;
+          <div className="mt-5 space-y-3">
+            <div>
+              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Packet freshness
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {freshnessFilters.map((filter) => {
+                  const active = filter.value === selectedFreshnessFilter;
 
-              return (
-                <Link
-                  key={filter.value}
-                  href={filter.href}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
-                    active
-                      ? "border-primary/35 bg-primary/10 text-primary"
-                      : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
-                  }`}
-                >
-                  <span>{filter.label}</span>
-                  <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
-                    {filter.count}
-                  </span>
-                </Link>
-              );
-            })}
+                  return (
+                    <Link
+                      key={filter.value}
+                      href={filter.href}
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
+                        active
+                          ? "border-primary/35 bg-primary/10 text-primary"
+                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
+                      }`}
+                    >
+                      <span>{filter.label}</span>
+                      <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
+                        {filter.count}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Evidence posture
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {postureFilters.map((filter) => {
+                  const active = filter.value === selectedPostureFilter;
+
+                  return (
+                    <Link
+                      key={filter.value}
+                      href={filter.href}
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
+                        active
+                          ? "border-primary/35 bg-primary/10 text-primary"
+                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
+                      }`}
+                    >
+                      <span>{filter.label}</span>
+                      <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
+                        {filter.count}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             Showing {filteredReports.length} of {reports.length} report{reports.length === 1 ? "" : "s"}
-            {selectedFreshnessFilter === "all"
+            {selectedFreshnessFilter === "all" && selectedPostureFilter === "all"
               ? "."
-              : ` for the ${freshnessFilters.find((filter) => filter.value === selectedFreshnessFilter)?.label.toLowerCase() ?? "selected"} filter.`}
+              : ` for ${[
+                  selectedFreshnessFilter === "all"
+                    ? null
+                    : freshnessFilters.find((filter) => filter.value === selectedFreshnessFilter)?.label.toLowerCase(),
+                  selectedPostureFilter === "all"
+                    ? null
+                    : postureFilters.find((filter) => filter.value === selectedPostureFilter)?.label.toLowerCase(),
+                ]
+                  .filter(Boolean)
+                  .join(" + ")} filters.`}
           </p>
 
           {reports.length === 0 ? (

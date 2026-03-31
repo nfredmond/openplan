@@ -6,7 +6,9 @@ import {
   getReportPacketFreshness,
   getReportPacketPriority,
   matchesReportFreshnessFilter,
+  matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
+  normalizeReportPostureFilter,
 } from "@/lib/reports/catalog";
 
 describe("getReportPacketFreshness", () => {
@@ -95,5 +97,42 @@ describe("getReportPacketFreshness", () => {
     expect(matchesReportFreshnessFilter("refresh", "No packet")).toBe(false);
     expect(matchesReportFreshnessFilter("missing", "No packet")).toBe(true);
     expect(matchesReportFreshnessFilter("current", "Packet current")).toBe(true);
+  });
+
+  it("normalizes and applies evidence posture filters", () => {
+    expect(normalizeReportPostureFilter(undefined)).toBe("all");
+    expect(normalizeReportPostureFilter("evidence-backed")).toBe("evidence-backed");
+    expect(normalizeReportPostureFilter("weird")).toBe("all");
+
+    expect(
+      matchesReportPostureFilter("all", {
+        hasEvidenceChain: false,
+        hasBlockedGovernance: false,
+      })
+    ).toBe(true);
+    expect(
+      matchesReportPostureFilter("evidence-backed", {
+        hasEvidenceChain: true,
+        hasBlockedGovernance: false,
+      })
+    ).toBe(true);
+    expect(
+      matchesReportPostureFilter("evidence-backed", {
+        hasEvidenceChain: false,
+        hasBlockedGovernance: false,
+      })
+    ).toBe(false);
+    expect(
+      matchesReportPostureFilter("governance-hold", {
+        hasEvidenceChain: true,
+        hasBlockedGovernance: true,
+      })
+    ).toBe(true);
+    expect(
+      matchesReportPostureFilter("no-evidence", {
+        hasEvidenceChain: false,
+        hasBlockedGovernance: false,
+      })
+    ).toBe(true);
   });
 });

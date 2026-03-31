@@ -28,6 +28,11 @@ export type ReportPacketFreshness = {
 };
 
 export type ReportFreshnessFilter = "all" | "refresh" | "missing" | "current";
+export type ReportPostureFilter =
+  | "all"
+  | "evidence-backed"
+  | "governance-hold"
+  | "no-evidence";
 
 export type ReportEvidenceChainDigest = {
   headline: string;
@@ -92,6 +97,38 @@ export function matchesReportFreshnessFilter(
       return freshnessLabel === "No packet";
     case "current":
       return freshnessLabel === "Packet current";
+    default:
+      return true;
+  }
+}
+
+export function normalizeReportPostureFilter(
+  value: string | null | undefined
+): ReportPostureFilter {
+  switch (value) {
+    case "evidence-backed":
+    case "governance-hold":
+    case "no-evidence":
+      return value;
+    default:
+      return "all";
+  }
+}
+
+export function matchesReportPostureFilter(
+  filter: ReportPostureFilter,
+  input: {
+    hasEvidenceChain: boolean;
+    hasBlockedGovernance: boolean;
+  }
+) {
+  switch (filter) {
+    case "evidence-backed":
+      return input.hasEvidenceChain;
+    case "governance-hold":
+      return input.hasBlockedGovernance;
+    case "no-evidence":
+      return !input.hasEvidenceChain;
     default:
       return true;
   }
