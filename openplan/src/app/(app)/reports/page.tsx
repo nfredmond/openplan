@@ -222,6 +222,12 @@ export default async function ReportsPage({
   const currentPacketCount = reports.filter(
     (report) => report.packetFreshness.label === "Packet current"
   ).length;
+  const evidenceBackedCount = reports.filter(
+    (report) => Boolean(report.evidenceChainDigest)
+  ).length;
+  const blockedGovernanceCount = reports.filter(
+    (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
+  ).length;
   const filteredReports = reports.filter((report) =>
     matchesReportFreshnessFilter(selectedFreshnessFilter, report.packetFreshness.label)
   );
@@ -371,6 +377,18 @@ export default async function ReportsPage({
               </p>
             </div>
           </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+              {currentPacketCount} packet current
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/25 bg-sky-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-300">
+              {evidenceBackedCount} evidence-backed
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:text-amber-200">
+              {blockedGovernanceCount} governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced
+            </span>
+          </div>
         </article>
 
         {/* Right: auditability posture */}
@@ -386,6 +404,32 @@ export default async function ReportsPage({
               <h2 className="text-xl font-semibold tracking-tight">
                 Structured packets with provenance
               </h2>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
+                Current packets
+              </p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
+                {currentPacketCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
+                Evidence-backed
+              </p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
+                {evidenceBackedCount}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
+                Governance holds
+              </p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
+                {blockedGovernanceCount}
+              </p>
             </div>
           </div>
           <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
@@ -467,6 +511,12 @@ export default async function ReportsPage({
               );
             })}
           </div>
+          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+            Showing {filteredReports.length} of {reports.length} report{reports.length === 1 ? "" : "s"}
+            {selectedFreshnessFilter === "all"
+              ? "."
+              : ` for the ${freshnessFilters.find((filter) => filter.value === selectedFreshnessFilter)?.label.toLowerCase() ?? "selected"} filter.`}
+          </p>
 
           {reports.length === 0 ? (
             <div className="mt-5">
