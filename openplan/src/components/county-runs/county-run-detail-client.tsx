@@ -14,6 +14,7 @@ import {
   buildCountyActivitySimBundleUiCard,
   buildCountyBehavioralPrototypeUiCard,
   buildCountyRunUiCard,
+  buildCountyValidationScaffoldUiCard,
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
@@ -74,6 +75,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     stage: data.stage,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
+  const validationScaffold = buildCountyValidationScaffoldUiCard(data.manifest);
   const activitysimBundle = buildCountyActivitySimBundleUiCard(data.manifest);
   const behavioral = buildCountyBehavioralPrototypeUiCard(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
@@ -197,6 +199,29 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <div>Median APE: {metrics.medianApe ?? "—"}</div>
             <div>Max APE: {metrics.maxApe ?? "—"}</div>
             <div>Status: {card.statusLabel ?? "Not available"}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Validation scaffold</CardTitle>
+            <CardDescription>Observed-count sourcing progress from the county onramp manifest.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <StatusBadge tone={validationScaffold.tone}>{validationScaffold.statusLabel}</StatusBadge>
+            <div>Starter stations: {validationScaffold.stationCount ?? "—"}</div>
+            <div>
+              Observed counts entered: {validationScaffold.observedVolumeFilledCount ?? "—"}
+              {validationScaffold.stationCount != null ? ` / ${validationScaffold.stationCount}` : ""}
+            </div>
+            <div>Source descriptions entered: {validationScaffold.sourceDescriptionFilledCount ?? "—"}</div>
+            <div>Agencies still TBD: {validationScaffold.sourceAgencyTbdCount ?? "—"}</div>
+            <div>
+              Validator-ready stations: {validationScaffold.readyStationCount ?? "—"}
+              {validationScaffold.stationCount != null ? ` / ${validationScaffold.stationCount}` : ""}
+            </div>
+            <p>{validationScaffold.claim}</p>
+            <p>Next scaffold action: {validationScaffold.nextActionLabel}</p>
           </CardContent>
         </Card>
 

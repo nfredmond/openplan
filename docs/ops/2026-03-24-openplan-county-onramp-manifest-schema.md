@@ -162,6 +162,21 @@ Expected fields:
 - type: `object | null`
 - meaning: validation sub-object from `bundle_manifest.json` when available
 
+### `summary.scaffold`
+- type: `object | null`
+- meaning: lightweight readiness snapshot for the generated validation scaffold CSV
+- intended stable fields:
+  - `station_count`
+  - `observed_volume_filled_count`
+  - `observed_volume_missing_count`
+  - `source_agency_filled_count`
+  - `source_agency_tbd_count`
+  - `source_description_filled_count`
+  - `source_description_missing_count`
+  - `ready_station_count`
+  - `next_action_label`
+- use: lets the app/backend surface count-sourcing progress without re-reading the scaffold CSV at request time
+
 ### `summary.activitysim_bundle`
 - type: `object | null`
 - meaning: lightweight summary of the ActivitySim input bundle generated through the behavioral prototype lane

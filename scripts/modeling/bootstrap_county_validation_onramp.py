@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import shlex
 import subprocess
@@ -132,6 +133,66 @@ def summarize_activitysim_bundle(behavioral_manifest: dict[str, Any] | None) -> 
     }
 
 
+PLACEHOLDER_TOKENS = {"", "TBD", "N/A", "NA", "UNKNOWN"}
+
+
+def is_placeholder_text(value: Any) -> bool:
+    return str(value or "").strip().upper() in PLACEHOLDER_TOKENS
+
+
+def summarize_validation_scaffold(scaffold_csv_path: Path) -> dict[str, Any] | None:
+    if not scaffold_csv_path.exists():
+        return None
+
+    with scaffold_csv_path.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    station_count = len(rows)
+    observed_volume_filled_count = sum(
+        1 for row in rows if not is_placeholder_text(row.get("observed_volume"))
+    )
+    source_agency_filled_count = sum(
+        1 for row in rows if not is_placeholder_text(row.get("source_agency"))
+    )
+    source_description_filled_count = sum(
+        1 for row in rows if not is_placeholder_text(row.get("source_description"))
+    )
+    ready_station_count = sum(
+        1
+        for row in rows
+        if not is_placeholder_text(row.get("observed_volume"))
+        and not is_placeholder_text(row.get("source_agency"))
+        and not is_placeholder_text(row.get("source_description"))
+    )
+
+    if station_count == 0:
+        next_action_label = "Regenerate the validation scaffold before sourcing observed counts."
+    elif ready_station_count == station_count:
+        next_action_label = (
+            "All starter stations have observed counts and source metadata recorded. "
+            "Tighten definitions if needed, then run validation."
+        )
+    elif observed_volume_filled_count == 0:
+        next_action_label = f"Source observed counts for the {station_count} starter stations."
+    else:
+        remaining = station_count - ready_station_count
+        next_action_label = (
+            f"Complete source metadata and observed counts for the remaining {remaining} starter stations."
+        )
+
+    return {
+        "station_count": station_count,
+        "observed_volume_filled_count": observed_volume_filled_count,
+        "observed_volume_missing_count": station_count - observed_volume_filled_count,
+        "source_agency_filled_count": source_agency_filled_count,
+        "source_agency_tbd_count": station_count - source_agency_filled_count,
+        "source_description_filled_count": source_description_filled_count,
+        "source_description_missing_count": station_count - source_description_filled_count,
+        "ready_station_count": ready_station_count,
+        "next_action_label": next_action_label,
+    }
+
+
 def summarize_behavioral_prototype_from_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     artifacts = manifest.get("artifacts") or {}
     return {
@@ -250,6 +311,7 @@ def main() -> int:
     ]
     run_cmd(scaffold_cmd, repo_root)
 
+    scaffold_summary = summarize_validation_scaffold(Path(args.output_csv).expanduser().resolve())
     run_summary = read_json_if_exists(run_dir / "run_summary.json")
     validation_summary = read_json_if_exists(run_dir / "validation" / "validation_summary.json")
     bundle_manifest = read_json_if_exists(run_dir / "bundle_manifest.json")
@@ -309,6 +371,7 @@ def main() -> int:
             },
             "validation": validation_summary,
             "bundle_validation": (bundle_manifest or {}).get("validation"),
+            "scaffold": scaffold_summary,
             "activitysim_bundle": activitysim_bundle,
             "behavioral_prototype": {
                 "pipeline_status": behavioral_prototype.get("pipeline_status"),

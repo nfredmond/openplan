@@ -41,6 +41,17 @@
     },
     "validation": null,
     "bundle_validation": null,
+    "scaffold": {
+      "station_count": 8,
+      "observed_volume_filled_count": 0,
+      "observed_volume_missing_count": 8,
+      "source_agency_filled_count": 0,
+      "source_agency_tbd_count": 8,
+      "source_description_filled_count": 8,
+      "source_description_missing_count": 0,
+      "ready_station_count": 0,
+      "next_action_label": "Source observed counts for the 8 starter stations."
+    },
     "activitysim_bundle": {
       "status": "completed",
       "output_dir": "/home/nathaniel/.openclaw/workspace/openplan/data/screening-runs/placer-county-runtime-connectorbias2-20260324/behavioral_demand_prototype/activitysim_bundle",

@@ -56,6 +56,18 @@ const manifest = {
     bundle_validation: {
       status_label: "bounded screening-ready",
     },
+    scaffold: {
+      station_count: 5,
+      observed_volume_filled_count: 5,
+      observed_volume_missing_count: 0,
+      source_agency_filled_count: 5,
+      source_agency_tbd_count: 0,
+      source_description_filled_count: 5,
+      source_description_missing_count: 0,
+      ready_station_count: 5,
+      next_action_label:
+        "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+    },
     activitysim_bundle: {
       status: "completed",
       output_dir: "/tmp/activitysim",
@@ -145,7 +157,13 @@ describe("county onramp presenters", () => {
         "Behavioral KPI Summary",
         "Behavioral KPI Packet",
       ],
-      metricAvailabilityLabels: ["Zones 26", "Links 3174", "Gap 0.0091", "Median APE 16.01%"],
+      metricAvailabilityLabels: [
+        "Zones 26",
+        "Links 3174",
+        "Gap 0.0091",
+        "Median APE 16.01%",
+        "Scaffold ready 5/5",
+      ],
       zoneCount: 26,
       loadedLinks: 3174,
       finalGap: 0.0091,

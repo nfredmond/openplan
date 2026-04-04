@@ -51,6 +51,9 @@ def main() -> int:
 
     print(f"Manifest OK: {path}")
     print(f"stage={data['stage']}")
+    scaffold = ((data.get("summary") or {}).get("scaffold") or {}) if isinstance(data.get("summary"), dict) else {}
+    if isinstance(scaffold, dict) and "station_count" in scaffold and "ready_station_count" in scaffold:
+        print(f"scaffold_ready={scaffold.get('ready_station_count')}/{scaffold.get('station_count')}")
     return 0
 
 

@@ -172,6 +172,18 @@ describe("CountyRunDetailClient", () => {
           bundle_validation: {
             status_label: "bounded screening-ready",
           },
+          scaffold: {
+            station_count: 5,
+            observed_volume_filled_count: 5,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 5,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 5,
+            source_description_missing_count: 0,
+            ready_station_count: 5,
+            next_action_label:
+              "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
           activitysim_bundle: {
             status: "completed",
             output_dir: "/tmp/activitysim",
@@ -190,6 +202,10 @@ describe("CountyRunDetailClient", () => {
 
     expect(screen.getByText("Why this stage")).toBeInTheDocument();
     expect(screen.getAllByText("bounded screening-ready").length).toBeGreaterThan(0);
+    expect(screen.getByText("Validation scaffold")).toBeInTheDocument();
+    expect(screen.getByText("Validator-ready")).toBeInTheDocument();
+    expect(screen.getByText("Starter stations: 5")).toBeInTheDocument();
+    expect(screen.getByText("Validator-ready stations: 5 / 5")).toBeInTheDocument();
     expect(screen.getByText("ActivitySim handoff")).toBeInTheDocument();
     expect(screen.getByText("Bundle ready")).toBeInTheDocument();
     expect(screen.getByText("Bundle ready: Yes")).toBeInTheDocument();

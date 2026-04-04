@@ -68,6 +68,20 @@ export const countyOnrampValidationSummarySchema = z
   })
   .passthrough();
 
+export const countyOnrampScaffoldSummarySchema = z
+  .object({
+    station_count: z.number().int().nonnegative(),
+    observed_volume_filled_count: z.number().int().nonnegative(),
+    observed_volume_missing_count: z.number().int().nonnegative(),
+    source_agency_filled_count: z.number().int().nonnegative(),
+    source_agency_tbd_count: z.number().int().nonnegative(),
+    source_description_filled_count: z.number().int().nonnegative(),
+    source_description_missing_count: z.number().int().nonnegative(),
+    ready_station_count: z.number().int().nonnegative(),
+    next_action_label: z.string().min(1),
+  })
+  .passthrough();
+
 export const countyOnrampActivitySimBundleSummarySchema = z
   .object({
     status: z.enum(["completed", "failed", "not-built"]),
@@ -135,6 +149,7 @@ export const countyOnrampManifestSchema = z.object({
     run: countyOnrampRunSnapshotSchema,
     validation: countyOnrampValidationSummarySchema.nullable(),
     bundle_validation: z.record(z.string(), z.unknown()).nullable(),
+    scaffold: countyOnrampScaffoldSummarySchema.nullable().optional(),
     activitysim_bundle: countyOnrampActivitySimBundleSummarySchema.nullable().optional(),
     behavioral_prototype: countyOnrampBehavioralPrototypeSummarySchema.nullable().optional(),
   }),
@@ -144,6 +159,7 @@ export type CountyOnrampArtifacts = z.infer<typeof countyOnrampArtifactsSchema>;
 export type CountyOnrampRuntime = z.infer<typeof countyOnrampRuntimeSchema>;
 export type CountyOnrampRunSnapshot = z.infer<typeof countyOnrampRunSnapshotSchema>;
 export type CountyOnrampValidationSummary = z.infer<typeof countyOnrampValidationSummarySchema>;
+export type CountyOnrampScaffoldSummary = z.infer<typeof countyOnrampScaffoldSummarySchema>;
 export type CountyOnrampActivitySimBundleSummary = z.infer<typeof countyOnrampActivitySimBundleSummarySchema>;
 export type CountyOnrampBehavioralPrototypeSummary = z.infer<typeof countyOnrampBehavioralPrototypeSummarySchema>;
 export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
@@ -171,16 +187,33 @@ export function getCountyRunStageReasonLabel(input: {
   behavioralRuntimeStatus?: string | null;
   behavioralComparisonReady?: boolean | null;
   behavioralEvidenceReady?: boolean | null;
+  scaffoldSummary?: CountyOnrampScaffoldSummary | null;
 }): string | null {
+  const scaffold = input.scaffoldSummary;
+  const scaffoldReadyCount = scaffold?.ready_station_count ?? 0;
+  const scaffoldStationCount = scaffold?.station_count ?? 0;
+
   if (input.stage === "validated-screening") {
     return input.statusLabel?.trim() || "Validation gate passed on the documented slice.";
   }
 
   if (input.stage === "validation-scaffolded") {
+    if (scaffold && scaffoldStationCount > 0) {
+      if (scaffoldReadyCount >= scaffoldStationCount) {
+        return "Validation scaffold is fully populated; rerun validation or tighten station definitions.";
+      }
+      return `Validation scaffold is in progress; ${scaffoldReadyCount} of ${scaffoldStationCount} starter stations are validator-ready.`;
+    }
     return "Scaffold exists; count ingestion or station cleanup is still underway.";
   }
 
   if (input.stage === "runtime-complete") {
+    if (scaffold && scaffoldStationCount > 0) {
+      if (scaffoldReadyCount >= scaffoldStationCount) {
+        return "Runtime artifacts are complete and the validation scaffold is fully populated; validation can run next.";
+      }
+      return `Runtime artifacts are complete; ${scaffoldReadyCount} of ${scaffoldStationCount} starter stations are validator-ready.`;
+    }
     return "Runtime artifacts are complete; observed-count validation has not closed yet.";
   }
 

@@ -134,6 +134,21 @@
           "type": ["object", "null"],
           "additionalProperties": true
         },
+        "scaffold": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "station_count": { "type": "number" },
+            "observed_volume_filled_count": { "type": "number" },
+            "observed_volume_missing_count": { "type": "number" },
+            "source_agency_filled_count": { "type": "number" },
+            "source_agency_tbd_count": { "type": "number" },
+            "source_description_filled_count": { "type": "number" },
+            "source_description_missing_count": { "type": "number" },
+            "ready_station_count": { "type": "number" },
+            "next_action_label": { "type": "string" }
+          }
+        },
         "activitysim_bundle": {
           "type": ["object", "null"],
           "additionalProperties": true,

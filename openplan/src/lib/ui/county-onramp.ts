@@ -1,6 +1,7 @@
 import type {
   CountyOnrampBehavioralPrototypeSummary,
   CountyOnrampManifest,
+  CountyOnrampScaffoldSummary,
   CountyRunStage,
 } from "@/lib/models/county-onramp";
 import type { CountyRunListItem } from "@/lib/api/county-onramp";
@@ -65,6 +66,18 @@ export type CountyActivitySimBundleUiCard = {
   skimModeLabel: string | null;
   errorMessage: string | null;
   errorKind: string | null;
+};
+
+export type CountyValidationScaffoldUiCard = {
+  statusLabel: string;
+  tone: "neutral" | "info" | "warning" | "success";
+  stationCount: number | null;
+  observedVolumeFilledCount: number | null;
+  sourceAgencyTbdCount: number | null;
+  sourceDescriptionFilledCount: number | null;
+  readyStationCount: number | null;
+  nextActionLabel: string;
+  claim: string;
 };
 
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
@@ -133,6 +146,68 @@ export function getCountyRunMetricHighlights(manifest: CountyOnrampManifest | nu
     finalGap: run?.final_gap ?? null,
     medianApe: validation?.median_absolute_percent_error ?? null,
     maxApe: validation?.max_absolute_percent_error ?? null,
+  };
+}
+
+function getValidationScaffoldClaim(scaffold: CountyOnrampScaffoldSummary | null | undefined): string {
+  if (!scaffold) {
+    return "Validation scaffold progress has not been recorded for this county run yet.";
+  }
+
+  if (scaffold.station_count === 0) {
+    return "No starter stations are currently recorded in the validation scaffold.";
+  }
+
+  if (scaffold.ready_station_count >= scaffold.station_count) {
+    return "All starter stations have observed counts and source metadata recorded; validation can run after any final station cleanup.";
+  }
+
+  return `Validation scaffold exists, but only ${scaffold.ready_station_count} of ${scaffold.station_count} starter stations are validator-ready.`;
+}
+
+export function buildCountyValidationScaffoldUiCard(
+  manifest: CountyOnrampManifest | null | undefined
+): CountyValidationScaffoldUiCard {
+  const scaffold = manifest?.summary?.scaffold;
+
+  if (!scaffold) {
+    return {
+      statusLabel: "Not recorded",
+      tone: "neutral",
+      stationCount: null,
+      observedVolumeFilledCount: null,
+      sourceAgencyTbdCount: null,
+      sourceDescriptionFilledCount: null,
+      readyStationCount: null,
+      nextActionLabel: "Regenerate or ingest the validation scaffold before sourcing counts.",
+      claim: getValidationScaffoldClaim(null),
+    };
+  }
+
+  if (scaffold.station_count > 0 && scaffold.ready_station_count >= scaffold.station_count) {
+    return {
+      statusLabel: "Validator-ready",
+      tone: "success",
+      stationCount: scaffold.station_count,
+      observedVolumeFilledCount: scaffold.observed_volume_filled_count,
+      sourceAgencyTbdCount: scaffold.source_agency_tbd_count,
+      sourceDescriptionFilledCount: scaffold.source_description_filled_count,
+      readyStationCount: scaffold.ready_station_count,
+      nextActionLabel: scaffold.next_action_label,
+      claim: getValidationScaffoldClaim(scaffold),
+    };
+  }
+
+  return {
+    statusLabel: "Counts sourcing in progress",
+    tone: "warning",
+    stationCount: scaffold.station_count,
+    observedVolumeFilledCount: scaffold.observed_volume_filled_count,
+    sourceAgencyTbdCount: scaffold.source_agency_tbd_count,
+    sourceDescriptionFilledCount: scaffold.source_description_filled_count,
+    readyStationCount: scaffold.ready_station_count,
+    nextActionLabel: scaffold.next_action_label,
+    claim: getValidationScaffoldClaim(scaffold),
   };
 }
 

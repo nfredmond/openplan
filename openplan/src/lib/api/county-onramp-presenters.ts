@@ -70,6 +70,9 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     manifest?.summary?.validation?.metrics?.median_absolute_percent_error != null
       ? `Median APE ${manifest.summary.validation.metrics.median_absolute_percent_error.toFixed(2)}%`
       : null,
+    manifest?.summary?.scaffold?.station_count != null
+      ? `Scaffold ready ${manifest.summary.scaffold.ready_station_count}/${manifest.summary.scaffold.station_count}`
+      : null,
   ].filter((value): value is string => Boolean(value));
 
   let behavioralEvidenceStatusLabel: string | null = null;
@@ -111,6 +114,7 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
     behavioralComparisonReady,
     behavioralEvidenceReady,
+    scaffoldSummary: manifest?.summary?.scaffold ?? null,
   });
 
   return {
@@ -181,6 +185,7 @@ export function presentCountyRunDetail(params: {
     behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
     behavioralComparisonReady,
     behavioralEvidenceReady,
+    scaffoldSummary: manifest?.summary?.scaffold ?? null,
   });
 
   return {
