@@ -238,6 +238,8 @@ describe("county onramp primitives", () => {
         behavioralRuntimeStatus: null,
         behavioralEvidenceReady: false,
         behavioralComparisonReady: false,
+        scaffoldStationCount: 8,
+        scaffoldReadyStationCount: 0,
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
         updatedAt: "2026-03-24T22:00:00Z",
         finalGap: null,
@@ -282,6 +284,9 @@ describe("county onramp primitives", () => {
     expect(filterCountyRunListItemsByQuickView(items, "prototype-blocked").map((item) => item.id)).toEqual([
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     ]);
+    expect(filterCountyRunListItemsByQuickView(items, "scaffold-backlog").map((item) => item.id)).toEqual([
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    ]);
     expect(filterCountyRunListItemsByQuickView(items, "needs-attention").map((item) => item.id)).toEqual([
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -289,6 +294,7 @@ describe("county onramp primitives", () => {
     expect(buildCountyRunSummaryCounts(items)).toEqual({
       totalRuns: 4,
       needsAttention: 2,
+      scaffoldBacklog: 1,
       prototypeBlocked: 1,
       evidenceReady: 1,
       comparisonReady: 1,

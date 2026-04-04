@@ -56,6 +56,8 @@ let countyRunsItemsMock = [
     behavioralRuntimeMode: null,
     behavioralEvidenceReady: false,
     behavioralComparisonReady: false,
+    scaffoldStationCount: 8,
+    scaffoldReadyStationCount: 0,
     behavioralEvidenceStatusLabel: "Behavioral lane requested",
     behavioralComparisonStatusLabel: "Await recorded behavioral state",
     artifactAvailabilityLabels: [],
@@ -160,6 +162,8 @@ describe("CountyRunsPageClient", () => {
         behavioralRuntimeMode: null,
         behavioralEvidenceReady: false,
         behavioralComparisonReady: false,
+        scaffoldStationCount: 8,
+        scaffoldReadyStationCount: 0,
         behavioralEvidenceStatusLabel: "Behavioral lane requested",
         behavioralComparisonStatusLabel: "Await recorded behavioral state",
         artifactAvailabilityLabels: [],
@@ -193,12 +197,14 @@ describe("CountyRunsPageClient", () => {
 
     expect(screen.getByText("Total runs")).toBeInTheDocument();
     expect(screen.getAllByText("Needs attention").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Scaffold backlog").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Prototype blocked").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Comparison-ready").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Validated screening").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Viewing: All runs · sorted by Recently updated")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Needs attention (2)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Scaffold backlog (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Prototype blocked (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Evidence-ready (0)" })).toBeInTheDocument();

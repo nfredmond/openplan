@@ -148,6 +148,8 @@ describe("county onramp presenters", () => {
       behavioralComparisonReady: false,
       behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
       behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+      scaffoldStationCount: 5,
+      scaffoldReadyStationCount: 5,
       artifactAvailabilityLabels: [
         "Scaffold CSV",
         "Review packet",

@@ -50,6 +50,8 @@ export const countyRunListItemSchema = z.object({
   behavioralComparisonReady: z.boolean().optional(),
   behavioralEvidenceStatusLabel: z.string().nullable().optional(),
   behavioralComparisonStatusLabel: z.string().nullable().optional(),
+  scaffoldStationCount: z.number().int().nonnegative().nullable().optional(),
+  scaffoldReadyStationCount: z.number().int().nonnegative().nullable().optional(),
   artifactAvailabilityLabels: z.array(z.string()).optional(),
   metricAvailabilityLabels: z.array(z.string()).optional(),
   zoneCount: z.number().nullable().optional(),

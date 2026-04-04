@@ -84,6 +84,7 @@ export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "m
 export type CountyRunQuickView =
   | "all"
   | "needs-attention"
+  | "scaffold-backlog"
   | "best-validated"
   | "prototype-blocked"
   | "evidence-ready"
@@ -92,6 +93,7 @@ export type CountyRunQuickView =
 export type CountyRunSummaryCounts = {
   totalRuns: number;
   needsAttention: number;
+  scaffoldBacklog: number;
   prototypeBlocked: number;
   evidenceReady: number;
   comparisonReady: number;
@@ -440,6 +442,7 @@ export function buildCountyRunSummaryCounts(items: CountyRunListItem[]): CountyR
   return {
     totalRuns: items.length,
     needsAttention: filterCountyRunListItemsByQuickView(items, "needs-attention").length,
+    scaffoldBacklog: filterCountyRunListItemsByQuickView(items, "scaffold-backlog").length,
     prototypeBlocked: filterCountyRunListItemsByQuickView(items, "prototype-blocked").length,
     evidenceReady: filterCountyRunListItemsByQuickView(items, "evidence-ready").length,
     comparisonReady: filterCountyRunListItemsByQuickView(items, "comparison-ready").length,
@@ -473,6 +476,13 @@ export function filterCountyRunListItemsByQuickView(
       return item.stage === "validated-screening";
     }
 
+    if (quickView === "scaffold-backlog") {
+      return (
+        (item.scaffoldStationCount ?? 0) > 0 &&
+        (item.scaffoldReadyStationCount ?? 0) < (item.scaffoldStationCount ?? 0)
+      );
+    }
+
     if (quickView === "prototype-blocked") {
       return (
         item.behavioralRuntimeStatus === "behavioral_runtime_blocked" ||
@@ -497,6 +507,8 @@ export function filterCountyRunListItemsByQuickView(
         item.enqueueStatus === "failed" ||
         item.stage === "bootstrap-incomplete" ||
         item.stage === "validation-scaffolded" ||
+        ((item.scaffoldStationCount ?? 0) > 0 &&
+          (item.scaffoldReadyStationCount ?? 0) < (item.scaffoldStationCount ?? 0)) ||
         item.behavioralRuntimeStatus === "behavioral_runtime_blocked" ||
         item.behavioralRuntimeStatus === "behavioral_runtime_failed" ||
         item.behavioralPipelineStatus === "prototype_pipeline_failed" ||

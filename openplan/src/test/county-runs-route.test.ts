@@ -222,6 +222,8 @@ describe("/api/county-runs route", () => {
           behavioralComparisonReady: false,
           behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
           behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
+          scaffoldStationCount: 5,
+          scaffoldReadyStationCount: 5,
           artifactAvailabilityLabels: [
             "Scaffold CSV",
             "Review packet",

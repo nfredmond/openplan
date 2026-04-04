@@ -134,6 +134,8 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralComparisonReady,
     behavioralEvidenceStatusLabel,
     behavioralComparisonStatusLabel,
+    scaffoldStationCount: manifest?.summary?.scaffold?.station_count ?? null,
+    scaffoldReadyStationCount: manifest?.summary?.scaffold?.ready_station_count ?? null,
     artifactAvailabilityLabels,
     metricAvailabilityLabels,
     zoneCount: manifest?.summary?.run?.zone_count ?? null,

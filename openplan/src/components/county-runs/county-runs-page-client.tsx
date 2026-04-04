@@ -67,6 +67,7 @@ const COUNTY_RUN_SORT_OPTIONS: { value: CountyRunSort; label: string }[] = [
 const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string }[] = [
   { value: "all", label: "All runs" },
   { value: "needs-attention", label: "Needs attention" },
+  { value: "scaffold-backlog", label: "Scaffold backlog" },
   { value: "best-validated", label: "Best validated" },
   { value: "prototype-blocked", label: "Prototype blocked" },
   { value: "evidence-ready", label: "Evidence-ready" },
@@ -74,7 +75,14 @@ const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string 
 ];
 
 const COUNTY_SUMMARY_TILES: {
-  key: "totalRuns" | "needsAttention" | "prototypeBlocked" | "evidenceReady" | "comparisonReady" | "validatedScreening";
+  key:
+    | "totalRuns"
+    | "needsAttention"
+    | "scaffoldBacklog"
+    | "prototypeBlocked"
+    | "evidenceReady"
+    | "comparisonReady"
+    | "validatedScreening";
   label: string;
   quickView: CountyRunQuickView;
   className: string;
@@ -90,6 +98,12 @@ const COUNTY_SUMMARY_TILES: {
     label: "Needs attention",
     quickView: "needs-attention",
     className: "border border-amber-500/30 bg-amber-500/10",
+  },
+  {
+    key: "scaffoldBacklog",
+    label: "Scaffold backlog",
+    quickView: "scaffold-backlog",
+    className: "border border-orange-500/30 bg-orange-500/10",
   },
   {
     key: "prototypeBlocked",
