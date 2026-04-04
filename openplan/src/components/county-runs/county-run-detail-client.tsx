@@ -96,11 +96,13 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
+  const scaffoldSourceValue = scaffoldData?.csvContent ?? "";
   const scaffoldEditorValue =
     scaffoldDraftState.path === scaffoldTargetPath
-      ? scaffoldDraftState.value ?? scaffoldData?.csvContent ?? ""
-      : scaffoldData?.csvContent ?? "";
-  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldEditorValue.trim());
+      ? scaffoldDraftState.value ?? scaffoldSourceValue
+      : scaffoldSourceValue;
+  const scaffoldDirty = Boolean(scaffoldTargetPath) && scaffoldEditorValue !== scaffoldSourceValue;
+  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldEditorValue.trim() && scaffoldDirty);
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
   const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
@@ -139,7 +141,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   };
 
   const saveScaffoldDraft = async () => {
-    if (!scaffoldTargetPath || !scaffoldEditorValue.trim()) {
+    if (!scaffoldTargetPath || !scaffoldEditorValue.trim() || !scaffoldDirty) {
       return;
     }
 
@@ -151,6 +153,16 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
     setScaffoldSaveState("saved");
     await Promise.all([refresh(), refreshScaffold()]);
+  };
+
+  const reloadScaffoldDraft = async () => {
+    if (!scaffoldTargetPath) {
+      return;
+    }
+
+    setScaffoldDraftState({ path: null, value: null });
+    setScaffoldSaveState("idle");
+    await refreshScaffold();
   };
 
   return (
@@ -288,6 +300,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               <Button type="button" variant="outline" onClick={() => void saveScaffoldDraft()} disabled={actionLoading || !canSaveScaffold}>
                 Save scaffold CSV
               </Button>
+              <Button type="button" variant="ghost" onClick={() => void reloadScaffoldDraft()} disabled={scaffoldLoading || !scaffoldTargetPath}>
+                Reload scaffold CSV
+              </Button>
+              {!scaffoldDirty && scaffoldTargetPath ? <span>Editor matches the currently stored scaffold.</span> : null}
               {scaffoldSaveState === "saved" ? <span className="text-emerald-600">Scaffold saved and readiness refreshed.</span> : null}
               {scaffoldSaveState === "error" ? <span className="text-destructive">Unable to save scaffold.</span> : null}
             </div>
