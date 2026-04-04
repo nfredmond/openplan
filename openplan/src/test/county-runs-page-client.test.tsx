@@ -67,6 +67,32 @@ let countyRunsItemsMock = [
     medianApe: null,
     updatedAt: "2026-03-24T23:10:00Z",
   },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    geographyLabel: "Yuba County, CA",
+    runName: "yuba-run",
+    stage: "validation-scaffolded",
+    stageReasonLabel: "Validation scaffold is fully populated; rerun validation or tighten station definitions.",
+    statusLabel: "Validation pending scaffold edits",
+    enqueueStatus: "queued_stub",
+    runtimePresetLabel: "Standard county runtime",
+    behavioralPipelineStatus: null,
+    behavioralRuntimeStatus: null,
+    behavioralRuntimeMode: null,
+    behavioralEvidenceReady: false,
+    behavioralComparisonReady: false,
+    scaffoldStationCount: 4,
+    scaffoldReadyStationCount: 4,
+    behavioralEvidenceStatusLabel: null,
+    behavioralComparisonStatusLabel: null,
+    artifactAvailabilityLabels: ["Scaffold CSV"],
+    metricAvailabilityLabels: ["Scaffold ready 4/4"],
+    zoneCount: 18,
+    loadedLinks: 2110,
+    finalGap: 0.0124,
+    medianApe: null,
+    updatedAt: "2026-03-24T23:20:00Z",
+  },
 ];
 
 vi.mock("next/navigation", () => ({
@@ -173,6 +199,32 @@ describe("CountyRunsPageClient", () => {
         medianApe: null,
         updatedAt: "2026-03-24T23:10:00Z",
       },
+      {
+        id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        geographyLabel: "Yuba County, CA",
+        runName: "yuba-run",
+        stage: "validation-scaffolded",
+        stageReasonLabel: "Validation scaffold is fully populated; rerun validation or tighten station definitions.",
+        statusLabel: "Validation pending scaffold edits",
+        enqueueStatus: "queued_stub",
+        runtimePresetLabel: "Standard county runtime",
+        behavioralPipelineStatus: null,
+        behavioralRuntimeStatus: null,
+        behavioralRuntimeMode: null,
+        behavioralEvidenceReady: false,
+        behavioralComparisonReady: false,
+        scaffoldStationCount: 4,
+        scaffoldReadyStationCount: 4,
+        behavioralEvidenceStatusLabel: null,
+        behavioralComparisonStatusLabel: null,
+        artifactAvailabilityLabels: ["Scaffold CSV"],
+        metricAvailabilityLabels: ["Scaffold ready 4/4"],
+        zoneCount: 18,
+        loadedLinks: 2110,
+        finalGap: 0.0124,
+        medianApe: null,
+        updatedAt: "2026-03-24T23:20:00Z",
+      },
     ];
     searchParamsValue = "";
     routerPushMock.mockReset();
@@ -202,9 +254,10 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getAllByText("Comparison-ready").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Validated screening").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Viewing: All runs · sorted by Recently updated")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "All runs (2)" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Needs attention (2)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "All runs (3)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Needs attention (3)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Scaffold backlog (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ready to validate (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Best validated (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Prototype blocked (1)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Evidence-ready (0)" })).toBeInTheDocument();
@@ -215,14 +268,14 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByText("Pipeline status: Prototype preflight complete")).toBeInTheDocument();
     expect(screen.getByText("Runtime status: Behavioral runtime blocked")).toBeInTheDocument();
     expect(screen.getByText("Runtime mode: Preflight only")).toBeInTheDocument();
-    expect(screen.getByText("Artifacts")).toBeInTheDocument();
-    expect(screen.getByText("Scaffold CSV")).toBeInTheDocument();
+    expect(screen.getAllByText("Artifacts").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Scaffold CSV").length).toBeGreaterThan(0);
     expect(screen.getByText("Validation summary")).toBeInTheDocument();
     expect(screen.getByText("ActivitySim bundle")).toBeInTheDocument();
     expect(screen.getByText("Behavioral prototype")).toBeInTheDocument();
     expect(screen.getByText("Behavioral KPI Summary")).toBeInTheDocument();
     expect(screen.getByText("Behavioral KPI Packet")).toBeInTheDocument();
-    expect(screen.getByText("Metrics")).toBeInTheDocument();
+    expect(screen.getAllByText("Metrics").length).toBeGreaterThan(0);
     expect(screen.getByText("Zones 26")).toBeInTheDocument();
     expect(screen.getByText("Links 3174")).toBeInTheDocument();
     expect(screen.getByText("Gap 0.0091")).toBeInTheDocument();
@@ -253,9 +306,10 @@ describe("CountyRunsPageClient", () => {
   it("filters county runs by behavioral state and persists the filter in the URL", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    expect(screen.getByText("Showing 2 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 3 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
+    expect(screen.getByText("Yuba County, CA")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Behavioral state"), {
       target: { value: "lane-requested" },
@@ -264,7 +318,7 @@ describe("CountyRunsPageClient", () => {
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=lane-requested", { scroll: false });
     expect(screen.getByRole("button", { name: "Behavioral: Lane requested ×" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Clear all filters" })).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
     expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
 
@@ -273,7 +327,7 @@ describe("CountyRunsPageClient", () => {
     });
 
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?behavioral=preflight-only", { scroll: false });
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
 
@@ -285,7 +339,7 @@ describe("CountyRunsPageClient", () => {
       "/county-runs?behavioral=preflight-only&runtimeStatus=behavioral_runtime_blocked",
       { scroll: false }
     );
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Runtime mode"), {
@@ -303,15 +357,16 @@ describe("CountyRunsPageClient", () => {
         "Viewing: All runs · sorted by Recently updated · behavioral state Preflight only · runtime status Runtime blocked · runtime mode Preflight only"
       )
     ).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Clear all filters" }));
 
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs", { scroll: false });
-    expect(screen.getByText("Showing 2 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 3 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.getByText("Placer County, CA")).toBeInTheDocument();
+    expect(screen.getByText("Yuba County, CA")).toBeInTheDocument();
   });
 
   it("initializes behavioral and runtime filters from the URL", () => {
@@ -321,7 +376,7 @@ describe("CountyRunsPageClient", () => {
 
     expect(screen.getByDisplayValue("Runtime blocked")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Preflight only")).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
@@ -329,7 +384,7 @@ describe("CountyRunsPageClient", () => {
   it("copies the current county dashboard view link", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Needs attention (2)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (3)" }));
     await waitFor(() =>
       expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
     );
@@ -345,7 +400,7 @@ describe("CountyRunsPageClient", () => {
   it("preserves the active county dashboard view in detail links", async () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Needs attention (2)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Needs attention (3)" }));
     await waitFor(() =>
       expect(screen.getByText("Viewing: Needs attention · sorted by Recently updated")).toBeInTheDocument()
     );
@@ -376,7 +431,7 @@ describe("CountyRunsPageClient", () => {
     });
     expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View: Prototype blocked ×" })).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
@@ -392,7 +447,7 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByDisplayValue("Lowest median APE")).toBeInTheDocument();
     expect(screen.getByText("Viewing: Best validated · sorted by Lowest median APE")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View: Best validated ×" })).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
 
@@ -400,6 +455,19 @@ describe("CountyRunsPageClient", () => {
 
     expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs", { scroll: false });
     expect(screen.getByDisplayValue("Recently updated")).toBeInTheDocument();
+  });
+
+  it("surfaces the ready-to-validate quick view for scaffold-complete non-validated counties", () => {
+    render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Ready to validate (1)" }));
+
+    expect(routerReplaceMock).toHaveBeenCalledWith("/county-runs?view=ready-to-validate", { scroll: false });
+    expect(screen.getByText("Viewing: Ready to validate · sorted by Recently updated")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Yuba County, CA")).toBeInTheDocument();
+    expect(screen.queryByText("Nevada County, CA")).not.toBeInTheDocument();
+    expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });
 
   it("separates evidence-ready runs from comparison-ready and blocked runs", () => {
@@ -615,7 +683,7 @@ describe("CountyRunsPageClient", () => {
 
     expect(screen.getByDisplayValue("Lowest final gap")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View: Prototype blocked ×" })).toBeInTheDocument();
-    expect(screen.getByText("Showing 1 of 2 county runs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 3 county runs")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.queryByText("Placer County, CA")).not.toBeInTheDocument();
   });

@@ -288,6 +288,7 @@ describe("county onramp primitives", () => {
     expect(filterCountyRunListItemsByQuickView(items, "scaffold-backlog").map((item) => item.id)).toEqual([
       "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
     ]);
+    expect(filterCountyRunListItemsByQuickView(items, "ready-to-validate")).toEqual([]);
     expect(filterCountyRunListItemsByQuickView(items, "needs-attention").map((item) => item.id)).toEqual([
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -296,6 +297,7 @@ describe("county onramp primitives", () => {
       totalRuns: 4,
       needsAttention: 2,
       scaffoldBacklog: 1,
+      readyToValidate: 0,
       prototypeBlocked: 1,
       evidenceReady: 1,
       comparisonReady: 1,

@@ -93,6 +93,7 @@ export type CountyRunQuickView =
   | "all"
   | "needs-attention"
   | "scaffold-backlog"
+  | "ready-to-validate"
   | "best-validated"
   | "prototype-blocked"
   | "evidence-ready"
@@ -102,6 +103,7 @@ export type CountyRunSummaryCounts = {
   totalRuns: number;
   needsAttention: number;
   scaffoldBacklog: number;
+  readyToValidate: number;
   prototypeBlocked: number;
   evidenceReady: number;
   comparisonReady: number;
@@ -506,6 +508,7 @@ export function buildCountyRunSummaryCounts(items: CountyRunListItem[]): CountyR
     totalRuns: items.length,
     needsAttention: filterCountyRunListItemsByQuickView(items, "needs-attention").length,
     scaffoldBacklog: filterCountyRunListItemsByQuickView(items, "scaffold-backlog").length,
+    readyToValidate: filterCountyRunListItemsByQuickView(items, "ready-to-validate").length,
     prototypeBlocked: filterCountyRunListItemsByQuickView(items, "prototype-blocked").length,
     evidenceReady: filterCountyRunListItemsByQuickView(items, "evidence-ready").length,
     comparisonReady: filterCountyRunListItemsByQuickView(items, "comparison-ready").length,
@@ -543,6 +546,14 @@ export function filterCountyRunListItemsByQuickView(
       return (
         (item.scaffoldStationCount ?? 0) > 0 &&
         (item.scaffoldReadyStationCount ?? 0) < (item.scaffoldStationCount ?? 0)
+      );
+    }
+
+    if (quickView === "ready-to-validate") {
+      return (
+        (item.scaffoldStationCount ?? 0) > 0 &&
+        (item.scaffoldReadyStationCount ?? 0) >= (item.scaffoldStationCount ?? 0) &&
+        item.stage !== "validated-screening"
       );
     }
 
