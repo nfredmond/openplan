@@ -68,6 +68,7 @@ const COUNTY_RUN_QUICK_VIEW_OPTIONS: { value: CountyRunQuickView; label: string 
   { value: "all", label: "All runs" },
   { value: "needs-attention", label: "Needs attention" },
   { value: "scaffold-backlog", label: "Scaffold backlog" },
+  { value: "ready-to-validate", label: "Ready to validate" },
   { value: "best-validated", label: "Best validated" },
   { value: "prototype-blocked", label: "Prototype blocked" },
   { value: "evidence-ready", label: "Evidence-ready" },
@@ -79,6 +80,7 @@ const COUNTY_SUMMARY_TILES: {
     | "totalRuns"
     | "needsAttention"
     | "scaffoldBacklog"
+    | "readyToValidate"
     | "prototypeBlocked"
     | "evidenceReady"
     | "comparisonReady"
@@ -104,6 +106,12 @@ const COUNTY_SUMMARY_TILES: {
     label: "Scaffold backlog",
     quickView: "scaffold-backlog",
     className: "border border-orange-500/30 bg-orange-500/10",
+  },
+  {
+    key: "readyToValidate",
+    label: "Ready to validate",
+    quickView: "ready-to-validate",
+    className: "border border-lime-500/30 bg-lime-500/10",
   },
   {
     key: "prototypeBlocked",
