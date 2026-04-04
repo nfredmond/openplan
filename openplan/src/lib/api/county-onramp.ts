@@ -96,6 +96,10 @@ export const enqueueCountyRunResponseSchema = z.object({
   workerPayload: countyOnrampWorkerPayloadSchema,
 });
 
+export const updateCountyRunScaffoldRequestSchema = z.object({
+  csvContent: z.string().min(1),
+});
+
 export const ingestCountyRunManifestRequestSchema = z.object({
   jobId: z.string().uuid().optional(),
   status: z.enum(["completed", "failed"]).default("completed"),
@@ -132,4 +136,5 @@ export type CountyRunListResponse = z.infer<typeof countyRunListResponseSchema>;
 export type CountyRunArtifact = z.infer<typeof countyRunArtifactSchema>;
 export type CountyRunDetailResponse = z.infer<typeof countyRunDetailResponseSchema>;
 export type EnqueueCountyRunResponse = z.infer<typeof enqueueCountyRunResponseSchema>;
+export type UpdateCountyRunScaffoldRequest = z.infer<typeof updateCountyRunScaffoldRequestSchema>;
 export type IngestCountyRunManifestRequest = z.infer<typeof ingestCountyRunManifestRequestSchema>;

@@ -5,6 +5,7 @@ import {
   getCountyRunDetail,
   ingestCountyRunManifest,
   listCountyRuns,
+  updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 
 const manifest = {
@@ -190,6 +191,16 @@ describe("county onramp client helpers", () => {
         new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
       )
       .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ...detailPayload,
+            stage: "validation-scaffolded",
+            statusLabel: "Validation pending scaffold edits",
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      )
+      .mockResolvedValueOnce(
         new Response(JSON.stringify({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", status: "failed" }), {
           status: 202,
           headers: { "content-type": "application/json" },
@@ -209,6 +220,14 @@ describe("county onramp client helpers", () => {
       fetcher as typeof fetch
     );
     expect("stage" in completed && completed.stage).toBe("validated-screening");
+
+    const scaffoldUpdated = await updateCountyRunScaffold(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      { csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n" },
+      fetcher as typeof fetch
+    );
+    expect(scaffoldUpdated.stage).toBe("validation-scaffolded");
+    expect(scaffoldUpdated.statusLabel).toBe("Validation pending scaffold edits");
 
     const failed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

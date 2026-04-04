@@ -5,6 +5,7 @@ const listCountyRunsMock = vi.fn();
 const getCountyRunDetailMock = vi.fn();
 const createCountyRunMock = vi.fn();
 const enqueueCountyRunMock = vi.fn();
+const updateCountyRunScaffoldMock = vi.fn();
 const ingestCountyRunManifestMock = vi.fn();
 const searchCountyGeographiesMock = vi.fn();
 
@@ -13,6 +14,7 @@ vi.mock("@/lib/api/county-onramp-client", () => ({
   getCountyRunDetail: (...args: unknown[]) => getCountyRunDetailMock(...args),
   createCountyRun: (...args: unknown[]) => createCountyRunMock(...args),
   enqueueCountyRun: (...args: unknown[]) => enqueueCountyRunMock(...args),
+  updateCountyRunScaffold: (...args: unknown[]) => updateCountyRunScaffoldMock(...args),
   ingestCountyRunManifest: (...args: unknown[]) => ingestCountyRunManifestMock(...args),
 }));
 
@@ -92,7 +94,7 @@ describe("useCountyOnramp hooks", () => {
     expect(result.current.data?.stage).toBe("validated-screening");
   });
 
-  it("creates county runs and ingests manifests via mutation helper", async () => {
+  it("creates county runs, updates scaffolds, and ingests manifests via mutation helper", async () => {
     createCountyRunMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       stage: "bootstrap-incomplete",
@@ -106,6 +108,18 @@ describe("useCountyOnramp hooks", () => {
         countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
         callback: { manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest" },
       },
+    });
+    updateCountyRunScaffoldMock.mockResolvedValue({
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      geographyType: "county_fips",
+      geographyId: "06061",
+      geographyLabel: "Placer County, CA",
+      runName: "placer-run",
+      stage: "validation-scaffolded",
+      statusLabel: "Validation pending scaffold edits",
+      manifest: null,
+      artifacts: [],
+      validationSummary: null,
     });
     ingestCountyRunManifestMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
@@ -136,6 +150,18 @@ describe("useCountyOnramp hooks", () => {
     expect(enqueueResult).toMatchObject({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       status: "queued_stub",
+    });
+
+    let scaffoldResult;
+    await act(async () => {
+      scaffoldResult = await result.current.updateScaffold("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", {
+        csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
+      });
+    });
+
+    expect(scaffoldResult).toMatchObject({
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      stage: "validation-scaffolded",
     });
 
     let ingestResult;

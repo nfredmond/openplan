@@ -8,6 +8,7 @@ import type {
   CreateCountyRunResponse,
   EnqueueCountyRunResponse,
   IngestCountyRunManifestRequest,
+  UpdateCountyRunScaffoldRequest,
 } from "@/lib/api/county-onramp";
 import type { CountyGeographySearchResponse } from "@/lib/api/county-geographies";
 import {
@@ -16,6 +17,7 @@ import {
   getCountyRunDetail,
   ingestCountyRunManifest,
   listCountyRuns,
+  updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 import { searchCountyGeographies } from "@/lib/api/county-geographies-client";
 
@@ -214,6 +216,23 @@ export function useCountyRunMutations() {
     }
   }, []);
 
+  const updateScaffold = useCallback(
+    async (countyRunId: string, input: UpdateCountyRunScaffoldRequest): Promise<CountyRunDetailResponse | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await updateCountyRunScaffold(countyRunId, input);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update county run scaffold";
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   const ingestManifest = useCallback(
     async (
       countyRunId: string,
@@ -239,6 +258,7 @@ export function useCountyRunMutations() {
     error,
     create,
     enqueue,
+    updateScaffold,
     ingestManifest,
   };
 }

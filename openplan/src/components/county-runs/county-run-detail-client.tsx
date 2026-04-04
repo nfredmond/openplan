@@ -22,18 +22,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Textarea } from "@/components/ui/textarea";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
-  const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const { enqueue, updateScaffold, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
     status: "queued_stub";
     deliveryMode: "prepared" | "submitted";
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
+  const [scaffoldDraft, setScaffoldDraft] = useState("");
+  const [scaffoldSaveState, setScaffoldSaveState] = useState<"idle" | "saved" | "error">("idle");
   const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
   const [shareLinkError, setShareLinkError] = useState(false);
 
@@ -83,6 +86,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
+  const scaffoldTargetPath = data.manifest?.artifacts?.scaffold_csv ?? null;
+  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldDraft.trim());
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
   const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
@@ -118,6 +123,21 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     } catch {
       setShareLinkError(true);
     }
+  };
+
+  const saveScaffoldDraft = async () => {
+    if (!scaffoldTargetPath || !scaffoldDraft.trim()) {
+      return;
+    }
+
+    const result = await updateScaffold(countyRunId, { csvContent: scaffoldDraft });
+    if (!result) {
+      setScaffoldSaveState("error");
+      return;
+    }
+
+    setScaffoldSaveState("saved");
+    await refresh();
   };
 
   return (
@@ -222,6 +242,40 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             </div>
             <p>{validationScaffold.claim}</p>
             <p>Next scaffold action: {validationScaffold.nextActionLabel}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Scaffold update</CardTitle>
+            <CardDescription>Paste a full scaffold CSV to refresh observed-count readiness without leaving OpenPlan.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <div>
+              <div className="font-medium text-foreground">Registered scaffold path</div>
+              <p className="mt-1 break-all">{scaffoldTargetPath ?? "No scaffold file is currently registered for this county run."}</p>
+            </div>
+            <p>
+              Saving a revised scaffold will refresh readiness metrics immediately. If this county already had a validated
+              slice, OpenPlan will mark that validation stale until the validator is rerun.
+            </p>
+            <Textarea
+              value={scaffoldDraft}
+              onChange={(event) => {
+                setScaffoldDraft(event.target.value);
+                setScaffoldSaveState("idle");
+              }}
+              placeholder="Paste the full scaffold CSV here after editing observed counts and source metadata."
+              rows={10}
+              disabled={!scaffoldTargetPath}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="button" variant="outline" onClick={() => void saveScaffoldDraft()} disabled={actionLoading || !canSaveScaffold}>
+                Save scaffold CSV
+              </Button>
+              {scaffoldSaveState === "saved" ? <span className="text-emerald-600">Scaffold saved and readiness refreshed.</span> : null}
+              {scaffoldSaveState === "error" ? <span className="text-destructive">Unable to save scaffold.</span> : null}
+            </div>
           </CardContent>
         </Card>
 

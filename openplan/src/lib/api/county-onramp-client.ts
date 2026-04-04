@@ -5,12 +5,14 @@ import {
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
   ingestCountyRunManifestRequestSchema,
+  updateCountyRunScaffoldRequestSchema,
   type CountyRunDetailResponse,
   type CountyRunListResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
   type EnqueueCountyRunResponse,
   type IngestCountyRunManifestRequest,
+  type UpdateCountyRunScaffoldRequest,
 } from "@/lib/api/county-onramp";
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -87,6 +89,24 @@ export async function enqueueCountyRun(
   });
 
   return enqueueCountyRunResponseSchema.parse(await parseJson(response));
+}
+
+export async function updateCountyRunScaffold(
+  countyRunId: string,
+  input: UpdateCountyRunScaffoldRequest,
+  fetcher: typeof fetch = fetch
+): Promise<CountyRunDetailResponse> {
+  const body = updateCountyRunScaffoldRequestSchema.parse(input);
+  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  return countyRunDetailResponseSchema.parse(await parseJson(response));
 }
 
 export async function ingestCountyRunManifest(
