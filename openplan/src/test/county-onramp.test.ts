@@ -19,6 +19,7 @@ import {
   buildCountyBehavioralPrototypeUiCard,
   buildCountyRunSummaryCounts,
   buildCountyRunUiCard,
+  buildCountyValidationRerunUiCard,
   buildCountyValidationScaffoldUiCard,
   filterCountyRunListItemsByQuickView,
   getCountyRunMetricHighlights,
@@ -307,6 +308,7 @@ describe("county onramp primitives", () => {
     const metrics = getCountyRunMetricHighlights(manifest);
     const activitysimBundle = buildCountyActivitySimBundleUiCard(manifest);
     const scaffold = buildCountyValidationScaffoldUiCard(manifest);
+    const validationRerun = buildCountyValidationRerunUiCard(manifest);
     const behavioral = buildCountyBehavioralPrototypeUiCard(manifest);
 
     expect(metrics).toEqual({
@@ -327,6 +329,9 @@ describe("county onramp primitives", () => {
     expect(scaffold.readyStationCount).toBe(5);
     expect(scaffold.claim).toContain("All starter stations have observed counts and source metadata recorded");
     expect(scaffold.nextActionLabel).toContain("run validation");
+    expect(validationRerun.statusLabel).toBe("Ready to validate");
+    expect(validationRerun.ready).toBe(true);
+    expect(validationRerun.claim).toContain("validator rerun command");
     expect(behavioral.pipelineStatus).toBe("prototype_preflight_complete");
     expect(behavioral.runtimeStatus).toBe("behavioral_runtime_blocked");
     expect(behavioral.runtimePosture).toBe(

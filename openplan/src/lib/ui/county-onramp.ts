@@ -80,6 +80,14 @@ export type CountyValidationScaffoldUiCard = {
   claim: string;
 };
 
+export type CountyValidationRerunUiCard = {
+  statusLabel: string;
+  tone: "neutral" | "info" | "warning" | "success";
+  ready: boolean;
+  claim: string;
+  nextActionLabel: string;
+};
+
 export type CountyRunSort = "updated-desc" | "stage-desc" | "final-gap-asc" | "median-ape-asc";
 export type CountyRunQuickView =
   | "all"
@@ -210,6 +218,61 @@ export function buildCountyValidationScaffoldUiCard(
     readyStationCount: scaffold.ready_station_count,
     nextActionLabel: scaffold.next_action_label,
     claim: getValidationScaffoldClaim(scaffold),
+  };
+}
+
+export function buildCountyValidationRerunUiCard(
+  manifest: CountyOnrampManifest | null | undefined
+): CountyValidationRerunUiCard {
+  const scaffold = manifest?.summary?.scaffold;
+  const hasRuntimeSummary = Boolean(manifest?.summary?.run);
+
+  if (!hasRuntimeSummary) {
+    return {
+      statusLabel: "Runtime not recorded",
+      tone: "neutral",
+      ready: false,
+      claim: "OpenPlan cannot prepare a validation rerun until county runtime outputs are recorded.",
+      nextActionLabel: "Finish or ingest the county runtime before attempting validation.",
+    };
+  }
+
+  if (!scaffold) {
+    return {
+      statusLabel: "Scaffold missing",
+      tone: "neutral",
+      ready: false,
+      claim: "Validation rerun cannot start because a scaffold/counts CSV is not registered for this county run.",
+      nextActionLabel: "Generate or ingest the validation scaffold first.",
+    };
+  }
+
+  if (scaffold.station_count === 0) {
+    return {
+      statusLabel: "No stations selected",
+      tone: "warning",
+      ready: false,
+      claim: "Validation rerun is blocked because the scaffold does not currently contain any starter stations.",
+      nextActionLabel: "Regenerate the scaffold or add starter stations before validation.",
+    };
+  }
+
+  if (scaffold.ready_station_count < scaffold.station_count) {
+    return {
+      statusLabel: "Counts sourcing incomplete",
+      tone: "warning",
+      ready: false,
+      claim: `Validation rerun is blocked because only ${scaffold.ready_station_count} of ${scaffold.station_count} starter stations are validator-ready.`,
+      nextActionLabel: scaffold.next_action_label,
+    };
+  }
+
+  return {
+    statusLabel: "Ready to validate",
+    tone: "success",
+    ready: true,
+    claim: "The stored scaffold currently has observed counts and source metadata for all starter stations, so OpenPlan can prepare a validator rerun command for the documented slice.",
+    nextActionLabel: "Prepare the validator command, rerun validation, then ingest the refreshed summary artifacts.",
   };
 }
 

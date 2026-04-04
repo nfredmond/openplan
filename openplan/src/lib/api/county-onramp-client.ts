@@ -2,6 +2,7 @@ import {
   countyRunDetailResponseSchema,
   countyRunListResponseSchema,
   countyRunScaffoldResponseSchema,
+  prepareCountyRunValidationResponseSchema,
   createCountyRunRequestSchema,
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
@@ -10,6 +11,7 @@ import {
   type CountyRunDetailResponse,
   type CountyRunListResponse,
   type CountyRunScaffoldResponse,
+  type PrepareCountyRunValidationResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
   type EnqueueCountyRunResponse,
@@ -103,6 +105,18 @@ export async function getCountyRunScaffold(
   });
 
   return countyRunScaffoldResponseSchema.parse(await parseJson(response));
+}
+
+export async function prepareCountyRunValidation(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<PrepareCountyRunValidationResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/validate`, {
+    method: "POST",
+    headers: { accept: "application/json" },
+  });
+
+  return prepareCountyRunValidationResponseSchema.parse(await parseJson(response));
 }
 
 export async function updateCountyRunScaffold(

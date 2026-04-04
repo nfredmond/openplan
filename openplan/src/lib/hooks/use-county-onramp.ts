@@ -5,6 +5,7 @@ import type {
   CountyRunDetailResponse,
   CountyRunListResponse,
   CountyRunScaffoldResponse,
+  PrepareCountyRunValidationResponse,
   CreateCountyRunRequest,
   CreateCountyRunResponse,
   EnqueueCountyRunResponse,
@@ -19,6 +20,7 @@ import {
   getCountyRunScaffold,
   ingestCountyRunManifest,
   listCountyRuns,
+  prepareCountyRunValidation,
   updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 import { searchCountyGeographies } from "@/lib/api/county-geographies-client";
@@ -275,6 +277,23 @@ export function useCountyRunMutations() {
     []
   );
 
+  const prepareValidation = useCallback(
+    async (countyRunId: string): Promise<PrepareCountyRunValidationResponse | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await prepareCountyRunValidation(countyRunId);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to prepare county run validation";
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   const ingestManifest = useCallback(
     async (
       countyRunId: string,
@@ -301,6 +320,7 @@ export function useCountyRunMutations() {
     create,
     enqueue,
     updateScaffold,
+    prepareValidation,
     ingestManifest,
   };
 }

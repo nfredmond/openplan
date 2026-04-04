@@ -101,6 +101,18 @@ export const countyRunScaffoldResponseSchema = z.object({
   csvContent: z.string(),
 });
 
+export const prepareCountyRunValidationResponseSchema = z.object({
+  countyRunId: z.string().uuid(),
+  ready: z.boolean(),
+  statusLabel: z.string().min(1),
+  reasons: z.array(z.string()),
+  command: z.string().nullable(),
+  runOutputDir: z.string().nullable(),
+  countsCsvPath: z.string().nullable(),
+  outputDir: z.string().nullable(),
+  projectDbPath: z.string().nullable(),
+});
+
 export const updateCountyRunScaffoldRequestSchema = z.object({
   csvContent: z.string().min(1),
 });
@@ -142,5 +154,6 @@ export type CountyRunArtifact = z.infer<typeof countyRunArtifactSchema>;
 export type CountyRunDetailResponse = z.infer<typeof countyRunDetailResponseSchema>;
 export type EnqueueCountyRunResponse = z.infer<typeof enqueueCountyRunResponseSchema>;
 export type CountyRunScaffoldResponse = z.infer<typeof countyRunScaffoldResponseSchema>;
+export type PrepareCountyRunValidationResponse = z.infer<typeof prepareCountyRunValidationResponseSchema>;
 export type UpdateCountyRunScaffoldRequest = z.infer<typeof updateCountyRunScaffoldRequestSchema>;
 export type IngestCountyRunManifestRequest = z.infer<typeof ingestCountyRunManifestRequestSchema>;

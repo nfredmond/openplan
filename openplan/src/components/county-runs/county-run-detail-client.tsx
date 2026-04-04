@@ -14,6 +14,7 @@ import {
   buildCountyActivitySimBundleUiCard,
   buildCountyBehavioralPrototypeUiCard,
   buildCountyRunUiCard,
+  buildCountyValidationRerunUiCard,
   buildCountyValidationScaffoldUiCard,
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
@@ -28,7 +29,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
-  const { enqueue, updateScaffold, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const { enqueue, updateScaffold, prepareValidation, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const scaffoldTargetPath = data?.manifest?.artifacts?.scaffold_csv ?? null;
   const {
     data: scaffoldData,
@@ -47,6 +48,18 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     value: null,
   });
   const [scaffoldSaveState, setScaffoldSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [validationPrepState, setValidationPrepState] = useState<{
+    ready: boolean;
+    statusLabel: string;
+    reasons: string[];
+    command: string | null;
+    runOutputDir: string | null;
+    countsCsvPath: string | null;
+    outputDir: string | null;
+    projectDbPath: string | null;
+  } | null>(null);
+  const [copiedValidationCommand, setCopiedValidationCommand] = useState<string | null>(null);
+  const [validationCopyError, setValidationCopyError] = useState(false);
   const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
   const [shareLinkError, setShareLinkError] = useState(false);
 
@@ -89,6 +102,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
   const validationScaffold = buildCountyValidationScaffoldUiCard(data.manifest);
+  const validationRerun = buildCountyValidationRerunUiCard(data.manifest);
   const activitysimBundle = buildCountyActivitySimBundleUiCard(data.manifest);
   const behavioral = buildCountyBehavioralPrototypeUiCard(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
@@ -103,6 +117,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       : scaffoldSourceValue;
   const scaffoldDirty = Boolean(scaffoldTargetPath) && scaffoldEditorValue !== scaffoldSourceValue;
   const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldEditorValue.trim() && scaffoldDirty);
+  const canPrepareValidation = validationRerun.ready && !scaffoldDirty;
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
   const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
@@ -163,6 +178,43 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     setScaffoldDraftState({ path: null, value: null });
     setScaffoldSaveState("idle");
     await refreshScaffold();
+  };
+
+  const runPrepareValidation = async () => {
+    const result = await prepareValidation(countyRunId);
+    if (result) {
+      setValidationPrepState({
+        ready: result.ready,
+        statusLabel: result.statusLabel,
+        reasons: result.reasons,
+        command: result.command,
+        runOutputDir: result.runOutputDir,
+        countsCsvPath: result.countsCsvPath,
+        outputDir: result.outputDir,
+        projectDbPath: result.projectDbPath,
+      });
+      setCopiedValidationCommand(null);
+      setValidationCopyError(false);
+    }
+  };
+
+  const copyValidationCommand = async () => {
+    if (!validationPrepState?.command) {
+      return;
+    }
+
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setValidationCopyError(true);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(validationPrepState.command);
+      setCopiedValidationCommand(validationPrepState.command);
+      setValidationCopyError(false);
+    } catch {
+      setValidationCopyError(true);
+    }
   };
 
   return (
@@ -267,6 +319,51 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             </div>
             <p>{validationScaffold.claim}</p>
             <p>Next scaffold action: {validationScaffold.nextActionLabel}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Validation rerun</CardTitle>
+            <CardDescription>Prepare the exact validator command for the currently stored county scaffold.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <StatusBadge tone={validationRerun.tone}>{validationRerun.statusLabel}</StatusBadge>
+            <p>{validationRerun.claim}</p>
+            <p>Next validation action: {scaffoldDirty ? "Save or reload scaffold edits before preparing validation." : validationRerun.nextActionLabel}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="button" variant="outline" onClick={() => void runPrepareValidation()} disabled={actionLoading || !canPrepareValidation}>
+                Prepare validation command
+              </Button>
+              {scaffoldDirty ? <span>Save or reload scaffold edits first.</span> : null}
+            </div>
+            {validationPrepState ? (
+              <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
+                <div className="font-medium text-foreground">{validationPrepState.statusLabel}</div>
+                {validationPrepState.reasons.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {validationPrepState.reasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {validationPrepState.runOutputDir ? <div>Run output: {validationPrepState.runOutputDir}</div> : null}
+                {validationPrepState.countsCsvPath ? <div>Counts CSV: {validationPrepState.countsCsvPath}</div> : null}
+                {validationPrepState.outputDir ? <div>Validation output: {validationPrepState.outputDir}</div> : null}
+                {validationPrepState.projectDbPath ? <div>Project DB: {validationPrepState.projectDbPath}</div> : null}
+                {validationPrepState.command ? (
+                  <>
+                    <Textarea value={validationPrepState.command} readOnly rows={6} />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button type="button" variant="outline" onClick={() => void copyValidationCommand()}>
+                        {copiedValidationCommand === validationPrepState.command ? "Copied command" : "Copy validation command"}
+                      </Button>
+                      {validationCopyError ? <span className="text-destructive">Unable to copy validation command.</span> : null}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 

@@ -7,6 +7,7 @@ const getCountyRunScaffoldMock = vi.fn();
 const createCountyRunMock = vi.fn();
 const enqueueCountyRunMock = vi.fn();
 const updateCountyRunScaffoldMock = vi.fn();
+const prepareCountyRunValidationMock = vi.fn();
 const ingestCountyRunManifestMock = vi.fn();
 const searchCountyGeographiesMock = vi.fn();
 
@@ -17,6 +18,7 @@ vi.mock("@/lib/api/county-onramp-client", () => ({
   createCountyRun: (...args: unknown[]) => createCountyRunMock(...args),
   enqueueCountyRun: (...args: unknown[]) => enqueueCountyRunMock(...args),
   updateCountyRunScaffold: (...args: unknown[]) => updateCountyRunScaffoldMock(...args),
+  prepareCountyRunValidation: (...args: unknown[]) => prepareCountyRunValidationMock(...args),
   ingestCountyRunManifest: (...args: unknown[]) => ingestCountyRunManifestMock(...args),
 }));
 
@@ -110,7 +112,7 @@ describe("useCountyOnramp hooks", () => {
     expect(result.current.data?.csvContent).toContain("station_id");
   });
 
-  it("creates county runs, updates scaffolds, and ingests manifests via mutation helper", async () => {
+  it("creates county runs, updates scaffolds, prepares validation, and ingests manifests via mutation helper", async () => {
     createCountyRunMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       stage: "bootstrap-incomplete",
@@ -136,6 +138,17 @@ describe("useCountyOnramp hooks", () => {
       manifest: null,
       artifacts: [],
       validationSummary: null,
+    });
+    prepareCountyRunValidationMock.mockResolvedValue({
+      countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      ready: true,
+      statusLabel: "Ready to validate",
+      reasons: [],
+      command: "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/placer/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/placer/validation'",
+      runOutputDir: "/tmp/placer/run_output",
+      countsCsvPath: "/tmp/scaffold.csv",
+      outputDir: "/tmp/placer/validation",
+      projectDbPath: null,
     });
     ingestCountyRunManifestMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
@@ -178,6 +191,16 @@ describe("useCountyOnramp hooks", () => {
     expect(scaffoldResult).toMatchObject({
       id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       stage: "validation-scaffolded",
+    });
+
+    let validationResult;
+    await act(async () => {
+      validationResult = await result.current.prepareValidation("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    });
+
+    expect(validationResult).toMatchObject({
+      countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      ready: true,
     });
 
     let ingestResult;

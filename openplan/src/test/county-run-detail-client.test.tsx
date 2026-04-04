@@ -6,6 +6,7 @@ const refreshMock = vi.fn();
 const refreshScaffoldMock = vi.fn();
 const enqueueMock = vi.fn();
 const updateScaffoldMock = vi.fn();
+const prepareValidationMock = vi.fn();
 const clipboardWriteTextMock = vi.fn();
 
 let detailDataMock = {
@@ -58,6 +59,7 @@ vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRunMutations: () => ({
     enqueue: enqueueMock,
     updateScaffold: updateScaffoldMock,
+    prepareValidation: prepareValidationMock,
     loading: false,
     error: null,
   }),
@@ -90,6 +92,7 @@ describe("CountyRunDetailClient", () => {
     refreshScaffoldMock.mockReset();
     enqueueMock.mockReset();
     updateScaffoldMock.mockReset();
+    prepareValidationMock.mockReset();
     clipboardWriteTextMock.mockReset();
     clipboardWriteTextMock.mockResolvedValue(undefined);
   });
@@ -289,6 +292,89 @@ describe("CountyRunDetailClient", () => {
     const textarea = screen.getByPlaceholderText(/paste the full scaffold csv here/i) as HTMLTextAreaElement;
     await waitFor(() => expect(textarea.value).toContain("station_id,observed_volume"));
     expect(textarea.value).toContain("Caltrans");
+  });
+
+  it("prepares and copies a validation rerun command for scaffold-ready counties", async () => {
+    prepareValidationMock.mockResolvedValue({
+      countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      ready: true,
+      statusLabel: "Ready to validate",
+      reasons: [],
+      command:
+        "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'",
+      runOutputDir: "/tmp/nevada/run_output",
+      countsCsvPath: "/tmp/scaffold.csv",
+      outputDir: "/tmp/nevada/validation",
+      projectDbPath: null,
+    });
+
+    detailDataMock = {
+      ...detailDataMock,
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validation-scaffolded",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: null,
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 1,
+            observed_volume_filled_count: 1,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 1,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 1,
+            source_description_missing_count: 0,
+            ready_station_count: 1,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Prepare validation command" }));
+
+    await waitFor(() => expect(prepareValidationMock).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"));
+    expect(screen.getByDisplayValue(/validate_screening_observed_counts\.py/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy validation command" }));
+
+    await waitFor(() =>
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+        "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'"
+      )
+    );
   });
 
   it("keeps scaffold save disabled until the editor differs from the stored CSV", async () => {

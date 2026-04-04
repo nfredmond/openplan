@@ -6,6 +6,7 @@ import {
   getCountyRunScaffold,
   ingestCountyRunManifest,
   listCountyRuns,
+  prepareCountyRunValidation,
   updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 
@@ -203,6 +204,23 @@ describe("county onramp client helpers", () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
+            countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            ready: true,
+            statusLabel: "Ready to validate",
+            reasons: [],
+            command:
+              "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'",
+            runOutputDir: "/tmp/nevada/run_output",
+            countsCsvPath: "/tmp/scaffold.csv",
+            outputDir: "/tmp/nevada/validation",
+            projectDbPath: null,
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
             ...detailPayload,
             stage: "validation-scaffolded",
             statusLabel: "Validation pending scaffold edits",
@@ -234,6 +252,13 @@ describe("county onramp client helpers", () => {
     const scaffold = await getCountyRunScaffold("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(scaffold.path).toBe("/tmp/scaffold.csv");
     expect(scaffold.csvContent).toContain("station_id,observed_volume");
+
+    const validation = await prepareCountyRunValidation(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      fetcher as typeof fetch
+    );
+    expect(validation.ready).toBe(true);
+    expect(validation.command).toContain("validate_screening_observed_counts.py");
 
     const scaffoldUpdated = await updateCountyRunScaffold(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
