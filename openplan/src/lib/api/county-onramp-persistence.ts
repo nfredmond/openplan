@@ -29,6 +29,47 @@ export function deriveCountyRunStatusLabel(manifest: CountyOnrampManifest): stri
   return manifest.summary.validation?.screening_gate?.status_label ?? null;
 }
 
+function hasRecordValue(value: Record<string, unknown> | null | undefined): value is Record<string, unknown> {
+  return Boolean(value && Object.keys(value).length > 0);
+}
+
+export function deriveCountyRunStageFromValidation(params: {
+  runSummary?: Record<string, unknown> | null;
+  validationSummary?: Record<string, unknown> | null;
+}): CountyOnrampManifest["stage"] {
+  const { runSummary, validationSummary } = params;
+  if (hasRecordValue(validationSummary)) {
+    const statusLabel =
+      typeof ((validationSummary.screening_gate as Record<string, unknown> | undefined)?.status_label) === "string"
+        ? String((validationSummary.screening_gate as Record<string, unknown>).status_label).trim().toLowerCase()
+        : "";
+    return statusLabel === "bounded screening-ready" ? "validated-screening" : "validation-scaffolded";
+  }
+
+  if (hasRecordValue(runSummary)) {
+    return "runtime-complete";
+  }
+
+  return "bootstrap-incomplete";
+}
+
+export function deriveCountyBundleValidationSummary(
+  validationSummary: Record<string, unknown> | null | undefined
+): Record<string, unknown> | null {
+  if (!hasRecordValue(validationSummary)) {
+    return null;
+  }
+
+  const screeningGate = (validationSummary.screening_gate as Record<string, unknown> | undefined) ?? undefined;
+  const metrics = (validationSummary.metrics as Record<string, unknown> | undefined) ?? undefined;
+  return {
+    status_label: typeof screeningGate?.status_label === "string" ? screeningGate.status_label : null,
+    matched_stations:
+      typeof validationSummary.stations_matched === "number" ? validationSummary.stations_matched : null,
+    metrics: metrics ?? null,
+  };
+}
+
 export function buildCountyRunRecord(params: {
   workspaceId: string;
   geographyId: string;

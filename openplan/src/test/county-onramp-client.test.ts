@@ -7,6 +7,7 @@ import {
   ingestCountyRunManifest,
   listCountyRuns,
   prepareCountyRunValidation,
+  refreshCountyRunValidation,
   updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 
@@ -219,6 +220,9 @@ describe("county onramp client helpers", () => {
         )
       )
       .mockResolvedValueOnce(
+        new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
+      )
+      .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             ...detailPayload,
@@ -259,6 +263,12 @@ describe("county onramp client helpers", () => {
     );
     expect(validation.ready).toBe(true);
     expect(validation.command).toContain("validate_screening_observed_counts.py");
+
+    const refreshed = await refreshCountyRunValidation(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      fetcher as typeof fetch
+    );
+    expect(refreshed.stage).toBe("validated-screening");
 
     const scaffoldUpdated = await updateCountyRunScaffold(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

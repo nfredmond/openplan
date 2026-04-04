@@ -21,6 +21,7 @@ import {
   ingestCountyRunManifest,
   listCountyRuns,
   prepareCountyRunValidation,
+  refreshCountyRunValidation,
   updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 import { searchCountyGeographies } from "@/lib/api/county-geographies-client";
@@ -294,6 +295,23 @@ export function useCountyRunMutations() {
     []
   );
 
+  const refreshValidation = useCallback(
+    async (countyRunId: string): Promise<CountyRunDetailResponse | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await refreshCountyRunValidation(countyRunId);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to refresh county run validation";
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   const ingestManifest = useCallback(
     async (
       countyRunId: string,
@@ -321,6 +339,7 @@ export function useCountyRunMutations() {
     enqueue,
     updateScaffold,
     prepareValidation,
+    refreshValidation,
     ingestManifest,
   };
 }

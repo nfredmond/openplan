@@ -29,7 +29,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
-  const { enqueue, updateScaffold, prepareValidation, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const { enqueue, updateScaffold, prepareValidation, refreshValidation, loading: actionLoading, error: actionError } =
+    useCountyRunMutations();
   const scaffoldTargetPath = data?.manifest?.artifacts?.scaffold_csv ?? null;
   const {
     data: scaffoldData,
@@ -58,6 +59,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     outputDir: string | null;
     projectDbPath: string | null;
   } | null>(null);
+  const [validationRefreshState, setValidationRefreshState] = useState<"idle" | "refreshed" | "error">("idle");
   const [copiedValidationCommand, setCopiedValidationCommand] = useState<string | null>(null);
   const [validationCopyError, setValidationCopyError] = useState(false);
   const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
@@ -167,6 +169,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     }
 
     setScaffoldSaveState("saved");
+    setValidationRefreshState("idle");
     await Promise.all([refresh(), refreshScaffold()]);
   };
 
@@ -177,6 +180,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
     setScaffoldDraftState({ path: null, value: null });
     setScaffoldSaveState("idle");
+    setValidationRefreshState("idle");
     await refreshScaffold();
   };
 
@@ -193,9 +197,22 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         outputDir: result.outputDir,
         projectDbPath: result.projectDbPath,
       });
+      setValidationRefreshState("idle");
       setCopiedValidationCommand(null);
       setValidationCopyError(false);
     }
+  };
+
+  const runRefreshValidation = async () => {
+    const result = await refreshValidation(countyRunId);
+    if (!result) {
+      setValidationRefreshState("error");
+      return;
+    }
+
+    setValidationRefreshState("refreshed");
+    setValidationPrepState(null);
+    await refresh();
   };
 
   const copyValidationCommand = async () => {
@@ -335,7 +352,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               <Button type="button" variant="outline" onClick={() => void runPrepareValidation()} disabled={actionLoading || !canPrepareValidation}>
                 Prepare validation command
               </Button>
+              <Button type="button" variant="ghost" onClick={() => void runRefreshValidation()} disabled={actionLoading || scaffoldDirty}>
+                Refresh validation from disk
+              </Button>
               {scaffoldDirty ? <span>Save or reload scaffold edits first.</span> : null}
+              {validationRefreshState === "refreshed" ? <span className="text-emerald-600">Validation refreshed from disk.</span> : null}
+              {validationRefreshState === "error" ? <span className="text-destructive">Unable to refresh validation from disk.</span> : null}
             </div>
             {validationPrepState ? (
               <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
@@ -388,6 +410,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               onChange={(event) => {
                 setScaffoldDraftState({ path: scaffoldTargetPath, value: event.target.value });
                 setScaffoldSaveState("idle");
+                setValidationRefreshState("idle");
               }}
               placeholder="Paste the full scaffold CSV here after editing observed counts and source metadata."
               rows={10}

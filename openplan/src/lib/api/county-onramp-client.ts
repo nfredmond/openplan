@@ -119,6 +119,18 @@ export async function prepareCountyRunValidation(
   return prepareCountyRunValidationResponseSchema.parse(await parseJson(response));
 }
 
+export async function refreshCountyRunValidation(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<CountyRunDetailResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/validate/refresh`, {
+    method: "POST",
+    headers: { accept: "application/json" },
+  });
+
+  return countyRunDetailResponseSchema.parse(await parseJson(response));
+}
+
 export async function updateCountyRunScaffold(
   countyRunId: string,
   input: UpdateCountyRunScaffoldRequest,
