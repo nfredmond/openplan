@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { RefreshCcw } from "lucide-react";
-import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
+import { useCountyRunDetail, useCountyRunMutations, useCountyRunScaffold } from "@/lib/hooks/use-county-onramp";
 import {
   getCountyRunEnqueueHelpText,
   getCountyRunEnqueueStatusLabel,
@@ -29,13 +29,23 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, updateScaffold, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const scaffoldTargetPath = data?.manifest?.artifacts?.scaffold_csv ?? null;
+  const {
+    data: scaffoldData,
+    loading: scaffoldLoading,
+    error: scaffoldError,
+    refresh: refreshScaffold,
+  } = useCountyRunScaffold(countyRunId, Boolean(scaffoldTargetPath));
   const [enqueueState, setEnqueueState] = useState<{
     status: "queued_stub";
     deliveryMode: "prepared" | "submitted";
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
-  const [scaffoldDraft, setScaffoldDraft] = useState("");
+  const [scaffoldDraftState, setScaffoldDraftState] = useState<{ path: string | null; value: string | null }>({
+    path: null,
+    value: null,
+  });
   const [scaffoldSaveState, setScaffoldSaveState] = useState<"idle" | "saved" | "error">("idle");
   const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
   const [shareLinkError, setShareLinkError] = useState(false);
@@ -86,8 +96,11 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
-  const scaffoldTargetPath = data.manifest?.artifacts?.scaffold_csv ?? null;
-  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldDraft.trim());
+  const scaffoldEditorValue =
+    scaffoldDraftState.path === scaffoldTargetPath
+      ? scaffoldDraftState.value ?? scaffoldData?.csvContent ?? ""
+      : scaffoldData?.csvContent ?? "";
+  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldEditorValue.trim());
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
   const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
@@ -126,18 +139,18 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   };
 
   const saveScaffoldDraft = async () => {
-    if (!scaffoldTargetPath || !scaffoldDraft.trim()) {
+    if (!scaffoldTargetPath || !scaffoldEditorValue.trim()) {
       return;
     }
 
-    const result = await updateScaffold(countyRunId, { csvContent: scaffoldDraft });
+    const result = await updateScaffold(countyRunId, { csvContent: scaffoldEditorValue });
     if (!result) {
       setScaffoldSaveState("error");
       return;
     }
 
     setScaffoldSaveState("saved");
-    await refresh();
+    await Promise.all([refresh(), refreshScaffold()]);
   };
 
   return (
@@ -248,7 +261,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <Card>
           <CardHeader>
             <CardTitle>Scaffold update</CardTitle>
-            <CardDescription>Paste a full scaffold CSV to refresh observed-count readiness without leaving OpenPlan.</CardDescription>
+            <CardDescription>Edit the current scaffold in place or paste a full replacement CSV without leaving OpenPlan.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             <div>
@@ -259,10 +272,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               Saving a revised scaffold will refresh readiness metrics immediately. If this county already had a validated
               slice, OpenPlan will mark that validation stale until the validator is rerun.
             </p>
+            {scaffoldLoading ? <p>Loading current scaffold CSV…</p> : null}
+            {scaffoldError ? <p className="text-destructive">{scaffoldError}</p> : null}
             <Textarea
-              value={scaffoldDraft}
+              value={scaffoldEditorValue}
               onChange={(event) => {
-                setScaffoldDraft(event.target.value);
+                setScaffoldDraftState({ path: scaffoldTargetPath, value: event.target.value });
                 setScaffoldSaveState("idle");
               }}
               placeholder="Paste the full scaffold CSV here after editing observed counts and source metadata."

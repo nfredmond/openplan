@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, extname, isAbsolute, resolve } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -43,6 +43,93 @@ function resolveScaffoldPath(scaffoldPath: string): string {
     throw new CountyValidationScaffoldCsvError("Registered scaffold path must end with .csv.");
   }
   return resolvedPath;
+}
+
+function hasErrnoCode(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("county-runs.scaffold.get", request);
+  const startedAt = Date.now();
+
+  try {
+    const routeParams = await context.params;
+    const parsedParams = paramsSchema.safeParse(routeParams);
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: "Invalid county run route params" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: countyRun, error: countyRunError } = await supabase
+      .from("county_runs")
+      .select("id, manifest_json")
+      .eq("id", parsedParams.data.countyRunId)
+      .maybeSingle();
+
+    if (countyRunError) {
+      audit.error("county_run_lookup_failed", {
+        message: countyRunError.message,
+        code: countyRunError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load county run" }, { status: 500 });
+    }
+
+    if (!countyRun) {
+      return NextResponse.json({ error: "County run not found" }, { status: 404 });
+    }
+
+    const parsedManifest = countyOnrampManifestSchema.safeParse(countyRun.manifest_json ?? null);
+    if (!parsedManifest.success) {
+      audit.warn("county_run_manifest_missing", { countyRunId: parsedParams.data.countyRunId });
+      return NextResponse.json({ error: "County run does not have a stored onramp manifest yet" }, { status: 400 });
+    }
+
+    const scaffoldPath = parsedManifest.data.artifacts.scaffold_csv;
+    if (!scaffoldPath) {
+      return NextResponse.json({ error: "County run does not have a registered scaffold CSV path" }, { status: 400 });
+    }
+
+    const resolvedScaffoldPath = resolveScaffoldPath(scaffoldPath);
+    const csvContent = normalizeCountyValidationScaffoldCsvContent(await readFile(resolvedScaffoldPath, "utf8"));
+
+    audit.info("county_run_scaffold_loaded", {
+      countyRunId: parsedParams.data.countyRunId,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return NextResponse.json({ path: scaffoldPath, csvContent }, { status: 200 });
+  } catch (error) {
+    if (error instanceof CountyValidationScaffoldCsvError) {
+      audit.warn("county_run_scaffold_invalid_csv", {
+        message: error.message,
+        durationMs: Date.now() - startedAt,
+      });
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    if (hasErrnoCode(error, "ENOENT")) {
+      audit.warn("county_run_scaffold_missing_file", {
+        durationMs: Date.now() - startedAt,
+      });
+      return NextResponse.json({ error: "Registered scaffold CSV file was not found" }, { status: 404 });
+    }
+
+    audit.error("county_run_scaffold_get_unhandled_error", {
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+    return NextResponse.json({ error: "Unexpected error while loading county run scaffold" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {

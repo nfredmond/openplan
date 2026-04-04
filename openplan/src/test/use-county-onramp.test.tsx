@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const listCountyRunsMock = vi.fn();
 const getCountyRunDetailMock = vi.fn();
+const getCountyRunScaffoldMock = vi.fn();
 const createCountyRunMock = vi.fn();
 const enqueueCountyRunMock = vi.fn();
 const updateCountyRunScaffoldMock = vi.fn();
@@ -12,6 +13,7 @@ const searchCountyGeographiesMock = vi.fn();
 vi.mock("@/lib/api/county-onramp-client", () => ({
   listCountyRuns: (...args: unknown[]) => listCountyRunsMock(...args),
   getCountyRunDetail: (...args: unknown[]) => getCountyRunDetailMock(...args),
+  getCountyRunScaffold: (...args: unknown[]) => getCountyRunScaffoldMock(...args),
   createCountyRun: (...args: unknown[]) => createCountyRunMock(...args),
   enqueueCountyRun: (...args: unknown[]) => enqueueCountyRunMock(...args),
   updateCountyRunScaffold: (...args: unknown[]) => updateCountyRunScaffoldMock(...args),
@@ -27,6 +29,7 @@ import {
   useCountyRunDetail,
   useCountyRunMutations,
   useCountyRuns,
+  useCountyRunScaffold,
 } from "@/lib/hooks/use-county-onramp";
 
 describe("useCountyOnramp hooks", () => {
@@ -92,6 +95,19 @@ describe("useCountyOnramp hooks", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.data?.stage).toBe("validated-screening");
+  });
+
+  it("loads county run scaffold content when enabled", async () => {
+    getCountyRunScaffoldMock.mockResolvedValue({
+      path: "/tmp/scaffold.csv",
+      csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
+    });
+
+    const { result } = renderHook(() => useCountyRunScaffold("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", true));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data?.path).toBe("/tmp/scaffold.csv");
+    expect(result.current.data?.csvContent).toContain("station_id");
   });
 
   it("creates county runs, updates scaffolds, and ingests manifests via mutation helper", async () => {

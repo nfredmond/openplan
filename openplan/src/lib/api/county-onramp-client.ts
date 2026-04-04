@@ -1,6 +1,7 @@
 import {
   countyRunDetailResponseSchema,
   countyRunListResponseSchema,
+  countyRunScaffoldResponseSchema,
   createCountyRunRequestSchema,
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
@@ -8,6 +9,7 @@ import {
   updateCountyRunScaffoldRequestSchema,
   type CountyRunDetailResponse,
   type CountyRunListResponse,
+  type CountyRunScaffoldResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
   type EnqueueCountyRunResponse,
@@ -89,6 +91,18 @@ export async function enqueueCountyRun(
   });
 
   return enqueueCountyRunResponseSchema.parse(await parseJson(response));
+}
+
+export async function getCountyRunScaffold(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<CountyRunScaffoldResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  });
+
+  return countyRunScaffoldResponseSchema.parse(await parseJson(response));
 }
 
 export async function updateCountyRunScaffold(

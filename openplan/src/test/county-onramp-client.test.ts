@@ -3,6 +3,7 @@ import {
   createCountyRun,
   enqueueCountyRun,
   getCountyRunDetail,
+  getCountyRunScaffold,
   ingestCountyRunManifest,
   listCountyRuns,
   updateCountyRunScaffold,
@@ -193,6 +194,15 @@ describe("county onramp client helpers", () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
+            path: "/tmp/scaffold.csv",
+            csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
             ...detailPayload,
             stage: "validation-scaffolded",
             statusLabel: "Validation pending scaffold edits",
@@ -220,6 +230,10 @@ describe("county onramp client helpers", () => {
       fetcher as typeof fetch
     );
     expect("stage" in completed && completed.stage).toBe("validated-screening");
+
+    const scaffold = await getCountyRunScaffold("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
+    expect(scaffold.path).toBe("/tmp/scaffold.csv");
+    expect(scaffold.csvContent).toContain("station_id,observed_volume");
 
     const scaffoldUpdated = await updateCountyRunScaffold(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

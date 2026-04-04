@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   CountyRunDetailResponse,
   CountyRunListResponse,
+  CountyRunScaffoldResponse,
   CreateCountyRunRequest,
   CreateCountyRunResponse,
   EnqueueCountyRunResponse,
@@ -15,6 +16,7 @@ import {
   createCountyRun,
   enqueueCountyRun,
   getCountyRunDetail,
+  getCountyRunScaffold,
   ingestCountyRunManifest,
   listCountyRuns,
   updateCountyRunScaffold,
@@ -175,6 +177,46 @@ export function useCountyRunDetail(countyRunId?: string, refreshMs?: number) {
 
     return () => window.clearInterval(timer);
   }, [countyRunId, refreshMs, refresh]);
+
+  return {
+    data,
+    loading,
+    error,
+    refresh,
+  };
+}
+
+export function useCountyRunScaffold(countyRunId?: string, enabled = true) {
+  const [data, setData] = useState<CountyRunScaffoldResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!countyRunId || !enabled) {
+      setData(null);
+      setError(null);
+      setLoading(false);
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const next = await getCountyRunScaffold(countyRunId);
+      setData(next);
+      return next;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load county run scaffold";
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [countyRunId, enabled]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   return {
     data,
