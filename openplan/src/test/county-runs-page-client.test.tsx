@@ -16,6 +16,7 @@ let countyRunsItemsMock = [
     geographyLabel: "Nevada County, CA",
     runName: "nevada-run",
     stage: "validated-screening",
+    stageReasonLabel: "bounded screening-ready",
     statusLabel: "bounded screening-ready",
     enqueueStatus: "queued_stub",
     runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -46,6 +47,7 @@ let countyRunsItemsMock = [
     geographyLabel: "Placer County, CA",
     runName: "placer-run",
     stage: "bootstrap-incomplete",
+    stageReasonLabel: "County onboarding job is still running or awaiting its first recorded runtime artifacts.",
     statusLabel: null,
     enqueueStatus: "not-enqueued",
     runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -118,6 +120,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Nevada County, CA",
         runName: "nevada-run",
         stage: "validated-screening",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -148,6 +151,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Placer County, CA",
         runName: "placer-run",
         stage: "bootstrap-incomplete",
+        stageReasonLabel: "County onboarding job is still running or awaiting its first recorded runtime artifacts.",
         statusLabel: null,
         enqueueStatus: "not-enqueued",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -200,6 +204,7 @@ describe("CountyRunsPageClient", () => {
     expect(screen.getByRole("button", { name: "Evidence-ready (0)" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Comparison-ready (0)" })).toBeInTheDocument();
     expect(screen.getByText("Preflight-only evidence")).toBeInTheDocument();
+    expect(screen.getAllByText("Why this stage").length).toBeGreaterThan(0);
     expect(screen.getByText("Preflight-only behavioral evidence")).toBeInTheDocument();
     expect(screen.getByText("Pipeline status: Prototype preflight complete")).toBeInTheDocument();
     expect(screen.getByText("Runtime status: Behavioral runtime blocked")).toBeInTheDocument();
@@ -398,6 +403,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Nevada County, CA",
         runName: "nevada-run",
         stage: "validated-screening",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -421,6 +427,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Sutter County, CA",
         runName: "sutter-run",
         stage: "validated-screening",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -444,6 +451,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Placer County, CA",
         runName: "placer-run",
         stage: "runtime-complete",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -496,6 +504,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Nevada County, CA",
         runName: "nevada-run",
         stage: "validated-screening",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -519,6 +528,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Sutter County, CA",
         runName: "sutter-run",
         stage: "validated-screening",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
@@ -542,6 +552,7 @@ describe("CountyRunsPageClient", () => {
         geographyLabel: "Placer County, CA",
         runName: "placer-run",
         stage: "runtime-complete",
+        stageReasonLabel: "bounded screening-ready",
         statusLabel: "bounded screening-ready",
         enqueueStatus: "queued_stub",
         runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",

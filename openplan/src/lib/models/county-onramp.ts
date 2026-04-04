@@ -151,7 +151,7 @@ export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
 export function getCountyRunStageLabel(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
-      return "Running";
+      return "Bootstrap In Progress";
     case "runtime-complete":
       return "Runtime Complete";
     case "validation-scaffolded":
@@ -161,6 +161,58 @@ export function getCountyRunStageLabel(stage: CountyRunStage): string {
     default:
       return stage;
   }
+}
+
+export function getCountyRunStageReasonLabel(input: {
+  stage: CountyRunStage;
+  enqueueStatus?: CountyRunEnqueueStatus | null;
+  statusLabel?: string | null;
+  behavioralPipelineStatus?: string | null;
+  behavioralRuntimeStatus?: string | null;
+  behavioralComparisonReady?: boolean | null;
+  behavioralEvidenceReady?: boolean | null;
+}): string | null {
+  if (input.stage === "validated-screening") {
+    return input.statusLabel?.trim() || "Validation gate passed on the documented slice.";
+  }
+
+  if (input.stage === "validation-scaffolded") {
+    return "Scaffold exists; count ingestion or station cleanup is still underway.";
+  }
+
+  if (input.stage === "runtime-complete") {
+    return "Runtime artifacts are complete; observed-count validation has not closed yet.";
+  }
+
+  if (input.behavioralComparisonReady) {
+    return "Behavioral comparison artifacts are ready for internal review.";
+  }
+
+  if (input.behavioralPipelineStatus === "prototype_pipeline_running") {
+    return "Behavioral prototype lane is still running.";
+  }
+
+  if (input.behavioralRuntimeStatus === "behavioral_runtime_blocked") {
+    return "Behavioral runtime was requested but only reached preflight depth.";
+  }
+
+  if (input.behavioralRuntimeStatus === "behavioral_runtime_failed") {
+    return "Behavioral runtime attempted execution and failed.";
+  }
+
+  if (input.behavioralEvidenceReady) {
+    return "Prototype evidence artifacts exist, but comparison-ready outputs are not complete.";
+  }
+
+  if (input.enqueueStatus === "queued_stub") {
+    return "Bootstrap handoff is prepared for background execution.";
+  }
+
+  if (input.enqueueStatus === "failed") {
+    return "Most recent enqueue/bootstrap attempt failed and needs operator review.";
+  }
+
+  return "County onboarding job is still running or awaiting its first recorded runtime artifacts.";
 }
 
 export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info" | "warning" | "success" {

@@ -198,6 +198,7 @@ describe("/api/county-runs route", () => {
           geographyLabel: "Nevada County, CA",
           runName: "nevada-run",
           stage: "validated-screening",
+          stageReasonLabel: "bounded screening-ready",
           statusLabel: "bounded screening-ready",
           enqueueStatus: "queued_stub",
           lastEnqueuedAt: "2026-03-24T23:05:00Z",

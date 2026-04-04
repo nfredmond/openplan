@@ -220,6 +220,7 @@ describe("county onramp primitives", () => {
         geographyLabel: "Yuba County, CA",
         runName: "yuba-run",
         stage: "bootstrap-incomplete",
+        stageReasonLabel: "County onboarding job is still running or awaiting its first recorded runtime artifacts.",
         behavioralPipelineStatus: null,
         behavioralRuntimeStatus: null,
         behavioralEvidenceReady: false,
@@ -319,6 +320,7 @@ describe("county onramp primitives", () => {
     expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
+    expect(getCountyRunStageLabel("bootstrap-incomplete")).toBe("Bootstrap In Progress");
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");
     expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
     expect(getCountyRunCaveats("runtime-complete")).toContain("No local validation result yet.");

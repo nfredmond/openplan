@@ -888,6 +888,12 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                     </p>
                   ) : null}
                 </div>
+                {item.stageReasonLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Why this stage</div>
+                    <p className="mt-1 text-muted-foreground">{item.stageReasonLabel}</p>
+                  </div>
+                ) : null}
                 {item.runtimePresetLabel ? (
                   <div>
                     <div className="font-medium text-foreground">Runtime preset</div>

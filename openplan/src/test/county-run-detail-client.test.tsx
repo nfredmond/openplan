@@ -14,6 +14,7 @@ let detailDataMock = {
   geographyLabel: "Nevada County, CA",
   runName: "nevada-run",
   stage: "validated-screening" as const,
+  stageReasonLabel: "bounded screening-ready",
   statusLabel: "bounded screening-ready",
   enqueueStatus: "not-enqueued" as const,
   lastEnqueuedAt: null,
@@ -63,6 +64,7 @@ describe("CountyRunDetailClient", () => {
       geographyLabel: "Nevada County, CA",
       runName: "nevada-run",
       stage: "validated-screening",
+      stageReasonLabel: "bounded screening-ready",
       statusLabel: "bounded screening-ready",
       enqueueStatus: "not-enqueued",
       lastEnqueuedAt: null,
@@ -186,6 +188,8 @@ describe("CountyRunDetailClient", () => {
 
     render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
 
+    expect(screen.getByText("Why this stage")).toBeInTheDocument();
+    expect(screen.getAllByText("bounded screening-ready").length).toBeGreaterThan(0);
     expect(screen.getByText("ActivitySim handoff")).toBeInTheDocument();
     expect(screen.getByText("Bundle ready")).toBeInTheDocument();
     expect(screen.getByText("Bundle ready: Yes")).toBeInTheDocument();

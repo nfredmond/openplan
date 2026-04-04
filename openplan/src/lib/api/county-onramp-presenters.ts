@@ -1,5 +1,6 @@
 import {
   countyOnrampManifestSchema,
+  getCountyRunStageReasonLabel,
   type CountyOnrampManifest,
   type CountyRunStage,
 } from "@/lib/models/county-onramp";
@@ -102,11 +103,22 @@ export function presentCountyRunListItem(row: CountyRunRowLike): CountyRunListIt
     behavioralComparisonStatusLabel = "Await recorded behavioral state";
   }
 
+  const stageReasonLabel = getCountyRunStageReasonLabel({
+    stage: row.stage,
+    enqueueStatus: row.enqueue_status ?? "not-enqueued",
+    statusLabel: row.status_label,
+    behavioralPipelineStatus: behavioral?.pipeline_status ?? null,
+    behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
+    behavioralComparisonReady,
+    behavioralEvidenceReady,
+  });
+
   return {
     id: row.id,
     geographyLabel: row.geography_label ?? row.geography_id,
     runName: row.run_name,
     stage: row.stage,
+    stageReasonLabel,
     statusLabel: row.status_label,
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
@@ -155,6 +167,22 @@ export function presentCountyRunDetail(params: {
         )
       : null;
 
+  const behavioral = manifest?.summary?.behavioral_prototype;
+  const behavioralEvidenceReady = Boolean(
+    behavioral?.prototype_manifest_path || behavioral?.runtime_manifest_path || behavioral?.runtime_summary_path
+  );
+  const behavioralComparisonReady =
+    behavioral?.pipeline_status === "behavioral_runtime_succeeded" && Boolean(behavioral?.kpi_summary_path);
+  const stageReasonLabel = getCountyRunStageReasonLabel({
+    stage: row.stage,
+    enqueueStatus: row.enqueue_status ?? "not-enqueued",
+    statusLabel: row.status_label,
+    behavioralPipelineStatus: behavioral?.pipeline_status ?? null,
+    behavioralRuntimeStatus: behavioral?.runtime_status ?? null,
+    behavioralComparisonReady,
+    behavioralEvidenceReady,
+  });
+
   return {
     id: row.id,
     workspaceId: row.workspace_id,
@@ -163,6 +191,7 @@ export function presentCountyRunDetail(params: {
     geographyLabel: row.geography_label ?? row.geography_id,
     runName: row.run_name,
     stage: row.stage,
+    stageReasonLabel,
     statusLabel: row.status_label,
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,

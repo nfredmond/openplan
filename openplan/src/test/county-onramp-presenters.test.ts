@@ -124,6 +124,7 @@ describe("county onramp presenters", () => {
       geographyLabel: "Nevada County, CA",
       runName: "nevada-run",
       stage: "validated-screening",
+      stageReasonLabel: "bounded screening-ready",
       statusLabel: "bounded screening-ready",
       enqueueStatus: "not-enqueued",
       lastEnqueuedAt: null,

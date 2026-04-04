@@ -210,6 +210,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               <div className="font-medium text-foreground">Allowed claim</div>
               <p className="mt-1">{card.allowedClaim}</p>
             </div>
+            {data.stageReasonLabel ? (
+              <div>
+                <div className="font-medium text-foreground">Why this stage</div>
+                <p className="mt-1">{data.stageReasonLabel}</p>
+              </div>
+            ) : null}
             <div>
               <div className="font-medium text-foreground">Next action</div>
               <p className="mt-1">{card.nextAction}</p>
