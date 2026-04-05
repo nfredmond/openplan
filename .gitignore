@@ -19,3 +19,31 @@ data/pilot-nevada-county/*.csv.gz
 data/pilot-nevada-county/aeq_project/
 data/pilot-nevada-county/run_output/*.omx
 data/pilot-nevada-county/run_output/state_*.json
+data/pilot-nevada-county/caltrans_2023_aadt.xlsx
+data/pilot-nevada-county/run_output_v2/
+data/pilot-nevada-county/run_output_v3/
+data/pilot-nevada-county/validation/rerun_*/
+
+# Superseded county-specific Placer pilot scratch/runtime artifacts
+# Keep the tracked validation scaffolds; park the exploratory county-local build assets.
+data/pilot-placer-county/aeq_project/
+data/pilot-placer-county/package/
+data/pilot-placer-county/roads/
+data/pilot-placer-county/run_output/
+data/pilot-placer-county/tracts/
+data/pilot-placer-county/*.csv.gz
+data/pilot-placer-county/build_network_package.py
+data/pilot-placer-county/build_trip_tables.py
+data/pilot-placer-county/step1_osm.py
+data/pilot-placer-county/step2_assign.py
+
+# Local screening-run experiments and transfer artifacts not selected as canonical repo truth
+# Existing tracked run bundles remain versioned; these rules only park current local leftovers.
+data/screening-runs/grass-valley-core-generic-v1/
+data/screening-runs/nevada-county-runtime-diagnostics-20260324/
+data/screening-runs/nevada-county-runtime-extscalar05-20260324/
+data/screening-runs/nevada-county-runtime-mainline-scalar0369-diagnostics-20260324/
+data/screening-runs/nevada-county-runtime-norenumber-20260324/
+data/screening-runs/nevada-county-runtime-purposemix-a-20260324/
+data/screening-runs/nevada-county-runtime-validation-20260324-remapfix/
+data/screening-runs/placer-county-runtime-connectorbias2-20260324/
