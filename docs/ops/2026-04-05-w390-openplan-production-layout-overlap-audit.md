@@ -1,14 +1,14 @@
 # OpenPlan Production Layout Overlap Audit — 2026-04-05 (390×1200)
 
-- Base URL: https://openplan-natford.vercel.app
+- Base URL: https://openplan-iqnflq779-natford.vercel.app
 - Viewport: 390×1200
-- QA user email: openplan-layout-audit-2026-04-05T05-07-13-323Z@natfordplanning.com
-- Workspace id: 83e6c17b-3648-4683-a73c-b61dd1bccfa0
-- Project id: 33eb8361-a208-4d91-bcd2-f0a9a57f9f8a
-- Plan id: c0417988-d1db-401e-83e9-6baad916a9cd
-- Model id: 6d823791-8836-4125-826f-99ee9713bb1e
-- Program id: f289d04b-52db-49d4-a1a2-991da6f7e5b5
-- County run id: 06d79b07-8c1a-4284-a6a7-54fabe15c6cf
+- QA user email: openplan-layout-audit-2026-04-05T06-26-53-518Z@natfordplanning.com
+- Workspace id: 441cfba6-77cf-4913-96bd-0b7768b1e39b
+- Project id: b96a7aa5-91ab-44f8-9c93-dc3507b76515
+- Plan id: 2a5b7284-2868-4fca-b310-f451aa606836
+- Model id: c23cdaab-20d4-402d-a2db-1233733bf96e
+- Program id: 135988c7-4745-497c-8f30-122cf25923aa
+- County run id: 861513d3-57a1-42dc-8e8b-c1bc025456c1
 
 ## Page audit summary
 - layout-audit-01-projects-list: 4 candidate surfaces scanned; 0 overlap(s) detected.
@@ -20,8 +20,11 @@
 - layout-audit-07-county-run-detail: 12 candidate surfaces scanned; 0 overlap(s) detected.
 - layout-audit-08-billing: 0 candidate surfaces scanned; 0 overlap(s) detected.
 
-## Likely offenders
+## Likely overlap offenders
 - No meaningful container overlap was detected on the audited pages.
+
+## Likely overflow offenders
+- No meaningful horizontal overflow was detected on the audited pages.
 
 ## Artifacts
 - docs/ops/2026-04-05-test-output/2026-04-05-w390-layout-audit-01-projects-list.png
@@ -35,4 +38,4 @@
 
 ## Notes
 - This audit measures actual bounding-box overlap between visible card/section containers, not subjective visual crowding.
-- QA production records and auth identities created during this pass were subsequently cleaned up; see `docs/ops/2026-04-05-openplan-production-qa-cleanup.md`.
+- QA production records and auth identities should be removed after the audit via the cleanup harness.

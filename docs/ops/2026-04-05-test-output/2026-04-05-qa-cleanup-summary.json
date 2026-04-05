@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-04-05T05:08:09.795Z",
+  "startedAt": "2026-04-05T06:27:54.927Z",
   "createdAfter": "2026-04-05",
   "envPath": "/tmp/openplan-prod.env",
   "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i",
@@ -102,13 +102,13 @@
     "usersPlanned": 0,
     "workspaces": [
       {
-        "id": "83e6c17b-3648-4683-a73c-b61dd1bccfa0",
-        "name": "QA Layout Audit Project 2026-04-05T05-07-13-323Z",
-        "slug": "qa-layout-audit-project-2026-04-05t05-07-13-323z",
+        "id": "441cfba6-77cf-4913-96bd-0b7768b1e39b",
+        "name": "QA Layout Audit Project 2026-04-05T06-26-53-518Z",
+        "slug": "qa-layout-audit-project-2026-04-05t06-26-53-518z",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-05T05:07:16.841048+00:00"
+        "created_at": "2026-04-05T06:26:58.91275+00:00"
       }
     ]
   },

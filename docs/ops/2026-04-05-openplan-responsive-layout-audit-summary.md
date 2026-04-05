@@ -4,7 +4,9 @@
 
 A production Playwright audit was run against the main authenticated OpenPlan surfaces to detect **real bounding-box overlap** between visible card/section containers.
 
-Result: **no meaningful container overlaps detected** across the audited pages at the following viewport widths:
+The first responsive mobile pass exposed a real county-detail bug: at `390px`, `county-runs/[countyRunId]` was horizontally overflowing because card/section surfaces were inheriting a too-wide min-content width. That was fixed by making shared cards/section surfaces explicitly shrinkable on narrow layouts.
+
+Final result after the fix: **no meaningful container overlaps or horizontal overflow detected** across the audited pages at the following viewport widths:
 
 - desktop: `1440×1600`
 - tablet-ish: `1024×1500`
@@ -25,7 +27,7 @@ Result: **no meaningful container overlaps detected** across the audited pages a
 ## Interpretation
 
 This does **not** prove the UI is perfect.
-It does mean the current complaint is unlikely to be a broad literal “cards are overlapping each other” bug on the core authenticated surfaces.
+It does mean the current complaint is unlikely to be a broad literal “cards are overlapping each other” bug on the core authenticated surfaces after the current fix set.
 
 More likely explanations now are:
 
@@ -48,6 +50,11 @@ See `docs/ops/2026-04-05-test-output/` for the viewport-tagged screenshots:
 - `2026-04-05-w1024-layout-audit-*`
 - `2026-04-05-w768-layout-audit-*`
 - `2026-04-05-w390-layout-audit-*`
+
+## Fix note
+
+- Narrow-layout hardening shipped in `6e1bece` — `fix: prevent card overflow on narrow layouts`
+- Final mobile confirmation was run against the direct Nat Ford deployment URL to avoid alias churn during verification.
 
 ## Next recommended lane
 

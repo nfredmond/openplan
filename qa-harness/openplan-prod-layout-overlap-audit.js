@@ -195,11 +195,25 @@ async function main() {
         }
       }
 
+      const viewportWidth = window.innerWidth;
+      const overflow = elements
+        .filter(({ rect }) => rect.right > viewportWidth + 4 || rect.left < -4)
+        .map(({ text, classes, rect }) => ({
+          text,
+          classes,
+          rect,
+          overflowRight: Math.max(0, rect.right - viewportWidth),
+          overflowLeft: Math.max(0, 0 - rect.left),
+        }));
+
       overlaps.sort((left, right) => right.overlapArea - left.overlapArea);
+      overflow.sort((left, right) => Math.max(right.overflowRight, right.overflowLeft) - Math.max(left.overflowRight, left.overflowLeft));
       return {
         cardCount: elements.length,
         overlapCount: overlaps.length,
         overlaps: overlaps.slice(0, 12),
+        overflowCount: overflow.length,
+        overflow: overflow.slice(0, 12),
       };
     });
 
@@ -347,7 +361,7 @@ async function main() {
     for (const entry of pagesToAudit) {
       await page.goto(entry.url, { waitUntil: 'networkidle' });
       const result = await auditCurrentPage(entry.name);
-      summary.notes.push(`${entry.name}: cardCount=${result.cardCount}, overlapCount=${result.overlapCount}.`);
+      summary.notes.push(`${entry.name}: cardCount=${result.cardCount}, overlapCount=${result.overlapCount}, overflowCount=${result.overflowCount}.`);
     }
 
     const offenders = summary.pages.filter((pageAudit) => pageAudit.overlapCount > 0);
@@ -368,7 +382,7 @@ async function main() {
       '## Page audit summary',
       ...summary.pages.map((pageAudit) => `- ${pageAudit.name}: ${pageAudit.cardCount} candidate surfaces scanned; ${pageAudit.overlapCount} overlap(s) detected.`),
       '',
-      '## Likely offenders',
+      '## Likely overlap offenders',
       ...(offenders.length
         ? offenders.flatMap((pageAudit) => [
             `### ${pageAudit.name}`,
@@ -376,6 +390,14 @@ async function main() {
             '',
           ])
         : ['- No meaningful container overlap was detected on the audited pages.', '']),
+      '## Likely overflow offenders',
+      ...(summary.pages.some((pageAudit) => pageAudit.overflowCount > 0)
+        ? summary.pages.flatMap((pageAudit) => pageAudit.overflowCount > 0 ? [
+            `### ${pageAudit.name}`,
+            ...pageAudit.overflow.map((entry, index) => `- Overflow ${index + 1}: right=${entry.overflowRight.toFixed(1)} left=${entry.overflowLeft.toFixed(1)} for [${entry.classes}] "${entry.text}"`),
+            '',
+          ] : [])
+        : ['- No meaningful horizontal overflow was detected on the audited pages.', '']),
       '## Artifacts',
       ...summary.screenshots.map((filePath) => `- ${path.relative(repoRoot, filePath)}`),
       '',

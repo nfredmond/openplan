@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-05
 
-- Started: 2026-04-05T05:08:09.795Z
+- Started: 2026-04-05T06:27:54.927Z
 - Created-after filter: 2026-04-05
 - QA match rule: /qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i
 
