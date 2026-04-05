@@ -1,3 +1,5 @@
+import { type SupabaseClient } from "@supabase/supabase-js";
+
 export type WorkspaceRecord = {
   name?: string | null;
   plan?: string | null;
@@ -31,18 +33,7 @@ export function unwrapWorkspaceRecord<T>(value: T | T[] | null | undefined): T |
   return value ?? null;
 }
 
-export type WorkspaceMembershipClient = {
-  from: (table: string) => {
-    select: (query: string) => {
-      eq: (column: string, value: string) => {
-        limit: (count: number) => PromiseLike<{
-          data: unknown[] | null;
-          error: { message?: string | null } | null;
-        }>;
-      };
-    };
-  };
-};
+export type WorkspaceMembershipClient = Pick<SupabaseClient<any>, "from">;
 
 export type WorkspaceMembershipSelection = {
   memberships: WorkspaceMembershipRow[];
