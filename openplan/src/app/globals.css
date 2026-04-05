@@ -290,6 +290,7 @@
 
   .module-intro-card,
   .module-section-surface {
+    min-width: 0;
     position: relative;
     overflow: hidden;
     border-radius: 1.85rem;
