@@ -110,6 +110,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     manifest: data.manifest,
     stage: data.stage,
   });
+  const runStatusLabel = data.statusLabel ?? card.statusLabel;
   const metrics = getCountyRunMetricHighlights(data.manifest);
   const validationScaffold = buildCountyValidationScaffoldUiCard(data.manifest);
   const validationRerun = buildCountyValidationRerunUiCard(data.manifest);
@@ -280,7 +281,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
-          {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
+          {runStatusLabel ? <StatusBadge tone={card.tone}>{runStatusLabel}</StatusBadge> : null}
           <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
           <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCcw className="h-4 w-4" />
@@ -348,7 +349,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <div>Median APE: {metrics.medianApe ?? "—"}</div>
             <div>Max APE: {metrics.maxApe ?? "—"}</div>
-            <div>Status: {card.statusLabel ?? "Not available"}</div>
+            <div>Status: {runStatusLabel ?? "Not available"}</div>
           </CardContent>
         </Card>
 

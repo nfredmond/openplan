@@ -392,6 +392,68 @@ describe("CountyRunDetailClient", () => {
     );
   });
 
+  it("surfaces the run status label when validation summary has been invalidated", () => {
+    detailDataMock = {
+      ...detailDataMock,
+      stage: "validation-scaffolded",
+      statusLabel: "Validation pending scaffold edits",
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validation-scaffolded",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: null,
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 2,
+            observed_volume_filled_count: 2,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 2,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 2,
+            source_description_missing_count: 0,
+            ready_station_count: 2,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    expect(screen.getAllByText("Validation pending scaffold edits").length).toBeGreaterThan(0);
+    expect(screen.getByText("Status: Validation pending scaffold edits")).toBeInTheDocument();
+  });
+
   it("refreshes validation from disk and updates county detail", async () => {
     refreshValidationMock.mockResolvedValue({
       ...detailDataMock,
