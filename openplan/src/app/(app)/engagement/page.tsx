@@ -149,7 +149,7 @@ export default async function EngagementPage({
             <h1 className="module-intro-title">Campaigns now have a real operator registry</h1>
             <p className="module-intro-description">
               Engagement V1 is intentionally narrow: create a campaign, link it to a project when needed, define intake
-              categories, and moderate structured input items without inventing a public portal yet.
+              categories, moderate structured input items, and use a controlled public portal without losing traceability.
             </p>
           </div>
 
@@ -187,13 +187,14 @@ export default async function EngagementPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Intake stays inside the audited app shell for now. The point of V1 is a durable schema and workflow lane,
-            not external publishing complexity.
+            Intake stays supervised by design. The point of V1 is a durable schema, a supportable moderation lane, and a
+            controlled public portal rather than a sprawling survey builder.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Campaigns can exist with or without a linked project, but never without workspace ownership.</div>
             <div className="module-operator-item">Categories are lightweight structure for moderation and reporting, not a full survey builder.</div>
             <div className="module-operator-item">Items track status, source, location signal, and internal notes from day one.</div>
+            <div className="module-operator-item">Public share links stay staged until a campaign is Active, then run through moderated intake.</div>
           </div>
         </article>
       </header>

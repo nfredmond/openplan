@@ -3,6 +3,8 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
+import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -142,9 +144,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const items = (itemsData ?? []) as ExportItemRow[];
-    const categoryMap = new Map(
-      ((categories ?? []) as ExportCategoryRow[]).map((c) => [c.id, c.label])
-    );
+    const exportCategories = (categories ?? []) as ExportCategoryRow[];
+    const categoryMap = new Map(exportCategories.map((c) => [c.id, c.label]));
+    const counts = summarizeEngagementItems(exportCategories, items);
+    const publicPortal = getPublicPortalState(access.campaign);
 
     audit.info("export_completed", {
       userId: user.id,
@@ -161,8 +164,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
           title: access.campaign.title,
           status: access.campaign.status,
           exportedAt: new Date().toISOString(),
+          publicPortal: {
+            label: publicPortal.label,
+            detail: publicPortal.detail,
+            portalPath: publicPortal.portalPath,
+            visibility: publicPortal.visibility,
+            shareTokenConfigured: Boolean(publicPortal.shareToken),
+            isPubliclyReachable: publicPortal.isPubliclyReachable,
+            isAcceptingSubmissions: publicPortal.isAcceptingSubmissions,
+          },
         },
-        categories: (categories ?? []) as ExportCategoryRow[],
+        categories: exportCategories,
         items: items.map((item) => ({
           ...item,
           categoryLabel: item.category_id ? categoryMap.get(item.category_id) ?? null : null,
@@ -170,6 +182,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
         meta: {
           totalItems: items.length,
           statusFilter,
+          counts,
+          handoffReadiness: {
+            readyForHandoffCount: counts.moderationQueue.readyForHandoffCount,
+            actionableCount: counts.moderationQueue.actionableCount,
+            uncategorizedItems: counts.uncategorizedItems,
+          },
         },
       };
 

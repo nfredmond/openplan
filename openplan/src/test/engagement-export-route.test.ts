@@ -78,6 +78,9 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
         project_id: null,
         title: "Test Campaign",
         status: "active",
+        share_token: "pilot-link-01",
+        allow_public_submissions: true,
+        submissions_closed_at: null,
       },
       error: null,
     });
@@ -157,8 +160,19 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
 
     const json = JSON.parse(await response.text());
     expect(json.campaign.id).toBe(validCampaignId);
+    expect(json.campaign.publicPortal).toMatchObject({
+      label: "Live · accepting submissions",
+      portalPath: "/engage/pilot-link-01",
+      isPubliclyReachable: true,
+      isAcceptingSubmissions: true,
+    });
     expect(json.items).toHaveLength(1);
     expect(json.items[0].categoryLabel).toBe("Safety");
+    expect(json.meta.handoffReadiness).toMatchObject({
+      readyForHandoffCount: 1,
+      actionableCount: 0,
+      uncategorizedItems: 0,
+    });
   });
 
   it("rejects unsupported format", async () => {

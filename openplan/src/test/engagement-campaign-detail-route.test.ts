@@ -300,4 +300,81 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       })
     );
   });
+
+  it("PATCH rejects an in-use share token after normalization", async () => {
+    campaignMaybeSingleMock
+      .mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "Downtown listening campaign",
+          status: "draft",
+          engagement_type: "comment_collection",
+          share_token: null,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: "99999999-9999-4999-8999-999999999999",
+        },
+        error: null,
+      });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          shareToken: " Pilot_Link_01 ",
+        }),
+      }),
+      {
+        params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: "That share token is already in use by another engagement campaign",
+    });
+  });
+
+  it("PATCH stores a lowercased share token when available", async () => {
+    campaignMaybeSingleMock
+      .mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "Downtown listening campaign",
+          status: "draft",
+          engagement_type: "comment_collection",
+          share_token: null,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          shareToken: " Pilot_Link_02 ",
+        }),
+      }),
+      {
+        params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        share_token: "pilot_link_02",
+      })
+    );
+  });
 });

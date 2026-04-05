@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
+import { normalizeShareToken } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
 const paramsSchema = z.object({
@@ -17,7 +18,9 @@ const patchCampaignSchema = z
     status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
     engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
     projectId: z.union([z.string().uuid(), z.null()]).optional(),
-    shareToken: z.union([z.string().trim().min(8).max(64), z.null()]).optional(),
+    shareToken: z
+      .union([z.string().trim().min(8).max(64).regex(/^[a-zA-Z0-9_-]+$/), z.null()])
+      .optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
   })
@@ -243,13 +246,41 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const nextShareToken =
+      parsed.data.shareToken !== undefined ? normalizeShareToken(parsed.data.shareToken) : undefined;
+
+    if (nextShareToken && nextShareToken !== normalizeShareToken(access.campaign.share_token)) {
+      const { data: existingShareTokenCampaign, error: shareTokenLookupError } = await supabase
+        .from("engagement_campaigns")
+        .select("id")
+        .eq("share_token", nextShareToken)
+        .maybeSingle();
+
+      if (shareTokenLookupError) {
+        audit.error("campaign_share_token_lookup_failed", {
+          campaignId: access.campaign.id,
+          shareToken: nextShareToken,
+          message: shareTokenLookupError.message,
+          code: shareTokenLookupError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify share token availability" }, { status: 500 });
+      }
+
+      if (existingShareTokenCampaign && existingShareTokenCampaign.id !== access.campaign.id) {
+        return NextResponse.json(
+          { error: "That share token is already in use by another engagement campaign" },
+          { status: 409 }
+        );
+      }
+    }
+
     const updates: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary;
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.engagementType !== undefined) updates.engagement_type = parsed.data.engagementType;
     if (parsed.data.projectId !== undefined) updates.project_id = nextProjectId;
-    if (parsed.data.shareToken !== undefined) updates.share_token = parsed.data.shareToken;
+    if (parsed.data.shareToken !== undefined) updates.share_token = nextShareToken;
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
 

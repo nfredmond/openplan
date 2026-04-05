@@ -6,10 +6,12 @@ import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getPublicPortalState } from "@/lib/engagement/public-portal";
 
 type ShareControlsCampaign = {
   id: string;
   title: string;
+  status: string;
   share_token: string | null;
   public_description: string | null;
   allow_public_submissions: boolean;
@@ -18,6 +20,13 @@ type ShareControlsCampaign = {
 
 function generateShareToken(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (value) => chars[value % chars.length]).join("");
+  }
+
   let token = "";
   for (let i = 0; i < 24; i++) {
     token += chars[Math.floor(Math.random() * chars.length)];
@@ -38,8 +47,14 @@ export function EngagementShareControls({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = shareToken
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/engage/${shareToken}`
+  const portalState = getPublicPortalState({
+    status: campaign.status,
+    share_token: shareToken,
+    allow_public_submissions: allowSubmissions,
+    submissions_closed_at: campaign.submissions_closed_at,
+  });
+  const shareUrl = portalState.portalPath
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}${portalState.portalPath}`
     : null;
 
   const handleCopy = useCallback(async () => {
@@ -93,8 +108,8 @@ export function EngagementShareControls({
           <p className="module-section-label">Public access</p>
           <h2 className="module-section-title">Share link & public portal</h2>
           <p className="module-section-description">
-            Generate a share token to create a public feedback portal for this campaign. Anyone with the link can view
-            approved feedback and optionally submit new input.
+            Configure a controlled public feedback portal for this campaign. A saved share link is only live once the
+            campaign status is Active.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/12 text-violet-700 dark:text-violet-300">
@@ -129,18 +144,41 @@ export function EngagementShareControls({
           </div>
         </div>
 
-        {shareUrl && (
-          <div className="rounded-xl border border-border/70 bg-background/80 p-3">
-            <div className="flex items-center gap-2 text-sm">
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="truncate font-mono text-xs">{shareUrl}</span>
-              <Button type="button" variant="ghost" size="sm" onClick={() => void handleCopy()} className="ml-auto shrink-0">
+        <div
+          className={`rounded-xl border p-3 text-sm ${
+            portalState.isPubliclyReachable
+              ? "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
+              : portalState.visibility === "private"
+                ? "border-border/70 bg-background/70"
+                : "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
+          }`}
+        >
+          <p className="font-semibold text-foreground">Portal status: {portalState.label}</p>
+          <p className="mt-1 text-muted-foreground">{portalState.detail}</p>
+          {shareUrl ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border/60 bg-background/80 px-3 py-2">
+                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <span className="truncate font-mono text-xs">{shareUrl}</span>
+              </div>
+              <Button type="button" variant="ghost" size="sm" onClick={() => void handleCopy()} className="shrink-0">
                 {copied ? <Check className="h-3.5 w-3.5 text-[color:var(--pine)]" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy"}
               </Button>
+              {portalState.isPubliclyReachable ? (
+                <a
+                  href={portalState.portalPath ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-input bg-background px-3 py-2 text-sm font-medium shadow-xs transition hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open portal
+                </a>
+              ) : null}
             </div>
-          </div>
-        )}
+          ) : null}
+        </div>
 
         <div className="space-y-1.5">
           <label htmlFor="public-description" className="text-[0.82rem] font-semibold">
