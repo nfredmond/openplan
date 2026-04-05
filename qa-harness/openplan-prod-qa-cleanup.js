@@ -210,6 +210,7 @@ async function main() {
     projectMeetingsResult,
     workspaceMembersResult,
     billingEventsResult,
+    countyRunsResult,
   ] = await Promise.all([
     restSelect('projects', 'id,workspace_id,name,created_at', `&created_at=gte.${createdAfter}T00:00:00Z&order=created_at.asc`),
     restSelect('reports', 'id,workspace_id,project_id,title,created_at', `&created_at=gte.${createdAfter}T00:00:00Z&order=created_at.asc`),
@@ -224,6 +225,7 @@ async function main() {
     restSelect('project_meetings', 'id,workspace_id,project_id', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
     restSelect('workspace_members', 'workspace_id,user_id,role', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
     restSelect('billing_events', 'id,workspace_id,event_type,payload,created_at', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
+    restSelect('county_runs', 'id,workspace_id,run_name,created_at', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
   ]);
 
   const projects = (Array.isArray(projectsResult.data) ? projectsResult.data : []).filter((project) => qaPattern.test(project.name || '') || workspaceIds.includes(project.workspace_id));
@@ -233,12 +235,15 @@ async function main() {
   const campaigns = (Array.isArray(campaignsResult.data) ? campaignsResult.data : []).filter((campaign) => qaPattern.test(campaign.title || '') || workspaceIds.includes(campaign.workspace_id));
   const campaignIds = campaigns.map((campaign) => campaign.id);
 
-  const [reportArtifactsResult, reportRunsResult, reportSectionsResult, engagementCategoriesResult, engagementItemsResult] = await Promise.all([
+  const countyRunIds = (Array.isArray(countyRunsResult.data) ? countyRunsResult.data : []).map((row) => row.id);
+
+  const [reportArtifactsResult, reportRunsResult, reportSectionsResult, engagementCategoriesResult, engagementItemsResult, countyRunArtifactsResult] = await Promise.all([
     restSelect('report_artifacts', 'id,report_id', reportIds.length ? `&${inFilter('report_id', reportIds)}` : '&limit=0'),
     restSelect('report_runs', 'id,report_id,run_id', reportIds.length ? `&${inFilter('report_id', reportIds)}` : '&limit=0'),
     restSelect('report_sections', 'id,report_id', reportIds.length ? `&${inFilter('report_id', reportIds)}` : '&limit=0'),
     restSelect('engagement_categories', 'id,campaign_id', campaignIds.length ? `&${inFilter('campaign_id', campaignIds)}` : '&limit=0'),
     restSelect('engagement_items', 'id,campaign_id', campaignIds.length ? `&${inFilter('campaign_id', campaignIds)}` : '&limit=0'),
+    restSelect('county_run_artifacts', 'id,county_run_id', countyRunIds.length ? `&${inFilter('county_run_id', countyRunIds)}` : '&limit=0'),
   ]);
 
   const reportArtifactIds = (Array.isArray(reportArtifactsResult.data) ? reportArtifactsResult.data : []).map((row) => row.id);
@@ -246,6 +251,7 @@ async function main() {
   const reportSectionIds = (Array.isArray(reportSectionsResult.data) ? reportSectionsResult.data : []).map((row) => row.id);
   const engagementCategoryIds = (Array.isArray(engagementCategoriesResult.data) ? engagementCategoriesResult.data : []).map((row) => row.id);
   const engagementItemIds = (Array.isArray(engagementItemsResult.data) ? engagementItemsResult.data : []).map((row) => row.id);
+  const countyRunArtifactIds = (Array.isArray(countyRunArtifactsResult.data) ? countyRunArtifactsResult.data : []).map((row) => row.id);
   const planIds = (Array.isArray(plansResult.data) ? plansResult.data : []).map((row) => row.id);
   const modelIds = (Array.isArray(modelsResult.data) ? modelsResult.data : []).map((row) => row.id);
   const programIds = (Array.isArray(programsResult.data) ? programsResult.data : []).map((row) => row.id);
@@ -266,6 +272,7 @@ async function main() {
     projectCount: projectIds.length,
     reportCount: reportIds.length,
     campaignCount: campaignIds.length,
+    countyRunCount: countyRunIds.length,
     usersPlanned: 0,
     workspaces: qaWorkspaces,
   };
@@ -280,6 +287,8 @@ async function main() {
     ['report_sections', 'id', reportSectionIds],
     ['engagement_items', 'id', engagementItemIds],
     ['engagement_categories', 'id', engagementCategoryIds],
+    ['county_run_artifacts', 'id', countyRunArtifactIds],
+    ['county_runs', 'id', countyRunIds],
     ['project_deliverables', 'id', deliverableIds],
     ['project_risks', 'id', riskIds],
     ['project_issues', 'id', issueIds],

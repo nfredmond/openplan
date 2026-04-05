@@ -9,6 +9,8 @@ import {
   buildCountyRunRecord,
 } from "@/lib/api/county-onramp-persistence";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
+import { countyOnrampManifestSchema } from "@/lib/models/county-onramp";
+import { preserveCountyInlineScaffoldCsvContent } from "@/lib/api/county-onramp-inline-scaffold";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -122,15 +124,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Manifest is required when status=completed" }, { status: 400 });
     }
 
+    const existingManifestParse = countyOnrampManifestSchema.safeParse(existingRow.manifest_json ?? null);
+    const preservedManifest = preserveCountyInlineScaffoldCsvContent(
+      existingManifestParse.success ? existingManifestParse.data : null,
+      manifest
+    );
+
     const nextRecord = buildCountyRunRecord({
       workspaceId: existingRow.workspace_id,
       geographyId: existingRow.geography_id,
       geographyLabel: existingRow.geography_label,
-      manifest,
+      manifest: preservedManifest,
     });
     const artifacts = buildCountyRunArtifacts({
       workspaceId: existingRow.workspace_id,
-      manifest,
+      manifest: preservedManifest,
     });
 
     const { data: updatedRows, error: updateError } = await supabase

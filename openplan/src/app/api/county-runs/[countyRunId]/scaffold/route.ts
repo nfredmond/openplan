@@ -7,6 +7,10 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { countyOnrampManifestSchema } from "@/lib/models/county-onramp";
 import { updateCountyRunScaffoldRequestSchema } from "@/lib/api/county-onramp";
 import {
+  getCountyInlineScaffoldCsvContent,
+  withCountyInlineScaffoldCsvContent,
+} from "@/lib/api/county-onramp-inline-scaffold";
+import {
   CountyValidationScaffoldCsvError,
   normalizeCountyValidationScaffoldCsvContent,
   summarizeCountyValidationScaffoldCsv,
@@ -99,8 +103,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "County run does not have a registered scaffold CSV path" }, { status: 400 });
     }
 
-    const resolvedScaffoldPath = resolveScaffoldPath(scaffoldPath);
-    const csvContent = normalizeCountyValidationScaffoldCsvContent(await readFile(resolvedScaffoldPath, "utf8"));
+    const inlineCsvContent = getCountyInlineScaffoldCsvContent(parsedManifest.data);
+    const csvContent = inlineCsvContent
+      ? normalizeCountyValidationScaffoldCsvContent(inlineCsvContent)
+      : normalizeCountyValidationScaffoldCsvContent(await readFile(resolveScaffoldPath(scaffoldPath), "utf8"));
 
     audit.info("county_run_scaffold_loaded", {
       countyRunId: parsedParams.data.countyRunId,
@@ -201,20 +207,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
     await writeFile(resolvedScaffoldPath, normalizedCsvContent, "utf8");
 
     const invalidatesValidation = Boolean(manifest.summary.validation);
-    const nextManifest = countyOnrampManifestSchema.parse({
-      ...manifest,
-      stage: invalidatesValidation ? "validation-scaffolded" : manifest.stage,
-      artifacts: {
-        ...manifest.artifacts,
-        validation_summary_json: invalidatesValidation ? null : manifest.artifacts.validation_summary_json,
-      },
-      summary: {
-        ...manifest.summary,
-        validation: invalidatesValidation ? null : manifest.summary.validation,
-        bundle_validation: invalidatesValidation ? null : manifest.summary.bundle_validation,
-        scaffold: scaffoldSummary,
-      },
-    });
+    const nextManifest = withCountyInlineScaffoldCsvContent(
+      countyOnrampManifestSchema.parse({
+        ...manifest,
+        stage: invalidatesValidation ? "validation-scaffolded" : manifest.stage,
+        artifacts: {
+          ...manifest.artifacts,
+          validation_summary_json: invalidatesValidation ? null : manifest.artifacts.validation_summary_json,
+        },
+        summary: {
+          ...manifest.summary,
+          validation: invalidatesValidation ? null : manifest.summary.validation,
+          bundle_validation: invalidatesValidation ? null : manifest.summary.bundle_validation,
+          scaffold: scaffoldSummary,
+        },
+      }),
+      normalizedCsvContent
+    );
 
     const nextStatusLabel = invalidatesValidation ? "Validation pending scaffold edits" : existingRow.status_label;
     const nextValidationSummaryJson = invalidatesValidation ? null : existingRow.validation_summary_json ?? null;
