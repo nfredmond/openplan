@@ -3,14 +3,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCountyRunManifestRequestSchema } from "@/lib/api/county-onramp";
-import { isAuthenticatedCountyWorkerCallback } from "@/lib/api/county-onramp-worker-auth";
 import {
   buildCountyRunArtifacts,
   buildCountyRunRecord,
 } from "@/lib/api/county-onramp-persistence";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
-import { countyOnrampManifestSchema } from "@/lib/models/county-onramp";
-import { preserveCountyInlineScaffoldCsvContent } from "@/lib/api/county-onramp-inline-scaffold";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -55,14 +52,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const supabase = await createClient();
-    const isWorkerCallback = isAuthenticatedCountyWorkerCallback(request);
-    let user = null;
-    if (!isWorkerCallback) {
-      const authResult = await supabase.auth.getUser();
-      user = authResult.data.user;
-    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!isWorkerCallback && !user) {
+    if (!user) {
       audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -92,7 +86,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const { error: updateError } = await supabase
         .from("county_runs")
         .update({
-          enqueue_status: "failed",
           status_label: failureStatus,
         })
         .eq("id", existingRow.id);
@@ -108,7 +101,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.warn("county_run_worker_failed", {
         countyRunId: existingRow.id,
         jobId: parsed.data.jobId ?? null,
-        authMode: isWorkerCallback ? "worker" : "user",
         message: failureStatus,
         durationMs: Date.now() - startedAt,
       });
@@ -118,27 +110,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const manifest = parsed.data.manifest;
     if (!manifest) {
-      audit.warn("county_run_manifest_missing", {
+      audit.warn("manifest_missing_for_completed_status", {
         countyRunId: existingRow.id,
       });
-      return NextResponse.json({ error: "Manifest is required when status=completed" }, { status: 400 });
+      return NextResponse.json({ error: "Completed county run payload is missing a manifest" }, { status: 400 });
     }
-
-    const existingManifestParse = countyOnrampManifestSchema.safeParse(existingRow.manifest_json ?? null);
-    const preservedManifest = preserveCountyInlineScaffoldCsvContent(
-      existingManifestParse.success ? existingManifestParse.data : null,
-      manifest
-    );
 
     const nextRecord = buildCountyRunRecord({
       workspaceId: existingRow.workspace_id,
       geographyId: existingRow.geography_id,
       geographyLabel: existingRow.geography_label,
-      manifest: preservedManifest,
+      manifest,
     });
     const artifacts = buildCountyRunArtifacts({
       workspaceId: existingRow.workspace_id,
-      manifest: preservedManifest,
+      manifest,
     });
 
     const { data: updatedRows, error: updateError } = await supabase
@@ -207,7 +193,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("county_run_manifest_ingested", {
       countyRunId: existingRow.id,
       jobId: parsed.data.jobId ?? null,
-      authMode: isWorkerCallback ? "worker" : "user",
       stage: response.stage,
       statusLabel: response.statusLabel ?? null,
       durationMs: Date.now() - startedAt,

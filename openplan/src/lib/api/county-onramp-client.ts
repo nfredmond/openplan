@@ -1,22 +1,16 @@
 import {
   countyRunDetailResponseSchema,
   countyRunListResponseSchema,
-  countyRunScaffoldResponseSchema,
-  prepareCountyRunValidationResponseSchema,
   createCountyRunRequestSchema,
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
   ingestCountyRunManifestRequestSchema,
-  updateCountyRunScaffoldRequestSchema,
   type CountyRunDetailResponse,
   type CountyRunListResponse,
-  type CountyRunScaffoldResponse,
-  type PrepareCountyRunValidationResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
   type EnqueueCountyRunResponse,
   type IngestCountyRunManifestRequest,
-  type UpdateCountyRunScaffoldRequest,
 } from "@/lib/api/county-onramp";
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -93,60 +87,6 @@ export async function enqueueCountyRun(
   });
 
   return enqueueCountyRunResponseSchema.parse(await parseJson(response));
-}
-
-export async function getCountyRunScaffold(
-  countyRunId: string,
-  fetcher: typeof fetch = fetch
-): Promise<CountyRunScaffoldResponse> {
-  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
-    method: "GET",
-    headers: { accept: "application/json" },
-  });
-
-  return countyRunScaffoldResponseSchema.parse(await parseJson(response));
-}
-
-export async function prepareCountyRunValidation(
-  countyRunId: string,
-  fetcher: typeof fetch = fetch
-): Promise<PrepareCountyRunValidationResponse> {
-  const response = await fetcher(`/api/county-runs/${countyRunId}/validate`, {
-    method: "POST",
-    headers: { accept: "application/json" },
-  });
-
-  return prepareCountyRunValidationResponseSchema.parse(await parseJson(response));
-}
-
-export async function refreshCountyRunValidation(
-  countyRunId: string,
-  fetcher: typeof fetch = fetch
-): Promise<CountyRunDetailResponse> {
-  const response = await fetcher(`/api/county-runs/${countyRunId}/validate/refresh`, {
-    method: "POST",
-    headers: { accept: "application/json" },
-  });
-
-  return countyRunDetailResponseSchema.parse(await parseJson(response));
-}
-
-export async function updateCountyRunScaffold(
-  countyRunId: string,
-  input: UpdateCountyRunScaffoldRequest,
-  fetcher: typeof fetch = fetch
-): Promise<CountyRunDetailResponse> {
-  const body = updateCountyRunScaffoldRequestSchema.parse(input);
-  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  return countyRunDetailResponseSchema.parse(await parseJson(response));
 }
 
 export async function ingestCountyRunManifest(

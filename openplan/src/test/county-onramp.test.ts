@@ -3,29 +3,18 @@ import {
   countyOnrampManifestSchema,
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
-  getCountyRunEnqueueHelpText,
-  getCountyRunEnqueueStatusLabel,
-  getCountyRunEnqueueStatusTone,
   getCountyRunStageLabel,
   getCountyRunStageTone,
 } from "@/lib/models/county-onramp";
 import {
   createCountyRunRequestSchema,
   ingestCountyRunManifestRequestSchema,
-  type CountyRunListItem,
 } from "@/lib/api/county-onramp";
 import {
-  buildCountyActivitySimBundleUiCard,
-  buildCountyBehavioralPrototypeUiCard,
-  buildCountyRunSummaryCounts,
   buildCountyRunUiCard,
-  buildCountyValidationRerunUiCard,
-  buildCountyValidationScaffoldUiCard,
-  filterCountyRunListItemsByQuickView,
   getCountyRunMetricHighlights,
   getCountyRunNextAction,
   getCountyRunStatusLabel,
-  sortCountyRunListItems,
 } from "@/lib/ui/county-onramp";
 
 const validatedManifestFixture = {
@@ -43,13 +32,6 @@ const validatedManifestFixture = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
-    activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
-    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-    behavioral_runtime_manifest_json: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
-    behavioral_runtime_summary_json: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
-    behavioral_ingestion_summary_json: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
-    behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-    behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
   },
   runtime: {
     keep_project: true,
@@ -59,10 +41,6 @@ const validatedManifestFixture = {
     hbw_scalar: null,
     hbo_scalar: null,
     nhb_scalar: null,
-    activitysim_container_image: "python:3.11-slim",
-    container_engine_cli: "docker",
-    activitysim_container_cli_template: "python -m pip install activitysim && activitysim run",
-    container_network_mode: "bridge",
   },
   summary: {
     run: {
@@ -84,41 +62,6 @@ const validatedManifestFixture = {
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
-    },
-    scaffold: {
-      station_count: 5,
-      observed_volume_filled_count: 5,
-      observed_volume_missing_count: 0,
-      source_agency_filled_count: 5,
-      source_agency_tbd_count: 0,
-      source_description_filled_count: 5,
-      source_description_missing_count: 0,
-      ready_station_count: 5,
-      next_action_label:
-        "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
-    },
-    activitysim_bundle: {
-      status: "completed",
-      output_dir: "/tmp/activitysim",
-      manifest_path: "/tmp/activitysim/bundle_manifest.json",
-      land_use_rows: 26,
-      households: 41415,
-      persons: 102322,
-      skim_mode: "copy",
-    },
-    behavioral_prototype: {
-      pipeline_status: "prototype_preflight_complete",
-      runtime_status: "behavioral_runtime_blocked",
-      runtime_mode: "preflight_only",
-      runtime_posture: "containerized ActivitySim runtime configured via python:3.11-slim, but not executed",
-      output_root: "/tmp/behavioral",
-      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-      runtime_manifest_path: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
-      runtime_summary_path: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
-      ingestion_summary_path: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
-      kpi_summary_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-      kpi_packet_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
-      caveats: ["ActivitySim CLI is not installed or not on PATH"],
     },
   },
 } as const;
@@ -185,133 +128,9 @@ describe("county onramp primitives", () => {
     expect(card.nextAction).toContain("validation report");
   });
 
-  it("sorts county list items by recency, stage, and validation metrics", () => {
-    const items: CountyRunListItem[] = [
-      {
-        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        geographyLabel: "Nevada County, CA",
-        runName: "nevada-run",
-        stage: "validated-screening",
-        behavioralPipelineStatus: "prototype_preflight_complete",
-        behavioralRuntimeStatus: "behavioral_runtime_blocked",
-        behavioralEvidenceReady: true,
-        behavioralComparisonReady: false,
-        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        updatedAt: "2026-03-24T23:00:00Z",
-        finalGap: 0.0091,
-        medianApe: 16.01,
-      },
-      {
-        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        geographyLabel: "Placer County, CA",
-        runName: "placer-run",
-        stage: "runtime-complete",
-        behavioralPipelineStatus: "behavioral_runtime_succeeded",
-        behavioralRuntimeStatus: "behavioral_runtime_succeeded",
-        behavioralEvidenceReady: true,
-        behavioralComparisonReady: true,
-        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        updatedAt: "2026-03-24T23:10:00Z",
-        finalGap: 0.0042,
-        medianApe: 12.5,
-      },
-      {
-        id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        geographyLabel: "Sutter County, CA",
-        runName: "sutter-run",
-        stage: "validated-screening",
-        behavioralPipelineStatus: "behavioral_runtime_succeeded",
-        behavioralRuntimeStatus: "behavioral_runtime_succeeded",
-        behavioralEvidenceReady: true,
-        behavioralComparisonReady: false,
-        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        updatedAt: "2026-03-24T23:05:00Z",
-        finalGap: 0.006,
-        medianApe: 14,
-      },
-      {
-        id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-        geographyLabel: "Yuba County, CA",
-        runName: "yuba-run",
-        stage: "bootstrap-incomplete",
-        stageReasonLabel: "County onboarding job is still running or awaiting its first recorded runtime artifacts.",
-        behavioralPipelineStatus: null,
-        behavioralRuntimeStatus: null,
-        behavioralEvidenceReady: false,
-        behavioralComparisonReady: false,
-        scaffoldStationCount: 8,
-        scaffoldReadyStationCount: 0,
-        runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-        updatedAt: "2026-03-24T22:00:00Z",
-        finalGap: null,
-        medianApe: null,
-      },
-    ];
-
-    expect(sortCountyRunListItems(items, "updated-desc").map((item) => item.id)).toEqual([
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(sortCountyRunListItems(items, "stage-desc").map((item) => item.id)).toEqual([
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(sortCountyRunListItems(items, "final-gap-asc").map((item) => item.id)).toEqual([
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(sortCountyRunListItems(items, "median-ape-asc").map((item) => item.id)).toEqual([
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "comparison-ready").map((item) => item.id)).toEqual([
-      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "evidence-ready").map((item) => item.id)).toEqual([
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "best-validated").map((item) => item.id)).toEqual([
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "prototype-blocked").map((item) => item.id)).toEqual([
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "scaffold-backlog").map((item) => item.id)).toEqual([
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(filterCountyRunListItemsByQuickView(items, "ready-to-validate")).toEqual([]);
-    expect(filterCountyRunListItemsByQuickView(items, "needs-attention").map((item) => item.id)).toEqual([
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    ]);
-    expect(buildCountyRunSummaryCounts(items)).toEqual({
-      totalRuns: 4,
-      needsAttention: 2,
-      scaffoldBacklog: 1,
-      readyToValidate: 0,
-      prototypeBlocked: 1,
-      evidenceReady: 1,
-      comparisonReady: 1,
-      validatedScreening: 2,
-    });
-  });
-
   it("exposes metric highlights and basic stage helpers", () => {
     const manifest = countyOnrampManifestSchema.parse(validatedManifestFixture);
     const metrics = getCountyRunMetricHighlights(manifest);
-    const activitysimBundle = buildCountyActivitySimBundleUiCard(manifest);
-    const scaffold = buildCountyValidationScaffoldUiCard(manifest);
-    const validationRerun = buildCountyValidationRerunUiCard(manifest);
-    const behavioral = buildCountyBehavioralPrototypeUiCard(manifest);
 
     expect(metrics).toEqual({
       zoneCount: 26,
@@ -321,44 +140,11 @@ describe("county onramp primitives", () => {
       medianApe: 16.01,
       maxApe: 49.48,
     });
-    expect(activitysimBundle.statusLabel).toBe("Bundle ready");
-    expect(activitysimBundle.ready).toBe(true);
-    expect(activitysimBundle.claim).toContain("scaffold availability only");
-    expect(activitysimBundle.manifestPath).toBe("/tmp/activitysim/bundle_manifest.json");
-    expect(activitysimBundle.skimModeLabel).toBe("Copied skims");
-    expect(scaffold.statusLabel).toBe("Validator-ready");
-    expect(scaffold.stationCount).toBe(5);
-    expect(scaffold.readyStationCount).toBe(5);
-    expect(scaffold.claim).toContain("All starter stations have observed counts and source metadata recorded");
-    expect(scaffold.nextActionLabel).toContain("run validation");
-    expect(validationRerun.statusLabel).toBe("Ready to validate");
-    expect(validationRerun.ready).toBe(true);
-    expect(validationRerun.claim).toContain("validator rerun command");
-    expect(behavioral.pipelineStatus).toBe("prototype_preflight_complete");
-    expect(behavioral.runtimeStatus).toBe("behavioral_runtime_blocked");
-    expect(behavioral.runtimePosture).toBe(
-      "containerized ActivitySim runtime configured via python:3.11-slim, but not executed"
-    );
-    expect(behavioral.evidenceStatusLabel).toBe("Preflight only");
-    expect(behavioral.evidenceSupportLabel).toContain("preflight-depth prototype artifacts only");
-    expect(behavioral.evidencePacketReady).toBe(true);
-    expect(behavioral.comparisonReady).toBe(false);
-    expect(behavioral.evidencePacketPath).toBe("/tmp/behavioral/behavioral_demand_prototype_manifest.json");
-    expect(behavioral.runtimeSummaryPath).toBe("/tmp/behavioral/runtime/activitysim_runtime_summary.json");
-    expect(behavioral.ingestionSummaryPath).toBe("/tmp/behavioral/ingestion/activitysim_ingestion_summary.json");
-    expect(behavioral.comparisonSummaryPath).toBe("/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json");
-    expect(behavioral.comparisonPacketPath).toBe("/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md");
-    expect(behavioral.comparisonSupportLabel).toContain("only reached preflight depth");
-    expect(behavioral.claim).toContain("preflight depth");
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
-    expect(getCountyRunStageLabel("bootstrap-incomplete")).toBe("Bootstrap In Progress");
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");
     expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
     expect(getCountyRunCaveats("runtime-complete")).toContain("No local validation result yet.");
-    expect(getCountyRunEnqueueStatusLabel("queued_stub")).toBe("Enqueue Prepared");
-    expect(getCountyRunEnqueueStatusTone("failed")).toBe("danger");
-    expect(getCountyRunEnqueueHelpText("not-enqueued")).toContain("not yet been prepared");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
   });
 });

@@ -21,10 +21,6 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
-    activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
-    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-    behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-    behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
   },
   runtime: {
     keep_project: true,
@@ -56,34 +52,6 @@ const manifest = {
     bundle_validation: {
       status_label: "bounded screening-ready",
     },
-    scaffold: {
-      station_count: 5,
-      observed_volume_filled_count: 5,
-      observed_volume_missing_count: 0,
-      source_agency_filled_count: 5,
-      source_agency_tbd_count: 0,
-      source_description_filled_count: 5,
-      source_description_missing_count: 0,
-      ready_station_count: 5,
-      next_action_label:
-        "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
-    },
-    activitysim_bundle: {
-      status: "completed",
-      output_dir: "/tmp/activitysim",
-      manifest_path: "/tmp/activitysim/bundle_manifest.json",
-      land_use_rows: 26,
-      households: 41415,
-      persons: 102322,
-      skim_mode: "copy",
-    },
-    behavioral_prototype: {
-      pipeline_status: "prototype_preflight_complete",
-      runtime_status: "behavioral_runtime_blocked",
-      runtime_mode: "preflight_only",
-      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-      caveats: ["ActivitySim CLI is not installed or not on PATH"],
-    },
   },
 } as const;
 
@@ -93,7 +61,7 @@ describe("county onramp presenters", () => {
     expect(parseCountyOnrampManifest({ nope: true })).toBeNull();
   });
 
-  it("presents county run list items from recorded behavioral manifest state", () => {
+  it("presents county run list items", () => {
     expect(
       presentCountyRunListItem({
         id: "123e4567-e89b-12d3-a456-426614174000",
@@ -104,31 +72,6 @@ describe("county onramp presenters", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "not-enqueued",
-        last_enqueued_at: null,
-        requested_runtime_json: {
-          workspaceId: "123e4567-e89b-12d3-a456-426614174001",
-          geographyType: "county_fips",
-          geographyId: "06057",
-          geographyLabel: "Nevada County, CA",
-          runName: "nevada-run",
-          countyPrefix: "NEVADA",
-          runtimeOptions: {
-            keepProject: true,
-            force: true,
-            overallDemandScalar: null,
-            externalDemandScalar: null,
-            hbwScalar: null,
-            hboScalar: null,
-            nhbScalar: null,
-            activitysimContainerImage: "python:3.11-slim",
-            containerEngineCli: "docker",
-            activitysimContainerCliTemplate:
-              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-            containerNetworkMode: "bridge",
-          },
-        },
-        manifest_json: manifest,
         updated_at: "2026-03-24T23:00:00Z",
       })
     ).toEqual({
@@ -136,40 +79,7 @@ describe("county onramp presenters", () => {
       geographyLabel: "Nevada County, CA",
       runName: "nevada-run",
       stage: "validated-screening",
-      stageReasonLabel: "bounded screening-ready",
       statusLabel: "bounded screening-ready",
-      enqueueStatus: "not-enqueued",
-      lastEnqueuedAt: null,
-      runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-      behavioralPipelineStatus: "prototype_preflight_complete",
-      behavioralRuntimeStatus: "behavioral_runtime_blocked",
-      behavioralRuntimeMode: "preflight_only",
-      behavioralEvidenceReady: true,
-      behavioralComparisonReady: false,
-      behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
-      behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-      scaffoldStationCount: 5,
-      scaffoldReadyStationCount: 5,
-      artifactAvailabilityLabels: [
-        "Scaffold CSV",
-        "Review packet",
-        "Validation summary",
-        "ActivitySim bundle",
-        "Behavioral prototype",
-        "Behavioral KPI Summary",
-        "Behavioral KPI Packet",
-      ],
-      metricAvailabilityLabels: [
-        "Zones 26",
-        "Links 3174",
-        "Gap 0.0091",
-        "Median APE 16.01%",
-        "Scaffold ready 5/5",
-      ],
-      zoneCount: 26,
-      loadedLinks: 3174,
-      finalGap: 0.0091,
-      medianApe: 16.01,
       updatedAt: "2026-03-24T23:00:00Z",
     });
   });
@@ -211,11 +121,6 @@ describe("county onramp presenters", () => {
             hbwScalar: null,
             hboScalar: null,
             nhbScalar: null,
-            activitysimContainerImage: "python:3.11-slim",
-            containerEngineCli: "docker",
-            activitysimContainerCliTemplate:
-              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-            containerNetworkMode: "bridge",
           },
         },
         manifest_json: manifest,
@@ -228,7 +133,6 @@ describe("county onramp presenters", () => {
     expect(detail.geographyLabel).toBe("Nevada County, CA");
     expect(detail.enqueueStatus).toBe("queued_stub");
     expect(detail.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
-    expect(detail.runtimePresetLabel).toBe("Containerized behavioral smoke runtime (prototype)");
     expect(detail.manifest?.stage).toBe("validated-screening");
     expect(detail.workerPayload?.callback.manifestIngestUrl).toBe(
       "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174000/manifest"

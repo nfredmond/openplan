@@ -10,10 +10,10 @@ export const countyRuntimeOptionsSchema = z.object({
   hbwScalar: z.number().nullable().optional(),
   hboScalar: z.number().nullable().optional(),
   nhbScalar: z.number().nullable().optional(),
-  activitysimContainerImage: z.string().min(1).nullable().optional(),
-  containerEngineCli: z.string().min(1).nullable().optional(),
-  activitysimContainerCliTemplate: z.string().min(1).nullable().optional(),
-  containerNetworkMode: z.string().min(1).nullable().optional(),
+  activitysimContainerImage: z.string().min(1).optional(),
+  containerEngineCli: z.string().min(1).optional(),
+  activitysimContainerCliTemplate: z.string().min(1).optional(),
+  containerNetworkMode: z.string().min(1).optional(),
 });
 
 export const createCountyRunRequestSchema = z.object({
@@ -38,26 +38,9 @@ export const countyRunListItemSchema = z.object({
   geographyLabel: z.string().min(1),
   runName: z.string().min(1),
   stage: countyRunStageSchema,
-  stageReasonLabel: z.string().nullable().optional(),
   statusLabel: z.string().nullable().optional(),
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
-  runtimePresetLabel: z.string().nullable().optional(),
-  behavioralPipelineStatus: z.string().nullable().optional(),
-  behavioralRuntimeStatus: z.string().nullable().optional(),
-  behavioralRuntimeMode: z.string().nullable().optional(),
-  behavioralEvidenceReady: z.boolean().optional(),
-  behavioralComparisonReady: z.boolean().optional(),
-  behavioralEvidenceStatusLabel: z.string().nullable().optional(),
-  behavioralComparisonStatusLabel: z.string().nullable().optional(),
-  scaffoldStationCount: z.number().int().nonnegative().nullable().optional(),
-  scaffoldReadyStationCount: z.number().int().nonnegative().nullable().optional(),
-  artifactAvailabilityLabels: z.array(z.string()).optional(),
-  metricAvailabilityLabels: z.array(z.string()).optional(),
-  zoneCount: z.number().nullable().optional(),
-  loadedLinks: z.number().nullable().optional(),
-  finalGap: z.number().nullable().optional(),
-  medianApe: z.number().nullable().optional(),
   updatedAt: z.string(),
 });
 
@@ -78,11 +61,9 @@ export const countyRunDetailResponseSchema = z.object({
   geographyLabel: z.string().min(1),
   runName: z.string().min(1),
   stage: countyRunStageSchema,
-  stageReasonLabel: z.string().nullable().optional(),
   statusLabel: z.string().nullable().optional(),
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
-  runtimePresetLabel: z.string().nullable().optional(),
   workerPayload: countyOnrampWorkerPayloadSchema.nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),
@@ -92,13 +73,16 @@ export const countyRunDetailResponseSchema = z.object({
 export const enqueueCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
   status: z.literal("queued_stub"),
-  deliveryMode: z.enum(["prepared", "submitted"]),
   workerPayload: countyOnrampWorkerPayloadSchema,
 });
 
 export const countyRunScaffoldResponseSchema = z.object({
   path: z.string().min(1),
-  csvContent: z.string(),
+  csvContent: z.string().min(1),
+});
+
+export const updateCountyRunScaffoldRequestSchema = z.object({
+  csvContent: z.string().min(1),
 });
 
 export const prepareCountyRunValidationResponseSchema = z.object({
@@ -108,16 +92,12 @@ export const prepareCountyRunValidationResponseSchema = z.object({
   reasons: z.array(z.string()),
   command: z.string().nullable(),
   automationCommand: z.string().nullable(),
-  refreshUrl: z.string().nullable(),
-  callbackAuthMode: z.enum(["session-only", "bearer-env"]).nullable(),
+  refreshUrl: z.string().url(),
+  callbackAuthMode: z.enum(["session-only", "bearer-env"]),
   runOutputDir: z.string().nullable(),
   countsCsvPath: z.string().nullable(),
   outputDir: z.string().nullable(),
   projectDbPath: z.string().nullable(),
-});
-
-export const updateCountyRunScaffoldRequestSchema = z.object({
-  csvContent: z.string().min(1),
 });
 
 export const ingestCountyRunManifestRequestSchema = z.object({
@@ -157,6 +137,6 @@ export type CountyRunArtifact = z.infer<typeof countyRunArtifactSchema>;
 export type CountyRunDetailResponse = z.infer<typeof countyRunDetailResponseSchema>;
 export type EnqueueCountyRunResponse = z.infer<typeof enqueueCountyRunResponseSchema>;
 export type CountyRunScaffoldResponse = z.infer<typeof countyRunScaffoldResponseSchema>;
-export type PrepareCountyRunValidationResponse = z.infer<typeof prepareCountyRunValidationResponseSchema>;
 export type UpdateCountyRunScaffoldRequest = z.infer<typeof updateCountyRunScaffoldRequestSchema>;
+export type PrepareCountyRunValidationResponse = z.infer<typeof prepareCountyRunValidationResponseSchema>;
 export type IngestCountyRunManifestRequest = z.infer<typeof ingestCountyRunManifestRequestSchema>;

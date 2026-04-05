@@ -56,7 +56,6 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
-    activitysim_bundle_manifest_json: "/tmp/activitysim/manifest.json",
   },
   runtime: {
     keep_project: true,
@@ -88,33 +87,12 @@ const manifest = {
     bundle_validation: {
       status_label: "bounded screening-ready",
     },
-    scaffold: {
-      station_count: 1,
-      observed_volume_filled_count: 1,
-      observed_volume_missing_count: 0,
-      source_agency_filled_count: 1,
-      source_agency_tbd_count: 0,
-      source_description_filled_count: 1,
-      source_description_missing_count: 0,
-      ready_station_count: 1,
-      next_action_label: "Validation can run next.",
-    },
-    activitysim_bundle: {
-      status: "completed",
-      output_dir: "/tmp/activitysim",
-      manifest_path: "/tmp/activitysim/manifest.json",
-      land_use_rows: 26,
-      households: 41415,
-      persons: 102322,
-      skim_mode: "copy",
-    },
   },
 } as const;
 
 describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -205,7 +183,6 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       data: [
         { artifact_type: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
         { artifact_type: "validation_review_packet_md", path: "/tmp/review.md" },
-        { artifact_type: "activitysim_bundle_manifest_json", path: "/tmp/activitysim/manifest.json" },
       ],
       error: null,
     });
@@ -249,50 +226,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     expect(payload.artifacts).toEqual([
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
       { artifactType: "validation_review_packet_md", path: "/tmp/review.md" },
-      { artifactType: "activitysim_bundle_manifest_json", path: "/tmp/activitysim/manifest.json" },
     ]);
-  });
-
-  it("preserves inline scaffold CSV content when a manifest refresh keeps the same scaffold path", async () => {
-    countyRunMaybeSingleMock.mockResolvedValueOnce({
-      data: {
-        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        workspace_id: "11111111-1111-4111-8111-111111111111",
-        geography_type: "county_fips",
-        geography_id: "06057",
-        geography_label: "Nevada County, CA",
-        run_name: "old-run",
-        stage: "validated-screening",
-        status_label: "bounded screening-ready",
-        enqueue_status: "queued_stub",
-        last_enqueued_at: "2026-03-24T23:05:00Z",
-        requested_runtime_json: {},
-        manifest_json: {
-          ...manifest,
-          summary: {
-            ...manifest.summary,
-            scaffold: {
-              ...manifest.summary.scaffold,
-              inline_csv_content: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
-            },
-          },
-        },
-        validation_summary_json: manifest.summary.validation,
-      },
-      error: null,
-    });
-
-    const response = await postCountyRunManifest(jsonRequest({ status: "completed", manifest }), {
-      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
-    });
-
-    expect(response.status).toBe(200);
-    const updatePayload = countyRunUpdateMock.mock.calls.at(-1)?.[0] as {
-      manifest_json: { summary: { scaffold: { inline_csv_content?: string } } };
-    };
-    expect(updatePayload.manifest_json.summary.scaffold.inline_csv_content).toBe(
-      "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n"
-    );
   });
 
   it("records worker failure callbacks", async () => {
@@ -312,49 +246,6 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       status: "failed",
     });
-  });
-
-  it("accepts machine-authenticated worker callbacks without a logged-in user", async () => {
-    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
-    authGetUserMock.mockResolvedValue({ data: { user: null } });
-
-    const response = await postCountyRunManifest(
-      new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: "Bearer callback-secret",
-        },
-        body: JSON.stringify({ status: "failed", error: { message: "Worker crashed" } }),
-      }),
-      {
-        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
-      }
-    );
-
-    expect(response.status).toBe(202);
-    expect(authGetUserMock).not.toHaveBeenCalled();
-  });
-
-  it("rejects unauthenticated worker callbacks when the bearer token is wrong", async () => {
-    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
-    authGetUserMock.mockResolvedValue({ data: { user: null } });
-
-    const response = await postCountyRunManifest(
-      new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: "Bearer wrong-secret",
-        },
-        body: JSON.stringify({ status: "failed", error: { message: "Worker crashed" } }),
-      }),
-      {
-        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
-      }
-    );
-
-    expect(response.status).toBe(401);
   });
 
   it("returns 400 for invalid payloads", async () => {

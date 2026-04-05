@@ -29,45 +29,63 @@ export function deriveCountyRunStatusLabel(manifest: CountyOnrampManifest): stri
   return manifest.summary.validation?.screening_gate?.status_label ?? null;
 }
 
-function hasRecordValue(value: Record<string, unknown> | null | undefined): value is Record<string, unknown> {
-  return Boolean(value && Object.keys(value).length > 0);
+export function deriveCountyBundleValidationSummary(
+  validationSummary: Record<string, unknown> | null | undefined
+): Record<string, unknown> | null {
+  if (!validationSummary || typeof validationSummary !== "object") {
+    return null;
+  }
+
+  const nextSummary: Record<string, unknown> = {};
+
+  for (const key of ["counts_csv", "stations_total", "stations_matched", "stations_unmatched"]) {
+    const value = validationSummary[key];
+    if (value !== undefined) {
+      nextSummary[key] = value;
+    }
+  }
+
+  const screeningGate = validationSummary.screening_gate;
+  if (screeningGate && typeof screeningGate === "object") {
+    const statusLabel = (screeningGate as Record<string, unknown>).status_label;
+    const reasons = (screeningGate as Record<string, unknown>).reasons;
+    if (typeof statusLabel === "string" && statusLabel.length > 0) {
+      nextSummary.status_label = statusLabel;
+    }
+    if (Array.isArray(reasons)) {
+      nextSummary.reasons = reasons;
+    }
+  }
+
+  return Object.keys(nextSummary).length > 0 ? nextSummary : null;
 }
 
 export function deriveCountyRunStageFromValidation(params: {
-  runSummary?: Record<string, unknown> | null;
-  validationSummary?: Record<string, unknown> | null;
+  runSummary: Record<string, unknown> | null | undefined;
+  validationSummary: Record<string, unknown> | null | undefined;
 }): CountyOnrampManifest["stage"] {
-  const { runSummary, validationSummary } = params;
-  if (hasRecordValue(validationSummary)) {
-    const statusLabel =
-      typeof ((validationSummary.screening_gate as Record<string, unknown> | undefined)?.status_label) === "string"
-        ? String((validationSummary.screening_gate as Record<string, unknown>).status_label).trim().toLowerCase()
-        : "";
-    return statusLabel === "bounded screening-ready" ? "validated-screening" : "validation-scaffolded";
+  const screeningGate = params.validationSummary?.screening_gate;
+  const statusLabel =
+    screeningGate && typeof screeningGate === "object"
+      ? (screeningGate as Record<string, unknown>).status_label
+      : null;
+
+  if (typeof statusLabel === "string") {
+    const normalized = statusLabel.toLowerCase();
+    if (normalized.includes("bounded screening-ready") || normalized.includes("validated")) {
+      return "validated-screening";
+    }
   }
 
-  if (hasRecordValue(runSummary)) {
+  if (params.validationSummary && Object.keys(params.validationSummary).length > 0) {
+    return "validation-scaffolded";
+  }
+
+  if (params.runSummary && Object.keys(params.runSummary).length > 0) {
     return "runtime-complete";
   }
 
   return "bootstrap-incomplete";
-}
-
-export function deriveCountyBundleValidationSummary(
-  validationSummary: Record<string, unknown> | null | undefined
-): Record<string, unknown> | null {
-  if (!hasRecordValue(validationSummary)) {
-    return null;
-  }
-
-  const screeningGate = (validationSummary.screening_gate as Record<string, unknown> | undefined) ?? undefined;
-  const metrics = (validationSummary.metrics as Record<string, unknown> | undefined) ?? undefined;
-  return {
-    status_label: typeof screeningGate?.status_label === "string" ? screeningGate.status_label : null,
-    matched_stations:
-      typeof validationSummary.stations_matched === "number" ? validationSummary.stations_matched : null,
-    metrics: metrics ?? null,
-  };
 }
 
 export function buildCountyRunRecord(params: {
@@ -114,33 +132,6 @@ export function buildCountyRunArtifacts(params: {
   pushArtifact("run_summary_json", manifest.artifacts.run_summary_json, "application/json");
   pushArtifact("bundle_manifest_json", manifest.artifacts.bundle_manifest_json, "application/json");
   pushArtifact("validation_summary_json", manifest.artifacts.validation_summary_json, "application/json");
-  pushArtifact(
-    "activitysim_bundle_manifest_json",
-    manifest.artifacts.activitysim_bundle_manifest_json,
-    "application/json"
-  );
-  pushArtifact(
-    "behavioral_prototype_manifest_json",
-    manifest.artifacts.behavioral_prototype_manifest_json,
-    "application/json"
-  );
-  pushArtifact(
-    "behavioral_runtime_manifest_json",
-    manifest.artifacts.behavioral_runtime_manifest_json,
-    "application/json"
-  );
-  pushArtifact(
-    "behavioral_runtime_summary_json",
-    manifest.artifacts.behavioral_runtime_summary_json,
-    "application/json"
-  );
-  pushArtifact(
-    "behavioral_ingestion_summary_json",
-    manifest.artifacts.behavioral_ingestion_summary_json,
-    "application/json"
-  );
-  pushArtifact("behavioral_kpi_summary_json", manifest.artifacts.behavioral_kpi_summary_json, "application/json");
-  pushArtifact("behavioral_kpi_packet_md", manifest.artifacts.behavioral_kpi_packet_md, "text/markdown");
 
   return artifacts;
 }

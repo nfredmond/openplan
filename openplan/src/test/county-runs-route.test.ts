@@ -59,108 +59,6 @@ describe("/api/county-runs route", () => {
           status_label: "bounded screening-ready",
           enqueue_status: "queued_stub",
           last_enqueued_at: "2026-03-24T23:05:00Z",
-          requested_runtime_json: {
-            workspaceId: "11111111-1111-4111-8111-111111111111",
-            geographyType: "county_fips",
-            geographyId: "06057",
-            geographyLabel: "Nevada County, CA",
-            runName: "nevada-run",
-            countyPrefix: "NEVADA",
-            runtimeOptions: {
-              keepProject: true,
-              force: true,
-              overallDemandScalar: null,
-              externalDemandScalar: null,
-              hbwScalar: null,
-              hboScalar: null,
-              nhbScalar: null,
-              activitysimContainerImage: "python:3.11-slim",
-              containerEngineCli: "docker",
-              activitysimContainerCliTemplate:
-                "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-              containerNetworkMode: "bridge",
-            },
-          },
-          manifest_json: {
-            schema_version: "openplan.county_onramp_manifest.v1",
-            generated_at: "2026-03-24T23:00:00Z",
-            name: "nevada-run",
-            county_fips: "06057",
-            county_prefix: "NEVADA",
-            run_dir: "/tmp/nevada",
-            mode: "existing-run",
-            stage: "validated-screening",
-            artifacts: {
-              scaffold_csv: "/tmp/scaffold.csv",
-              review_packet_md: "/tmp/review.md",
-              run_summary_json: "/tmp/run_summary.json",
-              bundle_manifest_json: "/tmp/bundle_manifest.json",
-              validation_summary_json: "/tmp/validation_summary.json",
-              activitysim_bundle_manifest_json: "/tmp/activitysim/bundle_manifest.json",
-              behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-              behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-              behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
-            },
-            runtime: {
-              keep_project: true,
-              force: false,
-              overall_demand_scalar: 0.369,
-              external_demand_scalar: null,
-              hbw_scalar: null,
-              hbo_scalar: null,
-              nhb_scalar: null,
-            },
-            summary: {
-              run: {
-                zone_count: 26,
-                population_total: 102345,
-                jobs_total: 45678,
-                loaded_links: 3174,
-                final_gap: 0.0091,
-                total_trips: 231828.75,
-              },
-              validation: {
-                screening_gate: {
-                  status_label: "bounded screening-ready",
-                },
-                metrics: {
-                  median_absolute_percent_error: 16.01,
-                  max_absolute_percent_error: 49.48,
-                },
-              },
-              bundle_validation: {
-                status_label: "bounded screening-ready",
-              },
-              scaffold: {
-                station_count: 5,
-                observed_volume_filled_count: 5,
-                observed_volume_missing_count: 0,
-                source_agency_filled_count: 5,
-                source_agency_tbd_count: 0,
-                source_description_filled_count: 5,
-                source_description_missing_count: 0,
-                ready_station_count: 5,
-                next_action_label:
-                  "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
-              },
-              activitysim_bundle: {
-                status: "completed",
-                output_dir: "/tmp/activitysim",
-                manifest_path: "/tmp/activitysim/bundle_manifest.json",
-                land_use_rows: 26,
-                households: 41415,
-                persons: 102322,
-                skim_mode: "copy",
-              },
-              behavioral_prototype: {
-                pipeline_status: "prototype_preflight_complete",
-                runtime_status: "behavioral_runtime_blocked",
-                runtime_mode: "preflight_only",
-                prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-                caveats: ["ActivitySim CLI is not installed or not on PATH"],
-              },
-            },
-          },
           updated_at: "2026-03-24T23:00:00Z",
         },
       ],
@@ -210,40 +108,9 @@ describe("/api/county-runs route", () => {
           geographyLabel: "Nevada County, CA",
           runName: "nevada-run",
           stage: "validated-screening",
-          stageReasonLabel: "bounded screening-ready",
           statusLabel: "bounded screening-ready",
           enqueueStatus: "queued_stub",
           lastEnqueuedAt: "2026-03-24T23:05:00Z",
-          runtimePresetLabel: "Containerized behavioral smoke runtime (prototype)",
-          behavioralPipelineStatus: "prototype_preflight_complete",
-          behavioralRuntimeStatus: "behavioral_runtime_blocked",
-          behavioralRuntimeMode: "preflight_only",
-          behavioralEvidenceReady: true,
-          behavioralComparisonReady: false,
-          behavioralEvidenceStatusLabel: "Preflight-only behavioral evidence",
-          behavioralComparisonStatusLabel: "Comparison blocked: preflight only",
-          scaffoldStationCount: 5,
-          scaffoldReadyStationCount: 5,
-          artifactAvailabilityLabels: [
-            "Scaffold CSV",
-            "Review packet",
-            "Validation summary",
-            "ActivitySim bundle",
-            "Behavioral prototype",
-            "Behavioral KPI Summary",
-            "Behavioral KPI Packet",
-          ],
-          metricAvailabilityLabels: [
-            "Zones 26",
-            "Links 3174",
-            "Gap 0.0091",
-            "Median APE 16.01%",
-            "Scaffold ready 5/5",
-          ],
-          zoneCount: 26,
-          loadedLinks: 3174,
-          finalGap: 0.0091,
-          medianApe: 16.01,
           updatedAt: "2026-03-24T23:00:00Z",
         },
       ],
@@ -298,62 +165,6 @@ describe("/api/county-runs route", () => {
         }),
       })
     );
-  });
-
-  it("persists behavioral smoke runtime options when creating a county run", async () => {
-    const response = await postCountyRuns(
-      jsonRequest("POST", "http://localhost/api/county-runs", {
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        geographyType: "county_fips",
-        geographyId: "06057",
-        geographyLabel: "Nevada County, CA",
-        runName: "nevada-behavioral-smoke",
-        runtimeOptions: {
-          keepProject: true,
-          activitysimContainerImage: "python:3.11-slim",
-          containerEngineCli: "docker",
-          activitysimContainerCliTemplate:
-            "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-          containerNetworkMode: "bridge",
-        },
-      })
-    );
-
-    expect(response.status).toBe(201);
-    expect(insertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        requested_runtime_json: expect.objectContaining({
-          countyPrefix: "NEVADA",
-          runtimeOptions: expect.objectContaining({
-            keepProject: true,
-            force: true,
-            activitysimContainerImage: "python:3.11-slim",
-            containerEngineCli: "docker",
-            activitysimContainerCliTemplate:
-              "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-            containerNetworkMode: "bridge",
-          }),
-        }),
-      })
-    );
-
-    expect(await response.json()).toMatchObject({
-      workerPayload: {
-        countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        geographyId: "06057",
-        geographyLabel: "Nevada County, CA",
-        countyPrefix: "NEVADA",
-        runtimeOptions: {
-          keepProject: true,
-          force: true,
-          activitysimContainerImage: "python:3.11-slim",
-          containerEngineCli: "docker",
-          activitysimContainerCliTemplate:
-            "bash -lc 'python -m pip install --no-cache-dir activitysim==1.5.1 && python -m activitysim.cli.run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}'",
-          containerNetworkMode: "bridge",
-        },
-      },
-    });
   });
 
   it("returns 400 for invalid POST payload", async () => {

@@ -21,13 +21,6 @@ const manifest = countyOnrampManifestSchema.parse({
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
-    activitysim_bundle_manifest_json: "/tmp/activitysim/manifest.json",
-    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-    behavioral_runtime_manifest_json: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
-    behavioral_runtime_summary_json: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
-    behavioral_ingestion_summary_json: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
-    behavioral_kpi_summary_json: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-    behavioral_kpi_packet_md: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
   },
   runtime: {
     keep_project: true,
@@ -58,27 +51,6 @@ const manifest = countyOnrampManifestSchema.parse({
     },
     bundle_validation: {
       status_label: "bounded screening-ready",
-    },
-    activitysim_bundle: {
-      status: "completed",
-      output_dir: "/tmp/activitysim",
-      manifest_path: "/tmp/activitysim/manifest.json",
-      land_use_rows: 26,
-      households: 41415,
-      persons: 102322,
-      skim_mode: "copy",
-    },
-    behavioral_prototype: {
-      pipeline_status: "prototype_preflight_complete",
-      runtime_status: "behavioral_runtime_blocked",
-      runtime_mode: "preflight_only",
-      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-      runtime_manifest_path: "/tmp/behavioral/runtime/activitysim_runtime_manifest.json",
-      runtime_summary_path: "/tmp/behavioral/runtime/activitysim_runtime_summary.json",
-      ingestion_summary_path: "/tmp/behavioral/ingestion/activitysim_ingestion_summary.json",
-      kpi_summary_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_summary.json",
-      kpi_packet_path: "/tmp/behavioral/kpis/activitysim_behavioral_kpi_packet.md",
-      caveats: ["ActivitySim CLI is not installed or not on PATH"],
     },
   },
 });
@@ -114,7 +86,7 @@ describe("county onramp persistence helpers", () => {
       manifest,
     });
 
-    expect(artifacts).toHaveLength(12);
+    expect(artifacts).toHaveLength(5);
     expect(artifacts[0]).toMatchObject({
       workspace_id: "123e4567-e89b-12d3-a456-426614174000",
       artifact_type: "validation_scaffold_csv",
@@ -127,13 +99,6 @@ describe("county onramp persistence helpers", () => {
       "run_summary_json",
       "bundle_manifest_json",
       "validation_summary_json",
-      "activitysim_bundle_manifest_json",
-      "behavioral_prototype_manifest_json",
-      "behavioral_runtime_manifest_json",
-      "behavioral_runtime_summary_json",
-      "behavioral_ingestion_summary_json",
-      "behavioral_kpi_summary_json",
-      "behavioral_kpi_packet_md",
     ]);
   });
 

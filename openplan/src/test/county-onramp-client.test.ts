@@ -3,12 +3,8 @@ import {
   createCountyRun,
   enqueueCountyRun,
   getCountyRunDetail,
-  getCountyRunScaffold,
   ingestCountyRunManifest,
   listCountyRuns,
-  prepareCountyRunValidation,
-  refreshCountyRunValidation,
-  updateCountyRunScaffold,
 } from "@/lib/api/county-onramp-client";
 
 const manifest = {
@@ -26,7 +22,6 @@ const manifest = {
     run_summary_json: "/tmp/run_summary.json",
     bundle_manifest_json: "/tmp/bundle_manifest.json",
     validation_summary_json: "/tmp/validation_summary.json",
-    behavioral_prototype_manifest_json: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
   },
   runtime: {
     keep_project: true,
@@ -58,13 +53,6 @@ const manifest = {
     bundle_validation: {
       status_label: "bounded screening-ready",
     },
-    behavioral_prototype: {
-      pipeline_status: "prototype_preflight_complete",
-      runtime_status: "behavioral_runtime_blocked",
-      runtime_mode: "preflight_only",
-      prototype_manifest_path: "/tmp/behavioral/behavioral_demand_prototype_manifest.json",
-      caveats: ["ActivitySim CLI is not installed or not on PATH"],
-    },
   },
 } as const;
 
@@ -80,8 +68,6 @@ describe("county onramp client helpers", () => {
               runName: "nevada-run",
               stage: "validated-screening",
               statusLabel: "bounded screening-ready",
-              behavioralEvidenceStatusLabel: "Validation-ready county state",
-              behavioralComparisonStatusLabel: "Open detail for behavioral readiness",
               updatedAt: "2026-03-24T23:00:00Z",
             },
           ],
@@ -158,7 +144,6 @@ describe("county onramp client helpers", () => {
           JSON.stringify({
             countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             status: "queued_stub",
-            deliveryMode: "prepared",
             workerPayload: {
               jobId: "123e4567-e89b-12d3-a456-426614174999",
               countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -194,48 +179,6 @@ describe("county onramp client helpers", () => {
         new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
       )
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            path: "/tmp/scaffold.csv",
-            csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
-          }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-            ready: true,
-            statusLabel: "Ready to validate",
-            reasons: [],
-            command:
-              "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'",
-            automationCommand: null,
-            refreshUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh",
-            callbackAuthMode: "session-only",
-            runOutputDir: "/tmp/nevada/run_output",
-            countsCsvPath: "/tmp/scaffold.csv",
-            outputDir: "/tmp/nevada/validation",
-            projectDbPath: null,
-          }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(detailPayload), { status: 200, headers: { "content-type": "application/json" } })
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            ...detailPayload,
-            stage: "validation-scaffolded",
-            statusLabel: "Validation pending scaffold edits",
-          }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
-      )
-      .mockResolvedValueOnce(
         new Response(JSON.stringify({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", status: "failed" }), {
           status: 202,
           headers: { "content-type": "application/json" },
@@ -247,7 +190,6 @@ describe("county onramp client helpers", () => {
 
     const enqueued = await enqueueCountyRun("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(enqueued.status).toBe("queued_stub");
-    expect(enqueued.deliveryMode).toBe("prepared");
 
     const completed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -255,31 +197,6 @@ describe("county onramp client helpers", () => {
       fetcher as typeof fetch
     );
     expect("stage" in completed && completed.stage).toBe("validated-screening");
-
-    const scaffold = await getCountyRunScaffold("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
-    expect(scaffold.path).toBe("/tmp/scaffold.csv");
-    expect(scaffold.csvContent).toContain("station_id,observed_volume");
-
-    const validation = await prepareCountyRunValidation(
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      fetcher as typeof fetch
-    );
-    expect(validation.ready).toBe(true);
-    expect(validation.command).toContain("validate_screening_observed_counts.py");
-
-    const refreshed = await refreshCountyRunValidation(
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      fetcher as typeof fetch
-    );
-    expect(refreshed.stage).toBe("validated-screening");
-
-    const scaffoldUpdated = await updateCountyRunScaffold(
-      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      { csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n" },
-      fetcher as typeof fetch
-    );
-    expect(scaffoldUpdated.stage).toBe("validation-scaffolded");
-    expect(scaffoldUpdated.statusLabel).toBe("Validation pending scaffold edits");
 
     const failed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
