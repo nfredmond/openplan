@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-05
 
-- Started: 2026-04-05T03:52:40.760Z
+- Started: 2026-04-05T04:23:02.098Z
 - Created-after filter: 2026-04-05
 - QA match rule: /qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i
 
@@ -21,7 +21,7 @@
 - workspaces: status=200 ok=true planned=2 deleted=2
 
 ## Auth deletes
-- openplan-county-scaffold-smoke-2026-04-05t03-52-04-149z@natfordplanning.com: status=200 ok=true
+- openplan-county-scaffold-smoke-2026-04-05t04-22-31-819z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0

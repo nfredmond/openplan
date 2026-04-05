@@ -382,9 +382,11 @@ async function main() {
       'A,789,Caltrans,PM 2.4',
       { timeout: 20000 }
     );
-    const statusVisible = await page.getByText('Validation pending scaffold edits').isVisible().catch(() => false);
+    const statusLocator = page.getByText('Validation pending scaffold edits');
+    const statusCount = await statusLocator.count().catch(() => 0);
+    const statusVisible = statusCount > 0 ? await statusLocator.first().isVisible().catch(() => false) : false;
     summary.notes.push(
-      `Validation invalidation label visible after reload: ${statusVisible}. Backend state was confirmed via production API regardless of this visual check.`
+      `Validation invalidation label match count after reload: ${statusCount}; visible: ${statusVisible}. Backend state was confirmed via production API regardless of this visual check.`
     );
     await screenshot('prod-county-scaffold-03-saved');
     summary.notes.push('Saving the imported CSV persisted the new scaffold, refreshed readiness counts, and invalidated the prior validation state.');

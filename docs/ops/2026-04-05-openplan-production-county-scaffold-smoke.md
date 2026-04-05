@@ -1,11 +1,11 @@
 # OpenPlan Production County Scaffold Smoke — 2026-04-05
 
 - Base URL: https://openplan-zeta.vercel.app
-- QA user email: openplan-county-scaffold-smoke-2026-04-05T03-52-04-149Z@natfordplanning.com
-- Workspace id: 8638f1c0-6595-42f4-a357-5225c62d6d25
-- Project id: 9907dc06-c5a8-4c48-a381-3eefe72e71ed
-- County run id: f77f49e9-a455-47dc-95d9-0f93ba6da544
-- Registered scaffold path: /tmp/openplan-county-scaffold-smoke-2026-04-05T03-52-04-149Z.csv
+- QA user email: openplan-county-scaffold-smoke-2026-04-05T04-22-31-819Z@natfordplanning.com
+- Workspace id: 76e08649-74e8-4bfd-989d-4ad26854ba54
+- Project id: ab8a6023-1953-441f-9512-431ea01bbb1f
+- County run id: 03bd70bd-b6df-4a69-9616-8b5b6976acd8
+- Registered scaffold path: /tmp/openplan-county-scaffold-smoke-2026-04-05T04-22-31-819Z.csv
 
 ## Pass/Fail Notes
 - PASS: Signed into production with dedicated county scaffold smoke user.
@@ -20,7 +20,7 @@
 - PASS: Imported replacement CSV file hydrated the editor without manual paste workflow.
 - PASS: Save scaffold button disabled before click: false.
 - PASS: Save scaffold response status: 200.
-- PASS: Validation invalidation label visible after reload: false. Backend state was confirmed via production API regardless of this visual check.
+- PASS: Validation invalidation label match count after reload: 2; visible: true. Backend state was confirmed via production API regardless of this visual check.
 - PASS: Saving the imported CSV persisted the new scaffold, refreshed readiness counts, and invalidated the prior validation state.
 
 ## Assertions proven on production
@@ -40,4 +40,3 @@
 ## Notes
 - This smoke used dedicated production QA identities and records for verification.
 - QA production records and auth identities created during this pass were subsequently cleaned up; see `docs/ops/2026-04-05-openplan-production-qa-cleanup.md`.
-- `openplan-zeta.vercel.app` was explicitly rebound to the functioning `natford/openplan` production deployment before this proof run.
