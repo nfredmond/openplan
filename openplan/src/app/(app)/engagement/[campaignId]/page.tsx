@@ -244,13 +244,12 @@ export default async function EngagementCampaignDetailPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Audit posture</p>
-              <h2 className="module-operator-title">Moderation signal is first-class</h2>
+              <p className="module-operator-eyebrow">Moderation Summary</p>
+              <h2 className="module-operator-title">Audit posture and review status</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            V1 keeps counts and review state visible in one place: project linkage, intake categories, recent items, and
-            moderation status totals.
+            Current moderation workload and workload signals. Operators should triage flagged and pending items before generating reports.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Pending: {counts.moderationQueue.pendingCount}</div>
@@ -264,258 +263,276 @@ export default async function EngagementCampaignDetailPage({
         </article>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <EngagementCampaignControls campaign={campaign} projects={(projects ?? []) as Array<{ id: string; name: string }>} />
-        <EngagementShareControls campaign={campaign} />
-      </div>
+      <div className="mt-6 space-y-6">
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Handoff Readiness</p>
+              <h2 className="module-section-title">Review posture and planning handoff</h2>
+              <p className="module-section-description">
+                Campaigns stay explicitly tied to planning context, moderation load, map coverage, and downstream report awareness.
+              </p>
+            </div>
+          </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <EngagementItemComposer
-          campaignId={campaign.id}
-          categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-            id: category.id,
-            label: category.label,
-          }))}
-        />
-      </div>
+          <div className="mt-5 space-y-3">
+            <div className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={project ? "success" : "neutral"}>{project ? "Linked project" : "Unlinked project"}</StatusBadge>
+                    {project?.status ? <StatusBadge tone="neutral">{titleizeEngagementValue(project.status)}</StatusBadge> : null}
+                  </div>
+                  <h3 className="module-record-title text-[1rem]">{project?.name ?? "No project linked yet"}</h3>
+                  <p className="module-record-summary">
+                    {project
+                      ? project.summary || "Project context is present even when campaign reporting stays lightweight."
+                      : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
+                  </p>
+                </div>
+              </div>
+              <div className="module-record-meta">
+                <span className="module-record-chip">Campaign status {titleizeEngagementValue(campaign.status)}</span>
+                <span className="module-record-chip">Recent activity {counts.recentActivity.count} items</span>
+                <span className="module-record-chip">{counts.geographyCoverage.geolocatedItems} geolocated</span>
+                <span className="module-record-chip">{reportRecords.length} linked reports</span>
+              </div>
+            </div>
 
-      {(items?.length ?? 0) > 0 && (
-        <div className="mt-6">
-          <EngagementBulkModeration
-            campaignId={campaign.id}
-            items={(items ?? []) as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              status: string;
-              source_type: string;
-            }>}
-            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
-              id: c.id,
-              label: c.label,
-            }))}
-          />
-        </div>
-      )}
-
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
-        <div className="space-y-6">
-          <EngagementCategoryCreator campaignId={campaign.id} />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Traceability</p>
-                <h2 className="module-section-title">Review posture and planning handoff</h2>
-                <p className="module-section-description">
-                  Campaigns stay explicitly tied to planning context, moderation load, map coverage, and downstream report awareness.
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Actionable review</p>
+                <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
+                <p className="module-summary-detail">
+                  {counts.moderationQueue.pendingCount} pending and {counts.moderationQueue.flaggedCount} flagged.
+                </p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Categorized coverage</p>
+                <p className="module-summary-value">{counts.categorizedItems}</p>
+                <p className="module-summary-detail">
+                  {counts.uncategorizedItems} items still need classification before reporting is reliable.
+                </p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Map coverage</p>
+                <p className="module-summary-value">{fmtPercent(counts.geographyCoverage.geolocatedShare)}</p>
+                <p className="module-summary-detail">
+                  {counts.geographyCoverage.geolocatedItems} geolocated, {counts.geographyCoverage.nonGeolocatedItems} non-geolocated.
                 </p>
               </div>
             </div>
 
-            <div className="mt-5 space-y-3">
-              <div className="module-record-row">
+            <div className="grid gap-3 xl:grid-cols-2">
+              <article className="module-record-row">
                 <div className="module-record-head">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
-                      <StatusBadge tone={project ? "success" : "neutral"}>{project ? "Linked project" : "Unlinked project"}</StatusBadge>
-                      {project?.status ? <StatusBadge tone="neutral">{titleizeEngagementValue(project.status)}</StatusBadge> : null}
+                      <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
+                        {counts.moderationQueue.readyForHandoffCount} handoff-ready
+                      </StatusBadge>
+                      <StatusBadge tone={counts.moderationQueue.uncategorizedCount > 0 ? "warning" : "success"}>
+                        {counts.moderationQueue.uncategorizedCount} uncategorized
+                      </StatusBadge>
                     </div>
-                    <h3 className="module-record-title text-[1rem]">{project?.name ?? "No project linked yet"}</h3>
+                    <h3 className="module-record-title text-[1rem]">Lightweight planning handoff cue</h3>
                     <p className="module-record-summary">
-                      {project
-                        ? project.summary || "Project context is present even when campaign reporting stays lightweight."
-                        : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
+                      Approved items with category assignment are the cleanest candidates for report inclusion or planning review.
                     </p>
                   </div>
                 </div>
                 <div className="module-record-meta">
-                  <span className="module-record-chip">Campaign status {titleizeEngagementValue(campaign.status)}</span>
-                  <span className="module-record-chip">Recent activity {counts.recentActivity.count} items</span>
-                  <span className="module-record-chip">{counts.geographyCoverage.geolocatedItems} geolocated</span>
-                  <span className="module-record-chip">{reportRecords.length} linked reports</span>
+                  <span className="module-record-chip">{counts.statusCounts.approved} approved total</span>
+                  <span className="module-record-chip">{counts.moderationQueue.readyForHandoffCount} approved + categorized</span>
+                  <span className="module-record-chip">{counts.moderationQueue.itemsWithNotesCount} with audit notes</span>
                 </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <div className="module-summary-card">
-                  <p className="module-summary-label">Actionable review</p>
-                  <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
-                  <p className="module-summary-detail">
-                    {counts.moderationQueue.pendingCount} pending and {counts.moderationQueue.flaggedCount} flagged.
-                  </p>
-                </div>
-                <div className="module-summary-card">
-                  <p className="module-summary-label">Categorized coverage</p>
-                  <p className="module-summary-value">{counts.categorizedItems}</p>
-                  <p className="module-summary-detail">
-                    {counts.uncategorizedItems} items still need classification before reporting is reliable.
-                  </p>
-                </div>
-                <div className="module-summary-card">
-                  <p className="module-summary-label">Map coverage</p>
-                  <p className="module-summary-value">{fmtPercent(counts.geographyCoverage.geolocatedShare)}</p>
-                  <p className="module-summary-detail">
-                    {counts.geographyCoverage.geolocatedItems} geolocated, {counts.geographyCoverage.nonGeolocatedItems} non-geolocated.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-3 xl:grid-cols-2">
-                <article className="module-record-row">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
-                          {counts.moderationQueue.readyForHandoffCount} handoff-ready
-                        </StatusBadge>
-                        <StatusBadge tone={counts.moderationQueue.uncategorizedCount > 0 ? "warning" : "success"}>
-                          {counts.moderationQueue.uncategorizedCount} uncategorized
-                        </StatusBadge>
-                      </div>
-                      <h3 className="module-record-title text-[1rem]">Lightweight planning handoff cue</h3>
-                      <p className="module-record-summary">
-                        Approved items with category assignment are the cleanest candidates for report inclusion or planning review.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">{counts.statusCounts.approved} approved total</span>
-                    <span className="module-record-chip">{counts.moderationQueue.readyForHandoffCount} approved + categorized</span>
-                    <span className="module-record-chip">{counts.moderationQueue.itemsWithNotesCount} with audit notes</span>
-                  </div>
-                </article>
-
-                <article className="module-record-row">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone="info">
-                          {primarySource ? `${titleizeEngagementValue(primarySource.sourceType)} lead source` : "No source mix yet"}
-                        </StatusBadge>
-                        <StatusBadge tone="neutral">{counts.recentActivity.count} recent items</StatusBadge>
-                      </div>
-                      <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
-                      <p className="module-record-summary">
-                        {primarySource
-                          ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest intake lane with ${primarySource.count} items.`
-                          : "No intake items yet."}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">{counts.recentActivity.byStatus.pending} pending in window</span>
-                    <span className="module-record-chip">{counts.recentActivity.byStatus.flagged} flagged in window</span>
-                    <span className="module-record-chip">Last activity {fmtDateTime(counts.lastActivityAt)}</span>
-                  </div>
-                </article>
-              </div>
+              </article>
 
               <article className="module-record-row">
                 <div className="module-record-head">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
-                      <StatusBadge tone={campaign.project_id ? "success" : "warning"}>
-                        {campaign.project_id ? "Project-linked" : "Project link required"}
+                      <StatusBadge tone="info">
+                        {primarySource ? `${titleizeEngagementValue(primarySource.sourceType)} lead source` : "No source mix yet"}
                       </StatusBadge>
-                      <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
-                        {counts.moderationQueue.readyForHandoffCount} handoff-ready
-                      </StatusBadge>
+                      <StatusBadge tone="neutral">{counts.recentActivity.count} recent items</StatusBadge>
                     </div>
-                    <h3 className="module-record-title text-[1rem]">Create an engagement handoff packet</h3>
+                    <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
                     <p className="module-record-summary">
-                      Seed a project-linked report with this campaign as an explicit source section so planning review does not rely on manual copy-paste.
+                      {primarySource
+                        ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest intake lane with ${primarySource.count} items.`
+                        : "No intake items yet."}
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">{counts.totalItems} total items</span>
-                    <span className="module-record-chip">{counts.moderationQueue.actionableCount} actionable review items</span>
-                    <span className="module-record-chip">{reportRecords.length} existing project reports</span>
-                    <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
-                  </div>
-                  <EngagementReportCreateButton
-                    campaign={campaign}
-                    counts={counts}
-                    existingReportGuidance={
-                      recommendedCampaignReport
-                        ? {
-                            reportCount: campaignLinkedReports.length,
-                            packetAttentionCount,
-                            recommendedReportId: recommendedCampaignReport.id,
-                            recommendedReportTitle: recommendedCampaignReport.title,
-                            recommendedAction: getReportPacketActionLabel(
-                              recommendedCampaignReport.packetFreshness.label
-                            ),
-                            recommendedDetail: recommendedCampaignReport.packetFreshness.detail,
-                          }
-                        : null
-                    }
-                  />
+                <div className="module-record-meta">
+                  <span className="module-record-chip">{counts.recentActivity.byStatus.pending} pending in window</span>
+                  <span className="module-record-chip">{counts.recentActivity.byStatus.flagged} flagged in window</span>
+                  <span className="module-record-chip">Last activity {fmtDateTime(counts.lastActivityAt)}</span>
                 </div>
               </article>
             </div>
-          </article>
 
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Analytics</p>
-                <h2 className="module-section-title">Source and geography breakdown</h2>
-                <p className="module-section-description">
-                  Keep the summary lightweight but decision-useful: where intake came from, how much has map signal, and what still needs triage.
+            <article className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={campaign.project_id ? "success" : "warning"}>
+                      {campaign.project_id ? "Project-linked" : "Project link required"}
+                    </StatusBadge>
+                    <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
+                      {counts.moderationQueue.readyForHandoffCount} handoff-ready
+                    </StatusBadge>
+                  </div>
+                  <h3 className="module-record-title text-[1rem]">Create an engagement handoff packet</h3>
+                  <p className="module-record-summary">
+                    Seed a project-linked report with this campaign as an explicit source section so planning review does not rely on manual copy-paste.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="module-record-meta">
+                  <span className="module-record-chip">{counts.totalItems} total items</span>
+                  <span className="module-record-chip">{counts.moderationQueue.actionableCount} actionable review items</span>
+                  <span className="module-record-chip">{reportRecords.length} existing project reports</span>
+                  <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
+                </div>
+                <EngagementReportCreateButton
+                  campaign={campaign}
+                  counts={counts}
+                  existingReportGuidance={
+                    recommendedCampaignReport
+                      ? {
+                          reportCount: campaignLinkedReports.length,
+                          packetAttentionCount,
+                          recommendedReportId: recommendedCampaignReport.id,
+                          recommendedReportTitle: recommendedCampaignReport.title,
+                          recommendedAction: getReportPacketActionLabel(
+                            recommendedCampaignReport.packetFreshness.label
+                          ),
+                          recommendedDetail: recommendedCampaignReport.packetFreshness.detail,
+                        }
+                      : null
+                  }
+                />
+              </div>
+            </article>
+          </div>
+        </article>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Report Awareness</p>
+              <h2 className="module-section-title">Project-linked reports</h2>
+              <p className="module-section-description">
+                Linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+              <FileStack className="h-5 w-5" />
+            </span>
+          </div>
+
+          {!project ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No linked project yet"
+                description="Attach this campaign to a project before expecting report-aware handoff cues."
+                compact
+              />
+            </div>
+          ) : reportRecords.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No reports linked through this project yet"
+                description="Project-linked reports will appear here once reporting catches up with the campaign."
+                compact
+              />
+            </div>
+          ) : (
+            <div className="mt-5 space-y-3">
+              <div className="module-record-meta">
+                <span className="module-record-chip">{explicitlyLinkedReportCount} explicit campaign-source reports</span>
+                <span className="module-record-chip">{projectOnlyReportCount} project-linked only</span>
+                <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
+              </div>
+
+              <div
+                className={`rounded-[22px] border p-5 ${
+                  packetAttentionCount > 0
+                    ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
+                    : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
+                }`}
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Campaign reporting posture
+                </p>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">
+                  {packetAttentionCount > 0 && recommendedCampaignReport
+                    ? `${recommendedCampaignReport.title} needs packet attention`
+                    : "Linked campaign packets look current"}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {recommendedCampaignReport
+                    ? getReportPacketActionLabel(recommendedCampaignReport.packetFreshness.label)
+                    : "Open reports to create the first linked packet for this campaign's project context."}
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {recommendedCampaignReport?.packetFreshness.detail ??
+                    "No project-linked reports are available for this campaign yet."}
                 </p>
               </div>
-            </div>
 
-            {sourceSummaries.every((source) => source.count === 0) ? (
-              <div className="mt-5">
-                <EmptyState title="No source mix yet" description="Register items to expose source, moderation, and map coverage patterns." compact />
-              </div>
-            ) : (
-              <div className="mt-5 space-y-3">
-                {sourceSummaries
-                  .filter((source) => source.count > 0)
-                  .map((source) => (
-                    <div key={source.sourceType} className="module-record-row">
-                      <div className="module-record-head">
-                        <div className="module-record-main">
-                          <div className="module-record-kicker">
-                            <StatusBadge tone="info">{titleizeEngagementValue(source.sourceType)}</StatusBadge>
-                            <StatusBadge tone={source.flaggedCount > 0 ? "warning" : "neutral"}>{source.count} items</StatusBadge>
-                            <StatusBadge tone={source.geolocatedCount > 0 ? "success" : "neutral"}>
-                              <MapPinned className="h-3 w-3" />
-                              {source.geolocatedCount} mapped
-                            </StatusBadge>
-                          </div>
-                          <p className="module-record-summary">
-                            {fmtPercent(source.shareOfItems)} of campaign intake. {source.pendingCount} pending, {source.approvedCount} approved, {source.rejectedCount} rejected.
-                          </p>
-                        </div>
+              {campaignLinkedReports.slice(0, 4).map((report) => (
+                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
+                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                        <StatusBadge tone={report.isExplicitCampaignSource ? "success" : "neutral"}>
+                          {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
+                        </StatusBadge>
+                        <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                       </div>
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">{source.categorizedCount} categorized</span>
-                        <span className="module-record-chip">{source.nonGeolocatedCount} non-geolocated</span>
-                        <span className="module-record-chip">{source.flaggedCount} flagged</span>
-                        <span className="module-record-chip">Last activity {fmtDateTime(source.lastActivityAt)}</span>
-                      </div>
+                      <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                      <p className="module-record-summary">
+                        {report.isExplicitCampaignSource
+                          ? "This report explicitly includes this campaign as an engagement source section."
+                          : "This report shares the project context, but does not explicitly source this campaign yet."}
+                      </p>
+                      <p className="module-record-summary">{report.packetFreshness.detail}</p>
+                      <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
+                      <p className="module-record-summary">
+                        Updated {fmtDateTime(report.updated_at)}
+                        {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
+                      </p>
                     </div>
-                  ))}
-              </div>
-            )}
-          </article>
+                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </article>
+      </div>
 
+      <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
+        <div className="space-y-6">
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Registry</p>
+                <p className="module-section-label">Category Registry</p>
                 <h2 className="module-section-title">Current categories</h2>
                 <p className="module-section-description">
                   Category structure stays intentionally light, but each lane now exposes item volume and moderation load.
                 </p>
               </div>
+            </div>
+
+            <div className="mt-5">
+              <EngagementCategoryCreator campaignId={campaign.id} />
             </div>
 
             {!(categories?.length) ? (
@@ -576,147 +593,143 @@ export default async function EngagementCampaignDetailPage({
               </div>
             )}
           </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Analytics</p>
+                <h2 className="module-section-title">Source and geography breakdown</h2>
+                <p className="module-section-description">
+                  Keep the summary lightweight but decision-useful: where intake came from, how much has map signal, and what still needs triage.
+                </p>
+              </div>
+            </div>
+
+            {sourceSummaries.every((source) => source.count === 0) ? (
+              <div className="mt-5">
+                <EmptyState title="No source mix yet" description="Register items to expose source, moderation, and map coverage patterns." compact />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {sourceSummaries
+                  .filter((source) => source.count > 0)
+                  .map((source) => (
+                    <div key={source.sourceType} className="module-record-row">
+                      <div className="module-record-head">
+                        <div className="module-record-main">
+                          <div className="module-record-kicker">
+                            <StatusBadge tone="info">{titleizeEngagementValue(source.sourceType)}</StatusBadge>
+                            <StatusBadge tone={source.flaggedCount > 0 ? "warning" : "neutral"}>{source.count} items</StatusBadge>
+                            <StatusBadge tone={source.geolocatedCount > 0 ? "success" : "neutral"}>
+                              <MapPinned className="h-3 w-3" />
+                              {source.geolocatedCount} mapped
+                            </StatusBadge>
+                          </div>
+                          <p className="module-record-summary">
+                            {fmtPercent(source.shareOfItems)} of campaign intake. {source.pendingCount} pending, {source.approvedCount} approved, {source.rejectedCount} rejected.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">{source.categorizedCount} categorized</span>
+                        <span className="module-record-chip">{source.nonGeolocatedCount} non-geolocated</span>
+                        <span className="module-record-chip">{source.flaggedCount} flagged</span>
+                        <span className="module-record-chip">Last activity {fmtDateTime(source.lastActivityAt)}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </article>
         </div>
 
-        {items?.length ? (
-          <EngagementItemRegistry
-            items={recentItems as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              body: string;
-              submitted_by: string | null;
-              status: string;
-              source_type: string;
-              moderation_notes: string | null;
-              latitude: number | null;
-              longitude: number | null;
-              updated_at: string;
-            }>}
+        <div className="space-y-6">
+          {(items?.length ?? 0) > 0 && (
+            <EngagementBulkModeration
+              campaignId={campaign.id}
+              items={(items ?? []) as Array<{
+                id: string;
+                campaign_id: string;
+                category_id: string | null;
+                title: string | null;
+                status: string;
+                source_type: string;
+              }>}
+              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
+                id: c.id,
+                label: c.label,
+              }))}
+            />
+          )}
+
+          {items?.length ? (
+            <EngagementItemRegistry
+              items={recentItems as Array<{
+                id: string;
+                campaign_id: string;
+                category_id: string | null;
+                title: string | null;
+                body: string;
+                submitted_by: string | null;
+                status: string;
+                source_type: string;
+                moderation_notes: string | null;
+                latitude: number | null;
+                longitude: number | null;
+                updated_at: string;
+              }>}
+              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+                id: category.id,
+                label: category.label,
+              }))}
+              counts={counts}
+            />
+          ) : (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">Recent intake registry</h2>
+                  <p className="module-section-description">
+                    Create the first item to open moderation state inside this campaign.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <EmptyState
+                  title="No intake items yet"
+                  description="Register internal notes, meeting observations, or moderated public input to start the campaign record."
+                />
+              </div>
+            </article>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-12 space-y-6 border-t pt-12">
+        <div className="module-section-heading">
+          <p className="module-section-label">Operator Actions</p>
+          <h2 className="module-section-title">Campaign management and intake</h2>
+          <p className="module-section-description">
+            Update campaign settings, manage share tokens, or manually compose new intake items.
+          </p>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <EngagementCampaignControls campaign={campaign} projects={(projects ?? []) as Array<{ id: string; name: string }>} />
+          <EngagementShareControls campaign={campaign} />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-1">
+          <EngagementItemComposer
+            campaignId={campaign.id}
             categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
               id: category.id,
               label: category.label,
             }))}
-            counts={counts}
           />
-        ) : (
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Moderation</p>
-                <h2 className="module-section-title">Recent intake registry</h2>
-                <p className="module-section-description">
-                  Create the first item to open moderation state inside this campaign.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <EmptyState
-                title="No intake items yet"
-                description="Register internal notes, meeting observations, or moderated public input to start the campaign record."
-              />
-            </div>
-          </article>
-        )}
-      </div>
-
-      <article className="mt-6 module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Reports</p>
-            <h2 className="module-section-title">Project-linked report awareness</h2>
-            <p className="module-section-description">
-              Engagement stays operator-first in V1, but linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
-            </p>
-          </div>
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
-            <FileStack className="h-5 w-5" />
-          </span>
         </div>
-
-        {!project ? (
-          <div className="mt-5">
-            <EmptyState
-              title="No linked project yet"
-              description="Attach this campaign to a project before expecting report-aware handoff cues."
-              compact
-            />
-          </div>
-        ) : reportRecords.length === 0 ? (
-          <div className="mt-5">
-            <EmptyState
-              title="No reports linked through this project yet"
-              description="Project-linked reports will appear here once reporting catches up with the campaign."
-              compact
-            />
-          </div>
-        ) : (
-          <div className="mt-5 space-y-3">
-            <div className="module-record-meta">
-              <span className="module-record-chip">{explicitlyLinkedReportCount} explicit campaign-source reports</span>
-              <span className="module-record-chip">{projectOnlyReportCount} project-linked only</span>
-              <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
-            </div>
-
-            <div
-              className={`rounded-[22px] border p-5 ${
-                packetAttentionCount > 0
-                  ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
-                  : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
-              }`}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Campaign reporting posture
-              </p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {packetAttentionCount > 0 && recommendedCampaignReport
-                  ? `${recommendedCampaignReport.title} needs packet attention`
-                  : "Linked campaign packets look current"}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedCampaignReport
-                  ? getReportPacketActionLabel(recommendedCampaignReport.packetFreshness.label)
-                  : "Open reports to create the first linked packet for this campaign's project context."}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedCampaignReport?.packetFreshness.detail ??
-                  "No project-linked reports are available for this campaign yet."}
-              </p>
-            </div>
-
-            {campaignLinkedReports.slice(0, 4).map((report) => (
-              <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                      <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                      <StatusBadge tone={report.isExplicitCampaignSource ? "success" : "neutral"}>
-                        {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
-                      </StatusBadge>
-                      <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
-                    </div>
-                    <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
-                    <p className="module-record-summary">
-                      {report.isExplicitCampaignSource
-                        ? "This report explicitly includes this campaign as an engagement source section."
-                        : "This report shares the project context, but does not explicitly source this campaign yet."}
-                    </p>
-                    <p className="module-record-summary">{report.packetFreshness.detail}</p>
-                    <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
-                    <p className="module-record-summary">
-                      Updated {fmtDateTime(report.updated_at)}
-                      {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
-                    </p>
-                  </div>
-                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </article>
+      </div>
     </section>
   );
 }
