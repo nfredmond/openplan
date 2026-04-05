@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { isAuthenticatedCountyWorkerCallback } from "@/lib/api/county-onramp-worker-auth";
 import {
   buildCountyRunArtifacts,
   buildCountyRunRecord,
@@ -60,11 +61,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const isWorkerCallback = isAuthenticatedCountyWorkerCallback(request);
+    let user = null;
+    if (!isWorkerCallback) {
+      const authResult = await supabase.auth.getUser();
+      user = authResult.data.user;
+    }
 
-    if (!user) {
+    if (!isWorkerCallback && !user) {
       audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

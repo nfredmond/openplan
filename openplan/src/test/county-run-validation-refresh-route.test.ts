@@ -50,6 +50,7 @@ function request() {
 describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     await rm(runDir, { recursive: true, force: true });
@@ -224,6 +225,29 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
       { artifactType: "validation_scaffold_csv", path: `${runDir}/scaffold.csv` },
       { artifactType: "validation_summary_json", path: validationSummaryPath },
     ]);
+  });
+
+  it("accepts machine-authenticated refresh callbacks without a logged-in user", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await refreshCountyRunValidation(
+      new NextRequest(
+        "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh",
+        {
+          method: "POST",
+          headers: {
+            authorization: "Bearer callback-secret",
+          },
+        }
+      ),
+      {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(authGetUserMock).not.toHaveBeenCalled();
   });
 
   it("returns 404 when the validation summary file is missing", async () => {

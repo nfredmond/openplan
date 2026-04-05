@@ -211,6 +211,9 @@ describe("county onramp client helpers", () => {
             reasons: [],
             command:
               "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'",
+            automationCommand: null,
+            refreshUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh",
+            callbackAuthMode: "session-only",
             runOutputDir: "/tmp/nevada/run_output",
             countsCsvPath: "/tmp/scaffold.csv",
             outputDir: "/tmp/nevada/validation",

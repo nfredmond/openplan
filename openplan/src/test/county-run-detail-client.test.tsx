@@ -305,6 +305,10 @@ describe("CountyRunDetailClient", () => {
       reasons: [],
       command:
         "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation'",
+      automationCommand:
+        "python3 'scripts/modeling/validate_screening_observed_counts.py' --run-output-dir '/tmp/nevada/run_output' --counts-csv '/tmp/scaffold.csv' --output-dir '/tmp/nevada/validation' && curl -sS -X POST 'http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh' -H 'accept: application/json' -H \"authorization: Bearer $OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN\"",
+      refreshUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh",
+      callbackAuthMode: "bearer-env",
       runOutputDir: "/tmp/nevada/run_output",
       countsCsvPath: "/tmp/scaffold.csv",
       outputDir: "/tmp/nevada/validation",
@@ -369,7 +373,9 @@ describe("CountyRunDetailClient", () => {
     fireEvent.click(screen.getByRole("button", { name: "Prepare validation command" }));
 
     await waitFor(() => expect(prepareValidationMock).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"));
-    expect(screen.getByDisplayValue(/validate_screening_observed_counts\.py/)).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue(/validate_screening_observed_counts\.py/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Automation command")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy automation command" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Copy validation command" }));
 

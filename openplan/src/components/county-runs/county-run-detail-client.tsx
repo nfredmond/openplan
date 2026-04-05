@@ -54,6 +54,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     statusLabel: string;
     reasons: string[];
     command: string | null;
+    automationCommand: string | null;
+    refreshUrl: string | null;
+    callbackAuthMode: "session-only" | "bearer-env" | null;
     runOutputDir: string | null;
     countsCsvPath: string | null;
     outputDir: string | null;
@@ -192,6 +195,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         statusLabel: result.statusLabel,
         reasons: result.reasons,
         command: result.command,
+        automationCommand: result.automationCommand,
+        refreshUrl: result.refreshUrl,
+        callbackAuthMode: result.callbackAuthMode,
         runOutputDir: result.runOutputDir,
         countsCsvPath: result.countsCsvPath,
         outputDir: result.outputDir,
@@ -215,8 +221,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     await refresh();
   };
 
-  const copyValidationCommand = async () => {
-    if (!validationPrepState?.command) {
+  const copyValidationCommand = async (command: string | null | undefined) => {
+    if (!command) {
       return;
     }
 
@@ -226,8 +232,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     }
 
     try {
-      await navigator.clipboard.writeText(validationPrepState.command);
-      setCopiedValidationCommand(validationPrepState.command);
+      await navigator.clipboard.writeText(command);
+      setCopiedValidationCommand(command);
       setValidationCopyError(false);
     } catch {
       setValidationCopyError(true);
@@ -375,15 +381,46 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                 {validationPrepState.projectDbPath ? <div>Project DB: {validationPrepState.projectDbPath}</div> : null}
                 {validationPrepState.command ? (
                   <>
+                    <div className="font-medium text-foreground">Validator command</div>
                     <Textarea value={validationPrepState.command} readOnly rows={6} />
                     <div className="flex flex-wrap items-center gap-3">
-                      <Button type="button" variant="outline" onClick={() => void copyValidationCommand()}>
-                        {copiedValidationCommand === validationPrepState.command ? "Copied command" : "Copy validation command"}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void copyValidationCommand(validationPrepState.command)}
+                      >
+                        {copiedValidationCommand === validationPrepState.command
+                          ? "Copied command"
+                          : "Copy validation command"}
                       </Button>
-                      {validationCopyError ? <span className="text-destructive">Unable to copy validation command.</span> : null}
                     </div>
                   </>
                 ) : null}
+                {validationPrepState.automationCommand ? (
+                  <>
+                    <div className="font-medium text-foreground">Automation command</div>
+                    <p>
+                      This chained command reruns validation and then posts the refresh callback using
+                      <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">{`$OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN`}</code>
+                      from the local environment.
+                    </p>
+                    <Textarea value={validationPrepState.automationCommand} readOnly rows={8} />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void copyValidationCommand(validationPrepState.automationCommand)}
+                      >
+                        {copiedValidationCommand === validationPrepState.automationCommand
+                          ? "Copied automation command"
+                          : "Copy automation command"}
+                      </Button>
+                    </div>
+                  </>
+                ) : validationPrepState.callbackAuthMode === "session-only" ? (
+                  <p>Automation callback command is unavailable because callback bearer auth is not configured on this deployment.</p>
+                ) : null}
+                {validationCopyError ? <span className="text-destructive">Unable to copy validation command.</span> : null}
               </div>
             ) : null}
           </CardContent>

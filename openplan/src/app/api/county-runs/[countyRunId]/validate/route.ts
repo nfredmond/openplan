@@ -19,6 +19,8 @@ function resolveStoredPath(pathValue: string): string {
   return isAbsolute(pathValue) ? pathValue : resolve(process.cwd(), "..", pathValue);
 }
 
+const countyCallbackBearerEnvVar = "OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN";
+
 function shellEscape(value: string): string {
   return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
@@ -128,6 +130,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
             ...(projectDbPath ? ["--project-db", shellEscape(projectDbPath)] : []),
           ].join(" ")
         : null;
+    const refreshUrl = `${new URL(request.url).origin}/api/county-runs/${parsedParams.data.countyRunId}/validate/refresh`;
+    const hasCallbackBearerAuth = Boolean(process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN?.trim());
+    const automationCommand =
+      ready && command && hasCallbackBearerAuth
+        ? `${command} && curl -sS -X POST ${shellEscape(refreshUrl)} -H 'accept: application/json' -H "authorization: Bearer $${countyCallbackBearerEnvVar}"`
+        : null;
 
     const response = prepareCountyRunValidationResponseSchema.parse({
       countyRunId: parsedParams.data.countyRunId,
@@ -135,6 +143,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       statusLabel: ready ? "Ready to validate" : "Validation prep blocked",
       reasons,
       command,
+      automationCommand,
+      refreshUrl,
+      callbackAuthMode: hasCallbackBearerAuth ? "bearer-env" : "session-only",
       runOutputDir,
       countsCsvPath,
       outputDir,

@@ -40,6 +40,7 @@ function request() {
 describe("POST /api/county-runs/[countyRunId]/validate", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    delete process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     await rm(runDir, { recursive: true, force: true });
@@ -137,14 +138,34 @@ describe("POST /api/county-runs/[countyRunId]/validate", () => {
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       ready: true,
       statusLabel: "Ready to validate",
+      refreshUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh",
+      callbackAuthMode: "session-only",
       runOutputDir,
       countsCsvPath,
       outputDir: `${runDir}/validation`,
       projectDbPath,
     });
+    expect(payload.automationCommand).toBeNull();
     expect(String(payload.command)).toContain("validate_screening_observed_counts.py");
     expect(String(payload.command)).toContain(`--run-output-dir '${runOutputDir}'`);
     expect(String(payload.command)).toContain(`--counts-csv '${countsCsvPath}'`);
+  });
+
+  it("returns a chained automation command when callback bearer auth is configured", async () => {
+    process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN = "callback-secret";
+
+    const response = await prepareCountyRunValidation(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.callbackAuthMode).toBe("bearer-env");
+    expect(String(payload.automationCommand)).toContain("validate_screening_observed_counts.py");
+    expect(String(payload.automationCommand)).toContain(
+      "curl -sS -X POST 'http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate/refresh'"
+    );
+    expect(String(payload.automationCommand)).toContain("$OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN");
   });
 
   it("returns a blocked preparation state when scaffold readiness is incomplete", async () => {
@@ -215,5 +236,6 @@ describe("POST /api/county-runs/[countyRunId]/validate", () => {
     expect(payload.statusLabel).toBe("Validation prep blocked");
     expect(payload.reasons).toContain("Only 1 of 2 starter stations are validator-ready.");
     expect(payload.command).toBeNull();
+    expect(payload.automationCommand).toBeNull();
   });
 });
