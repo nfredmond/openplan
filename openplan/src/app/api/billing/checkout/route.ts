@@ -199,21 +199,16 @@ export async function POST(request: NextRequest) {
   return handleCheckout(parsed.data.workspaceId, parsed.data.plan, request);
 }
 
-export async function GET(request: NextRequest) {
-  const parsed = billingCheckoutSchema.safeParse({
-    workspaceId: request.nextUrl.searchParams.get("workspaceId"),
-    plan: request.nextUrl.searchParams.get("plan"),
-  });
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid checkout query params" }, { status: 400 });
-  }
-
-  const response = await handleCheckout(parsed.data.workspaceId, parsed.data.plan, request);
-  if (response.status !== 200) {
-    return response;
-  }
-
-  const payload = (await response.json()) as { checkoutUrl: string };
-  return NextResponse.redirect(payload.checkoutUrl, { status: 302 });
+export async function GET() {
+  return NextResponse.json(
+    {
+      error: "Use POST to initialize billing checkout.",
+    },
+    {
+      status: 405,
+      headers: {
+        Allow: "POST",
+      },
+    }
+  );
 }

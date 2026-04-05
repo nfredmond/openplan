@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
+import { BillingCheckoutLauncher } from "@/components/billing/billing-checkout-launcher";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -178,6 +179,7 @@ export default async function BillingPage({
   const workspaceId = membership.workspace_id;
   const status = normalizeSubscriptionStatus(workspace.subscription_status ?? null);
   const plan = workspace.subscription_plan ?? workspace.plan ?? "starter";
+  const canStartCheckout = canAccessWorkspaceAction("billing.checkout", membership.role);
   const canWriteInvoices = canAccessWorkspaceAction("billing.invoices.write", membership.role);
 
   const { data: billingEvents } = await supabase
@@ -186,6 +188,12 @@ export default async function BillingPage({
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false })
     .limit(10);
+
+  const { data: workspaceBillingDetail } = await supabase
+    .from("workspaces")
+    .select("subscription_current_period_end")
+    .eq("id", workspaceId)
+    .maybeSingle();
 
   const { data: workspaceProjectsData } = await supabase
     .from("projects")
@@ -312,21 +320,16 @@ export default async function BillingPage({
           Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records selected plan on the workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/api/billing/checkout?workspaceId=${workspaceId}&plan=starter`}
-            className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary"
-          >
-            Start Starter Checkout
-          </Link>
-          <Link
-            href={`/api/billing/checkout?workspaceId=${workspaceId}&plan=professional`}
-            className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary"
-          >
-            Start Professional Checkout
-          </Link>
-        </div>
       </article>
+
+      <BillingCheckoutLauncher
+        workspaceId={workspaceId}
+        workspaceName={workspace.name ?? "Workspace"}
+        currentPlan={plan}
+        currentStatus={status}
+        currentPeriodEnd={workspaceBillingDetail?.subscription_current_period_end ?? null}
+        canStartCheckout={canStartCheckout}
+      />
 
       <section className="space-y-4">
         <div className="space-y-2">

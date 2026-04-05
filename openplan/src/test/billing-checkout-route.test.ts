@@ -43,7 +43,7 @@ vi.mock("@/lib/billing/events", () => ({
   logBillingEvent: (...args: unknown[]) => logBillingEventMock(...args),
 }));
 
-import { POST as postCheckout } from "@/app/api/billing/checkout/route";
+import { GET as getCheckout, POST as postCheckout } from "@/app/api/billing/checkout/route";
 
 function jsonRequest(payload: unknown) {
   return new NextRequest("http://localhost/api/billing/checkout", {
@@ -53,7 +53,7 @@ function jsonRequest(payload: unknown) {
   });
 }
 
-describe("POST /api/billing/checkout safe messaging", () => {
+describe("/api/billing/checkout safe messaging", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -112,6 +112,15 @@ describe("POST /api/billing/checkout safe messaging", () => {
     });
 
     logBillingEventMock.mockResolvedValue(undefined);
+  });
+
+  it("rejects GET so checkout cannot be launched from a link prefetch", async () => {
+    const response = await getCheckout();
+
+    expect(response.status).toBe(405);
+    expect(response.headers.get("allow")).toBe("POST");
+    expect(await response.json()).toMatchObject({ error: "Use POST to initialize billing checkout." });
+    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
   });
 
   it("returns 401 Unauthorized when user is unauthenticated", async () => {
