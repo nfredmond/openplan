@@ -1,45 +1,23 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunDetailClient } from "@/components/county-runs/county-run-detail-client";
-import { buildCountyRunDetailHref, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 
-export default async function CountyRunDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ countyRunId: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function CountyRunDetailPage({ params }: { params: Promise<{ countyRunId: string }> }) {
   const { countyRunId } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
-  const requestedBackTo = typeof resolvedSearchParams.backTo === "string" ? resolvedSearchParams.backTo : null;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(
-      `/signin?next=${encodeURIComponent(
-        buildCountyRunDetailHref(countyRunId, getSafeCountyRunsBackHref(requestedBackTo))
-      )}`
-    );
+    redirect(`/signin?next=/county-runs/${countyRunId}`);
   }
 
-  const { data: memberships, error } = await supabase
-    .from("workspace_members")
-    .select("workspace_id")
-    .eq("user_id", user.id)
-    .limit(1);
+  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
-  if (error) {
-    throw new Error(error.message || "Failed to load workspace membership");
-  }
-
-  const workspaceId = memberships?.[0]?.workspace_id;
-
-  if (!workspaceId) {
+  if (!membership?.workspace_id) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="County onboarding"

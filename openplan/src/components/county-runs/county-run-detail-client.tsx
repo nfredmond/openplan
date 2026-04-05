@@ -1,90 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { useCountyRunDetail, useCountyRunMutations, useCountyRunScaffold } from "@/lib/hooks/use-county-onramp";
+import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import {
   getCountyRunEnqueueHelpText,
   getCountyRunEnqueueStatusLabel,
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
-import {
-  buildCountyActivitySimBundleUiCard,
-  buildCountyBehavioralPrototypeUiCard,
-  buildCountyRunUiCard,
-  buildCountyValidationRerunUiCard,
-  buildCountyValidationScaffoldUiCard,
-  getCountyRunMetricHighlights,
-} from "@/lib/ui/county-onramp";
-import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
-import { downloadText } from "@/lib/export/download";
-import {
-  CountyValidationScaffoldCsvError,
-  summarizeCountyValidationScaffoldCsv,
-} from "@/lib/api/county-onramp-scaffold";
+import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
+import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Textarea } from "@/components/ui/textarea";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
-  const { enqueue, updateScaffold, prepareValidation, refreshValidation, loading: actionLoading, error: actionError } =
-    useCountyRunMutations();
-  const scaffoldTargetPath = data?.manifest?.artifacts?.scaffold_csv ?? null;
-  const {
-    data: scaffoldData,
-    loading: scaffoldLoading,
-    error: scaffoldError,
-    refresh: refreshScaffold,
-  } = useCountyRunScaffold(countyRunId, Boolean(scaffoldTargetPath));
+  const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
     status: "queued_stub";
-    deliveryMode: "prepared" | "submitted";
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
-  const [scaffoldDraftState, setScaffoldDraftState] = useState<{ path: string | null; value: string | null }>({
-    path: null,
-    value: null,
-  });
-  const scaffoldFileInputRef = useRef<HTMLInputElement | null>(null);
-  const [scaffoldSaveState, setScaffoldSaveState] = useState<"idle" | "saved" | "error">("idle");
-  const [scaffoldImportError, setScaffoldImportError] = useState<string | null>(null);
-  const [scaffoldImportFileName, setScaffoldImportFileName] = useState<string | null>(null);
-  const [validationPrepState, setValidationPrepState] = useState<{
-    ready: boolean;
-    statusLabel: string;
-    reasons: string[];
-    command: string | null;
-    automationCommand: string | null;
-    refreshUrl: string | null;
-    callbackAuthMode: "session-only" | "bearer-env" | null;
-    runOutputDir: string | null;
-    countsCsvPath: string | null;
-    outputDir: string | null;
-    projectDbPath: string | null;
-  } | null>(null);
-  const [validationRefreshState, setValidationRefreshState] = useState<"idle" | "refreshed" | "error">("idle");
-  const [copiedValidationCommand, setCopiedValidationCommand] = useState<string | null>(null);
-  const [validationCopyError, setValidationCopyError] = useState(false);
-  const [copiedDetailRelativeUrl, setCopiedDetailRelativeUrl] = useState<string | null>(null);
-  const [shareLinkError, setShareLinkError] = useState(false);
 
   if (error) {
     return (
       <section className="module-page pb-10">
-        <ErrorState
+        <StateBlock
           title="Unable to load county run"
           description={error}
+          tone="danger"
           action={
-            <Button variant="outline" size="sm" onClick={() => void refresh()}>
+            <Button variant="outline" onClick={() => void refresh()}>
               Retry
             </Button>
           }
@@ -96,7 +44,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (!data && loading) {
     return (
       <section className="module-page pb-10">
-        <LoadingState label="Loading county run" description="Fetching county run detail and artifact state…" />
+        <StateBlock title="Loading county run" description="Fetching county run detail and artifact state…" tone="info" />
       </section>
     );
   }
@@ -104,7 +52,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (!data) {
     return (
       <section className="module-page pb-10">
-        <EmptyState title="County run unavailable" description="No county run data is currently available." />
+        <StateBlock title="County run unavailable" description="No county run data is currently available." tone="warning" />
       </section>
     );
   }
@@ -114,186 +62,21 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     manifest: data.manifest,
     stage: data.stage,
   });
-  const runStatusLabel = data.statusLabel ?? card.statusLabel;
   const metrics = getCountyRunMetricHighlights(data.manifest);
-  const validationScaffold = buildCountyValidationScaffoldUiCard(data.manifest);
-  const validationRerun = buildCountyValidationRerunUiCard(data.manifest);
-  const activitysimBundle = buildCountyActivitySimBundleUiCard(data.manifest);
-  const behavioral = buildCountyBehavioralPrototypeUiCard(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
   const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
   const canEnqueue = enqueueStatus !== "queued_stub";
-  const scaffoldSourceValue = scaffoldData?.csvContent ?? "";
-  const scaffoldEditorValue =
-    scaffoldDraftState.path === scaffoldTargetPath
-      ? scaffoldDraftState.value ?? scaffoldSourceValue
-      : scaffoldSourceValue;
-  const scaffoldDirty = Boolean(scaffoldTargetPath) && scaffoldEditorValue !== scaffoldSourceValue;
-  const scaffoldDraftValidation = (() => {
-    if (!scaffoldTargetPath || !scaffoldEditorValue.trim()) {
-      return { summary: null, error: null as string | null };
-    }
-
-    try {
-      return {
-        summary: summarizeCountyValidationScaffoldCsv(scaffoldEditorValue),
-        error: null as string | null,
-      };
-    } catch (error) {
-      const message =
-        error instanceof CountyValidationScaffoldCsvError
-          ? error.message
-          : error instanceof Error
-          ? error.message
-          : "Draft scaffold CSV could not be validated.";
-      return { summary: null, error: message };
-    }
-  })();
-  const canSaveScaffold = Boolean(
-    scaffoldTargetPath && scaffoldEditorValue.trim() && scaffoldDirty && !scaffoldDraftValidation.error
-  );
-  const canPrepareValidation = validationRerun.ready && !scaffoldDirty;
-  const requestedBackTo = searchParams.get("backTo");
-  const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
-  const countyRunsBackContextLabel = getCountyRunsBackContextLabel(requestedBackTo);
-  const currentCountyRunRelativeUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
-  const shareLinkState: "idle" | "copied" | "error" = shareLinkError
-    ? "error"
-    : copiedDetailRelativeUrl === currentCountyRunRelativeUrl
-    ? "copied"
-    : "idle";
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
     if (result?.status === "queued_stub") {
       setEnqueueState({
         status: result.status,
-        deliveryMode: result.deliveryMode,
         manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
         manifestPath: result.workerPayload.artifactTargets.manifestPath,
       });
-    }
-  };
-
-  const copyCurrentDetailLink = async () => {
-    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      setShareLinkError(true);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}${currentCountyRunRelativeUrl}`);
-      setCopiedDetailRelativeUrl(currentCountyRunRelativeUrl);
-      setShareLinkError(false);
-    } catch {
-      setShareLinkError(true);
-    }
-  };
-
-  const saveScaffoldDraft = async () => {
-    if (!scaffoldTargetPath || !scaffoldEditorValue.trim() || !scaffoldDirty) {
-      return;
-    }
-
-    const result = await updateScaffold(countyRunId, { csvContent: scaffoldEditorValue });
-    if (!result) {
-      setScaffoldSaveState("error");
-      return;
-    }
-
-    setScaffoldSaveState("saved");
-    setValidationRefreshState("idle");
-    await Promise.all([refresh(), refreshScaffold()]);
-  };
-
-  const reloadScaffoldDraft = async () => {
-    if (!scaffoldTargetPath) {
-      return;
-    }
-
-    setScaffoldDraftState({ path: null, value: null });
-    setScaffoldSaveState("idle");
-    setScaffoldImportError(null);
-    setScaffoldImportFileName(null);
-    setValidationRefreshState("idle");
-    await refreshScaffold();
-  };
-
-  const importScaffoldFile = async (file: File) => {
-    try {
-      const nextContent = await file.text();
-      setScaffoldDraftState({ path: scaffoldTargetPath, value: nextContent });
-      setScaffoldImportError(null);
-      setScaffoldImportFileName(file.name);
-      setScaffoldSaveState("idle");
-      setValidationRefreshState("idle");
-    } catch {
-      setScaffoldImportError("Unable to read the selected scaffold CSV file.");
-      setScaffoldImportFileName(null);
-    }
-  };
-
-  const downloadCurrentScaffold = () => {
-    if (!scaffoldTargetPath || !scaffoldSourceValue) {
-      return;
-    }
-
-    const filename = scaffoldTargetPath.split("/").pop() || "county-validation-scaffold.csv";
-    downloadText(scaffoldSourceValue, filename, "text/csv;charset=utf-8");
-  };
-
-  const runPrepareValidation = async () => {
-    const result = await prepareValidation(countyRunId);
-    if (result) {
-      setValidationPrepState({
-        ready: result.ready,
-        statusLabel: result.statusLabel,
-        reasons: result.reasons,
-        command: result.command,
-        automationCommand: result.automationCommand,
-        refreshUrl: result.refreshUrl,
-        callbackAuthMode: result.callbackAuthMode,
-        runOutputDir: result.runOutputDir,
-        countsCsvPath: result.countsCsvPath,
-        outputDir: result.outputDir,
-        projectDbPath: result.projectDbPath,
-      });
-      setValidationRefreshState("idle");
-      setCopiedValidationCommand(null);
-      setValidationCopyError(false);
-    }
-  };
-
-  const runRefreshValidation = async () => {
-    const result = await refreshValidation(countyRunId);
-    if (!result) {
-      setValidationRefreshState("error");
-      return;
-    }
-
-    setValidationRefreshState("refreshed");
-    setValidationPrepState(null);
-    await refresh();
-  };
-
-  const copyValidationCommand = async (command: string | null | undefined) => {
-    if (!command) {
-      return;
-    }
-
-    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      setValidationCopyError(true);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(command);
-      setCopiedValidationCommand(command);
-      setValidationCopyError(false);
-    } catch {
-      setValidationCopyError(true);
     }
   };
 
@@ -307,46 +90,24 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
-          {runStatusLabel ? <StatusBadge tone={card.tone}>{runStatusLabel}</StatusBadge> : null}
+          {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
           <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
           <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {data.enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => void copyCurrentDetailLink()}>
-            {shareLinkState === "copied" ? "Copied" : "Copy detail link"}
+            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
           </Button>
           <Button asChild variant="outline">
-            <Link href={countyRunsBackHref}>Back to county runs</Link>
+            <Link href="/county-runs">Back to county runs</Link>
           </Button>
         </div>
-        {countyRunsBackContextLabel || shareLinkState !== "idle" ? (
-          <div className="mt-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-            {countyRunsBackContextLabel ? (
-              <div>
-                <span className="font-medium text-foreground">Saved dashboard view</span>
-                <span className="ml-2">{countyRunsBackContextLabel}</span>
-              </div>
-            ) : null}
-            {shareLinkState === "copied" ? <div className="text-emerald-600">Copied detail link</div> : null}
-            {shareLinkState === "error" ? <div className="text-destructive">Unable to copy detail link</div> : null}
-          </div>
-        ) : null}
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
         {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">
-              {enqueueState.deliveryMode === "submitted" ? "Background worker accepted the job" : "Enqueue payload prepared"}
-            </div>
-            <div className="mt-1">
-              {enqueueState.deliveryMode === "submitted"
-                ? "The county bootstrap was handed to the configured worker endpoint for background execution."
-                : "No worker endpoint is configured yet, so the payload is ready for operator/manual dispatch."}
-            </div>
+            <div className="font-medium text-foreground">Enqueue stub prepared</div>
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
             <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
           </div>
@@ -375,197 +136,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <div>Median APE: {metrics.medianApe ?? "—"}</div>
             <div>Max APE: {metrics.maxApe ?? "—"}</div>
-            <div>Status: {runStatusLabel ?? "Not available"}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Validation scaffold</CardTitle>
-            <CardDescription>Observed-count sourcing progress from the county onramp manifest.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <StatusBadge tone={validationScaffold.tone}>{validationScaffold.statusLabel}</StatusBadge>
-            <div>Starter stations: {validationScaffold.stationCount ?? "—"}</div>
-            <div>
-              Observed counts entered: {validationScaffold.observedVolumeFilledCount ?? "—"}
-              {validationScaffold.stationCount != null ? ` / ${validationScaffold.stationCount}` : ""}
-            </div>
-            <div>Source descriptions entered: {validationScaffold.sourceDescriptionFilledCount ?? "—"}</div>
-            <div>Agencies still TBD: {validationScaffold.sourceAgencyTbdCount ?? "—"}</div>
-            <div>
-              Validator-ready stations: {validationScaffold.readyStationCount ?? "—"}
-              {validationScaffold.stationCount != null ? ` / ${validationScaffold.stationCount}` : ""}
-            </div>
-            <p>{validationScaffold.claim}</p>
-            <p>Next scaffold action: {validationScaffold.nextActionLabel}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Validation rerun</CardTitle>
-            <CardDescription>Prepare the exact validator command for the currently stored county scaffold.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <StatusBadge tone={validationRerun.tone}>{validationRerun.statusLabel}</StatusBadge>
-            <p>{validationRerun.claim}</p>
-            <p>Next validation action: {scaffoldDirty ? "Save or reload scaffold edits before preparing validation." : validationRerun.nextActionLabel}</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button type="button" variant="outline" onClick={() => void runPrepareValidation()} disabled={actionLoading || !canPrepareValidation}>
-                Prepare validation command
-              </Button>
-              <Button type="button" variant="ghost" onClick={() => void runRefreshValidation()} disabled={actionLoading || scaffoldDirty}>
-                Refresh validation from disk
-              </Button>
-              {scaffoldDirty ? <span>Save or reload scaffold edits first.</span> : null}
-              {validationRefreshState === "refreshed" ? <span className="text-emerald-600">Validation refreshed from disk.</span> : null}
-              {validationRefreshState === "error" ? <span className="text-destructive">Unable to refresh validation from disk.</span> : null}
-            </div>
-            {validationPrepState ? (
-              <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
-                <div className="font-medium text-foreground">{validationPrepState.statusLabel}</div>
-                {validationPrepState.reasons.length > 0 ? (
-                  <ul className="list-disc space-y-1 pl-5">
-                    {validationPrepState.reasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                {validationPrepState.runOutputDir ? <div>Run output: {validationPrepState.runOutputDir}</div> : null}
-                {validationPrepState.countsCsvPath ? <div>Counts CSV: {validationPrepState.countsCsvPath}</div> : null}
-                {validationPrepState.outputDir ? <div>Validation output: {validationPrepState.outputDir}</div> : null}
-                {validationPrepState.projectDbPath ? <div>Project DB: {validationPrepState.projectDbPath}</div> : null}
-                {validationPrepState.command ? (
-                  <>
-                    <div className="font-medium text-foreground">Validator command</div>
-                    <Textarea value={validationPrepState.command} readOnly rows={6} />
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => void copyValidationCommand(validationPrepState.command)}
-                      >
-                        {copiedValidationCommand === validationPrepState.command
-                          ? "Copied command"
-                          : "Copy validation command"}
-                      </Button>
-                    </div>
-                  </>
-                ) : null}
-                {validationPrepState.automationCommand ? (
-                  <>
-                    <div className="font-medium text-foreground">Automation command</div>
-                    <p>
-                      This chained command reruns validation and then posts the refresh callback using
-                      <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">{`$OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN`}</code>
-                      from the local environment.
-                    </p>
-                    <Textarea value={validationPrepState.automationCommand} readOnly rows={8} />
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => void copyValidationCommand(validationPrepState.automationCommand)}
-                      >
-                        {copiedValidationCommand === validationPrepState.automationCommand
-                          ? "Copied automation command"
-                          : "Copy automation command"}
-                      </Button>
-                    </div>
-                  </>
-                ) : validationPrepState.callbackAuthMode === "session-only" ? (
-                  <p>Automation callback command is unavailable because callback bearer auth is not configured on this deployment.</p>
-                ) : null}
-                {validationCopyError ? <span className="text-destructive">Unable to copy validation command.</span> : null}
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Scaffold update</CardTitle>
-            <CardDescription>Edit the current scaffold in place or paste a full replacement CSV without leaving OpenPlan.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <Input
-              ref={scaffoldFileInputRef}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) {
-                  void importScaffoldFile(file);
-                }
-                event.currentTarget.value = "";
-              }}
-            />
-            <div>
-              <div className="font-medium text-foreground">Registered scaffold path</div>
-              <p className="mt-1 break-all">{scaffoldTargetPath ?? "No scaffold file is currently registered for this county run."}</p>
-            </div>
-            <p>
-              Saving a revised scaffold will refresh readiness metrics immediately. If this county already had a validated
-              slice, OpenPlan will mark that validation stale until the validator is rerun.
-            </p>
-            {scaffoldLoading ? <p>Loading current scaffold CSV…</p> : null}
-            {scaffoldError ? <p className="text-destructive">{scaffoldError}</p> : null}
-            {scaffoldImportFileName ? <p>Imported file: {scaffoldImportFileName}</p> : null}
-            {scaffoldImportError ? <p className="text-destructive">{scaffoldImportError}</p> : null}
-            {scaffoldDraftValidation.error ? <p className="text-destructive">Draft validation: {scaffoldDraftValidation.error}</p> : null}
-            <Textarea
-              value={scaffoldEditorValue}
-              onChange={(event) => {
-                setScaffoldDraftState({ path: scaffoldTargetPath, value: event.target.value });
-                setScaffoldImportError(null);
-                setScaffoldSaveState("idle");
-                setValidationRefreshState("idle");
-              }}
-              placeholder="Paste the full scaffold CSV here after editing observed counts and source metadata."
-              rows={10}
-              disabled={!scaffoldTargetPath}
-            />
-            {scaffoldDraftValidation.summary ? (
-              <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
-                <div className="font-medium text-foreground">Draft readiness preview</div>
-                <div className="mt-2 space-y-1">
-                  <div>Starter stations: {scaffoldDraftValidation.summary.station_count}</div>
-                  <div>
-                    Validator-ready stations: {scaffoldDraftValidation.summary.ready_station_count} / {scaffoldDraftValidation.summary.station_count}
-                  </div>
-                  <div>
-                    Observed counts entered: {scaffoldDraftValidation.summary.observed_volume_filled_count} / {scaffoldDraftValidation.summary.station_count}
-                  </div>
-                  <div>Agencies still TBD: {scaffoldDraftValidation.summary.source_agency_tbd_count}</div>
-                  <div>Next draft action: {scaffoldDraftValidation.summary.next_action_label}</div>
-                </div>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => scaffoldFileInputRef.current?.click()}
-                disabled={!scaffoldTargetPath}
-              >
-                Import scaffold CSV file
-              </Button>
-              <Button type="button" variant="ghost" onClick={downloadCurrentScaffold} disabled={!scaffoldTargetPath || !scaffoldSourceValue}>
-                Download scaffold CSV
-              </Button>
-              <Button type="button" variant="outline" onClick={() => void saveScaffoldDraft()} disabled={actionLoading || !canSaveScaffold}>
-                Save scaffold CSV
-              </Button>
-              <Button type="button" variant="ghost" onClick={() => void reloadScaffoldDraft()} disabled={scaffoldLoading || !scaffoldTargetPath}>
-                Reload scaffold CSV
-              </Button>
-              {!scaffoldDirty && scaffoldTargetPath ? <span>Editor matches the currently stored scaffold.</span> : null}
-              {scaffoldDirty && scaffoldDraftValidation.error ? <span className="text-destructive">Fix the draft CSV before saving.</span> : null}
-              {scaffoldSaveState === "saved" ? <span className="text-emerald-600">Scaffold saved and readiness refreshed.</span> : null}
-              {scaffoldSaveState === "error" ? <span className="text-destructive">Unable to save scaffold.</span> : null}
-            </div>
+            <div>Status: {card.statusLabel ?? "Not available"}</div>
           </CardContent>
         </Card>
 
@@ -579,12 +150,6 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               <div className="font-medium text-foreground">Allowed claim</div>
               <p className="mt-1">{card.allowedClaim}</p>
             </div>
-            {data.stageReasonLabel ? (
-              <div>
-                <div className="font-medium text-foreground">Why this stage</div>
-                <p className="mt-1">{data.stageReasonLabel}</p>
-              </div>
-            ) : null}
             <div>
               <div className="font-medium text-foreground">Next action</div>
               <p className="mt-1">{card.nextAction}</p>
@@ -594,57 +159,6 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>ActivitySim handoff</CardTitle>
-            <CardDescription>Intermediate bundle state between screening outputs and the prototype behavioral lane.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <StatusBadge tone={activitysimBundle.tone}>{activitysimBundle.statusLabel}</StatusBadge>
-            <div>Bundle ready: {activitysimBundle.ready ? "Yes" : "No"}</div>
-            <p>{activitysimBundle.claim}</p>
-            <div>Land-use rows: {activitysimBundle.landUseRows ?? "—"}</div>
-            <div>Households: {activitysimBundle.households ?? "—"}</div>
-            <div>Persons: {activitysimBundle.persons ?? "—"}</div>
-            <div>Skim posture: {activitysimBundle.skimModeLabel ?? "—"}</div>
-            {activitysimBundle.outputDir ? <div>Output root: {activitysimBundle.outputDir}</div> : null}
-            {activitysimBundle.manifestPath ? <div>Bundle manifest: {activitysimBundle.manifestPath}</div> : null}
-            {activitysimBundle.errorMessage ? <div>Error: {activitysimBundle.errorMessage}</div> : null}
-            {activitysimBundle.errorKind ? <div>Error kind: {activitysimBundle.errorKind}</div> : null}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Behavioral prototype</CardTitle>
-            <CardDescription>End-to-end prototype lane status from the county onramp manifest.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <div>Pipeline status: {behavioral.pipelineStatus ?? "Not recorded"}</div>
-            <div>Runtime status: {behavioral.runtimeStatus ?? "Not recorded"}</div>
-            <div>Runtime mode: {behavioral.runtimeMode ?? "Not recorded"}</div>
-            <div>Runtime posture: {behavioral.runtimePosture ?? "Not recorded"}</div>
-            <div>Evidence status: {behavioral.evidenceStatusLabel}</div>
-            <div>Evidence packet ready: {behavioral.evidencePacketReady ? "Yes" : "No"}</div>
-            <div>Comparison ready: {behavioral.comparisonReady ? "Yes" : "No"}</div>
-            <p>{behavioral.claim}</p>
-            <p>{behavioral.evidenceSupportLabel}</p>
-            <p>{behavioral.comparisonSupportLabel}</p>
-            {behavioral.evidencePacketPath ? <div>Evidence source: {behavioral.evidencePacketPath}</div> : null}
-            {behavioral.runtimeSummaryPath ? <div>Runtime summary: {behavioral.runtimeSummaryPath}</div> : null}
-            {behavioral.ingestionSummaryPath ? <div>Ingestion summary: {behavioral.ingestionSummaryPath}</div> : null}
-            {behavioral.comparisonSummaryPath ? <div>Comparison summary: {behavioral.comparisonSummaryPath}</div> : null}
-            {behavioral.comparisonPacketPath ? <div>Comparison packet: {behavioral.comparisonPacketPath}</div> : null}
-            {behavioral.caveats.length > 0 ? (
-              <ul className="list-disc space-y-1 pl-5">
-                {behavioral.caveats.map((caveat) => (
-                  <li key={caveat}>{caveat}</li>
-                ))}
-              </ul>
-            ) : null}
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Artifacts</CardTitle>
@@ -677,10 +191,6 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                   <div className="mt-1">{data.workerPayload.countyPrefix}</div>
                 </div>
                 <div>
-                  <div className="font-medium text-foreground">Runtime preset</div>
-                  <div className="mt-1">{data.runtimePresetLabel ?? "Standard county onboarding runtime"}</div>
-                </div>
-                <div>
                   <div className="font-medium text-foreground">Callback URL</div>
                   <div className="mt-1 break-all">{data.workerPayload.callback.manifestIngestUrl}</div>
                 </div>
@@ -702,15 +212,6 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                     <li>hbwScalar: {data.workerPayload.runtimeOptions.hbwScalar ?? "—"}</li>
                     <li>hboScalar: {data.workerPayload.runtimeOptions.hboScalar ?? "—"}</li>
                     <li>nhbScalar: {data.workerPayload.runtimeOptions.nhbScalar ?? "—"}</li>
-                    <li>
-                      activitysimContainerImage: {data.workerPayload.runtimeOptions.activitysimContainerImage ?? "—"}
-                    </li>
-                    <li>containerEngineCli: {data.workerPayload.runtimeOptions.containerEngineCli ?? "—"}</li>
-                    <li>
-                      activitysimContainerCliTemplate:{" "}
-                      {data.workerPayload.runtimeOptions.activitysimContainerCliTemplate ?? "—"}
-                    </li>
-                    <li>containerNetworkMode: {data.workerPayload.runtimeOptions.containerNetworkMode ?? "—"}</li>
                   </ul>
                 </div>
               </>
