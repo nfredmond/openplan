@@ -70,4 +70,5 @@ The duplicate project was created later, pointed at the wrong root directory, an
 - Use only `natford/openplan` going forward.
 - Treat `openplan-natford.vercel.app` as the canonical production alias for active tooling and verification.
 - Keep `openplan-zeta.vercel.app` only as a legacy compatibility alias until it is no longer needed.
+- For how to interpret old `zeta` references in historical proof docs, see `docs/ops/2026-04-05-openplan-alias-reference-policy.md`.
 - If a future team/scope migration is needed, move deliberately with one project only — not parallel duplicate Vercel projects.
