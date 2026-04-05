@@ -1,5 +1,3 @@
-import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
-
 type EvidencePacketKpiItem = {
   name?: string;
   label?: string;
@@ -373,8 +371,14 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
 }
 
 export function labelForEngineKey(engineKey: string | null | undefined) {
+  if (engineKey === "aequilibrae") return "AequilibraE";
+  if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
   if (!engineKey) return "Unknown engine";
-  return getManagedRunModeDefinition(engineKey).engineLabel;
+  return engineKey
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export function labelForArtifactType(artifactType: string | null | undefined) {

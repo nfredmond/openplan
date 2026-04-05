@@ -69,12 +69,13 @@ const sectionMap: Array<{
     },
   },
   {
-    match: ["/scenarios", "/models", "/data-hub"],
+    match: ["/scenarios", "/models", "/data-hub", "/county-runs"],
     section: {
       title: "Modeling & Data",
       items: [
         { href: "/scenarios", label: "Scenarios" },
         { href: "/models", label: "Models" },
+        { href: "/county-runs", label: "County Validation" },
         { href: "/data-hub", label: "Data Hub" },
       ],
     },
