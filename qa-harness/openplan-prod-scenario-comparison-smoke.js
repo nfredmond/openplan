@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { getOutputDir, loadEnv, repoRoot } = require('./harness-env');
+const { buildBrowserContextOptions, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
 const outputDate = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(outputDate);
@@ -50,7 +50,7 @@ async function main() {
   if (!createUserResult.ok) throw new Error(`Failed to create QA user: ${createUserResult.status} ${JSON.stringify(createUserResult.data)}`);
 
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1700 } });
+  const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
 
   async function screenshot(name, targetPage = page) {

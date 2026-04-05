@@ -58,9 +58,42 @@ function getOutputDir(datePart) {
   return path.join(repoRoot, `docs/ops/${datePart}-test-output`);
 }
 
+function getVercelProtectionBypassHeaders() {
+  const secret =
+    process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+    process.env.VERCEL_PROTECTION_BYPASS_SECRET ||
+    process.env.OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET;
+
+  if (!secret) {
+    return {};
+  }
+
+  return {
+    'x-vercel-protection-bypass': secret,
+    'x-vercel-set-bypass-cookie': 'true',
+  };
+}
+
+function buildBrowserContextOptions(baseOptions = {}) {
+  const bypassHeaders = getVercelProtectionBypassHeaders();
+  if (!Object.keys(bypassHeaders).length) {
+    return baseOptions;
+  }
+
+  return {
+    ...baseOptions,
+    extraHTTPHeaders: {
+      ...(baseOptions.extraHTTPHeaders || {}),
+      ...bypassHeaders,
+    },
+  };
+}
+
 module.exports = {
   appRoot,
+  buildBrowserContextOptions,
   getOutputDir,
+  getVercelProtectionBypassHeaders,
   loadEnv,
   readEnv,
   repoRoot,

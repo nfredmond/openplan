@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const { buildBrowserContextOptions } = require('./harness-env');
 
 const repoRoot = path.resolve(__dirname, '..');
 const appRoot = path.join(repoRoot, 'openplan');
@@ -116,7 +117,7 @@ async function main() {
   notes.push(`Created QA auth user ${email}.`);
 
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1200 } });
+  const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1200 } }));
   const page = await context.newPage();
 
   async function screenshot(name) {
