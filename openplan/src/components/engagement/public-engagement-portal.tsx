@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, Loader2, MapPinned, MessageSquare, Send, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { LocationPickerMap } from "./location-picker-map";
+import { LocationDisplayMap } from "./location-display-map";
 
 type CategoryOption = {
   id: string;
@@ -146,6 +148,16 @@ function SubmissionForm({
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground space-y-2">
+        <h3 className="font-semibold text-primary flex items-center gap-1.5 mb-2">
+          <Info className="h-4 w-4" />
+          Before you submit
+        </h3>
+        <p><strong>What we&apos;re looking for:</strong> Clear, specific observations or ideas connected to this project. We read every submission.</p>
+        <p><strong>What&apos;s optional:</strong> Pinning a location on the map, picking a category, or adding your name. Your main note is what matters most.</p>
+        <p><strong>What happens next:</strong> Submissions are reviewed by the project team for inclusion in public engagement reports and technical summaries.</p>
+      </div>
+
       <section className="space-y-3 rounded-2xl border border-border/60 bg-background/70 p-4">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -220,31 +232,21 @@ function SubmissionForm({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="public-lat" className="text-sm font-medium">
-              Latitude <span className="text-xs text-muted-foreground">(optional)</span>
-            </label>
-            <Input
-              id="public-lat"
-              inputMode="decimal"
-              placeholder="e.g. 39.2190"
-              value={latitude}
-              onChange={(e) => setLatitude(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="public-lng" className="text-sm font-medium">
-              Longitude <span className="text-xs text-muted-foreground">(optional)</span>
-            </label>
-            <Input
-              id="public-lng"
-              inputMode="decimal"
-              placeholder="e.g. -121.0560"
-              value={longitude}
-              onChange={(e) => setLongitude(e.target.value)}
-            />
-          </div>
+        <div className="space-y-1.5 pt-2">
+          <label className="text-sm font-medium">
+            Location pin <span className="text-xs text-muted-foreground">(optional)</span>
+          </label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Click on the map to drop a pin if your input is about a specific spot.
+          </p>
+          <LocationPickerMap
+            latitude={latitude}
+            longitude={longitude}
+            onLocationChange={(lat, lng) => {
+              setLatitude(lat);
+              setLongitude(lng);
+            }}
+          />
         </div>
       </section>
 
@@ -409,8 +411,10 @@ export function PublicEngagementPortal({
         )}
 
         {activeTab === "feedback" && (
-          <div className="space-y-3">
-            {approvedItems.length === 0 ? (
+          <div>
+            <LocationDisplayMap items={approvedItems.map(i => ({ id: i.id, latitude: i.latitude, longitude: i.longitude, title: i.title, body: i.body }))} />
+            <div className="space-y-3">
+              {approvedItems.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border/70 bg-card/60 p-6 text-center text-sm text-muted-foreground">
                 No community feedback has been published for this campaign yet.
               </div>
@@ -437,6 +441,7 @@ export function PublicEngagementPortal({
                 </div>
               ))
             )}
+            </div>
           </div>
         )}
       </div>
