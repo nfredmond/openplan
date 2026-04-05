@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import {
@@ -10,12 +11,15 @@ import {
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
@@ -23,6 +27,25 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     manifestIngestUrl: string;
     manifestPath: string;
   } | null>(null);
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "error">("idle");
+
+  const backTo = searchParams.get("backTo");
+  const safeBackHref = useMemo(() => getSafeCountyRunsBackHref(backTo), [backTo]);
+  const backContextLabel = useMemo(() => getCountyRunsBackContextLabel(backTo), [backTo]);
+  const detailHref = useMemo(() => {
+    const query = searchParams.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [pathname, searchParams]);
+  const stageReasonLabel = (data as { stageReasonLabel?: string } | null)?.stageReasonLabel ?? null;
+
+  const copyDetailLink = async () => {
+    try {
+      await navigator.clipboard.writeText(detailHref);
+      setLinkCopyState("copied");
+    } catch {
+      setLinkCopyState("error");
+    }
+  };
 
   if (error) {
     return (
@@ -85,36 +108,76 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       <div className="module-intro-card">
         <div className="module-intro-kicker">County onboarding</div>
         <div className="module-intro-body">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
+            {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
+            <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
+          </div>
           <h1 className="module-intro-title">{data.geographyLabel}</h1>
-          <p className="module-intro-description">{data.runName}</p>
+          <p className="module-intro-description">
+            {data.runName}. This page is the operational truth surface for the selected county run: recorded artifacts,
+            bootstrap posture, stage rationale, and the next safe operator move.
+          </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
-          <StatusBadge tone={card.tone}>{card.stageLabel}</StatusBadge>
-          {card.statusLabel ? <StatusBadge tone={card.tone}>{card.statusLabel}</StatusBadge> : null}
-          <StatusBadge tone={enqueueTone}>{enqueueLabel}</StatusBadge>
           <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Enqueue bootstrap"}
+            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Prepare bootstrap handoff"}
           </Button>
           <Button asChild variant="outline">
-            <Link href="/county-runs">Back to county runs</Link>
+            <Link href={safeBackHref}>Back to county runs</Link>
+          </Button>
+          <Button variant="outline" onClick={() => void copyDetailLink()}>
+            {linkCopyState === "copied" ? "Copied detail link" : "Copy detail link"}
           </Button>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
+        {stageReasonLabel ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Why this stage:</span> {stageReasonLabel}
+          </p>
+        ) : null}
         {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
+        {linkCopyState === "error" ? <p className="mt-2 text-sm text-destructive">Unable to copy the current detail link.</p> : null}
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">Enqueue stub prepared</div>
+            <div className="font-medium text-foreground">Bootstrap handoff prepared</div>
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
             <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
           </div>
         ) : null}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      {backContextLabel ? (
+        <StateBlock
+          className="mt-4"
+          title="Saved dashboard view"
+          description={backContextLabel}
+          tone="info"
+          compact
+          action={
+            <Link
+              href={safeBackHref}
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+            >
+              Return to that view
+            </Link>
+          }
+        />
+      ) : null}
+
+      <StateBlock
+        className="mt-4"
+        title="How to read this page"
+        description="Use the stage/status badges for the current recorded posture, use the guidance card for safe claims and next actions, and treat artifacts below as evidence inventory rather than implied completion."
+        tone="info"
+        compact
+      />
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Runtime summary</CardTitle>

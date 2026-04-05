@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
@@ -11,14 +11,17 @@ import {
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard } from "@/lib/ui/county-onramp";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { buildCountyRunDetailHref } from "@/lib/ui/county-runs-navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { items, loading, error, refresh } = useCountyRuns({
     workspaceId,
     limit: 25,
@@ -29,6 +32,11 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
   const [geographyLabel, setGeographyLabel] = useState("");
   const [countyPrefix, setCountyPrefix] = useState("");
   const [runName, setRunName] = useState("");
+
+  const currentViewHref = useMemo(() => {
+    const query = searchParams.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [pathname, searchParams]);
 
   const suggestedRunName = useMemo(() => {
     const prefix = geographyLabel
@@ -60,7 +68,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
 
     if (created?.countyRunId) {
       await refresh();
-      router.push(`/county-runs/${created.countyRunId}`);
+      router.push(buildCountyRunDetailHref(created.countyRunId, currentViewHref));
     }
   };
 
@@ -69,10 +77,14 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       <div className="module-intro-card">
         <div className="module-intro-kicker">County onboarding</div>
         <div className="module-intro-body">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge tone="info">Pilot validation lane</StatusBadge>
+            <StatusBadge tone="neutral">25 most recent runs</StatusBadge>
+          </div>
           <h1 className="module-intro-title">County runs</h1>
           <p className="module-intro-description">
-            Track geography-first county onboarding from runtime build through validation scaffolding and bounded
-            screening status.
+            Track geography-first county onboarding from bootstrap through validation scaffolding. This page is meant to
+            stay operational: launch a run, check stage truth, then open detail for artifacts, worker handoff, and caveats.
           </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -83,7 +95,15 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         </div>
       </div>
 
-      <Card className="mb-4">
+      <StateBlock
+        className="mt-4"
+        title="What this page can confirm"
+        description="County stages, operator-safe status labels, and bootstrap state shown here reflect recorded application state. Validation quality still depends on the underlying scaffold and rerun evidence on each detail page."
+        tone="info"
+        compact
+      />
+
+      <Card className="mb-4 mt-4">
         <CardHeader>
           <CardTitle>Launch county onboarding</CardTitle>
           <CardDescription>
@@ -116,14 +136,14 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 placeholder={suggestedRunName || "placer-county-runtime"}
               />
             </div>
-            <div className="md:col-span-2 xl:col-span-4 flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-1 md:col-span-2 xl:col-span-4">
               <Button type="submit" disabled={creating}>
                 Launch county run
               </Button>
               {createError ? <span className="text-sm text-destructive">{createError}</span> : null}
               {!createError ? (
                 <span className="text-sm text-muted-foreground">
-                  This creates the county run record and initial stage state. Background execution wiring follows next.
+                  This creates the county run record and initial stage state. Bootstrap and validation evidence continue on the detail surface.
                 </span>
               ) : null}
             </div>
@@ -147,13 +167,26 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       {!error && !loading && items.length === 0 ? (
         <StateBlock
           title="No county runs yet"
-          description="Once county onboarding jobs are created, they will appear here with stage, caveats, and artifact access."
+          description="Once county onboarding jobs are created, they will appear here with stage truth, bootstrap posture, and detail links for artifacts and validation guidance."
           tone="neutral"
         />
       ) : null}
 
+      {!error && items.length > 0 ? (
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent runs</p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">Current county onboarding records</h2>
+          </div>
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {items.length} visible
+          </span>
+        </div>
+      ) : null}
+
       <div className="grid gap-4 xl:grid-cols-2">
         {items.map((item) => {
+          const stageReasonLabel = (item as { stageReasonLabel?: string }).stageReasonLabel ?? null;
           const card = buildCountyRunUiCard({
             geographyLabel: item.geographyLabel,
             manifest: null,
@@ -179,6 +212,12 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
+                {stageReasonLabel ? (
+                  <div>
+                    <div className="font-medium text-foreground">Why this stage</div>
+                    <p className="mt-1 text-muted-foreground">{stageReasonLabel}</p>
+                  </div>
+                ) : null}
                 <div>
                   <div className="font-medium text-foreground">Allowed claim</div>
                   <p className="mt-1 text-muted-foreground">{card.allowedClaim}</p>
@@ -199,7 +238,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                 <div className="flex items-center justify-between gap-3 pt-2">
                   <span className="text-xs text-muted-foreground">Updated {new Date(item.updatedAt).toLocaleString()}</span>
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/county-runs/${item.id}`}>Open detail</Link>
+                    <Link href={buildCountyRunDetailHref(item.id, currentViewHref)}>Open detail</Link>
                   </Button>
                 </div>
               </CardContent>

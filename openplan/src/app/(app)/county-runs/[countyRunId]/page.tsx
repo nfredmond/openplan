@@ -12,7 +12,7 @@ export default async function CountyRunDetailPage({ params }: { params: Promise<
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/signin?next=/county-runs/${countyRunId}`);
+    redirect(`/sign-in?next=/county-runs/${countyRunId}`);
   }
 
   const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
