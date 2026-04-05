@@ -666,6 +666,78 @@ describe("CountyRunDetailClient", () => {
     );
   });
 
+  it("shows a draft readiness preview for edited scaffold CSV content", async () => {
+    detailDataMock = {
+      ...detailDataMock,
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validated-screening",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: "/tmp/validation_summary.json",
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 1,
+            observed_volume_filled_count: 1,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 1,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 1,
+            source_description_missing_count: 0,
+            ready_station_count: 1,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    fireEvent.change(screen.getByPlaceholderText(/paste the full scaffold csv here/i), {
+      target: {
+        value:
+          "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\nB,,TBD,Seeded from runtime\n",
+      },
+    });
+
+    expect(screen.getByText("Draft readiness preview")).toBeInTheDocument();
+    expect(screen.getByText("Starter stations: 2")).toBeInTheDocument();
+    expect(screen.getByText("Validator-ready stations: 1 / 2")).toBeInTheDocument();
+    expect(screen.getByText("Agencies still TBD: 1")).toBeInTheDocument();
+    expect(
+      screen.getByText("Next draft action: Complete source metadata and observed counts for the remaining 1 starter stations.")
+    ).toBeInTheDocument();
+  });
+
   it("keeps scaffold save disabled until the editor differs from the stored CSV", async () => {
     detailDataMock = {
       ...detailDataMock,
@@ -732,6 +804,75 @@ describe("CountyRunDetailClient", () => {
     });
 
     expect(saveButton).not.toBeDisabled();
+  });
+
+  it("blocks scaffold save when the draft CSV is structurally invalid", async () => {
+    detailDataMock = {
+      ...detailDataMock,
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validated-screening",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: "/tmp/validation_summary.json",
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 1,
+            observed_volume_filled_count: 1,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 1,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 1,
+            source_description_missing_count: 0,
+            ready_station_count: 1,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    fireEvent.change(screen.getByPlaceholderText(/paste the full scaffold csv here/i), {
+      target: {
+        value: "station_id,label\nA,Mainline\n",
+      },
+    });
+
+    expect(screen.getByText(/Draft validation:/)).toHaveTextContent(
+      "Draft validation: Scaffold CSV is missing required columns: observed_volume, source_agency, source_description"
+    );
+    expect(screen.getByText("Fix the draft CSV before saving.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save scaffold CSV" })).toBeDisabled();
   });
 
   it("reloads scaffold editor content from the stored CSV", async () => {

@@ -20,6 +20,10 @@ import {
 } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { downloadText } from "@/lib/export/download";
+import {
+  CountyValidationScaffoldCsvError,
+  summarizeCountyValidationScaffoldCsv,
+} from "@/lib/api/county-onramp-scaffold";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,7 +131,29 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       ? scaffoldDraftState.value ?? scaffoldSourceValue
       : scaffoldSourceValue;
   const scaffoldDirty = Boolean(scaffoldTargetPath) && scaffoldEditorValue !== scaffoldSourceValue;
-  const canSaveScaffold = Boolean(scaffoldTargetPath && scaffoldEditorValue.trim() && scaffoldDirty);
+  const scaffoldDraftValidation = (() => {
+    if (!scaffoldTargetPath || !scaffoldEditorValue.trim()) {
+      return { summary: null, error: null as string | null };
+    }
+
+    try {
+      return {
+        summary: summarizeCountyValidationScaffoldCsv(scaffoldEditorValue),
+        error: null as string | null,
+      };
+    } catch (error) {
+      const message =
+        error instanceof CountyValidationScaffoldCsvError
+          ? error.message
+          : error instanceof Error
+          ? error.message
+          : "Draft scaffold CSV could not be validated.";
+      return { summary: null, error: message };
+    }
+  })();
+  const canSaveScaffold = Boolean(
+    scaffoldTargetPath && scaffoldEditorValue.trim() && scaffoldDirty && !scaffoldDraftValidation.error
+  );
   const canPrepareValidation = validationRerun.ready && !scaffoldDirty;
   const requestedBackTo = searchParams.get("backTo");
   const countyRunsBackHref = getSafeCountyRunsBackHref(requestedBackTo);
@@ -488,6 +514,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             {scaffoldError ? <p className="text-destructive">{scaffoldError}</p> : null}
             {scaffoldImportFileName ? <p>Imported file: {scaffoldImportFileName}</p> : null}
             {scaffoldImportError ? <p className="text-destructive">{scaffoldImportError}</p> : null}
+            {scaffoldDraftValidation.error ? <p className="text-destructive">Draft validation: {scaffoldDraftValidation.error}</p> : null}
             <Textarea
               value={scaffoldEditorValue}
               onChange={(event) => {
@@ -500,6 +527,22 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               rows={10}
               disabled={!scaffoldTargetPath}
             />
+            {scaffoldDraftValidation.summary ? (
+              <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
+                <div className="font-medium text-foreground">Draft readiness preview</div>
+                <div className="mt-2 space-y-1">
+                  <div>Starter stations: {scaffoldDraftValidation.summary.station_count}</div>
+                  <div>
+                    Validator-ready stations: {scaffoldDraftValidation.summary.ready_station_count} / {scaffoldDraftValidation.summary.station_count}
+                  </div>
+                  <div>
+                    Observed counts entered: {scaffoldDraftValidation.summary.observed_volume_filled_count} / {scaffoldDraftValidation.summary.station_count}
+                  </div>
+                  <div>Agencies still TBD: {scaffoldDraftValidation.summary.source_agency_tbd_count}</div>
+                  <div>Next draft action: {scaffoldDraftValidation.summary.next_action_label}</div>
+                </div>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="button"
@@ -519,6 +562,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                 Reload scaffold CSV
               </Button>
               {!scaffoldDirty && scaffoldTargetPath ? <span>Editor matches the currently stored scaffold.</span> : null}
+              {scaffoldDirty && scaffoldDraftValidation.error ? <span className="text-destructive">Fix the draft CSV before saving.</span> : null}
               {scaffoldSaveState === "saved" ? <span className="text-emerald-600">Scaffold saved and readiness refreshed.</span> : null}
               {scaffoldSaveState === "error" ? <span className="text-destructive">Unable to save scaffold.</span> : null}
             </div>
