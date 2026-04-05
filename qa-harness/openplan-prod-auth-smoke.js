@@ -2,12 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const repoRoot = '/home/nathaniel/.openclaw/workspace/openplan';
+const repoRoot = path.resolve(__dirname, '..');
 const appRoot = path.join(repoRoot, 'openplan');
-const envPath = path.join(appRoot, '.env.local');
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = path.join(repoRoot, `docs/ops/${datePart}-test-output`);
-const productionBaseUrl = 'https://openplan-zeta.vercel.app';
+const productionBaseUrl = process.env.OPENPLAN_BASE_URL || 'https://openplan-zeta.vercel.app';
 
 function readEnv(filePath) {
   const env = {};
@@ -18,10 +17,42 @@ function readEnv(filePath) {
     const idx = line.indexOf('=');
     if (idx === -1) continue;
     const key = line.slice(0, idx);
-    const value = line.slice(idx + 1);
+    const rawValue = line.slice(idx + 1).trim();
+    const value = rawValue.replace(/^(["'])(.*)\1$/, '$2');
     env[key] = value;
   }
   return env;
+}
+
+function resolveEnvPath() {
+  const candidates = [
+    process.env.OPENPLAN_ENV_PATH,
+    path.join(appRoot, '.env.local'),
+    path.join(repoRoot, '.env.local'),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function loadEnv() {
+  const resolvedPath = resolveEnvPath();
+  if (!resolvedPath) {
+    return { env: { ...process.env }, envPath: 'process.env' };
+  }
+
+  return {
+    env: {
+      ...readEnv(resolvedPath),
+      ...process.env,
+    },
+    envPath: resolvedPath,
+  };
 }
 
 function slug(text) {
@@ -43,7 +74,7 @@ async function jsonFetch(url, options = {}) {
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
 
-  const env = readEnv(envPath);
+  const { env, envPath } = loadEnv();
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
@@ -55,7 +86,7 @@ async function main() {
   const password = `OpenPlan!${Date.now()}Qa`;
 
   const artifacts = [];
-  const notes = [];
+  const notes = [`Loaded environment from ${envPath}.`];
   const ids = {};
 
   const createUserResult = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {

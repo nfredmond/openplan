@@ -1,9 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const repoRoot = '/home/nathaniel/.openclaw/workspace/openplan';
+const repoRoot = path.resolve(__dirname, '..');
 const appRoot = path.join(repoRoot, 'openplan');
-const envPath = path.join(appRoot, '.env.local');
 const outputDate = new Date().toISOString().slice(0, 10);
 const outputDir = path.join(repoRoot, `docs/ops/${outputDate}-test-output`);
 const summaryPath = path.join(repoRoot, `docs/ops/${outputDate}-openplan-production-qa-cleanup.md`);
@@ -18,12 +17,45 @@ function readEnv(filePath) {
     if (!line || line.startsWith('#')) continue;
     const idx = line.indexOf('=');
     if (idx === -1) continue;
-    env[line.slice(0, idx)] = line.slice(idx + 1);
+    const key = line.slice(0, idx);
+    const rawValue = line.slice(idx + 1).trim();
+    env[key] = rawValue.replace(/^(["'])(.*)\1$/, '$2');
   }
   return env;
 }
 
-const env = readEnv(envPath);
+function resolveEnvPath() {
+  const candidates = [
+    process.env.OPENPLAN_ENV_PATH,
+    path.join(appRoot, '.env.local'),
+    path.join(repoRoot, '.env.local'),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function loadEnv() {
+  const resolvedPath = resolveEnvPath();
+  if (!resolvedPath) {
+    return { env: { ...process.env }, envPath: 'process.env' };
+  }
+
+  return {
+    env: {
+      ...readEnv(resolvedPath),
+      ...process.env,
+    },
+    envPath: resolvedPath,
+  };
+}
+
+const { env, envPath } = loadEnv();
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
 const stripeKey = env.OPENPLAN_STRIPE_SECRET_KEY;
@@ -147,6 +179,7 @@ async function main() {
   const summary = {
     startedAt,
     createdAfter,
+    envPath,
     qaPattern: qaPattern.toString(),
     stripeSessionResults: [],
     deleteResults: [],
