@@ -1,0 +1,61 @@
+{
+  "validation_type": "screening_assignment_vs_caltrans_aadt",
+  "caltrans_year": 2023,
+  "model_run_id": "1de72401-4bb7-4377-a1c0-bbb7381a8f95",
+  "model_engine": "AequilibraE 1.6.1",
+  "model_caveats": [
+    "Uncalibrated",
+    "OSM default speeds/capacities",
+    "Closed boundary",
+    "Screening-grade"
+  ],
+  "stations_total": 5,
+  "stations_matched": 5,
+  "stations_missed": 0,
+  "metrics": {
+    "median_absolute_percent_error": 97.78,
+    "mean_absolute_percent_error": 97.62,
+    "min_absolute_percent_error": 93.76,
+    "max_absolute_percent_error": 99.95,
+    "spearman_rho_facility_ranking": -0.9
+  },
+  "facility_ranking": [
+    {
+      "station": "SR 20 at Jct Rte 49",
+      "observed_aadt": 45500,
+      "modeled_daily_pce": 22,
+      "obs_rank": 1,
+      "mod_rank": 5
+    },
+    {
+      "station": "SR 20 at Brunswick Rd",
+      "observed_aadt": 35500,
+      "modeled_daily_pce": 151,
+      "obs_rank": 2,
+      "mod_rank": 4
+    },
+    {
+      "station": "SR 49 at South Grass Valley",
+      "observed_aadt": 26000,
+      "modeled_daily_pce": 578,
+      "obs_rank": 3,
+      "mod_rank": 2
+    },
+    {
+      "station": "SR 20 at Penn Valley Dr",
+      "observed_aadt": 17500,
+      "modeled_daily_pce": 518,
+      "obs_rank": 4,
+      "mod_rank": 3
+    },
+    {
+      "station": "SR 174 at Brunswick Rd",
+      "observed_aadt": 10300,
+      "modeled_daily_pce": 643,
+      "obs_rank": 5,
+      "mod_rank": 1
+    }
+  ],
+  "interpretation": "This is a screening-grade comparison between an uncalibrated LODES-based static assignment (BFW on OSM network with default speeds/capacities) and Caltrans 2023 observed AADT. High APE is expected: the model uses a synthetic OD matrix derived from workplace-area commute flows scaled by a flat factor, not a calibrated behavioral model. The facility-ranking correlation indicates whether the model correctly identifies relative demand magnitude across corridors, which is the useful screening signal.",
+  "created_at": "2026-03-23T03:03:38.856628+00:00"
+}

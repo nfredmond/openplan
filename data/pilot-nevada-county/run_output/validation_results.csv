@@ -1,0 +1,6 @@
+station_id,label,match_status,caltrans_description,caltrans_postmile,observed_aadt,model_link_id,model_link_name,model_link_type,model_lon,model_lat,modeled_daily_pce,absolute_difference,absolute_percent_error,volume_ratio_model_obs
+CT_SR20_JCT49,SR 20 at Jct Rte 49,matched,"GRASS VALLEY, JCT. RTE. 49",12.24,45500,6522,Golden Center Freeway,motorway,-121.0545,39.22036,22,45478,99.95,0.0005
+CT_SR20_BRUNSWICK,SR 20 at Brunswick Rd,matched,BRUNSWICK ROAD,14.797,35500,6750,Brunswick Road,secondary,-121.03804,39.23603,151,35349,99.57,0.0043
+CT_SR20_PENNVALLEY,SR 20 at Penn Valley Dr,matched,PENN VALLEY DRIVE,6.6,17500,1843,Penn Valley Drive,secondary,-121.17074,39.20168,518,16982,97.04,0.0296
+CT_SR49_SOUTHGV,SR 49 at South Grass Valley,matched,SOUTH GRASS VALLEY,13.663,26000,3883,Alta Sierra Drive,secondary,-121.05725,39.1404,578,25422,97.78,0.0222
+CT_SR174_BRUNSWICK,SR 174 at Brunswick Rd,matched,BRUNSWICK ROAD,6.83,10300,4301,Colfax Highway,secondary,-121.05419,39.21427,643,9657,93.76,0.0624
