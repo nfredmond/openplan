@@ -1,29 +1,26 @@
 # OpenPlan Production QA Cleanup — 2026-04-05
 
-- Started: 2026-04-05T00:49:35.481Z
+- Started: 2026-04-05T02:37:02.941Z
 - Created-after filter: 2026-04-05
-- QA match rule: /qa|proof|trace|canary|debug/i
+- QA match rule: /qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i
 
 ## Scope
 - Targeted QA/debug/proof/trace/canary production records created on or after 2026-04-05.
-- Targeted workspaces: 3
-- Targeted auth users: 2
+- Targeted workspaces: 2
+- Targeted auth users: 1
 
 ## Stripe cleanup
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete results
-- plans: status=200 ok=true planned=1 deleted=1
 - models: status=200 ok=true planned=1 deleted=1
-- programs: status=200 ok=true planned=1 deleted=1
-- billing_events: status=200 ok=true planned=3 deleted=0
+- billing_events: status=200 ok=true planned=2 deleted=0
 - projects: status=200 ok=true planned=1 deleted=1
-- workspace_members: status=200 ok=true planned=3 deleted=3
-- workspaces: status=200 ok=true planned=3 deleted=3
+- workspace_members: status=200 ok=true planned=2 deleted=2
+- workspaces: status=200 ok=true planned=2 deleted=2
 
 ## Auth deletes
-- openplan-qa-2026-04-05t00-48-50-442z@natfordplanning.com: status=200 ok=true
-- openplan-qa-2026-04-05t00-47-34-705z@natfordplanning.com: status=200 ok=true
+- openplan-scenario-compare-2026-04-05t02-36-37-964z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0

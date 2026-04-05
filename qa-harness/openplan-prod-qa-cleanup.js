@@ -7,7 +7,7 @@ const outputDate = new Date().toISOString().slice(0, 10);
 const outputDir = path.join(repoRoot, `docs/ops/${outputDate}-test-output`);
 const summaryPath = path.join(repoRoot, `docs/ops/${outputDate}-openplan-production-qa-cleanup.md`);
 const createdAfter = process.env.CLEANUP_DATE || '2026-03-17';
-const qaPattern = /qa|proof|trace|canary|debug/i;
+const qaPattern = /qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i;
 
 function readEnv(filePath) {
   const env = {};

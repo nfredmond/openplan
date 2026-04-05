@@ -1,26 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const { getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
-const repoRoot = '/home/nathaniel/.openclaw/workspace/openplan';
-const appRoot = path.join(repoRoot, 'openplan');
-const envPath = path.join(appRoot, '.env.local');
 const outputDate = new Date().toISOString().slice(0, 10);
-const outputDir = path.join(repoRoot, `docs/ops/${outputDate}-test-output`);
+const outputDir = getOutputDir(outputDate);
 const productionBaseUrl = process.env.OPENPLAN_BASE_URL || 'https://openplan-zeta.vercel.app';
-
-function readEnv(filePath) {
-  const env = {};
-  const text = fs.readFileSync(filePath, 'utf8');
-  for (const rawLine of text.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) continue;
-    const idx = line.indexOf('=');
-    if (idx === -1) continue;
-    env[line.slice(0, idx)] = line.slice(idx + 1);
-  }
-  return env;
-}
 
 async function jsonFetch(url, options = {}) {
   const response = await fetch(url, options);
@@ -36,7 +21,7 @@ function sleep(ms) {
 
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
-  const env = readEnv(envPath);
+  const { env } = loadEnv();
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) throw new Error('Missing Supabase environment keys');
