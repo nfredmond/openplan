@@ -27,6 +27,9 @@
 - [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
 - [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) — canonical pricing / positioning resolution
+- [product-governance historian](2026-04-05-openplan-product-governance-historian-memo.md) — reconciled current-truth synthesis
+- [proof ops runbook](2026-04-05-openplan-proof-ops-runbook.md) — proof lane, canary monitor, cleanup
+- [multi-agent execution architecture](2026-04-05-openplan-multi-agent-execution-architecture.md) — lane orchestration and direct-to-main execution model
 - [principal-gate-decision.md](2026-03-17-openplan-principal-gate-decision.md) — scoped approval
 - [commercial-proof-waiver.md](2026-03-17-openplan-commercial-proof-waiver.md) — CEO paid-canary waiver
 - [coo-verification.md](2026-03-16-openplan-v1-coo-verification.md) — COO verification
@@ -77,6 +80,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **175**
+- Markdown docs in `docs/ops/`: **178**
 - Test output files (PNG/JSON/log/txt): **132**
 - Subdirectories: **14**
