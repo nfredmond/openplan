@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { buildBrowserContextOptions } = require('./harness-env');
+const { buildBrowserContextOptions, getOpenplanBaseUrl } = require('./harness-env');
 
 const repoRoot = path.resolve(__dirname, '..');
 const appRoot = path.join(repoRoot, 'openplan');
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = path.join(repoRoot, `docs/ops/${datePart}-test-output`);
-const productionBaseUrl = process.env.OPENPLAN_BASE_URL || 'https://openplan-zeta.vercel.app';
+const productionBaseUrl = getOpenplanBaseUrl();
 
 function readEnv(filePath) {
   const env = {};

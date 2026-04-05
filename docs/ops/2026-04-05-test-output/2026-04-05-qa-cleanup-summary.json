@@ -1,21 +1,30 @@
 {
-  "startedAt": "2026-04-05T04:23:02.098Z",
+  "startedAt": "2026-04-05T04:48:54.851Z",
   "createdAfter": "2026-04-05",
   "envPath": "/tmp/openplan-prod.env",
   "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i",
   "stripeSessionResults": [],
   "deleteResults": [
     {
-      "table": "county_run_artifacts",
+      "table": "plans",
       "column": "id",
-      "countPlanned": 4,
+      "countPlanned": 1,
       "ok": true,
       "status": 200,
-      "deletedCount": 4,
+      "deletedCount": 1,
       "error": null
     },
     {
-      "table": "county_runs",
+      "table": "models",
+      "column": "id",
+      "countPlanned": 1,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 1,
+      "error": null
+    },
+    {
+      "table": "programs",
       "column": "id",
       "countPlanned": 1,
       "ok": true,
@@ -71,33 +80,33 @@
     "projectCount": 1,
     "reportCount": 0,
     "campaignCount": 0,
-    "countyRunCount": 1,
+    "countyRunCount": 0,
     "usersPlanned": 1,
     "workspaces": [
       {
-        "id": "095e85ff-deba-47f4-a921-e2f35fb158d3",
-        "name": "openplan-county-scaffold-smoke-2026-04-05t04-22-31-819z",
-        "slug": "openplan-county-scaffold-smoke-2026-04-05t04-22-31-819z-1d8152cd",
+        "id": "3cb9c955-64d0-4d6b-9737-b95c2ac57fd4",
+        "name": "openplan-qa-2026-04-05t04-48-09-371z",
+        "slug": "openplan-qa-2026-04-05t04-48-09-371z-c8cbe6fb",
         "plan": "free",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-05T04:22:32.016711+00:00"
+        "created_at": "2026-04-05T04:48:09.811062+00:00"
       },
       {
-        "id": "76e08649-74e8-4bfd-989d-4ad26854ba54",
-        "name": "County Scaffold Smoke Project 2026-04-05T04-22-31-819Z",
-        "slug": "county-scaffold-smoke-project-2026-04-05t04-22-3",
+        "id": "d11ef7e4-3d4b-4d36-b048-0958f173f46c",
+        "name": "QA Continuity Project 2026-04-05T04-48-09-371Z",
+        "slug": "qa-continuity-project-2026-04-05t04-48-09-371z",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-05T04:22:35.057028+00:00"
+        "created_at": "2026-04-05T04:48:16.392195+00:00"
       }
     ]
   },
   "authDeletes": [
     {
-      "userId": "1d8152cd-f0b5-4ede-b858-0437f93a001f",
-      "email": "openplan-county-scaffold-smoke-2026-04-05t04-22-31-819z@natfordplanning.com",
+      "userId": "c8cbe6fb-60b0-4933-bb6b-2f58d1fa11d7",
+      "email": "openplan-qa-2026-04-05t04-48-09-371z@natfordplanning.com",
       "ok": true,
       "status": 200,
       "error": null

@@ -16,7 +16,8 @@ The duplicate project was created later, pointed at the wrong root directory, an
 - Project id: `prj_NKckTxKCBtO25Tf6a92hPLkuqzYT`
 - Root directory: `openplan`
 - Framework preset: `Next.js`
-- Current production alias: `https://openplan-zeta.vercel.app`
+- Current canonical production alias: `https://openplan-natford.vercel.app`
+- Legacy compatibility alias retained: `https://openplan-zeta.vercel.app`
 - Current deployment URL at verification time: `https://openplan-oozbaqw9b-natford.vercel.app`
 - Verified behavior: real route builds present (`admin`, `billing`, `county-runs/[countyRunId]`, etc.)
 
@@ -57,6 +58,8 @@ The duplicate project was created later, pointed at the wrong root directory, an
 
 - Local Vercel link repointed to canonical `natford/openplan`
 - `openplan-zeta.vercel.app` pointed back to canonical Nat Ford deployment
+- Active tooling should default to `openplan-natford.vercel.app` so future proof/deploy flows follow the Nat Ford project’s production alias instead of relying on the older `zeta` compatibility alias.
+- This was implemented in the QA harness bundle and verified by a fresh authenticated production smoke using the default harness base URL (no explicit `OPENPLAN_BASE_URL` override).
 - Canonical production proof preserved in:
   - `docs/ops/2026-04-05-openplan-production-authenticated-smoke.md`
   - `docs/ops/2026-04-05-openplan-production-county-scaffold-smoke.md`
@@ -65,5 +68,6 @@ The duplicate project was created later, pointed at the wrong root directory, an
 ## Recommended post-cleanup posture
 
 - Use only `natford/openplan` going forward.
-- Treat `openplan-zeta.vercel.app` and `openplan-natford.vercel.app` as canonical production aliases.
+- Treat `openplan-natford.vercel.app` as the canonical production alias for active tooling and verification.
+- Keep `openplan-zeta.vercel.app` only as a legacy compatibility alias until it is no longer needed.
 - If a future team/scope migration is needed, move deliberately with one project only — not parallel duplicate Vercel projects.

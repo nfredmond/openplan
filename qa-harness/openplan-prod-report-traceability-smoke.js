@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { buildBrowserContextOptions, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
+const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
-const productionBaseUrl = process.env.OPENPLAN_BASE_URL || 'https://openplan-zeta.vercel.app';
+const productionBaseUrl = getOpenplanBaseUrl();
 
 async function jsonFetch(url, options = {}) {
   const response = await fetch(url, options);

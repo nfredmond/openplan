@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-05
 
-- Started: 2026-04-05T04:23:02.098Z
+- Started: 2026-04-05T04:48:54.851Z
 - Created-after filter: 2026-04-05
 - QA match rule: /qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i
 
@@ -13,15 +13,16 @@
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete results
-- county_run_artifacts: status=200 ok=true planned=4 deleted=4
-- county_runs: status=200 ok=true planned=1 deleted=1
+- plans: status=200 ok=true planned=1 deleted=1
+- models: status=200 ok=true planned=1 deleted=1
+- programs: status=200 ok=true planned=1 deleted=1
 - billing_events: status=200 ok=true planned=2 deleted=0
 - projects: status=200 ok=true planned=1 deleted=1
 - workspace_members: status=200 ok=true planned=2 deleted=2
 - workspaces: status=200 ok=true planned=2 deleted=2
 
 ## Auth deletes
-- openplan-county-scaffold-smoke-2026-04-05t04-22-31-819z@natfordplanning.com: status=200 ok=true
+- openplan-qa-2026-04-05t04-48-09-371z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0

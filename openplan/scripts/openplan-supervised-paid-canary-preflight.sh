@@ -4,7 +4,7 @@ set -euo pipefail
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_ROOT="$(cd "$APP_DIR/.." && pwd)"
 DOCS_ROOT="$REPO_ROOT/docs/ops"
-DEFAULT_ALIAS_URL="https://openplan-zeta.vercel.app"
+DEFAULT_ALIAS_URL="https://openplan-natford.vercel.app"
 DEFAULT_ENV_FILE="/tmp/openplan.vercel.env"
 TIMEZONE="America/Los_Angeles"
 

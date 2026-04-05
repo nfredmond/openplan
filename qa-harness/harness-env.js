@@ -58,6 +58,10 @@ function getOutputDir(datePart) {
   return path.join(repoRoot, `docs/ops/${datePart}-test-output`);
 }
 
+function getOpenplanBaseUrl() {
+  return process.env.OPENPLAN_BASE_URL || 'https://openplan-natford.vercel.app';
+}
+
 function getVercelProtectionBypassHeaders() {
   const secret =
     process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
@@ -92,6 +96,7 @@ function buildBrowserContextOptions(baseOptions = {}) {
 module.exports = {
   appRoot,
   buildBrowserContextOptions,
+  getOpenplanBaseUrl,
   getOutputDir,
   getVercelProtectionBypassHeaders,
   loadEnv,
