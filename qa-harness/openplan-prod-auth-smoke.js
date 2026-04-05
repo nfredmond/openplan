@@ -1,60 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { buildBrowserContextOptions, getOpenplanBaseUrl } = require('./harness-env');
+const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
-const repoRoot = path.resolve(__dirname, '..');
-const appRoot = path.join(repoRoot, 'openplan');
 const datePart = new Date().toISOString().slice(0, 10);
-const outputDir = path.join(repoRoot, `docs/ops/${datePart}-test-output`);
+const outputDir = getOutputDir(datePart);
 const productionBaseUrl = getOpenplanBaseUrl();
-
-function readEnv(filePath) {
-  const env = {};
-  const text = fs.readFileSync(filePath, 'utf8');
-  for (const rawLine of text.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) continue;
-    const idx = line.indexOf('=');
-    if (idx === -1) continue;
-    const key = line.slice(0, idx);
-    const rawValue = line.slice(idx + 1).trim();
-    const value = rawValue.replace(/^(["'])(.*)\1$/, '$2');
-    env[key] = value;
-  }
-  return env;
-}
-
-function resolveEnvPath() {
-  const candidates = [
-    process.env.OPENPLAN_ENV_PATH,
-    path.join(appRoot, '.env.local'),
-    path.join(repoRoot, '.env.local'),
-  ].filter(Boolean);
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
-
-function loadEnv() {
-  const resolvedPath = resolveEnvPath();
-  if (!resolvedPath) {
-    return { env: { ...process.env }, envPath: 'process.env' };
-  }
-
-  return {
-    env: {
-      ...readEnv(resolvedPath),
-      ...process.env,
-    },
-    envPath: resolvedPath,
-  };
-}
 
 function slug(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

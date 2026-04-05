@@ -5,18 +5,36 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 ## Current scripts
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
+- `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
+- `openplan-prod-managed-run-smoke.js` — proves managed model-run launch and downstream scenario attachment continuity on production.
+- `openplan-prod-report-traceability-smoke.js` — proves report detail backlink continuity against live engagement artifacts.
+- `openplan-prod-scenario-comparison-smoke.js` — proves live scenario comparison rendering from production-created QA data.
+- `openplan-prod-county-scaffold-smoke.js` — proves county scaffold seed/readback/download/import/save/invalidation behavior on production.
+- `openplan-prod-layout-overlap-audit.js` — audits authenticated production surfaces for overlap/overflow at the configured viewport and writes screenshot-backed findings.
+- `openplan-prod-qa-cleanup.js` — inventories test-only QA artifacts and removes them from production only when run with `--apply`.
 
 ## Usage
 From `openplan/qa-harness`:
 
 ```bash
 npm install
-node openplan-prod-auth-smoke.js
-node openplan-prod-engagement-smoke.js
+npm run prod-auth-smoke
+npm run prod-managed-run-smoke
+npm run prod-scenario-comparison-smoke
+
+# cleanup now defaults to plan-only / dry-run
+npm run prod-qa-cleanup
+
+# apply cleanup deliberately
+npm run prod-qa-cleanup:apply
 ```
 
 ## Notes
-- Reads OpenPlan env from `../openplan/.env.local`.
+- Uses `harness-env.js` for repo-root discovery, env loading, canonical base URL selection, and optional Vercel protection bypass headers.
+- Reads OpenPlan env from `OPENPLAN_ENV_PATH`, `openplan/.env.local`, or repo-root `.env.local` (first match wins).
+- Defaults active proofs to the canonical production alias `https://openplan-natford.vercel.app`. Override with `OPENPLAN_BASE_URL` only when intentionally targeting another lane.
+- If Vercel Authentication is enabled, set `VERCEL_AUTOMATION_BYPASS_SECRET` (or one of the accepted bypass env aliases in `harness-env.js`) so Playwright contexts can reach the protected deployment.
 - Uses Playwright in headless mode.
 - Intended for controlled operator use, not CI.
-- Creates QA production data; cleanup is a deliberate follow-up step.
+- Most smoke scripts create real production QA users/workspaces/records. Run cleanup after proof so production residue does not accumulate.
+- `openplan-prod-qa-cleanup.js` is intentionally non-destructive by default; use `--apply` only after reviewing the printed plan.

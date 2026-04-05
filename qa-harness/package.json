@@ -5,7 +5,15 @@
   "main": "index.js",
   "scripts": {
     "prod-auth-smoke": "node openplan-prod-auth-smoke.js",
-    "prod-engagement-smoke": "node openplan-prod-engagement-smoke.js"
+    "prod-engagement-smoke": "node openplan-prod-engagement-smoke.js",
+    "prod-engagement-report-handoff-smoke": "node openplan-prod-engagement-report-handoff-smoke.js",
+    "prod-managed-run-smoke": "node openplan-prod-managed-run-smoke.js",
+    "prod-report-traceability-smoke": "node openplan-prod-report-traceability-smoke.js",
+    "prod-scenario-comparison-smoke": "node openplan-prod-scenario-comparison-smoke.js",
+    "prod-county-scaffold-smoke": "node openplan-prod-county-scaffold-smoke.js",
+    "prod-layout-overlap-audit": "node openplan-prod-layout-overlap-audit.js",
+    "prod-qa-cleanup": "node openplan-prod-qa-cleanup.js",
+    "prod-qa-cleanup:apply": "node openplan-prod-qa-cleanup.js --apply"
   },
   "keywords": [],
   "author": "Bartholomew Hale",
