@@ -9,6 +9,7 @@ const updateScaffoldMock = vi.fn();
 const prepareValidationMock = vi.fn();
 const refreshValidationMock = vi.fn();
 const clipboardWriteTextMock = vi.fn();
+const downloadTextMock = vi.fn();
 
 let detailDataMock = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -32,6 +33,10 @@ let detailDataMock = {
 vi.mock("next/navigation", () => ({
   usePathname: () => "/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   useSearchParams: () => new URLSearchParams(searchParamsValue),
+}));
+
+vi.mock("@/lib/export/download", () => ({
+  downloadText: (...args: unknown[]) => downloadTextMock(...args),
 }));
 
 Object.defineProperty(globalThis.navigator, "clipboard", {
@@ -97,6 +102,7 @@ describe("CountyRunDetailClient", () => {
     prepareValidationMock.mockReset();
     refreshValidationMock.mockReset();
     clipboardWriteTextMock.mockReset();
+    downloadTextMock.mockReset();
     clipboardWriteTextMock.mockResolvedValue(undefined);
   });
 
@@ -460,6 +466,142 @@ describe("CountyRunDetailClient", () => {
     );
     await waitFor(() => expect(refreshMock).toHaveBeenCalled());
     expect(screen.getByText("Validation refreshed from disk.")).toBeInTheDocument();
+  });
+
+  it("downloads the current scaffold CSV", () => {
+    detailDataMock = {
+      ...detailDataMock,
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validated-screening",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: "/tmp/validation_summary.json",
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 1,
+            observed_volume_filled_count: 1,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 1,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 1,
+            source_description_missing_count: 0,
+            ready_station_count: 1,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Download scaffold CSV" }));
+
+    expect(downloadTextMock).toHaveBeenCalledWith(
+      "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
+      "scaffold.csv",
+      "text/csv;charset=utf-8"
+    );
+  });
+
+  it("imports a replacement scaffold CSV file into the editor", async () => {
+    detailDataMock = {
+      ...detailDataMock,
+      manifest: {
+        schema_version: "openplan.county_onramp_manifest.v1",
+        generated_at: "2026-03-24T23:00:00Z",
+        name: "nevada-run",
+        county_fips: "06057",
+        county_prefix: "NEVADA",
+        run_dir: "/tmp/nevada",
+        mode: "existing-run",
+        stage: "validated-screening",
+        artifacts: {
+          scaffold_csv: "/tmp/scaffold.csv",
+          review_packet_md: "/tmp/review.md",
+          run_summary_json: "/tmp/run_summary.json",
+          bundle_manifest_json: "/tmp/bundle_manifest.json",
+          validation_summary_json: "/tmp/validation_summary.json",
+        },
+        runtime: {
+          keep_project: true,
+          force: false,
+          overall_demand_scalar: 0.369,
+          external_demand_scalar: null,
+          hbw_scalar: null,
+          hbo_scalar: null,
+          nhb_scalar: null,
+        },
+        summary: {
+          run: {
+            zone_count: 26,
+            population_total: 102345,
+            jobs_total: 45678,
+            loaded_links: 3174,
+            final_gap: 0.0091,
+            total_trips: 231828.75,
+          },
+          validation: null,
+          bundle_validation: null,
+          scaffold: {
+            station_count: 1,
+            observed_volume_filled_count: 1,
+            observed_volume_missing_count: 0,
+            source_agency_filled_count: 1,
+            source_agency_tbd_count: 0,
+            source_description_filled_count: 1,
+            source_description_missing_count: 0,
+            ready_station_count: 1,
+            next_action_label: "All starter stations have observed counts and source metadata recorded. Tighten definitions if needed, then run validation.",
+          },
+        },
+      },
+    };
+
+    const { container } = render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(
+      ["station_id,observed_volume,source_agency,source_description\nA,789,Caltrans,PM 2.4\n"],
+      "replacement.csv",
+      { type: "text/csv" }
+    );
+
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => expect(screen.getByText("Imported file: replacement.csv")).toBeInTheDocument());
+    expect((screen.getByPlaceholderText(/paste the full scaffold csv here/i) as HTMLTextAreaElement).value).toContain(
+      "A,789,Caltrans"
+    );
   });
 
   it("keeps scaffold save disabled until the editor differs from the stored CSV", async () => {

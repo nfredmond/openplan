@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations, useCountyRunScaffold } from "@/lib/hooks/use-county-onramp";
@@ -19,8 +19,10 @@ import {
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
+import { downloadText } from "@/lib/export/download";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,7 +50,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     path: null,
     value: null,
   });
+  const scaffoldFileInputRef = useRef<HTMLInputElement | null>(null);
   const [scaffoldSaveState, setScaffoldSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [scaffoldImportError, setScaffoldImportError] = useState<string | null>(null);
+  const [scaffoldImportFileName, setScaffoldImportFileName] = useState<string | null>(null);
   const [validationPrepState, setValidationPrepState] = useState<{
     ready: boolean;
     statusLabel: string;
@@ -183,8 +188,33 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
     setScaffoldDraftState({ path: null, value: null });
     setScaffoldSaveState("idle");
+    setScaffoldImportError(null);
+    setScaffoldImportFileName(null);
     setValidationRefreshState("idle");
     await refreshScaffold();
+  };
+
+  const importScaffoldFile = async (file: File) => {
+    try {
+      const nextContent = await file.text();
+      setScaffoldDraftState({ path: scaffoldTargetPath, value: nextContent });
+      setScaffoldImportError(null);
+      setScaffoldImportFileName(file.name);
+      setScaffoldSaveState("idle");
+      setValidationRefreshState("idle");
+    } catch {
+      setScaffoldImportError("Unable to read the selected scaffold CSV file.");
+      setScaffoldImportFileName(null);
+    }
+  };
+
+  const downloadCurrentScaffold = () => {
+    if (!scaffoldTargetPath || !scaffoldSourceValue) {
+      return;
+    }
+
+    const filename = scaffoldTargetPath.split("/").pop() || "county-validation-scaffold.csv";
+    downloadText(scaffoldSourceValue, filename, "text/csv;charset=utf-8");
   };
 
   const runPrepareValidation = async () => {
@@ -432,6 +462,19 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <CardDescription>Edit the current scaffold in place or paste a full replacement CSV without leaving OpenPlan.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <Input
+              ref={scaffoldFileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) {
+                  void importScaffoldFile(file);
+                }
+                event.currentTarget.value = "";
+              }}
+            />
             <div>
               <div className="font-medium text-foreground">Registered scaffold path</div>
               <p className="mt-1 break-all">{scaffoldTargetPath ?? "No scaffold file is currently registered for this county run."}</p>
@@ -442,10 +485,13 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             </p>
             {scaffoldLoading ? <p>Loading current scaffold CSV…</p> : null}
             {scaffoldError ? <p className="text-destructive">{scaffoldError}</p> : null}
+            {scaffoldImportFileName ? <p>Imported file: {scaffoldImportFileName}</p> : null}
+            {scaffoldImportError ? <p className="text-destructive">{scaffoldImportError}</p> : null}
             <Textarea
               value={scaffoldEditorValue}
               onChange={(event) => {
                 setScaffoldDraftState({ path: scaffoldTargetPath, value: event.target.value });
+                setScaffoldImportError(null);
                 setScaffoldSaveState("idle");
                 setValidationRefreshState("idle");
               }}
@@ -454,6 +500,17 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               disabled={!scaffoldTargetPath}
             />
             <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => scaffoldFileInputRef.current?.click()}
+                disabled={!scaffoldTargetPath}
+              >
+                Import scaffold CSV file
+              </Button>
+              <Button type="button" variant="ghost" onClick={downloadCurrentScaffold} disabled={!scaffoldTargetPath || !scaffoldSourceValue}>
+                Download scaffold CSV
+              </Button>
               <Button type="button" variant="outline" onClick={() => void saveScaffoldDraft()} disabled={actionLoading || !canSaveScaffold}>
                 Save scaffold CSV
               </Button>
