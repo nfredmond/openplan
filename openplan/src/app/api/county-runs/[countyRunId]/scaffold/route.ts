@@ -226,7 +226,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
 
     const nextStatusLabel = invalidatesValidation ? "Validation pending scaffold edits" : existingRow.status_label;
-    const nextValidationSummaryJson = invalidatesValidation ? null : existingRow.validation_summary_json ?? null;
+    const nextValidationSummaryJson = invalidatesValidation ? {} : existingRow.validation_summary_json ?? {};
 
     const { data: updatedRow, error: updateError } = await supabase
       .from("county_runs")
