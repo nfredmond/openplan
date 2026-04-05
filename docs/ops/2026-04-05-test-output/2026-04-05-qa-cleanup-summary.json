@@ -1,12 +1,21 @@
 {
-  "startedAt": "2026-04-05T02:37:02.941Z",
+  "startedAt": "2026-04-05T03:52:40.760Z",
   "createdAfter": "2026-04-05",
   "envPath": "/tmp/openplan-prod.env",
   "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run/i",
   "stripeSessionResults": [],
   "deleteResults": [
     {
-      "table": "models",
+      "table": "county_run_artifacts",
+      "column": "id",
+      "countPlanned": 4,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 4,
+      "error": null
+    },
+    {
+      "table": "county_runs",
       "column": "id",
       "countPlanned": 1,
       "ok": true,
@@ -62,32 +71,33 @@
     "projectCount": 1,
     "reportCount": 0,
     "campaignCount": 0,
+    "countyRunCount": 1,
     "usersPlanned": 1,
     "workspaces": [
       {
-        "id": "8292e2fb-7e8d-4d56-aff1-4c7f20134879",
-        "name": "openplan-scenario-compare-2026-04-05t02-36-37-964z",
-        "slug": "openplan-scenario-compare-2026-04-05t02-36-37-964z-d8760757",
+        "id": "bb627c41-044c-456d-9b03-38e271c87e37",
+        "name": "openplan-county-scaffold-smoke-2026-04-05t03-52-04-149z",
+        "slug": "openplan-county-scaffold-smoke-2026-04-05t03-52-04-149z-2f85f124",
         "plan": "free",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-05T02:36:38.390077+00:00"
+        "created_at": "2026-04-05T03:52:04.508982+00:00"
       },
       {
-        "id": "94a492ee-90c0-463e-aea4-df21f51846ff",
-        "name": "Scenario Comparison Smoke 2026-04-05T02-36-37-964Z",
-        "slug": "scenario-comparison-smoke-2026-04-05t02-36-37-96",
+        "id": "8638f1c0-6595-42f4-a357-5225c62d6d25",
+        "name": "County Scaffold Smoke Project 2026-04-05T03-52-04-149Z",
+        "slug": "county-scaffold-smoke-project-2026-04-05t03-52-0",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-05T02:36:41.445777+00:00"
+        "created_at": "2026-04-05T03:52:08.591054+00:00"
       }
     ]
   },
   "authDeletes": [
     {
-      "userId": "d8760757-8578-4e06-92eb-230dae2bb8f8",
-      "email": "openplan-scenario-compare-2026-04-05t02-36-37-964z@natfordplanning.com",
+      "userId": "2f85f124-bb48-4844-9e50-e31bdc8d4eb3",
+      "email": "openplan-county-scaffold-smoke-2026-04-05t03-52-04-149z@natfordplanning.com",
       "ok": true,
       "status": 200,
       "error": null

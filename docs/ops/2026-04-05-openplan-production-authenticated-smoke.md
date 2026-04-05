@@ -1,23 +1,23 @@
 # OpenPlan Production Authenticated Smoke — 2026-04-05
 
 - Base URL: https://openplan-zeta.vercel.app
-- QA user email: openplan-qa-2026-04-05T00-48-50-442Z@natfordplanning.com
+- QA user email: openplan-qa-2026-04-05T03-48-46-630Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: d03afe17-52e7-4f72-87d8-08898fb30360
-- Project id: e6802eb3-a5fa-474b-9898-d796c7eddae7
-- Plan id: e419e785-217c-4e23-be53-b4ae1f18611c
-- Model id: b3073aec-6bf1-49b4-bbe1-453b5bd8381b
-- Program id: a8fb47d8-1018-45a9-aaaf-65bfa0ede2b6
+- Workspace id: bc338ddd-111e-4c15-a423-d5fd8e896cfd
+- Project id: 20345ece-96e3-4360-a6bc-1cc93ac399eb
+- Plan id: 7e55d335-292c-4f95-ac44-5df079b3eadc
+- Model id: 5b001ef6-299b-416f-a4e0-cb661efd386c
+- Program id: 9d08f2c1-dc82-4a87-9444-2a5ab3d4065d
 
 ## Pass/Fail Notes
 - PASS: Loaded environment from /tmp/openplan-prod.env.
-- PASS: Created QA auth user openplan-qa-2026-04-05T00-48-50-442Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-qa-2026-04-05T03-48-46-630Z@natfordplanning.com.
 - PASS: Signed-out redirect continuity passed for /models → /sign-in?redirect=%2Fmodels.
 - PASS: Signed-in user landed on live Models workspace surface after redirect.
-- PASS: Created project/workspace via production API: QA Continuity Project 2026-04-05T00-48-50-442Z.
-- PASS: Created plan QA Corridor Plan 2026-04-05T00-48-50-442Z.
-- PASS: Created model QA Accessibility Model 2026-04-05T00-48-50-442Z.
-- PASS: Created program QA RTIP Program 2026-04-05T00-48-50-442Z.
+- PASS: Created project/workspace via production API: QA Continuity Project 2026-04-05T03-48-46-630Z.
+- PASS: Created plan QA Corridor Plan 2026-04-05T03-48-46-630Z.
+- PASS: Created model QA Accessibility Model 2026-04-05T03-48-46-630Z.
+- PASS: Created program QA RTIP Program 2026-04-05T03-48-46-630Z.
 - PASS: Projects list loaded and showed the QA project.
 - PASS: Models list loaded, showed the QA model, and accepted search input.
 - PASS: Model detail loaded and showed linked plan continuity.
@@ -47,3 +47,4 @@
 - This smoke used a dedicated QA auth user and created production QA records/workspace for continuity verification.
 - No destructive mutations were performed beyond creating QA data needed for verification.
 - QA production records and auth identities created during this pass were subsequently cleaned up; see `docs/ops/2026-04-05-openplan-production-qa-cleanup.md`.
+- This rerun was executed against the functioning `natford/openplan` production deployment after `openplan-zeta.vercel.app` was restored to that lane.

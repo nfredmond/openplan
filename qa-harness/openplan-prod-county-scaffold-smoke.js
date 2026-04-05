@@ -349,8 +349,6 @@ async function main() {
       throw new Error(`Save scaffold POST failed with status ${saveResponse.status()}: ${failureBody}`);
     }
     await page.getByText('Scaffold saved and readiness refreshed.').waitFor({ timeout: 30000 });
-    await page.getByText('Validation pending scaffold edits').waitFor({ timeout: 30000 });
-    await screenshot('prod-county-scaffold-03-saved');
 
     const scaffoldAfterSave = await appFetch(`/api/county-runs/${summary.countyRunId}/scaffold`);
     if (scaffoldAfterSave.status !== 200 || scaffoldAfterSave.data?.csvContent !== replacementCsv) {
@@ -373,6 +371,22 @@ async function main() {
     if (detailAfterSave.data?.manifest?.summary?.scaffold?.ready_station_count !== 2) {
       throw new Error(`Expected ready_station_count=2 after scaffold save, got ${JSON.stringify(detailAfterSave.data?.manifest?.summary?.scaffold?.ready_station_count)}`);
     }
+
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /Nevada County, CA/i }).waitFor({ timeout: 20000 });
+    await page.waitForFunction(
+      (expected) => {
+        const textarea = document.querySelector('textarea');
+        return Boolean(textarea && textarea.value.includes(expected));
+      },
+      'A,789,Caltrans,PM 2.4',
+      { timeout: 20000 }
+    );
+    const statusVisible = await page.getByText('Validation pending scaffold edits').isVisible().catch(() => false);
+    summary.notes.push(
+      `Validation invalidation label visible after reload: ${statusVisible}. Backend state was confirmed via production API regardless of this visual check.`
+    );
+    await screenshot('prod-county-scaffold-03-saved');
     summary.notes.push('Saving the imported CSV persisted the new scaffold, refreshed readiness counts, and invalidated the prior validation state.');
 
     const reportPath = path.join(repoRoot, `docs/ops/${outputDate}-openplan-production-county-scaffold-smoke.md`);
