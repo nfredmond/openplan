@@ -8,10 +8,12 @@ import {
   Briefcase,
   CircuitBoard,
   ClipboardList,
+  CreditCard,
   Database,
   FileText,
   FolderKanban,
   LayoutDashboard,
+  Map,
   MessageSquareShare,
   Settings2,
   type LucideIcon,
@@ -28,7 +30,9 @@ const icons = {
   scenarios: Briefcase,
   models: CircuitBoard,
   data: Database,
+  county: Map,
   reports: FileText,
+  billing: CreditCard,
   admin: Settings2,
 } satisfies Record<string, LucideIcon>;
 

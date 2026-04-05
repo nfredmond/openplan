@@ -1,104 +1,245 @@
-import fs from 'fs'
-import path from 'path'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ExportButton } from './ExportButton'
+import fs from "fs";
+import path from "path";
+import { FileCheck2, ShieldCheck } from "lucide-react";
+import { ExportButton } from "./ExportButton";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export const metadata = {
-  title: 'Pilot Readiness Evidence Center | OpenPlan Admin',
-}
+  title: "Pilot Readiness Evidence Center | OpenPlan Admin",
+};
 
 interface SmokeStatus {
-  lane: string
-  status: 'PASS' | 'FAIL' | 'PENDING' | 'UNKNOWN'
-  lastRun: string
-  details: string
+  lane: string;
+  status: "PASS" | "FAIL" | "PENDING" | "UNKNOWN";
+  lastRun: string;
+  details: string;
 }
 
 function getSmokeStatus(): SmokeStatus[] {
-  const rootDir = process.cwd()
-  const opsDir = path.join(rootDir, '../docs/ops')
-  
+  const rootDir = process.cwd();
+  const opsDir = path.join(rootDir, "../docs/ops");
+
   if (!fs.existsSync(opsDir)) {
-    return [
-      { lane: 'System', status: 'UNKNOWN', lastRun: 'N/A', details: `Ops directory not found at ${opsDir}` }
-    ]
+    return [{ lane: "System", status: "UNKNOWN", lastRun: "N/A", details: `Ops directory not found at ${opsDir}` }];
   }
 
-  const files = fs.readdirSync(opsDir)
+  const files = fs.readdirSync(opsDir);
   const lanes = [
-    { lane: 'Authenticated Auth', regex: /openplan-production-authenticated-smoke\.md$/ },
-    { lane: 'County Scaffold', regex: /openplan-production-county-scaffold-smoke\.md$/ },
-    { lane: 'Layout Audit', regex: /openplan-production-layout-overlap-audit\.md$/ },
-    { lane: 'Managed Run', regex: /openplan-production-managed-run-smoke\.md$/ },
-    { lane: 'Scenario Comparison', regex: /openplan-production-scenario-comparison-smoke\.md$/ },
-  ]
+    { lane: "Authenticated Auth", regex: /openplan-production-authenticated-smoke\.md$/ },
+    { lane: "County Scaffold", regex: /openplan-production-county-scaffold-smoke\.md$/ },
+    { lane: "Layout Audit", regex: /openplan-production-layout-overlap-audit\.md$/ },
+    { lane: "Managed Run", regex: /openplan-production-managed-run-smoke\.md$/ },
+    { lane: "Scenario Comparison", regex: /openplan-production-scenario-comparison-smoke\.md$/ },
+  ];
 
-  const statusList: SmokeStatus[] = []
+  const statusList: SmokeStatus[] = [];
 
   for (const { lane, regex } of lanes) {
-    const matchingFiles = files.filter(f => regex.test(f)).sort().reverse()
+    const matchingFiles = files.filter((file) => regex.test(file)).sort().reverse();
     if (matchingFiles.length > 0) {
-      const latestFile = matchingFiles[0]
-      const content = fs.readFileSync(path.join(opsDir, latestFile), 'utf8')
-      const isPass = content.includes('Status: PASS') || content.includes('STATUS: PASS') || content.includes('**Status**: PASS') || content.includes('**STATUS**: PASS')
-      const isFail = content.includes('Status: FAIL') || content.includes('STATUS: FAIL') || content.includes('**Status**: FAIL') || content.includes('**STATUS**: FAIL')
-      
-      const dateMatch = latestFile.match(/^(\d{4}-\d{2}-\d{2})/)
-      const lastRun = dateMatch ? dateMatch[1] : 'Unknown'
+      const latestFile = matchingFiles[0];
+      const content = fs.readFileSync(path.join(opsDir, latestFile), "utf8");
+      const isPass =
+        content.includes("Status: PASS") ||
+        content.includes("STATUS: PASS") ||
+        content.includes("**Status**: PASS") ||
+        content.includes("**STATUS**: PASS");
+      const isFail =
+        content.includes("Status: FAIL") ||
+        content.includes("STATUS: FAIL") ||
+        content.includes("**Status**: FAIL") ||
+        content.includes("**STATUS**: FAIL");
+      const dateMatch = latestFile.match(/^(\d{4}-\d{2}-\d{2})/);
 
       statusList.push({
         lane,
-        status: isPass ? 'PASS' : isFail ? 'FAIL' : 'UNKNOWN',
-        lastRun,
-        details: latestFile
-      })
+        status: isPass ? "PASS" : isFail ? "FAIL" : "UNKNOWN",
+        lastRun: dateMatch ? dateMatch[1] : "Unknown",
+        details: latestFile,
+      });
     } else {
       statusList.push({
         lane,
-        status: 'PENDING',
-        lastRun: 'N/A',
-        details: 'No test runs found'
-      })
+        status: "PENDING",
+        lastRun: "N/A",
+        details: "No test runs found",
+      });
     }
   }
 
-  return statusList
+  return statusList;
+}
+
+function getStatusTone(status: SmokeStatus["status"]): "success" | "danger" | "warning" | "neutral" {
+  if (status === "PASS") return "success";
+  if (status === "FAIL") return "danger";
+  if (status === "PENDING") return "warning";
+  return "neutral";
+}
+
+function buildReadinessHeadline(statusList: SmokeStatus[]): { label: string; detail: string; tone: "success" | "danger" | "warning" | "neutral" } {
+  const failCount = statusList.filter((item) => item.status === "FAIL").length;
+  const pendingCount = statusList.filter((item) => item.status === "PENDING").length;
+  const passCount = statusList.filter((item) => item.status === "PASS").length;
+
+  if (failCount > 0) {
+    return {
+      label: "Follow-up required",
+      detail: `${failCount} readiness lane${failCount === 1 ? " is" : "s are"} currently failing.`,
+      tone: "danger",
+    };
+  }
+
+  if (passCount > 0 && pendingCount > 0) {
+    return {
+      label: "Evidence current with open gaps",
+      detail: `${passCount} lane${passCount === 1 ? " shows" : "s show"} recent passing evidence while ${pendingCount} still need fresh proof.`,
+      tone: "warning",
+    };
+  }
+
+  if (passCount > 0) {
+    return {
+      label: "Evidence current",
+      detail: "All tracked readiness lanes currently show passing proof artifacts.",
+      tone: "success",
+    };
+  }
+
+  return {
+    label: "Evidence still forming",
+    detail: "No passing proof artifacts are available yet for the tracked readiness lanes.",
+    tone: "neutral",
+  };
 }
 
 export default function PilotReadinessPage() {
-  const statusList = getSmokeStatus()
+  const statusList = getSmokeStatus();
+  const passCount = statusList.filter((item) => item.status === "PASS").length;
+  const failCount = statusList.filter((item) => item.status === "FAIL").length;
+  const pendingCount = statusList.filter((item) => item.status === "PENDING").length;
+  const latestEvidenceDate = statusList
+    .map((item) => item.lastRun)
+    .filter((value) => value !== "N/A" && value !== "Unknown")
+    .sort()
+    .reverse()[0] ?? "No dated proof yet";
+  const readinessHeadline = buildReadinessHeadline(statusList);
 
   return (
-    <div className="container mx-auto py-8 max-w-6xl">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pilot Readiness Evidence Center</h1>
-          <p className="text-muted-foreground mt-2">
-            Internal dashboard for proof artifacts, smoke status, and pilot readiness packet generation.
-          </p>
-        </div>
-        <ExportButton statusList={statusList} />
-      </div>
+    <section className="module-page">
+      <header className="module-header-grid">
+        <article className="module-intro-card">
+          <div className="module-intro-kicker">
+            <FileCheck2 className="h-3.5 w-3.5" />
+            Pilot readiness evidence center
+          </div>
+          <div className="module-intro-body">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge tone={readinessHeadline.tone}>{readinessHeadline.label}</StatusBadge>
+              <StatusBadge tone="neutral">Latest evidence: {latestEvidenceDate}</StatusBadge>
+            </div>
+            <h1 className="module-intro-title">Proof before promise</h1>
+            <p className="module-intro-description">
+              This surface is intentionally evidence-first. It tracks the latest smoke artifacts, keeps launch-facing
+              readiness honest, and exports a share-safe packet when someone asks what the supervised pilot can prove today.
+            </p>
+          </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {statusList.map((status, i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{status.lane}</CardTitle>
-                <Badge variant={status.status === 'PASS' ? 'default' : status.status === 'FAIL' ? 'destructive' : 'secondary'}>
-                  {status.status}
-                </Badge>
+          <div className="module-summary-grid cols-4">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Passing lanes</p>
+              <p className="module-summary-value">{passCount}</p>
+              <p className="module-summary-detail">Readiness checks with a recorded PASS artifact.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Failing lanes</p>
+              <p className="module-summary-value">{failCount}</p>
+              <p className="module-summary-detail">Follow-up required before those lanes can be cited as ready.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Pending lanes</p>
+              <p className="module-summary-value">{pendingCount}</p>
+              <p className="module-summary-detail">Tracked checks that still need fresh proof artifacts.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Packet export</p>
+              <p className="module-summary-value">Ready</p>
+              <p className="module-summary-detail">Generate a share-safe markdown packet from the current status list.</p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <ExportButton statusList={statusList} />
+          </div>
+        </article>
+
+        <article className="module-operator-card">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+              <ShieldCheck className="h-5 w-5 text-emerald-200" />
+            </span>
+            <div>
+              <p className="module-operator-eyebrow">Readiness posture</p>
+              <h2 className="module-operator-title">{readinessHeadline.label}</h2>
+            </div>
+          </div>
+          <p className="module-operator-copy">{readinessHeadline.detail}</p>
+          <div className="module-operator-list">
+            <div className="module-operator-item">This page shows recorded proof artifacts, not aspirational roadmap language.</div>
+            <div className="module-operator-item">Each lane stays visible even when evidence is missing, pending, or failed.</div>
+            <div className="module-operator-item">Exported packets should be treated as diligence evidence for the supervised pilot, not a substitute for operator judgment.</div>
+          </div>
+        </article>
+      </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Tracked smoke lanes</p>
+            <h2 className="module-section-title">Current proof artifacts by launch-relevant surface</h2>
+            <p className="module-section-description">
+              Each card below represents the latest artifact we could find for that readiness lane.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {statusList.map((status) => (
+            <article key={status.lane} className="module-subpanel min-h-[190px]">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Readiness lane</p>
+                  <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{status.lane}</h3>
+                </div>
+                <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
               </div>
-              <CardDescription>Last run: {status.lastRun}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground break-all">{status.details}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  )
+
+              <div className="mt-5 space-y-3 text-sm text-muted-foreground">
+                <div>
+                  <div className="font-medium text-foreground">Last run</div>
+                  <p className="mt-1">{status.lastRun}</p>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Evidence artifact</div>
+                  <p className="mt-1 break-all">{status.details}</p>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">Interpretation</div>
+                  <p className="mt-1">
+                    {status.status === "PASS"
+                      ? "This lane has a recent passing proof artifact available for pilot diligence."
+                      : status.status === "FAIL"
+                        ? "This lane currently has failing evidence and should not be described as ready without follow-up."
+                        : status.status === "PENDING"
+                          ? "This lane is tracked but still needs a fresh proof artifact before it can be cited confidently."
+                          : "The current artifact could not be interpreted automatically. Inspect the underlying file before using it in launch-facing language."}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </article>
+    </section>
+  );
 }
