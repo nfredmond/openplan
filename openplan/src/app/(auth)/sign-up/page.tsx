@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function SignUpPage() {
+function normalizeSelectedPlan(value: string | null): "starter" | "professional" | null {
+  if (value === "starter" || value === "professional") {
+    return value;
+  }
+
+  return null;
+}
+
+function labelForPlan(value: "starter" | "professional" | null): string {
+  if (value === "starter") return "Starter";
+  if (value === "professional") return "Professional";
+  return "OpenPlan";
+}
+
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedPlan = useMemo(() => normalizeSelectedPlan(searchParams.get("plan")), [searchParams]);
   const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +51,12 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push("/sign-in?created=1");
+    const params = new URLSearchParams({ created: "1" });
+    if (selectedPlan) {
+      params.set("plan", selectedPlan);
+    }
+
+    router.push(`/sign-in?${params.toString()}`);
     router.refresh();
   }
 
@@ -44,9 +65,18 @@ export default function SignUpPage() {
       <header className="space-y-1.5">
         <h1 className="font-display text-2xl font-semibold tracking-tight">Create account</h1>
         <p className="text-sm text-muted-foreground">
-          Start your agency planning workspace in OpenPlan.
+          Create your OpenPlan login first. Workspace setup, billing selection, and paid activation happen after sign-in so the correct workspace can be targeted explicitly.
         </p>
       </header>
+
+      {selectedPlan ? (
+        <article className="rounded-md border border-sky-300 bg-sky-50 px-3 py-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+          <p className="font-semibold">Selected early-access plan: {labelForPlan(selectedPlan)}</p>
+          <p className="mt-1">
+            This step creates your account only. After sign-in, create or open the correct workspace, then launch billing from the in-app billing surface.
+          </p>
+        </article>
+      ) : null}
 
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
@@ -106,11 +136,25 @@ export default function SignUpPage() {
 
       <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/sign-in" className="font-medium text-foreground underline">
+        <Link href={selectedPlan ? `/sign-in?plan=${selectedPlan}` : "/sign-in"} className="font-medium text-foreground underline">
           Sign in
         </Link>
         .
       </p>
     </section>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="mx-auto w-full max-w-md rounded-2xl border border-border/80 bg-card p-6 text-sm text-muted-foreground shadow-[0_16px_48px_rgba(20,33,43,0.08)]">
+          Loading sign-up…
+        </section>
+      }
+    >
+      <SignUpForm />
+    </Suspense>
   );
 }

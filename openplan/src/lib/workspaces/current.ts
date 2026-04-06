@@ -33,7 +33,7 @@ export function unwrapWorkspaceRecord<T>(value: T | T[] | null | undefined): T |
   return value ?? null;
 }
 
-export type WorkspaceMembershipClient = Pick<SupabaseClient<any>, "from">;
+export type WorkspaceMembershipClient = Pick<SupabaseClient, "from">;
 
 export type WorkspaceMembershipSelection = {
   memberships: WorkspaceMembershipRow[];

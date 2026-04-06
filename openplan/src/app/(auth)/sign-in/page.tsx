@@ -13,6 +13,8 @@ function SignInForm() {
   const checkoutState = searchParams.get("checkout");
   const activationState = searchParams.get("activation");
   const redirectTarget = searchParams.get("redirect");
+  const createdState = searchParams.get("created");
+  const selectedPlan = searchParams.get("plan");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,20 @@ function SignInForm() {
           Access your OpenPlan workspace.
         </p>
       </header>
+
+      {createdState === "1" ? (
+        <article className="rounded-md border border-sky-300 bg-sky-50 px-3 py-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+          <p className="font-semibold">Account created — next step is your first workspace</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Sign in with the email and password you just created.</li>
+            <li>Create or open the correct workspace from Projects.</li>
+            <li>
+              If you selected {selectedPlan === "starter" ? "Starter" : selectedPlan === "professional" ? "Professional" : "an early-access"} pricing,
+              launch billing only after you are inside the correct workspace context.
+            </li>
+          </ol>
+        </article>
+      ) : null}
 
       {checkoutState === "success" ? (
         <article className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
@@ -113,7 +129,7 @@ function SignInForm() {
 
       <p className="text-sm text-muted-foreground">
         New to OpenPlan?{" "}
-        <Link href="/sign-up" className="font-medium text-foreground underline">
+        <Link href={selectedPlan === "starter" || selectedPlan === "professional" ? `/sign-up?plan=${selectedPlan}` : "/sign-up"} className="font-medium text-foreground underline">
           Create an account
         </Link>
         .
