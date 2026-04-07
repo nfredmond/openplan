@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { resolveBillingSupportState } from "@/lib/billing/support";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -234,6 +235,15 @@ export default async function BillingPage({
     identityReviewPayload && typeof identityReviewPayload.purchaserEmail === "string"
       ? identityReviewPayload.purchaserEmail
       : null;
+  const billingSupportState = resolveBillingSupportState({
+    status,
+    checkoutState,
+    billingUpdatedAt: workspace.billing_updated_at ?? null,
+    events: (billingEvents ?? []).map((event) => ({
+      eventType: event.event_type,
+      createdAt: event.created_at,
+    })),
+  });
 
   return (
     <section className="space-y-6">
@@ -302,6 +312,24 @@ export default async function BillingPage({
             {initiatedByUserEmail ? <li>Workspace checkout was initiated by: <strong>{initiatedByUserEmail}</strong></li> : null}
             {purchaserEmail ? <li>Stripe checkout completed with: <strong>{purchaserEmail}</strong></li> : null}
             <li>Next step: sign in with the purchaser email used at checkout, or complete a manual ownership review before activation.</li>
+          </ul>
+        </article>
+      ) : null}
+
+      {billingSupportState && !(status === "checkout_pending" && identityReviewEvent) ? (
+        <article
+          className={`rounded-2xl p-4 text-sm shadow-[0_10px_24px_rgba(20,33,43,0.06)] ${
+            billingSupportState.tone === "warning"
+              ? "border border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100"
+              : "border border-sky-300/70 bg-sky-50 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/30 dark:text-sky-100"
+          }`}
+        >
+          <p className="font-semibold tracking-tight">{billingSupportState.title}</p>
+          <p className="mt-2">{billingSupportState.summary}</p>
+          <ul className="mt-3 space-y-1.5">
+            {billingSupportState.bullets.map((bullet) => (
+              <li key={bullet}>{bullet}</li>
+            ))}
           </ul>
         </article>
       ) : null}

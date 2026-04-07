@@ -53,3 +53,14 @@ Specifically, it reduces three avoidable sources of confusion:
 
 ## Remaining bounded gap
 This slice improves **truth and onboarding clarity**. It does **not** by itself re-prove live production checkout, webhook activation, or full new-buyer end-to-end smoke. Those remain separate proof lanes.
+
+## April 6 follow-through added in the same wave
+A second billing-support hardening pass now complements the onboarding truth slice:
+- `/billing` now derives a clearer support state from workspace status plus recent billing events,
+- Stripe-return-without-webhook-confirmation now surfaces as an explicit unresolved state instead of vague pending language,
+- generic `checkout_pending` and inactive/past-due states now tell the operator what to verify next.
+
+Fresh production-truth findings from the same date are recorded separately in:
+- `docs/ops/2026-04-06-openplan-production-billing-truth-refresh.md`
+
+That follow-through matters because onboarding truth alone is not enough; the in-app billing surface also needs to tell the truth when activation is still unresolved.
