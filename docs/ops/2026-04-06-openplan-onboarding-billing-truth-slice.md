@@ -58,9 +58,10 @@ This slice improves **truth and onboarding clarity**. It does **not** by itself 
 A second billing-support hardening pass now complements the onboarding truth slice:
 - `/billing` now derives a clearer support state from workspace status plus recent billing events,
 - Stripe-return-without-webhook-confirmation now surfaces as an explicit unresolved state instead of vague pending language,
-- generic `checkout_pending` and inactive/past-due states now tell the operator what to verify next.
+- generic `checkout_pending` and inactive/past-due states now tell the operator what to verify next,
+- and repo-side billing routes now fail with an explicit `503 Billing configuration unavailable` when the production service-role billing env is absent, which is safer and more diagnosable than vague downstream failures during checkout/webhook handling.
 
 Fresh production-truth findings from the same date are recorded separately in:
 - `docs/ops/2026-04-06-openplan-production-billing-truth-refresh.md`
 
-That follow-through matters because onboarding truth alone is not enough; the in-app billing surface also needs to tell the truth when activation is still unresolved.
+That follow-through matters because onboarding truth alone is not enough; the in-app billing surface and operator tooling also need to tell the truth when activation is still unresolved or when production env posture is incomplete.

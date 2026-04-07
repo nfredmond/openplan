@@ -36,6 +36,8 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
+  isMissingEnvironmentVariableError: (error: unknown) =>
+    error instanceof Error && error.name === "MissingEnvironmentVariableError",
 }));
 
 vi.mock("@/lib/billing/webhook", () => ({
@@ -391,6 +393,39 @@ describe("POST /api/billing/webhook", () => {
         failureReason: "checkout_identity_review_pending",
       })
     );
+  });
+
+  it("returns 503 when verified stripe events cannot apply because service-role billing config is missing", async () => {
+    const missingEnvError = new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
+    missingEnvError.name = "MissingEnvironmentVariableError";
+    createServiceRoleClientMock.mockImplementationOnce(() => {
+      throw missingEnvError;
+    });
+
+    verifyStripeWebhookSignatureMock.mockResolvedValue({
+      ok: true,
+      event: {
+        id: "evt_cfg",
+        type: "checkout.session.completed",
+        data: { object: {} },
+      },
+    });
+
+    const response = await postWebhook(
+      jsonRequest(
+        {
+          object: "event",
+          id: "evt_cfg",
+        },
+        {
+          "stripe-signature": "t=123,v1=test",
+        }
+      )
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ error: "Billing configuration unavailable" });
+    expect(completeWebhookEventMock).not.toHaveBeenCalled();
   });
 
   it("short-circuits duplicate verified stripe events with 200 duplicate response", async () => {

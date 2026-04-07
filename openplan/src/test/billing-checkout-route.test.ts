@@ -29,6 +29,8 @@ const mockAudit = {
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
   createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
+  isMissingEnvironmentVariableError: (error: unknown) =>
+    error instanceof Error && error.name === "MissingEnvironmentVariableError",
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -155,6 +157,25 @@ describe("/api/billing/checkout safe messaging", () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ error: "Owner/admin access is required" });
+  });
+
+  it("returns 503 when service-role billing configuration is missing", async () => {
+    const missingEnvError = new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
+    missingEnvError.name = "MissingEnvironmentVariableError";
+    createServiceRoleClientMock.mockImplementationOnce(() => {
+      throw missingEnvError;
+    });
+
+    const response = await postCheckout(
+      jsonRequest({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        plan: "starter",
+      })
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ error: "Billing configuration unavailable" });
+    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
   });
 
   it("returns safe activation error when checkout session creation fails", async () => {

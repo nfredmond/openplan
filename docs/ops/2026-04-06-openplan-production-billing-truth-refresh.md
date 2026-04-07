@@ -9,6 +9,8 @@ Today’s truthful answer is narrower than a clean commercial PASS.
 
 What I could freshly prove:
 - the repo slice for billing/support clarity is now hardened locally,
+- billing routes now fail explicitly with `503 Billing configuration unavailable` when service-role billing env is missing instead of failing opaquely deeper in Supabase client construction,
+- the supervised paid canary preflight now writes an explicit blocker summary instead of dying early with a generic missing-env message,
 - the current production Vercel lane is still actively deploying on `natford/openplan`,
 - the live Starter Stripe price is present, active, recurring monthly, and non-zero,
 - the canonical alias currently sits behind Vercel auth/protection for anonymous curl,
@@ -75,7 +77,8 @@ Fresh `vercel env pull /tmp/openplan.vercel.env --environment=production -y` pro
 
 That means:
 - `qa-harness/openplan-prod-auth-smoke.js` cannot create a dedicated QA auth user from the pulled env snapshot,
-- `openplan/scripts/openplan-supervised-paid-canary-preflight.sh` cannot complete its workspace snapshot lane from that env snapshot alone,
+- `openplan/scripts/openplan-supervised-paid-canary-preflight.sh` now makes that blocker explicit in its summary, but still cannot complete its workspace snapshot / monitor lane from that env snapshot alone,
+- billing checkout and webhook routes now surface this configuration hole as a clear `503` instead of a vague downstream failure,
 - and a clean same-session replay of the prior admin-created proof flow is blocked until a valid service-role source is restored or explicitly provided.
 
 ## Product slice shipped alongside this truth refresh
@@ -104,7 +107,8 @@ This does not fake proof. It does make the app more trustworthy when proof is st
 3. Re-run:
    - `qa-harness/npm run prod-auth-smoke`
    - `openplan/scripts/openplan-supervised-paid-canary-preflight.sh`
-4. Only then decide whether a supervised paid canary is required this cycle or whether the billing lane is honestly strong enough without money-moving proof.
+4. Treat the preflight summary as the operator source of truth: it now records whether alias reachability, live price posture, canonical webhook posture, and service-role-backed workspace evidence are each actually present.
+5. Only then decide whether a supervised paid canary is required this cycle or whether the billing lane is honestly strong enough without money-moving proof.
 
 ## Bottom line
 Today improved trust and clarity, but it did **not** close the billing proof lane.

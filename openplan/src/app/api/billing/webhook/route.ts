@@ -10,7 +10,10 @@ import {
 } from "@/lib/billing/webhook";
 import { claimWebhookEvent, completeWebhookEvent } from "@/lib/billing/webhook-idempotency";
 import { logBillingEvent } from "@/lib/billing/events";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import {
+  createServiceRoleClient,
+  isMissingEnvironmentVariableError,
+} from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
 type WebhookEnvelope = {
@@ -427,13 +430,55 @@ export async function POST(request: NextRequest) {
         providerEventId: envelope.eventId,
         providerEventType: envelope.eventType,
         message: reviewError instanceof Error ? reviewError.message : "unknown",
+        missingEnv:
+          isMissingEnvironmentVariableError(reviewError) ? reviewError.variableName : undefined,
       });
+
+      if (isMissingEnvironmentVariableError(reviewError)) {
+        return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
+      }
 
       return NextResponse.json({ error: "Failed to apply billing update" }, { status: 500 });
     }
   }
 
-  const { error } = await applyBillingMutation(envelope.mutation);
+  let mutationResult;
+  try {
+    mutationResult = await applyBillingMutation(envelope.mutation);
+  } catch (mutationError) {
+    if (receiptId) {
+      await completeWebhookEvent({
+        receiptId,
+        status: "failed",
+        workspaceId: envelope.mutation.workspaceId,
+        eventType: envelope.eventType,
+        failureReason: mutationError instanceof Error ? mutationError.message : "unknown",
+      }).catch((receiptError) => {
+        audit.warn("webhook_receipt_complete_failed", {
+          eventId: envelope?.eventId,
+          message: receiptError instanceof Error ? receiptError.message : "unknown",
+        });
+      });
+    }
+
+    audit.error("workspace_update_failed", {
+      workspaceId: envelope.mutation.workspaceId,
+      message: mutationError instanceof Error ? mutationError.message : "unknown",
+      source: envelope.mutation.source ?? envelope.provider,
+      providerEventId: envelope.eventId,
+      providerEventType: envelope.eventType,
+      missingEnv:
+        isMissingEnvironmentVariableError(mutationError) ? mutationError.variableName : undefined,
+    });
+
+    if (isMissingEnvironmentVariableError(mutationError)) {
+      return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
+    }
+
+    return NextResponse.json({ error: "Failed to apply billing update" }, { status: 500 });
+  }
+
+  const { error } = mutationResult;
 
   if (error) {
     if (receiptId) {

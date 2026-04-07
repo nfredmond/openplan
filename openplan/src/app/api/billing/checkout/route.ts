@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createStripeCheckoutSession } from "@/lib/billing/checkout";
 import { logBillingEvent } from "@/lib/billing/events";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import {
+  createClient,
+  createServiceRoleClient,
+  isMissingEnvironmentVariableError,
+} from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
@@ -108,7 +112,13 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
       userId: user.id,
       plan,
       message: error instanceof Error ? error.message : "unknown",
+      missingEnv:
+        isMissingEnvironmentVariableError(error) ? error.variableName : undefined,
     });
+
+    if (isMissingEnvironmentVariableError(error)) {
+      return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
+    }
 
     return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
   }
@@ -142,7 +152,13 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
       userId: user.id,
       plan,
       message: error instanceof Error ? error.message : "unknown",
+      missingEnv:
+        isMissingEnvironmentVariableError(error) ? error.variableName : undefined,
     });
+
+    if (isMissingEnvironmentVariableError(error)) {
+      return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
+    }
 
     return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
   }

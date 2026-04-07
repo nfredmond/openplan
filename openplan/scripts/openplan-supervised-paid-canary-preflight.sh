@@ -145,45 +145,91 @@ STRIPE_KEY="${OPENPLAN_STRIPE_SECRET_KEY:-${STRIPE_SECRET_KEY:-}}"
 SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-}"
 SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
 STARTER_PRICE_ID="${OPENPLAN_STRIPE_PRICE_ID_STARTER:-}"
+WEBHOOK_URL="$ALIAS_URL/api/billing/webhook"
+MONITOR_EMAIL_ARG=""
+if [[ -n "$BILLING_EMAIL" ]]; then
+  MONITOR_EMAIL_ARG=" --email $BILLING_EMAIL"
+fi
 
-if [[ -z "$STRIPE_KEY" || -z "$SUPABASE_URL" || -z "$SUPABASE_SERVICE_ROLE_KEY" || -z "$STARTER_PRICE_ID" ]]; then
-  echo "Missing required env vars after loading $ENV_FILE" >&2
-  echo "Need: OPENPLAN_STRIPE_SECRET_KEY (or STRIPE_SECRET_KEY), NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENPLAN_STRIPE_PRICE_ID_STARTER" >&2
-  exit 1
+BLOCKERS=()
+ALIAS_CHECK_OK=0
+PRICE_CHECK_OK=0
+WEBHOOK_CHECK_OK=0
+WORKSPACE_SNAPSHOT_OK=0
+MONITOR_SNAPSHOT_OK=0
+
+if [[ -z "$STRIPE_KEY" ]]; then
+  BLOCKERS+=("Missing OPENPLAN_STRIPE_SECRET_KEY (or STRIPE_SECRET_KEY) in $ENV_FILE")
+fi
+if [[ -z "$STARTER_PRICE_ID" ]]; then
+  BLOCKERS+=("Missing OPENPLAN_STRIPE_PRICE_ID_STARTER in $ENV_FILE")
+fi
+if [[ -z "$SUPABASE_URL" ]]; then
+  BLOCKERS+=("Missing NEXT_PUBLIC_SUPABASE_URL in $ENV_FILE")
+fi
+if [[ -z "$SUPABASE_SERVICE_ROLE_KEY" ]]; then
+  BLOCKERS+=("Missing SUPABASE_SERVICE_ROLE_KEY in $ENV_FILE (this is the current production-proof blocker for deeper reruns)")
 fi
 
 curl -sSI "$ALIAS_URL" | tee "$ALIAS_HEADERS_LOG" >/dev/null
 curl -sS -o /dev/null -w 'status=%{http_code}\nfinal_url=%{url_effective}\nredirect_url=%{redirect_url}\n' "$ALIAS_URL/billing" | tee "$ALIAS_STATUS_LOG" >/dev/null
+if grep -q '^status=' "$ALIAS_STATUS_LOG"; then
+  ALIAS_CHECK_OK=1
+fi
 
-curl -sS "https://api.stripe.com/v1/prices/$STARTER_PRICE_ID" \
-  -u "$STRIPE_KEY:" > "$STARTER_PRICE_JSON"
+if [[ -n "$STRIPE_KEY" && -n "$STARTER_PRICE_ID" ]]; then
+  curl -sS "https://api.stripe.com/v1/prices/$STARTER_PRICE_ID" \
+    -u "$STRIPE_KEY:" > "$STARTER_PRICE_JSON"
 
-jq -e '
-  .id != null
-  and .livemode == true
-  and .active == true
-  and .type == "recurring"
-  and .recurring.interval == "month"
-  and (.unit_amount | tonumber) > 0
-' "$STARTER_PRICE_JSON" >/dev/null
+  if jq -e '
+    .id != null
+    and .livemode == true
+    and .active == true
+    and .type == "recurring"
+    and .recurring.interval == "month"
+    and (.unit_amount | tonumber) > 0
+  ' "$STARTER_PRICE_JSON" >/dev/null; then
+    PRICE_CHECK_OK=1
+  else
+    BLOCKERS+=("Starter price $STARTER_PRICE_ID is not a live active recurring monthly non-zero price")
+  fi
 
-curl -sS https://api.stripe.com/v1/webhook_endpoints \
-  -u "$STRIPE_KEY:" > "$WEBHOOKS_JSON"
+  curl -sS https://api.stripe.com/v1/webhook_endpoints \
+    -u "$STRIPE_KEY:" > "$WEBHOOKS_JSON"
 
-jq -e --arg expected_url "$ALIAS_URL/api/billing/webhook" '
-  any(.data[]?; .url == $expected_url and .status == "enabled"
-    and (.enabled_events | index("checkout.session.completed")) != null
-    and (.enabled_events | index("customer.subscription.created")) != null
-    and (.enabled_events | index("customer.subscription.updated")) != null
-    and (.enabled_events | index("customer.subscription.deleted")) != null)
-' "$WEBHOOKS_JSON" >/dev/null
+  if jq -e --arg expected_url "$WEBHOOK_URL" '
+    any(.data[]?; .url == $expected_url and .status == "enabled"
+      and (.enabled_events | index("checkout.session.completed")) != null
+      and (.enabled_events | index("customer.subscription.created")) != null
+      and (.enabled_events | index("customer.subscription.updated")) != null
+      and (.enabled_events | index("customer.subscription.deleted")) != null)
+  ' "$WEBHOOKS_JSON" >/dev/null; then
+    WEBHOOK_CHECK_OK=1
+  else
+    BLOCKERS+=("Stripe does not show an enabled webhook endpoint at $WEBHOOK_URL with the required subscription events")
+  fi
+fi
 
-(
-  cd "$APP_DIR"
-  WORKSPACE_ID="$WORKSPACE_ID" \
-  SUPABASE_URL="$SUPABASE_URL" \
-  SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
-  node <<'NODE'
+WORKSPACE_NAME="unknown"
+WORKSPACE_STATUS="unavailable"
+WORKSPACE_PLAN="unavailable"
+STARTER_PRICE_SUMMARY="unavailable"
+STARTER_PRICE_DISPLAY="unavailable"
+if [[ -f "$STARTER_PRICE_JSON" ]]; then
+  STARTER_PRICE_SUMMARY="$(jq -r '[.id, (if .livemode then "live" else "test" end), (.currency // "n/a"), ((.unit_amount // 0) / 100 | tostring), (.recurring.interval // "n/a")] | @tsv' "$STARTER_PRICE_JSON")"
+  STARTER_PRICE_CURRENCY="$(jq -r '.currency // "usd"' "$STARTER_PRICE_JSON")"
+  STARTER_PRICE_AMOUNT="$(jq -r '((.unit_amount // 0) / 100 | tostring)' "$STARTER_PRICE_JSON")"
+  STARTER_PRICE_INTERVAL="$(jq -r '.recurring.interval // "n/a"' "$STARTER_PRICE_JSON")"
+  STARTER_PRICE_DISPLAY="${STARTER_PRICE_AMOUNT} ${STARTER_PRICE_CURRENCY}/${STARTER_PRICE_INTERVAL}"
+fi
+
+if [[ -n "$SUPABASE_URL" && -n "$SUPABASE_SERVICE_ROLE_KEY" ]]; then
+  if (
+    cd "$APP_DIR"
+    WORKSPACE_ID="$WORKSPACE_ID" \
+    SUPABASE_URL="$SUPABASE_URL" \
+    SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+    node <<'NODE'
 const { createClient } = require('@supabase/supabase-js');
 
 const workspaceId = process.env.WORKSPACE_ID;
@@ -198,23 +244,15 @@ async function run() {
     .eq('id', workspaceId)
     .maybeSingle();
 
-  if (workspaceError) {
-    throw workspaceError;
-  }
-
-  if (!workspace) {
-    throw new Error(`workspace ${workspaceId} not found`);
-  }
+  if (workspaceError) throw workspaceError;
+  if (!workspace) throw new Error(`workspace ${workspaceId} not found`);
 
   const { data: members, error: membersError } = await sb
     .from('workspace_members')
     .select('user_id,role')
     .eq('workspace_id', workspaceId)
     .order('role', { ascending: true });
-
-  if (membersError) {
-    throw membersError;
-  }
+  if (membersError) throw membersError;
 
   const { data: events, error: eventsError } = await sb
     .from('billing_events')
@@ -222,20 +260,15 @@ async function run() {
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
     .limit(10);
+  if (eventsError) throw eventsError;
 
-  if (eventsError) {
-    throw eventsError;
-  }
-
-  const payload = {
+  process.stdout.write(JSON.stringify({
     capturedAt: new Date().toISOString(),
     workspace,
     memberCount: members?.length ?? 0,
     members: members ?? [],
     recentBillingEvents: events ?? [],
-  };
-
-  process.stdout.write(JSON.stringify(payload, null, 2));
+  }, null, 2));
 }
 
 run().catch((error) => {
@@ -243,38 +276,44 @@ run().catch((error) => {
   process.exit(1);
 });
 NODE
-) > "$WORKSPACE_SNAPSHOT_JSON"
+  ) > "$WORKSPACE_SNAPSHOT_JSON"; then
+    WORKSPACE_SNAPSHOT_OK=1
+    WORKSPACE_NAME="$(jq -r '.workspace.name' "$WORKSPACE_SNAPSHOT_JSON")"
+    WORKSPACE_STATUS="$(jq -r '.workspace.subscription_status // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
+    WORKSPACE_PLAN="$(jq -r '.workspace.subscription_plan // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
+  else
+    BLOCKERS+=("Failed to capture production workspace snapshot from Supabase service-role access")
+  fi
 
-MONITOR_ARGS=(
-  --workspace-id "$WORKSPACE_ID"
-  --since-minutes "$SINCE_MINUTES"
-  --env-file "$ENV_FILE"
-)
-if [[ -n "$BILLING_EMAIL" ]]; then
-  MONITOR_ARGS+=(--email "$BILLING_EMAIL")
+  MONITOR_ARGS=(
+    --workspace-id "$WORKSPACE_ID"
+    --since-minutes "$SINCE_MINUTES"
+    --env-file "$ENV_FILE"
+  )
+  if [[ -n "$BILLING_EMAIL" ]]; then
+    MONITOR_ARGS+=(--email "$BILLING_EMAIL")
+  fi
+
+  if "$APP_DIR/scripts/openplan-starter-canary-monitor.sh" "${MONITOR_ARGS[@]}" > "$MONITOR_SNAPSHOT_LOG"; then
+    MONITOR_SNAPSHOT_OK=1
+  else
+    BLOCKERS+=("Failed to capture current monitor snapshot for the canary workspace")
+  fi
 fi
 
-"$APP_DIR/scripts/openplan-starter-canary-monitor.sh" "${MONITOR_ARGS[@]}" > "$MONITOR_SNAPSHOT_LOG"
-
-STARTER_PRICE_SUMMARY="$(jq -r '[.id, (if .livemode then "live" else "test" end), (.currency // "n/a"), ((.unit_amount // 0) / 100 | tostring), (.recurring.interval // "n/a")] | @tsv' "$STARTER_PRICE_JSON")"
-STARTER_PRICE_CURRENCY="$(jq -r '.currency // "usd"' "$STARTER_PRICE_JSON")"
-STARTER_PRICE_AMOUNT="$(jq -r '((.unit_amount // 0) / 100 | tostring)' "$STARTER_PRICE_JSON")"
-STARTER_PRICE_INTERVAL="$(jq -r '.recurring.interval // "n/a"' "$STARTER_PRICE_JSON")"
-STARTER_PRICE_DISPLAY="${STARTER_PRICE_AMOUNT} ${STARTER_PRICE_CURRENCY}/${STARTER_PRICE_INTERVAL}"
-WORKSPACE_NAME="$(jq -r '.workspace.name' "$WORKSPACE_SNAPSHOT_JSON")"
-WORKSPACE_STATUS="$(jq -r '.workspace.subscription_status // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
-WORKSPACE_PLAN="$(jq -r '.workspace.subscription_plan // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
-WEBHOOK_URL="$ALIAS_URL/api/billing/webhook"
-MONITOR_EMAIL_ARG=""
-if [[ -n "$BILLING_EMAIL" ]]; then
-  MONITOR_EMAIL_ARG=" --email $BILLING_EMAIL"
+if [[ ${#BLOCKERS[@]} -eq 0 ]]; then
+  READY_STATE="READY FOR SUPERVISED EXECUTION"
+else
+  READY_STATE="BLOCKED — operator action required"
 fi
 
 cat > "$SUMMARY_MD" <<SUMMARY
 # OpenPlan Supervised Paid Canary Preflight Summary
 
 - Captured at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+- Status: $READY_STATE
 - Public alias: $ALIAS_URL
+- Canonical webhook URL: $WEBHOOK_URL
 - Workspace id: $WORKSPACE_ID
 - Workspace name: $WORKSPACE_NAME
 - Current workspace subscription status: $WORKSPACE_STATUS
@@ -284,13 +323,13 @@ cat > "$SUMMARY_MD" <<SUMMARY
 - Env file used: $ENV_FILE
 - Evidence directory: $EVIDENCE_DIR
 
-## Preflight checks completed
-1. Pulled/loaded production env snapshot.
-2. Confirmed public alias responds and the /billing route redirects through the live app.
-3. Confirmed Starter price is live, active, recurring monthly, and non-zero.
-4. Confirmed Stripe webhook endpoint exists at $WEBHOOK_URL with the required billing events enabled.
-5. Captured current workspace snapshot and recent billing events from production Supabase.
-6. Captured a current monitor snapshot for this workspace.
+## Preflight check status
+1. Production env snapshot loaded: YES
+2. Public alias reachable: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+3. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+4. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+5. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+6. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
 
 ## Exact operator route
 - $ALIAS_URL/billing?workspaceId=$WORKSPACE_ID
@@ -301,6 +340,9 @@ cd $APP_DIR
 ./scripts/openplan-starter-canary-monitor.sh --workspace-id $WORKSPACE_ID$MONITOR_EMAIL_ARG --since-minutes $SINCE_MINUTES --watch 15 --env-file $ENV_FILE
 \`\`\`
 
+## Explicit blockers
+$(if [[ ${#BLOCKERS[@]} -eq 0 ]]; then echo "- None."; else for blocker in "${BLOCKERS[@]}"; do echo "- $blocker"; done; fi)
+
 ## Evidence files generated
 - $ALIAS_HEADERS_LOG
 - $ALIAS_STATUS_LOG
@@ -310,12 +352,12 @@ cd $APP_DIR
 - $MONITOR_SNAPSHOT_LOG
 
 ## Ready / abort guidance
-- READY if the workspace shown above is the intended dedicated canary workspace and the operator identity is approved.
-- ABORT if the workspace is wrong, the price posture changes unexpectedly, or the live alias no longer behaves as expected.
+- READY if blockers are empty, the workspace above is the intended dedicated canary workspace, and the operator identity is approved.
+- ABORT or remediate first if any blocker remains. Most importantly: do not claim paid happy-path proof until the Supabase service-role snapshot and monitor evidence both exist.
 SUMMARY
 
 cat <<EOF
-OpenPlan supervised paid canary preflight: READY FOR SUPERVISED EXECUTION
+OpenPlan supervised paid canary preflight: $READY_STATE
 - Workspace: $WORKSPACE_ID ($WORKSPACE_NAME)
 - Evidence dir: $EVIDENCE_DIR
 - Summary: $SUMMARY_MD
@@ -323,3 +365,7 @@ OpenPlan supervised paid canary preflight: READY FOR SUPERVISED EXECUTION
 - Monitor command:
   cd $APP_DIR && ./scripts/openplan-starter-canary-monitor.sh --workspace-id $WORKSPACE_ID$MONITOR_EMAIL_ARG --since-minutes $SINCE_MINUTES --watch 15 --env-file $ENV_FILE
 EOF
+
+if [[ ${#BLOCKERS[@]} -gt 0 ]]; then
+  exit 2
+fi
