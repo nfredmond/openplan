@@ -172,6 +172,14 @@ What preflight now does by default:
 
 During the supervised canary, run the exact monitor command emitted by preflight. Do not improvise a different workspace id or alias midstream.
 
+Immediately after the supervised canary, run the read-only webhook proof checker from `openplan/openplan`:
+
+```bash
+npm run ops:webhook-proof -- --workspace-id <workspace-uuid> --since-minutes 240 --env-file /tmp/openplan.vercel.env
+```
+
+Use `--email <operator-email>` when you need to disambiguate recent Stripe events for a shared test window. Treat a non-zero exit as a real blocker, not a soft warning.
+
 ## 8) Cleanup — dry-run first, apply second
 
 Review the cleanup plan first:
@@ -239,3 +247,4 @@ Abort the release/canary lane if any of the following is true:
 - `docs/ops/2026-04-05-openplan-production-managed-run-smoke.md`
 - `docs/ops/2026-04-05-openplan-production-scenario-comparison-smoke.md`
 - `docs/ops/2026-04-05-openplan-production-qa-cleanup.md`
+- `docs/ops/2026-04-06-openplan-operator-remediation-packet.md`
