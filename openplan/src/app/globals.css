@@ -934,11 +934,18 @@
 
   .module-run-history-action-group {
     display: grid;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
   .module-run-history-action-group > * {
     width: 100%;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .module-run-history-action-group {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .module-record-detail-grid {
@@ -961,8 +968,8 @@
 
   @media (min-width: 1024px) {
     .module-run-history-bridge-grid {
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
-      align-items: center;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: start;
     }
 
     .module-run-history-bridge-actions {
@@ -974,12 +981,23 @@
     }
 
     .module-run-history-detail-grid {
-      grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.92fr);
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
     }
 
     .module-run-history-sidecar {
-      flex: 0 0 16rem;
+      flex: 0 0 15rem;
       align-self: stretch;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .module-run-history-bridge-grid {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .module-run-history-sidecar {
+      flex-basis: 16rem;
     }
   }
 
