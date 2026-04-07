@@ -12,9 +12,10 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const checkoutState = searchParams.get("checkout");
   const activationState = searchParams.get("activation");
-  const redirectTarget = searchParams.get("redirect");
+  const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const createdState = searchParams.get("created");
-  const selectedPlan = searchParams.get("plan");
+  const selectedPlan = searchParams.get("plan") ?? "starter";
+  const signUpHref = `/sign-up?plan=${encodeURIComponent(selectedPlan)}&redirect=${encodeURIComponent(redirectTarget)}`;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +130,7 @@ function SignInForm() {
 
       <p className="text-sm text-muted-foreground">
         New to OpenPlan?{" "}
-        <Link href={selectedPlan === "starter" || selectedPlan === "professional" ? `/sign-up?plan=${selectedPlan}` : "/sign-up"} className="font-medium text-foreground underline">
+        <Link href={signUpHref} className="font-medium text-foreground underline">
           Create an account
         </Link>
         .

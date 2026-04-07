@@ -36,14 +36,18 @@ describe("SignInPage", () => {
     searchParamsValue.forEach((_, key) => searchParamsValue.delete(key));
   });
 
-  it("surfaces first-success guidance after account creation", async () => {
+  it("surfaces first-success guidance after account creation and preserves the redirect target", async () => {
     searchParamsValue.set("created", "1");
     searchParamsValue.set("plan", "starter");
+    searchParamsValue.set("redirect", "/reports");
 
     render(<SignInPage />);
 
     expect(await screen.findByText(/Account created — next step is your first workspace/i)).toBeInTheDocument();
     expect(screen.getByText(/launch billing only after you are inside the correct workspace context/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Create an account/i })).toHaveAttribute("href", "/sign-up?plan=starter");
+    expect(screen.getByRole("link", { name: /Create an account/i })).toHaveAttribute(
+      "href",
+      "/sign-up?plan=starter&redirect=%2Freports",
+    );
   });
 });

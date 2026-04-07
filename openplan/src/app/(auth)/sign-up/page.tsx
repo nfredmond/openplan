@@ -24,7 +24,14 @@ function labelForPlan(value: "starter" | "professional" | null): string {
 function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const selectedPlan = useMemo(() => normalizeSelectedPlan(searchParams.get("plan")), [searchParams]);
+  const signInHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selectedPlan) params.set("plan", selectedPlan);
+    if (redirectTarget) params.set("redirect", redirectTarget);
+    return `/sign-in?${params.toString()}`;
+  }, [redirectTarget, selectedPlan]);
   const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +58,7 @@ function SignUpForm() {
       return;
     }
 
-    const params = new URLSearchParams({ created: "1" });
+    const params = new URLSearchParams({ created: "1", redirect: redirectTarget });
     if (selectedPlan) {
       params.set("plan", selectedPlan);
     }
@@ -136,7 +143,7 @@ function SignUpForm() {
 
       <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href={selectedPlan ? `/sign-in?plan=${selectedPlan}` : "/sign-in"} className="font-medium text-foreground underline">
+        <Link href={signInHref} className="font-medium text-foreground underline">
           Sign in
         </Link>
         .
