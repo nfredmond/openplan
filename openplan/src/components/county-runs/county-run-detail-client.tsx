@@ -125,13 +125,13 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Prepare bootstrap handoff"}
+            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Prepare run handoff"}
           </Button>
           <Button asChild variant="outline">
             <Link href={safeBackHref}>Back to county runs</Link>
           </Button>
           <Button variant="outline" onClick={() => void copyDetailLink()}>
-            {linkCopyState === "copied" ? "Copied detail link" : "Copy detail link"}
+            {linkCopyState === "copied" ? "Copied detail link" : "Copy page link"}
           </Button>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>

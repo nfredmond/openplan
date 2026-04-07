@@ -131,40 +131,40 @@ export default function PilotReadinessPage() {
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <FileCheck2 className="h-3.5 w-3.5" />
-            Pilot readiness evidence center
+            Readiness status
           </div>
           <div className="module-intro-body">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge tone={readinessHeadline.tone}>{readinessHeadline.label}</StatusBadge>
               <StatusBadge tone="neutral">Latest evidence: {latestEvidenceDate}</StatusBadge>
             </div>
-            <h1 className="module-intro-title">Proof before promise</h1>
+            <h1 className="module-intro-title">Readiness overview</h1>
             <p className="module-intro-description">
-              This surface is intentionally evidence-first. It tracks the latest smoke artifacts, keeps launch-facing
-              readiness honest, and exports a share-safe packet when someone asks what the supervised pilot can prove today.
+              Track the latest smoke-test results, see which areas are healthy, and export a shareable summary of the
+              current status.
             </p>
           </div>
 
           <div className="module-summary-grid cols-4">
             <div className="module-summary-card">
-              <p className="module-summary-label">Passing lanes</p>
+              <p className="module-summary-label">Passing checks</p>
               <p className="module-summary-value">{passCount}</p>
-              <p className="module-summary-detail">Readiness checks with a recorded PASS artifact.</p>
+              <p className="module-summary-detail">Checks with a recent passing result.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Failing lanes</p>
+              <p className="module-summary-label">Failing checks</p>
               <p className="module-summary-value">{failCount}</p>
-              <p className="module-summary-detail">Follow-up required before those lanes can be cited as ready.</p>
+              <p className="module-summary-detail">Checks that need follow-up before they can be treated as healthy.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Pending lanes</p>
+              <p className="module-summary-label">Pending checks</p>
               <p className="module-summary-value">{pendingCount}</p>
-              <p className="module-summary-detail">Tracked checks that still need fresh proof artifacts.</p>
+              <p className="module-summary-detail">Tracked checks that still need a recent result.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Packet export</p>
+              <p className="module-summary-label">Export</p>
               <p className="module-summary-value">Ready</p>
-              <p className="module-summary-detail">Generate a share-safe markdown packet from the current status list.</p>
+              <p className="module-summary-detail">Generate a markdown summary from the current status list.</p>
             </div>
           </div>
 
@@ -179,15 +179,15 @@ export default function PilotReadinessPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Readiness posture</p>
+              <p className="module-operator-eyebrow">Status summary</p>
               <h2 className="module-operator-title">{readinessHeadline.label}</h2>
             </div>
           </div>
           <p className="module-operator-copy">{readinessHeadline.detail}</p>
           <div className="module-operator-list">
-            <div className="module-operator-item">This page shows recorded proof artifacts, not aspirational roadmap language.</div>
-            <div className="module-operator-item">Each lane stays visible even when evidence is missing, pending, or failed.</div>
-            <div className="module-operator-item">Exported packets should be treated as diligence evidence for the supervised pilot, not a substitute for operator judgment.</div>
+            <div className="module-operator-item">This page shows recorded results rather than planned work.</div>
+            <div className="module-operator-item">Each check stays visible even when the latest result is missing, pending, or failing.</div>
+            <div className="module-operator-item">Use the exported summary as a status snapshot, then follow up in the source documents when more detail is needed.</div>
           </div>
         </article>
       </header>
@@ -195,10 +195,10 @@ export default function PilotReadinessPage() {
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Tracked smoke lanes</p>
-            <h2 className="module-section-title">Current proof artifacts by launch-relevant surface</h2>
+            <p className="module-section-label">Tracked checks</p>
+            <h2 className="module-section-title">Latest results by app surface</h2>
             <p className="module-section-description">
-              Each card below represents the latest artifact we could find for that readiness lane.
+              Each card below shows the latest result we could find for that check.
             </p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function PilotReadinessPage() {
             <article key={status.lane} className="module-subpanel min-h-[190px]">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Readiness lane</p>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Check</p>
                   <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{status.lane}</h3>
                 </div>
                 <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
