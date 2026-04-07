@@ -1,0 +1,38 @@
+{
+  "capturedAt": "2026-04-07T04:54:55.883Z",
+  "workspace": {
+    "id": "3aba7677-1826-49ff-8df7-983fd78c7d3e",
+    "name": "Prod QA Project 4 2026-03-23T03-09-24-366Z",
+    "subscription_plan": "starter",
+    "subscription_status": "checkout_pending",
+    "stripe_customer_id": null,
+    "stripe_subscription_id": null,
+    "billing_updated_at": "2026-03-23T03:09:36.788+00:00",
+    "created_at": "2026-03-23T03:09:28.224478+00:00"
+  },
+  "memberCount": 2,
+  "members": [
+    {
+      "user_id": "b1093d59-2278-4ef0-9be6-719f3bc514ba",
+      "role": "owner"
+    },
+    {
+      "user_id": "9cca6881-2125-42d1-b7d1-a3d5b93d217d",
+      "role": "owner"
+    }
+  ],
+  "recentBillingEvents": [
+    {
+      "id": "359a1a5c-418d-47cc-bea2-c1b1277a850e",
+      "event_type": "checkout_initialized",
+      "source": "stripe_checkout_session",
+      "created_at": "2026-03-23T03:09:37.01098+00:00"
+    },
+    {
+      "id": "15b8a968-9943-4490-9d13-65031988a016",
+      "event_type": "checkout_initialized",
+      "source": "stripe_checkout_session",
+      "created_at": "2026-03-23T03:09:37.001622+00:00"
+    }
+  ]
+}
