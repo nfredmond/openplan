@@ -108,20 +108,29 @@ The blocker set is now smaller than this note originally reported:
 
 ### What is still blocking the proof lane
 
-Only one blocker remains from the latest rerun:
+A follow-up check exposed a more precise truth state:
 
-1. **Canonical alias/browser proof route is still blocked by Vercel deployment protection.**
+1. **`openplan-natford` path:** browser proof is blocked by Vercel deployment protection.
    - `/billing` on `https://openplan-natford.vercel.app` returned `401`.
-   - response still sets `_vercel_sso_nonce`, consistent with deployment protection.
+   - response sets `_vercel_sso_nonce`, consistent with deployment protection.
    - no valid bypass secret was available in the pulled production env snapshot.
+
+2. **`openplan-zeta` path:** browser proof is reachable, but Stripe webhook targeting is mismatched for that alias.
+   - `/billing` on `https://openplan-zeta.vercel.app` is reachable and redirects normally to sign-in.
+   - however, the active Stripe webhook endpoint posture in the proof packet does **not** validate `https://openplan-zeta.vercel.app/api/billing/webhook` with the required subscription events.
+   - latest zeta-targeted packet: `docs/ops/2026-04-06-test-output/20260407T052334Z-supervised-paid-canary-preflight/preflight-summary.md`
 
 ### Updated exact next step
 
-Do this next, then rerun the same preflight before any money-moving canary:
+There are now two honest resolution paths before any money-moving canary:
 
-1. Decide the browser proof mode:
-   - supply `OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET`, or
-   - run the canary from an intentionally authenticated browser session and document that posture in the packet.
+1. **Keep `openplan-natford` as canonical for proof**, and supply one of:
+   - `OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET`, or
+   - an intentionally authenticated browser session.
 
-At this point, the proof lane is no longer blocked by service-role posture or Stripe webhook targeting. It is blocked only by browser access to the protected canonical alias.
+2. **Use `openplan-zeta` as the proof surface**, and first align Stripe webhook targeting so the active endpoint matches `https://openplan-zeta.vercel.app/api/billing/webhook`.
+
+At this point, the proof lane is no longer blocked by service-role posture. It is blocked by an alias split:
+- `openplan-natford` has the right webhook posture but protected browser access,
+- `openplan-zeta` has open browser access but the wrong webhook posture.
 

@@ -1,0 +1,14 @@
+========================================
+OpenPlan Starter Canary Monitor
+Time: 2026-04-07 05:23:40 UTC
+Since: last 240 minutes (epoch >= 1775525020)
+Workspace filter: 3aba7677-1826-49ff-8df7-983fd78c7d3e
+Email filter: <none>
+Env file: /tmp/openplan.vercel.env
+========================================
+\n[Stripe events]
+  (no matching Stripe events found yet)
+\n[Supabase billing evidence]
+  workspace 3aba7677-1826-49ff-8df7-983fd78c7d3e name=Prod QA Project 4 2026-03-23T03-09-24-366Z sub_status=checkout_pending sub_plan=starter stripe_sub=n/a billing_updated=2026-03-23T03:09:36.788+00:00
+  billing_events: no matching rows
+  webhook_receipts: no matching rows

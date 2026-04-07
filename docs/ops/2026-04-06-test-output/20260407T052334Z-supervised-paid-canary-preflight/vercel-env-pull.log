@@ -1,0 +1,9 @@
+Retrieving project…
+> Overwriting existing /tmp/openplan.vercel.env file
+> Downloading `production` Environment Variables for natford/openplan
+Downloading
+
+Changes:
++ VERCEL_OIDC_TOKEN (Updated)
+
+Updated /tmp/openplan.vercel.env file  [273ms]
