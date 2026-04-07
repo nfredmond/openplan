@@ -598,13 +598,13 @@ export default async function PlanDetailPage({
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <FileStack className="h-3.5 w-3.5" />
-            Plan detail
+            Plan record
           </div>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{plan.title}</h1>
             <p className="module-intro-description">
               {plan.summary ||
-                "This plan record is intentionally lightweight in pass 1: structured metadata, clear linked inputs and outputs, and an explicit readiness basis."}
+                "Keep policy intent, linked scenarios, engagement, and report outputs together in one clear record."}
             </p>
           </div>
 
@@ -620,12 +620,12 @@ export default async function PlanDetailPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Linked scenarios</p>
               <p className="module-summary-value">{linkedScenarios.length}</p>
-              <p className="module-summary-detail">Inherited from the project or explicitly linked to the plan.</p>
+              <p className="module-summary-detail">Scenarios linked directly to this plan or inherited from the project.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Engagement campaigns</p>
               <p className="module-summary-value">{linkedCampaigns.length}</p>
-              <p className="module-summary-detail">Source campaigns feeding the planning record.</p>
+              <p className="module-summary-detail">Engagement campaigns connected to this plan.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked outputs</p>

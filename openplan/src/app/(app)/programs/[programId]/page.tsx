@@ -473,11 +473,11 @@ export default async function ProgramDetailPage({
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <ClipboardList className="h-3.5 w-3.5" />
-            Programming record
+            Program record
           </div>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{program.title}</h1>
-            <p className="module-intro-description">{program.summary || workflow.reason}</p>
+            <p className="module-intro-description">{program.summary || "Track scope, timing, delivery relationships, and linked work in a single record for the program."}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">

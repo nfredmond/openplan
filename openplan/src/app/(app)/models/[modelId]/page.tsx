@@ -327,7 +327,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               <h1 className="module-intro-title">{model.title}</h1>
               <p className="module-intro-description">
                 {model.summary ||
-                  "No summary yet. Use this record to define config versioning, provenance, and downstream output traceability."}
+                  "No summary yet. Use this record to document the model setup, linked inputs, and downstream outputs."}
               </p>
             </div>
 
@@ -342,12 +342,12 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               <div className="module-summary-card">
                 <p className="module-summary-label">Linked plans</p>
                 <p className="module-summary-value">{linkageCounts.plans}</p>
-                <p className="module-summary-detail">Planning records that already depend on this model basis.</p>
+                <p className="module-summary-detail">Plans that already reference this model.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Datasets</p>
                 <p className="module-summary-value">{linkageCounts.datasets}</p>
-                <p className="module-summary-detail">Linked Data Hub provenance records.</p>
+                <p className="module-summary-detail">Linked Data Hub records.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Runs</p>
@@ -357,7 +357,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               <div className="module-summary-card">
                 <p className="module-summary-label">Reports</p>
                 <p className="module-summary-value">{linkageCounts.reports}</p>
-                <p className="module-summary-detail">Linked report outputs carrying this model forward.</p>
+                <p className="module-summary-detail">Reports that reference this model.</p>
               </div>
             </div>
           </article>
@@ -368,7 +368,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                 <ShieldCheck className="h-5 w-5 text-emerald-200" />
               </span>
               <div>
-                <p className="module-operator-eyebrow">Workflow summary</p>
+                <p className="module-operator-eyebrow">Model summary</p>
                 <h2 className="module-operator-title">{workflow.label}</h2>
               </div>
             </div>

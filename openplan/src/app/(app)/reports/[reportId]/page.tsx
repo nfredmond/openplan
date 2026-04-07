@@ -244,7 +244,7 @@ function asStageGateSnapshotGateSummary(
     sequence: asNullableNumber(record.sequence) ?? 0,
     name: asNullableString(record.name) ?? "Unknown gate",
     workflowState,
-    rationale: asNullableString(record.rationale) ?? "No rationale recorded.",
+    rationale: asNullableString(record.rationale) ?? "No rationale provided.",
     missingArtifacts,
     requiredEvidenceCount: asNullableNumber(record.requiredEvidenceCount) ?? 0,
     operatorControlEvidenceCount:
@@ -875,7 +875,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         ? `Blocked ${snapshotBlockedGateId ?? "none"} -> ${currentBlockedGateId ?? "none"}. Next ${snapshotNextGateId ?? "complete"} -> ${currentNextGateId ?? "complete"}.`
         : countsChanged
           ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} not started. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} not started.`
-          : "Stage-gate counts, blocked gate, and next gate still match the artifact snapshot.",
+          : "Review counts and next steps still match the saved report snapshot.",
     });
   }
 
@@ -893,7 +893,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       ? { href: `/projects/${project.id}`, label: "Review project records" }
       : null,
     "stage-gates": project
-      ? { href: `/projects/${project.id}#project-governance`, label: "Review governance" }
+      ? { href: `/projects/${project.id}#project-governance`, label: "Review project settings" }
       : null,
   };
 
@@ -1147,7 +1147,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
 
         {/* Right column */}
         <div className="space-y-6">
-          {/* Provenance / audit trail */}
+          {/* Source history */}
           <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
@@ -1434,7 +1434,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                           className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                         >
                           <Link2 className="h-3.5 w-3.5" />
-                          Open governance
+                          Open project settings
                         </Link>
                       ) : null}
                     </div>
