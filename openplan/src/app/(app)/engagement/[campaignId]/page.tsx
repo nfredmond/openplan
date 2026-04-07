@@ -11,6 +11,7 @@ import { EngagementBulkModeration } from "@/components/engagement/engagement-bul
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -126,6 +127,12 @@ export default async function EngagementCampaignDetailPage({
   ]);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
+  const handoffReadiness = getEngagementHandoffReadiness({
+    campaignStatus: campaign.status,
+    projectLinked: Boolean(project),
+    categoryCount: (categories ?? []).length,
+    counts,
+  });
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
@@ -229,10 +236,10 @@ export default async function EngagementCampaignDetailPage({
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Planning-ready</p>
-              <p className="module-summary-value">{counts.moderationQueue.readyForHandoffCount}</p>
+              <p className="module-summary-label">Handoff readiness</p>
+              <p className="module-summary-value">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks}</p>
               <p className="module-summary-detail">
-                {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.
+                {handoffReadiness.label}. {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.
               </p>
             </div>
           </div>
@@ -276,6 +283,36 @@ export default async function EngagementCampaignDetailPage({
           </div>
 
           <div className="mt-5 space-y-3">
+            <div className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={handoffReadiness.tone}>{handoffReadiness.label}</StatusBadge>
+                    <StatusBadge tone="neutral">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks} checks complete</StatusBadge>
+                  </div>
+                  <h3 className="module-record-title text-[1rem]">Campaign handoff decision</h3>
+                  <p className="module-record-summary">{handoffReadiness.nextAction}</p>
+                </div>
+              </div>
+              <div className="module-record-meta">
+                {handoffReadiness.checks.map((check) => (
+                  <span key={check.id} className="module-record-chip">
+                    {check.passed ? "Pass" : "Open"} · {check.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {handoffReadiness.checks.map((check) => (
+                <div key={check.id} className="module-summary-card">
+                  <p className="module-summary-label">{check.label}</p>
+                  <p className="module-summary-value text-lg">{check.passed ? "Ready" : "Open"}</p>
+                  <p className="module-summary-detail">{check.detail}</p>
+                </div>
+              ))}
+            </div>
+
             <div className="module-record-row">
               <div className="module-record-head">
                 <div className="module-record-main">

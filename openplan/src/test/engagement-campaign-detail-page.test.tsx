@@ -262,9 +262,12 @@ describe("EngagementCampaignDetailPage", () => {
     });
   });
 
-  it("surfaces campaign-linked packet freshness guidance", async () => {
+  it("surfaces campaign-linked packet freshness guidance and handoff readiness", async () => {
     await renderPage();
 
+    expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Nearly ready/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/close the campaign when intake is complete/i)).toBeInTheDocument();
     expect(screen.getByText(/Campaign reporting posture/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs packet attention/i)).toBeInTheDocument();
     expect(screen.getByText(/Refresh recommended/i)).toBeInTheDocument();

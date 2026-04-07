@@ -5,6 +5,7 @@ import { EngagementCampaignCreator } from "@/components/engagement/engagement-ca
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -121,12 +122,24 @@ export default async function EngagementPage({
   }
 
   const campaigns = ((campaignsData ?? []) as CampaignRow[])
-    .map((campaign) => ({
-      ...campaign,
-      project: Array.isArray(campaign.projects) ? campaign.projects[0] ?? null : campaign.projects ?? null,
-      categoryCount: (categoriesByCampaign.get(campaign.id) ?? []).length,
-      counts: summarizeEngagementItems(categoriesByCampaign.get(campaign.id) ?? [], itemsByCampaign.get(campaign.id) ?? []),
-    }))
+    .map((campaign) => {
+      const categoryCount = (categoriesByCampaign.get(campaign.id) ?? []).length;
+      const counts = summarizeEngagementItems(categoriesByCampaign.get(campaign.id) ?? [], itemsByCampaign.get(campaign.id) ?? []);
+      const project = Array.isArray(campaign.projects) ? campaign.projects[0] ?? null : campaign.projects ?? null;
+
+      return {
+        ...campaign,
+        project,
+        categoryCount,
+        counts,
+        readiness: getEngagementHandoffReadiness({
+          campaignStatus: campaign.status,
+          projectLinked: Boolean(project),
+          categoryCount,
+          counts,
+        }),
+      };
+    })
     .filter((campaign) => (filters.projectId ? campaign.project_id === filters.projectId : true))
     .filter((campaign) => (filters.status ? campaign.status === filters.status : true));
 
@@ -243,6 +256,7 @@ export default async function EngagementPage({
                         <StatusBadge tone={campaign.counts.totalItems > 0 ? "success" : "neutral"}>
                           {campaign.counts.totalItems} items
                         </StatusBadge>
+                        <StatusBadge tone={campaign.readiness.tone}>{campaign.readiness.label}</StatusBadge>
                       </div>
 
                       <div className="space-y-1.5">
@@ -265,6 +279,7 @@ export default async function EngagementPage({
                   <div className="module-record-meta">
                     <span className="module-record-chip">Project {campaign.project?.name ?? "Unlinked"}</span>
                     <span className="module-record-chip">{campaign.categoryCount} categories</span>
+                    <span className="module-record-chip">{campaign.readiness.completeCount}/{campaign.readiness.totalChecks} readiness checks</span>
                     <span className="module-record-chip">{campaign.counts.statusCounts.approved} approved</span>
                     <span className="module-record-chip">{campaign.counts.statusCounts.flagged} flagged</span>
                     <span className="module-record-chip">{campaign.counts.recentActivity.count} recent</span>
