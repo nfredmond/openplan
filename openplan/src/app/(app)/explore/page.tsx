@@ -2932,7 +2932,7 @@ export default function ExplorePage() {
       <div className="space-y-5">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Analysis Studio Control Panel</CardTitle>
+            <CardTitle>Analysis Studio</CardTitle>
             <CardDescription>Upload a corridor, frame the planning question, and drive the map, metrics, and reporting workflow from one operator surface.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5">
@@ -2963,12 +2963,12 @@ export default function ExplorePage() {
             {workspaceLoadState === "noMembership" ? (
               <div className="rounded-xl border border-border/80 bg-muted/30 p-3 space-y-2.5">
                 <p className="text-xs text-muted-foreground">
-                  No workspace membership detected. Bootstrap a pilot workspace in under 10 minutes.
+                  No workspace membership detected. Create a workspace to start using Analysis Studio.
                 </p>
                 <Input
                   value={bootstrapWorkspaceName}
                   onChange={(event) => setBootstrapWorkspaceName(event.target.value)}
-                  placeholder="Example: Nevada County Pilot Workspace"
+                  placeholder="Example: Nevada County Workspace"
                 />
                 <Button
                   type="button"
@@ -2976,7 +2976,7 @@ export default function ExplorePage() {
                   onClick={() => void bootstrapWorkspace()}
                   disabled={isBootstrappingWorkspace}
                 >
-                  {isBootstrappingWorkspace ? "Bootstrapping workspace..." : "Create Pilot Workspace"}
+                  {isBootstrappingWorkspace ? "Creating workspace..." : "Create workspace"}
                 </Button>
               </div>
             ) : null}
@@ -3456,7 +3456,7 @@ export default function ExplorePage() {
                       <div className="space-y-2">
                         <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Comparison narrative</CardTitle>
                         <CardDescription className="max-w-2xl text-sm leading-6 text-slate-300/76">
-                          Identity → Run History handoff → delta board → map-context evidence. The active pair stays audit-ready all the way down, rather than breaking into disconnected cards.
+                          Keep the selected run, comparison, and map context together so it is easy to review changes without losing your place.
                         </CardDescription>
                       </div>
                       <div className="analysis-run-identity-panel is-baseline">
@@ -3574,9 +3574,9 @@ export default function ExplorePage() {
                         <div className="analysis-run-history-handoff">
                           <div className="analysis-run-history-handoff-header">
                             <div>
-                              <p className="analysis-run-history-handoff-label">Step 2 · Run History handoff</p>
+                              <p className="analysis-run-history-handoff-label">Step 2 · Run History</p>
                               <p className="analysis-run-history-handoff-copy">
-                                The active pair above stays synced to the exact current row and pinned baseline row below. Use Run History for the control handoff: reload current, replace baseline, or clear baseline without leaving this review cycle.
+                                The selected comparison stays synced with the current run and baseline below. Use Run History to reload the current run, replace the baseline, or clear the comparison without leaving this review flow.
                               </p>
                             </div>
                             <div className="analysis-run-history-handoff-badges">
@@ -3587,14 +3587,14 @@ export default function ExplorePage() {
 
                           <div className="analysis-run-history-handoff-grid">
                             <div className="analysis-run-history-handoff-card is-current">
-                              <p className="analysis-run-history-handoff-card-label">Current row below</p>
+                              <p className="analysis-run-history-handoff-card-label">Current run</p>
                               <p className="analysis-run-history-handoff-card-title">{currentRunTitle}</p>
                               <p className="analysis-run-history-handoff-card-copy">
                                 Driving result stack · {currentRunTimestampLabel}. Reload another run there only if you intend to replace the current side of this pair.
                               </p>
                             </div>
                             <div className="analysis-run-history-handoff-card is-baseline">
-                              <p className="analysis-run-history-handoff-card-label">Pinned baseline row below</p>
+                              <p className="analysis-run-history-handoff-card-label">Baseline run</p>
                               <p className="analysis-run-history-handoff-card-title">{comparisonRun.title}</p>
                               <p className="analysis-run-history-handoff-card-copy">
                                 Baseline pinned · {formatRunTimestamp(comparisonRun.created_at)}. Replace or clear that exact row to change the baseline side of this pair.
@@ -3905,7 +3905,7 @@ export default function ExplorePage() {
                         <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-muted-foreground">
                           <li>Census tract geometry + choropleth overlays</li>
                           <li>SWITRS collision point layer + severity filters</li>
-                          <li>Project and engagement overlays tied into the Planning OS</li>
+                          <li>Project and engagement overlays tied into the workspace</li>
                           <li>CARTO workflow lane for derived spatial products and scheduled refreshes</li>
                         </ul>
                       </div>

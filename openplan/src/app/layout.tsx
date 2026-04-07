@@ -18,7 +18,7 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: "OpenPlan",
-  description: "Planning OS for agencies, transportation commissions, and consultants",
+  description: "Planning software for agencies, transportation commissions, and consultants",
 };
 
 export default function RootLayout({

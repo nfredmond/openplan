@@ -180,7 +180,7 @@ export default async function DataHubPage() {
             <h1 className="module-intro-title">Data Hub needs an authenticated workspace membership</h1>
             <p className="module-intro-description">
               Sign into a workspace or create a project workspace first. Data Hub records are scoped to authenticated
-              Planning OS workspaces and are not available in preview mode.
+              OpenPlan workspaces and are not available in preview mode.
             </p>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
@@ -319,7 +319,7 @@ export default async function DataHubPage() {
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <Sparkles className="h-3.5 w-3.5" />
-            Data Hub module live
+            Data Hub
           </div>
           <div className="module-intro-body">
             <h1 className="module-intro-title">Data Hub now uses the same internal hierarchy as the rest of OpenPlan</h1>
@@ -415,7 +415,7 @@ export default async function DataHubPage() {
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <Database className="h-3.5 w-3.5" />
-              Planning OS fabric
+              Connected data workspace
             </span>
           </div>
 

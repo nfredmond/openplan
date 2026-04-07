@@ -26,7 +26,7 @@ const plans = [
       "Up to 500 corridor runs/month",
       "Priority support + onboarding office hours",
       "Advanced reporting workflow and KPI review",
-      "Early access to new Planning OS modules and data connectors",
+      "Early access to new OpenPlan features and data connectors",
     ],
     cta: "Create Professional account",
   },
@@ -73,7 +73,7 @@ export default function PricingPage() {
         <p className="font-medium text-foreground">Implementation notes</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
           <li>Pricing shown is the current early-access baseline and may vary for negotiated supervised pilots, agency complexity, data requirements, and implementation scope.</li>
-          <li>Current scope includes the production-backed planning shell, billing workspace selection, and the live Analysis Studio foundation; broader Planning OS modules remain phased in.</li>
+          <li>Current scope includes the core workspace, billing workspace selection, and the live Analysis Studio foundation; broader OpenPlan features continue to roll out in phases.</li>
           <li>Checkout starts only after account creation, sign-in, and explicit workspace billing selection. Returning from Stripe does not by itself guarantee activation until webhook status confirms it.</li>
           <li>No hidden fees, punitive change orders, or black-box scoring claims.</li>
         </ul>

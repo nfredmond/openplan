@@ -253,13 +253,13 @@ export default async function ProjectsPage() {
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <Sparkles className="h-3.5 w-3.5" />
-            Projects module live
+            Project workspace
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Projects now read like a coherent portfolio layer</h1>
+            <h1 className="module-intro-title">Projects</h1>
             <p className="module-intro-description">
-              The projects surface is now aligned to the same hierarchy as the rest of OpenPlan: one clear page intro,
-              one operator callout, one creation lane, and one portfolio lane with tighter record cards.
+              Keep project context, recent activity, and delivery records together in one place so teams can quickly see
+              what is active and what needs attention.
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export default async function ProjectsPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Projects</p>
               <p className="module-summary-value">{projects.length}</p>
-              <p className="module-summary-detail">First-class project records inside the Planning OS shell.</p>
+              <p className="module-summary-detail">Project records connected to the rest of the workspace.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active</p>
@@ -310,13 +310,13 @@ export default async function ProjectsPage() {
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
-              Each new project creates a real project record plus its attached workspace shell.
+              Each new project creates a dedicated record that can hold its own files, notes, and linked work.
             </div>
             <div className="module-operator-item">
-              Project detail pages now host deliverables, risks, issues, decisions, meetings, runs, and linked datasets.
+              Project pages can bring together deliverables, risks, issues, decisions, meetings, runs, and linked data.
             </div>
             <div className="module-operator-item">
-              Best next layer after this surface pass: portfolio filters, saved views, and owner-based workload lenses.
+              Coming next: stronger portfolio filters, saved views, and better workload visibility across the workspace.
             </div>
           </div>
         </article>
@@ -342,7 +342,7 @@ export default async function ProjectsPage() {
 
           {projects.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No project records yet. Use the creation lane to establish the first Planning OS project container.
+              No project records yet. Create your first project to start tracking work here.
             </div>
           ) : (
             <div className="mt-5 module-record-list">

@@ -19,7 +19,7 @@ export default function AuthLayout({
             />
             <span className="text-sm font-semibold tracking-[0.06em] text-foreground/90">OpenPlan</span>
           </Link>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Planning OS Access</p>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">OpenPlan access</p>
         </div>
         <div className="flex flex-1 items-center justify-center">{children}</div>
       </div>

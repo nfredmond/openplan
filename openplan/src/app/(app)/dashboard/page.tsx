@@ -91,7 +91,7 @@ export default async function DashboardPage() {
     {
       href: "/explore",
       title: "Open Analysis Studio",
-      description: "Run the corridor workflow inside the Planning OS shell with map, metrics, and report posture intact.",
+      description: "Run corridor analysis with map context, metrics, and report-ready outputs intact.",
       icon: Radar,
     },
     {
@@ -155,8 +155,8 @@ export default async function DashboardPage() {
             </div>
             <h1 className="module-intro-title">{workspaceName}</h1>
             <p className="module-intro-description">
-              Signed in as {user.email}. Overview now behaves like the front desk of the Planning OS: high-level workspace
-              signal up top, operational paths below, and deeper history where it belongs.
+              Signed in as {user.email}. This overview brings together your workspace status, recent activity, and the
+              fastest paths back into active work.
             </p>
           </div>
 
@@ -182,8 +182,8 @@ export default async function DashboardPage() {
             </div>
           </div>
           <p className="module-operator-copy">
-            This surface is now intentionally structured as the calm top of the stack: summary metrics first, module entry
-            points second, detailed run history after that.
+            Use this page as your starting point: get the quick summary first, then jump into the module or task that
+            needs attention.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
               <p className="module-section-label">Current baseline</p>
               <h2 className="module-section-title">What is already live</h2>
               <p className="module-section-description">
-                This is the grounded product floor beneath the broader Planning OS language.
+                This is the practical starting point for day-to-day work in the app.
               </p>
             </div>
           </div>

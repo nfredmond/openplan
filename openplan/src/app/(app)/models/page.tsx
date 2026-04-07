@@ -205,7 +205,7 @@ export default async function ModelsPage({
             Models module live
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Managed model records now have a real Planning OS home</h1>
+            <h1 className="module-intro-title">Model records</h1>
             <p className="module-intro-description">
               Track versioned model configurations, scenario anchors, input provenance, and output traceability without
               pretending OpenPlan already runs full model orchestration inside the product.
