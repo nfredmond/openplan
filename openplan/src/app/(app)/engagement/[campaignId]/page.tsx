@@ -236,7 +236,7 @@ export default async function EngagementCampaignDetailPage({
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Handoff readiness</p>
+              <p className="module-summary-label">Report status</p>
               <p className="module-summary-value">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks}</p>
               <p className="module-summary-detail">
                 {handoffReadiness.label}. {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.

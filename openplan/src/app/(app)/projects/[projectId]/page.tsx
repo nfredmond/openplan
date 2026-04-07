@@ -664,7 +664,7 @@ export default async function ProjectDetailPage({
             <h1 className="module-intro-title">{project.name}</h1>
             <p className="module-intro-description">
               {project.summary ||
-                "This project now has a real record inside OpenPlan. Use this detail view as the anchor point for runs, stage gates, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and linked datasets."}
+                "Use this detail view to keep runs, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and linked datasets tied to the project."}
             </p>
           </div>
 
@@ -743,17 +743,17 @@ export default async function ProjectDetailPage({
           <div className="module-summary-card">
             <p className="module-summary-label">Report records</p>
             <p className="module-summary-value">{reportRecordCount}</p>
-            <p className="module-summary-detail">Project-linked report packets and drafts.</p>
+            <p className="module-summary-detail">Report packets and drafts linked to this project.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Needs attention</p>
             <p className="module-summary-value">{reportAttentionCount}</p>
-            <p className="module-summary-detail">Reports with stale or missing packets.</p>
+            <p className="module-summary-detail">Reports that still need packet updates.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Evidence-backed</p>
             <p className="module-summary-value">{evidenceBackedReportCount}</p>
-            <p className="module-summary-detail">Reports carrying evidence-chain summary metadata.</p>
+            <p className="module-summary-detail">Reports with source-summary details attached.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Refresh recommended</p>
@@ -769,7 +769,7 @@ export default async function ProjectDetailPage({
 
         {projectReports.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">
-            No report records linked to this project yet. Create the first packet in reports to establish a review trail.
+            No reports are linked to this project yet. Create the first report packet to start a review trail.
           </div>
         ) : (
           <div className="mt-5 grid gap-4 md:grid-cols-[0.92fr_1.08fr]">
@@ -795,7 +795,7 @@ export default async function ProjectDetailPage({
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {recommendedReport?.packetFreshness.detail ??
-                  "No project-linked report records exist yet."}
+                  "No reports are linked to this project yet."}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {recommendedReport ? (
@@ -947,7 +947,7 @@ export default async function ProjectDetailPage({
                 </div>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                {stageGateSummary.blockedGate?.rationale ?? "Record the first HOLD decision to surface the exact compliance blockage here."}
+                {stageGateSummary.blockedGate?.rationale ?? "Record the first hold decision to show the current blocker here."}
               </p>
               {stageGateSummary.blockedGate?.missingArtifacts.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -969,7 +969,7 @@ export default async function ProjectDetailPage({
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
                 {stageGateSummary.nextGate
-                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. ${stageGateSummary.nextGate.operatorControlEvidenceCount > 0 ? `${stageGateSummary.nextGate.operatorControlEvidenceCount} PM/invoicing operator control profile${stageGateSummary.nextGate.operatorControlEvidenceCount === 1 ? " is" : "s are"} available for the readiness pack.` : "Build the evidence pack before expecting a PASS decision."}`
+                  ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. ${stageGateSummary.nextGate.operatorControlEvidenceCount > 0 ? `${stageGateSummary.nextGate.operatorControlEvidenceCount} PM/invoicing control profile${stageGateSummary.nextGate.operatorControlEvidenceCount === 1 ? " is" : "s are"} available for this review.` : "Build the evidence pack before expecting a pass decision."}`
                   : "Every stage gate in the active template currently has a recorded PASS decision."}
               </p>
             </div>
@@ -1487,7 +1487,7 @@ export default async function ProjectDetailPage({
           </div>
           {dataHubMigrationPending ? (
             <div className="module-alert mt-5 text-sm">
-              Data Hub schema is pending in the current database, so project-linked datasets will appear here after the migration is applied.
+              Project-linked datasets will appear here once the Data Hub schema is available in this environment.
             </div>
           ) : linkedDatasets.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
