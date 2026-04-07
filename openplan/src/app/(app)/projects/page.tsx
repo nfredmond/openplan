@@ -301,12 +301,11 @@ export default async function ProjectsPage() {
             </span>
             <div>
               <p className="module-operator-eyebrow">Portfolio posture</p>
-              <h2 className="module-operator-title">Projects are the stable center of gravity</h2>
+              <h2 className="module-operator-title">Projects keep work organized</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            This module should now feel like the administrative hinge between overview and deep project work—not a one-off
-            special page with its own panel logic.
+            Use this page to create projects, review active work, and jump into project details without losing context.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
@@ -316,7 +315,7 @@ export default async function ProjectsPage() {
               Project pages can bring together deliverables, risks, issues, decisions, meetings, runs, and linked data.
             </div>
             <div className="module-operator-item">
-              Coming next: stronger portfolio filters, saved views, and better workload visibility across the workspace.
+              Next improvements will add stronger filters, saved views, and better workload visibility across the workspace.
             </div>
           </div>
         </article>

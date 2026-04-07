@@ -235,7 +235,7 @@ export default async function ReportsPage({
     (report) => report.status === "draft"
   ).length;
   const refreshRecommendedCount = reports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended"
+    (report) => report.packetFreshness.label === "Needs refresh"
   ).length;
   const noPacketCount = reports.filter(
     (report) => report.packetFreshness.label === "No packet"
@@ -280,7 +280,7 @@ export default async function ReportsPage({
     },
     {
       value: "refresh",
-      label: "Refresh recommended",
+      label: "Needs refresh",
       count: refreshRecommendedCount,
       href: buildReportsFilterHref({
         freshness: "refresh",
@@ -382,7 +382,7 @@ export default async function ReportsPage({
       current.latestReportId = report.id;
       current.latestReportTitle = report.title;
     }
-    if (report.packetFreshness.label === "Refresh recommended") {
+    if (report.packetFreshness.label === "Needs refresh") {
       current.refreshRecommendedCount += 1;
       if (!current.recommendedReportId) {
         current.recommendedReportId = report.id;
@@ -420,12 +420,10 @@ export default async function ReportsPage({
           </div>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Report catalog and packet generation
+            Reports
           </h1>
           <p className="mt-3 max-w-3xl text-[0.9rem] leading-relaxed text-muted-foreground sm:text-base">
-            Create structured report packets linked to projects and analysis
-            runs. Each report tracks its configured sections, artifact history,
-            and audit provenance.
+            Create and manage report packets linked to projects and analysis runs. Each report keeps its sections, generated artifacts, and source history together.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-4">
@@ -447,7 +445,7 @@ export default async function ReportsPage({
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Refresh recommended
+                Needs refresh
               </p>
               <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
                 {refreshRecommendedCount}
@@ -487,7 +485,7 @@ export default async function ReportsPage({
                 Auditability
               </p>
               <h2 className="text-xl font-semibold tracking-tight">
-                Structured packets with provenance
+                Structured packets with clear source history
               </h2>
             </div>
           </div>
@@ -519,16 +517,13 @@ export default async function ReportsPage({
           </div>
           <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Every report artifact captures its source runs and audit gates so
-              reviewers can trace what went into the packet.
+              Each report artifact keeps its source runs and checks visible so teams can trace what went into the packet.
             </li>
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              HTML packet generation is live. Storage-backed export and PDF
-              rendering will follow once export delivery is connected.
+              HTML packet generation is available now. Export delivery and PDF output are still being completed.
             </li>
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Missing source context is surfaced as explicit warnings, never
-              silently omitted from the generated output.
+              Missing source context appears as a visible warning instead of being silently omitted.
             </li>
           </ul>
         </article>

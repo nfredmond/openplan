@@ -156,13 +156,12 @@ export default async function EngagementPage({
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <MessagesSquare className="h-3.5 w-3.5" />
-            Engagement catalog live
+            Engagement workspace
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Campaigns now have a real operator registry</h1>
+            <h1 className="module-intro-title">Campaigns</h1>
             <p className="module-intro-description">
-              Engagement V1 is intentionally narrow: create a campaign, link it to a project when needed, define intake
-              categories, moderate structured input items, and use a controlled public portal without losing traceability.
+              Create campaigns, link them to projects when needed, organize public input, and keep moderation and reporting in one place.
             </p>
           </div>
 
@@ -196,17 +195,16 @@ export default async function EngagementPage({
             </span>
             <div>
               <p className="module-operator-eyebrow">Moderation posture</p>
-              <h2 className="module-operator-title">This pass stays operator-facing by design</h2>
+              <h2 className="module-operator-title">Engagement stays manageable</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Intake stays supervised by design. The point of V1 is a durable schema, a supportable moderation lane, and a
-            controlled public portal rather than a sprawling survey builder.
+            Keep public input organized with a clear moderation flow and a shareable public portal, without turning the app into a complex survey builder.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Campaigns can exist with or without a linked project, but never without workspace ownership.</div>
-            <div className="module-operator-item">Categories are lightweight structure for moderation and reporting, not a full survey builder.</div>
-            <div className="module-operator-item">Items track status, source, location signal, and internal notes from day one.</div>
+            <div className="module-operator-item">Campaigns can stand alone or connect to a project, but they always stay attached to the workspace.</div>
+            <div className="module-operator-item">Categories keep input organized for moderation and reporting.</div>
+            <div className="module-operator-item">Items track status, source, map signal, and team notes from day one.</div>
             <div className="module-operator-item">Public share links stay staged until a campaign is Active, then run through moderated intake.</div>
           </div>
         </article>

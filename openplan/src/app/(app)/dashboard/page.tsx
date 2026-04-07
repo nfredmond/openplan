@@ -155,8 +155,7 @@ export default async function DashboardPage() {
             </div>
             <h1 className="module-intro-title">{workspaceName}</h1>
             <p className="module-intro-description">
-              Signed in as {user.email}. This overview brings together your workspace status, recent activity, and the
-              fastest paths back into active work.
+              Signed in as {user.email}. Use this overview to check workspace activity, see what needs attention, and jump back into active work.
             </p>
           </div>
 
@@ -182,8 +181,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <p className="module-operator-copy">
-            Use this page as your starting point: get the quick summary first, then jump into the module or task that
-            needs attention.
+            Start here for a quick summary, then jump straight into the module or task that matters most.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
@@ -246,7 +244,7 @@ export default async function DashboardPage() {
               <p className="module-section-label">Current baseline</p>
               <h2 className="module-section-title">What is already live</h2>
               <p className="module-section-description">
-                This is the practical starting point for day-to-day work in the app.
+                This is the main day-to-day workspace for active planning work.
               </p>
             </div>
           </div>
