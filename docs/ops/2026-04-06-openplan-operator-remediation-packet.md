@@ -40,6 +40,16 @@ npm run ops:webhook-proof -- --workspace-id <workspace-uuid> --since-minutes 240
 
 This should now be the standard read-only webhook-proof command after any supervised billing canary.
 
+### 3. Canary preflight summary now separates “env file loaded” from “proof-capable env posture”
+Previously, an operator could see that the env snapshot loaded and still miss that the pulled file was not actually proof-capable because the service-role key was blank.
+
+The preflight summary now breaks this out explicitly:
+- env snapshot file loaded,
+- core env posture present,
+- service-role proof posture present.
+
+That reduces the chance of reading a partially loaded env as a green light.
+
 ## Exact operator closure sequence
 
 ### Phase A — restore the missing proof prerequisite

@@ -12,6 +12,7 @@ What I could freshly prove:
 - billing routes now fail explicitly with `503 Billing configuration unavailable` when service-role billing env is missing instead of failing opaquely deeper in Supabase client construction,
 - the supervised paid canary preflight now writes an explicit blocker summary instead of dying early with a generic missing-env message,
 - the supervised paid canary preflight now distinguishes a truly reachable alias from a Vercel-protected alias and can validate a legitimate bypass-header proof mode when the operator provides the secret,
+- the supervised paid canary preflight now separates “env file loaded” from “proof-capable env posture,” so a pulled env with a blank service-role key no longer reads like a soft green light,
 - the current production Vercel lane is still actively deploying on `natford/openplan`,
 - the live Starter Stripe price is present, active, recurring monthly, and non-zero,
 - the canonical alias currently sits behind Vercel auth/protection for anonymous curl,

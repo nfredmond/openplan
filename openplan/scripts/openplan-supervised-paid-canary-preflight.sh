@@ -161,6 +161,9 @@ if [[ -n "$BILLING_EMAIL" ]]; then
 fi
 
 BLOCKERS=()
+ENV_FILE_PRESENT_OK=1
+ENV_CORE_OK=1
+ENV_SERVICE_ROLE_OK=1
 ALIAS_CHECK_OK=0
 PRICE_CHECK_OK=0
 WEBHOOK_CHECK_OK=0
@@ -173,15 +176,19 @@ ALIAS_PROTECTION_DETAIL="Not yet checked"
 ALIAS_EFFECTIVE_MODE="none"
 
 if [[ -z "$STRIPE_KEY" ]]; then
+  ENV_CORE_OK=0
   BLOCKERS+=("Missing OPENPLAN_STRIPE_SECRET_KEY (or STRIPE_SECRET_KEY) in $ENV_FILE")
 fi
 if [[ -z "$STARTER_PRICE_ID" ]]; then
+  ENV_CORE_OK=0
   BLOCKERS+=("Missing OPENPLAN_STRIPE_PRICE_ID_STARTER in $ENV_FILE")
 fi
 if [[ -z "$SUPABASE_URL" ]]; then
+  ENV_CORE_OK=0
   BLOCKERS+=("Missing NEXT_PUBLIC_SUPABASE_URL in $ENV_FILE")
 fi
 if [[ -z "$SUPABASE_SERVICE_ROLE_KEY" ]]; then
+  ENV_SERVICE_ROLE_OK=0
   BLOCKERS+=("Missing SUPABASE_SERVICE_ROLE_KEY in $ENV_FILE (this is the current production-proof blocker for deeper reruns)")
 fi
 
@@ -370,12 +377,20 @@ cat > "$SUMMARY_MD" <<SUMMARY
 - Evidence directory: $EVIDENCE_DIR
 
 ## Preflight check status
-1. Production env snapshot loaded: YES
-2. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-3. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-4. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-5. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
-6. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+1. Production env snapshot file loaded: $( [[ "$ENV_FILE_PRESENT_OK" -eq 1 ]] && echo YES || echo NO )
+2. Required core env posture present (Stripe key, Starter price id, public Supabase URL): $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo YES || echo NO )
+3. Supabase service-role proof posture present: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo YES || echo NO )
+4. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+5. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+6. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+7. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+8. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+
+## Env posture details
+- Env file present: $( [[ "$ENV_FILE_PRESENT_OK" -eq 1 ]] && echo YES || echo NO )
+- Core env posture: $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo READY || echo BLOCKED )
+- Service-role proof posture: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo READY || echo BLOCKED )
+- Current env blocker note: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo "None" || echo "Missing SUPABASE_SERVICE_ROLE_KEY prevents service-role-backed workspace and monitor proof." )
 
 ## Alias proof details
 - Raw /billing status without bypass header: ${ALIAS_PRIMARY_STATUS:-unknown}
