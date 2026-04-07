@@ -304,7 +304,7 @@ function getComparisonNarrativeLead(
   if (metricChangeCount > 0 && viewDifferenceCount > 0) {
     return {
       title: "Metric movement is present, but the evidence frame changed.",
-      detail: "Use the map-context evidence directly beneath the delta board before treating every score shift as a like-for-like comparison.",
+      detail: "Check the map context before assuming every score change is a direct apples-to-apples comparison.",
       tone: "warning",
     };
   }
@@ -312,7 +312,7 @@ function getComparisonNarrativeLead(
   if (metricChangeCount === 0 && viewDifferenceCount > 0) {
     return {
       title: "Scores are flat, but the evidence frame is not.",
-      detail: "The delta board reads as stable, yet the underlying tract / crash / overlay posture differs between current and baseline.",
+      detail: "The score change looks small, but the underlying map layers differ between the current run and the baseline.",
       tone: "warning",
     };
   }
@@ -2933,7 +2933,7 @@ export default function ExplorePage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle>Analysis Studio</CardTitle>
-            <CardDescription>Upload a corridor, frame the planning question, and drive the map, metrics, and reporting workflow from one operator surface.</CardDescription>
+            <CardDescription>Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5">
             <Input
@@ -3262,7 +3262,7 @@ export default function ExplorePage() {
                       <CardTitle className="text-[1.05rem] font-semibold tracking-[-0.02em] text-white">Current Result</CardTitle>
                       <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/76">
                         {comparisonRun?.metrics
-                          ? "The live run remains the primary operator surface, now explicitly paired with the pinned baseline directly below before the delta board begins."
+                          ? "The active run stays paired with the pinned baseline below so the comparison stays easy to follow."
                           : analysisResult.aiInterpretationSource === "ai"
                             ? "Operator-facing summary of the current run with AI-assisted narrative support. Human review remains mandatory before release."
                             : "Operator-facing summary of the current run using deterministic fallback logic rather than AI narrative output."}
@@ -3411,11 +3411,11 @@ export default function ExplorePage() {
                   <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Source transparency</p>
-                        <p className="mt-2 text-sm text-slate-300/74">Audit the data posture, fallback logic, and narrative source before sharing beyond the operator surface.</p>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Data source checks</p>
+                        <p className="mt-2 text-sm text-slate-300/74">Review source quality, fallback behavior, and narrative inputs before sharing results.</p>
                       </div>
                       <StatusBadge tone={sourceReviewCount > 0 ? "warning" : "success"}>
-                        {sourceReviewCount > 0 ? `${sourceReviewCount} review flags` : "Audit posture stable"}
+                        {sourceReviewCount > 0 ? `${sourceReviewCount} items to review` : "Source checks look good"}
                       </StatusBadge>
                     </div>
                     <div className="mt-4 space-y-3">
@@ -3437,7 +3437,7 @@ export default function ExplorePage() {
                 <Card className="gap-0 overflow-hidden rounded-[28px] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(8,18,29,0.99),rgba(10,20,31,0.97))] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
                   <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone="warning">Baseline pinned</StatusBadge>
+                      <StatusBadge tone="warning">Pinned baseline</StatusBadge>
                       <StatusBadge tone={comparisonMetricChangeCount > 0 ? "info" : "neutral"}>
                         {comparisonMetricChangeCount > 0 ? `${comparisonMetricChangeCount} metric shifts` : "No material metric shift"}
                       </StatusBadge>
@@ -3454,9 +3454,9 @@ export default function ExplorePage() {
                     </div>
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="space-y-2">
-                        <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Comparison narrative</CardTitle>
+                        <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Run comparison</CardTitle>
                         <CardDescription className="max-w-2xl text-sm leading-6 text-slate-300/76">
-                          Keep the selected run, comparison, and map context together so it is easy to review changes without losing your place.
+                          Compare the current run against a pinned baseline without losing the map or result context.
                         </CardDescription>
                       </div>
                       <div className="analysis-run-identity-panel is-baseline">
@@ -3477,14 +3477,14 @@ export default function ExplorePage() {
                         <div className="analysis-run-pair-board">
                           <div className="analysis-run-pair-board-header">
                             <div>
-                              <p className="analysis-run-pair-board-label">Step 1 · paired identity</p>
+                              <p className="analysis-run-pair-board-label">Step 1 · select the two runs</p>
                               <p className="analysis-run-pair-board-copy">
-                                Lock the current result and pinned baseline as one coordinated review surface before interpreting score movement or narrative shifts.
+                                Review the current run and the pinned baseline side by side before reading score or narrative changes.
                               </p>
                             </div>
                             <div className="analysis-run-pair-board-badges">
                               <StatusBadge tone="info">Current live</StatusBadge>
-                              <StatusBadge tone="warning">Baseline pinned</StatusBadge>
+                              <StatusBadge tone="warning">Pinned baseline</StatusBadge>
                             </div>
                           </div>
 
@@ -3495,10 +3495,10 @@ export default function ExplorePage() {
                                   <p className="analysis-run-pair-surface-eyebrow">Current result</p>
                                   <p className="analysis-run-pair-surface-title">{currentRunTitle}</p>
                                 </div>
-                                <StatusBadge tone="info">Driving result stack</StatusBadge>
+                                <StatusBadge tone="info">Active result</StatusBadge>
                               </div>
                               <p className="analysis-run-pair-surface-body">
-                                This run remains live in Analysis Studio and continues to drive the visible result stack, exports, and release framing.
+                                This is the active run currently driving the visible results and exports.
                               </p>
                               <div className="analysis-run-pair-field-grid">
                                 <div className="analysis-run-pair-field">
@@ -3522,8 +3522,8 @@ export default function ExplorePage() {
                                   <p className="analysis-run-pair-field-value">{currentRunOverallScore}</p>
                                 </div>
                                 <div className="analysis-run-pair-field">
-                                  <p className="analysis-run-pair-field-label">Primary action</p>
-                                  <p className="analysis-run-pair-field-value">Export current metrics / geometry</p>
+                                  <p className="analysis-run-pair-field-label">Suggested action</p>
+                                  <p className="analysis-run-pair-field-value">Export current results</p>
                                 </div>
                               </div>
                             </section>
@@ -3537,7 +3537,7 @@ export default function ExplorePage() {
                                 <StatusBadge tone="warning">Pinned for comparison</StatusBadge>
                               </div>
                               <p className="analysis-run-pair-surface-body">
-                                The baseline remains anchored in the pinned Run History row below for replacement, reload, or clearance without breaking the current review posture.
+                                This baseline stays pinned until you replace it or clear the comparison.
                               </p>
                               <div className="analysis-run-pair-field-grid">
                                 <div className="analysis-run-pair-field">
@@ -3561,8 +3561,8 @@ export default function ExplorePage() {
                                   <p className="analysis-run-pair-field-value">{baselineRunOverallScore}</p>
                                 </div>
                                 <div className="analysis-run-pair-field">
-                                  <p className="analysis-run-pair-field-label">Primary action</p>
-                                  <p className="analysis-run-pair-field-value">Replace / clear in pinned history row</p>
+                                  <p className="analysis-run-pair-field-label">Suggested action</p>
+                                  <p className="analysis-run-pair-field-value">Replace or clear baseline</p>
                                 </div>
                               </div>
                             </section>
@@ -3574,9 +3574,9 @@ export default function ExplorePage() {
                         <div className="analysis-run-history-handoff">
                           <div className="analysis-run-history-handoff-header">
                             <div>
-                              <p className="analysis-run-history-handoff-label">Step 2 · Run History</p>
+                              <p className="analysis-run-history-handoff-label">Step 2 · review in run history</p>
                               <p className="analysis-run-history-handoff-copy">
-                                The selected comparison stays synced with the current run and baseline below. Use Run History to reload the current run, replace the baseline, or clear the comparison without leaving this review flow.
+                                Jump to either run in history to reload the current result, replace the baseline, or clear the comparison.
                               </p>
                             </div>
                             <div className="analysis-run-history-handoff-badges">
@@ -3590,14 +3590,14 @@ export default function ExplorePage() {
                               <p className="analysis-run-history-handoff-card-label">Current run</p>
                               <p className="analysis-run-history-handoff-card-title">{currentRunTitle}</p>
                               <p className="analysis-run-history-handoff-card-copy">
-                                Driving result stack · {currentRunTimestampLabel}. Reload another run there only if you intend to replace the current side of this pair.
+                                Active result · {currentRunTimestampLabel}. Reload another run here only if you want to replace the current side of the comparison.
                               </p>
                             </div>
                             <div className="analysis-run-history-handoff-card is-baseline">
                               <p className="analysis-run-history-handoff-card-label">Baseline run</p>
                               <p className="analysis-run-history-handoff-card-title">{comparisonRun.title}</p>
                               <p className="analysis-run-history-handoff-card-copy">
-                                Baseline pinned · {formatRunTimestamp(comparisonRun.created_at)}. Replace or clear that exact row to change the baseline side of this pair.
+                                Pinned baseline · {formatRunTimestamp(comparisonRun.created_at)}. Replace or clear this row to change the baseline.
                               </p>
                             </div>
                           </div>
@@ -3619,7 +3619,7 @@ export default function ExplorePage() {
                       <section className="analysis-comparison-story-step analysis-comparison-narrative">
                         <div className="analysis-comparison-narrative-header">
                           <div>
-                            <p className="analysis-comparison-narrative-label">Step 3 · delta board + map-context evidence</p>
+                            <p className="analysis-comparison-narrative-label">Step 3 · review the differences</p>
                             <h3 className="analysis-comparison-narrative-title">{comparisonNarrativeLead.title}</h3>
                             <p className="analysis-comparison-narrative-copy">{comparisonNarrativeLead.detail}</p>
                           </div>
@@ -3729,7 +3729,7 @@ export default function ExplorePage() {
                             <div>
                               <p className="analysis-comparison-section-label">Map-context evidence</p>
                               <p className="analysis-comparison-section-copy">
-                                Read these checks as the evidentiary frame beneath the delta board — they confirm whether both runs were reviewed under the same tract, crash, and overlay posture.
+                                Use these checks to confirm whether both runs were reviewed with the same tract, crash, and overlay context.
                               </p>
                             </div>
                             <StatusBadge tone={comparisonViewDifferenceCount > 0 ? "warning" : "success"}>
@@ -3744,7 +3744,7 @@ export default function ExplorePage() {
                                   <p className="analysis-comparison-evidence-group-label">Differences requiring interpretation</p>
                                   <p className="analysis-comparison-evidence-group-copy">
                                     {changedMapViewRows.length > 0
-                                      ? "These differences may explain part of the delta board above or may indicate the two runs were reviewed under a materially different evidence frame."
+                                      ? "These differences may explain part of the score change above, or they may show that the two runs were reviewed under different map conditions."
                                       : "No tract, crash, or overlay posture conflicts were detected between current and baseline."}
                                   </p>
                                 </div>
@@ -3805,7 +3805,7 @@ export default function ExplorePage() {
                             </div>
                           ) : (
                             <div className="analysis-comparison-evidence-empty">
-                              <p>No saved map context is attached to the baseline yet, so the delta board above should be interpreted without a captured evidence-frame check.</p>
+                              <p>No saved map context is attached to the baseline yet, so compare the results with extra caution.</p>
                             </div>
                           )}
                         </div>
