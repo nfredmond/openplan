@@ -423,6 +423,7 @@
   .module-subpanel,
   .module-note,
   .module-empty-state {
+    min-width: 0;
     border-radius: 1.25rem;
     border: 1px solid rgba(199, 210, 220, 0.72);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 250, 252, 0.9));
@@ -942,14 +943,17 @@
 
   .module-record-detail-grid {
     display: grid;
-    gap: 0.7rem;
+    gap: 0.8rem;
   }
 
   @media (min-width: 768px) {
-    .module-record-detail-grid.cols-2 {
+    .module-record-detail-grid.cols-2,
+    .module-record-detail-grid.cols-3 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+  }
 
+  @media (min-width: 1200px) {
     .module-record-detail-grid.cols-3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
