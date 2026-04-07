@@ -15,16 +15,18 @@ ENV_FILE=""
 SINCE_MINUTES=180
 EVIDENCE_DIR=""
 SKIP_ENV_PULL=0
+VERCEL_PROTECTION_BYPASS_SECRET=""
 
 usage() {
   cat <<USAGE
 Usage:
-  $0 --workspace-id <uuid> [--billing-email <email>] [--alias-url <url>] [--env-file <path>] [--since-minutes <n>] [--evidence-dir <path>] [--skip-env-pull]
+  $0 --workspace-id <uuid> [--billing-email <email>] [--alias-url <url>] [--env-file <path>] [--since-minutes <n>] [--evidence-dir <path>] [--skip-env-pull] [--vercel-protection-bypass-secret <secret>]
 
 Examples:
   $0 --workspace-id 11111111-2222-4333-8444-555555555555
   $0 --workspace-id 11111111-2222-4333-8444-555555555555 --billing-email owner@example.gov --since-minutes 240
   $0 --workspace-id 11111111-2222-4333-8444-555555555555 --env-file /tmp/openplan.vercel.env --evidence-dir ../docs/ops/2026-03-16-test-output/canary-preflight
+  $0 --workspace-id 11111111-2222-4333-8444-555555555555 --vercel-protection-bypass-secret "\$OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET"
 USAGE
 }
 
@@ -70,6 +72,10 @@ while [[ $# -gt 0 ]]; do
       SKIP_ENV_PULL=1
       shift
       ;;
+    --vercel-protection-bypass-secret)
+      VERCEL_PROTECTION_BYPASS_SECRET="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -108,6 +114,8 @@ EVIDENCE_DIR="$(cd "$EVIDENCE_DIR" && pwd)"
 ENV_PULL_LOG="$EVIDENCE_DIR/vercel-env-pull.log"
 ALIAS_HEADERS_LOG="$EVIDENCE_DIR/public-alias-headers.txt"
 ALIAS_STATUS_LOG="$EVIDENCE_DIR/public-alias-status.txt"
+ALIAS_BYPASS_HEADERS_LOG="$EVIDENCE_DIR/public-alias-bypass-headers.txt"
+ALIAS_BYPASS_STATUS_LOG="$EVIDENCE_DIR/public-alias-bypass-status.txt"
 STARTER_PRICE_JSON="$EVIDENCE_DIR/starter-price.json"
 WEBHOOKS_JSON="$EVIDENCE_DIR/webhook-endpoints.json"
 WORKSPACE_SNAPSHOT_JSON="$EVIDENCE_DIR/workspace-preflight-snapshot.json"
@@ -146,6 +154,7 @@ SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-}"
 SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
 STARTER_PRICE_ID="${OPENPLAN_STRIPE_PRICE_ID_STARTER:-}"
 WEBHOOK_URL="$ALIAS_URL/api/billing/webhook"
+VERCEL_PROTECTION_BYPASS_SECRET="${VERCEL_PROTECTION_BYPASS_SECRET:-${OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET:-${VERCEL_AUTOMATION_BYPASS_SECRET:-}}}"
 MONITOR_EMAIL_ARG=""
 if [[ -n "$BILLING_EMAIL" ]]; then
   MONITOR_EMAIL_ARG=" --email $BILLING_EMAIL"
@@ -157,6 +166,11 @@ PRICE_CHECK_OK=0
 WEBHOOK_CHECK_OK=0
 WORKSPACE_SNAPSHOT_OK=0
 MONITOR_SNAPSHOT_OK=0
+ALIAS_PRIMARY_STATUS="unknown"
+ALIAS_PRIMARY_HEADERS=""
+ALIAS_PROTECTION_STATE="unknown"
+ALIAS_PROTECTION_DETAIL="Not yet checked"
+ALIAS_EFFECTIVE_MODE="none"
 
 if [[ -z "$STRIPE_KEY" ]]; then
   BLOCKERS+=("Missing OPENPLAN_STRIPE_SECRET_KEY (or STRIPE_SECRET_KEY) in $ENV_FILE")
@@ -173,8 +187,37 @@ fi
 
 curl -sSI "$ALIAS_URL" | tee "$ALIAS_HEADERS_LOG" >/dev/null
 curl -sS -o /dev/null -w 'status=%{http_code}\nfinal_url=%{url_effective}\nredirect_url=%{redirect_url}\n' "$ALIAS_URL/billing" | tee "$ALIAS_STATUS_LOG" >/dev/null
-if grep -q '^status=' "$ALIAS_STATUS_LOG"; then
+ALIAS_PRIMARY_STATUS="$(awk -F= '/^status=/{print $2}' "$ALIAS_STATUS_LOG" | tail -n 1)"
+ALIAS_PRIMARY_HEADERS="$(tr '[:upper:]' '[:lower:]' < "$ALIAS_HEADERS_LOG")"
+
+if [[ "$ALIAS_PRIMARY_STATUS" =~ ^(200|301|302|307|308)$ ]]; then
   ALIAS_CHECK_OK=1
+  ALIAS_PROTECTION_STATE="open"
+  ALIAS_PROTECTION_DETAIL="Canonical alias returned HTTP $ALIAS_PRIMARY_STATUS without needing a bypass secret."
+  ALIAS_EFFECTIVE_MODE="direct"
+elif [[ "$ALIAS_PRIMARY_STATUS" =~ ^(401|403)$ ]]; then
+  if grep -qi 'x-vercel-protection-bypass\|x-vercel-set-bypass-cookie\|vercel authentication\|authentication required\|deployment protection' "$ALIAS_HEADERS_LOG"; then
+    ALIAS_PROTECTION_STATE="protected"
+    ALIAS_PROTECTION_DETAIL="Canonical alias returned HTTP $ALIAS_PRIMARY_STATUS and appears to be behind Vercel deployment protection."
+    if [[ -n "$VERCEL_PROTECTION_BYPASS_SECRET" ]]; then
+      curl -sSI -H "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS_SECRET" "$ALIAS_URL" | tee "$ALIAS_BYPASS_HEADERS_LOG" >/dev/null
+      curl -sS -o /dev/null -w 'status=%{http_code}\nfinal_url=%{url_effective}\nredirect_url=%{redirect_url}\n' -H "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS_SECRET" "$ALIAS_URL/billing" | tee "$ALIAS_BYPASS_STATUS_LOG" >/dev/null
+      ALIAS_BYPASS_STATUS="$(awk -F= '/^status=/{print $2}' "$ALIAS_BYPASS_STATUS_LOG" | tail -n 1)"
+      if [[ "$ALIAS_BYPASS_STATUS" =~ ^(200|301|302|307|308)$ ]]; then
+        ALIAS_CHECK_OK=1
+        ALIAS_PROTECTION_DETAIL="Canonical alias is protected by Vercel, but the supplied bypass secret produced HTTP $ALIAS_BYPASS_STATUS on /billing."
+        ALIAS_EFFECTIVE_MODE="bypass-header"
+      else
+        BLOCKERS+=("Canonical alias appears Vercel-protected and the supplied bypass secret did not unlock /billing (HTTP ${ALIAS_BYPASS_STATUS:-unknown})")
+      fi
+    else
+      BLOCKERS+=("Canonical alias appears Vercel-protected (HTTP $ALIAS_PRIMARY_STATUS) and no bypass secret was supplied for proof automation")
+    fi
+  else
+    BLOCKERS+=("Canonical alias returned HTTP $ALIAS_PRIMARY_STATUS for /billing and did not clearly identify as Vercel protection")
+  fi
+else
+  BLOCKERS+=("Canonical alias returned unexpected HTTP ${ALIAS_PRIMARY_STATUS:-unknown} for /billing")
 fi
 
 if [[ -n "$STRIPE_KEY" && -n "$STARTER_PRICE_ID" ]]; then
@@ -314,6 +357,9 @@ cat > "$SUMMARY_MD" <<SUMMARY
 - Status: $READY_STATE
 - Public alias: $ALIAS_URL
 - Canonical webhook URL: $WEBHOOK_URL
+- Alias protection state: $ALIAS_PROTECTION_STATE
+- Alias protection detail: $ALIAS_PROTECTION_DETAIL
+- Alias effective proof mode: $ALIAS_EFFECTIVE_MODE
 - Workspace id: $WORKSPACE_ID
 - Workspace name: $WORKSPACE_NAME
 - Current workspace subscription status: $WORKSPACE_STATUS
@@ -325,11 +371,18 @@ cat > "$SUMMARY_MD" <<SUMMARY
 
 ## Preflight check status
 1. Production env snapshot loaded: YES
-2. Public alias reachable: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+2. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
 3. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
 4. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
 5. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
 6. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+
+## Alias proof details
+- Raw /billing status without bypass header: ${ALIAS_PRIMARY_STATUS:-unknown}
+- Protection posture: $ALIAS_PROTECTION_STATE
+- Effective proof mode: $ALIAS_EFFECTIVE_MODE
+- Detail: $ALIAS_PROTECTION_DETAIL
+- Supplied bypass secret: $( [[ -n "$VERCEL_PROTECTION_BYPASS_SECRET" ]] && echo YES || echo NO )
 
 ## Exact operator route
 - $ALIAS_URL/billing?workspaceId=$WORKSPACE_ID
@@ -346,6 +399,8 @@ $(if [[ ${#BLOCKERS[@]} -eq 0 ]]; then echo "- None."; else for blocker in "${BL
 ## Evidence files generated
 - $ALIAS_HEADERS_LOG
 - $ALIAS_STATUS_LOG
+- $ALIAS_BYPASS_HEADERS_LOG
+- $ALIAS_BYPASS_STATUS_LOG
 - $STARTER_PRICE_JSON
 - $WEBHOOKS_JSON
 - $WORKSPACE_SNAPSHOT_JSON
@@ -354,6 +409,7 @@ $(if [[ ${#BLOCKERS[@]} -eq 0 ]]; then echo "- None."; else for blocker in "${BL
 ## Ready / abort guidance
 - READY if blockers are empty, the workspace above is the intended dedicated canary workspace, and the operator identity is approved.
 - ABORT or remediate first if any blocker remains. Most importantly: do not claim paid happy-path proof until the Supabase service-role snapshot and monitor evidence both exist.
+- If the alias is Vercel-protected, either supply a valid bypass secret for automation or use an intentionally authenticated browser session and document that posture in the packet.
 SUMMARY
 
 cat <<EOF

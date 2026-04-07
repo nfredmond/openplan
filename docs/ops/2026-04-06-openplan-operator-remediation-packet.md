@@ -101,13 +101,29 @@ From `openplan/openplan`:
   --since-minutes 240
 ```
 
+If the canonical alias is under Vercel deployment protection and the operator has the legitimate automation bypass secret, provide it explicitly so preflight can tell the difference between “protected but runnable” and “blocked by protection”:
+
+```bash
+./scripts/openplan-supervised-paid-canary-preflight.sh \
+  --workspace-id <workspace-uuid> \
+  --billing-email <approved-operator-email> \
+  --env-file /tmp/openplan.vercel.env \
+  --since-minutes 240 \
+  --vercel-protection-bypass-secret "$OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET"
+```
+
 #### Preflight must show all of the following
 1. env snapshot loaded,
-2. public alias reachable,
+2. canonical alias/browser proof route reachable in the current proof mode,
 3. Starter price valid,
 4. canonical Stripe webhook endpoint valid,
 5. production workspace snapshot captured,
 6. current monitor snapshot captured.
+
+The preflight summary now classifies alias posture explicitly:
+- `open` → alias responded without deployment protection bypass,
+- `protected` + `effective proof mode: bypass-header` → alias is protected but proof automation is legitimately runnable with the supplied bypass secret,
+- `protected` + `effective proof mode: none` → stop and remediate before checkout.
 
 **If any item is NO, stop there.** Remediate that item before any supervised checkout.
 
@@ -186,6 +202,7 @@ Then update the approval/governance packet with exact truth language:
 - [ ] `vercel env pull` shows the key is no longer blank.
 - [ ] Stripe endpoint points to `https://openplan-natford.vercel.app/api/billing/webhook`.
 - [ ] Preflight returns no blockers.
+- [ ] If the alias is Vercel-protected, the packet records whether proof used a bypass secret or an intentionally authenticated browser session.
 - [ ] Supervised canary run executed against the dedicated QA workspace.
 - [ ] `npm run ops:webhook-proof` returns exit code `0`.
 - [ ] Evidence files stored under `docs/ops/`.
@@ -195,6 +212,7 @@ Then update the approval/governance packet with exact truth language:
 ## Honest current status after this packet
 ### What is now better
 - The repo has a safer and more deterministic webhook-proof tool.
+- The canary preflight now distinguishes a genuinely reachable alias from a Vercel-protected alias and can validate a legitimate bypass-secret path when supplied.
 - The operator path is more explicit.
 - The remaining blockers are now concrete and commandable instead of vague.
 
