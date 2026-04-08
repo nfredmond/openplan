@@ -32,7 +32,7 @@ describe("BillingCheckoutLauncher", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Start Starter checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start Starter checkout for Nevada County Pilot" }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/billing/checkout", {
@@ -68,7 +68,7 @@ describe("BillingCheckoutLauncher", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Start Professional checkout" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start Professional checkout for Nevada County Pilot" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Owner/admin access is required");
     expect(assignMock).not.toHaveBeenCalled();
@@ -89,5 +89,24 @@ describe("BillingCheckoutLauncher", () => {
 
     expect(screen.getByText(/Members can review billing posture/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Start Starter checkout/i })).not.toBeInTheDocument();
+  });
+
+  it("surfaces the locked workspace target in the safeguard copy", () => {
+    render(
+      <BillingCheckoutLauncher
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        workspaceName="Nevada County Pilot"
+        currentPlan="starter"
+        currentStatus="active"
+        currentPeriodEnd="2026-04-30T00:00:00.000Z"
+        canStartCheckout
+        onCheckoutRedirect={assignMock}
+      />
+    );
+
+    expect(screen.getByText(/Checkout target is locked before Stripe opens/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Nevada County Pilot/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/aaaaaaaa/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Start Starter checkout for Nevada County Pilot/i })).toBeInTheDocument();
   });
 });

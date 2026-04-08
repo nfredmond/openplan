@@ -259,9 +259,9 @@ export default async function BillingPage({
         <article className="rounded-2xl border border-border/80 bg-card p-4 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
           <p className="font-semibold text-foreground">Viewing workspace-specific billing</p>
           <p className="mt-1">
-            This account has access to multiple workspaces. You are currently viewing billing for <strong>{workspace.name ?? "Workspace"}</strong>.
+            This account has access to multiple workspaces. You are currently viewing billing for <strong>{workspace.name ?? "Workspace"}</strong>, and any checkout launched below will apply only to this workspace target.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {selection.memberships.map((membershipOption) => {
               const optionWorkspace = unwrapWorkspaceRecord(membershipOption.workspaces);
               const isCurrentWorkspace = membershipOption.workspace_id === workspaceId;
@@ -280,6 +280,12 @@ export default async function BillingPage({
                 </Link>
               );
             })}
+            <Link
+              href="/billing"
+              className="inline-flex rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary"
+            >
+              Re-open workspace chooser
+            </Link>
           </div>
         </article>
       ) : null}
@@ -339,13 +345,14 @@ export default async function BillingPage({
           <StatusBadge tone={toneForStatus(status)}>{titleCase(status)}</StatusBadge>
           <StatusBadge tone="info">Plan: {titleCase(plan)}</StatusBadge>
           <StatusBadge tone="neutral">Role: {titleCase(membership.role)}</StatusBadge>
+          <StatusBadge tone="neutral">Workspace ID: {formatWorkspaceIdSnippet(workspaceId)}</StatusBadge>
           <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
             Updated: {workspace.billing_updated_at ? new Date(workspace.billing_updated_at).toLocaleString() : "N/A"}
           </p>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records selected plan on the workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
+          Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records the selected plan on this exact workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
         </p>
 
       </article>

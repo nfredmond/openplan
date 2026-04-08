@@ -69,6 +69,10 @@ function formatPeriodEnd(value: string | null | undefined): string {
   return parsed.toLocaleString();
 }
 
+function formatWorkspaceIdSnippet(workspaceId: string): string {
+  return workspaceId.slice(0, 8);
+}
+
 export function redirectToCheckout(url: string) {
   window.location.assign(url);
 }
@@ -159,6 +163,13 @@ export function BillingCheckoutLauncher({
         </div>
       </div>
 
+      <div className="rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="font-semibold tracking-tight">Checkout target is locked before Stripe opens</p>
+        <p className="mt-1">
+          Any checkout started below will apply to <strong>{workspaceName}</strong> ({formatWorkspaceIdSnippet(workspaceId)}). If this is not the workspace you intend to bill, switch workspaces before continuing.
+        </p>
+      </div>
+
       <p className="text-sm text-muted-foreground">
         OpenPlan sends you to Stripe only after an explicit button press for this exact workspace. Returning from Stripe is not treated as activation by itself; the workspace remains trustworthy only after webhook status and billing events confirm the result.
       </p>
@@ -189,7 +200,13 @@ export function BillingCheckoutLauncher({
                   <li>{entitlementsForPlan(planCard.plan).capabilities.exportReports ? "Includes report exports" : "Report exports stay limited on this tier"}</li>
                   <li>{normalizedStatus === "checkout_pending" ? "A new checkout can replace an abandoned pending attempt." : "Workspace targeting remains explicit throughout checkout."}</li>
                 </ul>
-                <Button type="button" variant={isCurrentPlan ? "secondary" : "default"} disabled={pendingPlan !== null} onClick={() => handleCheckout(planCard.plan)}>
+                <Button
+                  type="button"
+                  variant={isCurrentPlan ? "secondary" : "default"}
+                  disabled={pendingPlan !== null}
+                  onClick={() => handleCheckout(planCard.plan)}
+                  aria-label={`Start ${planCard.title} checkout for ${workspaceName}`}
+                >
                   {isPending ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
