@@ -155,7 +155,7 @@ export default async function DashboardPage() {
             </div>
             <h1 className="module-intro-title">{workspaceName}</h1>
             <p className="module-intro-description">
-              Signed in as {user.email}. Use this overview to check workspace activity, see what needs attention, and jump back into active work.
+              Use this overview to see current work, recent activity, and the next planning tasks that need attention.
             </p>
           </div>
 
@@ -176,24 +176,22 @@ export default async function DashboardPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Operator posture</p>
-              <h2 className="module-operator-title">Overview should orient, not compete</h2>
+              <p className="module-operator-eyebrow">Overview</p>
+              <h2 className="module-operator-title">Start here, then move into the work</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Start here for a quick summary, then jump straight into the module or task that matters most.
+            Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
-              <strong className="text-slate-100">Current priority:</strong> keep the dashboard legible as a control surface
-              instead of turning it into a second analysis page.
+              Review active projects, recent updates, and items that need follow-up.
             </div>
             <div className="module-operator-item">
-              <strong className="text-slate-100">Best next move:</strong> open Projects to work at the project-control-room
-              layer, or Analysis Studio to produce fresh evidence.
+              Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
             </div>
             <div className="module-operator-item">
-              <strong className="text-slate-100">Activation signal:</strong> time to first result is
+              A good overview should help the team get to the right task quickly.
               {" "}
               {formatTimeToFirstResult(kpis.timeToFirstResultHours)}.
             </div>

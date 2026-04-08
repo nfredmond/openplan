@@ -205,10 +205,9 @@ export default async function ModelsPage({
             Models module live
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Model records</h1>
+            <h1 className="module-intro-title">Models</h1>
             <p className="module-intro-description">
-              Track versioned model configurations, scenario anchors, input provenance, and output traceability without
-              pretending OpenPlan already runs full model orchestration inside the product.
+              Keep methods, assumptions, and results connected to the plans and projects they support.
             </p>
           </div>
 
@@ -221,12 +220,12 @@ export default async function ModelsPage({
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Review-ready</p>
+              <p className="module-summary-label">Ready for review</p>
               <p className="module-summary-value">{reviewReadyCount}</p>
               <p className="module-summary-detail">Records that reached review or approval posture.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Traceable outputs</p>
+              <p className="module-summary-label">Linked results</p>
               <p className="module-summary-value">{traceableCount}</p>
               <p className="module-summary-detail">{readinessGreenCount} currently pass every readiness check.</p>
             </div>
@@ -239,8 +238,8 @@ export default async function ModelsPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Modeling posture</p>
-              <h2 className="module-operator-title">Readiness is explicit, not implied</h2>
+              <p className="module-operator-eyebrow">Modeling</p>
+              <h2 className="module-operator-title">Keep methods and results easy to review</h2>
             </div>
           </div>
           <p className="module-operator-copy">

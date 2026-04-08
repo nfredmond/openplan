@@ -217,10 +217,9 @@ export default async function ProgramsPage({
             Programs module live
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Programming cycles now have a real system-of-record layer</h1>
+            <h1 className="module-intro-title">Programs</h1>
             <p className="module-intro-description">
-              Track RTIP, STIP, and adjacent funding lanes as explicit package records tied to projects, plans,
-              engagement evidence, and packet outputs without pretending OpenPlan is already a full narrative editor.
+              Track funding cycles, submissions, and linked planning work in one place.
             </p>
           </div>
 
@@ -231,14 +230,14 @@ export default async function ProgramsPage({
               <p className="module-summary-detail">Cycle and package records in the current workspace catalog.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">In motion</p>
+              <p className="module-summary-label">Active programs</p>
               <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">{rtipStipCount} focused on RTIP/STIP lanes.</p>
+              <p className="module-summary-detail">{rtipStipCount} tied to RTIP or STIP cycles.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Package ready</p>
+              <p className="module-summary-label">Ready to submit</p>
               <p className="module-summary-value">{readyCount}</p>
-              <p className="module-summary-detail">Transparent readiness only: metadata plus linked package evidence.</p>
+              <p className="module-summary-detail">Programs with the key information in place for review or submission.</p>
             </div>
           </div>
         </article>
@@ -249,13 +248,12 @@ export default async function ProgramsPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Programming posture</p>
-              <h2 className="module-operator-title">Package readiness stays explicit and auditable</h2>
+              <p className="module-operator-eyebrow">Programming</p>
+              <h2 className="module-operator-title">Keep funding information clear and easy to review</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            This v1 is deliberately metadata-first: cycle timing, fiscal window, sponsor agency, linked plans, packet
-            outputs, and engagement evidence in one place.
+            Keep cycle timing, sponsor agency, linked plans, and submission materials together in one place.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Primary project links inherit relevant plans, reports, and engagement records.</div>

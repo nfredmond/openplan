@@ -93,7 +93,7 @@ export default function AdminPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Pilot posture</p>
               <p className="module-summary-value">Supervised</p>
-              <p className="module-summary-detail">Admin controls stay explicit about current scope instead of implying full self-serve governance.</p>
+              <p className="module-summary-detail">Admin tools show what is available today and what is still coming next.</p>
             </div>
           </div>
         </article>
@@ -104,18 +104,17 @@ export default function AdminPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Launch-facing clarity</p>
-              <h2 className="module-operator-title">Admin should reduce uncertainty, not create it</h2>
+              <p className="module-operator-eyebrow">Administration</p>
+              <h2 className="module-operator-title">Keep workspace settings clear and manageable</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            The current pilot does not need a dense settings maze. It needs a clean place to confirm what is live,
-            what is monitored, and what still requires operator support.
+            Use this area to review workspace settings, billing status, and tools that are available to your team.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Use Billing for plan and invoice posture.</div>
-            <div className="module-operator-item">Use Pilot Readiness for smoke evidence and exportable proof packets.</div>
-            <div className="module-operator-item">Keep team-management and audit tooling labeled as staged until they are genuinely self-serve.</div>
+            <div className="module-operator-item">Use Billing to review plan and invoice details.</div>
+            <div className="module-operator-item">Use Pilot Readiness to review launch checks and proof materials.</div>
+            <div className="module-operator-item">Some tools are still marked as coming soon.</div>
           </div>
         </article>
       </header>
@@ -124,9 +123,9 @@ export default function AdminPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Admin modules</p>
-            <h2 className="module-section-title">Available controls and staged follow-ons</h2>
+            <h2 className="module-section-title">Available controls</h2>
             <p className="module-section-description">
-              Each card below is intentionally explicit about whether the route is live today or reserved for a later slice.
+              Each card below shows whether the feature is available now or still coming soon.
             </p>
           </div>
         </div>

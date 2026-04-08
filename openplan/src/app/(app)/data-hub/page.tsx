@@ -348,7 +348,7 @@ export default async function DataHubPage() {
               <p className="module-summary-detail">{runningJobs} queued or running right now.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Policy monitors</p>
+              <p className="module-summary-label">Needs attention</p>
               <p className="module-summary-value">{monitoredConnectors}</p>
               <p className="module-summary-detail">{staleDatasets} datasets currently need attention.</p>
             </div>
@@ -361,18 +361,17 @@ export default async function DataHubPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Workspace posture</p>
-              <h2 className="module-operator-title">Governed data fabric for {workspace?.name ?? "Planning Workspace"}</h2>
+              <p className="module-operator-eyebrow">Data Hub</p>
+              <h2 className="module-operator-title">Keep project data organized for {workspace?.name ?? "Planning Workspace"}</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Light surfaces now hold the operator record work. Dark treatment is reserved for top-level posture and
-            module-wide governance signal.
+            Keep datasets, linked projects, and source information organized so teams can find the right information quickly.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Workspace plan: {titleize(workspace?.plan ?? "pilot")}</div>
-            <div className="module-operator-item">Authenticated records stay scoped to workspace membership instead of hidden shared state.</div>
-            <div className="module-operator-item">Projects can now expose linked datasets directly, which closes the loop between project control rooms and the data fabric below them.</div>
+            <div className="module-operator-item">Datasets stay scoped to the current workspace.</div>
+            <div className="module-operator-item">Projects can link directly to the data they rely on.</div>
           </div>
         </article>
       </header>
@@ -382,10 +381,9 @@ export default async function DataHubPage() {
           <div className="flex items-start gap-3 text-sm">
             <ShieldAlert className="mt-0.5 h-4.5 w-4.5 shrink-0" />
             <div>
-              <p className="font-semibold">Data Hub migration has not been applied to the current database yet.</p>
+              <p className="font-semibold">The latest Data Hub database update has not been applied yet.</p>
               <p className="mt-1 opacity-90">
-                The UI is wired and build-safe, but live records will remain empty until the latest Supabase migration is
-                applied. This guardrail keeps the module from crashing before the schema lands.
+                Live records will stay empty until the latest database update is applied. This prevents the page from failing before the schema is ready.
               </p>
             </div>
           </div>

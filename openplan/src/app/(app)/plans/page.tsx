@@ -237,7 +237,7 @@ export default async function PlansPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Foundation ready</p>
               <p className="module-summary-value">{readyFoundationCount}</p>
-              <p className="module-summary-detail">Transparent readiness only: linked artifacts plus core metadata.</p>
+              <p className="module-summary-detail">Plans with the core information in place for review.</p>
             </div>
           </div>
         </article>
@@ -248,18 +248,17 @@ export default async function PlansPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Readiness posture</p>
-              <h2 className="module-operator-title">No fake completeness, only explicit planning basis</h2>
+              <p className="module-operator-eyebrow">Planning records</p>
+              <h2 className="module-operator-title">Keep plan information clear and reviewable</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            This first pass keeps plans operator-facing: metadata, audit-safe linkages, and a plain readiness basis that
-            shows what is present and what is still missing.
+            Keep plan records connected to related projects, scenarios, engagement work, and reports.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Primary project linkage is separate from additional project records.</div>
-            <div className="module-operator-item">Scenario, engagement, and report coverage can come from explicit links or the linked project.</div>
-            <div className="module-operator-item">Readiness is a transparent checklist, not a hidden score.</div>
+            <div className="module-operator-item">Plans can link to one primary project and other related projects.</div>
+            <div className="module-operator-item">Scenario, engagement, and report links stay visible from the plan record.</div>
+            <div className="module-operator-item">Review status shows what is complete and what still needs attention.</div>
           </div>
         </article>
       </header>
@@ -335,7 +334,7 @@ export default async function PlansPage({
             <div className="mt-5">
               <EmptyState
                 title="No plans yet"
-                description="Create the first plan record to establish a formal planning object and its readiness basis."
+                description="Create the first plan record to organize scope, links, and review status."
               />
             </div>
           ) : (

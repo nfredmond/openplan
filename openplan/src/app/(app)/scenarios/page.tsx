@@ -122,13 +122,12 @@ export default async function ScenariosPage({
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <GitCompareArrows className="h-3.5 w-3.5" />
-            Scenario registry live
+            Scenario planning
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Scenario sets now have a durable catalog</h1>
+            <h1 className="module-intro-title">Scenarios</h1>
             <p className="module-intro-description">
-              Baselines and alternatives can now be registered against real projects, linked to runs, and reopened later
-              as planning artifacts instead of one-off comparison states.
+              Compare alternatives, keep a clear baseline, and revisit earlier scenario work when a project changes.
             </p>
           </div>
 
@@ -136,12 +135,12 @@ export default async function ScenariosPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Scenario sets</p>
               <p className="module-summary-value">{scenarioSets.length}</p>
-              <p className="module-summary-detail">Project-linked planning sets with explicit baseline identity.</p>
+              <p className="module-summary-detail">Saved scenario groups linked to projects and plans.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active</p>
               <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">Sets currently in active comparison or review posture.</p>
+              <p className="module-summary-detail">Scenario sets currently being reviewed or compared.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Alternatives</p>

@@ -179,7 +179,7 @@ export default async function EngagementPage({
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Operational load</p>
+              <p className="module-summary-label">Active items</p>
               <p className="module-summary-value">{totalItems}</p>
               <p className="module-summary-detail">
                 {totalCategories} categories and {recentActivityItems} recently active items across listed campaigns.
@@ -194,18 +194,18 @@ export default async function EngagementPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Moderation posture</p>
-              <h2 className="module-operator-title">Engagement stays manageable</h2>
+              <p className="module-operator-eyebrow">Engagement</p>
+              <h2 className="module-operator-title">Keep public input organized and reviewable</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Keep public input organized with a clear moderation flow and a shareable public portal, without turning the app into a complex survey builder.
+            Organize comments, categories, and campaign status so public input is easy to review and summarize.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Campaigns can stand alone or connect to a project, but they always stay attached to the workspace.</div>
-            <div className="module-operator-item">Categories keep input organized for moderation and reporting.</div>
-            <div className="module-operator-item">Items track status, source, map signal, and team notes from day one.</div>
-            <div className="module-operator-item">Public share links stay staged until a campaign is Active, then run through moderated intake.</div>
+            <div className="module-operator-item">Campaigns can stand alone or connect to a project.</div>
+            <div className="module-operator-item">Categories keep comments organized for review and reporting.</div>
+            <div className="module-operator-item">Items track status, source, map location, and team notes.</div>
+            <div className="module-operator-item">Share links stay disabled until a campaign is ready to open.</div>
           </div>
         </article>
       </header>
