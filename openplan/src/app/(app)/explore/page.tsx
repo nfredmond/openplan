@@ -2472,7 +2472,7 @@ export default function ExplorePage() {
       : "tract";
 
   return (
-    <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
+    <section className="grid min-h-[calc(100vh-7rem)] gap-0 overflow-hidden rounded-[30px] border border-white/10 bg-[#081019] shadow-[0_36px_120px_rgba(0,0,0,0.35)] lg:grid-cols-[minmax(0,1fr)_420px]">
       <div className="relative overflow-hidden rounded-[30px] border border-slate-800/80 bg-[linear-gradient(180deg,#08111a_0%,#0d1722_100%)] shadow-[0_28px_80px_rgba(3,10,18,0.28)]">
         <div ref={mapContainerRef} className="h-[720px] min-h-[720px] w-full" />
 
@@ -2493,7 +2493,7 @@ export default function ExplorePage() {
           <p className="mt-4 text-sm leading-6 text-slate-300/78">{analysisSummary}</p>
         </div>
 
-        <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-2.5rem)] max-w-[min(84%,320px)] overflow-y-auto pr-1 sm:right-5 sm:top-5">
+        <div className="hidden absolute right-4 top-4 z-10 max-h-[calc(100%-2.5rem)] max-w-[min(84%,320px)] overflow-y-auto pr-1 sm:right-5 sm:top-5">
           <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -2928,13 +2928,19 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <div className="space-y-5">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Analysis Studio</CardTitle>
-            <CardDescription>Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5">
+      <aside className="flex h-[720px] min-h-[720px] flex-col overflow-y-auto border-l border-white/10 bg-[rgba(7,14,20,0.96)]">
+        <div className="border-b border-white/10 px-5 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Analysis Studio</p>
+          <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor analysis workspace</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
+        </div>
+        <div className="space-y-5 px-5 py-4">
+          <div>
+            <div className="pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-white">Study setup</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-300/72">Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.</p>
+            </div>
+            <div className="space-y-3.5">
             <Input
               value={workspaceId}
               onChange={(event) => setWorkspaceId(event.target.value)}
@@ -3229,8 +3235,9 @@ export default function ExplorePage() {
               </Button>
             </div>
             {error ? <ErrorState compact title="Please review" description={error} /> : null}
-          </CardContent>
-        </Card>
+            </div>
+          </div>
+        </div>
 
         {analysisResult ? (
           <>
@@ -3977,7 +3984,7 @@ export default function ExplorePage() {
           comparisonRunTitle={comparisonRun?.title ?? null}
           comparisonRunCreatedAt={comparisonRun?.created_at ?? null}
         />
-      </div>
+      </aside>
     </section>
   );
 }
