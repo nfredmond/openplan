@@ -40,7 +40,7 @@ This is not blind optimism. It rests on a narrower but still real evidence base:
 ## Operating rule after this waiver
 
 Use this posture going forward:
-- **Operational assumption:** payments are treated as working for now.
+- **Operational posture:** payments are treated as operationally sufficient for the current supervised pilot boundary.
 - **Evidence posture:** the canary preflight is ready, but no fresh same-cycle real paid checkout was executed.
 - **Disclosure posture:** if billing-proof strength matters, describe it as historical live payment evidence plus current production billing proof plus explicit CEO waiver of the fresh paid canary.
 

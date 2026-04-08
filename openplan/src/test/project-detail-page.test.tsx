@@ -368,7 +368,7 @@ describe("ProjectDetailPage", () => {
     await renderPage();
 
     expect(
-      screen.getByText(/No report records linked to this project yet\./i)
+      screen.getByText(/No reports are linked to this project yet\./i)
     ).toBeInTheDocument();
   });
 });

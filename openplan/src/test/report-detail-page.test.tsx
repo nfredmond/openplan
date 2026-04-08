@@ -536,7 +536,7 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Civil rights plan is still missing\./i)).toBeInTheDocument();
     expect(screen.getByText(/Missing artifacts: G02_E03\./i)).toBeInTheDocument();
     expect(screen.getByText(/3 operator control evidence items/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open governance/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Review project settings/i })).toHaveAttribute(
       "href",
       "/projects/project-1#project-governance"
     );
@@ -621,7 +621,7 @@ describe("ReportDetailPage", () => {
       "href",
       "/projects/project-1"
     );
-    expect(screen.getByRole("link", { name: /Review governance/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Review project settings/i })).toHaveAttribute(
       "href",
       "/projects/project-1#project-governance"
     );
