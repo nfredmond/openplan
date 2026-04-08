@@ -60,7 +60,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         const response = await fetch(`/api/assistant/context?${params.toString()}`);
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to load copilot context");
+          throw new Error(payload?.error ?? "Failed to load Planner Agent context");
         }
 
         const payload = (await response.json()) as { preview: AssistantPreview };
@@ -80,7 +80,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         if (ignore) return;
         setPreview(null);
         setMessages([]);
-        setError(loadError instanceof Error ? loadError.message : "Failed to load copilot context");
+        setError(loadError instanceof Error ? loadError.message : "Failed to load Planner Agent context");
       } finally {
         if (!ignore) {
           setLoadingContext(false);
@@ -131,7 +131,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error ?? "Failed to build copilot response");
+        throw new Error(payload?.error ?? "Failed to build Planner Agent response");
       }
 
       const payload = (await response.json()) as { response: AssistantResponse };
@@ -146,7 +146,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       ]);
       setDraft("");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to build copilot response");
+      setError(submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response");
     } finally {
       setResponding(false);
     }
@@ -164,12 +164,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         onClick={() => setOpen(true)}
       >
         <Sparkles className="h-4 w-4 text-emerald-300" />
-        <span className="hidden sm:inline">Copilot</span>
+        <span>Planner Agent</span>
       </Button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
-          <button type="button" className="flex-1 cursor-default" aria-label="Close copilot overlay" onClick={() => setOpen(false)} />
+        <div className="fixed inset-0 z-[90] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
+          <button type="button" className="flex-1 cursor-default" aria-label="Close Planner Agent overlay" onClick={() => setOpen(false)} />
           <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
             <div className="border-b border-white/8 px-5 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
@@ -179,7 +179,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       <Sparkles className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate-400">OpenPlan copilot</p>
+                      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Planner Agent</p>
                       <h2 className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
                     </div>
                   </div>
@@ -193,7 +193,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   size="icon-sm"
                   className="shrink-0 rounded-2xl text-slate-300 hover:bg-white/7 hover:text-white"
                   onClick={() => setOpen(false)}
-                  aria-label="Close copilot"
+                  aria-label="Close Planner Agent"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -233,7 +233,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   {loadingContext ? (
                     <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
-                      Loading grounded copilot context…
+                      Loading Planner Agent context…
                     </div>
                   ) : null}
 
@@ -269,7 +269,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         <div key={message.id} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
                           <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
-                            Copilot grounding
+                            Planning context
                           </div>
                           <p className="text-sm leading-relaxed text-slate-100">{message.preview.summary}</p>
                           <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
@@ -347,12 +347,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
               <div className="border-t border-white/8 px-5 py-4 sm:px-6">
                 <label className="mb-2 block text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                  Ask this record
+                  Ask Planner Agent
                 </label>
                 <Textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  placeholder="Ask about blockers, readiness, report release posture, or run deltas…"
+                  placeholder="Ask about project status, planning assumptions, report needs, or next steps…"
                   className="min-h-[108px] border-white/10 bg-white/[0.04] text-slate-50 placeholder:text-slate-400/75"
                 />
                 <div className="mt-3 flex items-center justify-between gap-3">

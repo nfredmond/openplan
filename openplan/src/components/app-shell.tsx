@@ -197,7 +197,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
         <header className="app-shell-toolbar sticky top-0 z-30 border-b border-white/[0.06] backdrop-blur-xl">
           <div className="relative flex flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div className="flex items-center justify-between gap-2 lg:justify-end">
+            <div className="relative z-[80] flex items-center justify-between gap-2 lg:justify-end">
               <AppCopilot workspaceId={membership?.workspace_id ?? null} workspaceName={workspaceName} />
               <div className="hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] px-3.5 py-2 text-sm text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:block">
                 <p className="font-medium text-white">{user?.email ?? "Guest session"}</p>

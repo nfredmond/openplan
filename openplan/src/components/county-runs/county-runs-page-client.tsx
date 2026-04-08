@@ -167,7 +167,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
       {!error && !loading && items.length === 0 ? (
         <StateBlock
           title="No county runs yet"
-          description="Once county onboarding jobs are created, they will appear here with stage truth, bootstrap posture, and detail links for artifacts and validation guidance."
+          description="County modeling runs will appear here as they are created, along with status, next steps, and links to details."
           tone="neutral"
         />
       ) : null}
@@ -176,7 +176,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent runs</p>
-            <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">Current county onboarding records</h2>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">County validation runs</h2>
           </div>
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {items.length} visible
@@ -214,12 +214,12 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
               <CardContent className="space-y-4 text-sm">
                 {stageReasonLabel ? (
                   <div>
-                    <div className="font-medium text-foreground">Why this stage</div>
+                    <div className="font-medium text-foreground">Current status</div>
                     <p className="mt-1 text-muted-foreground">{stageReasonLabel}</p>
                   </div>
                 ) : null}
                 <div>
-                  <div className="font-medium text-foreground">Allowed claim</div>
+                  <div className="font-medium text-foreground">What this run supports</div>
                   <p className="mt-1 text-muted-foreground">{card.allowedClaim}</p>
                 </div>
                 <div>
@@ -227,7 +227,7 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
                   <p className="mt-1 text-muted-foreground">{card.nextAction}</p>
                 </div>
                 <div>
-                  <div className="font-medium text-foreground">Execution status</div>
+                  <div className="font-medium text-foreground">Run status</div>
                   <p className="mt-1 text-muted-foreground">{enqueueHelp}</p>
                   {item.lastEnqueuedAt ? (
                     <p className="mt-1 text-xs text-muted-foreground">

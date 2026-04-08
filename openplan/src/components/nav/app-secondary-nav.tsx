@@ -30,7 +30,6 @@ const sectionMap: Array<{
       title: "Analysis Studio",
       items: [
         { href: "/explore", label: "Corridor Analysis" },
-        { href: "/scenarios", label: "Scenarios" },
         { href: "/reports", label: "Reports" },
       ],
     },
@@ -71,10 +70,10 @@ const sectionMap: Array<{
   {
     match: ["/scenarios", "/models", "/data-hub", "/county-runs"],
     section: {
-      title: "Modeling & Data",
+      title: "Transportation Modeling",
       items: [
-        { href: "/scenarios", label: "Scenarios" },
         { href: "/models", label: "Models" },
+        { href: "/scenarios", label: "Scenarios" },
         { href: "/county-runs", label: "County Validation" },
         { href: "/data-hub", label: "Data Hub" },
       ],

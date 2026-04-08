@@ -243,13 +243,12 @@ export default async function ModelsPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Models v1 is deliberately metadata-first. It shows what is configured, what evidence is linked, and what is
-            still missing before a run or report can be trusted downstream.
+            Use this page to keep model descriptions, assumptions, related scenarios, and results organized for planning review.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Primary project and scenario anchors keep the modeling record tied to planning context.</div>
-            <div className="module-operator-item">Data Hub datasets, plans, reports, and recorded runs can be linked without inventing duplicate concepts.</div>
-            <div className="module-operator-item">Filters expose which models are ready, which still have gaps, and which already support downstream planning records.</div>
+            <div className="module-operator-item">Link each model to the project or scenario it supports.</div>
+            <div className="module-operator-item">Keep related datasets, reports, and results connected in one place.</div>
+            <div className="module-operator-item">Use filters to see which models are ready to review and which still need work.</div>
           </div>
         </article>
       </header>
