@@ -7,7 +7,7 @@
       "url": "https://mcp.vercel.com"
     },
     "github": {
-      "command": "/home/nathaniel/.openclaw/workspace/scripts/github_mcp.sh"
+      "command": "/home/narford/.openclaw/workspace/scripts/github_mcp.sh"
     }
   }
 }

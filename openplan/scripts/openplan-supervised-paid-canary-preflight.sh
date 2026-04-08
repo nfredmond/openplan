@@ -38,6 +38,77 @@ require_bin() {
   fi
 }
 
+stripe_price_is_valid() {
+  local file="$1"
+  python3 - "$file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+ok = (
+    data.get("id") is not None
+    and data.get("livemode") is True
+    and data.get("active") is True
+    and data.get("type") == "recurring"
+    and ((data.get("recurring") or {}).get("interval") == "month")
+    and int(data.get("unit_amount") or 0) > 0
+)
+
+sys.exit(0 if ok else 1)
+PY
+}
+
+stripe_price_field() {
+  local file="$1"
+  local field="$2"
+  python3 - "$file" "$field" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+field = sys.argv[2]
+if field == "summary":
+    print("\t".join([
+        str(data.get("id") or "n/a"),
+        "live" if data.get("livemode") else "test",
+        str(data.get("currency") or "n/a"),
+        str((data.get("unit_amount") or 0) / 100),
+        str((data.get("recurring") or {}).get("interval") or "n/a"),
+    ]))
+elif field == "currency":
+    print(data.get("currency") or "usd")
+elif field == "amount":
+    print(str((data.get("unit_amount") or 0) / 100))
+elif field == "interval":
+    print((data.get("recurring") or {}).get("interval") or "n/a")
+PY
+}
+
+workspace_snapshot_field() {
+  local file="$1"
+  local field="$2"
+  python3 - "$file" "$field" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+workspace = data.get("workspace") or {}
+field = sys.argv[2]
+if field == "name":
+    print(workspace.get("name") or "unknown")
+elif field == "status":
+    print(workspace.get("subscription_status") or "n/a")
+elif field == "plan":
+    print(workspace.get("subscription_plan") or "n/a")
+PY
+}
+
 is_uuid() {
   [[ "$1" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ ]]
 }
@@ -100,8 +171,8 @@ if ! is_uuid "$WORKSPACE_ID"; then
 fi
 
 require_bin curl
-require_bin jq
 require_bin node
+require_bin python3
 
 RUN_DATE="$(TZ="$TIMEZONE" date +%F)"
 RUN_STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -203,7 +274,7 @@ if [[ "$ALIAS_PRIMARY_STATUS" =~ ^(200|301|302|307|308)$ ]]; then
   ALIAS_PROTECTION_DETAIL="Canonical alias returned HTTP $ALIAS_PRIMARY_STATUS without needing a bypass secret."
   ALIAS_EFFECTIVE_MODE="direct"
 elif [[ "$ALIAS_PRIMARY_STATUS" =~ ^(401|403)$ ]]; then
-  if grep -qi 'x-vercel-protection-bypass\|x-vercel-set-bypass-cookie\|vercel authentication\|authentication required\|deployment protection' "$ALIAS_HEADERS_LOG"; then
+  if grep -qi '_vercel_sso_nonce\|x-vercel-protection-bypass\|x-vercel-set-bypass-cookie\|vercel authentication\|authentication required\|deployment protection' "$ALIAS_HEADERS_LOG"; then
     ALIAS_PROTECTION_STATE="protected"
     ALIAS_PROTECTION_DETAIL="Canonical alias returned HTTP $ALIAS_PRIMARY_STATUS and appears to be behind Vercel deployment protection."
     if [[ -n "$VERCEL_PROTECTION_BYPASS_SECRET" ]]; then
@@ -231,14 +302,7 @@ if [[ -n "$STRIPE_KEY" && -n "$STARTER_PRICE_ID" ]]; then
   curl -sS "https://api.stripe.com/v1/prices/$STARTER_PRICE_ID" \
     -u "$STRIPE_KEY:" > "$STARTER_PRICE_JSON"
 
-  if jq -e '
-    .id != null
-    and .livemode == true
-    and .active == true
-    and .type == "recurring"
-    and .recurring.interval == "month"
-    and (.unit_amount | tonumber) > 0
-  ' "$STARTER_PRICE_JSON" >/dev/null; then
+  if stripe_price_is_valid "$STARTER_PRICE_JSON"; then
     PRICE_CHECK_OK=1
   else
     BLOCKERS+=("Starter price $STARTER_PRICE_ID is not a live active recurring monthly non-zero price")
@@ -247,13 +311,33 @@ if [[ -n "$STRIPE_KEY" && -n "$STARTER_PRICE_ID" ]]; then
   curl -sS https://api.stripe.com/v1/webhook_endpoints \
     -u "$STRIPE_KEY:" > "$WEBHOOKS_JSON"
 
-  if jq -e --arg expected_url "$WEBHOOK_URL" '
-    any(.data[]?; .url == $expected_url and .status == "enabled"
-      and (.enabled_events | index("checkout.session.completed")) != null
-      and (.enabled_events | index("customer.subscription.created")) != null
-      and (.enabled_events | index("customer.subscription.updated")) != null
-      and (.enabled_events | index("customer.subscription.deleted")) != null)
-  ' "$WEBHOOKS_JSON" >/dev/null; then
+  if EXPECTED_WEBHOOK_URL="$WEBHOOK_URL" python3 - "$WEBHOOKS_JSON" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+expected = os.environ["EXPECTED_WEBHOOK_URL"]
+required = {
+    "checkout.session.completed",
+    "customer.subscription.created",
+    "customer.subscription.updated",
+    "customer.subscription.deleted",
+}
+
+with open(path, "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+ok = any(
+    item.get("url") == expected
+    and item.get("status") == "enabled"
+    and required.issubset(set(item.get("enabled_events") or []))
+    for item in (data.get("data") or [])
+)
+
+sys.exit(0 if ok else 1)
+PY
+  then
     WEBHOOK_CHECK_OK=1
   else
     BLOCKERS+=("Stripe does not show an enabled webhook endpoint at $WEBHOOK_URL with the required subscription events")
@@ -266,10 +350,10 @@ WORKSPACE_PLAN="unavailable"
 STARTER_PRICE_SUMMARY="unavailable"
 STARTER_PRICE_DISPLAY="unavailable"
 if [[ -f "$STARTER_PRICE_JSON" ]]; then
-  STARTER_PRICE_SUMMARY="$(jq -r '[.id, (if .livemode then "live" else "test" end), (.currency // "n/a"), ((.unit_amount // 0) / 100 | tostring), (.recurring.interval // "n/a")] | @tsv' "$STARTER_PRICE_JSON")"
-  STARTER_PRICE_CURRENCY="$(jq -r '.currency // "usd"' "$STARTER_PRICE_JSON")"
-  STARTER_PRICE_AMOUNT="$(jq -r '((.unit_amount // 0) / 100 | tostring)' "$STARTER_PRICE_JSON")"
-  STARTER_PRICE_INTERVAL="$(jq -r '.recurring.interval // "n/a"' "$STARTER_PRICE_JSON")"
+  STARTER_PRICE_SUMMARY="$(stripe_price_field "$STARTER_PRICE_JSON" summary)"
+  STARTER_PRICE_CURRENCY="$(stripe_price_field "$STARTER_PRICE_JSON" currency)"
+  STARTER_PRICE_AMOUNT="$(stripe_price_field "$STARTER_PRICE_JSON" amount)"
+  STARTER_PRICE_INTERVAL="$(stripe_price_field "$STARTER_PRICE_JSON" interval)"
   STARTER_PRICE_DISPLAY="${STARTER_PRICE_AMOUNT} ${STARTER_PRICE_CURRENCY}/${STARTER_PRICE_INTERVAL}"
 fi
 
@@ -328,9 +412,9 @@ run().catch((error) => {
 NODE
   ) > "$WORKSPACE_SNAPSHOT_JSON"; then
     WORKSPACE_SNAPSHOT_OK=1
-    WORKSPACE_NAME="$(jq -r '.workspace.name' "$WORKSPACE_SNAPSHOT_JSON")"
-    WORKSPACE_STATUS="$(jq -r '.workspace.subscription_status // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
-    WORKSPACE_PLAN="$(jq -r '.workspace.subscription_plan // "n/a"' "$WORKSPACE_SNAPSHOT_JSON")"
+    WORKSPACE_NAME="$(workspace_snapshot_field "$WORKSPACE_SNAPSHOT_JSON" name)"
+    WORKSPACE_STATUS="$(workspace_snapshot_field "$WORKSPACE_SNAPSHOT_JSON" status)"
+    WORKSPACE_PLAN="$(workspace_snapshot_field "$WORKSPACE_SNAPSHOT_JSON" plan)"
   else
     BLOCKERS+=("Failed to capture production workspace snapshot from Supabase service-role access")
   fi

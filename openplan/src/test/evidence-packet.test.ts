@@ -129,7 +129,7 @@ describe("evidence packet helpers", () => {
 
   it("formats labels and durations for the run surface", () => {
     expect(labelForEngineKey("deterministic_corridor_v1")).toBe("Deterministic Corridor");
-    expect(labelForEngineKey("aequilibrae")).toBe("Fast Screening");
+    expect(labelForEngineKey("aequilibrae")).toBe("AequilibraE");
     expect(labelForEngineKey("behavioral_demand")).toBe("Behavioral Demand");
     expect(labelForArtifactType("volumes_geojson")).toBe("Volumes Geojson");
     expect(labelForArtifactType("behavioral_kpi_summary_json")).toBe("Behavioral KPI Summary");

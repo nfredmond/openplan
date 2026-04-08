@@ -1,0 +1,14 @@
+========================================
+OpenPlan Starter Canary Monitor
+Time: 2026-04-07 03:39:26 UTC
+Since: last 240 minutes (epoch >= 1775518766)
+Workspace filter: 819138b9-37dd-4643-8825-419742d6b407
+Email filter: <none>
+Env file: /tmp/openplan.vercel.env
+========================================
+\n[Stripe events]
+  (no matching Stripe events found yet)
+\n[Supabase billing evidence]
+  workspaces: no matching rows
+  billing_events: no matching rows
+  webhook_receipts: no matching rows

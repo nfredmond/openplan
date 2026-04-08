@@ -19,6 +19,48 @@ Examples:
 USAGE
 }
 
+json_lines_for_events() {
+  python3 - "$WORKSPACE_ID" "$BILLING_EMAIL" <<'PY'
+import json
+import sys
+
+workspace_filter = sys.argv[1]
+email_filter = sys.argv[2].lower()
+
+try:
+    payload = json.load(sys.stdin)
+except json.JSONDecodeError:
+    sys.exit(0)
+
+for evt in payload.get("data") or []:
+    obj = evt.get("data", {}).get("object", {}) or {}
+    metadata = obj.get("metadata") or {}
+    workspace = (
+        metadata.get("workspaceId")
+        or metadata.get("workspace_id")
+        or obj.get("client_reference_id")
+        or ""
+    )
+    email = (
+        obj.get("customer_email")
+        or ((obj.get("customer_details") or {}).get("email"))
+        or obj.get("receipt_email")
+        or ""
+    )
+    if workspace_filter and workspace != workspace_filter:
+        continue
+    if email_filter and email.lower() != email_filter:
+        continue
+    print("\t".join([
+        str(evt.get("id") or ""),
+        str(evt.get("type") or ""),
+        str(evt.get("created") or ""),
+        str(workspace),
+        str(email),
+    ]))
+PY
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --workspace-id)
@@ -87,6 +129,11 @@ if [[ -z "$STRIPE_KEY" || -z "$SUPABASE_URL" || -z "$SUPABASE_SERVICE_ROLE_KEY" 
   exit 1
 fi
 
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Missing required dependency: python3"
+  exit 1
+fi
+
 SINCE_EPOCH="$(($(date +%s) - SINCE_MINUTES * 60))"
 
 print_header() {
@@ -127,18 +174,22 @@ print_stripe_section() {
     payload="$(fetch_stripe_events "$t")"
 
     local lines
-    lines="$(printf '%s' "$payload" | jq -r --arg ws "$WORKSPACE_ID" --arg em "$BILLING_EMAIL" '
-      .data[]
-      | . as $evt
-      | ($evt.data.object // {}) as $obj
-      | ($obj.metadata.workspaceId // $obj.metadata.workspace_id // $obj.client_reference_id // "") as $workspace
-      | ($obj.customer_email // $obj.customer_details.email // $obj.receipt_email // "") as $email
-      | ($ws == "" or ($workspace == $ws)) as $wsMatch
-      | ($em == "" or ((($email|ascii_downcase) == ($em|ascii_downcase)))) as $emMatch
-      | select($wsMatch and $emMatch)
-      | [(.id), (.type), (.created|tostring), ($workspace), ($email)]
-      | @tsv
-    ' || true)"
+    if command -v jq >/dev/null 2>&1; then
+      lines="$(printf '%s' "$payload" | jq -r --arg ws "$WORKSPACE_ID" --arg em "$BILLING_EMAIL" '
+        .data[]
+        | . as $evt
+        | ($evt.data.object // {}) as $obj
+        | ($obj.metadata.workspaceId // $obj.metadata.workspace_id // $obj.client_reference_id // "") as $workspace
+        | ($obj.customer_email // $obj.customer_details.email // $obj.receipt_email // "") as $email
+        | ($ws == "" or ($workspace == $ws)) as $wsMatch
+        | ($em == "" or ((($email|ascii_downcase) == ($em|ascii_downcase)))) as $emMatch
+        | select($wsMatch and $emMatch)
+        | [(.id), (.type), (.created|tostring), ($workspace), ($email)]
+        | @tsv
+      ' || true)"
+    else
+      lines="$(printf '%s' "$payload" | json_lines_for_events || true)"
+    fi
 
     if [[ -n "$lines" ]]; then
       any=1

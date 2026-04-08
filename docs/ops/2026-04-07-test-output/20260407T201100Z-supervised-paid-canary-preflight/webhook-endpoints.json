@@ -1,0 +1,44 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "we_1T75NaFRyHCgEytnnUoNE3Cn",
+      "object": "webhook_endpoint",
+      "api_version": "2026-02-25.clover",
+      "application": null,
+      "created": 1772592102,
+      "description": null,
+      "enabled_events": [
+        "checkout.session.completed",
+        "invoice.payment_failed",
+        "invoice.payment_succeeded",
+        "charge.refunded",
+        "customer.subscription.updated"
+      ],
+      "livemode": true,
+      "metadata": {},
+      "status": "enabled",
+      "url": "https://www.natfordplanning.com/api/commerce/webhook"
+    },
+    {
+      "id": "we_1T5zISFRyHCgEytnfwAi4dmw",
+      "object": "webhook_endpoint",
+      "api_version": null,
+      "application": null,
+      "created": 1772330392,
+      "description": "OpenPlan billing webhook rotated 2026-02-28",
+      "enabled_events": [
+        "checkout.session.completed",
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted"
+      ],
+      "livemode": true,
+      "metadata": {},
+      "status": "enabled",
+      "url": "https://openplan-natford.vercel.app/api/billing/webhook"
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/webhook_endpoints"
+}
