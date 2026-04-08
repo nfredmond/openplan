@@ -2460,11 +2460,9 @@ export default function ExplorePage() {
   }, [hoveredTract, tractMetric]);
 
   const mapExperienceReady = MAPBOX_ACCESS_TOKEN.length > 0;
-  const mapSummaryBadges = [
-    `Map engine: ${mapExperienceReady ? (mapReady ? "Mapbox live" : "Mapbox booting") : "Awaiting Mapbox token"}`,
-    `Data overlays: ${analysisResult ? "Live analysis result" : "Ready for upload"}`,
-    `Census connector: ${analysisResult?.metrics.dataQuality?.censusAvailable ? "Available" : "Configured path"}`,
-  ];
+  const analysisSummary = activeDatasetOverlay
+    ? `Current overlay: ${activeDatasetOverlay.name}`
+    : "Choose a corridor and add an overlay to begin comparing conditions.";
 
   const linkedDatasetPreview = analysisContext?.linkedDatasets.slice(0, 4) ?? [];
   const activeOverlayGeometryLabel = activeDatasetOverlay?.geometryAttachment === "analysis_corridor"
@@ -2492,13 +2490,7 @@ export default function ExplorePage() {
           <p className="mt-2 text-sm text-slate-300/86">
             Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {mapSummaryBadges.map((badge) => (
-              <span key={badge} className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-200/88">
-                {badge}
-              </span>
-            ))}
-          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-300/78">{analysisSummary}</p>
         </div>
 
         <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-2.5rem)] max-w-[min(84%,320px)] overflow-y-auto pr-1 sm:right-5 sm:top-5">
@@ -2761,7 +2753,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 right-4 z-10 max-h-[300px] max-w-[min(82%,300px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
+        <div className="mx-4 mb-4 mt-4 rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:mx-5 sm:mb-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <MapIcon className="h-3.5 w-3.5" />
             Tract legend
@@ -2842,11 +2834,11 @@ export default function ExplorePage() {
                     <div className="analysis-sidepanel-kicker">
                       <span className="analysis-sidepanel-chip">Crash data</span>
                     </div>
-                    <p className="analysis-sidepanel-title">SWITRS point inspection</p>
+                    <p className="analysis-sidepanel-title">Crash details</p>
                     <p className="analysis-sidepanel-body">
                       {switrsPointLayerAvailable
                         ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}`
-                        : "Point-level crash inspection appears only when the run uses local SWITRS geometry."}
+                        : "Crash details appear only when the current run uses local SWITRS geometry."}
                     </p>
                   </div>
                   <StatusBadge tone={switrsPointLayerAvailable ? "warning" : "neutral"}>{switrsPointLayerAvailable ? "Live" : "No point layer"}</StatusBadge>
@@ -2881,8 +2873,8 @@ export default function ExplorePage() {
                 ) : (
                   <p className="analysis-sidepanel-body">
                     {switrsPointLayerAvailable
-                      ? "Hover a SWITRS collision point to inspect its severity and vulnerable-road-user flags."
-                      : "Point-level crash inspection appears only when the run uses local SWITRS geometry."}
+                      ? "Hover a SWITRS collision point to inspect severity and vulnerable road user flags."
+                      : "Crash details appear only when the current run uses local SWITRS geometry."}
                   </p>
                 )}
               </div>
