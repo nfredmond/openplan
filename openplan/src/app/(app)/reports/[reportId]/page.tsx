@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
+import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -898,11 +899,11 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   };
 
   return (
-    <section className="space-y-6">
+    <section className="module-page space-y-6">
       {/* ── Hero row ─────────────────────────────────────────── */}
       <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         {/* Left: report identity */}
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
+        <article className="module-intro-card">
           <div className="module-intro-kicker">
             <ScrollText className="h-3.5 w-3.5" />
             Report detail
@@ -930,37 +931,28 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
           </div>
 
-          {/* Stat tiles */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Project
-              </p>
-              <p className="mt-1 truncate text-sm font-semibold text-foreground">
+          <div className="module-summary-grid cols-4 mt-6">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Project</p>
+              <p className="module-summary-value truncate text-xl">
                 {project?.name ?? "Unknown"}
               </p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Workspace
-              </p>
-              <p className="mt-1 truncate text-sm font-semibold text-foreground">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Workspace</p>
+              <p className="module-summary-value truncate text-xl">
                 {workspace?.name ?? "Unknown"}
               </p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Linked runs
-              </p>
-              <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Linked runs</p>
+              <p className="module-summary-value text-xl tabular-nums">
                 {runs.length}
               </p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Generated
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Generated</p>
+              <p className="module-summary-value text-base">
                 {report.generated_at
                   ? formatDateTime(report.generated_at)
                   : "Not yet"}
@@ -999,7 +991,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       {/* ── Composition + provenance row ─────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         {/* Left: packet composition */}
-        <article className="space-y-6 rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+        <article className="module-section-surface space-y-6">
           {/* Sections */}
           <div>
             <div className="flex items-center gap-3">
@@ -1140,7 +1132,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         {/* Right column */}
         <div className="space-y-6">
           {/* Source history */}
-          <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+          <article className="module-section-surface">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
                 <ShieldCheck className="h-5 w-5" />
@@ -1634,7 +1626,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           </article>
 
           {/* Related links */}
-          <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+          <article className="module-section-surface">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-500/10 text-slate-700 dark:text-slate-300">
                 <Link2 className="h-5 w-5" />
@@ -1648,47 +1640,43 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 </h2>
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2.5">
+            <MetaList className="mt-4">
               {project ? (
-                <Link
-                  href={`/projects/${project.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
-                >
-                  <FileOutput className="h-4 w-4" />
-                  Open project
-                </Link>
+                <MetaItem>
+                  <Link href={`/projects/${project.id}`} className="inline-flex items-center gap-2 transition hover:text-primary">
+                    <FileOutput className="h-4 w-4" />
+                    Open project
+                  </Link>
+                </MetaItem>
               ) : null}
               {engagementCampaign ? (
-                <Link
-                  href={`/engagement/${engagementCampaign.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
-                >
-                  <Link2 className="h-4 w-4" />
-                  Open engagement campaign
-                </Link>
+                <MetaItem>
+                  <Link href={`/engagement/${engagementCampaign.id}`} className="inline-flex items-center gap-2 transition hover:text-primary">
+                    <Link2 className="h-4 w-4" />
+                    Open engagement campaign
+                  </Link>
+                </MetaItem>
               ) : null}
               {engagementPublicHref ? (
-                <Link
-                  href={engagementPublicHref}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
-                >
-                  <Link2 className="h-4 w-4" />
-                  Open public engagement page
-                </Link>
+                <MetaItem>
+                  <Link href={engagementPublicHref} className="inline-flex items-center gap-2 transition hover:text-primary">
+                    <Link2 className="h-4 w-4" />
+                    Open public engagement page
+                  </Link>
+                </MetaItem>
               ) : null}
-              <Link
-                href="/reports"
-                className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
-              >
-                <ScrollText className="h-4 w-4" />
-                Back to catalog
-              </Link>
-            </div>
+              <MetaItem>
+                <Link href="/reports" className="inline-flex items-center gap-2 transition hover:text-primary">
+                  <ScrollText className="h-4 w-4" />
+                  Back to catalog
+                </Link>
+              </MetaItem>
+            </MetaList>
           </article>
 
           {/* HTML preview */}
           {latestHtml ? (
-            <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+            <article className="module-section-surface">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">

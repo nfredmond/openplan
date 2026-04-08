@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } f
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
+import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   formatReportStatusLabel,
@@ -293,39 +294,48 @@ export default async function ScenarioSetDetailPage({
             </div>
 
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              <div className="rounded-[22px] border border-border/70 bg-background/80 p-5">
-                <p className="text-sm font-semibold tracking-tight">Analysis Studio handoff</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Ready alternatives open with the attached run as current and the baseline pinned for direct review in Analysis Studio.
-                </p>
-                <div className="mt-4 space-y-2">
-                  {alternativeEntries.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No alternatives registered yet.</p>
-                  ) : (
-                    alternativeEntries.slice(0, 3).map((entry) => (
-                      <Link
-                        key={entry.id}
-                        href={buildScenarioStudioHref({
-                          runId: entry.attached_run_id,
-                          baselineRunId: baselineEntry?.attached_run_id ?? null,
-                          scenarioSetId: scenarioSet.id,
-                          entryId: entry.id,
-                        })}
-                        className="module-record-chip transition hover:border-primary/40 hover:text-primary"
-                      >
-                        Review {entry.label}
-                      </Link>
-                    ))
-                  )}
+              <div className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <p className="module-record-title text-[1rem]">Analysis Studio handoff</p>
+                    <p className="module-record-summary">
+                      Ready alternatives open with the attached run as current and the baseline pinned for direct review in Analysis Studio.
+                    </p>
+                  </div>
                 </div>
+                {alternativeEntries.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No alternatives registered yet.</p>
+                ) : (
+                  <MetaList>
+                    {alternativeEntries.slice(0, 3).map((entry) => (
+                      <MetaItem key={entry.id}>
+                        <Link
+                          href={buildScenarioStudioHref({
+                            runId: entry.attached_run_id,
+                            baselineRunId: baselineEntry?.attached_run_id ?? null,
+                            scenarioSetId: scenarioSet.id,
+                            entryId: entry.id,
+                          })}
+                          className="transition hover:text-primary"
+                        >
+                          Review {entry.label}
+                        </Link>
+                      </MetaItem>
+                    ))}
+                  </MetaList>
+                )}
               </div>
 
-              <div className="rounded-[22px] border border-border/70 bg-background/80 p-5">
-                <p className="text-sm font-semibold tracking-tight">Report linkage</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Reports are surfaced when they already use this scenario set&apos;s attached runs. New comparison packets can be drafted from ready evidence.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+              <div className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <p className="module-record-title text-[1rem]">Report linkage</p>
+                    <p className="module-record-summary">
+                      Reports are surfaced when they already use this scenario set&apos;s attached runs. New comparison packets can be drafted from ready evidence.
+                    </p>
+                  </div>
+                </div>
+                <div className="module-record-kicker">
                   <StatusBadge tone={linkedReportsWithFreshness.length > 0 ? "success" : "neutral"}>
                     {linkedReportsWithFreshness.length} linked reports
                   </StatusBadge>
@@ -369,7 +379,7 @@ export default async function ScenarioSetDetailPage({
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <h3 className="module-record-title text-[1.05rem]">{card.candidateLabel} vs {card.baselineLabel}</h3>
-                            <Link href={card.analysisHref} className="module-record-chip transition hover:border-primary/40 hover:text-primary">
+                            <Link href={card.analysisHref} className="text-sm font-medium text-muted-foreground transition hover:text-primary">
                               Open in Studio
                             </Link>
                           </div>
@@ -409,16 +419,16 @@ export default async function ScenarioSetDetailPage({
               </p>
             </div>
 
-            <div className="mt-5 rounded-[22px] border border-border/70 bg-background/80 p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold tracking-tight">{project?.name ?? "Unknown project"}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+            <div className="mt-5 module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <h3 className="module-record-title text-[1.05rem]">{project?.name ?? "Unknown project"}</h3>
+                  <p className="module-record-summary">
                     {project?.summary || "No project summary yet. Use the project record to add fuller planning context."}
                   </p>
                 </div>
                 {project ? (
-                  <Link href={`/projects/${project.id}`} className="module-record-chip transition hover:border-primary/40 hover:text-primary">
+                  <Link href={`/projects/${project.id}`} className="text-sm font-medium text-muted-foreground transition hover:text-primary">
                     Open project
                   </Link>
                 ) : null}
@@ -457,16 +467,16 @@ export default async function ScenarioSetDetailPage({
               Lightweight linkage only: reports are shown when they already reference this scenario set&apos;s attached runs.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="module-record-kicker">
+            <StatusBadge tone="neutral">
               <FileStack className="h-3.5 w-3.5" />
               {linkedReportsWithFreshness.length} linked
-            </span>
+            </StatusBadge>
             {linkedReportAttentionCount > 0 ? (
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+              <StatusBadge tone="warning">
                 <AlertTriangle className="h-3.5 w-3.5" />
                 {linkedReportAttentionCount} need{linkedReportAttentionCount === 1 ? "s" : ""} packet attention
-              </span>
+              </StatusBadge>
             ) : null}
           </div>
         </div>
@@ -478,7 +488,7 @@ export default async function ScenarioSetDetailPage({
         ) : (
           <>
             <div
-              className={`mt-5 rounded-[22px] border p-5 ${
+              className={`module-note mt-5 ${
                 linkedReportAttentionCount > 0
                   ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
                   : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
@@ -540,12 +550,10 @@ export default async function ScenarioSetDetailPage({
                     </div>
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">{report.matchedRunIds.length} matching runs</span>
-                    <span className="module-record-chip">
-                      {report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}
-                    </span>
-                  </div>
+                  <MetaList>
+                    <MetaItem>{report.matchedRunIds.length} matching runs</MetaItem>
+                    <MetaItem>{report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}</MetaItem>
+                  </MetaList>
                 </Link>
               ))}
             </div>

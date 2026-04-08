@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
+import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
@@ -737,15 +738,15 @@ export default async function ProgramDetailPage({
                                 <p className="module-record-summary line-clamp-2">
                                   {model.summary || "No summary on file for this supporting model record."}
                                 </p>
-                                <div className="module-record-meta">
-                                  <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config pending"}</span>
-                                  <span className="module-record-chip">{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</span>
-                                  <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
-                                  <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
+                                <MetaList>
+                                  <MetaItem>{model.config_version ? `Config ${model.config_version}` : "Config pending"}</MetaItem>
+                                  <MetaItem>{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</MetaItem>
+                                  <MetaItem>{model.linkageCounts.runs} runs</MetaItem>
+                                  <MetaItem>{model.linkageCounts.reports} reports</MetaItem>
                                   {model.linkedPlanTitles.map((title) => (
-                                    <span key={`${model.id}-${title}`} className="module-record-chip">Plan {title}</span>
+                                    <MetaItem key={`${model.id}-${title}`}>Plan {title}</MetaItem>
                                   ))}
-                                </div>
+                                </MetaList>
                                 <p className="text-sm text-muted-foreground">
                                   {model.readiness.missingCheckLabels.length > 0
                                     ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
@@ -786,12 +787,12 @@ export default async function ProgramDetailPage({
                               <p className="module-record-summary line-clamp-2">
                                 {report.summary || "No summary on file for this linked packet record."}
                               </p>
-                              <div className="module-record-meta">
-                                <span className="module-record-chip">{report.artifactCount} artifacts</span>
-                                <span className="module-record-chip">
+                              <MetaList>
+                                <MetaItem>{report.artifactCount} artifacts</MetaItem>
+                                <MetaItem>
                                   {report.generated_at ? `Generated ${formatProgramDateTime(report.generated_at)}` : "Not generated"}
-                                </span>
-                              </div>
+                                </MetaItem>
+                              </MetaList>
                             </div>
                           </div>
                         </div>
@@ -828,10 +829,10 @@ export default async function ProgramDetailPage({
                               <p className="module-record-summary line-clamp-2">
                                 {campaign.summary || "No summary on file for this linked engagement campaign."}
                               </p>
-                              <div className="module-record-meta">
-                                <span className="module-record-chip">{campaign.approvedItemCount} approved items</span>
-                                <span className="module-record-chip">{campaign.pendingItemCount} pending items</span>
-                              </div>
+                              <MetaList>
+                                <MetaItem>{campaign.approvedItemCount} approved items</MetaItem>
+                                <MetaItem>{campaign.pendingItemCount} pending items</MetaItem>
+                              </MetaList>
                             </div>
                           </div>
                         </div>

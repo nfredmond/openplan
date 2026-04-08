@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Database, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
 import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
+import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
@@ -436,38 +437,58 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Primary project</p>
-                  {primaryProjectResult.data ? (
-                    <div className="mt-2 space-y-2">
-                      <Link href={`/projects/${primaryProjectResult.data.id}`} className="text-base font-semibold text-foreground hover:text-primary">
-                        {primaryProjectResult.data.name}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">
-                        {primaryProjectResult.data.status || "Status pending"}
-                        {primaryProjectResult.data.delivery_phase ? ` · ${primaryProjectResult.data.delivery_phase}` : ""}
-                      </p>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                <div className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <p className="module-section-label">Primary project</p>
+                      {primaryProjectResult.data ? (
+                        <>
+                          <Link href={`/projects/${primaryProjectResult.data.id}`} className="module-record-title hover:text-primary">
+                            {primaryProjectResult.data.name}
+                          </Link>
+                          <p className="module-record-summary">
+                            {primaryProjectResult.data.summary || "Project anchor is present for this model record."}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="module-record-summary">No primary project attached yet.</p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">No primary project attached yet.</p>
-                  )}
+                  </div>
+                  {primaryProjectResult.data ? (
+                    <MetaList>
+                      <MetaItem>{primaryProjectResult.data.status || "Status pending"}</MetaItem>
+                      {primaryProjectResult.data.delivery_phase ? <MetaItem>{primaryProjectResult.data.delivery_phase}</MetaItem> : null}
+                      <MetaItem>Updated {formatModelDateTime(primaryProjectResult.data.updated_at)}</MetaItem>
+                    </MetaList>
+                  ) : null}
                 </div>
 
-                <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Primary scenario set</p>
-                  {primaryScenarioResult.data ? (
-                    <div className="mt-2 space-y-2">
-                      <Link href={`/scenarios/${primaryScenarioResult.data.id}`} className="text-base font-semibold text-foreground hover:text-primary">
-                        {primaryScenarioResult.data.title}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">
-                        {primaryScenarioResult.data.planning_question || primaryScenarioResult.data.summary || "No planning question captured yet."}
-                      </p>
+                <div className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <p className="module-section-label">Primary scenario set</p>
+                      {primaryScenarioResult.data ? (
+                        <>
+                          <Link href={`/scenarios/${primaryScenarioResult.data.id}`} className="module-record-title hover:text-primary">
+                            {primaryScenarioResult.data.title}
+                          </Link>
+                          <p className="module-record-summary">
+                            {primaryScenarioResult.data.planning_question || primaryScenarioResult.data.summary || "No planning question captured yet."}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="module-record-summary">No primary scenario set attached yet.</p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">No primary scenario set attached yet.</p>
-                  )}
+                  </div>
+                  {primaryScenarioResult.data ? (
+                    <MetaList>
+                      <MetaItem>{primaryScenarioResult.data.status || "Scenario record"}</MetaItem>
+                      <MetaItem>Updated {formatModelDateTime(primaryScenarioResult.data.updated_at)}</MetaItem>
+                    </MetaList>
+                  ) : null}
                 </div>
               </div>
             </article>
@@ -546,13 +567,15 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                                   ) : (
                                     <p className="text-sm font-semibold text-foreground">{record.title}</p>
                                   )}
-                                  <div className="mt-2 flex flex-wrap gap-2">
+                                  <div className="mt-2 space-y-2">
                                     <StatusBadge tone="neutral">{record.statusLabel}</StatusBadge>
-                                    {record.meta.map((item) => (
-                                      <span key={`${record.id}-${item}`} className="module-record-chip">
-                                        {item}
-                                      </span>
-                                    ))}
+                                    {record.meta.length > 0 ? (
+                                      <MetaList>
+                                        {record.meta.map((item) => (
+                                          <MetaItem key={`${record.id}-${item}`}>{item}</MetaItem>
+                                        ))}
+                                      </MetaList>
+                                    ) : null}
                                   </div>
                                 </div>
                                 <p className="shrink-0 text-xs text-muted-foreground">{record.timestampLabel}</p>

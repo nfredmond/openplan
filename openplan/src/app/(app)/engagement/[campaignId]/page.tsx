@@ -8,6 +8,7 @@ import { EngagementItemComposer } from "@/components/engagement/engagement-item-
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
+import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
@@ -294,13 +295,13 @@ export default async function EngagementCampaignDetailPage({
                   <p className="module-record-summary">{handoffReadiness.nextAction}</p>
                 </div>
               </div>
-              <div className="module-record-meta">
+              <MetaList>
                 {handoffReadiness.checks.map((check) => (
-                  <span key={check.id} className="module-record-chip">
+                  <MetaItem key={check.id}>
                     {check.passed ? "Pass" : "Open"} · {check.label}
-                  </span>
+                  </MetaItem>
                 ))}
-              </div>
+              </MetaList>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -328,12 +329,12 @@ export default async function EngagementCampaignDetailPage({
                   </p>
                 </div>
               </div>
-              <div className="module-record-meta">
-                <span className="module-record-chip">Campaign status {titleizeEngagementValue(campaign.status)}</span>
-                <span className="module-record-chip">Recent activity {counts.recentActivity.count} items</span>
-                <span className="module-record-chip">{counts.geographyCoverage.geolocatedItems} geolocated</span>
-                <span className="module-record-chip">{reportRecords.length} linked reports</span>
-              </div>
+              <MetaList>
+                <MetaItem>Campaign status {titleizeEngagementValue(campaign.status)}</MetaItem>
+                <MetaItem>Recent activity {counts.recentActivity.count} items</MetaItem>
+                <MetaItem>{counts.geographyCoverage.geolocatedItems} geolocated</MetaItem>
+                <MetaItem>{reportRecords.length} linked reports</MetaItem>
+              </MetaList>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -378,11 +379,11 @@ export default async function EngagementCampaignDetailPage({
                     </p>
                   </div>
                 </div>
-                <div className="module-record-meta">
-                  <span className="module-record-chip">{counts.statusCounts.approved} approved total</span>
-                  <span className="module-record-chip">{counts.moderationQueue.readyForHandoffCount} approved + categorized</span>
-                  <span className="module-record-chip">{counts.moderationQueue.itemsWithNotesCount} with audit notes</span>
-                </div>
+                <MetaList>
+                  <MetaItem>{counts.statusCounts.approved} approved total</MetaItem>
+                  <MetaItem>{counts.moderationQueue.readyForHandoffCount} approved + categorized</MetaItem>
+                  <MetaItem>{counts.moderationQueue.itemsWithNotesCount} with audit notes</MetaItem>
+                </MetaList>
               </article>
 
               <article className="module-record-row">
@@ -402,11 +403,11 @@ export default async function EngagementCampaignDetailPage({
                     </p>
                   </div>
                 </div>
-                <div className="module-record-meta">
-                  <span className="module-record-chip">{counts.recentActivity.byStatus.pending} pending in window</span>
-                  <span className="module-record-chip">{counts.recentActivity.byStatus.flagged} flagged in window</span>
-                  <span className="module-record-chip">Last activity {fmtDateTime(counts.lastActivityAt)}</span>
-                </div>
+                <MetaList>
+                  <MetaItem>{counts.recentActivity.byStatus.pending} pending in window</MetaItem>
+                  <MetaItem>{counts.recentActivity.byStatus.flagged} flagged in window</MetaItem>
+                  <MetaItem>Last activity {fmtDateTime(counts.lastActivityAt)}</MetaItem>
+                </MetaList>
               </article>
             </div>
 
@@ -428,12 +429,12 @@ export default async function EngagementCampaignDetailPage({
                 </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="module-record-meta">
-                  <span className="module-record-chip">{counts.totalItems} total items</span>
-                  <span className="module-record-chip">{counts.moderationQueue.actionableCount} actionable review items</span>
-                  <span className="module-record-chip">{reportRecords.length} existing project reports</span>
-                  <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
-                </div>
+                <MetaList>
+                  <MetaItem>{counts.totalItems} total items</MetaItem>
+                  <MetaItem>{counts.moderationQueue.actionableCount} actionable review items</MetaItem>
+                  <MetaItem>{reportRecords.length} existing project reports</MetaItem>
+                  <MetaItem>{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</MetaItem>
+                </MetaList>
                 <EngagementReportCreateButton
                   campaign={campaign}
                   counts={counts}
@@ -489,14 +490,14 @@ export default async function EngagementCampaignDetailPage({
             </div>
           ) : (
             <div className="mt-5 space-y-3">
-              <div className="module-record-meta">
-                <span className="module-record-chip">{explicitlyLinkedReportCount} explicit campaign-source reports</span>
-                <span className="module-record-chip">{projectOnlyReportCount} project-linked only</span>
-                <span className="module-record-chip">{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</span>
-              </div>
+              <MetaList>
+                <MetaItem>{explicitlyLinkedReportCount} explicit campaign-source reports</MetaItem>
+                <MetaItem>{projectOnlyReportCount} project-linked only</MetaItem>
+                <MetaItem>{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</MetaItem>
+              </MetaList>
 
               <div
-                className={`rounded-[22px] border p-5 ${
+                className={`module-note ${
                   packetAttentionCount > 0
                     ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
                     : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
@@ -600,12 +601,12 @@ export default async function EngagementCampaignDetailPage({
                         </p>
                       </div>
                     </div>
-                    <div className="module-record-meta">
-                      <span className="module-record-chip">{Math.round(category.shareOfItems * 100)}% of campaign items</span>
-                      <span className="module-record-chip">{category.pendingCount} pending</span>
-                      <span className="module-record-chip">{category.approvedCount} approved</span>
-                      <span className="module-record-chip">Last activity {fmtDateTime(category.lastActivityAt)}</span>
-                    </div>
+                    <MetaList>
+                      <MetaItem>{Math.round(category.shareOfItems * 100)}% of campaign items</MetaItem>
+                      <MetaItem>{category.pendingCount} pending</MetaItem>
+                      <MetaItem>{category.approvedCount} approved</MetaItem>
+                      <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
+                    </MetaList>
                   </div>
                 ))}
 
@@ -620,11 +621,11 @@ export default async function EngagementCampaignDetailPage({
                         <p className="module-record-summary">{uncategorizedSummary.description}</p>
                       </div>
                     </div>
-                    <div className="module-record-meta">
-                      <span className="module-record-chip">{uncategorizedSummary.pendingCount} pending</span>
-                      <span className="module-record-chip">{uncategorizedSummary.flaggedCount} flagged</span>
-                      <span className="module-record-chip">Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</span>
-                    </div>
+                    <MetaList>
+                      <MetaItem>{uncategorizedSummary.pendingCount} pending</MetaItem>
+                      <MetaItem>{uncategorizedSummary.flaggedCount} flagged</MetaItem>
+                      <MetaItem>Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</MetaItem>
+                    </MetaList>
                   </div>
                 ) : null}
               </div>
@@ -667,12 +668,12 @@ export default async function EngagementCampaignDetailPage({
                           </p>
                         </div>
                       </div>
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">{source.categorizedCount} categorized</span>
-                        <span className="module-record-chip">{source.nonGeolocatedCount} non-geolocated</span>
-                        <span className="module-record-chip">{source.flaggedCount} flagged</span>
-                        <span className="module-record-chip">Last activity {fmtDateTime(source.lastActivityAt)}</span>
-                      </div>
+                      <MetaList>
+                        <MetaItem>{source.categorizedCount} categorized</MetaItem>
+                        <MetaItem>{source.nonGeolocatedCount} non-geolocated</MetaItem>
+                        <MetaItem>{source.flaggedCount} flagged</MetaItem>
+                        <MetaItem>Last activity {fmtDateTime(source.lastActivityAt)}</MetaItem>
+                      </MetaList>
                     </div>
                   ))}
               </div>
