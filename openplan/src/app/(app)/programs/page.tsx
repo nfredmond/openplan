@@ -275,9 +275,9 @@ export default async function ProgramsPage({
                 Review package posture by status, lane, or linked project and jump straight into the cycle record.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-inline-item">
               <FolderKanban className="h-3.5 w-3.5" />
-              {typedPrograms.length} total
+              <strong>{typedPrograms.length}</strong> total
             </span>
           </div>
 
@@ -323,12 +323,12 @@ export default async function ProgramsPage({
                   </div>
 
                   <div className="module-record-meta">
-                    <span className="module-record-chip">{program.cycle_name}</span>
-                    <span className="module-record-chip">{formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
-                    <span className="module-record-chip">{program.project?.name ?? "No primary project"}</span>
-                    <span className="module-record-chip">{program.linkageCounts.plans} plans</span>
-                    <span className="module-record-chip">{program.linkageCounts.reports} reports</span>
-                    <span className="module-record-chip">{program.linkageCounts.engagementCampaigns} campaigns</span>
+                    <span className="module-record-chip">Cycle {program.cycle_name}</span>
+                    <span className="module-record-chip">Window {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
+                    <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
+                    <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
+                    <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
+                    <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
                   </div>
                 </Link>
               ))}

@@ -528,7 +528,7 @@ export default async function ProgramDetailPage({
               <h2 className="module-section-title">Package basis and timing</h2>
               <p className="module-section-description">{workflow.packageDetail}</p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-inline-item">
               <ShieldCheck className="h-3.5 w-3.5" />
               {readiness.label}
             </span>
@@ -576,9 +576,9 @@ export default async function ProgramDetailPage({
                 <h2 className="module-section-title">Cycle metadata</h2>
                 <p className="module-section-description">Timing and package posture that should travel with the funding record.</p>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <span className="module-inline-item">
                 <FolderKanban className="h-3.5 w-3.5" />
-                {linkedProjects.length} project link{linkedProjects.length === 1 ? "" : "s"}
+                <strong>{linkedProjects.length}</strong> project link{linkedProjects.length === 1 ? "" : "s"}
               </span>
             </div>
 
@@ -603,13 +603,9 @@ export default async function ProgramDetailPage({
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-1.5 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-              <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                Created {formatProgramDateTime(program.created_at)}
-              </span>
-              <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                Updated {formatProgramDateTime(program.updated_at)}
-              </span>
+            <div className="module-inline-list mt-5">
+              <span className="module-inline-item">Created {formatProgramDateTime(program.created_at)}</span>
+              <span className="module-inline-item">Updated {formatProgramDateTime(program.updated_at)}</span>
             </div>
           </article>
 

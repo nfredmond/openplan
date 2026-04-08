@@ -809,6 +809,92 @@
     color: var(--muted-foreground);
   }
 
+  .module-inline-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .module-inline-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.7rem;
+    border-left: 2px solid color-mix(in srgb, var(--line) 78%, white 22%);
+    background: color-mix(in srgb, white 74%, var(--fog) 26%);
+    padding: 0.3rem 0.7rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .module-inline-item strong {
+    color: var(--foreground);
+  }
+
+  .module-filter-stack {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .module-filter-rail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .module-filter-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    min-width: 11rem;
+    border-left: 2px solid color-mix(in srgb, var(--line) 76%, white 24%);
+    background: color-mix(in srgb, white 78%, var(--fog) 22%);
+    padding: 0.72rem 0.85rem 0.72rem 0.9rem;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  .module-filter-link:hover {
+    border-left-color: color-mix(in srgb, var(--accent) 48%, var(--line) 52%);
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  .module-filter-link.is-active {
+    border-left-color: color-mix(in srgb, var(--accent) 72%, var(--line) 28%);
+    background: color-mix(in srgb, var(--accent) 10%, white 90%);
+    color: var(--foreground);
+  }
+
+  .module-filter-link.is-warning-active {
+    border-left-color: color-mix(in srgb, var(--copper) 72%, var(--line) 28%);
+    background: color-mix(in srgb, var(--copper) 12%, white 88%);
+  }
+
+  .module-filter-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .module-filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.9rem;
+    padding-left: 0.45rem;
+    border-left: 1px solid color-mix(in srgb, var(--line) 82%, white 18%);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--foreground);
+  }
+
   .module-record-actions {
     display: flex;
     flex: 0 0 auto;
@@ -1418,9 +1504,8 @@
     align-items: center;
     gap: 0.35rem;
     min-height: 1.65rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(15, 23, 42, 0.4);
+    border-left: 2px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.42);
     padding: 0.3rem 0.68rem;
     font-size: 0.62rem;
     font-weight: 700;

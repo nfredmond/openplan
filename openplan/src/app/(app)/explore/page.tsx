@@ -3126,8 +3126,8 @@ export default function ExplorePage() {
                                         : "Registry record only for now; geometry attachment is not drawable yet."}
                                   </p>
                                   <div className="module-record-meta">
-                                    <span className="module-record-chip">{titleize(dataset.geographyScope)}</span>
-                                    <span className="module-record-chip">{dataset.connectorLabel ?? "Manual source"}</span>
+                                    <span className="module-record-chip">Scope {titleize(dataset.geographyScope)}</span>
+                                    <span className="module-record-chip">Source {dataset.connectorLabel ?? "Manual source"}</span>
                                     {dataset.vintageLabel ? <span className="module-record-chip">Vintage {dataset.vintageLabel}</span> : null}
                                     {dataset.thematicMetricLabel ? <span className="module-record-chip">Metric {dataset.thematicMetricLabel}</span> : null}
                                   </div>
@@ -3209,7 +3209,7 @@ export default function ExplorePage() {
                 >
                   SS4A
                 </Button>
-                <StatusBadge tone="info">Current: {reportTemplate.toUpperCase()}</StatusBadge>
+                <span className="module-inline-item">Current {reportTemplate.toUpperCase()}</span>
               </div>
             </div>
 

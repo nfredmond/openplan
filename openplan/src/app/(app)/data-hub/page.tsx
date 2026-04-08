@@ -183,17 +183,11 @@ export default async function DataHubPage() {
               OpenPlan workspaces and are not available in preview mode.
             </p>
           </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link
-              href="/projects"
-              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/85 px-4 py-2.5 text-sm font-semibold transition hover:border-primary/35 hover:text-primary"
-            >
+          <div className="module-inline-list mt-5">
+            <Link href="/projects" className="module-inline-item transition hover:text-primary">
               Open Projects
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition hover:border-primary/35 hover:text-primary"
-            >
+            <Link href="/dashboard" className="module-inline-item transition hover:text-primary">
               Back to Overview
             </Link>
           </div>
@@ -411,7 +405,7 @@ export default async function DataHubPage() {
                 This clarifies what lives as a source registry object versus what stays as downstream interpretation.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-inline-item">
               <Database className="h-3.5 w-3.5" />
               Connected data workspace
             </span>
@@ -586,14 +580,14 @@ export default async function DataHubPage() {
                           <FolderKanban className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
                           Linked projects
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
+                        <div className="mt-3 module-inline-list">
                           {links.map((link) => (
                             <Link
                               key={`${dataset.id}-${link.project.id}`}
                               href={`/projects/${link.project.id}`}
-                              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition hover:border-primary/35 hover:text-primary"
+                              className="module-inline-item transition hover:text-primary"
                             >
-                              {link.project.name}
+                              <strong>{link.project.name}</strong>
                               <span className="text-[0.64rem] text-slate-400">{titleize(link.relationshipType)}</span>
                             </Link>
                           ))}

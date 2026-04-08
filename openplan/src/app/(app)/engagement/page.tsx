@@ -223,9 +223,9 @@ export default async function EngagementPage({
                 operational view.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-inline-item">
               <FolderKanban className="h-3.5 w-3.5" />
-              {campaigns.length} total
+              <strong>{campaigns.length}</strong> total
             </span>
           </div>
 
@@ -276,12 +276,12 @@ export default async function EngagementPage({
 
                   <div className="module-record-meta">
                     <span className="module-record-chip">Project {campaign.project?.name ?? "Unlinked"}</span>
-                    <span className="module-record-chip">{campaign.categoryCount} categories</span>
-                    <span className="module-record-chip">{campaign.readiness.completeCount}/{campaign.readiness.totalChecks} readiness checks</span>
-                    <span className="module-record-chip">{campaign.counts.statusCounts.approved} approved</span>
-                    <span className="module-record-chip">{campaign.counts.statusCounts.flagged} flagged</span>
-                    <span className="module-record-chip">{campaign.counts.recentActivity.count} recent</span>
-                    <span className="module-record-chip">{campaign.counts.geolocatedItems} geolocated</span>
+                    <span className="module-record-chip">Categories {campaign.categoryCount}</span>
+                    <span className="module-record-chip">Readiness {campaign.readiness.completeCount}/{campaign.readiness.totalChecks}</span>
+                    <span className="module-record-chip">Approved {campaign.counts.statusCounts.approved}</span>
+                    <span className="module-record-chip">Flagged {campaign.counts.statusCounts.flagged}</span>
+                    <span className="module-record-chip">Recent {campaign.counts.recentActivity.count}</span>
+                    <span className="module-record-chip">Geolocated {campaign.counts.geolocatedItems}</span>
                   </div>
                 </Link>
               ))}

@@ -903,7 +903,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         {/* Left: report identity */}
         <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-sky-700 dark:text-sky-300">
+          <div className="module-intro-kicker">
             <ScrollText className="h-3.5 w-3.5" />
             Report detail
           </div>
@@ -969,18 +969,10 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           </div>
 
           {/* Timestamps */}
-          <div className="mt-4 flex flex-wrap gap-1.5 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-            <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-              Created {formatDateTime(report.created_at)}
-            </span>
-            <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-              Updated {formatDateTime(report.updated_at)}
-            </span>
-            {project?.updated_at ? (
-              <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                Project snapshot {formatDateTime(project.updated_at)}
-              </span>
-            ) : null}
+          <div className="module-inline-list mt-4">
+            <span className="module-inline-item">Created {formatDateTime(report.created_at)}</span>
+            <span className="module-inline-item">Updated {formatDateTime(report.updated_at)}</span>
+            {project?.updated_at ? <span className="module-inline-item">Project snapshot {formatDateTime(project.updated_at)}</span> : null}
           </div>
         </article>
 

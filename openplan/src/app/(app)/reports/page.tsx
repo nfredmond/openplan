@@ -409,73 +409,51 @@ export default async function ReportsPage({
   }
 
   return (
-    <section className="space-y-6">
-      {/* ── Hero row ─────────────────────────────────────────── */}
-      <header className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        {/* Left: intro + stats */}
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)] sm:p-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-amber-800 dark:text-amber-200">
+    <section className="module-page">
+      <header className="module-header-grid">
+        <article className="module-intro-card">
+          <div className="module-intro-kicker">
             <ScrollText className="h-3.5 w-3.5" />
-            Reports
+            Reports registry
+          </div>
+          <div className="module-intro-body">
+            <h1 className="module-intro-title">Reports</h1>
+            <p className="module-intro-description">
+              Keep packet generation, evidence lineage, and project delivery history inside one reviewable publishing surface.
+            </p>
           </div>
 
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Reports
-          </h1>
-          <p className="mt-3 max-w-3xl text-[0.9rem] leading-relaxed text-muted-foreground sm:text-base">
-            Create and manage report packets linked to projects and analysis runs. Each report keeps its sections, generated artifacts, and source history together.
-          </p>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Total reports
-              </p>
-              <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
-                {reports.length}
-              </p>
+          <div className="module-summary-grid cols-4">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Total reports</p>
+              <p className="module-summary-value">{reports.length}</p>
+              <p className="module-summary-detail">Workspace report records currently tracked.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Generated
-              </p>
-              <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
-                {generatedCount}
-              </p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Generated</p>
+              <p className="module-summary-value">{generatedCount}</p>
+              <p className="module-summary-detail">Packets already assembled from stored report records.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Needs refresh
-              </p>
-              <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
-                {refreshRecommendedCount}
-              </p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Needs refresh</p>
+              <p className="module-summary-value">{refreshRecommendedCount}</p>
+              <p className="module-summary-detail">Records whose current packet no longer matches the source basis.</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Projects covered
-              </p>
-              <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">
-                {distinctProjects}
-              </p>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Projects covered</p>
+              <p className="module-summary-value">{distinctProjects}</p>
+              <p className="module-summary-detail">Projects with report posture visible in this workspace.</p>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
-              {currentPacketCount} packet current
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/25 bg-sky-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-300">
-              {evidenceBackedCount} evidence-backed
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:text-amber-200">
-              {blockedGovernanceCount} governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced
-            </span>
+          <div className="module-inline-list">
+            <span className="module-inline-item"><strong>{currentPacketCount}</strong> packet current</span>
+            <span className="module-inline-item"><strong>{evidenceBackedCount}</strong> evidence-backed</span>
+            <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
           </div>
         </article>
 
-        {/* Right: auditability posture */}
-        <article className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(41,24,15,0.96),rgba(24,14,9,0.94))] p-6 text-amber-50 shadow-[0_30px_70px_rgba(0,0,0,0.24)]">
+        <article className="module-operator-card">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-amber-200" />
@@ -489,30 +467,21 @@ export default async function ReportsPage({
               </h2>
             </div>
           </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Packets
-              </p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
-                {currentPacketCount}
-              </p>
+          <div className="module-record-detail-grid cols-3 mt-5">
+            <div className="module-subpanel bg-white/[0.04] text-amber-50">
+              <p className="module-summary-label text-amber-200/70">Packets</p>
+              <p className="module-summary-value text-amber-50">{currentPacketCount}</p>
+              <p className="module-summary-detail text-amber-50/72">Current packet artifacts already available for review.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Ready to review
-              </p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
-                {evidenceBackedCount}
-              </p>
+            <div className="module-subpanel bg-white/[0.04] text-amber-50">
+              <p className="module-summary-label text-amber-200/70">Ready to review</p>
+              <p className="module-summary-value text-amber-50">{evidenceBackedCount}</p>
+              <p className="module-summary-detail text-amber-50/72">Evidence summaries attached and surfaced in the record lane.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Needs attention
-              </p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
-                {blockedGovernanceCount}
-              </p>
+            <div className="module-subpanel bg-white/[0.04] text-amber-50">
+              <p className="module-summary-label text-amber-200/70">Needs attention</p>
+              <p className="module-summary-value text-amber-50">{blockedGovernanceCount}</p>
+              <p className="module-summary-detail text-amber-50/72">Governance blockers that should be resolved before shipment.</p>
             </div>
           </div>
           <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
@@ -529,7 +498,6 @@ export default async function ReportsPage({
         </article>
       </header>
 
-      {/* ── Creator + catalog row ────────────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <ReportCreator
           projects={projectsData ?? []}
@@ -537,44 +505,28 @@ export default async function ReportsPage({
           reportGuidanceByProject={reportGuidanceByProject}
         />
 
-        {/* Report catalog */}
-        <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-          <div className="flex items-center justify-between gap-3">
+        <article className="module-section-surface">
+          <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
                 <FileStack className="h-5 w-5" />
               </span>
-              <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                  Catalog
-                </p>
-                <h2 className="text-xl font-semibold tracking-tight">
-                  Report records
-                </h2>
+              <div className="module-section-heading">
+                <p className="module-section-label">Catalog</p>
+                <h2 className="module-section-title">Report records</h2>
+                <p className="module-section-description">Use the rails below to sort packet freshness and evidence posture without collapsing the registry into chip filters.</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {draftCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  <Sparkles className="h-3 w-3" />
-                  {draftCount} draft{draftCount !== 1 ? "s" : ""}
-                </span>
-              )}
-              {noPacketCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-800 dark:text-amber-200">
-                  <Sparkles className="h-3 w-3" />
-                  {noPacketCount} without packet
-                </span>
-              )}
+            <div className="module-inline-list">
+              {draftCount > 0 ? <span className="module-inline-item"><Sparkles className="h-3 w-3" /> {draftCount} draft{draftCount !== 1 ? "s" : ""}</span> : null}
+              {noPacketCount > 0 ? <span className="module-inline-item"><Sparkles className="h-3 w-3" /> {noPacketCount} without packet</span> : null}
             </div>
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-5 module-filter-stack">
             <div>
-              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Packet freshness
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <p className="module-section-label mb-2">Packet freshness</p>
+              <div className="module-filter-rail">
                 {freshnessFilters.map((filter) => {
                   const active = filter.value === selectedFreshnessFilter;
 
@@ -582,43 +534,36 @@ export default async function ReportsPage({
                     <Link
                       key={filter.value}
                       href={filter.href}
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
-                        active
-                          ? "border-primary/35 bg-primary/10 text-primary"
-                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
-                      }`}
+                      className={["module-filter-link", active ? "is-active" : ""].filter(Boolean).join(" ")}
                     >
-                      <span>{filter.label}</span>
-                      <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
-                        {filter.count}
-                      </span>
+                      <span className="module-filter-label">{filter.label}</span>
+                      <span className="module-filter-count">{filter.count}</span>
                     </Link>
                   );
                 })}
               </div>
             </div>
             <div>
-              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Evidence posture
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <p className="module-section-label mb-2">Evidence posture</p>
+              <div className="module-filter-rail">
                 {postureFilters.map((filter) => {
                   const active = filter.value === selectedPostureFilter;
+                  const warningActive = active && filter.value === "governance-hold";
 
                   return (
                     <Link
                       key={filter.value}
                       href={filter.href}
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] transition ${
-                        active
-                          ? "border-primary/35 bg-primary/10 text-primary"
-                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/25 hover:text-foreground"
-                      }`}
+                      className={[
+                        "module-filter-link",
+                        active ? "is-active" : "",
+                        warningActive ? "is-warning-active" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
-                      <span>{filter.label}</span>
-                      <span className="rounded-full border border-current/15 px-2 py-0.5 text-[0.68rem] tabular-nums">
-                        {filter.count}
-                      </span>
+                      <span className="module-filter-label">{filter.label}</span>
+                      <span className="module-filter-count">{filter.count}</span>
                     </Link>
                   );
                 })}
@@ -656,82 +601,60 @@ export default async function ReportsPage({
               />
             </div>
           ) : (
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 module-record-list">
               {filteredReports.map((report) => (
                 <Link
                   key={report.id}
                   href={getReportNavigationHref(report.id, report.packetFreshness.label)}
-                  className="group block rounded-[22px] border border-border/80 bg-background/80 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
+                  className="module-record-row is-interactive group block"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-2.5">
-                      <h3 className="text-lg font-semibold leading-snug tracking-tight text-foreground group-hover:text-primary">
-                        {report.title}
-                      </h3>
-                      <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                        {report.summary ||
-                          "No summary provided. Open the report to add context and generate artifacts."}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
                         <StatusBadge tone={reportStatusTone(report.status)}>
                           {formatReportStatusLabel(report.status)}
                         </StatusBadge>
-                        <StatusBadge tone="info">
-                          {formatReportTypeLabel(report.report_type)}
-                        </StatusBadge>
-                        {report.latest_artifact_kind ? (
-                          <StatusBadge tone="neutral">
-                            {report.latest_artifact_kind.toUpperCase()}
-                          </StatusBadge>
-                        ) : null}
-                        <StatusBadge tone={report.packetFreshness.tone}>
-                          {report.packetFreshness.label}
-                        </StatusBadge>
+                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                        {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
+                        <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title}</h3>
+                          <p className="module-record-stamp">Updated {formatDateTime(report.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {report.summary || "No summary provided. Open the report to add context and generate artifacts."}
+                        </p>
                       </div>
                     </div>
-                    <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground/60 transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="mt-4 space-y-2 border-t border-border/50 pt-3">
-                    <div className="flex flex-wrap items-center gap-1.5 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-                      <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                        {report.project?.name ?? "Unknown project"}
-                      </span>
-                      <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                        Updated {formatDateTime(report.updated_at)}
-                      </span>
-                      {report.generated_at && (
-                        <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5">
-                          Generated {formatDateTime(report.generated_at)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        {report.packetFreshness.detail}
-                      </p>
-                      <p className="text-xs font-medium leading-relaxed text-foreground/80">
-                        {getReportPacketActionLabel(report.packetFreshness.label)}
-                      </p>
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">Project {report.project?.name ?? "Unknown project"}</span>
+                    <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
+                    {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
+                  </div>
+
+                  <div className="module-record-detail-grid cols-2 mt-4">
+                    <div className="module-note text-sm">
+                      <p className="font-medium text-foreground">Packet posture</p>
+                      <p className="mt-2">{report.packetFreshness.detail}</p>
                     </div>
                     {report.evidenceChainDigest ? (
-                      <div className="rounded-2xl border border-border/60 bg-card/70 px-3 py-2.5">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          Evidence chain posture
-                        </p>
-                        <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
-                          {report.evidenceChainDigest.headline}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          {report.evidenceChainDigest.detail}
-                        </p>
-                        {report.evidenceChainDigest.blockedGateDetail ? (
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {report.evidenceChainDigest.blockedGateDetail}
-                          </p>
-                        ) : null}
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Evidence chain posture</p>
+                        <p className="mt-2 font-medium text-foreground/90">{report.evidenceChainDigest.headline}</p>
+                        <p className="mt-1">{report.evidenceChainDigest.detail}</p>
+                        {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
                       </div>
-                    ) : null}
+                    ) : (
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Evidence chain posture</p>
+                        <p className="mt-2">No evidence summary attached to the latest artifact yet.</p>
+                      </div>
+                    )}
                   </div>
                 </Link>
               ))}
@@ -740,19 +663,14 @@ export default async function ReportsPage({
         </article>
       </div>
 
-      {/* ── Capability footer ────────────────────────────────── */}
-      <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+      <article className="module-section-surface">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
             <FolderKanban className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Capabilities
-            </p>
-            <h2 className="text-xl font-semibold tracking-tight">
-              What&apos;s available in report packets
-            </h2>
+            <p className="module-section-label">Capabilities</p>
+            <h2 className="module-section-title">What&apos;s available in report packets</h2>
           </div>
         </div>
         <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted-foreground">
