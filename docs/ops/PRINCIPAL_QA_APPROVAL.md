@@ -2,24 +2,13 @@
 
 ## Active current-cycle status
 
-**Date (PT):** 2026-04-07 18:18  
+**Date (PT):** 2026-04-07 18:52  
 **Reviewer:** Elena Marquez (Principal Planner)  
 **Decision cycle:** April 2026 packet refresh after canonical alias lock, authenticated production smoke refresh, canary-preflight readiness, client-safe positioning refresh, pilot ops pack assembly, and explicit CEO commercial-proof waiver refresh  
-**Status:** **PENDING PRINCIPAL REVIEW**  
-**Current governance interpretation:** March approval remains historical baseline only. It does **not** automatically certify the April packet until Elena refreshes the adjudication.
+**Status:** **PASS — supervised pilot / internal pre-close and bounded external pilot language only**  
+**Current governance interpretation:** This April decision supersedes the prior pending state and becomes the active principal approval for the current packet only.
 
-## Why this file was refreshed
-
-The prior artifact in this file was a valid **2026-03-17** principal decision, but by April it had become operationally ambiguous because the surrounding closeout packet materially changed.
-
-This refresh makes the current truth explicit:
-- the April packet is assembled and review-ready,
-- the recommended posture is still narrow and pilot-bounded,
-- but the canonical approval artifact is awaiting Elena’s current-cycle decision.
-
-This prevents stale March approval language from being mistaken for an April-cycle signoff.
-
-## April packet queued for principal review
+## Scope reviewed
 
 Primary April review packet:
 - `docs/ops/2026-04-05-openplan-launch-readiness-truth-memo.md`
@@ -39,46 +28,71 @@ Primary April review packet:
 - `docs/ops/2026-04-07-openplan-principal-qa-refresh-packet.md`
 - `docs/ops/2026-04-07-test-output/20260407T201100Z-supervised-paid-canary-preflight/preflight-summary.md`
 
-## Current April truth state for Elena to adjudicate
+## Principal decision
 
-### What is materially proven in the April packet
-1. **Authenticated planning-domain continuity on production** is freshly proven on `openplan-natford`.
-2. **Canonical alias discipline** is now explicit and consistent for the closeout lane.
-3. **Canonical alias access path** is verified through the approved Vercel protection bypass route.
-4. **Supervised paid canary preflight** is green on the canonical alias.
-5. **Commercial canary non-execution** is explicit and decision-backed, not vague.
-6. **External language and pilot ops posture** are already bounded to supervised pilot use.
+**PASS — but only for supervised pilot / internal pre-close posture and bounded external pilot language on the exact April 2026 packet described above.**
 
-### What remains intentionally bounded
-1. **No fresh same-cycle paid happy-path checkout was executed in April 2026.**
-2. **Broad public self-serve launch is still out of bounds.**
-3. **Modeling/compliance claims remain bounded to current evidence.**
-4. **Current-cycle principal adjudication is still pending.**
+This is an April-cycle principal signoff for a **narrow supervised-pilot scope**. It is **not** a blanket public-launch or fully commercially re-proven PASS.
 
-## Recommended principal decision, not yet signed
+## Exact approved scope
 
-The narrowest honest current-cycle recommendation is:
+Approved for supervised pilot / internal pre-close posture:
+1. **Current authenticated planning-domain continuity on production** on `openplan-natford`, including Project → Plan → Model → Program continuity and authenticated billing-page load as documented in the 2026-04-07 production smoke.
+2. **Canonical proof alias discipline** for the current cycle, with `openplan-natford` treated as the governing alias and proof target.
+3. **Protected canonical alias access path** through the documented approved Vercel protection bypass route.
+4. **Supervised paid canary operational readiness** on the canonical alias, including current workspace targeting, live Starter price posture, webhook posture, and successful preflight evidence capture.
+5. **Client-safe and pilot-safe external positioning** that remains evidence-accurate, pilot-bounded, and explicit about the current commercial proof boundary.
+6. **Pilot operations readiness** for supervised use, assuming the team keeps onboarding and support human-led and scoped.
 
-**CONDITIONAL PASS — supervised pilot / internal pre-close and bounded external pilot language only**
+Not approved by this PASS:
+1. **Broad public self-serve launch language.**
+2. **Any claim that a fresh same-cycle paid happy-path commercial checkout was executed in April 2026.**
+3. **Any claim that modeling or compliance maturity is fully validated beyond the bounded evidence in this packet.**
+4. **Any use of this PASS as a blanket recertification of all OpenPlan features or historical claims outside the reviewed April scope.**
 
-With the following explicit caveats:
-1. no claim of a fresh same-cycle paid happy-path checkout,
-2. no broad public self-serve launch language,
-3. no overstatement of modeling or compliance maturity,
-4. continued use of evidence-accurate, pilot-bounded positioning.
+## Why I am issuing PASS for this limited scope
 
-If Elena agrees, this file should be updated from **PENDING PRINCIPAL REVIEW** to either:
-- **PASS — supervised pilot / internal pre-close and bounded external pilot language only**, or
-- **HOLD**, with the exact remaining blocker list.
+1. The April packet materially refreshes live production confidence in the planning-domain spine with authenticated create/list/detail continuity on the canonical alias.
+2. The alias ambiguity that previously weakened proof interpretation is now explicitly resolved in favor of one canonical proof lane.
+3. The commercial lane is no longer vague. The packet clearly distinguishes between historical live payment evidence, current non-money-moving billing proof, and the absence of a fresh same-cycle paid canary.
+4. Nathaniel’s waiver is explicit, narrow, and transparently recorded. For supervised pilot posture, I accept that waiver as a governance boundary, not as substitute proof of a fresh paid happy path.
+5. The outward positioning documents are appropriately disciplined. They describe a supervised pilot product, not a broad municipal self-serve launch.
 
-## Immediate next required action
+## Accepted assumptions
 
-Elena should review the April packet and replace this pending state with an explicit current-cycle decision.
+1. This approval governs the **current April 2026 packet only** and should not be read as a blanket recertification of all historical or future OpenPlan functionality.
+2. The production evidence cited in the packet is representative of the build currently being relied upon for supervised pilot posture.
+3. Historical live payment evidence plus current billing-path proof plus explicit CEO waiver are sufficient for **bounded supervised pilot use**, but not equivalent to a fresh same-cycle paid happy-path proof.
+4. The team will continue to use evidence-accurate, pilot-bounded language in any client-safe, partner-safe, or public-safe materials.
+5. Human-led onboarding, support, and judgment remain part of the approved operating posture.
 
-Until then:
-- March approval remains valid historical context,
-- April docs may be used as the current working truth packet,
-- but no one should present this file as a refreshed April signoff.
+## Active blockers
+
+### For this limited supervised pilot PASS
+**No blocker remains.**
+
+### For broader external/commercial PASS
+1. **No fresh same-cycle paid happy-path canary was executed in April 2026.**
+2. **Broad public self-serve commercial language remains out of bounds.**
+3. **Modeling/compliance claims must remain bounded to the specific evidence currently documented.**
+
+## Commercial posture chosen
+
+**Accept current billing proof as sufficient for supervised pilot / internal pre-close only under explicit CEO waiver. Do not treat that waiver as fresh commercial proof.**
+
+That is the narrowest honest current-cycle posture.
+
+## Explicit recommendation
+
+**Recommendation:**
+- Treat OpenPlan as **principal-approved for supervised pilot / internal pre-close posture** on the April packet reviewed here.
+- Allow only **bounded external pilot language** that stays evidence-accurate and does not imply a fresh April paid happy path.
+- Keep **broad self-serve commercial release language at HOLD** until stronger same-cycle commercial proof exists or a future decision explicitly redefines that standard.
+
+## Principal signature
+
+**Signed by:** Elena Marquez  
+**Date (PT):** 2026-04-07 18:52
 
 ---
 
