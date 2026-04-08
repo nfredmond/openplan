@@ -160,7 +160,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         type="button"
         variant="outline"
         size="sm"
-        className="border-white/[0.12] bg-white/[0.05] text-slate-100 hover:border-emerald-300/35 hover:bg-emerald-400/10 hover:text-white"
+        className="fixed bottom-5 right-5 z-[95] h-11 rounded-full border-emerald-300/30 bg-[rgba(7,14,20,0.92)] px-4 text-slate-100 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl hover:border-emerald-300/50 hover:bg-emerald-400/12 hover:text-white sm:bottom-6 sm:right-6"
         onClick={() => setOpen(true)}
       >
         <Sparkles className="h-4 w-4 text-emerald-300" />
@@ -168,7 +168,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       </Button>
 
       {open ? (
-        <div className="fixed inset-0 z-[90] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[110] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
           <button type="button" className="flex-1 cursor-default" aria-label="Close Planner Agent overlay" onClick={() => setOpen(false)} />
           <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
             <div className="border-b border-white/8 px-5 py-4 sm:px-6">
