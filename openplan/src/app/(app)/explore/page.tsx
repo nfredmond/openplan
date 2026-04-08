@@ -2674,7 +2674,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-4 z-10 max-h-[320px] max-w-[min(82%,340px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
+        <div className="hidden absolute bottom-4 left-4 z-10 max-h-[320px] max-w-[min(82%,340px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <Layers3 className="h-3.5 w-3.5" />
             Map layers
@@ -2753,7 +2753,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="mx-4 mb-4 mt-4 rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:mx-5 sm:mb-5">
+        <div className="hidden mx-4 mb-4 mt-4 rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:mx-5 sm:mb-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <MapIcon className="h-3.5 w-3.5" />
             Tract legend
