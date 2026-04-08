@@ -6,14 +6,14 @@
 
 ## Executive Decision Recommendation
 
-**Recommended decision:** **CONDITIONAL PASS — supervised pilot v1**
+**Recommended decision:** **PASS — supervised pilot v1**
 
-That is the narrowest honest posture.
+That is now the narrowest honest posture.
 
 OpenPlan should move forward this week as:
 - **GO** for supervised pilot preparation and scoped supervised pilot motion,
 - **NO-GO** for broad public self-serve launch language,
-- **CONDITIONAL** on Principal Planner adjudication of the April packet and continued discipline around commercial-proof and scope claims.
+- **PASS** for the April supervised-pilot boundary under refreshed Principal QA approval and continued discipline around commercial-proof and scope claims.
 
 ## Why this is the right call
 
@@ -41,12 +41,9 @@ Use only if:
 - and all external language stays pilot-bounded.
 
 ### 2. CONDITIONAL PASS — supervised pilot v1
-**Recommended now.**
+This was the right interim recommendation before the April Principal QA decision landed.
 
-Meaning:
-- proceed with supervised pilot prep and pilot-facing execution posture,
-- treat the current packet as operationally sufficient for bounded motion,
-- but preserve explicit caveats until Principal QA refresh is finalized.
+It is now superseded by the bounded PASS reflected in `docs/ops/PRINCIPAL_QA_APPROVAL.md`.
 
 ### 3. HOLD
 Use only if:
@@ -71,6 +68,8 @@ At the moment, HOLD would be too conservative unless new contrary evidence appea
 - `docs/ops/2026-04-07-openplan-principal-qa-refresh-packet.md`
 - `docs/ops/PRINCIPAL_QA_APPROVAL.md`
 
+The April packet now carries an explicit Principal Planner PASS for supervised pilot / internal pre-close and bounded external pilot language only.
+
 ### Pilot operations posture
 - `docs/ops/2026-04-07-openplan-pilot-onboarding-checklist.md`
 - `docs/ops/2026-04-07-openplan-pilot-support-runbook.md`
@@ -79,10 +78,10 @@ At the moment, HOLD would be too conservative unless new contrary evidence appea
 ## Conditions Attached To This Recommendation
 
 ### Required
-1. Principal QA refresh must still be completed against the April packet.
-2. All outward language must stay within the supervised-pilot boundary.
-3. No one should imply a fresh same-cycle paid happy path was executed.
-4. No modeling/compliance claim should outrun current evidence.
+1. All outward language must stay within the supervised-pilot boundary approved in `PRINCIPAL_QA_APPROVAL.md`.
+2. No one should imply a fresh same-cycle paid happy path was executed.
+3. No modeling/compliance claim should outrun current evidence.
+4. Broad public self-serve or stronger commercial claims still require additional proof beyond this PASS.
 
 ### Operational
 1. Pilot motion should stay human-led and scoped.
@@ -91,7 +90,7 @@ At the moment, HOLD would be too conservative unless new contrary evidence appea
 
 ## What This Decision Authorizes
 
-If Nathaniel accepts this memo’s recommendation, it authorizes:
+This memo’s recommendation now authorizes:
 - continued supervised pilot preparation,
 - client-safe and partner-safe pilot positioning,
 - internal use of the current closeout packet as the working v1 truth state,
@@ -117,11 +116,11 @@ This memo does **not** authorize:
 
 My recommendation is:
 
-> **CONDITIONAL PASS — supervised pilot v1**
+> **PASS — supervised pilot v1**
 
 with the explicit interpretation that:
 - OpenPlan is ready to move this week as a production-backed supervised pilot product,
-- the billing lane is acceptable under explicit CEO waiver,
+- the billing lane is acceptable under explicit CEO waiver for this bounded posture,
 - and the only acceptable launch rhetoric is narrow, evidence-accurate, and pilot-bounded.
 
 ## Bottom Line

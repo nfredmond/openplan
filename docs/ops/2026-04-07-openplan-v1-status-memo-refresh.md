@@ -18,10 +18,10 @@ The current posture is:
 That means the remaining work is no longer “figure out whether OpenPlan basically works.”
 
 The remaining work is:
-- refreshed Principal QA adjudication against the exact April packet,
-- final external/client-safe language lock,
-- pilot ops packaging,
-- and a formal go / no-go memo.
+- propagate the newly issued Principal QA pilot PASS across the active closeout docs,
+- keep final external/client-safe language locked to that exact approved boundary,
+- use the pilot ops pack as the operating baseline,
+- and continue into supervised pilot motion without broad-launch drift.
 
 ## Current Truth State
 
@@ -104,7 +104,7 @@ This is an accepted evidence boundary, not unresolved confusion.
 1. **No fresh same-cycle paid happy-path billing proof was executed.**
 2. **Broad self-serve commercial launch language remains out of bounds.**
 3. **Modeling/compliance claims remain bounded and should not outrun evidence.**
-4. **Principal QA approval still needs a refreshed April-cycle adjudication against this exact packet.**
+4. **Principal QA approval is now refreshed for the April packet as a bounded supervised-pilot PASS.**
 
 ## Recommended Language Discipline
 
@@ -133,16 +133,17 @@ For current operations, use this posture:
 
 ## Immediate Next Actions
 
-1. Refresh `docs/ops/PRINCIPAL_QA_APPROVAL.md` against the April 2026 packet.
-2. Refresh the client-safe positioning note so external language reflects the current waiver and pilot boundary.
-3. Prepare the pilot onboarding/support pack.
-4. Write the formal go / no-go memo for supervised pilot v1.
+1. Refresh the active status/governance memos so they explicitly reflect the new April Principal QA pilot PASS.
+2. Keep the client-safe positioning note locked to the approved supervised-pilot boundary.
+3. Use the pilot onboarding/support pack as the live operating baseline.
+4. Continue into supervised pilot motion with disciplined commercial and modeling language.
 
 ## Bottom Line
 
 OpenPlan is now in a credible April 2026 v1 posture for **supervised pilot use**.
 
 The remaining caution is not technical fog. It is disciplined governance and honest language:
+- principal review is now in place for the supervised-pilot boundary,
 - no broad self-serve overclaiming,
 - no pretending a fresh paid canary happened when it did not,
-- and no loss of focus before the final closeout artifacts are complete.
+- and no drift away from the approved pilot-bounded posture.
