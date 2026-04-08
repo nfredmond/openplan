@@ -1,5 +1,7 @@
 "use client";
 
+import "mapbox-gl/dist/mapbox-gl.css";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -630,6 +632,10 @@ export default function ExplorePage() {
       attributionControl: false,
     });
 
+    window.setTimeout(() => {
+      map.resize();
+    }, 180);
+
     const installAnalysisLayers = () => {
       if (!map.getSource("analysis-result")) {
         map.addSource("analysis-result", {
@@ -860,6 +866,7 @@ export default function ExplorePage() {
 
     map.on("style.load", installAnalysisLayers);
     map.on("load", () => {
+      map.resize();
       installAnalysisLayers();
       map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
       map.addControl(new FullscreenControl(), "top-right");
@@ -2469,12 +2476,12 @@ export default function ExplorePage() {
   return (
     <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
       <div className="relative overflow-hidden rounded-[30px] border border-slate-800/80 bg-[linear-gradient(180deg,#08111a_0%,#0d1722_100%)] shadow-[0_28px_80px_rgba(3,10,18,0.28)]">
-        <div ref={mapContainerRef} className="h-[620px] w-full" />
+        <div ref={mapContainerRef} className="h-[720px] min-h-[720px] w-full" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(5,10,15,0.88),rgba(5,10,15,0))]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,rgba(5,10,15,0.94),rgba(5,10,15,0))]" />
 
-        <div className="absolute left-4 top-4 z-10 max-w-[min(88%,420px)] rounded-[26px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:left-5 sm:top-5 sm:p-5">
+        <div className="absolute left-4 top-4 z-10 max-w-[min(82%,360px)] rounded-[26px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:left-5 sm:top-5 sm:p-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
             <Sparkles className="h-3.5 w-3.5" />
             Analysis Studio
@@ -2494,7 +2501,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute right-4 top-4 z-10 max-w-[min(90%,360px)] sm:right-5 sm:top-5">
+        <div className="absolute right-4 top-4 z-10 max-h-[calc(100%-2.5rem)] max-w-[min(84%,320px)] overflow-y-auto pr-1 sm:right-5 sm:top-5">
           <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -2675,7 +2682,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-4 z-10 max-w-[min(88%,360px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
+        <div className="absolute bottom-4 left-4 z-10 max-h-[320px] max-w-[min(82%,340px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <Layers3 className="h-3.5 w-3.5" />
             Map layers
@@ -2754,7 +2761,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-4 right-4 z-10 max-w-[min(88%,320px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
+        <div className="absolute bottom-4 right-4 z-10 max-h-[300px] max-w-[min(82%,300px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <MapIcon className="h-3.5 w-3.5" />
             Tract legend
