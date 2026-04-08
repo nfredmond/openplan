@@ -104,9 +104,9 @@ export function AppSecondaryNav() {
   }
 
   return (
-    <div className="rounded-[22px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.032),rgba(255,255,255,0.018))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
-      <p className="text-[0.64rem] font-semibold uppercase tracking-[0.24em] text-slate-400">{section.title}</p>
-      <ul className="mt-3 space-y-1.5">
+    <div className="shell-ledger-panel gap-0">
+      <p className="shell-panel-kicker">{section.title}</p>
+      <ul className="mt-3 divide-y divide-white/[0.06] border-t border-white/[0.06]">
         {section.items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -114,14 +114,18 @@ export function AppSecondaryNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex rounded-xl px-2.5 py-2.5 transition-all duration-200",
-                  active
-                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.05))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                    : "text-slate-300/70 hover:bg-white/[0.04] hover:text-white"
+                  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 text-[0.82rem] transition-all duration-200",
+                  active ? "text-white" : "text-slate-300/72 hover:text-white"
                 )}
               >
-                <span className="min-w-0">
-                  <span className="block text-[0.82rem] font-medium">{item.label}</span>
+                <span className="min-w-0">{item.label}</span>
+                <span
+                  className={cn(
+                    "text-[0.58rem] font-semibold uppercase tracking-[0.18em]",
+                    active ? "text-emerald-100/84" : "text-slate-500"
+                  )}
+                >
+                  {active ? "Current" : "Lane"}
                 </span>
               </Link>
             </li>

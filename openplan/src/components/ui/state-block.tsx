@@ -76,7 +76,7 @@ export function StateBlock({
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border",
+            "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center border",
             styles.icon
           )}
         >

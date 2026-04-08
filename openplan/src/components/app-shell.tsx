@@ -79,62 +79,53 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(180deg,#0b1218_0%,#0f1720_18%,#111a24_58%,#121c26_100%)] text-slate-100 lg:grid lg:grid-cols-[300px_minmax(0,1fr)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(820px_320px_at_20%_-4%,rgba(86,162,113,0.10),transparent_58%),radial-gradient(700px_280px_at_90%_0%,rgba(96,165,250,0.08),transparent_64%)] lg:block"
-      />
-
-      <aside className="relative z-10 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(6,12,18,0.985),rgba(8,15,21,0.97))] lg:min-h-screen lg:border-b-0 lg:border-r lg:border-white/[0.06]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-12 right-0 hidden w-px bg-gradient-to-b from-white/[0.18] via-white/[0.08] to-transparent lg:block"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 top-24 hidden h-64 w-40 bg-[radial-gradient(circle,rgba(45,212,191,0.12),transparent_68%)] opacity-35 blur-3xl lg:block"
-        />
-
-        <div className="flex h-full flex-col px-4 py-4 lg:px-5 lg:py-5">
-          <div className="pb-5">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.05]"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-200 shadow-[0_0_0_1px_rgba(110,231,183,0.10)]">
+    <div className="min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[288px_minmax(0,1fr)] xl:grid-cols-[304px_minmax(0,1fr)]">
+      <aside className="shell-sidebar relative border-b border-[color:var(--shell-border)] lg:min-h-screen lg:border-b-0 lg:border-r">
+        <div className="shell-sidebar-grid flex h-full flex-col gap-5 px-4 py-4 lg:px-5 lg:py-5">
+          <div className="shell-brand-strip">
+            <Link href="/dashboard" className="shell-brand-mark">
+              <span className="shell-brand-icon">
                 <Command className="h-4 w-4" strokeWidth={1.9} />
               </span>
-              <span>
-                <span className="block text-[0.64rem] font-semibold uppercase tracking-[0.26em] text-slate-400">OpenPlan</span>
-                <span className="block text-[0.84rem] font-semibold tracking-[0.02em] text-white">Planning OS</span>
+              <span className="min-w-0">
+                <span className="shell-brand-kicker">OpenPlan</span>
+                <span className="shell-brand-title">Civic Workbench</span>
               </span>
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.038),rgba(255,255,255,0.026))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <section className="shell-ledger-panel">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.64rem] font-semibold uppercase tracking-[0.24em] text-slate-400">Workspace</p>
-                <h2 className="mt-2 font-display text-lg font-semibold tracking-tight text-white">{workspaceName}</h2>
+                <p className="shell-panel-kicker">Workspace ledger</p>
+                <h2 className="mt-2 font-display text-[1.3rem] font-semibold tracking-tight text-white">
+                  {workspaceName}
+                </h2>
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-400/8 px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-emerald-100">
+              <span className="shell-inline-stamp text-emerald-100/90">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Supervised pilot
+                supervised pilot
               </span>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[0.68rem] uppercase tracking-[0.14em] text-slate-300/70">
-              <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">{workspacePlan}</span>
-              <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">{workspaceRole}</span>
+            <div className="mt-4 grid gap-2 text-[0.72rem] uppercase tracking-[0.16em] text-slate-300/78 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <div className="shell-data-line">
+                <span>Plan</span>
+                <strong>{workspacePlan}</strong>
+              </div>
+              <div className="shell-data-line">
+                <span>Role</span>
+                <strong>{workspaceRole}</strong>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <nav className="mt-5 space-y-4" aria-label="Primary application navigation">
+          <nav className="space-y-4" aria-label="Primary application navigation">
             {navGroups.map((group) => (
               <div key={group.title} className="space-y-2">
                 <div className="px-1">
-                  <p className="text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-slate-500">{group.title}</p>
+                  <p className="shell-section-label">{group.title}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {group.items.map((item) => (
                     <AppSidebarLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
                   ))}
@@ -143,83 +134,72 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="mt-5">
-            <AppSecondaryNav />
-          </div>
+          <AppSecondaryNav />
 
-          <div className="mt-auto space-y-3 pt-6">
+          <div className="mt-auto space-y-3 pt-4">
             {membershipPending ? (
-              <div className="rounded-2xl border border-amber-300/15 bg-amber-400/10 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="shell-warning-rail">
                 <div className="flex items-center gap-2 text-[0.82rem] font-semibold text-amber-100">
                   <AlertTriangle className="h-3.5 w-3.5 text-amber-200" />
                   Workspace membership pending
                 </div>
-                <p className="mt-1.5 text-[0.78rem] leading-relaxed text-amber-50/80">
-                  You are signed in, but this account is not attached to a workspace yet. Create one from Projects or ask an owner/admin to add you.
+                <p className="mt-2 text-[0.78rem] leading-relaxed text-amber-50/82">
+                  This account is authenticated, but it is not attached to a workspace yet. Open Projects to create one or ask an owner/admin to add you.
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-amber-100/85">
-                  <Link href="/projects" className="rounded-full border border-amber-200/20 px-2.5 py-1 transition hover:border-amber-100/35 hover:text-white">
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href="/projects" className="shell-text-link">
                     Open Projects
                   </Link>
-                  <Link href="/dashboard" className="rounded-full border border-amber-200/15 px-2.5 py-1 text-amber-100/75 transition hover:border-amber-100/35 hover:text-white">
+                  <Link href="/dashboard" className="shell-text-link shell-text-link-muted">
                     Overview
                   </Link>
                 </div>
               </div>
             ) : null}
 
-            {user ? (
-              <form action={handleSignOut}>
-                <button
-                  type="submit"
-                  className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-slate-200/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.05] hover:text-white"
-                >
-                  Sign out
-                </button>
-              </form>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="block w-full rounded-2xl border border-emerald-300/15 bg-emerald-400/8 px-4 py-2.5 text-center text-sm font-semibold text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-200 hover:border-emerald-200/25 hover:bg-emerald-400/12"
-              >
-                Sign in to activate workspace
-              </Link>
-            )}
+            <div className="shell-session-panel">
+              <div>
+                <p className="shell-panel-kicker">Session</p>
+                <p className="mt-2 text-sm font-medium text-white">{user?.email ?? "Guest session"}</p>
+                <p className="mt-1 text-[0.74rem] text-slate-400">
+                  {user ? "Authenticated workspace operator" : "Preview mode"}
+                </p>
+              </div>
+
+              {user ? (
+                <form action={handleSignOut}>
+                  <button type="submit" className="shell-action-button w-full">
+                    Sign out
+                  </button>
+                </form>
+              ) : (
+                <Link href="/sign-in" className="shell-action-button shell-action-button-accent block text-center">
+                  Sign in to activate workspace
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </aside>
 
-      <div className="relative min-w-0">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[360px] bg-[radial-gradient(64%_90%_at_18%_0%,rgba(255,255,255,0.05),transparent_52%)] lg:block"
-        />
-
-        <header className="app-shell-toolbar sticky top-0 z-30 border-b border-white/[0.06] backdrop-blur-xl">
-          <div className="relative flex flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <div className="shell-main min-w-0">
+        <header className="app-shell-toolbar sticky top-0 z-30 border-b border-[color:var(--shell-border)]">
+          <div className="flex flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div>
+              <p className="shell-section-label">OpenPlan operator surface</p>
+              <p className="mt-1 text-sm text-[color:var(--shell-muted)]">
+                Atlas Studio, survey ledger, and delivery controls in one continuous workbench.
+              </p>
+            </div>
             <div className="relative z-[80] flex items-center justify-between gap-2 lg:justify-end">
               <AppCopilot workspaceId={membership?.workspace_id ?? null} workspaceName={workspaceName} />
-              <div className="hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] px-3.5 py-2 text-sm text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:block">
-                <p className="font-medium text-white">{user?.email ?? "Guest session"}</p>
-                <p className="text-[0.72rem] text-slate-400">{user ? "Authenticated workspace" : "Preview mode"}</p>
-              </div>
             </div>
           </div>
         </header>
 
         <main className="relative min-w-0 px-4 pb-6 pt-4 sm:px-6 sm:pb-7 lg:px-8 lg:pb-8 lg:pt-5">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-4 top-0 h-20 rounded-[30px] bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0))] sm:inset-x-6 lg:inset-x-8"
-          />
-          <div className="relative -mt-2 lg:-mt-3">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-6 -top-4 h-14 rounded-[28px] bg-[radial-gradient(60%_120%_at_50%_100%,rgba(56,189,248,0.10),transparent_72%)] blur-2xl"
-            />
-            <div className="workspace-module-surface text-slate-950">
-              <div className="relative px-4 pb-4 pt-5 sm:px-5 sm:pb-5 sm:pt-6 lg:px-6 lg:pb-6 lg:pt-7">{children}</div>
-            </div>
+          <div className="workspace-module-surface text-slate-950">
+            <div className="relative px-4 pb-4 pt-5 sm:px-5 sm:pb-5 sm:pt-6 lg:px-7 lg:pb-7 lg:pt-7">{children}</div>
           </div>
         </main>
       </div>

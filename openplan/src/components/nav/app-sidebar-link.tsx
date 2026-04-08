@@ -56,30 +56,39 @@ export function AppSidebarLink({ href, label, icon }: AppSidebarLinkProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 overflow-hidden rounded-[18px] border px-3 py-2.5 text-[0.84rem] font-medium transition-all duration-200",
+        "group relative grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 overflow-hidden border border-transparent px-3 py-3 text-[0.84rem] font-medium transition-all duration-200",
         isActive
-          ? "border-white/[0.1] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.048))] text-white shadow-[0_12px_28px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.04)]"
-          : "border-transparent text-slate-300/75 hover:border-white/[0.08] hover:bg-white/[0.03] hover:text-white"
+          ? "bg-white/[0.06] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+          : "text-slate-300/78 hover:border-white/[0.06] hover:bg-white/[0.025] hover:text-white"
       )}
     >
       <span
         aria-hidden
         className={cn(
-          "absolute inset-y-2 left-1.5 w-px rounded-full bg-gradient-to-b from-emerald-200/0 via-emerald-200/90 to-emerald-200/0 transition-opacity duration-200",
+          "absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-emerald-200/90 to-transparent transition-opacity duration-200",
           isActive ? "opacity-100" : "opacity-0"
         )}
       />
       <span
         className={cn(
-          "relative flex h-8 w-8 items-center justify-center rounded-xl border transition-colors duration-200",
+          "relative flex h-9 w-9 items-center justify-center border text-current transition-colors duration-200",
           isActive
-            ? "border-emerald-300/20 bg-[linear-gradient(180deg,rgba(110,231,183,0.14),rgba(110,231,183,0.08))] text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            ? "border-emerald-300/16 bg-emerald-300/10 text-emerald-100"
             : "border-white/[0.08] bg-white/[0.02] text-slate-400 group-hover:border-white/[0.12] group-hover:text-slate-200"
         )}
       >
         <Icon className="h-4 w-4" strokeWidth={1.8} />
       </span>
       <span className="relative min-w-0 truncate tracking-[0.01em]">{label}</span>
+      <span
+        aria-hidden
+        className={cn(
+          "text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors",
+          isActive && "text-emerald-100/82"
+        )}
+      >
+        {isActive ? "Live" : "Open"}
+      </span>
     </Link>
   );
 }

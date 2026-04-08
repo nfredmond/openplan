@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
-import { StatusBadge } from "@/components/ui/status-badge";
 import {
   describeEvidenceChainSummary,
   getReportPacketActionLabel,
@@ -60,14 +59,6 @@ function titleize(value: string | null | undefined): string {
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-}
-
-function toneForStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
-  if (status === "active") return "success";
-  if (status === "draft") return "neutral";
-  if (status === "on_hold") return "warning";
-  if (status === "complete") return "info";
-  return "neutral";
 }
 
 function fmtDate(value: string | null | undefined): string {
@@ -281,16 +272,19 @@ export default async function ProjectsPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-amber-800 dark:text-amber-200">
-              {projectsWithReportAttentionCount} project{projectsWithReportAttentionCount === 1 ? "" : "s"} with report attention
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/25 bg-sky-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-300">
-              {projectsWithEvidenceBackedReportsCount} project{projectsWithEvidenceBackedReportsCount === 1 ? "" : "s"} with evidence-backed packets
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/25 bg-rose-500/10 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-rose-700 dark:text-rose-300">
-              {governanceHoldReportCount} governance hold{governanceHoldReportCount === 1 ? "" : "s"} surfaced
-            </span>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="module-record-chip">
+              <span>Report attention</span>
+              <strong>{projectsWithReportAttentionCount}</strong>
+            </div>
+            <div className="module-record-chip">
+              <span>Evidence-backed</span>
+              <strong>{projectsWithEvidenceBackedReportsCount}</strong>
+            </div>
+            <div className="module-record-chip">
+              <span>Governance hold</span>
+              <strong>{governanceHoldReportCount}</strong>
+            </div>
           </div>
         </article>
 
@@ -325,9 +319,10 @@ export default async function ProjectsPage() {
               <h2 className="module-section-title">Project records</h2>
               <p className="module-section-description">All saved projects in the current workspace.</p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
-              {projects.length} total
+              <span>Total</span>
+              <strong>{projects.length}</strong>
             </span>
           </div>
 
@@ -342,9 +337,9 @@ export default async function ProjectsPage() {
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone={toneForStatus(project.status)}>{titleize(project.status)}</StatusBadge>
-                        <StatusBadge tone="info">{titleize(project.plan_type)}</StatusBadge>
-                        <StatusBadge tone="neutral">{titleize(project.delivery_phase)}</StatusBadge>
+                        <span className="module-record-chip"><span>Status</span><strong>{titleize(project.status)}</strong></span>
+                        <span className="module-record-chip"><span>Plan</span><strong>{titleize(project.plan_type)}</strong></span>
+                        <span className="module-record-chip"><span>Phase</span><strong>{titleize(project.delivery_phase)}</strong></span>
                       </div>
 
                       <div className="space-y-1.5">
@@ -365,22 +360,22 @@ export default async function ProjectsPage() {
                   </div>
 
                   <div className="module-record-meta">
-                    <span className="module-record-chip">Workspace {project.workspace?.name ?? "Unknown"}</span>
-                    <span className="module-record-chip">Tier {titleize(project.workspace?.plan ?? "pilot")}</span>
-                    <span className="module-record-chip">Created {fmtDate(project.created_at)}</span>
-                    <span className="module-record-chip">{project.reportSummary.totalCount} report{project.reportSummary.totalCount === 1 ? "" : "s"}</span>
+                    <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
+                    <span className="module-record-chip"><span>Tier</span><strong>{titleize(project.workspace?.plan ?? "pilot")}</strong></span>
+                    <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
+                    <span className="module-record-chip"><span>Reports</span><strong>{project.reportSummary.totalCount}</strong></span>
                     {project.reportSummary.attentionCount > 0 ? (
-                      <span className="module-record-chip">{project.reportSummary.attentionCount} need attention</span>
+                      <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
                     ) : null}
                     {project.reportSummary.evidenceBackedCount > 0 ? (
-                      <span className="module-record-chip">{project.reportSummary.evidenceBackedCount} evidence-backed</span>
+                      <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
                     ) : null}
                     {project.reportSummary.governanceHoldCount > 0 ? (
-                      <span className="module-record-chip">{project.reportSummary.governanceHoldCount} governance hold{project.reportSummary.governanceHoldCount === 1 ? "" : "s"}</span>
+                      <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
                     ) : null}
                   </div>
 
-                  <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+                  <div className="mt-3 border-t border-border/70 pt-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Report packet posture
                     </p>

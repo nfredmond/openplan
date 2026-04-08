@@ -187,12 +187,19 @@
 }
 
 @layer components {
+  :root {
+    --shell-border: color-mix(in srgb, var(--line) 88%, white 12%);
+    --shell-muted: #556575;
+  }
+
   .app-shell-toolbar {
     position: relative;
     overflow: hidden;
     background:
-      linear-gradient(180deg, rgba(7, 12, 17, 0.97) 0%, rgba(8, 14, 20, 0.9) 70%, rgba(9, 15, 22, 0.82) 100%),
-      radial-gradient(580px 180px at 16% 0%, rgba(86, 162, 113, 0.11), transparent 72%);
+      linear-gradient(180deg, rgba(252, 253, 252, 0.98) 0%, rgba(245, 248, 246, 0.95) 100%),
+      radial-gradient(680px 200px at 14% 0%, color-mix(in srgb, var(--pine) 10%, transparent), transparent 68%),
+      radial-gradient(540px 160px at 86% 0%, color-mix(in srgb, var(--copper) 8%, transparent), transparent 72%);
+    backdrop-filter: blur(14px);
   }
 
   .app-shell-toolbar::after {
@@ -200,23 +207,140 @@
     position: absolute;
     inset: auto 0 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--line) 88%, white 12%), transparent);
     pointer-events: none;
+  }
+
+  .shell-sidebar {
+    background:
+      linear-gradient(180deg, rgba(9, 14, 18, 0.985), rgba(11, 18, 24, 0.97)),
+      radial-gradient(520px 180px at 20% 0%, rgba(86, 162, 113, 0.12), transparent 72%);
+    color: #e8edf2;
+  }
+
+  .shell-sidebar-grid {
+    position: relative;
+  }
+
+  .shell-brand-strip {
+    padding-bottom: 0.5rem;
+  }
+
+  .shell-brand-mark {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.8rem 0.85rem;
+  }
+
+  .shell-brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    border: 1px solid rgba(110, 231, 183, 0.18);
+    background: rgba(110, 231, 183, 0.08);
+    color: #d9ffe8;
+  }
+
+  .shell-brand-kicker,
+  .shell-panel-kicker,
+  .shell-section-label {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.88);
+  }
+
+  .shell-brand-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .shell-ledger-panel,
+  .shell-session-panel,
+  .shell-warning-rail {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.95rem;
+  }
+
+  .shell-data-line {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .shell-data-line strong {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #f8fafc;
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+
+  .shell-inline-stamp,
+  .shell-text-link,
+  .shell-action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.55rem 0.8rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #f8fafc;
+  }
+
+  .shell-text-link-muted {
+    color: rgba(226, 232, 240, 0.76);
+  }
+
+  .shell-action-button {
+    justify-content: center;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .shell-action-button-accent {
+    border-color: rgba(110, 231, 183, 0.18);
+    background: rgba(110, 231, 183, 0.08);
+    color: #d9ffe8;
+  }
+
+  .shell-main {
+    background:
+      linear-gradient(180deg, rgba(247, 248, 244, 0.96) 0%, rgba(245, 247, 246, 0.92) 100%),
+      radial-gradient(780px 220px at 20% 0%, color-mix(in srgb, var(--copper) 12%, transparent), transparent 72%);
   }
 
   .workspace-module-surface {
     position: relative;
     overflow: hidden;
-    border-radius: 1.95rem;
+    border-radius: 1.5rem;
     border: 1px solid rgba(201, 213, 225, 0.72);
     background:
-      linear-gradient(180deg, rgba(250, 252, 254, 0.985) 0%, rgba(244, 248, 251, 0.985) 22%, rgba(237, 243, 247, 0.97) 100%),
+      linear-gradient(180deg, rgba(252, 253, 254, 0.98) 0%, rgba(246, 249, 251, 0.98) 22%, rgba(239, 244, 247, 0.98) 100%),
       radial-gradient(640px 140px at 14% 0%, rgba(86, 162, 113, 0.08), transparent 68%);
     box-shadow:
-      0 28px 72px rgba(2, 8, 15, 0.22),
-      0 10px 26px rgba(2, 8, 15, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.82),
-      inset 0 -1px 0 rgba(148, 163, 184, 0.08);
+      0 24px 60px rgba(2, 8, 15, 0.14),
+      0 8px 22px rgba(2, 8, 15, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.86);
   }
 
   .workspace-module-surface::before {
@@ -225,7 +349,7 @@
     inset: 0 0 auto;
     height: 84px;
     background:
-      linear-gradient(180deg, rgba(191, 203, 214, 0.26), rgba(255, 255, 255, 0)),
+      linear-gradient(180deg, rgba(191, 203, 214, 0.22), rgba(255, 255, 255, 0)),
       radial-gradient(420px 120px at 18% 0%, rgba(99, 102, 241, 0.05), transparent 70%);
     pointer-events: none;
   }
@@ -242,7 +366,7 @@
   .module-page {
     position: relative;
     display: grid;
-    gap: 1.75rem;
+    gap: 1.5rem;
     isolation: isolate;
   }
 
@@ -347,10 +471,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 999px;
     border: 1px solid rgba(34, 197, 94, 0.18);
     background: rgba(34, 197, 94, 0.08);
-    padding: 0.35rem 0.8rem;
+    padding: 0.38rem 0.75rem;
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.22em;
@@ -674,13 +797,12 @@
   .module-record-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    min-height: 1.75rem;
-    border-radius: 999px;
-    border: 1px solid rgba(199, 210, 220, 0.72);
-    background: rgba(255, 255, 255, 0.78);
-    padding: 0.34rem 0.72rem;
-    font-size: 0.66rem;
+    gap: 0.35rem;
+    min-height: 1.55rem;
+    border-left: 2px solid color-mix(in srgb, var(--line) 82%, white 18%);
+    background: color-mix(in srgb, white 72%, var(--fog) 28%);
+    padding: 0.24rem 0.6rem;
+    font-size: 0.64rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1027,7 +1149,7 @@
   }
 
   .dark .module-record-chip {
-    border-color: rgba(64, 82, 96, 0.78);
+    border-left-color: rgba(110, 231, 183, 0.32);
     background: rgba(10, 17, 24, 0.42);
   }
 
@@ -1196,8 +1318,8 @@
 
   .module-tab-trigger {
     gap: 0.5rem;
-    border-radius: 0.95rem;
-    padding: 0.55rem 0.85rem;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.8rem;
   }
 
   .module-tab-trigger[data-state="active"] {
@@ -1960,4 +2082,55 @@
 
 .animate-pulse-soft {
   animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+.ledger-surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(199, 210, 220, 0.74);
+  background:
+    linear-gradient(180deg, rgba(252, 253, 254, 0.98), rgba(246, 249, 251, 0.98)),
+    radial-gradient(460px 120px at 12% 0%, rgba(86, 162, 113, 0.08), transparent 70%);
+  box-shadow:
+    0 16px 36px rgba(4, 12, 20, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.ledger-surface::before,
+.ledger-section-header::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--line) 72%, white 28%);
+  pointer-events: none;
+}
+
+.ledger-section-header {
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.ledger-footer {
+  border-top: 1px solid rgba(199, 210, 220, 0.62);
+  padding-top: 1rem;
+}
+
+.dark .ledger-surface {
+  border-color: rgba(64, 82, 96, 0.78);
+  background:
+    linear-gradient(180deg, rgba(17, 28, 38, 0.96), rgba(11, 18, 25, 0.98)),
+    radial-gradient(460px 120px at 12% 0%, rgba(86, 162, 113, 0.12), transparent 72%);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .ledger-surface::before,
+.dark .ledger-section-header::after {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dark .ledger-footer {
+  border-top-color: rgba(64, 82, 96, 0.72);
 }

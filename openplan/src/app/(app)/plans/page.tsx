@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
 import { PlanCreator } from "@/components/plans/plan-creator";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
@@ -20,7 +19,6 @@ import {
   formatPlanTypeLabel,
   PLAN_STATUS_OPTIONS,
   PLAN_TYPE_OPTIONS,
-  planStatusTone,
 } from "@/lib/plans/catalog";
 
 type PlansPageSearchParams = Promise<{
@@ -275,17 +273,18 @@ export default async function PlansPage({
                 Filter by project, type, or status to isolate the plans that are ready for attention.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
-              {typedPlans.length} total
+              <span>Total</span>
+              <strong>{typedPlans.length}</strong>
             </span>
           </div>
 
-          <form className="mt-5 grid gap-3 rounded-[22px] border border-border/70 bg-background/70 p-4 md:grid-cols-3">
+          <form className="mt-5 grid gap-3 border border-border/70 bg-background/70 p-4 md:grid-cols-3">
             <select
               name="projectId"
               defaultValue={filters.projectId ?? ""}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+              className="module-select h-10 rounded-none"
             >
               <option value="">All projects</option>
               {(projectsData ?? []).map((project) => (
@@ -298,7 +297,7 @@ export default async function PlansPage({
             <select
               name="planType"
               defaultValue={filters.planType ?? ""}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+              className="module-select h-10 rounded-none"
             >
               <option value="">All plan types</option>
               {PLAN_TYPE_OPTIONS.map((option) => (
@@ -312,7 +311,7 @@ export default async function PlansPage({
               <select
                 name="status"
                 defaultValue={filters.status ?? ""}
-                className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
+                className="module-select h-10 rounded-none"
               >
                 <option value="">All statuses</option>
                 {PLAN_STATUS_OPTIONS.map((option) => (
@@ -323,7 +322,7 @@ export default async function PlansPage({
               </select>
               <button
                 type="submit"
-                className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium"
+                className="h-10 shrink-0 border border-border bg-card px-4 text-sm font-medium"
               >
                 Apply
               </button>
@@ -344,10 +343,10 @@ export default async function PlansPage({
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
-                        <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
-                        <StatusBadge tone={plan.readiness.tone}>{plan.readiness.label}</StatusBadge>
-                        <StatusBadge tone={plan.workflow.tone}>{plan.workflow.label}</StatusBadge>
+                        <span className="module-record-chip"><span>Status</span><strong>{formatPlanStatusLabel(plan.status)}</strong></span>
+                        <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
+                        <span className="module-record-chip"><span>Readiness</span><strong>{plan.readiness.label}</strong></span>
+                        <span className="module-record-chip"><span>Workflow</span><strong>{plan.workflow.label}</strong></span>
                       </div>
 
                       <div className="space-y-1.5">
@@ -368,23 +367,24 @@ export default async function PlansPage({
                   </div>
 
                   <div className="module-record-meta">
-                    <span className="module-record-chip">Project {plan.project?.name ?? "Unlinked"}</span>
+                    <span className="module-record-chip"><span>Project</span><strong>{plan.project?.name ?? "Unlinked"}</strong></span>
                     <span className="module-record-chip">
-                      {plan.geography_label ? `Geography ${plan.geography_label}` : "Geography pending"}
+                      <span>Geography</span>
+                      <strong>{plan.geography_label ? plan.geography_label : "Pending"}</strong>
                     </span>
                     <span className="module-record-chip">
-                      {plan.horizon_year ? `Horizon ${plan.horizon_year}` : "Horizon pending"}
+                      <span>Horizon</span>
+                      <strong>{plan.horizon_year ? plan.horizon_year : "Pending"}</strong>
                     </span>
-                    <span className="module-record-chip">{plan.artifactCoverage.label}</span>
-                    <span className="module-record-chip">{plan.workflow.planningOutputLabel}</span>
+                    <span className="module-record-chip"><span>Coverage</span><strong>{plan.artifactCoverage.label}</strong></span>
+                    <span className="module-record-chip"><span>Output</span><strong>{plan.workflow.planningOutputLabel}</strong></span>
                     <span className="module-record-chip">
-                      {plan.readiness.missingCheckCount > 0
-                        ? `${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
-                        : "No readiness gaps"}
+                      <span>Readiness</span>
+                      <strong>{plan.readiness.missingCheckCount > 0 ? `${plan.readiness.missingCheckCount} gaps` : "Clear"}</strong>
                     </span>
-                    <span className="module-record-chip">{plan.linkageCounts.scenarios} scenarios</span>
-                    <span className="module-record-chip">{plan.linkageCounts.engagementCampaigns} campaigns</span>
-                    <span className="module-record-chip">{plan.linkageCounts.reports} reports</span>
+                    <span className="module-record-chip"><span>Scenarios</span><strong>{plan.linkageCounts.scenarios}</strong></span>
+                    <span className="module-record-chip"><span>Campaigns</span><strong>{plan.linkageCounts.engagementCampaigns}</strong></span>
+                    <span className="module-record-chip"><span>Reports</span><strong>{plan.linkageCounts.reports}</strong></span>
                   </div>
 
                   {plan.readiness.missingCheckLabels.length > 0 ? (

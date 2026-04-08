@@ -26,13 +26,14 @@ export function NavLinkPill({ href, label }: NavLinkPillProps) {
       aria-current={isActive ? "page" : undefined}
       data-active={isActive ? "true" : "false"}
       className={cn(
-        "rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
+        "inline-flex items-center gap-2 border-b px-0 py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
         isActive
-          ? "border border-border bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--card))] text-primary shadow-sm"
-          : "border border-transparent text-foreground/70 hover:border-border hover:bg-muted hover:text-foreground"
+          ? "border-primary text-primary"
+          : "border-transparent text-foreground/68 hover:border-border hover:text-foreground"
       )}
     >
-      {label}
+      <span>{label}</span>
+      <span className="text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">{isActive ? "Live" : "Open"}</span>
     </Link>
   );
 }

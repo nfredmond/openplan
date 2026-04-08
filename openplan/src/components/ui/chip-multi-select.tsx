@@ -85,11 +85,12 @@ export function ChipMultiSelect({
   }
 
   return (
-    <div className={cn("rounded-[22px] border border-border/70 bg-background/70 p-4 shadow-sm", className)}>
+    <div className={cn("border border-border/70 bg-background/70 p-4 shadow-sm", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Linked records</p>
-        <span className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          {selectedOptions.length} selected
+        <span className="module-record-chip">
+          <span>Selected</span>
+          <strong>{selectedOptions.length}</strong>
         </span>
       </div>
 
@@ -100,7 +101,7 @@ export function ChipMultiSelect({
               key={option.id}
               type="button"
               onClick={() => removeOption(option.id)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/70 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-500/16"
+              className="inline-flex items-center gap-1.5 border border-emerald-200/70 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-emerald-400/40 dark:hover:bg-emerald-500/16"
               aria-label={`Remove ${option.label}`}
             >
               <span className="max-w-[16rem] truncate">{option.label}</span>
@@ -112,7 +113,7 @@ export function ChipMultiSelect({
         )}
       </div>
 
-      <div className="mt-4 space-y-3 rounded-[18px] border border-dashed border-border/70 bg-muted/20 p-3">
+      <div className="mt-4 space-y-3 border border-dashed border-border/70 bg-muted/20 p-3">
         <label htmlFor={`${id}-search`} className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Add records
         </label>
@@ -132,20 +133,20 @@ export function ChipMultiSelect({
         ) : filteredOptions.length === 0 ? (
           <p className="text-sm text-muted-foreground">{emptyResultsLabel}</p>
         ) : (
-          <ScrollArea className="max-h-44 rounded-[16px] border border-border/60 bg-background/75">
+          <ScrollArea className="max-h-44 border border-border/60 bg-background/75">
             <div className="grid gap-2 p-2">
               {filteredOptions.slice(0, 12).map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   onClick={() => addOption(option.id)}
-                  className="flex items-center justify-between gap-3 rounded-[14px] border border-border/65 bg-background px-3 py-2 text-left transition hover:border-primary/35 hover:bg-primary/5"
+                  className="flex items-center justify-between gap-3 border border-border/65 bg-background px-3 py-2 text-left transition hover:border-primary/35 hover:bg-primary/5"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{option.label}</p>
                     {option.hint ? <p className="truncate text-xs text-muted-foreground">{option.hint}</p> : null}
                   </div>
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted/35 text-muted-foreground">
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-border/70 bg-muted/35 text-muted-foreground">
                     <Plus className="h-4 w-4" />
                   </span>
                 </button>

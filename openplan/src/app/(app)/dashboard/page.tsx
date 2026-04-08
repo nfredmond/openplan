@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileText, FolderKanban, Radar, ShieldCheck } from "lucide-react";
 import { RunHistory } from "@/components/runs/RunHistory";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import { createClient } from "@/lib/supabase/server";
@@ -144,14 +143,21 @@ export default async function DashboardPage() {
     <section className="module-page">
       <header className="module-header-grid">
         <article className="module-intro-card">
-          <div className="module-intro-kicker">Workspace Dashboard</div>
+          <div className="module-intro-kicker">Workspace dashboard</div>
           <div className="module-intro-body">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge tone="info">{workspaceRole}</StatusBadge>
-              <StatusBadge tone="neutral">Plan: {workspacePlan}</StatusBadge>
-              <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
-                Workspace ID <span className="font-mono text-foreground">{workspaceIdSnippet}</span>
-              </p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="module-record-chip">
+                <span>Role</span>
+                <strong>{workspaceRole}</strong>
+              </div>
+              <div className="module-record-chip">
+                <span>Plan</span>
+                <strong>{workspacePlan}</strong>
+              </div>
+              <div className="module-record-chip">
+                <span>Workspace ID</span>
+                <strong className="font-mono normal-case tracking-tight">{workspaceIdSnippet}</strong>
+              </div>
             </div>
             <h1 className="module-intro-title">{workspaceName}</h1>
             <p className="module-intro-description">
@@ -221,7 +227,7 @@ export default async function DashboardPage() {
                   className="module-subpanel group transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_16px_36px_rgba(4,12,20,0.08)]"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                    <span className="flex h-10 w-10 items-center justify-center border border-emerald-500/18 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300">
                       <Icon className="h-4.5 w-4.5" />
                     </span>
                     <ArrowRight className="mt-1 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
