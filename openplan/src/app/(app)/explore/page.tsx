@@ -2169,7 +2169,7 @@ export default function ExplorePage() {
     if (workspaceLoadState === "loaded") {
       const displayName = workspaceName ?? "workspace";
       const role = workspaceRole ?? "member";
-      return `Connected to ${displayName} (${role}). You can override the workspace ID if needed.`;
+      return `Connected to ${displayName} (${role}).`;
     }
 
     return "Unable to auto-load a workspace right now. Enter a workspace ID manually.";
@@ -2477,13 +2477,13 @@ export default function ExplorePage() {
         <div className="absolute left-4 top-4 z-10 max-w-[min(88%,420px)] rounded-[26px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:left-5 sm:top-5 sm:p-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
             <Sparkles className="h-3.5 w-3.5" />
-            Geospatial Intelligence Surface
+            Analysis Studio
           </div>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-[1.7rem]">
-            Analysis Studio is moving onto a real planning map experience.
+            Analyze corridors and keep the results tied to your project.
           </h2>
           <p className="mt-2 text-sm text-slate-300/86">
-            This pass replaces the old demo-tile feel with a Mapbox-first foundation, richer layer styling, better operator chrome, and a cleaner path toward public engagement, Census overlays, and safety data.
+            Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {mapSummaryBadges.map((badge) => (
@@ -2498,7 +2498,7 @@ export default function ExplorePage() {
           <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">Overlay lanes</p>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">Overlays</p>
                 <p className="mt-1 text-sm text-slate-200/88">Control the visible geometry and any project-linked coverage footprints.</p>
               </div>
               <button
@@ -2678,7 +2678,7 @@ export default function ExplorePage() {
         <div className="absolute bottom-4 left-4 z-10 max-w-[min(88%,360px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <Layers3 className="h-3.5 w-3.5" />
-            Map layers and posture
+            Map layers
           </div>
           <div className="mt-3 analysis-sidepanel-stack">
             <div className={["analysis-sidepanel-row", corridorGeojson ? "is-active" : "is-muted"].join(" ")}>
@@ -2757,7 +2757,7 @@ export default function ExplorePage() {
         <div className="absolute bottom-4 right-4 z-10 max-w-[min(88%,320px)] rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:right-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
             <MapIcon className="h-3.5 w-3.5" />
-            Tract legend & inspector
+            Tract legend
           </div>
           {!mapExperienceReady ? (
             <div className="mt-3 analysis-sidepanel-row is-warning">
@@ -2833,7 +2833,7 @@ export default function ExplorePage() {
                 <div className="analysis-sidepanel-head">
                   <div className="analysis-sidepanel-main">
                     <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Crash inspector</span>
+                      <span className="analysis-sidepanel-chip">Crash data</span>
                     </div>
                     <p className="analysis-sidepanel-title">SWITRS point inspection</p>
                     <p className="analysis-sidepanel-body">
@@ -2884,7 +2884,7 @@ export default function ExplorePage() {
                 <div className="analysis-sidepanel-head">
                   <div className="analysis-sidepanel-main">
                     <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Hovered tract</span>
+                      <span className="analysis-sidepanel-chip">Tract details</span>
                     </div>
                     <p className="analysis-sidepanel-title">{hoveredTract ? hoveredTract.name : "Tract inspector idle"}</p>
                     <p className="analysis-sidepanel-body">

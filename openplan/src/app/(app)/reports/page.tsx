@@ -482,17 +482,17 @@ export default async function ReportsPage({
             </span>
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-amber-200/65">
-                Auditability
+                Reports
               </p>
               <h2 className="text-xl font-semibold tracking-tight">
-                Structured packets with clear source history
+                Report packets and exports
               </h2>
             </div>
           </div>
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Current packets
+                Packets
               </p>
               <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
                 {currentPacketCount}
@@ -500,7 +500,7 @@ export default async function ReportsPage({
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Evidence-backed
+                Ready to review
               </p>
               <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
                 {evidenceBackedCount}
@@ -508,7 +508,7 @@ export default async function ReportsPage({
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-200/65">
-                Governance holds
+                Needs attention
               </p>
               <p className="mt-1 text-2xl font-semibold tracking-tight text-amber-50">
                 {blockedGovernanceCount}
@@ -517,13 +517,13 @@ export default async function ReportsPage({
           </div>
           <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Each report artifact keeps its source runs and checks visible so teams can trace what went into the packet.
+              Keep report packets connected to the work that produced them.
             </li>
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              HTML packet generation is available now. Export delivery and PDF output are still being completed.
+              Generate HTML packets now and prepare exports for delivery.
             </li>
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Missing source context appears as a visible warning instead of being silently omitted.
+              Missing source context is surfaced clearly during review.
             </li>
           </ul>
         </article>

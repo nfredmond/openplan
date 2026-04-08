@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertTriangle, Command, CreditCard, Map, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Command, ShieldCheck } from "lucide-react";
 import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
 import { AppSidebarLink } from "@/components/nav/app-sidebar-link";
 import { AppCopilot } from "@/components/assistant/app-copilot";
@@ -14,8 +14,7 @@ import {
 
 const navGroups = [
   {
-    title: "Pilot spine",
-    hint: "The core authenticated routes operators will touch during the supervised pilot.",
+    title: "Main",
     items: [
       { href: "/dashboard", label: "Overview", icon: "overview" as const },
       { href: "/projects", label: "Projects", icon: "projects" as const },
@@ -25,8 +24,7 @@ const navGroups = [
     ],
   },
   {
-    title: "Analysis & delivery",
-    hint: "Evidence production, scenario work, and county onboarding surfaces.",
+    title: "Analysis",
     items: [
       { href: "/engagement", label: "Engagement", icon: "engagement" as const },
       { href: "/explore", label: "Analysis Studio", icon: "analysis" as const },
@@ -37,8 +35,7 @@ const navGroups = [
     ],
   },
   {
-    title: "Operations",
-    hint: "Commercial controls, admin posture, and pilot-readiness visibility.",
+    title: "Workspace",
     items: [
       { href: "/billing", label: "Billing", icon: "billing" as const },
       { href: "/admin", label: "Admin", icon: "admin" as const },
@@ -129,9 +126,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">{workspacePlan}</span>
               <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">{workspaceRole}</span>
             </div>
-            <p className="mt-3 text-[0.78rem] leading-relaxed text-slate-300/72">
-              Authenticated pilot shell with honest status labeling. Live routes stay visible; staged controls stay labeled as staged.
-            </p>
           </div>
 
           <nav className="mt-5 space-y-4" aria-label="Primary application navigation">
@@ -139,7 +133,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <div key={group.title} className="space-y-2">
                 <div className="px-1">
                   <p className="text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-slate-500">{group.title}</p>
-                  <p className="mt-1 text-[0.73rem] leading-relaxed text-slate-400/80">{group.hint}</p>
                 </div>
                 <div className="space-y-1">
                   {group.items.map((item) => (
@@ -155,21 +148,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="mt-auto space-y-3 pt-6">
-            <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.032),rgba(255,255,255,0.02))] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <div className="flex items-center gap-2 text-[0.82rem] font-semibold text-white">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-300/80" />
-                Pilot status
-              </div>
-              <p className="mt-1.5 text-[0.78rem] leading-relaxed text-slate-300/70">
-                Projects, reports, county validation, and readiness evidence are live in the authenticated shell. Team admin and deep audit tooling remain staged.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-300/80">
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Live routes</span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Readiness evidence</span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1">Staged admin controls</span>
-              </div>
-            </div>
-
             {membershipPending ? (
               <div className="rounded-2xl border border-amber-300/15 bg-amber-400/10 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <div className="flex items-center gap-2 text-[0.82rem] font-semibold text-amber-100">
@@ -219,26 +197,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
         <header className="app-shell-toolbar sticky top-0 z-30 border-b border-white/[0.06] backdrop-blur-xl">
           <div className="relative flex flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div className="min-w-0 flex-1 rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] px-4 py-3 text-sm text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/8 px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-emerald-100">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Supervised pilot
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-slate-200/80">
-                  <Map className="h-3.5 w-3.5" />
-                  County validation visible in main nav
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-slate-200/80">
-                  <CreditCard className="h-3.5 w-3.5" />
-                  Billing stays explicit
-                </span>
-              </div>
-              <p className="mt-2 text-[0.82rem] leading-relaxed text-slate-300/78">
-                This shell is intentionally honest: use the left rail for the live pilot routes, use Admin for readiness evidence, and assume staged controls are not self-serve yet unless the page says otherwise.
-              </p>
-            </div>
-
             <div className="flex items-center justify-between gap-2 lg:justify-end">
               <AppCopilot workspaceId={membership?.workspace_id ?? null} workspaceName={workspaceName} />
               <div className="hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] px-3.5 py-2 text-sm text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:block">

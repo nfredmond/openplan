@@ -177,7 +177,7 @@ export function ProjectWorkspaceCreator() {
         </div>
 
         <div className="module-note text-sm">
-          New project workspaces should be treated as stable operating containers, not temporary wizard output.
+          Create a project record to organize the work and continue from there.
         </div>
 
         {error ? (

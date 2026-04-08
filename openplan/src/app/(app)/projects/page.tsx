@@ -300,23 +300,17 @@ export default async function ProjectsPage() {
               <Layers3 className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Portfolio posture</p>
-              <h2 className="module-operator-title">Projects keep work organized</h2>
+              <p className="module-operator-eyebrow">Portfolio</p>
+              <h2 className="module-operator-title">Projects</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Use this page to create projects, review active work, and jump into project details without losing context.
+            Create projects, review active work, and move into project details from one place.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">
-              Each new project creates a dedicated record that can hold its own files, notes, and linked work.
-            </div>
-            <div className="module-operator-item">
-              Project pages can bring together deliverables, risks, issues, decisions, meetings, runs, and linked data.
-            </div>
-            <div className="module-operator-item">
-              Next improvements will add stronger filters, saved views, and better workload visibility across the workspace.
-            </div>
+            <div className="module-operator-item">Track project records, status, and linked work.</div>
+            <div className="module-operator-item">Keep plans, reports, and related decisions connected.</div>
+            <div className="module-operator-item">Open any project to continue the workflow.</div>
           </div>
         </article>
       </header>
@@ -328,10 +322,8 @@ export default async function ProjectsPage() {
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Portfolio</p>
-              <h2 className="module-section-title">Current project records</h2>
-              <p className="module-section-description">
-                Summary cards above give the module signal. The list below stays denser and operational.
-              </p>
+              <h2 className="module-section-title">Project records</h2>
+              <p className="module-section-description">All saved projects in the current workspace.</p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />

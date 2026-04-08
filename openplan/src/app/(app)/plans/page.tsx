@@ -217,10 +217,9 @@ export default async function PlansPage({
             Plans registry live
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Plans now have a real system-of-record layer</h1>
+            <h1 className="module-intro-title">Plans</h1>
             <p className="module-intro-description">
-              Register corridor plans, ATPs, safety plans, and regional plans as explicit workspace records tied to
-              projects, scenarios, engagement, and reports without pretending this is already a document editor.
+              Organize corridor plans, ATPs, safety plans, and regional plans alongside the rest of your project work.
             </p>
           </div>
 
