@@ -16,6 +16,7 @@
 | [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) | **External pilot packet** — scope, onboarding, support, AI, billing truth |
 | [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) | **Canonical pricing/positioning note** — resolves public pricing drift |
 | [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) | **Canonical frontend anti-generic design rules** — worksurface, rails, low-card, low-pill UI posture |
+| [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) | **Practical screen-by-screen UI implementation checklist** — use during redesign and QA |
 | [v1-internal-ship-gate.md](2026-03-16-openplan-v1-internal-ship-gate.md) | Internal ship gate checklist |
 | [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) | **Canonical** Elena approval (2026-03-17) |
 
@@ -29,6 +30,7 @@
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
 - [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) — canonical pricing / positioning resolution
 - [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) — canonical anti-generic UI rules for OpenPlan frontend work
+- [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) — practical implementation and QA checklist for redesign slices
 - [product-governance historian](2026-04-05-openplan-product-governance-historian-memo.md) — reconciled current-truth synthesis
 - [proof ops runbook](2026-04-05-openplan-proof-ops-runbook.md) — proof lane, canary monitor, cleanup
 - [multi-agent execution architecture](2026-04-05-openplan-multi-agent-execution-architecture.md) — lane orchestration and direct-to-main execution model
