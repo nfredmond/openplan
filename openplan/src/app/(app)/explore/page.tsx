@@ -16,10 +16,9 @@ import mapboxgl, {
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import type { Run } from "@/components/runs/RunHistory";
 import { RunHistory } from "@/components/runs/RunHistory";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState, ErrorState } from "@/components/ui/state-block";
+import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -2935,67 +2934,84 @@ export default function ExplorePage() {
           <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
         </div>
         <div className="space-y-5 px-5 py-4">
-          <div>
-            <div className="pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-white">Study setup</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-300/72">Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.</p>
-            </div>
-            <div className="space-y-3.5">
-            <Input
-              value={workspaceId}
-              onChange={(event) => setWorkspaceId(event.target.value)}
-              placeholder="Workspace UUID"
-            />
-            <div className="space-y-2">
-              <StatusBadge tone={resolveStatusTone(workspaceLoadState)}>{workspaceStatusLabel}</StatusBadge>
-              <p className="text-xs text-muted-foreground">{workspaceHelperText}</p>
-            </div>
-
-            {workspaceLoadState === "signedOut" ? (
-              <div className="rounded-xl border border-border/80 bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground">Authenticate to access your workspace automatically.</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/sign-in">Sign in</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="ghost">
-                    <Link href="/sign-up">Create account</Link>
-                  </Button>
+          <div className="space-y-3.5">
+            <section className="analysis-studio-surface">
+              <div className="analysis-studio-header">
+                <div className="analysis-studio-heading">
+                  <p className="analysis-studio-label">Study setup</p>
+                  <h3 className="analysis-studio-title">Workspace and intake</h3>
+                  <p className="analysis-studio-description">Connect the workspace, confirm membership, and prepare the corridor boundary before running analysis.</p>
                 </div>
+                <StatusBadge tone={resolveStatusTone(workspaceLoadState)}>{workspaceStatusLabel}</StatusBadge>
               </div>
-            ) : null}
 
-            {workspaceLoadState === "noMembership" ? (
-              <div className="rounded-xl border border-border/80 bg-muted/30 p-3 space-y-2.5">
-                <p className="text-xs text-muted-foreground">
-                  No workspace membership detected. Create a workspace to start using Analysis Studio.
-                </p>
-                <Input
-                  value={bootstrapWorkspaceName}
-                  onChange={(event) => setBootstrapWorkspaceName(event.target.value)}
-                  placeholder="Example: Nevada County Workspace"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => void bootstrapWorkspace()}
-                  disabled={isBootstrappingWorkspace}
-                >
-                  {isBootstrappingWorkspace ? "Creating workspace..." : "Create workspace"}
-                </Button>
-              </div>
-            ) : null}
+              <div className="analysis-studio-body">
+                <div className="analysis-studio-input-stack">
+                  <Input
+                    value={workspaceId}
+                    onChange={(event) => setWorkspaceId(event.target.value)}
+                    placeholder="Workspace UUID"
+                  />
+                  <p className="analysis-studio-note">{workspaceHelperText}</p>
+                </div>
 
-            {bootstrapChecklist.length > 0 ? (
-              <div className="rounded-xl border border-border/80 bg-background p-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Pilot Onboarding Checklist</p>
-                <ul className="mt-2 list-disc space-y-1.5 pl-5 text-xs text-muted-foreground">
-                  {bootstrapChecklist.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
+                {workspaceLoadState === "signedOut" ? (
+                  <div className="analysis-sidepanel-row is-muted">
+                    <div className="analysis-sidepanel-head">
+                      <div className="analysis-sidepanel-main">
+                        <p className="analysis-sidepanel-title">Authentication required</p>
+                        <p className="analysis-sidepanel-body">Authenticate to access your workspace automatically.</p>
+                      </div>
+                      <div className="analysis-sidepanel-actions">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href="/sign-in">Sign in</Link>
+                        </Button>
+                        <Button asChild size="sm" variant="ghost">
+                          <Link href="/sign-up">Create account</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {workspaceLoadState === "noMembership" ? (
+                  <div className="analysis-sidepanel-row is-warning">
+                    <div className="analysis-sidepanel-main">
+                      <p className="analysis-sidepanel-title">Create the first workspace</p>
+                      <p className="analysis-sidepanel-body">No workspace membership detected. Create a workspace to start using Analysis Studio.</p>
+                    </div>
+                    <div className="analysis-studio-input-stack">
+                      <Input
+                        value={bootstrapWorkspaceName}
+                        onChange={(event) => setBootstrapWorkspaceName(event.target.value)}
+                        placeholder="Example: Nevada County Workspace"
+                      />
+                      <div className="analysis-studio-action-row">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => void bootstrapWorkspace()}
+                          disabled={isBootstrappingWorkspace}
+                        >
+                          {isBootstrappingWorkspace ? "Creating workspace..." : "Create workspace"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {bootstrapChecklist.length > 0 ? (
+                  <div className="analysis-studio-inline-meta">
+                    <p className="analysis-studio-inline-meta-label">Pilot onboarding checklist</p>
+                    <ul className="analysis-studio-checklist">
+                      {bootstrapChecklist.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            </section>
 
             <div className="module-section-surface">
               <div className="module-section-header">
@@ -3173,69 +3189,87 @@ export default function ExplorePage() {
               ) : null}
             </div>
             <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
-            <div className="space-y-1.5">
-              <Textarea
-                value={queryText}
-                onChange={(event) => setQueryText(event.target.value)}
-                placeholder="Example: Evaluate transit accessibility, safety risk, and equity implications for this corridor."
-                rows={4}
-                maxLength={ANALYSIS_QUERY_MAX_CHARS}
-              />
-              <p className="text-[0.72rem] text-muted-foreground">
-                Query length: {queryCharacterCount}/{ANALYSIS_QUERY_MAX_CHARS} characters.
-              </p>
-              {isQueryTooLong ? (
-                <p className="text-[0.72rem] text-destructive">
-                  Trim the prompt before running analysis.
-                </p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Report template</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={reportTemplate === "atp" ? "secondary" : "outline"}
-                  onClick={() => setReportTemplate("atp")}
-                >
-                  ATP
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={reportTemplate === "ss4a" ? "secondary" : "outline"}
-                  onClick={() => setReportTemplate("ss4a")}
-                >
-                  SS4A
-                </Button>
-                <span className="module-inline-item">Current {reportTemplate.toUpperCase()}</span>
+            <section className="analysis-studio-surface">
+              <div className="analysis-studio-header">
+                <div className="analysis-studio-heading">
+                  <p className="analysis-studio-label">Study brief</p>
+                  <h3 className="analysis-studio-title">Question and outputs</h3>
+                  <p className="analysis-studio-description">Frame the planning question, choose the reporting lane, then run or export the analysis from the same rail.</p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => void runAnalysis()} disabled={!canSubmit || isSubmitting}>
-                {isSubmitting ? "Running analysis..." : "Run Analysis + Refresh Map"}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void generateReport()}
-                disabled={!analysisResult?.runId || isGeneratingReport}
-              >
-                {isGeneratingReport ? "Generating report..." : `Open ${reportTemplate.toUpperCase()} HTML Report`}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => void downloadPdfReport()}
-                disabled={!analysisResult?.runId || isDownloadingPdf}
-              >
-                {isDownloadingPdf ? "Preparing PDF..." : `Download ${reportTemplate.toUpperCase()} PDF`}
-              </Button>
-            </div>
-            {error ? <ErrorState compact title="Please review" description={error} /> : null}
-            </div>
+              <div className="analysis-studio-body">
+                <div className="analysis-studio-input-stack">
+                  <Textarea
+                    value={queryText}
+                    onChange={(event) => setQueryText(event.target.value)}
+                    placeholder="Example: Evaluate transit accessibility, safety risk, and equity implications for this corridor."
+                    rows={4}
+                    maxLength={ANALYSIS_QUERY_MAX_CHARS}
+                  />
+                  <p className="analysis-studio-note">
+                    Query length: {queryCharacterCount}/{ANALYSIS_QUERY_MAX_CHARS} characters.
+                  </p>
+                  {isQueryTooLong ? (
+                    <p className="text-[0.72rem] text-destructive">
+                      Trim the prompt before running analysis.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="analysis-sidepanel-row is-muted">
+                  <div className="analysis-sidepanel-head">
+                    <div className="analysis-sidepanel-main">
+                      <p className="analysis-sidepanel-title">Report template</p>
+                      <p className="analysis-sidepanel-body">Keep the current grant or program framing visible while you generate HTML or PDF outputs.</p>
+                    </div>
+                    <div className="analysis-sidepanel-actions">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={reportTemplate === "atp" ? "secondary" : "outline"}
+                        onClick={() => setReportTemplate("atp")}
+                      >
+                        ATP
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={reportTemplate === "ss4a" ? "secondary" : "outline"}
+                        onClick={() => setReportTemplate("ss4a")}
+                      >
+                        SS4A
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="analysis-studio-note">Current template: {reportTemplate.toUpperCase()}</p>
+                </div>
+
+                <div className="analysis-studio-action-row">
+                  <Button type="button" onClick={() => void runAnalysis()} disabled={!canSubmit || isSubmitting}>
+                    {isSubmitting ? "Running analysis..." : "Run Analysis + Refresh Map"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void generateReport()}
+                    disabled={!analysisResult?.runId || isGeneratingReport}
+                  >
+                    {isGeneratingReport ? "Generating report..." : `Open ${reportTemplate.toUpperCase()} HTML Report`}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void downloadPdfReport()}
+                    disabled={!analysisResult?.runId || isDownloadingPdf}
+                  >
+                    {isDownloadingPdf ? "Preparing PDF..." : `Download ${reportTemplate.toUpperCase()} PDF`}
+                  </Button>
+                </div>
+
+                {error ? <ErrorState compact title="Please review" description={error} /> : null}
+              </div>
+            </section>
           </div>
         </div>
 
@@ -3379,15 +3413,12 @@ export default function ExplorePage() {
                       </StatusBadge>
                     </div>
                     {currentMapViewSummary.length > 0 ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="analysis-context-summary-grid mt-4">
                         {currentMapViewSummary.map((item) => (
-                          <Badge
-                            key={`${item.label}-${item.value}`}
-                            variant="secondary"
-                            className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-slate-200/82"
-                          >
-                            {item.label}: {item.value}
-                          </Badge>
+                          <div key={`${item.label}-${item.value}`} className="analysis-context-summary-row">
+                            <p className="analysis-context-summary-label">{item.label}</p>
+                            <p className="analysis-context-summary-value">{item.value}</p>
+                          </div>
                         ))}
                       </div>
                     ) : (
@@ -3958,18 +3989,17 @@ export default function ExplorePage() {
             </Card>
           </>
         ) : (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>No analysis selected</CardTitle>
-              <CardDescription>Run a corridor analysis or load a prior run to review metrics, narrative output, and comparisons.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EmptyState
-                title="Ready for corridor analysis"
-                description="Upload a corridor, enter your planning question, and run the analysis to generate results."
-              />
-            </CardContent>
-          </Card>
+          <section className="analysis-studio-surface analysis-studio-surface--empty">
+            <div className="analysis-studio-heading">
+              <p className="analysis-studio-label">Result board</p>
+              <h3 className="analysis-studio-title">No analysis selected</h3>
+              <p className="analysis-studio-description">Run a corridor analysis or load a prior run to review metrics, narrative output, and comparisons.</p>
+            </div>
+            <div className="analysis-studio-inline-meta">
+              <p className="analysis-studio-inline-meta-label">Next step</p>
+              <p className="analysis-studio-inline-meta-value">Upload a corridor, enter the planning question, and run the study to populate this board.</p>
+            </div>
+          </section>
         )}
 
         <RunHistory

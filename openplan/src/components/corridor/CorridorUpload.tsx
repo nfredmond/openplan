@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
@@ -105,12 +104,17 @@ export function CorridorUpload({ onUpload }: CorridorUploadProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle>Corridor Geometry</CardTitle>
-        <CardDescription>Upload a Polygon or MultiPolygon `.geojson` file for analysis.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3.5">
+    <section className="analysis-studio-surface">
+      <div className="analysis-studio-header">
+        <div className="analysis-studio-heading">
+          <p className="analysis-studio-label">Corridor geometry</p>
+          <h3 className="analysis-studio-title">Load the analysis boundary</h3>
+          <p className="analysis-studio-description">Upload a Polygon or MultiPolygon GeoJSON file to define the corridor footprint for this run.</p>
+        </div>
+        <StatusBadge tone={fileName ? "success" : "neutral"}>{fileName ? "Boundary loaded" : "Awaiting file"}</StatusBadge>
+      </div>
+
+      <div className="analysis-studio-body">
         <Input
           ref={inputRef}
           type="file"
@@ -123,17 +127,20 @@ export function CorridorUpload({ onUpload }: CorridorUploadProps) {
             }
           }}
         />
-        <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-          Select GeoJSON File
-        </Button>
+        <div className="analysis-studio-toolbar">
+          <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
+            Select GeoJSON file
+          </Button>
+          <p className="analysis-studio-note">Polygon or MultiPolygon only, up to 10 MB.</p>
+        </div>
         {fileName ? (
-          <div className="space-y-1">
-            <StatusBadge tone="success">File loaded</StatusBadge>
-            <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">{fileName}</p>
+          <div className="analysis-studio-inline-meta">
+            <p className="analysis-studio-inline-meta-label">Loaded file</p>
+            <p className="analysis-studio-inline-meta-value">{fileName}</p>
           </div>
         ) : null}
         {error ? <ErrorState compact title="Upload issue" description={error} /> : null}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
