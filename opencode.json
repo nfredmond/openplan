@@ -3,7 +3,7 @@
   "mcp": {
     "supabase": {
       "type": "remote",
-      "url": "https://mcp.supabase.com/mcp?project_ref=aggphdqkanxsfzzoxlbk",
+      "url": "https://mcp.supabase.com/mcp?project_ref=aggphdqkanxsfzzoxlbk&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
       "enabled": true
     },
     "vercel": {
