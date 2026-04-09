@@ -18,11 +18,22 @@ const patchCampaignSchema = z
     status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
     engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
     projectId: z.union([z.string().uuid(), z.null()]).optional(),
+    rtpCycleId: z.union([z.string().uuid(), z.null()]).optional(),
+    rtpCycleChapterId: z.union([z.string().uuid(), z.null()]).optional(),
     shareToken: z
       .union([z.string().trim().min(8).max(64).regex(/^[a-zA-Z0-9_-]+$/), z.null()])
       .optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.rtpCycleChapterId && value.rtpCycleId === null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["rtpCycleId"],
+        message: "An RTP chapter target requires an RTP cycle target.",
+      });
+    }
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -246,6 +257,80 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    let nextRtpCycleId = access.campaign.rtp_cycle_id ?? null;
+    if (parsed.data.rtpCycleId !== undefined) {
+      if (parsed.data.rtpCycleId === null) {
+        nextRtpCycleId = null;
+      } else {
+        const { data: cycle, error: cycleError } = await supabase
+          .from("rtp_cycles")
+          .select("id, workspace_id")
+          .eq("id", parsed.data.rtpCycleId)
+          .maybeSingle();
+
+        if (cycleError) {
+          audit.error("campaign_patch_rtp_cycle_access_failed", {
+            campaignId: access.campaign.id,
+            rtpCycleId: parsed.data.rtpCycleId,
+            message: cycleError.message,
+            code: cycleError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to verify RTP cycle target" }, { status: 500 });
+        }
+
+        if (!cycle || cycle.workspace_id !== access.campaign.workspace_id) {
+          return NextResponse.json({ error: "RTP cycle not found in this workspace" }, { status: 404 });
+        }
+
+        nextRtpCycleId = cycle.id;
+      }
+    }
+
+    let nextRtpCycleChapterId = access.campaign.rtp_cycle_chapter_id ?? null;
+    if (parsed.data.rtpCycleChapterId !== undefined) {
+      if (parsed.data.rtpCycleChapterId === null) {
+        nextRtpCycleChapterId = null;
+      } else {
+        const { data: chapter, error: chapterError } = await supabase
+          .from("rtp_cycle_chapters")
+          .select("id, workspace_id, rtp_cycle_id")
+          .eq("id", parsed.data.rtpCycleChapterId)
+          .maybeSingle();
+
+        if (chapterError) {
+          audit.error("campaign_patch_rtp_chapter_access_failed", {
+            campaignId: access.campaign.id,
+            rtpCycleChapterId: parsed.data.rtpCycleChapterId,
+            message: chapterError.message,
+            code: chapterError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to verify RTP chapter target" }, { status: 500 });
+        }
+
+        if (!chapter || chapter.workspace_id !== access.campaign.workspace_id) {
+          return NextResponse.json({ error: "RTP chapter not found in this workspace" }, { status: 404 });
+        }
+
+        if (nextRtpCycleId && chapter.rtp_cycle_id !== nextRtpCycleId) {
+          return NextResponse.json({ error: "RTP chapter does not belong to the selected RTP cycle" }, { status: 400 });
+        }
+
+        nextRtpCycleId = chapter.rtp_cycle_id;
+        nextRtpCycleChapterId = chapter.id;
+      }
+    }
+
+    if (nextProjectId) {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("id, workspace_id")
+        .eq("id", nextProjectId)
+        .maybeSingle();
+      if (!project || project.workspace_id !== access.campaign.workspace_id) {
+        return NextResponse.json({ error: "Project not found in this workspace" }, { status: 404 });
+      }
+    }
+
     const nextShareToken =
       parsed.data.shareToken !== undefined ? normalizeShareToken(parsed.data.shareToken) : undefined;
 
@@ -280,6 +365,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.engagementType !== undefined) updates.engagement_type = parsed.data.engagementType;
     if (parsed.data.projectId !== undefined) updates.project_id = nextProjectId;
+    if (parsed.data.rtpCycleId !== undefined || parsed.data.rtpCycleChapterId !== undefined) {
+      updates.rtp_cycle_id = nextRtpCycleId;
+      updates.rtp_cycle_chapter_id = nextRtpCycleChapterId;
+    }
     if (parsed.data.shareToken !== undefined) updates.share_token = nextShareToken;
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;

@@ -20,6 +20,8 @@ type CampaignRow = {
   id: string;
   workspace_id: string;
   project_id: string | null;
+  rtp_cycle_id?: string | null;
+  rtp_cycle_chapter_id?: string | null;
   title?: string | null;
   summary?: string | null;
   status?: string | null;
@@ -102,7 +104,7 @@ export async function loadCampaignAccess(
   const client = asQueryClient(supabase);
   const { data: campaign, error: campaignError } = (await client
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, created_at, updated_at")
+    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, created_at, updated_at")
     .eq("id", campaignId)
     .maybeSingle()) as Awaited<{ data: CampaignRow | null; error: QueryError }>;
 

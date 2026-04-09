@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, FileStack, FolderKanban, Route as RouteIcon, ShieldCheck } from "lucide-react";
+import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
+import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
+import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
 import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -72,14 +75,27 @@ type ProjectRtpLinkRow = {
   portfolio_role: string;
   priority_rationale: string | null;
   created_at: string;
-  projects:
-    | ProjectLinkProjectRow
-    | ProjectLinkProjectRow[]
-    | null;
+  projects: ProjectLinkProjectRow | ProjectLinkProjectRow[] | null;
+};
+
+type CampaignProjectRow = {
+  id: string;
+  name: string;
+};
+
+type EngagementCampaignRow = {
+  id: string;
+  title: string;
+  summary: string | null;
+  status: string;
+  engagement_type: string;
+  rtp_cycle_chapter_id: string | null;
+  updated_at: string;
+  projects: CampaignProjectRow | CampaignProjectRow[] | null;
 };
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+  return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
 
 function formatProjectStatusLabel(value: string | null | undefined): string {
@@ -134,12 +150,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     .maybeSingle();
 
   const cycle = cycleData as RtpCycleRow | null;
-
   if (!cycle) {
     notFound();
   }
 
-  const [chaptersResult, projectLinksResult] = await Promise.all([
+  const [chaptersResult, projectLinksResult, campaignsResult] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
       .select("id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, updated_at")
@@ -151,6 +166,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .select("id, project_id, portfolio_role, priority_rationale, created_at, projects(id, name, status, delivery_phase, summary)")
       .eq("rtp_cycle_id", cycle.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("engagement_campaigns")
+      .select("id, title, summary, status, engagement_type, rtp_cycle_chapter_id, updated_at, projects(id, name)")
+      .eq("rtp_cycle_id", cycle.id)
+      .order("updated_at", { ascending: false }),
   ]);
 
   const chapters = looksLikePendingSchema(chaptersResult.error?.message)
@@ -175,6 +195,25 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         project: Array.isArray(link.projects) ? (link.projects[0] ?? null) : link.projects,
       }));
 
+  const engagementCampaigns = looksLikePendingSchema(campaignsResult.error?.message)
+    ? []
+    : ((campaignsResult.data ?? []) as EngagementCampaignRow[]).map((campaign) => ({
+        ...campaign,
+        project: Array.isArray(campaign.projects) ? (campaign.projects[0] ?? null) : campaign.projects,
+      }));
+
+  const campaignsByChapterId = new Map<string, Array<(typeof engagementCampaigns)[number]>>();
+  const cycleLevelCampaigns: Array<(typeof engagementCampaigns)[number]> = [];
+  for (const campaign of engagementCampaigns) {
+    if (campaign.rtp_cycle_chapter_id) {
+      const current = campaignsByChapterId.get(campaign.rtp_cycle_chapter_id) ?? [];
+      current.push(campaign);
+      campaignsByChapterId.set(campaign.rtp_cycle_chapter_id, current);
+    } else {
+      cycleLevelCampaigns.push(campaign);
+    }
+  }
+
   const readiness = buildRtpCycleReadiness({
     geographyLabel: cycle.geography_label,
     horizonStartYear: cycle.horizon_start_year,
@@ -187,9 +226,6 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
-  const constrainedProjectCount = projectLinks.filter((link) => link.portfolio_role === "constrained").length;
-  const illustrativeProjectCount = projectLinks.filter((link) => link.portfolio_role === "illustrative").length;
-
   return (
     <section className="module-page">
       <header className="module-header-grid">
@@ -206,7 +242,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           <div className="module-intro-body">
             <h1 className="module-intro-title">{cycle.title}</h1>
             <p className="module-intro-description">
-              One cycle now anchors portfolio posture and the first digital RTP chapter shell for this update.
+              One cycle now anchors portfolio posture, editable chapter workflow, and RTP-targeted engagement entry points.
             </p>
           </div>
 
@@ -241,9 +277,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               <p className="module-summary-detail">Portfolio records currently attached to this cycle.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Constrained / illustrative</p>
-              <p className="module-summary-value">{constrainedProjectCount} / {illustrativeProjectCount}</p>
-              <p className="module-summary-detail">Quick fiscal posture view for the visible portfolio.</p>
+              <p className="module-summary-label">Engagement targets</p>
+              <p className="module-summary-value">{engagementCampaigns.length}</p>
+              <p className="module-summary-detail">Cycle-level or chapter-level campaigns tied to this RTP update.</p>
             </div>
           </div>
         </article>
@@ -299,9 +335,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Chapter shell</p>
-                <h2 className="module-section-title">Seeded RTP sections</h2>
+                <h2 className="module-section-title">Editable RTP sections</h2>
                 <p className="module-section-description">
-                  This first shell mirrors the required RTP narrative lanes so comments, evidence, and exports can attach to explicit chapters later.
+                  The shell is no longer just seeded structure. Each chapter can now carry explicit workflow status, working summary, and guidance.
                 </p>
               </div>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -315,48 +351,92 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                 description="This cycle does not have seeded chapter scaffolding yet. Apply the latest migration and reopen the cycle."
               />
             ) : (
-              <div className="space-y-3">
-                {chapters.map((chapter) => (
-                  <article key={chapter.id} className="module-row-card gap-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-semibold tracking-tight">{chapter.title}</h3>
-                          <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>
-                            {formatRtpChapterStatusLabel(chapter.status)}
-                          </StatusBadge>
-                          <StatusBadge tone="neutral">{titleizeRtpValue(chapter.section_type)}</StatusBadge>
-                          {chapter.required ? <StatusBadge tone="success">Required</StatusBadge> : null}
+              <div className="space-y-4">
+                {chapters.map((chapter) => {
+                  const chapterCampaigns = campaignsByChapterId.get(chapter.id) ?? [];
+                  return (
+                    <article key={chapter.id} className="module-row-card gap-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-semibold tracking-tight">{chapter.title}</h3>
+                            <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>
+                              {formatRtpChapterStatusLabel(chapter.status)}
+                            </StatusBadge>
+                            <StatusBadge tone="neutral">{titleizeRtpValue(chapter.section_type)}</StatusBadge>
+                            {chapter.required ? <StatusBadge tone="success">Required</StatusBadge> : null}
+                            <StatusBadge tone="neutral">{chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</StatusBadge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
+                        <div className="text-right text-xs text-muted-foreground">
+                          <div>Updated {formatRtpDateTime(chapter.updated_at)}</div>
+                          <div>Key {chapter.chapter_key}</div>
+                        </div>
                       </div>
-                      <div className="text-right text-xs text-muted-foreground">
-                        <div>Updated {formatRtpDateTime(chapter.updated_at)}</div>
-                        <div>Key {chapter.chapter_key}</div>
-                      </div>
-                    </div>
 
-                    <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                      <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-3">
+                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
+                        </p>
+                      </div>
+
+                      {chapterCampaigns.length > 0 ? (
+                        <div className="space-y-2 rounded-2xl border border-border/70 bg-background px-4 py-3">
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
+                          {chapterCampaigns.map((campaign) => (
+                            <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
+                                  {campaign.title}
+                                </Link>
+                                <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                                <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
+                              </div>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {campaign.summary?.trim() || "No campaign summary yet."}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      {String(chapter.id).startsWith("template-") ? null : (
+                        <RtpChapterControls
+                          rtpCycleId={cycle.id}
+                          chapter={{
+                            id: chapter.id,
+                            title: chapter.title,
+                            status: chapter.status,
+                            guidance: chapter.guidance,
+                            summary: chapter.summary,
+                          }}
+                        />
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             )}
           </article>
         </section>
 
         <aside className="space-y-4">
+          <RtpEngagementCampaignCreator
+            rtpCycleId={cycle.id}
+            chapterOptions={chapters
+              .filter((chapter) => !String(chapter.id).startsWith("template-"))
+              .map((chapter) => ({ id: chapter.id, title: chapter.title }))}
+          />
+
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Portfolio posture</p>
                 <h2 className="module-section-title">Cycle-linked projects</h2>
                 <p className="module-section-description">
-                  The RTP chapter shell and the project portfolio now sit under the same cycle record.
+                  The RTP chapter workflow and the project portfolio now sit under the same cycle record.
                 </p>
               </div>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
@@ -404,23 +484,45 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Next layer</p>
-                <h2 className="module-section-title">Where this goes next</h2>
+                <p className="module-section-label">Cycle-wide engagement</p>
+                <h2 className="module-section-title">Whole-plan campaign targets</h2>
                 <p className="module-section-description">
-                  This is enough structure to start digital RTP assembly without pretending the full editorial workflow is done.
+                  Use whole-cycle campaigns for planwide public review, then point deeper campaigns at specific chapters as needed.
                 </p>
               </div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/12 text-violet-700 dark:text-violet-300">
+                <MessageSquare className="h-5 w-5" />
+              </span>
             </div>
 
-            <div className="module-operator-list mt-1">
-              <div className="module-operator-item">Add chapter editing and status updates so each section can move from shell to real content.</div>
-              <div className="module-operator-item">Attach engagement campaigns to whole-cycle, chapter, and project comment targets.</div>
-              <div className="module-operator-item">Connect the financial element to constrained and illustrative funding posture.</div>
-            </div>
-
-            <Link href="/projects" className="module-inline-action mt-4">
-              Continue portfolio work
-            </Link>
+            {cycleLevelCampaigns.length === 0 ? (
+              <EmptyState
+                title="No whole-cycle campaigns yet"
+                description="Create one above if you want a planwide comment or review target for this RTP update."
+              />
+            ) : (
+              <div className="space-y-3">
+                {cycleLevelCampaigns.map((campaign) => (
+                  <article key={campaign.id} className="module-row-card gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                      <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
+                    </div>
+                    <div>
+                      <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
+                        {campaign.title}
+                      </Link>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {campaign.summary?.trim() || "No campaign summary yet."}
+                      </p>
+                    </div>
+                    {campaign.project ? (
+                      <p className="text-xs text-muted-foreground">Linked project: {campaign.project.name}</p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
           </article>
         </aside>
       </div>

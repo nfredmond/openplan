@@ -14,10 +14,20 @@ const listCampaignsSchema = z.object({
 
 const createCampaignSchema = z.object({
   projectId: z.string().uuid().optional(),
+  rtpCycleId: z.string().uuid().optional(),
+  rtpCycleChapterId: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(160),
   summary: z.string().trim().max(2000).optional(),
   engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
   status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
+}).superRefine((value, context) => {
+  if (value.rtpCycleChapterId && !value.rtpCycleId) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["rtpCycleId"],
+      message: "An RTP chapter target requires an RTP cycle target.",
+    });
+  }
 });
 
 export async function GET(request: NextRequest) {
@@ -47,7 +57,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("engagement_campaigns")
       .select(
-        "id, workspace_id, project_id, title, summary, status, engagement_type, created_at, updated_at, projects(id, name), workspaces(name)"
+        "id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, created_at, updated_at, projects(id, name), workspaces(name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -134,6 +144,8 @@ export async function POST(request: NextRequest) {
     }
 
     let workspaceId: string | null = null;
+    let nextRtpCycleId: string | null = null;
+    let nextRtpCycleChapterId: string | null = null;
 
     if (parsed.data.projectId) {
       const access = await loadProjectAccess(supabase, parsed.data.projectId, user.id, "engagement.write");
@@ -156,7 +168,70 @@ export async function POST(request: NextRequest) {
       }
 
       workspaceId = access.project.workspace_id;
-    } else {
+    }
+
+    if (parsed.data.rtpCycleId) {
+      const { data: cycle, error: cycleError } = await supabase
+        .from("rtp_cycles")
+        .select("id, workspace_id")
+        .eq("id", parsed.data.rtpCycleId)
+        .maybeSingle();
+
+      if (cycleError) {
+        audit.error("rtp_cycle_lookup_failed", {
+          rtpCycleId: parsed.data.rtpCycleId,
+          message: cycleError.message,
+          code: cycleError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify RTP cycle target" }, { status: 500 });
+      }
+
+      if (!cycle) {
+        return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
+      }
+
+      if (workspaceId && workspaceId !== cycle.workspace_id) {
+        return NextResponse.json({ error: "Project and RTP cycle must belong to the same workspace" }, { status: 400 });
+      }
+
+      workspaceId = cycle.workspace_id;
+      nextRtpCycleId = cycle.id;
+    }
+
+    if (parsed.data.rtpCycleChapterId) {
+      const { data: chapter, error: chapterError } = await supabase
+        .from("rtp_cycle_chapters")
+        .select("id, workspace_id, rtp_cycle_id")
+        .eq("id", parsed.data.rtpCycleChapterId)
+        .maybeSingle();
+
+      if (chapterError) {
+        audit.error("rtp_chapter_lookup_failed", {
+          rtpCycleChapterId: parsed.data.rtpCycleChapterId,
+          message: chapterError.message,
+          code: chapterError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify RTP chapter target" }, { status: 500 });
+      }
+
+      if (!chapter) {
+        return NextResponse.json({ error: "RTP chapter not found" }, { status: 404 });
+      }
+
+      if (parsed.data.rtpCycleId && chapter.rtp_cycle_id !== parsed.data.rtpCycleId) {
+        return NextResponse.json({ error: "RTP chapter does not belong to the selected RTP cycle" }, { status: 400 });
+      }
+
+      if (workspaceId && workspaceId !== chapter.workspace_id) {
+        return NextResponse.json({ error: "Engagement targets must belong to the same workspace" }, { status: 400 });
+      }
+
+      workspaceId = chapter.workspace_id;
+      nextRtpCycleId = chapter.rtp_cycle_id;
+      nextRtpCycleChapterId = chapter.id;
+    }
+
+    if (!workspaceId) {
       const { data: membership, error: membershipError } = await supabase
         .from("workspace_members")
         .select("workspace_id, role")
@@ -185,13 +260,15 @@ export async function POST(request: NextRequest) {
       .insert({
         workspace_id: workspaceId,
         project_id: parsed.data.projectId ?? null,
+        rtp_cycle_id: nextRtpCycleId,
+        rtp_cycle_chapter_id: nextRtpCycleChapterId,
         title: parsed.data.title.trim(),
         summary: parsed.data.summary?.trim() || null,
         engagement_type: parsed.data.engagementType ?? "comment_collection",
         status: parsed.data.status ?? "draft",
         created_by: user.id,
       })
-      .select("id, workspace_id, project_id, title, summary, status, engagement_type, created_at, updated_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, created_at, updated_at")
       .single();
 
     if (insertError || !campaign) {
