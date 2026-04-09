@@ -15,6 +15,83 @@ export const RTP_PORTFOLIO_ROLE_OPTIONS = [
 
 export type RtpPortfolioRole = (typeof RTP_PORTFOLIO_ROLE_OPTIONS)[number]["value"];
 
+export const RTP_CHAPTER_STATUS_OPTIONS = [
+  { value: "not_started", label: "Not Started" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "ready_for_review", label: "Ready for Review" },
+  { value: "complete", label: "Complete" },
+] as const;
+
+export type RtpChapterStatus = (typeof RTP_CHAPTER_STATUS_OPTIONS)[number]["value"];
+
+export type RtpChapterTemplate = {
+  chapterKey: string;
+  title: string;
+  sectionType: "policy" | "action" | "financial" | "engagement" | "performance" | "resilience" | "compliance";
+  sortOrder: number;
+  required: boolean;
+  guidance: string;
+};
+
+export const RTP_CHAPTER_TEMPLATES: RtpChapterTemplate[] = [
+  {
+    chapterKey: "vision_goals_policy",
+    title: "Vision, goals, and policy framework",
+    sectionType: "policy",
+    sortOrder: 10,
+    required: true,
+    guidance: "Capture the policy element, goals, objectives, and performance direction that explain why the RTP exists.",
+  },
+  {
+    chapterKey: "action_element",
+    title: "Action element and implementation approach",
+    sectionType: "action",
+    sortOrder: 20,
+    required: true,
+    guidance: "Describe implementation actions, delivery posture, partners, and how the RTP translates into near- and mid-term work.",
+  },
+  {
+    chapterKey: "financial_element",
+    title: "Financial element and fiscal constraint",
+    sectionType: "financial",
+    sortOrder: 30,
+    required: true,
+    guidance: "Track revenue assumptions, year-of-expenditure logic, fiscal constraint, and the bridge between constrained and illustrative programs.",
+  },
+  {
+    chapterKey: "project_portfolio",
+    title: "Project portfolio and prioritization",
+    sectionType: "performance",
+    sortOrder: 40,
+    required: true,
+    guidance: "Summarize constrained, illustrative, and candidate projects with prioritization logic tied back to adopted goals.",
+  },
+  {
+    chapterKey: "consultation_engagement",
+    title: "Consultation, tribal coordination, and public engagement",
+    sectionType: "engagement",
+    sortOrder: 50,
+    required: true,
+    guidance: "Record public involvement, interagency consultation, and tribal coordination as a first-class RTP output.",
+  },
+  {
+    chapterKey: "safety_resilience",
+    title: "Safety, resilience, and emergency preparedness",
+    sectionType: "resilience",
+    sortOrder: 60,
+    required: true,
+    guidance: "Cover transportation safety, emergency preparedness, and rural resilience posture required for the RTP narrative.",
+  },
+  {
+    chapterKey: "adoption_compliance_appendix",
+    title: "Adoption package and compliance appendix",
+    sectionType: "compliance",
+    sortOrder: 70,
+    required: true,
+    guidance: "Assemble checklist, resolutions, comment-response materials, and board-ready compliance artifacts.",
+  },
+];
+
 export type RtpCycleReadinessCheck = {
   key: "geography" | "horizon" | "adoption_target" | "public_review_window";
   label: string;
@@ -60,6 +137,10 @@ export function formatRtpPortfolioRoleLabel(value: string | null | undefined): s
   return RTP_PORTFOLIO_ROLE_OPTIONS.find((option) => option.value === value)?.label ?? titleizeRtpValue(value);
 }
 
+export function formatRtpChapterStatusLabel(value: string | null | undefined): string {
+  return RTP_CHAPTER_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? titleizeRtpValue(value);
+}
+
 export function formatRtpDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
@@ -84,6 +165,14 @@ export function rtpPortfolioRoleTone(role: string | null | undefined): "info" | 
   if (role === "constrained") return "success";
   if (role === "illustrative") return "warning";
   if (role === "candidate") return "neutral";
+  return "neutral";
+}
+
+export function rtpChapterStatusTone(status: string | null | undefined): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "complete") return "success";
+  if (status === "ready_for_review") return "info";
+  if (status === "in_progress") return "warning";
+  if (status === "not_started") return "neutral";
   return "neutral";
 }
 

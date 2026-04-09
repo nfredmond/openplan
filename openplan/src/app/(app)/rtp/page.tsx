@@ -240,7 +240,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-semibold tracking-tight">{cycle.title}</h3>
+                          <Link href={`/rtp/${cycle.id}`} className="text-base font-semibold tracking-tight transition hover:text-foreground/80">
+                            {cycle.title}
+                          </Link>
                           <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                           <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
                         </div>
@@ -318,6 +320,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         </ul>
                       </div>
                     </div>
+
+                    <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
+                      Open RTP cycle shell
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
                   </article>
                 ))}
               </div>
@@ -334,7 +341,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <p className="module-section-label">Next slice</p>
                 <h2 className="module-section-title">What comes next</h2>
                 <p className="module-section-description">
-                  With the cycle object in place, the next implementation slice can safely attach portfolio and chapter state.
+                  The cycle now carries portfolio links and a first chapter shell. The next slice can move from structure into editable RTP content.
                 </p>
               </div>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -343,21 +350,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             </div>
 
             <div className="module-operator-list mt-1">
-              <div className="module-operator-item">Add project-to-cycle linkage for constrained vs illustrative portfolio tracking.</div>
-              <div className="module-operator-item">Add chapter scaffolding so policy, action, and financial sections live under one RTP cycle.</div>
+              <div className="module-operator-item">Add chapter editing so policy, action, and financial sections can move from shell to working draft.</div>
+              <div className="module-operator-item">Keep constrained, illustrative, and candidate project posture visible from the same cycle.</div>
               <div className="module-operator-item">Extend engagement campaigns so whole-plan, chapter, and project comments can point back to the same cycle.</div>
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="module-metric-card">
                 <p className="module-metric-label">Next domain</p>
-                <p className="module-metric-value text-sm">Project portfolio linkage</p>
-                <p className="mt-1 text-xs text-muted-foreground">Constrained / illustrative status, sponsor, rationale, and funding posture.</p>
+                <p className="module-metric-value text-sm">Editable chapter workflow</p>
+                <p className="mt-1 text-xs text-muted-foreground">Section summaries, chapter status, and chapter-specific evidence posture.</p>
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Next output</p>
-                <p className="module-metric-value text-sm">Digital RTP shell</p>
-                <p className="mt-1 text-xs text-muted-foreground">A narrative surface that can later carry chapter-level comments and board packet exports.</p>
+                <p className="module-metric-value text-sm">Comment-ready digital RTP</p>
+                <p className="mt-1 text-xs text-muted-foreground">A narrative surface that can carry chapter-level comments and board packet exports.</p>
               </div>
             </div>
 
