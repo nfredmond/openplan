@@ -16,6 +16,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
@@ -81,6 +82,23 @@ type LinkedDatasetItem = {
   connectorLabel: string | null;
   vintageLabel: string | null;
   lastRefreshedAt: string | null;
+};
+
+type ProjectRtpLinkRow = {
+  id: string;
+  rtp_cycle_id: string;
+  portfolio_role: string;
+  priority_rationale: string | null;
+  created_at: string;
+};
+
+type RtpCycleRow = {
+  id: string;
+  title: string;
+  status: string;
+  geography_label: string | null;
+  horizon_start_year: number | null;
+  horizon_end_year: number | null;
 };
 
 type MilestoneRow = {
@@ -300,6 +318,58 @@ export default async function ProjectDetailPage({
     .eq("id", project.workspace_id)
     .single();
 
+  const projectRtpLinkResult = await supabase
+    .from("project_rtp_cycle_links")
+    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, created_at")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false });
+
+  const projectRtpLinkRows = looksLikePendingSchema(projectRtpLinkResult.error?.message)
+    ? []
+    : ((projectRtpLinkResult.data ?? []) as ProjectRtpLinkRow[]);
+  const projectRtpLinksPending = looksLikePendingSchema(projectRtpLinkResult.error?.message);
+
+  const linkedRtpCycleIds = projectRtpLinkRows.map((item) => item.rtp_cycle_id);
+  const linkedRtpCyclesResult = linkedRtpCycleIds.length
+    ? await supabase
+        .from("rtp_cycles")
+        .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
+        .in("id", linkedRtpCycleIds)
+    : { data: [], error: null };
+
+  const linkedRtpCycles = looksLikePendingSchema(linkedRtpCyclesResult.error?.message)
+    ? []
+    : ((linkedRtpCyclesResult.data ?? []) as RtpCycleRow[]);
+
+  const workspaceRtpCyclesResult = await supabase
+    .from("rtp_cycles")
+    .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
+    .eq("workspace_id", project.workspace_id)
+    .order("updated_at", { ascending: false });
+
+  const workspaceRtpCycles = looksLikePendingSchema(workspaceRtpCyclesResult.error?.message)
+    ? []
+    : ((workspaceRtpCyclesResult.data ?? []) as RtpCycleRow[]);
+
+  const rtpCycleById = new Map(linkedRtpCycles.map((cycle) => [cycle.id, cycle]));
+  const existingRtpLinks = projectRtpLinkRows
+    .map((link) => {
+      const cycle = rtpCycleById.get(link.rtp_cycle_id);
+      if (!cycle) return null;
+      return {
+        id: link.id,
+        rtpCycleId: cycle.id,
+        title: cycle.title,
+        status: cycle.status,
+        geographyLabel: cycle.geography_label,
+        horizonStartYear: cycle.horizon_start_year,
+        horizonEndYear: cycle.horizon_end_year,
+        portfolioRole: link.portfolio_role,
+        priorityRationale: link.priority_rationale,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
   const { data: recentRuns } = await supabase
     .from("runs")
     .select("id, title, created_at, summary_text")
@@ -471,6 +541,10 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
+  const linkedRtpCycleCount = existingRtpLinks.length;
+  const constrainedRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "constrained").length;
+  const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
+  const candidateRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "candidate").length;
   const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
   const projectReportIds = ((projectReportData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
@@ -656,6 +730,7 @@ export default async function ProjectDetailPage({
             <StatusBadge tone={toneForControlHealth(projectControlsSummary.controlHealth)}>
               Controls {titleize(projectControlsSummary.controlHealth)}
             </StatusBadge>
+            {linkedRtpCycleCount > 0 ? <StatusBadge tone="success">RTP {linkedRtpCycleCount} linked</StatusBadge> : null}
             <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
               Workspace {workspaceData?.name ?? "Unknown"} · Updated {fmtDateTime(project.updated_at)}
             </p>
@@ -668,7 +743,7 @@ export default async function ProjectDetailPage({
             </p>
           </div>
 
-          <div className="module-summary-grid cols-5">
+          <div className="module-summary-grid cols-6">
             <div className="module-summary-card">
               <p className="module-summary-label">Deliverables</p>
               <p className="module-summary-value">{deliverables?.length ?? 0}</p>
@@ -693,6 +768,11 @@ export default async function ProjectDetailPage({
               <p className="module-summary-label">Pending submittals</p>
               <p className="module-summary-value">{projectControlsSummary.pendingSubmittalCount}</p>
               <p className="module-summary-detail">Packets still in draft, review, or submitted posture.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">RTP cycles</p>
+              <p className="module-summary-value">{linkedRtpCycleCount}</p>
+              <p className="module-summary-detail">Regional plan cycles this project is now attached to.</p>
             </div>
           </div>
         </article>
@@ -722,6 +802,67 @@ export default async function ProjectDetailPage({
           </div>
         </article>
       </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <Target className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Portfolio</p>
+              <h2 className="module-section-title">RTP portfolio posture</h2>
+              <p className="module-section-description">
+                Start making project prioritization explicit by attaching this project to one or more RTP cycles with a clear role and rationale.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="module-summary-grid cols-4 mt-5">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Linked cycles</p>
+            <p className="module-summary-value">{linkedRtpCycleCount}</p>
+            <p className="module-summary-detail">Total RTP update cycles connected to this project.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Constrained</p>
+            <p className="module-summary-value">{constrainedRtpLinkCount}</p>
+            <p className="module-summary-detail">Projects positioned inside the fiscally constrained portfolio.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Illustrative</p>
+            <p className="module-summary-value">{illustrativeRtpLinkCount}</p>
+            <p className="module-summary-detail">Projects visible for aspiration or later advancement.</p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Candidate</p>
+            <p className="module-summary-value">{candidateRtpLinkCount}</p>
+            <p className="module-summary-detail">Projects still being framed before final portfolio posture.</p>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          {projectRtpLinksPending ? (
+            <div className="rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+              RTP linkage schema is not available yet in this environment. Run the latest migration, then this project can attach into RTP cycle portfolio tracking.
+            </div>
+          ) : (
+            <ProjectRtpLinker
+              projectId={project.id}
+              availableCycles={workspaceRtpCycles.map((cycle) => ({
+                id: cycle.id,
+                title: cycle.title,
+                status: cycle.status,
+                geographyLabel: cycle.geography_label,
+                horizonStartYear: cycle.horizon_start_year,
+                horizonEndYear: cycle.horizon_end_year,
+              }))}
+              existingLinks={existingRtpLinks}
+            />
+          )}
+        </div>
+      </article>
 
       <article id="project-reporting" className="module-section-surface scroll-mt-24">
         <div className="module-section-header">

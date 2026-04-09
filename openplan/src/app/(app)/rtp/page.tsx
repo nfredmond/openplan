@@ -41,6 +41,17 @@ type RtpCycleRow = {
   updated_at: string;
 };
 
+type ProjectRtpLinkRow = {
+  id: string;
+  project_id: string;
+  rtp_cycle_id: string;
+  portfolio_role: string;
+};
+
+function looksLikePendingSchema(message: string | null | undefined): boolean {
+  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const supabase = await createClient();
@@ -78,8 +89,27 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     )
     .order("updated_at", { ascending: false });
 
+  const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
+  const projectRtpLinksResult = rtpCycleIds.length
+    ? await supabase
+        .from("project_rtp_cycle_links")
+        .select("id, project_id, rtp_cycle_id, portfolio_role")
+        .in("rtp_cycle_id", rtpCycleIds)
+    : { data: [], error: null };
+
+  const projectRtpLinks = looksLikePendingSchema(projectRtpLinksResult.error?.message)
+    ? []
+    : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
+  const linksByCycleId = new Map<string, ProjectRtpLinkRow[]>();
+  for (const link of projectRtpLinks) {
+    const current = linksByCycleId.get(link.rtp_cycle_id) ?? [];
+    current.push(link);
+    linksByCycleId.set(link.rtp_cycle_id, current);
+  }
+
   const typedCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
     .map((cycle) => {
+      const cycleLinks = linksByCycleId.get(cycle.id) ?? [];
       const readiness = buildRtpCycleReadiness({
         geographyLabel: cycle.geography_label,
         horizonStartYear: cycle.horizon_start_year,
@@ -91,6 +121,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
       return {
         ...cycle,
+        linkedProjectCount: cycleLinks.length,
+        constrainedProjectCount: cycleLinks.filter((link) => link.portfolio_role === "constrained").length,
+        illustrativeProjectCount: cycleLinks.filter((link) => link.portfolio_role === "illustrative").length,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
       };
@@ -101,6 +134,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const publicReviewCount = typedCycles.filter((cycle) => cycle.status === "public_review").length;
   const adoptedCount = typedCycles.filter((cycle) => cycle.status === "adopted").length;
   const readyFoundationCount = typedCycles.filter((cycle) => cycle.readiness.ready).length;
+  const linkedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.linkedProjectCount, 0);
 
   return (
     <section className="module-page">
@@ -117,7 +151,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             </p>
           </div>
 
-          <div className="module-summary-grid cols-4">
+          <div className="module-summary-grid cols-5">
             <div className="module-summary-card">
               <p className="module-summary-label">Cycles</p>
               <p className="module-summary-value">{typedCycles.length}</p>
@@ -137,6 +171,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               <p className="module-summary-label">Foundation ready</p>
               <p className="module-summary-value">{readyFoundationCount}</p>
               <p className="module-summary-detail">Cycles with core metadata in place for portfolio build-out.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Linked projects</p>
+              <p className="module-summary-value">{linkedProjectCount}</p>
+              <p className="module-summary-detail">Project-to-cycle portfolio links now visible across the registry.</p>
             </div>
           </div>
         </article>
@@ -239,6 +278,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             ? `${formatRtpDate(cycle.public_review_open_at)} → ${formatRtpDate(cycle.public_review_close_at)}`
                             : "Not set"}
                         </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Linked projects</p>
+                        <p className="module-metric-value text-sm">{cycle.linkedProjectCount}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Constrained</p>
+                        <p className="module-metric-value text-sm">{cycle.constrainedProjectCount}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Illustrative</p>
+                        <p className="module-metric-value text-sm">{cycle.illustrativeProjectCount}</p>
                       </div>
                     </div>
 

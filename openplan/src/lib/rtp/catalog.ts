@@ -7,6 +7,14 @@ export const RTP_CYCLE_STATUS_OPTIONS = [
 
 export type RtpCycleStatus = (typeof RTP_CYCLE_STATUS_OPTIONS)[number]["value"];
 
+export const RTP_PORTFOLIO_ROLE_OPTIONS = [
+  { value: "candidate", label: "Candidate" },
+  { value: "constrained", label: "Constrained" },
+  { value: "illustrative", label: "Illustrative" },
+] as const;
+
+export type RtpPortfolioRole = (typeof RTP_PORTFOLIO_ROLE_OPTIONS)[number]["value"];
+
 export type RtpCycleReadinessCheck = {
   key: "geography" | "horizon" | "adoption_target" | "public_review_window";
   label: string;
@@ -48,6 +56,10 @@ export function formatRtpCycleStatusLabel(value: string | null | undefined): str
   return RTP_CYCLE_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? titleizeRtpValue(value);
 }
 
+export function formatRtpPortfolioRoleLabel(value: string | null | undefined): string {
+  return RTP_PORTFOLIO_ROLE_OPTIONS.find((option) => option.value === value)?.label ?? titleizeRtpValue(value);
+}
+
 export function formatRtpDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
@@ -65,6 +77,13 @@ export function rtpCycleStatusTone(status: string | null | undefined): "info" | 
   if (status === "public_review") return "info";
   if (status === "archived") return "warning";
   if (status === "draft") return "neutral";
+  return "neutral";
+}
+
+export function rtpPortfolioRoleTone(role: string | null | undefined): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (role === "constrained") return "success";
+  if (role === "illustrative") return "warning";
+  if (role === "candidate") return "neutral";
   return "neutral";
 }
 

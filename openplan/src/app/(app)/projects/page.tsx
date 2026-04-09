@@ -51,6 +51,12 @@ type ReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
+type ProjectRtpLinkRow = {
+  id: string;
+  project_id: string;
+  portfolio_role: string;
+};
+
 function titleize(value: string | null | undefined): string {
   if (!value) return "Unknown";
   return value
@@ -136,6 +142,13 @@ export default async function ProjectsPage() {
         .order("updated_at", { ascending: false })
     : { data: [] };
 
+  const { data: projectRtpLinksData } = projectIds.length
+    ? await supabase
+        .from("project_rtp_cycle_links")
+        .select("id, project_id, portfolio_role")
+        .in("project_id", projectIds)
+    : { data: [] };
+
   const reportIds = ((projectReportsData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
   );
@@ -163,6 +176,13 @@ export default async function ProjectsPage() {
       }
     >
   >();
+  const rtpLinksByProjectId = new Map<string, ProjectRtpLinkRow[]>();
+  for (const link of (projectRtpLinksData ?? []) as ProjectRtpLinkRow[]) {
+    const current = rtpLinksByProjectId.get(link.project_id) ?? [];
+    current.push(link);
+    rtpLinksByProjectId.set(link.project_id, current);
+  }
+
   for (const report of (projectReportsData ?? []) as ProjectReportRow[]) {
     const current = reportsByProjectId.get(report.project_id) ?? [];
     current.push({
@@ -182,6 +202,7 @@ export default async function ProjectsPage() {
   }
 
   const projects = ((projectsData ?? []) as ProjectRow[]).map((project) => {
+    const rtpLinks = rtpLinksByProjectId.get(project.id) ?? [];
     const reports = (reportsByProjectId.get(project.id) ?? []).sort((left, right) => {
       const freshnessPriority =
         getReportPacketPriority(left.packetFreshness.label) -
@@ -221,6 +242,12 @@ export default async function ProjectsPage() {
         governanceHoldCount,
         recommendedReport: reports[0] ?? null,
       },
+      rtpSummary: {
+        totalCount: rtpLinks.length,
+        constrainedCount: rtpLinks.filter((link) => link.portfolio_role === "constrained").length,
+        illustrativeCount: rtpLinks.filter((link) => link.portfolio_role === "illustrative").length,
+        candidateCount: rtpLinks.filter((link) => link.portfolio_role === "candidate").length,
+      },
     };
   });
 
@@ -233,6 +260,7 @@ export default async function ProjectsPage() {
   const projectsWithEvidenceBackedReportsCount = projects.filter(
     (project) => project.reportSummary.evidenceBackedCount > 0
   ).length;
+  const projectsLinkedToRtpCount = projects.filter((project) => project.rtpSummary.totalCount > 0).length;
   const governanceHoldReportCount = projects.reduce(
     (sum, project) => sum + project.reportSummary.governanceHoldCount,
     0
@@ -284,6 +312,10 @@ export default async function ProjectsPage() {
             <div className="module-record-chip">
               <span>Governance hold</span>
               <strong>{governanceHoldReportCount}</strong>
+            </div>
+            <div className="module-record-chip">
+              <span>RTP-linked</span>
+              <strong>{projectsLinkedToRtpCount}</strong>
             </div>
           </div>
         </article>
@@ -363,6 +395,12 @@ export default async function ProjectsPage() {
                     <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
                     <span className="module-record-chip"><span>Tier</span><strong>{titleize(project.workspace?.plan ?? "pilot")}</strong></span>
                     <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
+                    {project.rtpSummary.totalCount > 0 ? (
+                      <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>
+                    ) : null}
+                    {project.rtpSummary.constrainedCount > 0 ? (
+                      <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
+                    ) : null}
                     <span className="module-record-chip"><span>Reports</span><strong>{project.reportSummary.totalCount}</strong></span>
                     {project.reportSummary.attentionCount > 0 ? (
                       <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
