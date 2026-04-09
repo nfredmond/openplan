@@ -14,6 +14,7 @@ type Chapter = {
   status: string;
   guidance: string | null;
   summary: string | null;
+  contentMarkdown: string | null;
 };
 
 type Props = {
@@ -27,6 +28,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
   const [status, setStatus] = useState(chapter.status);
   const [guidance, setGuidance] = useState(chapter.guidance ?? "");
   const [summary, setSummary] = useState(chapter.summary ?? "");
+  const [contentMarkdown, setContentMarkdown] = useState(chapter.contentMarkdown ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +46,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
           status,
           guidance: guidance.trim() ? guidance.trim() : null,
           summary: summary.trim() ? summary.trim() : null,
+          contentMarkdown: contentMarkdown.trim() ? contentMarkdown.trim() : null,
         }),
       });
 
@@ -115,6 +118,19 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
         </div>
 
         <div className="space-y-1.5">
+          <label htmlFor={`rtp-chapter-content-${chapter.id}`} className="text-[0.82rem] font-semibold">
+            Draft section content
+          </label>
+          <Textarea
+            id={`rtp-chapter-content-${chapter.id}`}
+            rows={10}
+            value={contentMarkdown}
+            onChange={(event) => setContentMarkdown(event.target.value)}
+            placeholder="Write the actual draft narrative for this RTP section here. Plain text or markdown-style structure is fine for now."
+          />
+        </div>
+
+        <div className="space-y-1.5">
           <label htmlFor={`rtp-chapter-guidance-${chapter.id}`} className="text-[0.82rem] font-semibold">
             Editorial guidance
           </label>
@@ -135,7 +151,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
 
         <Button type="submit" disabled={isSaving}>
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save chapter workflow
+          Save chapter draft
         </Button>
       </form>
     </article>

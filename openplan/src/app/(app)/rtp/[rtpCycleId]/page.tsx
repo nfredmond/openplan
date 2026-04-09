@@ -58,6 +58,7 @@ type RtpCycleChapterRow = {
   required: boolean;
   guidance: string | null;
   summary: string | null;
+  content_markdown: string | null;
   updated_at: string;
 };
 
@@ -157,7 +158,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const [chaptersResult, projectLinksResult, campaignsResult] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
-      .select("id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, updated_at")
+      .select("id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, content_markdown, updated_at")
       .eq("rtp_cycle_id", cycle.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -184,6 +185,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         required: template.required,
         guidance: template.guidance,
         summary: null,
+        content_markdown: null,
         updated_at: cycle.updated_at,
       }))
     : ((chaptersResult.data ?? []) as RtpCycleChapterRow[]);
@@ -382,6 +384,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         </p>
                       </div>
 
+                      <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
+                        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                          {chapter.content_markdown?.trim() || "No draft chapter content yet. Start writing the actual RTP section text here."}
+                        </p>
+                      </div>
+
                       {chapterCampaigns.length > 0 ? (
                         <div className="space-y-2 rounded-2xl border border-border/70 bg-background px-4 py-3">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
@@ -409,10 +418,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                             id: chapter.id,
                             title: chapter.title,
                             status: chapter.status,
-                            guidance: chapter.guidance,
-                            summary: chapter.summary,
-                          }}
-                        />
+                          guidance: chapter.guidance,
+                          summary: chapter.summary,
+                          contentMarkdown: chapter.content_markdown,
+                        }}
+                      />
                       )}
                     </article>
                   );

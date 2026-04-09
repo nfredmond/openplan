@@ -18,6 +18,7 @@ const patchChapterSchema = z
     status: z.enum(RTP_CHAPTER_STATUSES).optional(),
     summary: z.union([z.string().trim().max(4000), z.null()]).optional(),
     guidance: z.union([z.string().trim().max(4000), z.null()]).optional(),
+    contentMarkdown: z.union([z.string().trim().max(40000), z.null()]).optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -83,12 +84,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (payload.data.status !== undefined) updates.status = payload.data.status;
     if (payload.data.summary !== undefined) updates.summary = payload.data.summary;
     if (payload.data.guidance !== undefined) updates.guidance = payload.data.guidance;
+    if (payload.data.contentMarkdown !== undefined) updates.content_markdown = payload.data.contentMarkdown;
 
     const { data: updatedChapter, error: updateError } = await supabase
       .from("rtp_cycle_chapters")
       .update(updates)
       .eq("id", chapter.id)
-      .select("id, rtp_cycle_id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, updated_at")
+      .select("id, rtp_cycle_id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, content_markdown, updated_at")
       .single();
 
     if (updateError) {

@@ -43,6 +43,7 @@ type ChapterRow = {
   status: string;
   summary: string | null;
   guidance: string | null;
+  content_markdown: string | null;
   sort_order: number;
 };
 
@@ -229,6 +230,7 @@ function buildHtml(input: {
           <h3>${esc(chapter.title)}</h3>
           <p class="muted">${esc(titleizeRtpValue(chapter.section_type))} · ${esc(formatRtpChapterStatusLabel(chapter.status))}</p>
           <p>${esc(chapter.summary?.trim() || "No working summary yet.")}</p>
+          <p>${esc(chapter.content_markdown?.trim() || "No draft chapter content yet.")}</p>
           <p class="muted">${esc(chapter.guidance?.trim() || "No editorial guidance yet.")}</p>
           <p><strong>Chapter campaigns:</strong> ${campaignsByChapter.get(chapter.id)?.length ?? 0}</p>
         </div>`
@@ -290,6 +292,7 @@ function buildPdfLines(input: {
     ...chapters.flatMap((chapter) => [
       `${chapter.title} - ${formatRtpChapterStatusLabel(chapter.status)} - ${titleizeRtpValue(chapter.section_type)}`,
       chapter.summary?.trim() || "No working summary yet.",
+      chapter.content_markdown?.trim() || "No draft chapter content yet.",
     ]),
     "",
     `Linked projects (${linkedProjects.length}):`,
@@ -366,7 +369,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const [chaptersResult, linksResult, campaignsResult] = await Promise.all([
       supabase
         .from("rtp_cycle_chapters")
-        .select("id, title, section_type, status, summary, guidance, sort_order")
+        .select("id, title, section_type, status, summary, guidance, content_markdown, sort_order")
         .eq("rtp_cycle_id", cycle.id)
         .order("sort_order", { ascending: true }),
       supabase
