@@ -32,17 +32,11 @@ export function WorkspaceMembershipRequired({
               `${moduleLabel} records are workspace-scoped. You are signed in, but this account is not attached to a workspace yet. Create a project workspace first or ask an owner/admin to add you to the correct workspace.`}
           </p>
         </div>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href={primaryHref}
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/85 px-4 py-2.5 text-sm font-semibold transition hover:border-primary/35 hover:text-primary"
-          >
+        <div className="mt-5 flex flex-wrap gap-5 border-t border-white/10 pt-4 text-sm">
+          <Link href={primaryHref} className="font-semibold text-white transition hover:text-white/78">
             {primaryLabel}
           </Link>
-          <Link
-            href={secondaryHref}
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition hover:border-primary/35 hover:text-primary"
-          >
+          <Link href={secondaryHref} className="font-semibold text-white/72 transition hover:text-white">
             {secondaryLabel}
           </Link>
         </div>

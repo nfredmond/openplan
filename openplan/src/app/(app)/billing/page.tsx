@@ -73,6 +73,24 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
 
+function panelClass() {
+  return "border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]";
+}
+
+function insetClass() {
+  return "border border-border/60 bg-background/70";
+}
+
+function noticeClass(tone: "info" | "success" | "warning") {
+  const toneMap = {
+    info: "border-sky-300/80 bg-sky-50/80 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100",
+    success: "border-emerald-300/80 bg-emerald-50/80 text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100",
+    warning: "border-amber-300/80 bg-amber-50/80 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100",
+  } as const;
+
+  return `border-l-2 px-4 py-3 text-sm ${toneMap[tone]}`;
+}
+
 export default async function BillingPage({
   searchParams,
 }: {
@@ -117,55 +135,58 @@ export default async function BillingPage({
   if (selection.invalidWorkspaceId || selection.requiresExplicitSelection || !selection.membership || !selection.workspace) {
     return (
       <section className="space-y-6">
-        <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace for billing</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Billing state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or starting checkout.
-          </p>
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
+            <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace for billing</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              Billing state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or starting checkout.
+            </p>
+          </div>
+          <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
+            Open the exact billing surface you intend to review. That keeps status review, checkout writes, and later invoice work attached to the correct workspace ledger.
+          </div>
         </header>
 
         {selection.invalidWorkspaceId ? (
-          <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+          <article className={noticeClass("warning")}>
             The requested billing workspace was not found for this account. Choose one of your accessible workspaces below.
           </article>
         ) : null}
 
-        <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-4">
-          <div>
+        <article className={panelClass()}>
+          <div className="border-b border-border/60 pb-4">
             <h2 className="text-lg font-semibold tracking-tight">Available workspaces</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Open the exact billing surface you intend to review. This prevents accidental checkout or status review against the wrong workspace.
             </p>
           </div>
 
-          <ul className="grid gap-3">
+          <ul className="mt-4 space-y-3">
             {selection.memberships.map((membershipOption) => {
               const workspaceOption = unwrapWorkspaceRecord(membershipOption.workspaces);
               const optionStatus = normalizeSubscriptionStatus(workspaceOption?.subscription_status ?? null);
               const optionPlan = workspaceOption?.subscription_plan ?? workspaceOption?.plan ?? "starter";
 
               return (
-                <li key={membershipOption.workspace_id} className="rounded-2xl border border-border/70 bg-background p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-base font-semibold tracking-tight text-foreground">{workspaceOption?.name ?? "Workspace"}</h3>
-                        <StatusBadge tone={toneForStatus(optionStatus)}>{titleCase(optionStatus)}</StatusBadge>
-                        <StatusBadge tone="info">Plan: {titleCase(optionPlan)}</StatusBadge>
-                      </div>
-                      <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                        Workspace ID {formatWorkspaceIdSnippet(membershipOption.workspace_id)} · Role {membershipOption.role}
-                      </p>
+                <li key={membershipOption.workspace_id} className="grid gap-3 border border-border/60 bg-background/70 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold tracking-tight text-foreground">{workspaceOption?.name ?? "Workspace"}</h3>
+                      <StatusBadge tone={toneForStatus(optionStatus)}>{titleCase(optionStatus)}</StatusBadge>
+                      <StatusBadge tone="info">Plan: {titleCase(optionPlan)}</StatusBadge>
                     </div>
-
-                    <Link
-                      href={`/billing?workspaceId=${membershipOption.workspace_id}`}
-                      className="inline-flex rounded-full border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary hover:text-primary"
-                    >
-                      Open billing
-                    </Link>
+                    <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                      Workspace ID {formatWorkspaceIdSnippet(membershipOption.workspace_id)} · Role {membershipOption.role}
+                    </p>
                   </div>
+
+                  <Link
+                    href={`/billing?workspaceId=${membershipOption.workspace_id}`}
+                    className="text-sm font-semibold text-foreground transition hover:text-primary"
+                  >
+                    Open billing
+                  </Link>
                 </li>
               );
             })}
@@ -247,21 +268,38 @@ export default async function BillingPage({
 
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{workspace.name ?? "Workspace"} Billing</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Manage both subscription state and consulting invoice posture for this workspace. Subscription checkout still requires owner/admin role; invoice register reads are workspace-wide and writes are owner/admin only.
-        </p>
+      <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{workspace.name ?? "Workspace"} Billing</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            Manage both subscription state and consulting invoice posture for this workspace. Subscription checkout still requires owner/admin role, while invoice register reads are workspace-wide and writes are owner/admin only.
+          </p>
+        </div>
+
+        <div className={`${insetClass()} grid gap-px bg-border/80`}>
+          <div className="bg-background/70 px-4 py-3 text-sm">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Role</p>
+            <p className="mt-1 font-semibold text-foreground">{titleCase(membership.role)}</p>
+          </div>
+          <div className="bg-background/70 px-4 py-3 text-sm">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace ID</p>
+            <p className="mt-1 font-semibold text-foreground">{formatWorkspaceIdSnippet(workspaceId)}</p>
+          </div>
+          <div className="bg-background/70 px-4 py-3 text-sm">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last billing update</p>
+            <p className="mt-1 font-semibold text-foreground">{workspace.billing_updated_at ? new Date(workspace.billing_updated_at).toLocaleString() : "N/A"}</p>
+          </div>
+        </div>
       </header>
 
       {selection.hasMultipleMemberships ? (
-        <article className="rounded-2xl border border-border/80 bg-card p-4 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
+        <article className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           <p className="font-semibold text-foreground">Viewing workspace-specific billing</p>
-          <p className="mt-1">
+          <p className="mt-1.5">
             This account has access to multiple workspaces. You are currently viewing billing for <strong>{workspace.name ?? "Workspace"}</strong>, and any checkout launched below will apply only to this workspace target.
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-3">
             {selection.memberships.map((membershipOption) => {
               const optionWorkspace = unwrapWorkspaceRecord(membershipOption.workspaces);
               const isCurrentWorkspace = membershipOption.workspace_id === workspaceId;
@@ -269,21 +307,15 @@ export default async function BillingPage({
                 <Link
                   key={membershipOption.workspace_id}
                   href={`/billing?workspaceId=${membershipOption.workspace_id}`}
-                  className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                    isCurrentWorkspace
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-foreground hover:border-primary hover:text-primary"
-                  }`}
+                  className={isCurrentWorkspace ? "text-sm font-semibold text-foreground" : "text-sm font-semibold text-muted-foreground transition hover:text-foreground"}
                   aria-current={isCurrentWorkspace ? "page" : undefined}
                 >
                   {optionWorkspace?.name ?? "Workspace"}
                 </Link>
               );
             })}
-            <Link
-              href="/billing"
-              className="inline-flex rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary"
-            >
+            <span className="text-border">•</span>
+            <Link href="/billing" className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">
               Re-open workspace chooser
             </Link>
           </div>
@@ -291,30 +323,30 @@ export default async function BillingPage({
       ) : null}
 
       {checkoutState === "mock" ? (
-        <article className="rounded-2xl border border-border/80 bg-card p-4 text-sm text-muted-foreground shadow-[0_10px_24px_rgba(20,33,43,0.06)]">
+        <article className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           Mock checkout completed for plan <span className="font-semibold text-foreground">{titleCase(checkoutPlan)}</span>. Configure `OPENPLAN_STRIPE_SECRET_KEY` and Stripe price IDs to route to live Checkout Sessions.
         </article>
       ) : null}
 
       {checkoutState === "success" ? (
-        <article className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-4 text-sm text-emerald-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-emerald-700/60 dark:bg-emerald-950/30 dark:text-emerald-100">
-          Stripe checkout returned successfully for plan <strong>{titleCase(checkoutPlan)}</strong>. OpenPlan still relies on webhook processing to finalize workspace access, so confirm the status card and recent billing events below before treating activation as complete.
+        <article className={noticeClass("success")}>
+          Stripe checkout returned successfully for plan <strong>{titleCase(checkoutPlan)}</strong>. OpenPlan still relies on webhook processing to finalize workspace access, so confirm the status lane and recent billing events below before treating activation as complete.
         </article>
       ) : null}
 
       {checkoutState === "cancel" ? (
-        <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+        <article className={noticeClass("warning")}>
           Stripe checkout was canceled before payment completion for plan <strong>{titleCase(checkoutPlan)}</strong>. The workspace may still show <strong>Checkout Pending</strong> until a new checkout is completed or operations clears the abandoned pending state.
         </article>
       ) : null}
 
       {status === "checkout_pending" && identityReviewEvent ? (
-        <article className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 shadow-[0_10px_24px_rgba(20,33,43,0.06)] dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+        <article className={noticeClass("warning")}>
           <p className="font-semibold tracking-tight">Activation is paused for billing identity review.</p>
-          <p className="mt-2 text-sm text-amber-900/90 dark:text-amber-100/90">
+          <p className="mt-2 text-sm opacity-90">
             OpenPlan detected a purchaser-email mismatch during checkout, so this workspace stayed in <strong>Checkout Pending</strong> instead of auto-activating access.
           </p>
-          <ul className="mt-3 space-y-1.5 text-sm text-amber-900/90 dark:text-amber-100/90">
+          <ul className="mt-3 space-y-1.5 text-sm opacity-90">
             {initiatedByUserEmail ? <li>Workspace checkout was initiated by: <strong>{initiatedByUserEmail}</strong></li> : null}
             {purchaserEmail ? <li>Stripe checkout completed with: <strong>{purchaserEmail}</strong></li> : null}
             <li>Next step: sign in with the purchaser email used at checkout, or complete a manual ownership review before activation.</li>
@@ -323,13 +355,7 @@ export default async function BillingPage({
       ) : null}
 
       {billingSupportState && !(status === "checkout_pending" && identityReviewEvent) ? (
-        <article
-          className={`rounded-2xl p-4 text-sm shadow-[0_10px_24px_rgba(20,33,43,0.06)] ${
-            billingSupportState.tone === "warning"
-              ? "border border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100"
-              : "border border-sky-300/70 bg-sky-50 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/30 dark:text-sky-100"
-          }`}
-        >
+        <article className={noticeClass(billingSupportState.tone === "warning" ? "warning" : "info")}>
           <p className="font-semibold tracking-tight">{billingSupportState.title}</p>
           <p className="mt-2">{billingSupportState.summary}</p>
           <ul className="mt-3 space-y-1.5">
@@ -340,21 +366,25 @@ export default async function BillingPage({
         </article>
       ) : null}
 
-      <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge tone={toneForStatus(status)}>{titleCase(status)}</StatusBadge>
-          <StatusBadge tone="info">Plan: {titleCase(plan)}</StatusBadge>
-          <StatusBadge tone="neutral">Role: {titleCase(membership.role)}</StatusBadge>
-          <StatusBadge tone="neutral">Workspace ID: {formatWorkspaceIdSnippet(workspaceId)}</StatusBadge>
-          <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
-            Updated: {workspace.billing_updated_at ? new Date(workspace.billing_updated_at).toLocaleString() : "N/A"}
-          </p>
+      <article className={panelClass()}>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-4">
+              <StatusBadge tone={toneForStatus(status)}>{titleCase(status)}</StatusBadge>
+              <StatusBadge tone="info">Plan: {titleCase(plan)}</StatusBadge>
+              <StatusBadge tone="neutral">Role: {titleCase(membership.role)}</StatusBadge>
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records the selected plan on this exact workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
+            </p>
+          </div>
+          <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em]">Operating rule</p>
+            <p className="mt-2 text-foreground">
+              Subscription state belongs to the workspace ledger. Invoice records belong to delivery operations. Keep the two lanes aligned, but do not conflate them.
+            </p>
+          </div>
         </div>
-
-        <p className="text-sm text-muted-foreground">
-          Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records the selected plan on this exact workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
-        </p>
-
       </article>
 
       <BillingCheckoutLauncher
@@ -367,27 +397,28 @@ export default async function BillingPage({
       />
 
       <section className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Consulting invoice operations</h2>
-          <p className="text-sm text-muted-foreground">
-            Subscription checkout stays above as account/billing state. This section is the project-delivery invoice register used by operators for retention, backup posture, and workspace/project linkage.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
-          <p className="font-semibold text-foreground">Current scope</p>
-          <p className="mt-1">
-            OpenPlan supports a workspace/project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate exact CALTRANS/LAPM exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
-          </p>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Consulting invoice operations</h2>
+            <p className="text-sm text-muted-foreground">
+              Subscription checkout stays above as account and billing state. This section is the project-delivery invoice register used by operators for retention, backup posture, and workspace or project linkage.
+            </p>
+          </div>
+          <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
+            <p className="font-semibold text-foreground">Current scope</p>
+            <p className="mt-1.5">
+              OpenPlan supports a workspace or project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate exact CALTRANS or LAPM exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <InvoiceRecordComposer workspaceId={workspaceId} projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))} canWrite={canWriteInvoices} />
 
-          <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          <article className={panelClass()}>
+            <div className="flex items-start gap-3 border-b border-border/60 pb-4">
+              <span className="mt-0.5 flex h-10 w-10 items-center justify-center border border-emerald-300/40 bg-emerald-500/10 text-emerald-700 dark:border-emerald-700/30 dark:text-emerald-300">
                 <FileSpreadsheet className="h-5 w-5" />
               </span>
               <div>
@@ -397,27 +428,27 @@ export default async function BillingPage({
             </div>
 
             {invoiceRegisterPending ? (
-              <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+              <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
                 Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2">
+                <div className="bg-background/70 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Records</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{invoiceSummary.totalCount}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.draftCount} draft · {invoiceSummary.submittedCount} in review/payment flow.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.draftCount} draft, {invoiceSummary.submittedCount} in review or payment flow.</p>
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                <div className="bg-background/70 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Net requested</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.totalNetAmount)}</p>
                   <p className="mt-1 text-sm text-muted-foreground">All non-rejected invoice records in this workspace register.</p>
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                <div className="bg-background/70 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Outstanding</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.outstandingNetAmount)}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Submitted, internal-review, or approved-for-payment net amount.</p>
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                <div className="bg-background/70 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Paid</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.paidNetAmount)}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.overdueCount} overdue invoice record(s) still need attention.</p>
@@ -427,20 +458,20 @@ export default async function BillingPage({
           </article>
         </div>
 
-        <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
-          <div className="space-y-1">
+        <article className={panelClass()}>
+          <div className="space-y-1 border-b border-border/60 pb-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice register</p>
             <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
           </div>
 
           {invoiceRegisterPending ? (
-            <p className="text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
+            <p className="mt-4 text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
           ) : invoiceRecords.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No invoice records recorded yet for this workspace.</p>
+            <p className="mt-4 text-sm text-muted-foreground">No invoice records recorded yet for this workspace.</p>
           ) : (
-            <ul className="space-y-2.5">
+            <ul className="mt-4 space-y-3">
               {invoiceRecords.map((invoice) => (
-                <li key={invoice.id} className="rounded-xl border border-border/70 bg-background p-3">
+                <li key={invoice.id} className="border border-border/60 bg-background/70 px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
                     <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
@@ -449,7 +480,7 @@ export default async function BillingPage({
                       {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
                     </p>
                   </div>
-                  <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+                  <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
                       <p className="text-xs text-muted-foreground">
@@ -457,7 +488,7 @@ export default async function BillingPage({
                         {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left md:text-right">
                       <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
                       <p className="text-xs text-muted-foreground">
                         Gross {formatCurrency(Number(invoice.amount ?? 0))}
@@ -465,10 +496,10 @@ export default async function BillingPage({
                       </p>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-3 text-xs text-muted-foreground">
                     {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/50 pt-3 text-xs text-muted-foreground">
                     {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
                     {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
                     {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
@@ -480,15 +511,17 @@ export default async function BillingPage({
         </article>
       </section>
 
-      <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Recent Billing Events</h2>
+      <article className={panelClass()}>
+        <div className="border-b border-border/60 pb-4">
+          <h2 className="text-lg font-semibold tracking-tight">Recent Billing Events</h2>
+        </div>
 
         {!billingEvents || billingEvents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No billing events recorded yet for this workspace.</p>
+          <p className="mt-4 text-sm text-muted-foreground">No billing events recorded yet for this workspace.</p>
         ) : (
-          <ul className="space-y-2.5">
+          <ul className="mt-4 space-y-3">
             {billingEvents.map((event) => (
-              <li key={event.id} className="rounded-xl border border-border/70 bg-background p-3">
+              <li key={event.id} className="border border-border/60 bg-background/70 px-4 py-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone="neutral">{titleCase(event.event_type)}</StatusBadge>
                   <StatusBadge tone="info">{titleCase(event.source)}</StatusBadge>
@@ -496,7 +529,7 @@ export default async function BillingPage({
                     {event.created_at ? new Date(event.created_at).toLocaleString() : "N/A"}
                   </p>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground break-all">{event.payload ? JSON.stringify(event.payload) : "{}"}</p>
+                <p className="mt-3 break-all text-xs text-muted-foreground">{event.payload ? JSON.stringify(event.payload) : "{}"}</p>
               </li>
             ))}
           </ul>

@@ -125,30 +125,35 @@ export function BillingCheckoutLauncher({
   }
 
   return (
-    <article className="rounded-2xl border border-border/80 bg-card p-5 shadow-[0_10px_24px_rgba(20,33,43,0.06)] space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
-          <ShieldCheck className="h-5 w-5" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Checkout safeguards</p>
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">Launch paid billing against the correct workspace</h2>
+    <article className="border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]">
+      <div className="flex flex-col gap-3 border-b border-border/60 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-10 w-10 items-center justify-center border border-[color:var(--pine)]/20 bg-[color:var(--pine)]/10 text-[color:var(--pine)] dark:text-[color:var(--pine-deep)]">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Checkout safeguards</p>
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">Launch paid billing against the correct workspace</h2>
+          </div>
         </div>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Stripe opens only after an explicit write for this workspace target. Return from Stripe is not treated as activation until webhook state confirms it.
+        </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace target</p>
+      <div className="mt-5 grid gap-px border border-border/60 bg-border/80 md:grid-cols-2 xl:grid-cols-4">
+        <div className="bg-background/70 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace target</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{workspaceName}</p>
-          <p className="mt-1 text-xs text-muted-foreground break-all">{workspaceId}</p>
+          <p className="mt-1 break-all text-xs text-muted-foreground">{workspaceId}</p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current plan</p>
+        <div className="bg-background/70 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current plan</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{titleCase(currentPlan)}</p>
           <p className="mt-1 text-xs text-muted-foreground">Status: {titleCase(currentStatus)}</p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Access window</p>
+        <div className="bg-background/70 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Access window</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{formatPeriodEnd(currentPeriodEnd)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {normalizedStatus === "checkout_pending"
@@ -156,66 +161,64 @@ export function BillingCheckoutLauncher({
               : "Shown when Stripe has already reported the current billing period."}
           </p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Authority</p>
+        <div className="bg-background/70 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Authority</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{canStartCheckout ? "Owner/Admin can start checkout" : "Read-only for member role"}</p>
-          <p className="mt-1 text-xs text-muted-foreground">OpenPlan now starts checkout only from an explicit POST action instead of a prefetchable link.</p>
+          <p className="mt-1 text-xs text-muted-foreground">OpenPlan now starts checkout only from an explicit POST action, not a prefetchable link.</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+      <div className="mt-5 border-l-2 border-[color:var(--copper)] bg-[color:var(--copper)]/10 px-4 py-3 text-sm text-foreground">
         <p className="font-semibold tracking-tight">Checkout target is locked before Stripe opens</p>
-        <p className="mt-1">
+        <p className="mt-1.5">
           Any checkout started below will apply to <strong>{workspaceName}</strong> ({formatWorkspaceIdSnippet(workspaceId)}). If this is not the workspace you intend to bill, switch workspaces before continuing.
         </p>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        OpenPlan sends you to Stripe only after an explicit button press for this exact workspace. Returning from Stripe is not treated as activation by itself; the workspace remains trustworthy only after webhook status and billing events confirm the result.
-      </p>
-
       {!canStartCheckout ? (
-        <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
+        <div className="mt-5 border border-border/60 bg-background/70 px-4 py-4 text-sm text-muted-foreground">
           Members can review billing posture, but owner/admin role is required before OpenPlan will launch Stripe checkout for this workspace.
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 space-y-3">
           {PLAN_CARDS.map((planCard) => {
             const isCurrentPlan = normalizedPlan === planCard.plan;
             const isPending = pendingPlan === planCard.plan;
 
             return (
-              <div key={planCard.plan} className="rounded-2xl border border-border/70 bg-background/80 p-4 space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-semibold tracking-tight text-foreground">{planCard.title}</h3>
-                  {isCurrentPlan ? (
-                    <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-primary">
-                      Current plan
-                    </span>
-                  ) : null}
+              <div key={planCard.plan} className="grid gap-4 border border-border/60 bg-background/70 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h3 className="text-base font-semibold tracking-tight text-foreground">{planCard.title}</h3>
+                    {isCurrentPlan ? <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--pine)]">Current plan</span> : null}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{planCard.description}</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>{runLimitLabel(planCard.plan)}</span>
+                    <span>{entitlementsForPlan(planCard.plan).capabilities.exportReports ? "Includes report exports" : "Report exports remain limited"}</span>
+                    <span>{normalizedStatus === "checkout_pending" ? "Can replace an abandoned pending attempt" : "Workspace targeting remains explicit"}</span>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{planCard.description}</p>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li>{runLimitLabel(planCard.plan)}</li>
-                  <li>{entitlementsForPlan(planCard.plan).capabilities.exportReports ? "Includes report exports" : "Report exports stay limited on this tier"}</li>
-                  <li>{normalizedStatus === "checkout_pending" ? "A new checkout can replace an abandoned pending attempt." : "Workspace targeting remains explicit throughout checkout."}</li>
-                </ul>
-                <Button
-                  type="button"
-                  variant={isCurrentPlan ? "secondary" : "default"}
-                  disabled={pendingPlan !== null}
-                  onClick={() => handleCheckout(planCard.plan)}
-                  aria-label={`Start ${planCard.title} checkout for ${workspaceName}`}
-                >
-                  {isPending ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Opening Stripe…
-                    </span>
-                  ) : (
-                    `Start ${planCard.title} checkout`
-                  )}
-                </Button>
+
+                <div className="flex items-center lg:justify-end">
+                  <Button
+                    type="button"
+                    variant={isCurrentPlan ? "secondary" : "default"}
+                    disabled={pendingPlan !== null}
+                    onClick={() => handleCheckout(planCard.plan)}
+                    aria-label={`Start ${planCard.title} checkout for ${workspaceName}`}
+                    className="min-w-52"
+                  >
+                    {isPending ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Opening Stripe…
+                      </span>
+                    ) : (
+                      `Start ${planCard.title} checkout`
+                    )}
+                  </Button>
+                </div>
               </div>
             );
           })}
@@ -223,7 +226,7 @@ export function BillingCheckoutLauncher({
       )}
 
       {error ? (
-        <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300" role="alert">
+        <p className="mt-5 border-l-2 border-red-400 bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200" role="alert">
           {error}
         </p>
       ) : null}
