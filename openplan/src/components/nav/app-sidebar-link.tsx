@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Map,
   MessageSquareShare,
+  Route,
   Settings2,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 const icons = {
   overview: LayoutDashboard,
   projects: FolderKanban,
+  rtp: Route,
   plans: BookOpen,
   programs: ClipboardList,
   engagement: MessageSquareShare,

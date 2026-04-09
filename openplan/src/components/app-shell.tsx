@@ -18,6 +18,7 @@ const navGroups = [
     items: [
       { href: "/dashboard", label: "Overview", icon: "overview" as const },
       { href: "/projects", label: "Projects", icon: "projects" as const },
+      { href: "/rtp", label: "RTP Cycles", icon: "rtp" as const },
       { href: "/plans", label: "Plans", icon: "plans" as const },
       { href: "/programs", label: "Programs", icon: "programs" as const },
       { href: "/reports", label: "Reports", icon: "reports" as const },

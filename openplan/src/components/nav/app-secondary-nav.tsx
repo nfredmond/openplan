@@ -40,16 +40,18 @@ const sectionMap: Array<{
       title: "Projects",
       items: [
         { href: "/projects", label: "All Projects" },
+        { href: "/rtp", label: "RTP Cycles" },
         { href: "/plans", label: "Plans" },
         { href: "/programs", label: "Programs" },
       ],
     },
   },
   {
-    match: ["/plans", "/programs"],
+    match: ["/rtp", "/plans", "/programs"],
     section: {
       title: "Planning System",
       items: [
+        { href: "/rtp", label: "RTP Cycles" },
         { href: "/plans", label: "Plans" },
         { href: "/programs", label: "Programs & Cycles" },
         { href: "/engagement", label: "Engagement" },

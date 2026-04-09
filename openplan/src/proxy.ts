@@ -5,6 +5,7 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/dashboard',
   '/workspace',
   '/projects',
+  '/rtp',
   '/plans',
   '/programs',
   '/models',
