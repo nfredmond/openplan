@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { MessageSquareText } from "lucide-react";
+import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
 
@@ -40,6 +40,15 @@ type ApprovedItemRow = {
   longitude: number | null;
   created_at: string;
 };
+
+function fmtDateTime(value: string): string {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function getEngagementLabel(value: string): string {
+  return value.replaceAll("_", " ");
+}
 
 export default async function PublicEngagementPage({
   params,
@@ -92,51 +101,83 @@ export default async function PublicEngagementPage({
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
 
   return (
-    <section className="module-page">
-      <header className="mb-8">
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MessageSquareText className="h-4 w-4" />
-            <span>Community Engagement</span>
-          </div>
-          {project ? (
-            <span className="rounded-full border border-border/70 bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
-              Linked project: {project.name}
-            </span>
-          ) : null}
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{campaign.title}</h1>
-        {campaign.public_description ? (
-          <p className="mt-3 max-w-2xl text-base text-muted-foreground leading-relaxed">{campaign.public_description}</p>
-        ) : campaign.summary ? (
-          <p className="mt-3 max-w-2xl text-base text-muted-foreground leading-relaxed">{campaign.summary}</p>
-        ) : null}
-        {project ? (
-          <div className="mt-4 max-w-3xl rounded-2xl border border-border/70 bg-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">This input supports</p>
-            <p className="mt-1 text-base font-semibold text-foreground">{project.name}</p>
-            {project.summary ? <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{project.summary}</p> : null}
-          </div>
-        ) : null}
+    <section className="public-page">
+      <div className="public-page-backdrop" />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-border/70 bg-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Submission status</p>
-            <p className="mt-1 text-base font-semibold text-foreground">{acceptingSubmissions ? "Submissions open" : "Submissions closed"}</p>
-            <p className="mt-1 text-sm text-muted-foreground">The project team reviews submissions before they are used in public-facing materials.</p>
+      <div className="public-hero-grid">
+        <article className="public-hero">
+          <p className="public-kicker">
+            <MessageSquareText className="h-3.5 w-3.5" />
+            Community engagement
+          </p>
+
+          <div className="public-meta-strip">
+            {project ? <span>Linked project: {project.name}</span> : <span>Standalone public engagement page</span>}
+            <span>Share-ready public lane</span>
+            <span>{getEngagementLabel(campaign.engagement_type)}</span>
           </div>
-          <div className="rounded-2xl border border-border/70 bg-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Published feedback</p>
-            <p className="mt-1 text-base font-semibold text-foreground">{approvedItems.length}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Approved community items currently visible on this campaign page.</p>
+
+          <div className="public-headline-block">
+            <h1 className="public-title">{campaign.title}</h1>
+            {campaign.public_description ? (
+              <p className="public-lead max-w-4xl">{campaign.public_description}</p>
+            ) : campaign.summary ? (
+              <p className="public-lead max-w-4xl">{campaign.summary}</p>
+            ) : null}
           </div>
-          <div className="rounded-2xl border border-border/70 bg-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Engagement mode</p>
-            <p className="mt-1 text-base font-semibold text-foreground">{campaign.engagement_type.replaceAll("_", " ")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Structured public input collected in a planning-grade workflow.</p>
+
+          {project ? (
+            <div className="public-context-strip">
+              <p className="public-section-label">This input supports</p>
+              <p className="public-context-title">{project.name}</p>
+              {project.summary ? <p className="public-context-copy">{project.summary}</p> : null}
+            </div>
+          ) : null}
+
+          <div className="public-fact-grid public-fact-grid--three">
+            <div className="public-fact">
+              <p className="public-fact-label">Submission status</p>
+              <p className="public-fact-value">{acceptingSubmissions ? "Submissions open" : "Submissions closed"}</p>
+              <p className="public-fact-detail">The project team reviews submissions before they are used in public-facing materials.</p>
+            </div>
+            <div className="public-fact">
+              <p className="public-fact-label">Published feedback</p>
+              <p className="public-fact-value">{approvedItems.length}</p>
+              <p className="public-fact-detail">Approved community items currently visible on this campaign page.</p>
+            </div>
+            <div className="public-fact">
+              <p className="public-fact-label">Engagement mode</p>
+              <p className="public-fact-value">{getEngagementLabel(campaign.engagement_type)}</p>
+              <p className="public-fact-detail">Structured public input collected in a planning-grade workflow.</p>
+            </div>
           </div>
-        </div>
-      </header>
+        </article>
+
+        <article className="public-rail">
+          <div className="flex items-center gap-3">
+            <span className="public-rail-icon">
+              <ShieldCheck className="h-5 w-5 text-emerald-200" />
+            </span>
+            <div>
+              <p className="public-rail-kicker">Portal posture</p>
+              <h2 className="public-rail-title">Public input with review and traceability</h2>
+            </div>
+          </div>
+          <p className="public-rail-copy">
+            This page gives the public a focused place to submit and review campaign feedback while preserving planning context,
+            moderation, and category structure inside OpenPlan.
+          </p>
+          <div className="public-rail-list">
+            <div className="public-rail-item">Submissions are reviewed before they are reflected in public-facing summaries or technical materials.</div>
+            <div className="public-rail-item">Published feedback represents approved items from the campaign, not an unfiltered public message board.</div>
+            <div className="public-rail-item">Location-based comments can be tied to a specific place when that improves the planning record.</div>
+          </div>
+          <div className="public-rail-meta">
+            <Clock3 className="h-4 w-4" />
+            <span>Last updated {fmtDateTime(campaign.updated_at)}</span>
+          </div>
+        </article>
+      </div>
 
       <PublicEngagementPortal
         shareToken={shareToken}
