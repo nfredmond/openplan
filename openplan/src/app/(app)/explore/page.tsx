@@ -2471,14 +2471,14 @@ export default function ExplorePage() {
       : "tract";
 
   return (
-    <section className="grid min-h-[calc(100vh-7rem)] gap-0 overflow-hidden rounded-[30px] border border-white/10 bg-[#081019] shadow-[0_36px_120px_rgba(0,0,0,0.35)] lg:grid-cols-[minmax(0,1fr)_420px]">
-      <div className="relative overflow-hidden rounded-[30px] border border-slate-800/80 bg-[linear-gradient(180deg,#08111a_0%,#0d1722_100%)] shadow-[0_28px_80px_rgba(3,10,18,0.28)]">
+    <section className="analysis-explore-shell grid min-h-[calc(100vh-7rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="analysis-explore-mapstage relative overflow-hidden">
         <div ref={mapContainerRef} className="h-[720px] min-h-[720px] w-full" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(5,10,15,0.88),rgba(5,10,15,0))]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,rgba(5,10,15,0.94),rgba(5,10,15,0))]" />
 
-        <div className="absolute left-4 top-4 z-10 max-w-[min(82%,360px)] rounded-[26px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:left-5 sm:top-5 sm:p-5">
+        <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,400px)] text-white sm:left-5 sm:top-5">
           <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
             <Sparkles className="h-3.5 w-3.5" />
             Analysis Studio
@@ -2927,8 +2927,8 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <aside className="flex h-[720px] min-h-[720px] flex-col overflow-y-auto border-l border-white/10 bg-[rgba(7,14,20,0.96)]">
-        <div className="border-b border-white/10 px-5 py-4">
+      <aside className="analysis-explore-rail flex h-[720px] min-h-[720px] flex-col overflow-y-auto">
+        <div className="analysis-explore-rail-header">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Analysis Studio</p>
           <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor analysis workspace</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
@@ -3013,7 +3013,7 @@ export default function ExplorePage() {
               </div>
             </section>
 
-            <div className="module-section-surface">
+            <div className="module-section-surface analysis-explore-context-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
                   <p className="module-section-label">Project context</p>
@@ -3188,7 +3188,9 @@ export default function ExplorePage() {
                 <p className="mt-3 text-xs text-muted-foreground">Could not load project context from the workspace right now.</p>
               ) : null}
             </div>
-            <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
+            <div className="analysis-studio-surface-slot">
+              <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
+            </div>
             <section className="analysis-studio-surface">
               <div className="analysis-studio-header">
                 <div className="analysis-studio-heading">
@@ -3275,13 +3277,11 @@ export default function ExplorePage() {
 
         {analysisResult ? (
           <>
-            <div className="analysis-run-pair-stack">
+            <div className="analysis-run-pair-stack analysis-explore-results-stack">
               <Card
                 className={[
-                  "gap-0 overflow-hidden rounded-[28px] py-0 text-slate-100 shadow-[0_24px_64px_rgba(3,10,18,0.24)]",
-                  comparisonRun?.metrics
-                    ? "border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(8,19,28,0.98),rgba(11,24,35,0.96))]"
-                    : "border border-slate-800/88 bg-[linear-gradient(180deg,#0a141d_0%,#0f1c28_100%)]",
+                  "analysis-explore-surface analysis-explore-surface-current",
+                  comparisonRun?.metrics ? "is-paired" : "",
                 ].join(" ")}
               >
                 <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
@@ -3471,7 +3471,7 @@ export default function ExplorePage() {
               </Card>
 
               {comparisonRun && comparisonRun.metrics ? (
-                <Card className="gap-0 overflow-hidden rounded-[28px] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(8,18,29,0.99),rgba(10,20,31,0.97))] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+                <Card className="analysis-explore-surface analysis-explore-surface-comparison">
                   <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge tone="warning">Pinned baseline</StatusBadge>
@@ -3876,7 +3876,7 @@ export default function ExplorePage() {
               ) : null}
             </div>
 
-            <Card className="gap-0 overflow-hidden rounded-[28px] border border-slate-800/84 bg-[linear-gradient(180deg,#0a141d_0%,#0f1c28_100%)] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+            <Card className="analysis-explore-surface">
               <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone="neutral">Supporting briefing</StatusBadge>
@@ -3952,7 +3952,7 @@ export default function ExplorePage() {
               </CardContent>
             </Card>
 
-            <Card className="gap-0 overflow-hidden rounded-[28px] border border-amber-500/18 bg-[linear-gradient(180deg,rgba(36,24,13,0.84),rgba(12,20,29,0.96))] py-0 text-slate-100 shadow-[0_20px_56px_rgba(3,10,18,0.22)]">
+            <Card className="analysis-explore-surface analysis-explore-surface-warning">
               <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone="warning">Release guardrail</StatusBadge>
