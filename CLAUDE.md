@@ -93,6 +93,35 @@ The AI layer uses Vercel AI SDK's `streamText` with a single tool `run_spatial_q
 - **Workspace auto-creation**: DB trigger `on_auth_user_created` on `auth.users` creates workspace + owner membership on signup
 - **MapLibre** (not react-map-gl): Direct maplibre-gl usage with a custom `BaseMap` forwardRef component for full control
 
+## Frontend Redesign Guardrails (Current OpenPlan direction)
+
+When working on OpenPlan UI, do **not** drift back to generic AI-SaaS output.
+
+### Canonical posture
+- OpenPlan should feel like a **civic workbench / planning operating system**, not a startup dashboard made of cards and pills.
+- Default layout metaphor: **left rail + continuous worksurface + right inspector/context rail** when the workflow benefits from detail-on-selection.
+- Emphasize hierarchy through typography, spacing, row rhythm, alignment, and separators before adding more containers.
+
+### Avoid by default
+- stacked card grids as the main page structure,
+- chip/pill clusters for metadata or filters,
+- floating badge noise,
+- detached callout boxes that fragment the page,
+- many equal-weight CTAs fighting for attention.
+
+### Prefer by default
+- lists, rows, tables, and sectioned worksurfaces for scan/compare/find tasks,
+- sentence-style or inline-text filters instead of chip bars,
+- a single clear primary action per area,
+- inspector-side metadata editing and secondary actions,
+- calm density over decorative novelty.
+
+### Prompting / implementation rule
+Before major UI generation or refactor work, consult and follow:
+- `docs/ops/2026-04-08-openplan-frontend-design-constitution.md`
+
+That memo is the current design constitution for avoiding generic output while preserving feature parity.
+
 ## Research Context (from promt1.md)
 
 This platform targets the critical market gaps identified in the spec:
