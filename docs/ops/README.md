@@ -15,6 +15,7 @@
 | [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) | **Canonical April 2026 launch boundary** — supervised pilot / no broad self-serve launch |
 | [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) | **External pilot packet** — scope, onboarding, support, AI, billing truth |
 | [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) | **Canonical pricing/positioning note** — resolves public pricing drift |
+| [frontend master packet](2026-04-08-openplan-frontend-master-packet.md) | **Canonical entry point for OpenPlan UI work** — links constitution, checklist, and prompt template |
 | [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) | **Canonical frontend anti-generic design rules** — worksurface, rails, low-card, low-pill UI posture |
 | [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) | **Practical screen-by-screen UI implementation checklist** — use during redesign and QA |
 | [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) | **Reusable Codex/Claude prompt starter** — copy/paste for OpenPlan UI tasks |
@@ -30,6 +31,7 @@
 - [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
 - [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) — canonical pricing / positioning resolution
+- [frontend master packet](2026-04-08-openplan-frontend-master-packet.md) — canonical entry point for all OpenPlan frontend redesign work
 - [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) — canonical anti-generic UI rules for OpenPlan frontend work
 - [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) — practical implementation and QA checklist for redesign slices
 - [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) — reusable prompt starter for Codex/Claude frontend lanes
