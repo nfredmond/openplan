@@ -423,6 +423,30 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         </section>
 
         <aside className="space-y-4">
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Export</p>
+                <h2 className="module-section-title">RTP cycle output snapshot</h2>
+                <p className="module-section-description">
+                  Export the current cycle, chapter, portfolio, and engagement posture without waiting for deeper report-model integration.
+                </p>
+              </div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/12 text-amber-700 dark:text-amber-300">
+                <FileStack className="h-5 w-5" />
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
+                Open HTML export
+              </Link>
+              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action">
+                Open PDF export
+              </Link>
+            </div>
+          </article>
+
           <RtpEngagementCampaignCreator
             rtpCycleId={cycle.id}
             chapterOptions={chapters
