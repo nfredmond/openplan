@@ -448,6 +448,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
+                Open digital RTP document
+              </Link>
               <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
                 Open HTML export
               </Link>
