@@ -37,6 +37,7 @@ type RtpPageSearchParams = Promise<{
   status?: string;
   packet?: string;
   recent?: string;
+  queueAction?: string;
 }>;
 
 type RtpCycleRow = {
@@ -104,6 +105,7 @@ type ReportSectionRow = {
 };
 
 type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
+type QueueActionFilter = "all" | "create_record" | "reset_layout" | "generate_first_artifact" | "refresh_artifact";
 
 const RECENT_QUEUE_ACTION_WINDOW_MS = 1000 * 60 * 60 * 24;
 
@@ -128,6 +130,7 @@ function buildRtpRegistryHref(filters: {
   status?: string | null;
   packet?: PacketAttentionFilter | null;
   recent?: boolean | null;
+  queueAction?: QueueActionFilter | null;
 }) {
   const params = new URLSearchParams();
   if (filters.status) {
@@ -139,12 +142,34 @@ function buildRtpRegistryHref(filters: {
   if (filters.recent) {
     params.set("recent", "1");
   }
+  if (filters.queueAction && filters.queueAction !== "all") {
+    params.set("queueAction", filters.queueAction);
+  }
   const query = params.toString();
   return query ? `/rtp?${query}` : "/rtp";
 }
 
 function normalizeRecentQueueFilter(value: string | null | undefined) {
   return value === "1";
+}
+
+function normalizeQueueActionFilter(value: string | null | undefined): QueueActionFilter {
+  switch (value) {
+    case "create_record":
+    case "reset_layout":
+    case "generate_first_artifact":
+    case "refresh_artifact":
+      return value;
+    default:
+      return "all";
+  }
+}
+
+function matchesQueueActionFilter(filter: QueueActionFilter, action: string | null | undefined) {
+  if (filter === "all") {
+    return true;
+  }
+  return filter === action;
 }
 
 function getPacketAttentionPriority(packetAttention: Exclude<PacketAttentionFilter, "all">) {
@@ -351,6 +376,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
   const recentOnly = normalizeRecentQueueFilter(filters.recent);
+  const selectedQueueActionFilter = normalizeQueueActionFilter(filters.queueAction);
   const supabase = await createClient();
   const {
     data: { user },
@@ -618,9 +644,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     current: allCycles.filter((cycle) => cycle.packetAttention === "current").length,
   };
 
-  const typedCycles = [...allCycles]
+  const queueActionScopedCycles = [...allCycles]
     .filter((cycle) => matchesPacketAttentionFilter(selectedPacketFilter, cycle.packetAttention))
-    .filter((cycle) => (recentOnly ? cycle.packetQueueTrace.isRecent : true))
+    .filter((cycle) => (recentOnly ? cycle.packetQueueTrace.isRecent : true));
+
+  const queueActionCounts = {
+    createRecord: queueActionScopedCycles.filter((cycle) => cycle.packetQueueTrace.action === "create_record").length,
+    resetLayout: queueActionScopedCycles.filter((cycle) => cycle.packetQueueTrace.action === "reset_layout").length,
+    generateFirstArtifact: queueActionScopedCycles.filter(
+      (cycle) => cycle.packetQueueTrace.action === "generate_first_artifact"
+    ).length,
+    refreshArtifact: queueActionScopedCycles.filter((cycle) => cycle.packetQueueTrace.action === "refresh_artifact").length,
+  };
+
+  const typedCycles = queueActionScopedCycles
+    .filter((cycle) => matchesQueueActionFilter(selectedQueueActionFilter, cycle.packetQueueTrace.action))
     .sort((left, right) => {
       const priorityDelta = getPacketAttentionPriority(left.packetAttention) - getPacketAttentionPriority(right.packetAttention);
       if (priorityDelta !== 0) {
@@ -757,6 +795,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             status: active ? null : option.value,
                             packet: selectedPacketFilter,
                             recent: recentOnly,
+                            queueAction: selectedQueueActionFilter,
                           })}
                           className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                         >
@@ -785,6 +824,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             status: filters.status ?? null,
                             packet: active ? "all" : option.value,
                             recent: recentOnly,
+                            queueAction: selectedQueueActionFilter,
                           })}
                           className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                         >
@@ -802,6 +842,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         status: filters.status ?? null,
                         packet: selectedPacketFilter,
                         recent: false,
+                        queueAction: selectedQueueActionFilter,
                       })}
                       className={!recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
@@ -812,11 +853,44 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         status: filters.status ?? null,
                         packet: selectedPacketFilter,
                         recent: true,
+                        queueAction: selectedQueueActionFilter,
                       })}
                       className={recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
                       Recent only · {allCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length}
                     </Link>
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last queue action</p>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {[
+                      { value: "all" as const, label: "All actions", count: queueActionScopedCycles.length },
+                      { value: "create_record" as const, label: "Record created", count: queueActionCounts.createRecord },
+                      { value: "reset_layout" as const, label: "Preset reset", count: queueActionCounts.resetLayout },
+                      {
+                        value: "generate_first_artifact" as const,
+                        label: "First artifact",
+                        count: queueActionCounts.generateFirstArtifact,
+                      },
+                      { value: "refresh_artifact" as const, label: "Refresh", count: queueActionCounts.refreshArtifact },
+                    ].map((option) => {
+                      const active = selectedQueueActionFilter === option.value;
+                      return (
+                        <Link
+                          key={option.value}
+                          href={buildRtpRegistryHref({
+                            status: filters.status ?? null,
+                            packet: selectedPacketFilter,
+                            recent: recentOnly,
+                            queueAction: active ? "all" : option.value,
+                          })}
+                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                        >
+                          {option.label} · {option.count}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -854,7 +928,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               Showing {typedCycles.length} cycle{typedCycles.length === 1 ? "" : "s"}
               {filters.status ? ` in ${formatRtpCycleStatusLabel(filters.status).toLowerCase()} posture` : " across all cycle phases"}
               {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}
-              {recentOnly ? " limited to recent queue activity" : ""}.
+              {recentOnly ? " limited to recent queue activity" : ""}
+              {selectedQueueActionFilter !== "all"
+                ? ` filtered to ${selectedQueueActionFilter.replaceAll("_", " ")}`
+                : ""}
+              .
             </p>
 
             {typedCycles.length === 0 ? (
@@ -862,7 +940,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 title={allCycles.length > 0 ? "No cycles match the current filter" : "No RTP cycles yet"}
                 description={
                   allCycles.length > 0
-                    ? "Try a different status or packet-attention filter to resume triage across the RTP registry."
+                    ? "Try a different status, packet-attention, recent-work, or queue-action filter to resume triage across the RTP registry."
                     : "Create the first RTP cycle so the regional plan update has one shared parent object instead of fragmented records."
                 }
               />
