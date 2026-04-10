@@ -778,13 +778,20 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             <RtpRegistryPacketQueueCommandBoard
               resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
               missingCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "missing").map((cycle) => cycle.id)}
-              generateReportIds={[
+              generateFirstReportIds={[
+                ...new Set(
+                  allCycles
+                    .filter((cycle) => cycle.packetAttention === "generate")
+                    .map((cycle) => cycle.packetReport?.id)
+                    .filter((reportId): reportId is string => Boolean(reportId))
+                ),
+              ]}
+              refreshReportIds={[
                 ...new Set(
                   allCycles
                     .filter(
                       (cycle) =>
                         cycle.packetAttention === "reset" ||
-                        cycle.packetAttention === "generate" ||
                         cycle.packetAttention === "refresh"
                     )
                     .map((cycle) => cycle.packetReport?.id)

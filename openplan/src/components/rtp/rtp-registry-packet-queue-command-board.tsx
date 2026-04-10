@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/button";
 export function RtpRegistryPacketQueueCommandBoard({
   resetCycleIds,
   missingCycleIds,
-  generateReportIds,
+  generateFirstReportIds,
+  refreshReportIds,
   resetCount,
   missingCount,
 }: {
   resetCycleIds: string[];
   missingCycleIds: string[];
-  generateReportIds: string[];
+  generateFirstReportIds: string[];
+  refreshReportIds: string[];
   resetCount: number;
   missingCount: number;
 }) {
@@ -23,9 +25,10 @@ export function RtpRegistryPacketQueueCommandBoard({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const actionableReportCount = generateReportIds.length;
-  const totalGenerateWorkload = actionableReportCount + missingCycleIds.length;
-  const hasActionableQueue = resetCycleIds.length > 0 || actionableReportCount > 0 || missingCycleIds.length > 0;
+  const firstArtifactWorkload = generateFirstReportIds.length + missingCycleIds.length;
+  const refreshWorkload = refreshReportIds.length;
+  const hasActionableQueue =
+    resetCycleIds.length > 0 || firstArtifactWorkload > 0 || refreshWorkload > 0;
 
   async function handleClearQueue() {
     setIsSubmitting(true);
@@ -34,9 +37,11 @@ export function RtpRegistryPacketQueueCommandBoard({
 
     let resetUpdatedCount = 0;
     let createdReportCount = 0;
-    let regenerateSuccessCount = 0;
+    let generatedFirstArtifactCount = 0;
+    let refreshedArtifactCount = 0;
     let warningCount = 0;
-    const reportIdsToGenerate = [...generateReportIds];
+    const reportIdsToGenerateFirst = [...generateFirstReportIds];
+    const reportIdsToRefresh = [...refreshReportIds];
 
     try {
       for (const cycleId of missingCycleIds) {
@@ -59,7 +64,7 @@ export function RtpRegistryPacketQueueCommandBoard({
         }
 
         createdReportCount += 1;
-        reportIdsToGenerate.push(createPayload.reportId);
+        reportIdsToGenerateFirst.push(createPayload.reportId);
       }
 
       if (resetCycleIds.length > 0) {
@@ -81,7 +86,7 @@ export function RtpRegistryPacketQueueCommandBoard({
         resetUpdatedCount = resetPayload.updatedReportCount ?? 0;
       }
 
-      for (const reportId of [...new Set(reportIdsToGenerate)]) {
+      for (const reportId of [...new Set(reportIdsToGenerateFirst)]) {
         const response = await fetch(`/api/reports/${reportId}/generate`, {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -94,10 +99,30 @@ export function RtpRegistryPacketQueueCommandBoard({
         };
 
         if (!response.ok) {
-          throw new Error(payload.error || "Failed while regenerating RTP packets");
+          throw new Error(payload.error || "Failed while generating first RTP packet artifacts");
         }
 
-        regenerateSuccessCount += 1;
+        generatedFirstArtifactCount += 1;
+        warningCount += payload.warnings?.length ?? 0;
+      }
+
+      for (const reportId of [...new Set(reportIdsToRefresh)]) {
+        const response = await fetch(`/api/reports/${reportId}/generate`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        });
+
+        const payload = (await response.json()) as {
+          error?: string;
+          warnings?: Array<unknown>;
+        };
+
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed while refreshing RTP packet artifacts");
+        }
+
+        refreshedArtifactCount += 1;
         warningCount += payload.warnings?.length ?? 0;
       }
 
@@ -108,8 +133,15 @@ export function RtpRegistryPacketQueueCommandBoard({
       if (resetUpdatedCount > 0) {
         fragments.push(`reset ${resetUpdatedCount} packet ${resetUpdatedCount === 1 ? "layout" : "layouts"}`);
       }
-      if (regenerateSuccessCount > 0) {
-        fragments.push(`regenerated ${regenerateSuccessCount} packet ${regenerateSuccessCount === 1 ? "record" : "records"}`);
+      if (generatedFirstArtifactCount > 0) {
+        fragments.push(
+          `generated ${generatedFirstArtifactCount} first packet ${generatedFirstArtifactCount === 1 ? "artifact" : "artifacts"}`
+        );
+      }
+      if (refreshedArtifactCount > 0) {
+        fragments.push(
+          `refreshed ${refreshedArtifactCount} stale packet ${refreshedArtifactCount === 1 ? "artifact" : "artifacts"}`
+        );
       }
       if (missingCount > 0) {
         const remainingMissingCount = Math.max(missingCount - createdReportCount, 0);
@@ -145,7 +177,7 @@ export function RtpRegistryPacketQueueCommandBoard({
       </div>
 
       <div className="mt-5 space-y-4">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="module-metric-card">
             <p className="module-metric-label">Step 1: create</p>
             <p className="module-metric-value text-sm">{missingCount}</p>
@@ -157,9 +189,14 @@ export function RtpRegistryPacketQueueCommandBoard({
             <p className="mt-1 text-xs text-muted-foreground">Reapply the recommended phase preset before generation when layout drift exists.</p>
           </div>
           <div className="module-metric-card">
-            <p className="module-metric-label">Step 3: generate</p>
-            <p className="module-metric-value text-sm">{totalGenerateWorkload}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Total packet artifacts that will be generated after create/reset work completes.</p>
+            <p className="module-metric-label">Step 3: generate first</p>
+            <p className="module-metric-value text-sm">{firstArtifactWorkload}</p>
+            <p className="mt-1 text-xs text-muted-foreground">First packet artifacts to generate after missing-record creation completes.</p>
+          </div>
+          <div className="module-metric-card">
+            <p className="module-metric-label">Step 4: refresh</p>
+            <p className="module-metric-value text-sm">{refreshWorkload}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Existing packet artifacts that should be regenerated from current cycle state.</p>
           </div>
         </div>
 
@@ -168,7 +205,8 @@ export function RtpRegistryPacketQueueCommandBoard({
           <ol className="mt-2 space-y-2">
             <li>1. Create first packet records for cycles that still have none.</li>
             <li>2. Reset all cycles marked as needing a phase-aligned packet layout.</li>
-            <li>3. Generate every packet still flagged for first-artifact or refresh work.</li>
+            <li>3. Generate first artifacts for packet records that exist but have never rendered yet.</li>
+            <li>4. Refresh packet artifacts whose source cycle changed after generation.</li>
           </ol>
         </div>
 
