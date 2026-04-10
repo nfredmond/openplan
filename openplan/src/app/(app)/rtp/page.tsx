@@ -372,6 +372,35 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
   }
 }
 
+function buildPacketQueueTraceState(input: {
+  actedAt?: string | null;
+  sortTimestamp?: number;
+  cycleUpdatedAt: string;
+}) {
+  if (!input.actedAt || !input.sortTimestamp) {
+    return {
+      label: "Trace not recorded",
+      tone: "neutral" as const,
+      detail: "This cycle does not yet have a durable queue-action timestamp to compare against source changes.",
+    };
+  }
+
+  const cycleUpdatedAtTimestamp = new Date(input.cycleUpdatedAt).getTime();
+  if (Number.isFinite(cycleUpdatedAtTimestamp) && cycleUpdatedAtTimestamp > input.sortTimestamp) {
+    return {
+      label: "Outpaced by source",
+      tone: "warning" as const,
+      detail: "The RTP cycle changed after the last recorded queue action, so that trace no longer reflects the latest source state by itself.",
+    };
+  }
+
+  return {
+    label: "Aligned to source",
+    tone: "success" as const,
+    detail: "No cycle changes have landed since the last recorded queue action.",
+  };
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
@@ -585,6 +614,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       const packetNavigationHref = packetReport
         ? getReportNavigationHref(packetReport.id, packetFreshness.label)
         : `/rtp/${cycle.id}`;
+      const packetQueueTrace = buildPacketQueueTrace(packetReport);
+      const packetQueueTraceState = buildPacketQueueTraceState({
+        actedAt: packetQueueTrace.actedAt,
+        sortTimestamp: packetQueueTrace.sortTimestamp,
+        cycleUpdatedAt: cycle.updated_at,
+      });
       const cycleFundingSummaries = cycleLinks.map((link) =>
         buildProjectFundingStackSummary(
           fundingProfileByProjectId.get(link.project_id) ?? null,
@@ -623,7 +658,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetFreshness,
           packetPresetPosture,
         }),
-        packetQueueTrace: buildPacketQueueTrace(packetReport),
+        packetQueueTrace,
+        packetQueueTraceState,
         packetActivityTrace: buildPacketActivityTrace({
           packetReport,
           packetFreshness,
@@ -682,6 +718,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const likelyCoveredProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.likelyCoveredProjectCount, 0);
   const unfundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.unfundedProjectCount, 0);
   const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
+  const outpacedQueueTraceCount = typedCycles.filter((cycle) => cycle.packetQueueTraceState.label === "Outpaced by source").length;
   const latestQueueActionAt = typedCycles
     .map((cycle) => cycle.packetQueueTrace.actedAt)
     .filter((value): value is string => Boolean(value))
@@ -1096,6 +1133,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             {cycle.packetQueueTrace.isRecent ? <StatusBadge tone="info">Recent</StatusBadge> : null}
                           </div>
                         </div>
+                        <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border/50 bg-background px-3 py-3">
+                          <div>
+                            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                              Queue trace freshness
+                            </p>
+                            <p className="mt-2 text-sm font-medium">{cycle.packetQueueTraceState.label}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{cycle.packetQueueTraceState.detail}</p>
+                          </div>
+                          <StatusBadge tone={cycle.packetQueueTraceState.tone}>{cycle.packetQueueTraceState.label}</StatusBadge>
+                        </div>
                       </div>
                     </div>
 
@@ -1162,6 +1209,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Preset resets: {recentQueueActionBreakdown.resetLayout}</li>
                 <li>• First artifacts: {recentQueueActionBreakdown.generateFirstArtifact}</li>
                 <li>• Refreshes: {recentQueueActionBreakdown.refreshArtifact}</li>
+                <li>• Outpaced by newer source edits: {outpacedQueueTraceCount}</li>
               </ul>
               {latestQueueActionAt ? (
                 <p className="mt-2 text-xs text-muted-foreground">Latest action {formatRtpDateTime(latestQueueActionAt)}</p>
