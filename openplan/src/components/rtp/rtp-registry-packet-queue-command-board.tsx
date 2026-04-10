@@ -24,6 +24,7 @@ export function RtpRegistryPacketQueueCommandBoard({
   const [error, setError] = useState<string | null>(null);
 
   const actionableReportCount = generateReportIds.length;
+  const totalGenerateWorkload = actionableReportCount + missingCycleIds.length;
   const hasActionableQueue = resetCycleIds.length > 0 || actionableReportCount > 0 || missingCycleIds.length > 0;
 
   async function handleClearQueue() {
@@ -146,19 +147,19 @@ export function RtpRegistryPacketQueueCommandBoard({
       <div className="mt-5 space-y-4">
         <div className="grid gap-3 md:grid-cols-3">
           <div className="module-metric-card">
-            <p className="module-metric-label">Step 1: needs reset</p>
-            <p className="module-metric-value text-sm">{resetCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Reapply the recommended phase preset before regeneration.</p>
-          </div>
-          <div className="module-metric-card">
-            <p className="module-metric-label">Step 2: generate</p>
-            <p className="module-metric-value text-sm">{actionableReportCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Sequentially build first or refreshed packet artifacts for every queued record.</p>
-          </div>
-          <div className="module-metric-card">
-            <p className="module-metric-label">Missing packet records</p>
+            <p className="module-metric-label">Step 1: create</p>
             <p className="module-metric-value text-sm">{missingCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">These still need their first board packet record before the queue can be fully cleared.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Cycles that still need their first RTP board packet record.</p>
+          </div>
+          <div className="module-metric-card">
+            <p className="module-metric-label">Step 2: reset</p>
+            <p className="module-metric-value text-sm">{resetCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Reapply the recommended phase preset before generation when layout drift exists.</p>
+          </div>
+          <div className="module-metric-card">
+            <p className="module-metric-label">Step 3: generate</p>
+            <p className="module-metric-value text-sm">{totalGenerateWorkload}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Total packet artifacts that will be generated after create/reset work completes.</p>
           </div>
         </div>
 
