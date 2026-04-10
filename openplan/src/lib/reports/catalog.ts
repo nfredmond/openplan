@@ -143,6 +143,7 @@ export type ReportSectionTemplate = {
 };
 
 export type ReportTargetKind = "project" | "rtp_cycle";
+export type RtpPacketPresetStage = "draft" | "public_review" | "adopted" | "archived" | "default";
 
 const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
   project_status: [
@@ -256,6 +257,52 @@ const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>
   ],
 };
 
+function resolveRtpPacketPresetStage(status: string | null | undefined): RtpPacketPresetStage {
+  switch (status) {
+    case "draft":
+    case "public_review":
+    case "adopted":
+    case "archived":
+      return status;
+    default:
+      return "default";
+  }
+}
+
+function buildRtpPacketPresetTemplates(stage: RtpPacketPresetStage): ReportSectionTemplate[] {
+  const baseTemplates = RTP_SECTION_TEMPLATES.board_packet ?? [];
+  const enabledKeysByStage: Record<RtpPacketPresetStage, string[]> = {
+    draft: ["cycle_overview", "chapter_digest", "portfolio_posture", "adoption_readiness"],
+    public_review: [
+      "cycle_overview",
+      "chapter_digest",
+      "portfolio_posture",
+      "engagement_posture",
+      "adoption_readiness",
+      "appendix_references",
+    ],
+    adopted: ["cycle_overview", "chapter_digest", "portfolio_posture", "engagement_posture", "appendix_references"],
+    archived: ["cycle_overview", "portfolio_posture", "appendix_references"],
+    default: [
+      "cycle_overview",
+      "chapter_digest",
+      "portfolio_posture",
+      "engagement_posture",
+      "adoption_readiness",
+      "appendix_references",
+    ],
+  };
+
+  return baseTemplates.map((section) => ({
+    ...section,
+    enabled: enabledKeysByStage[stage].includes(section.sectionKey),
+    configJson: {
+      ...(section.configJson ?? {}),
+      rtpPacketPresetStage: stage,
+    },
+  }));
+}
+
 export function titleize(value: string | null | undefined): string {
   if (!value) return "Unknown";
   return value
@@ -287,8 +334,32 @@ export function createDefaultReportSections(reportType: ReportType): ReportSecti
   }));
 }
 
-export function createDefaultTargetedReportSections(reportType: ReportType, targetKind: ReportTargetKind): ReportSectionTemplate[] {
-  const targetTemplates = targetKind === "rtp_cycle" ? RTP_SECTION_TEMPLATES[reportType] : null;
+export function describeRtpPacketPresetStage(stage: RtpPacketPresetStage): string {
+  switch (stage) {
+    case "draft":
+      return "Draft packet preset";
+    case "public_review":
+      return "Public review packet preset";
+    case "adopted":
+      return "Adoption packet preset";
+    case "archived":
+      return "Archive packet preset";
+    default:
+      return "Standard RTP packet preset";
+  }
+}
+
+export function createDefaultTargetedReportSections(
+  reportType: ReportType,
+  targetKind: ReportTargetKind,
+  options?: { rtpCycleStatus?: string | null | undefined }
+): ReportSectionTemplate[] {
+  const targetTemplates =
+    targetKind === "rtp_cycle" && reportType === "board_packet"
+      ? buildRtpPacketPresetTemplates(resolveRtpPacketPresetStage(options?.rtpCycleStatus))
+      : targetKind === "rtp_cycle"
+        ? RTP_SECTION_TEMPLATES[reportType]
+        : null;
   const templates = targetTemplates ?? SECTION_TEMPLATES[reportType];
   return templates.map((section) => ({
     ...section,

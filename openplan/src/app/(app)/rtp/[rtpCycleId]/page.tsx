@@ -449,7 +449,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <RtpReportCreator rtpCycleId={cycle.id} defaultTitle={`${cycle.title} Board / Binder`} />
+              <RtpReportCreator rtpCycleId={cycle.id} defaultTitle={`${cycle.title} Board / Binder`} cycleStatus={cycle.status} />
               <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
                 Open digital RTP document
               </Link>

@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 
     let target:
       | { kind: "project"; id: string; workspaceId: string; title: string }
-      | { kind: "rtp_cycle"; id: string; workspaceId: string; title: string }
+      | { kind: "rtp_cycle"; id: string; workspaceId: string; title: string; status: string | null }
       | null = null;
 
     if (parsed.data.projectId) {
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     } else if (parsed.data.rtpCycleId) {
       const { data: cycle, error: cycleError } = await supabase
         .from("rtp_cycles")
-        .select("id, workspace_id, title")
+        .select("id, workspace_id, title, status")
         .eq("id", parsed.data.rtpCycleId)
         .maybeSingle();
 
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
       }
 
-      target = { kind: "rtp_cycle", id: cycle.id, workspaceId: cycle.workspace_id, title: cycle.title };
+      target = { kind: "rtp_cycle", id: cycle.id, workspaceId: cycle.workspace_id, title: cycle.title, status: cycle.status };
     }
 
     if (!target) {
@@ -285,7 +285,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create report" }, { status: 500 });
     }
 
-    const sections = parsed.data.sections ?? createDefaultTargetedReportSections(parsed.data.reportType as ReportType, target.kind);
+    const sections = parsed.data.sections ?? createDefaultTargetedReportSections(parsed.data.reportType as ReportType, target.kind, {
+      rtpCycleStatus: target.kind === "rtp_cycle" ? target.status : undefined,
+    });
 
     if (sections.length > 0) {
       const { error: sectionsError } = await supabase.from("report_sections").insert(
