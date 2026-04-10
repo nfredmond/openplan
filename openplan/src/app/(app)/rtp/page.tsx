@@ -29,6 +29,7 @@ import {
 
 type RtpPageSearchParams = Promise<{
   status?: string;
+  packet?: string;
 }>;
 
 type RtpCycleRow = {
@@ -73,12 +74,59 @@ type ReportSectionRow = {
   sort_order: number;
 };
 
+type PacketAttentionFilter = "all" | "refresh" | "missing" | "reset" | "current";
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
 
+function normalizePacketAttentionFilter(value: string | null | undefined): PacketAttentionFilter {
+  switch (value) {
+    case "refresh":
+    case "missing":
+    case "reset":
+    case "current":
+      return value;
+    default:
+      return "all";
+  }
+}
+
+function buildRtpRegistryHref(filters: { status?: string | null; packet?: PacketAttentionFilter | null }) {
+  const params = new URLSearchParams();
+  if (filters.status) {
+    params.set("status", filters.status);
+  }
+  if (filters.packet && filters.packet !== "all") {
+    params.set("packet", filters.packet);
+  }
+  const query = params.toString();
+  return query ? `/rtp?${query}` : "/rtp";
+}
+
+function getPacketAttentionPriority(packetAttention: Exclude<PacketAttentionFilter, "all">) {
+  switch (packetAttention) {
+    case "reset":
+      return 0;
+    case "missing":
+      return 1;
+    case "refresh":
+      return 2;
+    default:
+      return 3;
+  }
+}
+
+function matchesPacketAttentionFilter(filter: PacketAttentionFilter, packetAttention: Exclude<PacketAttentionFilter, "all">) {
+  if (filter === "all") {
+    return true;
+  }
+  return filter === packetAttention;
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
+  const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
   const supabase = await createClient();
   const {
     data: { user },
@@ -170,7 +218,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     packetSectionsByReportId.set(section.report_id, current);
   }
 
-  const typedCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
+  const allCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
     .map((cycle) => {
       const cycleLinks = linksByCycleId.get(cycle.id) ?? [];
       const packetReport = latestPacketReportByCycleId.get(cycle.id) ?? null;
@@ -231,6 +279,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       const packetNavigationHref = packetReport
         ? getReportNavigationHref(packetReport.id, packetFreshness.label)
         : `/rtp/${cycle.id}`;
+      const packetAttention = !packetReport
+        ? ("missing" as const)
+        : packetPresetPosture.label === "Needs reset"
+          ? ("reset" as const)
+          : packetFreshness.label === "Refresh recommended"
+            ? ("refresh" as const)
+            : ("current" as const);
 
       return {
         ...cycle,
@@ -240,12 +295,30 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         packetReport,
         packetFreshness,
         packetPresetPosture,
+        packetAttention,
         packetNavigationHref,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
       };
     })
     .filter((cycle) => (filters.status ? cycle.status === filters.status : true));
+
+  const packetAttentionCounts = {
+    reset: allCycles.filter((cycle) => cycle.packetAttention === "reset").length,
+    refresh: allCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
+    missing: allCycles.filter((cycle) => cycle.packetAttention === "missing").length,
+    current: allCycles.filter((cycle) => cycle.packetAttention === "current").length,
+  };
+
+  const typedCycles = [...allCycles]
+    .filter((cycle) => matchesPacketAttentionFilter(selectedPacketFilter, cycle.packetAttention))
+    .sort((left, right) => {
+      const priorityDelta = getPacketAttentionPriority(left.packetAttention) - getPacketAttentionPriority(right.packetAttention);
+      if (priorityDelta !== 0) {
+        return priorityDelta;
+      }
+      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+    });
 
   const draftCount = typedCycles.filter((cycle) => cycle.status === "draft").length;
   const publicReviewCount = typedCycles.filter((cycle) => cycle.status === "public_review").length;
@@ -329,26 +402,93 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                   Keep the update cadence, public-review posture, and linked packet recommendation posture visible from the same registry.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {RTP_CYCLE_STATUS_OPTIONS.map((option) => {
-                  const active = filters.status === option.value;
-                  return (
-                    <Link
-                      key={option.value}
-                      href={active ? "/rtp" : `/rtp?status=${option.value}`}
-                      className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                    >
-                      {option.label}
-                    </Link>
-                  );
-                })}
+              <div className="space-y-3 text-right">
+                <div>
+                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Cycle status</p>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {RTP_CYCLE_STATUS_OPTIONS.map((option) => {
+                      const active = filters.status === option.value;
+                      return (
+                        <Link
+                          key={option.value}
+                          href={buildRtpRegistryHref({
+                            status: active ? null : option.value,
+                            packet: selectedPacketFilter,
+                          })}
+                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                        >
+                          {option.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet attention</p>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {[
+                      { value: "all" as const, label: "All", count: allCycles.length },
+                      { value: "reset" as const, label: "Needs reset", count: packetAttentionCounts.reset },
+                      { value: "refresh" as const, label: "Refresh", count: packetAttentionCounts.refresh },
+                      { value: "missing" as const, label: "Missing", count: packetAttentionCounts.missing },
+                      { value: "current" as const, label: "Current", count: packetAttentionCounts.current },
+                    ].map((option) => {
+                      const active = selectedPacketFilter === option.value;
+                      return (
+                        <Link
+                          key={option.value}
+                          href={buildRtpRegistryHref({
+                            status: filters.status ?? null,
+                            packet: active ? "all" : option.value,
+                          })}
+                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                        >
+                          {option.label} · {option.count}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
 
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="module-metric-card">
+                <p className="module-metric-label">Needs reset</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Stale packet plus phase-preset divergence.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Refresh</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.refresh}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but source cycle changed after generation.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Missing packet</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.missing}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Cycle still lacks a linked RTP board packet record.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Packet current</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.current}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Packet is current with the cycle, whether preset-aligned or intentionally customized.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Showing {typedCycles.length} cycle{typedCycles.length === 1 ? "" : "s"}
+              {filters.status ? ` in ${formatRtpCycleStatusLabel(filters.status).toLowerCase()} posture` : " across all cycle phases"}
+              {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}.
+            </p>
+
             {typedCycles.length === 0 ? (
               <EmptyState
-                title="No RTP cycles yet"
-                description="Create the first RTP cycle so the regional plan update has one shared parent object instead of fragmented records."
+                title={allCycles.length > 0 ? "No cycles match the current filter" : "No RTP cycles yet"}
+                description={
+                  allCycles.length > 0
+                    ? "Try a different status or packet-attention filter to resume triage across the RTP registry."
+                    : "Create the first RTP cycle so the regional plan update has one shared parent object instead of fragmented records."
+                }
               />
             ) : (
               <div className="space-y-3">
