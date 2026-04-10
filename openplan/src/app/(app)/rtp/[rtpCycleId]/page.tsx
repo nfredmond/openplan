@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
+import { RtpCyclePhaseControls } from "@/components/rtp/rtp-cycle-phase-controls";
 import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
 import { RtpReportCreator } from "@/components/rtp/rtp-report-creator";
 import { EmptyState } from "@/components/ui/state-block";
@@ -96,6 +97,11 @@ type EngagementCampaignRow = {
   projects: CampaignProjectRow | CampaignProjectRow[] | null;
 };
 
+type RtpPacketReportRow = {
+  id: string;
+  title: string;
+};
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
@@ -156,7 +162,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     notFound();
   }
 
-  const [chaptersResult, projectLinksResult, campaignsResult] = await Promise.all([
+  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
       .select("id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, content_markdown, updated_at")
@@ -172,6 +178,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .from("engagement_campaigns")
       .select("id, title, summary, status, engagement_type, rtp_cycle_chapter_id, updated_at, projects(id, name)")
       .eq("rtp_cycle_id", cycle.id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("reports")
+      .select("id, title, report_type")
+      .eq("rtp_cycle_id", cycle.id)
+      .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
   ]);
 
@@ -204,6 +216,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         ...campaign,
         project: Array.isArray(campaign.projects) ? (campaign.projects[0] ?? null) : campaign.projects,
       }));
+
+  const packetReports = (packetReportsResult.data ?? []) as RtpPacketReportRow[];
 
   const campaignsByChapterId = new Map<string, Array<(typeof engagementCampaigns)[number]>>();
   const cycleLevelCampaigns: Array<(typeof engagementCampaigns)[number]> = [];
@@ -434,6 +448,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         </section>
 
         <aside className="space-y-4">
+          <RtpCyclePhaseControls
+            cycle={{ id: cycle.id, status: cycle.status }}
+            linkedPacketReports={packetReports.map((report) => ({ id: report.id, title: report.title }))}
+          />
+
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
