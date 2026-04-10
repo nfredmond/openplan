@@ -39,7 +39,7 @@ export function RtpRegistryPacketBulkGenerateActions({
         };
 
         if (!response.ok) {
-          throw new Error(payload.error || "Failed to regenerate one or more RTP packets");
+          throw new Error(payload.error || "Failed to generate one or more RTP packets");
         }
 
         successCount += 1;
@@ -47,11 +47,11 @@ export function RtpRegistryPacketBulkGenerateActions({
       }
 
       setMessage(
-        `Regenerated ${successCount} RTP packet ${successCount === 1 ? "record" : "records"}.${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned across the batch.` : ""}`
+        `Generated ${successCount} RTP packet ${successCount === 1 ? "artifact" : "artifacts"}.${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned across the batch.` : ""}`
       );
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to regenerate RTP packets");
+      setError(submitError instanceof Error ? submitError.message : "Failed to generate RTP packets");
     } finally {
       setIsSubmitting(false);
     }

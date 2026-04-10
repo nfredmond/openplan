@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type PacketAttention = "missing" | "reset" | "refresh" | "current";
+type PacketAttention = "missing" | "generate" | "reset" | "refresh" | "current";
 
 export function RtpRegistryPacketRowAction({
   cycleId,
@@ -126,7 +126,7 @@ export function RtpRegistryPacketRowAction({
       ? "Create and generate packet"
       : packetAttention === "reset"
         ? "Reset and regenerate packet"
-        : needsFirstArtifact
+        : packetAttention === "generate" || needsFirstArtifact
           ? "Generate first artifact"
           : "Regenerate packet";
 

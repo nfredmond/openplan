@@ -78,7 +78,7 @@ type ReportSectionRow = {
   sort_order: number;
 };
 
-type PacketAttentionFilter = "all" | "refresh" | "missing" | "reset" | "current";
+type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
@@ -86,6 +86,7 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
 
 function normalizePacketAttentionFilter(value: string | null | undefined): PacketAttentionFilter {
   switch (value) {
+    case "generate":
     case "refresh":
     case "missing":
     case "reset":
@@ -114,10 +115,12 @@ function getPacketAttentionPriority(packetAttention: Exclude<PacketAttentionFilt
       return 0;
     case "missing":
       return 1;
-    case "refresh":
+    case "generate":
       return 2;
-    default:
+    case "refresh":
       return 3;
+    default:
+      return 4;
   }
 }
 
@@ -375,7 +378,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ? ("missing" as const)
         : packetPresetPosture.label === "Needs reset"
           ? ("reset" as const)
-          : packetFreshness.label === "Refresh recommended" || packetFreshness.label === "No packet"
+          : packetFreshness.label === "No packet"
+            ? ("generate" as const)
+            : packetFreshness.label === "Refresh recommended"
             ? ("refresh" as const)
             : ("current" as const);
 
@@ -407,6 +412,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
   const packetAttentionCounts = {
     reset: allCycles.filter((cycle) => cycle.packetAttention === "reset").length,
+    generate: allCycles.filter((cycle) => cycle.packetAttention === "generate").length,
     refresh: allCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
     missing: allCycles.filter((cycle) => cycle.packetAttention === "missing").length,
     current: allCycles.filter((cycle) => cycle.packetAttention === "current").length,
@@ -531,8 +537,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     {[
                       { value: "all" as const, label: "All", count: allCycles.length },
                       { value: "reset" as const, label: "Needs reset", count: packetAttentionCounts.reset },
-                      { value: "refresh" as const, label: "Generate / refresh", count: packetAttentionCounts.refresh },
                       { value: "missing" as const, label: "Missing", count: packetAttentionCounts.missing },
+                      { value: "generate" as const, label: "Generate first", count: packetAttentionCounts.generate },
+                      { value: "refresh" as const, label: "Refresh", count: packetAttentionCounts.refresh },
                       { value: "current" as const, label: "Current", count: packetAttentionCounts.current },
                     ].map((option) => {
                       const active = selectedPacketFilter === option.value;
@@ -554,21 +561,26 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               <div className="module-metric-card">
                 <p className="module-metric-label">Needs reset</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Stale packet plus phase-preset divergence.</p>
               </div>
               <div className="module-metric-card">
-                <p className="module-metric-label">Refresh</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.refresh}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but it still needs a first artifact or a fresh regeneration.</p>
-              </div>
-              <div className="module-metric-card">
                 <p className="module-metric-label">Missing packet</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.missing}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Cycle still lacks a linked RTP board packet record.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Generate first</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.generate}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but the first artifact has not been generated yet.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Refresh</p>
+                <p className="module-metric-value text-sm">{packetAttentionCounts.refresh}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Packet artifact exists, but source cycle changed after generation.</p>
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Packet current</p>
@@ -761,14 +773,19 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
-          {packetAttentionCounts.reset > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
+          {packetAttentionCounts.reset > 0 || packetAttentionCounts.generate > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
             <RtpRegistryPacketQueueCommandBoard
               resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
               missingCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "missing").map((cycle) => cycle.id)}
               generateReportIds={[
                 ...new Set(
                   allCycles
-                    .filter((cycle) => cycle.packetAttention === "reset" || cycle.packetAttention === "refresh")
+                    .filter(
+                      (cycle) =>
+                        cycle.packetAttention === "reset" ||
+                        cycle.packetAttention === "generate" ||
+                        cycle.packetAttention === "refresh"
+                    )
                     .map((cycle) => cycle.packetReport?.id)
                     .filter((reportId): reportId is string => Boolean(reportId))
                 ),
@@ -785,13 +802,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             />
           ) : null}
 
-          {packetAttentionCounts.refresh > 0 ? (
+          {packetAttentionCounts.generate > 0 || packetAttentionCounts.refresh > 0 ? (
             <RtpRegistryPacketBulkGenerateActions
               reportIds={allCycles
-                .filter((cycle) => cycle.packetAttention === "refresh")
+                .filter((cycle) => cycle.packetAttention === "generate" || cycle.packetAttention === "refresh")
                 .map((cycle) => cycle.packetReport?.id)
                 .filter((reportId): reportId is string => Boolean(reportId))}
-              reportCount={packetAttentionCounts.refresh}
+              reportCount={packetAttentionCounts.generate + packetAttentionCounts.refresh}
             />
           ) : null}
 
