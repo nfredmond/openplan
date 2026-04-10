@@ -7,6 +7,7 @@ import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
+import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   formatReportStatusLabel,
@@ -689,6 +690,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       ) : null}
+                      <RtpRegistryPacketRowAction
+                        cycleId={cycle.id}
+                        reportId={cycle.packetReport?.id ?? null}
+                        packetAttention={cycle.packetAttention}
+                      />
                     </div>
                   </article>
                 ))}
