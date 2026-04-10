@@ -20,6 +20,7 @@ export function RtpReportDetail({
   sections,
   artifacts,
   latestHtml,
+  generationContext,
 }: {
   report: {
     id: string;
@@ -55,6 +56,19 @@ export function RtpReportDetail({
     generated_at: string;
   }>;
   latestHtml: string | null;
+  generationContext: {
+    generatedAt: string | null;
+    enabledSectionKeys: string[];
+    readinessLabel: string | null;
+    readinessReason: string | null;
+    workflowLabel: string | null;
+    workflowDetail: string | null;
+    chapterCount: number | null;
+    chapterCompleteCount: number | null;
+    chapterReadyForReviewCount: number | null;
+    linkedProjectCount: number | null;
+    engagementCampaignCount: number | null;
+  };
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
   const packetFreshness = getReportPacketFreshness({
@@ -158,6 +172,64 @@ export function RtpReportDetail({
                 {report.generated_at ? <StatusBadge tone="neutral">Packet generated {formatDateTime(report.generated_at)}</StatusBadge> : null}
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{packetFreshness.detail}</p>
+              {generationContext.readinessLabel || generationContext.workflowLabel ? (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time readiness</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.readinessLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.readinessReason ?? "No readiness reason captured."}</p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time workflow</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.workflowLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.workflowDetail ?? "No workflow detail captured."}</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Packet source trace</p>
+                <h2 className="module-section-title">What this packet was built from</h2>
+                <p className="module-section-description">Snapshot of the RTP cycle posture captured at generation time.</p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="module-metric-card">
+                <p className="module-metric-label">Packet generated</p>
+                <p className="module-metric-value text-sm">{formatDateTime(generationContext.generatedAt)}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Chapters in scope</p>
+                <p className="module-metric-value text-sm">{generationContext.chapterCount ?? 0}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Review-ready chapters</p>
+                <p className="module-metric-value text-sm">{generationContext.chapterReadyForReviewCount ?? 0}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Complete chapters</p>
+                <p className="module-metric-value text-sm">{generationContext.chapterCompleteCount ?? 0}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Linked projects</p>
+                <p className="module-metric-value text-sm">{generationContext.linkedProjectCount ?? 0}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Engagement targets</p>
+                <p className="module-metric-value text-sm">{generationContext.engagementCampaignCount ?? 0}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Section composition at generation time</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {generationContext.enabledSectionKeys.length > 0
+                  ? generationContext.enabledSectionKeys.join(", ")
+                  : "No section composition captured on this artifact."}
+              </p>
             </div>
           </article>
 

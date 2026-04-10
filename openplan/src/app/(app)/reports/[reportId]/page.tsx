@@ -541,6 +541,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const artifactList = (artifacts ?? []) as ReportArtifact[];
 
   if (report.rtp_cycle_id) {
+    const enabledSectionKeys = Array.isArray(sourceContext?.enabledSectionKeys)
+      ? sourceContext.enabledSectionKeys.filter(
+          (item): item is string => typeof item === "string" && item.trim().length > 0
+        )
+      : [];
+    const readinessRecord = asRecord(sourceContext?.readiness);
+    const workflowRecord = asRecord(sourceContext?.workflow);
     return (
       <RtpReportDetail
         report={report}
@@ -559,6 +566,19 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           generated_at: artifact.generated_at,
         }))}
         latestHtml={latestHtml}
+        generationContext={{
+          generatedAt: latestArtifact?.generated_at ?? null,
+          enabledSectionKeys,
+          readinessLabel: asNullableString(readinessRecord?.label),
+          readinessReason: asNullableString(readinessRecord?.reason),
+          workflowLabel: asNullableString(workflowRecord?.label),
+          workflowDetail: asNullableString(workflowRecord?.detail),
+          chapterCount: asNullableNumber(sourceContext?.chapterCount),
+          chapterCompleteCount: asNullableNumber(sourceContext?.chapterCompleteCount),
+          chapterReadyForReviewCount: asNullableNumber(sourceContext?.chapterReadyForReviewCount),
+          linkedProjectCount: asNullableNumber(sourceContext?.linkedProjectCount),
+          engagementCampaignCount: asNullableNumber(sourceContext?.engagementCampaignCount),
+        }}
       />
     );
   }
