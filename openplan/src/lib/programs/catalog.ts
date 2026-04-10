@@ -31,6 +31,12 @@ export const FUNDING_OPPORTUNITY_STATUS_OPTIONS = [
   { value: "archived", label: "Archived" },
 ] as const;
 
+export const FUNDING_OPPORTUNITY_DECISION_OPTIONS = [
+  { value: "monitor", label: "Monitor" },
+  { value: "pursue", label: "Pursue" },
+  { value: "skip", label: "Skip" },
+] as const;
+
 export const PROGRAM_LINK_TYPE_OPTIONS = [
   { value: "plan", label: "Plan Record" },
   { value: "report", label: "Report" },
@@ -43,6 +49,7 @@ export type ProgramStatus = (typeof PROGRAM_STATUS_OPTIONS)[number]["value"];
 export type ProgramLinkType = (typeof PROGRAM_LINK_TYPE_OPTIONS)[number]["value"];
 export type ProgramFundingClassification = (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"];
 export type FundingOpportunityStatus = (typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"];
+export type FundingOpportunityDecision = (typeof FUNDING_OPPORTUNITY_DECISION_OPTIONS)[number]["value"];
 
 export type ProgramReadinessCheck = {
   key:
@@ -117,6 +124,10 @@ export function formatFundingOpportunityStatusLabel(value: string | null | undef
   return FUNDING_OPPORTUNITY_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
 }
 
+export function formatFundingOpportunityDecisionLabel(value: string | null | undefined): string {
+  return FUNDING_OPPORTUNITY_DECISION_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
 export function programStatusTone(
   status: string | null | undefined
 ): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -134,6 +145,15 @@ export function fundingOpportunityStatusTone(
   if (status === "upcoming") return "info";
   if (status === "awarded") return "success";
   if (status === "closed" || status === "archived") return "neutral";
+  return "neutral";
+}
+
+export function fundingOpportunityDecisionTone(
+  decision: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (decision === "pursue") return "success";
+  if (decision === "monitor") return "info";
+  if (decision === "skip") return "warning";
   return "neutral";
 }
 

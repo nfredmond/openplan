@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
+  CalendarClock,
   ClipboardCheck,
   Clock3,
   Database,
@@ -16,11 +17,18 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
+import {
+  formatFundingOpportunityDecisionLabel,
+  formatFundingOpportunityStatusLabel,
+  fundingOpportunityDecisionTone,
+  fundingOpportunityStatusTone,
+} from "@/lib/programs/catalog";
 import {
   describeEvidenceChainSummary,
   formatReportStatusLabel,
@@ -146,6 +154,38 @@ type BillingInvoiceRow = {
   caltrans_posture: string;
   notes: string | null;
   created_at: string;
+};
+
+type FundingOpportunityRow = {
+  id: string;
+  program_id: string | null;
+  project_id: string | null;
+  title: string;
+  opportunity_status: string;
+  decision_state: string;
+  agency_name: string | null;
+  owner_label: string | null;
+  cadence_label: string | null;
+  opens_at: string | null;
+  closes_at: string | null;
+  decision_due_at: string | null;
+  fit_notes: string | null;
+  readiness_notes: string | null;
+  decision_rationale: string | null;
+  decided_at: string | null;
+  summary: string | null;
+  updated_at: string;
+  created_at: string;
+  programs:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
 };
 
 function titleize(value: string | null | undefined): string {
@@ -461,6 +501,22 @@ export default async function ProjectDetailPage({
   const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message) ? [] : ((invoiceResult.data ?? []) as BillingInvoiceRow[]);
   const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
+  const fundingOpportunitiesResult = await supabase
+    .from("funding_opportunities")
+    .select(
+      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title)"
+    )
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false })
+    .limit(6);
+  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+    ? []
+    : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]).map((item) => ({
+        ...item,
+        program: Array.isArray(item.programs) ? (item.programs[0] ?? null) : item.programs ?? null,
+      }));
+  const fundingOpportunitiesPending = looksLikePendingSchema(fundingOpportunitiesResult.error?.message);
+
   const datasetLinksResult = await supabase
     .from("data_dataset_project_links")
     .select("dataset_id, relationship_type, linked_at")
@@ -541,6 +597,10 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
+  const pursueFundingCount = fundingOpportunities.filter((item) => item.decision_state === "pursue").length;
+  const monitorFundingCount = fundingOpportunities.filter((item) => item.decision_state === "monitor").length;
+  const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
+  const openFundingCount = fundingOpportunities.filter((item) => item.opportunity_status === "open").length;
   const linkedRtpCycleCount = existingRtpLinks.length;
   const constrainedRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "constrained").length;
   const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
@@ -1201,6 +1261,123 @@ export default async function ProjectDetailPage({
           </div>
         </article>
       </div>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              <CalendarClock className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Funding strategy</p>
+              <h2 className="module-section-title">Candidate funding opportunities</h2>
+              <p className="module-section-description">
+                This project can now carry real pursue, monitor, or skip decisions against funding opportunities, with fit and readiness notes kept on the record.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {fundingOpportunitiesPending ? (
+          <div className="module-alert mt-5 text-sm">Funding opportunities will appear after the funding catalog migrations are applied to the database.</div>
+        ) : (
+          <>
+            <div className="module-summary-grid cols-5 mt-5">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Tracked</p>
+                <p className="module-summary-value">{fundingOpportunities.length}</p>
+                <p className="module-summary-detail">Open and upcoming opportunities linked to this project.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Pursue</p>
+                <p className="module-summary-value">{pursueFundingCount}</p>
+                <p className="module-summary-detail">Opportunities the team intends to actively package.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Monitor</p>
+                <p className="module-summary-value">{monitorFundingCount}</p>
+                <p className="module-summary-detail">Watchlist opportunities not yet fully committed.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Skip</p>
+                <p className="module-summary-value">{skipFundingCount}</p>
+                <p className="module-summary-detail">Intentionally declined opportunities with rationale recorded.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Open now</p>
+                <p className="module-summary-value">{openFundingCount}</p>
+                <p className="module-summary-detail">Current calls that can move into active pursuit.</p>
+              </div>
+            </div>
+
+            {fundingOpportunities.length === 0 ? (
+              <div className="module-empty-state mt-5 text-sm">No funding opportunities are linked to this project yet.</div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {fundingOpportunities.map((opportunity) => (
+                  <div key={opportunity.id} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
+                          {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
+                        </StatusBadge>
+                        <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
+                          {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
+                        </StatusBadge>
+                        {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{opportunity.title}</h3>
+                          <p className="module-record-stamp">Updated {fmtDateTime(opportunity.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary">
+                          {opportunity.summary || "No summary recorded yet for this funding opportunity."}
+                        </p>
+                      </div>
+
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
+                        <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
+                        <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
+                        <span className="module-record-chip">Opens {fmtDateTime(opportunity.opens_at)}</span>
+                        <span className="module-record-chip">Closes {fmtDateTime(opportunity.closes_at)}</span>
+                        <span className="module-record-chip">Decision due {fmtDateTime(opportunity.decision_due_at)}</span>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
+                          <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
+                        </div>
+                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
+                          <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
+                        </div>
+                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
+                          <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <FundingOpportunityDecisionControls
+                          opportunityId={opportunity.id}
+                          initialDecisionState={opportunity.decision_state as "monitor" | "pursue" | "skip"}
+                          initialFitNotes={opportunity.fit_notes}
+                          initialReadinessNotes={opportunity.readiness_notes}
+                          initialDecisionRationale={opportunity.decision_rationale}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">

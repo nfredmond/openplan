@@ -4,11 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
+  FUNDING_OPPORTUNITY_DECISION_OPTIONS,
   FUNDING_OPPORTUNITY_STATUS_OPTIONS,
+  type FundingOpportunityDecision,
   type FundingOpportunityStatus,
 } from "@/lib/programs/catalog";
 
 const FUNDING_OPPORTUNITY_STATUSES = FUNDING_OPPORTUNITY_STATUS_OPTIONS.map((option) => option.value) as [
+  string,
+  ...string[],
+];
+const FUNDING_OPPORTUNITY_DECISIONS = FUNDING_OPPORTUNITY_DECISION_OPTIONS.map((option) => option.value) as [
   string,
   ...string[],
 ];
@@ -17,6 +23,7 @@ const listFundingOpportunitiesSchema = z.object({
   programId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
   status: z.enum(FUNDING_OPPORTUNITY_STATUSES).optional(),
+  decisionState: z.enum(FUNDING_OPPORTUNITY_DECISIONS).optional(),
 });
 
 const createFundingOpportunitySchema = z.object({
@@ -24,12 +31,17 @@ const createFundingOpportunitySchema = z.object({
   projectId: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(160),
   status: z.enum(FUNDING_OPPORTUNITY_STATUSES).optional(),
+  decisionState: z.enum(FUNDING_OPPORTUNITY_DECISIONS).optional(),
   agencyName: z.string().trim().max(160).optional(),
   ownerLabel: z.string().trim().max(160).optional(),
   cadenceLabel: z.string().trim().max(160).optional(),
   opensAt: z.string().datetime().optional(),
   closesAt: z.string().datetime().optional(),
   decisionDueAt: z.string().datetime().optional(),
+  fitNotes: z.string().trim().max(4000).optional(),
+  readinessNotes: z.string().trim().max(4000).optional(),
+  decisionRationale: z.string().trim().max(4000).optional(),
+  decidedAt: z.string().datetime().optional(),
   summary: z.string().trim().max(4000).optional(),
 });
 
@@ -52,12 +64,17 @@ type FundingOpportunityRow = {
   project_id: string | null;
   title: string;
   opportunity_status: FundingOpportunityStatus;
+  decision_state: FundingOpportunityDecision;
   agency_name: string | null;
   owner_label: string | null;
   cadence_label: string | null;
   opens_at: string | null;
   closes_at: string | null;
   decision_due_at: string | null;
+  fit_notes: string | null;
+  readiness_notes: string | null;
+  decision_rationale: string | null;
+  decided_at: string | null;
   summary: string | null;
   updated_at: string;
   created_at: string;
@@ -190,6 +207,7 @@ export async function GET(request: NextRequest) {
       programId: request.nextUrl.searchParams.get("programId") ?? undefined,
       projectId: request.nextUrl.searchParams.get("projectId") ?? undefined,
       status: request.nextUrl.searchParams.get("status") ?? undefined,
+      decisionState: request.nextUrl.searchParams.get("decisionState") ?? undefined,
     });
 
     if (!parsedFilters.success) {
@@ -209,7 +227,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -223,6 +241,10 @@ export async function GET(request: NextRequest) {
 
     if (parsedFilters.data.status) {
       query = query.eq("opportunity_status", parsedFilters.data.status);
+    }
+
+    if (parsedFilters.data.decisionState) {
+      query = query.eq("decision_state", parsedFilters.data.decisionState);
     }
 
     const { data, error } = await query;
@@ -326,17 +348,22 @@ export async function POST(request: NextRequest) {
         project_id: parsed.data.projectId ?? null,
         title: parsed.data.title.trim(),
         opportunity_status: parsed.data.status ?? "upcoming",
+        decision_state: parsed.data.decisionState ?? "monitor",
         agency_name: parsed.data.agencyName?.trim() || null,
         owner_label: parsed.data.ownerLabel?.trim() || null,
         cadence_label: parsed.data.cadenceLabel?.trim() || null,
         opens_at: parsed.data.opensAt ?? null,
         closes_at: parsed.data.closesAt ?? null,
         decision_due_at: parsed.data.decisionDueAt ?? null,
+        fit_notes: parsed.data.fitNotes?.trim() || null,
+        readiness_notes: parsed.data.readinessNotes?.trim() || null,
+        decision_rationale: parsed.data.decisionRationale?.trim() || null,
+        decided_at: parsed.data.decidedAt ?? null,
         summary: parsed.data.summary?.trim() || null,
         created_by: user.id,
       })
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
       )
       .single();
 
