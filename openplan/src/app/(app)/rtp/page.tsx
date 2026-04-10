@@ -5,6 +5,12 @@ import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  formatReportStatusLabel,
+  getReportNavigationHref,
+  getReportPacketFreshness,
+  getRtpPacketPresetAlignment,
+} from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildRtpCycleReadiness,
@@ -48,8 +54,27 @@ type ProjectRtpLinkRow = {
   portfolio_role: string;
 };
 
+type RtpPacketReportRow = {
+  id: string;
+  rtp_cycle_id: string;
+  title: string;
+  report_type: string;
+  status: string;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+  updated_at: string;
+};
+
+type ReportSectionRow = {
+  id: string;
+  report_id: string;
+  section_key: string;
+  enabled: boolean;
+  sort_order: number;
+};
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+  return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
 
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
@@ -90,12 +115,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     .order("updated_at", { ascending: false });
 
   const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
-  const projectRtpLinksResult = rtpCycleIds.length
-    ? await supabase
-        .from("project_rtp_cycle_links")
-        .select("id, project_id, rtp_cycle_id, portfolio_role")
-        .in("rtp_cycle_id", rtpCycleIds)
-    : { data: [], error: null };
+  const [projectRtpLinksResult, packetReportsResult] = await Promise.all([
+    rtpCycleIds.length
+      ? supabase
+          .from("project_rtp_cycle_links")
+          .select("id, project_id, rtp_cycle_id, portfolio_role")
+          .in("rtp_cycle_id", rtpCycleIds)
+      : Promise.resolve({ data: [], error: null }),
+    rtpCycleIds.length
+      ? supabase
+          .from("reports")
+          .select("id, rtp_cycle_id, title, report_type, status, generated_at, latest_artifact_kind, updated_at")
+          .in("rtp_cycle_id", rtpCycleIds)
+          .eq("report_type", "board_packet")
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
 
   const projectRtpLinks = looksLikePendingSchema(projectRtpLinksResult.error?.message)
     ? []
@@ -107,9 +142,39 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     linksByCycleId.set(link.rtp_cycle_id, current);
   }
 
+  const packetReports = looksLikePendingSchema(packetReportsResult.error?.message)
+    ? []
+    : ((packetReportsResult.data ?? []) as RtpPacketReportRow[]);
+  const latestPacketReportByCycleId = new Map<string, RtpPacketReportRow>();
+  for (const report of packetReports) {
+    if (!latestPacketReportByCycleId.has(report.rtp_cycle_id)) {
+      latestPacketReportByCycleId.set(report.rtp_cycle_id, report);
+    }
+  }
+
+  const latestPacketReportIds = [...latestPacketReportByCycleId.values()].map((report) => report.id);
+  const packetSectionsResult = latestPacketReportIds.length
+    ? await supabase
+        .from("report_sections")
+        .select("id, report_id, section_key, enabled, sort_order")
+        .in("report_id", latestPacketReportIds)
+    : { data: [], error: null };
+
+  const packetSections = looksLikePendingSchema(packetSectionsResult.error?.message)
+    ? []
+    : ((packetSectionsResult.data ?? []) as ReportSectionRow[]);
+  const packetSectionsByReportId = new Map<string, ReportSectionRow[]>();
+  for (const section of packetSections) {
+    const current = packetSectionsByReportId.get(section.report_id) ?? [];
+    current.push(section);
+    packetSectionsByReportId.set(section.report_id, current);
+  }
+
   const typedCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
     .map((cycle) => {
       const cycleLinks = linksByCycleId.get(cycle.id) ?? [];
+      const packetReport = latestPacketReportByCycleId.get(cycle.id) ?? null;
+      const packetSectionsForReport = packetReport ? packetSectionsByReportId.get(packetReport.id) ?? [] : [];
       const readiness = buildRtpCycleReadiness({
         geographyLabel: cycle.geography_label,
         horizonStartYear: cycle.horizon_start_year,
@@ -118,12 +183,64 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         publicReviewOpenAt: cycle.public_review_open_at,
         publicReviewCloseAt: cycle.public_review_close_at,
       });
+      const packetFreshness = packetReport
+        ? getReportPacketFreshness({
+            latestArtifactKind: packetReport.latest_artifact_kind,
+            generatedAt: packetReport.generated_at,
+            updatedAt: cycle.updated_at,
+          })
+        : {
+            label: "No packet",
+            tone: "warning" as const,
+            detail: "No RTP board packet record exists for this cycle yet.",
+          };
+      const packetPresetAlignment = packetReport
+        ? getRtpPacketPresetAlignment({
+            cycleStatus: cycle.status,
+            sections: packetSectionsForReport.map((section) => ({
+              sectionKey: section.section_key,
+              enabled: section.enabled,
+              sortOrder: section.sort_order,
+            })),
+          })
+        : null;
+      const packetPresetPosture = !packetReport
+        ? {
+            label: "No packet record",
+            tone: "warning" as const,
+            detail:
+              "Create a linked RTP board packet record so phase-specific packet posture stays visible from the registry.",
+          }
+        : packetFreshness.label === "Refresh recommended" && packetPresetAlignment && !packetPresetAlignment.aligned
+          ? {
+              label: "Needs reset",
+              tone: "warning" as const,
+              detail: `The latest packet is stale and its structure has diverged from the ${packetPresetAlignment.presetLabel.toLowerCase()} for this cycle phase.`,
+            }
+          : packetPresetAlignment
+            ? {
+                label: packetPresetAlignment.statusLabel,
+                tone: packetPresetAlignment.tone,
+                detail: packetPresetAlignment.detail,
+              }
+            : {
+                label: "Preset unknown",
+                tone: "neutral" as const,
+                detail: "Packet structure could not be compared against the recommended phase preset.",
+              };
+      const packetNavigationHref = packetReport
+        ? getReportNavigationHref(packetReport.id, packetFreshness.label)
+        : `/rtp/${cycle.id}`;
 
       return {
         ...cycle,
         linkedProjectCount: cycleLinks.length,
         constrainedProjectCount: cycleLinks.filter((link) => link.portfolio_role === "constrained").length,
         illustrativeProjectCount: cycleLinks.filter((link) => link.portfolio_role === "illustrative").length,
+        packetReport,
+        packetFreshness,
+        packetPresetPosture,
+        packetNavigationHref,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
       };
@@ -209,7 +326,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <p className="module-section-label">Registry</p>
                 <h2 className="module-section-title">Tracked RTP cycles</h2>
                 <p className="module-section-description">
-                  Keep the update cadence and public-review posture visible before adding deeper portfolio and chapter structure.
+                  Keep the update cadence, public-review posture, and linked packet recommendation posture visible from the same registry.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -298,6 +415,32 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Linked packet</p>
+                        <p className="module-metric-value text-sm">{cycle.packetReport?.title ?? "Not created"}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {cycle.packetReport
+                            ? `${formatReportStatusLabel(cycle.packetReport.status)} record updated ${formatRtpDateTime(cycle.packetReport.updated_at)}.`
+                            : "Create the first RTP board packet record to keep report posture visible from the registry."}
+                        </p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Packet freshness</p>
+                        <div className="mt-1">
+                          <StatusBadge tone={cycle.packetFreshness.tone}>{cycle.packetFreshness.label}</StatusBadge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetFreshness.detail}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Packet preset</p>
+                        <div className="mt-1">
+                          <StatusBadge tone={cycle.packetPresetPosture.tone}>{cycle.packetPresetPosture.label}</StatusBadge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetPresetPosture.detail}</p>
+                      </div>
+                    </div>
+
                     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
                       <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -321,10 +464,18 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
-                    <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
-                      Open RTP cycle shell
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    <div className="flex flex-wrap gap-3">
+                      <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
+                        Open RTP cycle shell
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      {cycle.packetReport ? (
+                        <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
+                          Open linked packet
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      ) : null}
+                    </div>
                   </article>
                 ))}
               </div>
