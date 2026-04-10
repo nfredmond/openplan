@@ -36,6 +36,7 @@ import {
 type RtpPageSearchParams = Promise<{
   status?: string;
   packet?: string;
+  recent?: string;
 }>;
 
 type RtpCycleRow = {
@@ -123,7 +124,11 @@ function normalizePacketAttentionFilter(value: string | null | undefined): Packe
   }
 }
 
-function buildRtpRegistryHref(filters: { status?: string | null; packet?: PacketAttentionFilter | null }) {
+function buildRtpRegistryHref(filters: {
+  status?: string | null;
+  packet?: PacketAttentionFilter | null;
+  recent?: boolean | null;
+}) {
   const params = new URLSearchParams();
   if (filters.status) {
     params.set("status", filters.status);
@@ -131,8 +136,15 @@ function buildRtpRegistryHref(filters: { status?: string | null; packet?: Packet
   if (filters.packet && filters.packet !== "all") {
     params.set("packet", filters.packet);
   }
+  if (filters.recent) {
+    params.set("recent", "1");
+  }
   const query = params.toString();
   return query ? `/rtp?${query}` : "/rtp";
+}
+
+function normalizeRecentQueueFilter(value: string | null | undefined) {
+  return value === "1";
 }
 
 function getPacketAttentionPriority(packetAttention: Exclude<PacketAttentionFilter, "all">) {
@@ -338,6 +350,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
+  const recentOnly = normalizeRecentQueueFilter(filters.recent);
   const supabase = await createClient();
   const {
     data: { user },
@@ -607,6 +620,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
   const typedCycles = [...allCycles]
     .filter((cycle) => matchesPacketAttentionFilter(selectedPacketFilter, cycle.packetAttention))
+    .filter((cycle) => (recentOnly ? cycle.packetQueueTrace.isRecent : true))
     .sort((left, right) => {
       const priorityDelta = getPacketAttentionPriority(left.packetAttention) - getPacketAttentionPriority(right.packetAttention);
       if (priorityDelta !== 0) {
@@ -742,6 +756,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           href={buildRtpRegistryHref({
                             status: active ? null : option.value,
                             packet: selectedPacketFilter,
+                            recent: recentOnly,
                           })}
                           className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                         >
@@ -769,6 +784,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           href={buildRtpRegistryHref({
                             status: filters.status ?? null,
                             packet: active ? "all" : option.value,
+                            recent: recentOnly,
                           })}
                           className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                         >
@@ -776,6 +792,31 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         </Link>
                       );
                     })}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent queue work</p>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Link
+                      href={buildRtpRegistryHref({
+                        status: filters.status ?? null,
+                        packet: selectedPacketFilter,
+                        recent: false,
+                      })}
+                      className={!recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                    >
+                      All queue history
+                    </Link>
+                    <Link
+                      href={buildRtpRegistryHref({
+                        status: filters.status ?? null,
+                        packet: selectedPacketFilter,
+                        recent: true,
+                      })}
+                      className={recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                    >
+                      Recent only · {allCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length}
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -812,7 +853,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             <p className="text-sm text-muted-foreground">
               Showing {typedCycles.length} cycle{typedCycles.length === 1 ? "" : "s"}
               {filters.status ? ` in ${formatRtpCycleStatusLabel(filters.status).toLowerCase()} posture` : " across all cycle phases"}
-              {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}.
+              {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}
+              {recentOnly ? " limited to recent queue activity" : ""}.
             </p>
 
             {typedCycles.length === 0 ? (
