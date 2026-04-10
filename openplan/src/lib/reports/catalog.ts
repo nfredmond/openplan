@@ -142,6 +142,12 @@ export type ReportSectionTemplate = {
   configJson?: Record<string, unknown>;
 };
 
+export type ReportSectionPresetComparable = {
+  sectionKey: string;
+  enabled: boolean;
+  sortOrder: number;
+};
+
 export type ReportTargetKind = "project" | "rtp_cycle";
 export type RtpPacketPresetStage = "draft" | "public_review" | "adopted" | "archived" | "default";
 
@@ -257,7 +263,7 @@ const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>
   ],
 };
 
-function resolveRtpPacketPresetStage(status: string | null | undefined): RtpPacketPresetStage {
+export function resolveRtpPacketPresetStage(status: string | null | undefined): RtpPacketPresetStage {
   switch (status) {
     case "draft":
     case "public_review":
@@ -301,6 +307,48 @@ function buildRtpPacketPresetTemplates(stage: RtpPacketPresetStage): ReportSecti
       rtpPacketPresetStage: stage,
     },
   }));
+}
+
+export function getRtpPacketPresetAlignment(input: {
+  cycleStatus: string | null | undefined;
+  sections: ReportSectionPresetComparable[];
+}) {
+  const stage = resolveRtpPacketPresetStage(input.cycleStatus);
+  const preset = buildRtpPacketPresetTemplates(stage);
+  const comparablePreset = preset.map((section) => ({
+    sectionKey: section.sectionKey,
+    enabled: section.enabled,
+    sortOrder: section.sortOrder,
+  }));
+  const comparableCurrent = [...input.sections]
+    .map((section) => ({
+      sectionKey: section.sectionKey,
+      enabled: section.enabled,
+      sortOrder: section.sortOrder,
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder);
+
+  const aligned =
+    comparableCurrent.length === comparablePreset.length &&
+    comparableCurrent.every((section, index) => {
+      const presetSection = comparablePreset[index];
+      return (
+        presetSection?.sectionKey === section.sectionKey &&
+        presetSection.enabled === section.enabled &&
+        presetSection.sortOrder === section.sortOrder
+      );
+    });
+
+  return {
+    presetStage: stage,
+    presetLabel: describeRtpPacketPresetStage(stage),
+    aligned,
+    statusLabel: aligned ? "Preset-aligned" : "Customized",
+    tone: aligned ? ("success" as const) : ("info" as const),
+    detail: aligned
+      ? `Current packet structure still matches the ${describeRtpPacketPresetStage(stage).toLowerCase()}.`
+      : `Current packet structure has diverged from the ${describeRtpPacketPresetStage(stage).toLowerCase()}.`,
+  };
 }
 
 export function titleize(value: string | null | undefined): string {

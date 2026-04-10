@@ -118,6 +118,10 @@ export function RtpReportDetail({
     chapterReadyForReviewCount: number | null;
     linkedProjectCount: number | null;
     engagementCampaignCount: number | null;
+    presetStage: string | null;
+    presetLabel: string | null;
+    presetStatusLabel: string | null;
+    presetDetail: string | null;
   };
   currentContext: {
     enabledSectionKeys: string[];
@@ -131,6 +135,10 @@ export function RtpReportDetail({
     linkedProjectCount: number | null;
     engagementCampaignCount: number | null;
     cycleUpdatedAt: string | null;
+    presetStage: string | null;
+    presetLabel: string | null;
+    presetStatusLabel: string | null;
+    presetDetail: string | null;
   };
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
@@ -196,6 +204,21 @@ export function RtpReportDetail({
           detail: areKeySetsEqual(generationContext.enabledSectionKeys, currentContext.enabledSectionKeys)
             ? "Enabled section set still matches the packet artifact."
             : `Generated with ${generationContext.enabledSectionKeys.length} sections; current source has ${currentContext.enabledSectionKeys.length}.`,
+        }
+      : null,
+    generationContext.presetStatusLabel || currentContext.presetStatusLabel
+      ? {
+          label: "Preset alignment",
+          status:
+            generationContext.presetStatusLabel === currentContext.presetStatusLabel &&
+            generationContext.presetLabel === currentContext.presetLabel
+              ? ("unchanged" as const)
+              : ("updated" as const),
+          detail:
+            generationContext.presetStatusLabel === currentContext.presetStatusLabel &&
+            generationContext.presetLabel === currentContext.presetLabel
+              ? generationContext.presetDetail ?? currentContext.presetDetail ?? "Preset alignment unchanged."
+              : `Generated as ${generationContext.presetStatusLabel ?? "unknown"}; current source is ${currentContext.presetStatusLabel ?? "unknown"}.`,
         }
       : null,
   ].filter(
@@ -318,6 +341,20 @@ export function RtpReportDetail({
                   </div>
                 </div>
               ) : null}
+              {generationContext.presetStatusLabel || currentContext.presetStatusLabel ? (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated packet layout</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.presetStatusLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.presetDetail ?? "No packet preset alignment captured."}</p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current packet layout</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.presetStatusLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{currentContext.presetDetail ?? "No current packet preset alignment available."}</p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </article>
 
@@ -403,6 +440,18 @@ export function RtpReportDetail({
                   ? currentContext.enabledSectionKeys.join(", ")
                   : "No enabled section composition is currently configured on this packet record."}
               </p>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Generation-time preset</p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.presetLabel ?? "Unknown preset"}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{generationContext.presetStatusLabel ?? "Unknown status"}</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background px-4 py-4">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current preset posture</p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.presetLabel ?? "Unknown preset"}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{currentContext.presetStatusLabel ?? "Unknown status"}</p>
+              </div>
             </div>
           </article>
 

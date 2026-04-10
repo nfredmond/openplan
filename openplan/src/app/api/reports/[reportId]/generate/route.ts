@@ -7,6 +7,7 @@ import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
+import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
 import {
   buildProjectStageGateSnapshot,
   buildProjectStageGateSummary,
@@ -198,6 +199,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
       const enabledSectionKeys = sections.filter((section) => section.enabled).map((section) => section.section_key);
+      const packetPresetAlignment = getRtpPacketPresetAlignment({
+        cycleStatus: cycle.status,
+        sections: sections.map((section) => ({
+          sectionKey: section.section_key,
+          enabled: section.enabled,
+          sortOrder: section.sort_order,
+        })),
+      });
       const readiness = buildRtpCycleReadiness({
         geographyLabel: cycle.geography_label,
         horizonStartYear: cycle.horizon_start_year,
@@ -242,6 +251,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           workflow,
           enabledSectionCount: sections.filter((section) => section.enabled).length,
           enabledSectionKeys,
+          packetPresetAlignment,
         },
         generationMode: "rtp_html_packet",
       };

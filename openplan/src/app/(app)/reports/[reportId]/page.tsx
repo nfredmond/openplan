@@ -18,6 +18,7 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
+  getRtpPacketPresetAlignment,
   describeEvidenceChainSummary,
   formatDateTime,
   formatReportStatusLabel,
@@ -571,6 +572,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : [];
     const readinessRecord = asRecord(sourceContext?.readiness);
     const workflowRecord = asRecord(sourceContext?.workflow);
+    const presetAlignmentRecord = asRecord(sourceContext?.packetPresetAlignment);
+    const currentPacketPresetAlignment = getRtpPacketPresetAlignment({
+      cycleStatus: rtpCycle?.status,
+      sections: (sections ?? []).map((section) => ({
+        sectionKey: section.section_key,
+        enabled: section.enabled,
+        sortOrder: section.sort_order,
+      })),
+    });
     const currentRtpReadiness = rtpCycle
       ? buildRtpCycleReadiness({
           geographyLabel: rtpCycle.geography_label,
@@ -618,6 +628,10 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           chapterReadyForReviewCount: asNullableNumber(sourceContext?.chapterReadyForReviewCount),
           linkedProjectCount: asNullableNumber(sourceContext?.linkedProjectCount),
           engagementCampaignCount: asNullableNumber(sourceContext?.engagementCampaignCount),
+          presetStage: asNullableString(presetAlignmentRecord?.presetStage),
+          presetLabel: asNullableString(presetAlignmentRecord?.presetLabel),
+          presetStatusLabel: asNullableString(presetAlignmentRecord?.statusLabel),
+          presetDetail: asNullableString(presetAlignmentRecord?.detail),
         }}
         currentContext={{
           enabledSectionKeys: (sections ?? [])
@@ -633,6 +647,10 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           linkedProjectCount: currentRtpProjectLinks.length,
           engagementCampaignCount: currentRtpCampaigns.length,
           cycleUpdatedAt: rtpCycle?.updated_at ?? null,
+          presetStage: currentPacketPresetAlignment.presetStage,
+          presetLabel: currentPacketPresetAlignment.presetLabel,
+          presetStatusLabel: currentPacketPresetAlignment.statusLabel,
+          presetDetail: currentPacketPresetAlignment.detail,
         }}
       />
     );
