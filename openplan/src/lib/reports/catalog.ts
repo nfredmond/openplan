@@ -142,6 +142,8 @@ export type ReportSectionTemplate = {
   configJson?: Record<string, unknown>;
 };
 
+export type ReportTargetKind = "project" | "rtp_cycle";
+
 const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
   project_status: [
     {
@@ -243,6 +245,17 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
   ],
 };
 
+const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>> = {
+  board_packet: [
+    { sectionKey: "cycle_overview", title: "Cycle overview", enabled: true, sortOrder: 0 },
+    { sectionKey: "chapter_digest", title: "Chapter digest", enabled: true, sortOrder: 1 },
+    { sectionKey: "portfolio_posture", title: "Portfolio posture", enabled: true, sortOrder: 2 },
+    { sectionKey: "engagement_posture", title: "Engagement posture", enabled: true, sortOrder: 3 },
+    { sectionKey: "adoption_readiness", title: "Adoption readiness", enabled: true, sortOrder: 4 },
+    { sectionKey: "appendix_references", title: "Appendix and references", enabled: true, sortOrder: 5 },
+  ],
+};
+
 export function titleize(value: string | null | undefined): string {
   if (!value) return "Unknown";
   return value
@@ -274,6 +287,15 @@ export function createDefaultReportSections(reportType: ReportType): ReportSecti
   }));
 }
 
+export function createDefaultTargetedReportSections(reportType: ReportType, targetKind: ReportTargetKind): ReportSectionTemplate[] {
+  const targetTemplates = targetKind === "rtp_cycle" ? RTP_SECTION_TEMPLATES[reportType] : null;
+  const templates = targetTemplates ?? SECTION_TEMPLATES[reportType];
+  return templates.map((section) => ({
+    ...section,
+    configJson: section.configJson ?? {},
+  }));
+}
+
 export function defaultReportTitle(projectName: string, reportType: ReportType): string {
   const label = formatReportTypeLabel(reportType).replace(/\s+Packet$/i, "").trim();
   return `${projectName} ${label}`;
@@ -282,6 +304,33 @@ export function defaultReportTitle(projectName: string, reportType: ReportType):
 export function defaultTargetedReportTitle(targetTitle: string, reportType: ReportType): string {
   const label = formatReportTypeLabel(reportType).replace(/\s+Packet$/i, "").trim();
   return `${targetTitle} ${label}`;
+}
+
+export function describeReportSectionKey(sectionKey: string | null | undefined): string {
+  switch (sectionKey) {
+    case "cycle_overview":
+      return "Core RTP cycle scope, geography, horizon, and board posture.";
+    case "chapter_digest":
+      return "Draft narrative coverage and workflow status across RTP chapters.";
+    case "portfolio_posture":
+      return "Linked constrained, illustrative, and candidate projects for this RTP cycle.";
+    case "engagement_posture":
+      return "Cycle-level and chapter-level public review and consultation targets.";
+    case "adoption_readiness":
+      return "What remains before the packet is ready for public review, board action, or adoption.";
+    case "appendix_references":
+      return "Supporting references, exports, and linked packet materials.";
+    case "cover_page":
+      return "High-level packet cover context.";
+    case "executive_summary":
+      return "Condensed leadership-ready summary of the packet.";
+    case "project_records_digest":
+      return "Key project records and controls affecting this packet.";
+    case "analysis_summaries":
+      return "Analysis, modeling, or supporting evidence summaries attached to the packet.";
+    default:
+      return "Packet section configuration for this report record.";
+  }
 }
 
 export function reportStatusTone(

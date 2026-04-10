@@ -4,7 +4,14 @@ import { ReportDetailControls } from "@/components/reports/report-detail-control
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { formatRtpCycleStatusLabel, rtpCycleStatusTone } from "@/lib/rtp/catalog";
-import { formatDateTime, formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+import {
+  describeReportSectionKey,
+  formatDateTime,
+  formatReportStatusLabel,
+  formatReportTypeLabel,
+  getReportPacketFreshness,
+  reportStatusTone,
+} from "@/lib/reports/catalog";
 
 export function RtpReportDetail({
   report,
@@ -50,6 +57,11 @@ export function RtpReportDetail({
   latestHtml: string | null;
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
+  const packetFreshness = getReportPacketFreshness({
+    latestArtifactKind: report.latest_artifact_kind,
+    generatedAt: report.generated_at,
+    updatedAt: cycle?.updated_at ?? report.updated_at,
+  });
 
   return (
     <section className="module-page">
@@ -71,6 +83,7 @@ export function RtpReportDetail({
             <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
             {cycle ? <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge> : null}
             {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
+            <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -133,6 +146,24 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
+                <p className="module-section-label">Packet posture</p>
+                <h2 className="module-section-title">Freshness against RTP source</h2>
+                <p className="module-section-description">This compares the latest packet artifact against the current RTP cycle state.</p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
+                {cycle ? <StatusBadge tone="neutral">Cycle updated {formatDateTime(cycle.updated_at)}</StatusBadge> : null}
+                {report.generated_at ? <StatusBadge tone="neutral">Packet generated {formatDateTime(report.generated_at)}</StatusBadge> : null}
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">{packetFreshness.detail}</p>
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
                 <p className="module-section-label">Sections</p>
                 <h2 className="module-section-title">Packet structure</h2>
                 <p className="module-section-description">This record still uses the shared report section system.</p>
@@ -150,6 +181,7 @@ export function RtpReportDetail({
                     </div>
                     <p className="text-sm font-semibold tracking-tight">{section.title}</p>
                     <p className="text-xs text-muted-foreground">{section.section_key}</p>
+                    <p className="text-xs text-muted-foreground">{describeReportSectionKey(section.section_key)}</p>
                   </div>
                 ))}
               </div>

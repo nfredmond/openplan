@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
-  createDefaultReportSections,
+  createDefaultTargetedReportSections,
   defaultTargetedReportTitle,
   type ReportType,
 } from "@/lib/reports/catalog";
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create report" }, { status: 500 });
     }
 
-    const sections = parsed.data.sections ?? createDefaultReportSections(parsed.data.reportType as ReportType);
+    const sections = parsed.data.sections ?? createDefaultTargetedReportSections(parsed.data.reportType as ReportType, target.kind);
 
     if (sections.length > 0) {
       const { error: sectionsError } = await supabase.from("report_sections").insert(

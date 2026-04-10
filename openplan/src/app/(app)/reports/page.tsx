@@ -69,10 +69,12 @@ type ReportRow = {
     | {
         id: string;
         title: string;
+        updated_at?: string | null;
       }
     | Array<{
         id: string;
         title: string;
+        updated_at?: string | null;
       }>
     | null;
 };
@@ -181,7 +183,7 @@ export default async function ReportsPage({
       supabase
         .from("reports")
         .select(
-          "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title)"
+          "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title, updated_at)"
         )
         .order("updated_at", { ascending: false }),
       supabase
@@ -227,7 +229,8 @@ export default async function ReportsPage({
         packetFreshness: getReportPacketFreshness({
           latestArtifactKind: report.latest_artifact_kind,
           generatedAt: report.generated_at,
-          updatedAt: report.updated_at,
+          updatedAt:
+            (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
         }),
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
       };
