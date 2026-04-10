@@ -4,6 +4,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
+import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -629,6 +630,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             <RtpRegistryPacketBulkActions
               cycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
               cycleCount={packetAttentionCounts.reset}
+            />
+          ) : null}
+
+          {packetAttentionCounts.refresh > 0 ? (
+            <RtpRegistryPacketBulkGenerateActions
+              reportIds={allCycles
+                .filter((cycle) => cycle.packetAttention === "refresh")
+                .map((cycle) => cycle.packetReport?.id)
+                .filter((reportId): reportId is string => Boolean(reportId))}
+              reportCount={packetAttentionCounts.refresh}
             />
           ) : null}
 
