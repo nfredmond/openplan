@@ -127,6 +127,50 @@ function matchesPacketAttentionFilter(filter: PacketAttentionFilter, packetAtten
   return filter === packetAttention;
 }
 
+function buildPacketOperatorStatus(input: {
+  packetReport: RtpPacketReportRow | null;
+  packetFreshness: { label: string };
+  packetPresetPosture: { label: string };
+}) {
+  if (!input.packetReport) {
+    return {
+      label: "Queue-ready",
+      tone: "warning" as const,
+      detail: "Create the first RTP packet record from the queue board.",
+    };
+  }
+
+  if (input.packetPresetPosture.label === "Needs reset") {
+    return {
+      label: "Intervention needed",
+      tone: "warning" as const,
+      detail: "Reset the packet layout, then regenerate the stale artifact.",
+    };
+  }
+
+  if (input.packetFreshness.label === "Refresh recommended") {
+    return {
+      label: "Ready to regenerate",
+      tone: "info" as const,
+      detail: "The packet layout is usable, but the artifact should be regenerated from current source state.",
+    };
+  }
+
+  if (input.packetFreshness.label === "No packet") {
+    return {
+      label: "Record ready",
+      tone: "info" as const,
+      detail: "A packet record exists, but it still needs its first generated artifact.",
+    };
+  }
+
+  return {
+    label: "Queue clear",
+    tone: "success" as const,
+    detail: "Packet record and latest artifact are aligned with current cycle state.",
+  };
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
@@ -299,6 +343,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         packetFreshness,
         packetPresetPosture,
         packetAttention,
+        packetOperatorStatus: buildPacketOperatorStatus({
+          packetReport,
+          packetFreshness,
+          packetPresetPosture,
+        }),
         packetNavigationHref,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
@@ -581,6 +630,28 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           <StatusBadge tone={cycle.packetPresetPosture.tone}>{cycle.packetPresetPosture.label}</StatusBadge>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">{cycle.packetPresetPosture.detail}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Operator status
+                          </p>
+                          <p className="mt-2 text-sm font-medium">{cycle.packetOperatorStatus.label}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{cycle.packetOperatorStatus.detail}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 text-right">
+                          <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
+                          <p className="text-xs text-muted-foreground">
+                            {cycle.packetReport?.generated_at
+                              ? `Last generated ${formatRtpDateTime(cycle.packetReport.generated_at)}`
+                              : cycle.packetReport
+                                ? "No generated artifact yet"
+                                : "No packet record yet"}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
