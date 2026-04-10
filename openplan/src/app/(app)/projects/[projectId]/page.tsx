@@ -148,6 +148,7 @@ type SubmittalRow = {
 
 type BillingInvoiceRow = {
   id: string;
+  funding_award_id: string | null;
   invoice_number: string;
   consultant_name: string | null;
   billing_basis: string;
@@ -163,6 +164,16 @@ type BillingInvoiceRow = {
   caltrans_posture: string;
   notes: string | null;
   created_at: string;
+  funding_awards:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
 };
 
 type FundingOpportunityRow = {
@@ -549,12 +560,17 @@ export default async function ProjectDetailPage({
   const invoiceResult = await supabase
     .from("billing_invoice_records")
     .select(
-      "id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
+      "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)"
     )
     .eq("project_id", project.id)
     .order("created_at", { ascending: false })
     .limit(6);
-  const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message) ? [] : ((invoiceResult.data ?? []) as BillingInvoiceRow[]);
+  const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message)
+    ? []
+    : ((invoiceResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
+        ...invoice,
+        fundingAward: Array.isArray(invoice.funding_awards) ? (invoice.funding_awards[0] ?? null) : invoice.funding_awards ?? null,
+      }));
   const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
   const projectFundingProfileResult = await supabase
@@ -705,6 +721,12 @@ export default async function ProjectDetailPage({
   const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
   const candidateRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "candidate").length;
   const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
+  const invoiceSummaryByFundingAwardId = new Map(
+    fundingAwards.map((award) => [
+      award.id,
+      summarizeBillingInvoiceRecords(projectInvoices.filter((invoice) => invoice.funding_award_id === award.id)),
+    ])
+  );
   const projectReportIds = ((projectReportData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
   );
@@ -1464,39 +1486,45 @@ export default async function ProjectDetailPage({
               <div className="module-empty-state mt-5 text-sm">No funding awards are recorded for this project yet.</div>
             ) : (
               <div className="mt-5 module-record-list">
-                {fundingAwards.map((award) => (
-                  <div key={award.id} className="module-record-row">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={fundingAwardMatchPostureTone(award.match_posture)}>
-                          {formatFundingAwardMatchPostureLabel(award.match_posture)}
-                        </StatusBadge>
-                        <StatusBadge tone={fundingAwardSpendingStatusTone(award.spending_status)}>
-                          {formatFundingAwardSpendingStatusLabel(award.spending_status)}
-                        </StatusBadge>
-                        <StatusBadge tone={fundingAwardRiskFlagTone(award.risk_flag)}>
-                          {formatFundingAwardRiskFlagLabel(award.risk_flag)}
-                        </StatusBadge>
-                        {award.program ? <StatusBadge tone="info">{award.program.title}</StatusBadge> : null}
-                      </div>
+                {fundingAwards.map((award) => {
+                  const awardInvoiceSummary = invoiceSummaryByFundingAwardId.get(award.id);
 
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title">{award.title}</h3>
-                          <p className="module-record-stamp">Updated {fmtDateTime(award.updated_at)}</p>
+                  return (
+                    <div key={award.id} className="module-record-row">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={fundingAwardMatchPostureTone(award.match_posture)}>
+                            {formatFundingAwardMatchPostureLabel(award.match_posture)}
+                          </StatusBadge>
+                          <StatusBadge tone={fundingAwardSpendingStatusTone(award.spending_status)}>
+                            {formatFundingAwardSpendingStatusLabel(award.spending_status)}
+                          </StatusBadge>
+                          <StatusBadge tone={fundingAwardRiskFlagTone(award.risk_flag)}>
+                            {formatFundingAwardRiskFlagLabel(award.risk_flag)}
+                          </StatusBadge>
+                          {award.program ? <StatusBadge tone="info">{award.program.title}</StatusBadge> : null}
                         </div>
-                        <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
-                      </div>
 
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">Awarded {fmtCurrency(award.awarded_amount)}</span>
-                        <span className="module-record-chip">Match {fmtCurrency(award.match_amount)}</span>
-                        <span className="module-record-chip">Obligation {fmtDateTime(award.obligation_due_at)}</span>
-                        <span className="module-record-chip">Opportunity {award.opportunity?.title ?? "Not linked"}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title">{award.title}</h3>
+                            <p className="module-record-stamp">Updated {fmtDateTime(award.updated_at)}</p>
+                          </div>
+                          <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
+                        </div>
+
+                        <div className="module-record-meta">
+                          <span className="module-record-chip">Awarded {fmtCurrency(award.awarded_amount)}</span>
+                          <span className="module-record-chip">Match {fmtCurrency(award.match_amount)}</span>
+                          <span className="module-record-chip">Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)}</span>
+                          <span className="module-record-chip">Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)}</span>
+                          <span className="module-record-chip">Obligation {fmtDateTime(award.obligation_due_at)}</span>
+                          <span className="module-record-chip">Opportunity {award.opportunity?.title ?? "Not linked"}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -1803,6 +1831,7 @@ export default async function ProjectDetailPage({
                       <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
                       <StatusBadge tone="info">{titleize(invoice.billing_basis)}</StatusBadge>
                       <StatusBadge tone="neutral">{titleize(invoice.supporting_docs_status)}</StatusBadge>
+                      {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1816,6 +1845,7 @@ export default async function ProjectDetailPage({
                     <div className="module-record-meta">
                       {invoice.invoice_date ? <span className="module-record-chip">Invoice {fmtDateTime(invoice.invoice_date)}</span> : null}
                       {invoice.due_date ? <span className="module-record-chip">Due {fmtDateTime(invoice.due_date)}</span> : null}
+                      {invoice.fundingAward ? <span className="module-record-chip">Funding award {invoice.fundingAward.title}</span> : null}
                     </div>
                   </div>
                 </div>

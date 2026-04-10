@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,15 +17,23 @@ type ProjectOption = {
   name: string;
 };
 
+type FundingAwardOption = {
+  id: string;
+  title: string;
+  projectId: string | null;
+};
+
 type InvoiceRecordComposerProps = {
   workspaceId: string;
   projects: ProjectOption[];
+  fundingAwards?: FundingAwardOption[];
   canWrite: boolean;
 };
 
-export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: InvoiceRecordComposerProps) {
+export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [], canWrite }: InvoiceRecordComposerProps) {
   const router = useRouter();
   const [projectId, setProjectId] = useState("");
+  const [fundingAwardId, setFundingAwardId] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [consultantName, setConsultantName] = useState("Nat Ford");
   const [billingBasis, setBillingBasis] = useState("time_and_materials");
@@ -54,6 +62,16 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
     () => computeNetInvoiceAmount(amountValue, retentionAmountPreview, retentionPercentValue),
     [amountValue, retentionAmountPreview, retentionPercentValue]
   );
+  const visibleFundingAwards = useMemo(
+    () => fundingAwards.filter((award) => !projectId || !award.projectId || award.projectId === projectId),
+    [fundingAwards, projectId]
+  );
+
+  useEffect(() => {
+    if (fundingAwardId && !visibleFundingAwards.some((award) => award.id === fundingAwardId)) {
+      setFundingAwardId("");
+    }
+  }, [fundingAwardId, visibleFundingAwards]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,6 +87,7 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
         body: JSON.stringify({
           workspaceId,
           projectId: projectId || undefined,
+          fundingAwardId: fundingAwardId || undefined,
           invoiceNumber,
           consultantName,
           billingBasis,
@@ -92,6 +111,7 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
       }
 
       setProjectId("");
+      setFundingAwardId("");
       setInvoiceNumber("");
       setConsultantName("Nat Ford");
       setBillingBasis("time_and_materials");
@@ -152,7 +172,7 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
           </p>
 
           <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="invoice-number" className="text-sm font-medium">
                   Invoice number
@@ -168,6 +188,19 @@ export function InvoiceRecordComposer({ workspaceId, projects, canWrite }: Invoi
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="invoice-funding-award" className="text-sm font-medium">
+                  Funding award
+                </label>
+                <select id="invoice-funding-award" className="module-select" value={fundingAwardId} onChange={(event) => setFundingAwardId(event.target.value)}>
+                  <option value="">No linked funding award</option>
+                  {visibleFundingAwards.map((award) => (
+                    <option key={award.id} value={award.id}>
+                      {award.title}
                     </option>
                   ))}
                 </select>

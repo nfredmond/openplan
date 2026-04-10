@@ -27,7 +27,7 @@ describe("InvoiceRecordComposer", () => {
 
     const grossAmountInput = screen.getByLabelText("Gross amount");
     const retentionPercentInput = screen.getByLabelText("Retention %");
-    const previewCard = screen.getByText("Net request preview").closest("div");
+    const previewCard = screen.getByText("Net request preview").closest("aside");
 
     expect(previewCard).not.toBeNull();
     const preview = within(previewCard as HTMLElement);

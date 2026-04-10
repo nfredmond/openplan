@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 const createBillingInvoiceSchema = z.object({
   workspaceId: z.string().uuid(),
   projectId: z.string().uuid().optional(),
+  fundingAwardId: z.string().uuid().optional(),
   invoiceNumber: z.string().trim().min(1).max(120),
   consultantName: z.string().trim().max(160).optional(),
   billingBasis: z.enum(["lump_sum", "time_and_materials", "cost_plus", "milestone", "progress_payment"]).optional(),
@@ -91,6 +92,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let effectiveProjectId = parsed.data.projectId ?? null;
+    if (parsed.data.fundingAwardId) {
+      const { data: fundingAward, error: fundingAwardError } = await supabase
+        .from("funding_awards")
+        .select("id, workspace_id, project_id")
+        .eq("id", parsed.data.fundingAwardId)
+        .single();
+
+      if (fundingAwardError || !fundingAward || fundingAward.workspace_id !== parsed.data.workspaceId) {
+        audit.warn("funding_award_workspace_mismatch", {
+          workspaceId: parsed.data.workspaceId,
+          fundingAwardId: parsed.data.fundingAwardId,
+          message: fundingAwardError?.message ?? null,
+        });
+        return NextResponse.json({ error: "Funding award is not available in the requested workspace" }, { status: 400 });
+      }
+
+      if (effectiveProjectId && fundingAward.project_id && effectiveProjectId !== fundingAward.project_id) {
+        return NextResponse.json({ error: "Funding award must match the selected project" }, { status: 400 });
+      }
+
+      effectiveProjectId = effectiveProjectId ?? fundingAward.project_id ?? null;
+    }
+
     const amount = parsed.data.amount;
     const retentionPercent = parsed.data.retentionPercent ?? 0;
     const retentionAmount = computeRetentionAmount(amount, retentionPercent);
@@ -100,7 +125,8 @@ export async function POST(request: NextRequest) {
       .from("billing_invoice_records")
       .insert({
         workspace_id: parsed.data.workspaceId,
-        project_id: parsed.data.projectId ?? null,
+        project_id: effectiveProjectId,
+        funding_award_id: parsed.data.fundingAwardId ?? null,
         invoice_number: parsed.data.invoiceNumber,
         consultant_name: parsed.data.consultantName?.trim() || null,
         billing_basis: parsed.data.billingBasis ?? "time_and_materials",
@@ -120,7 +146,7 @@ export async function POST(request: NextRequest) {
         created_by: user.id,
       })
       .select(
-        "id, workspace_id, project_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
+        "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
       )
       .single();
 

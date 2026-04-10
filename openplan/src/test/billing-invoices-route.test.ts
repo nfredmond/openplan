@@ -14,6 +14,10 @@ const projectsSingleMock = vi.fn();
 const projectsEqMock = vi.fn(() => ({ single: projectsSingleMock }));
 const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));
 
+const fundingAwardsSingleMock = vi.fn();
+const fundingAwardsEqMock = vi.fn(() => ({ single: fundingAwardsSingleMock }));
+const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
+
 const billingInvoicesSingleMock = vi.fn();
 const billingInvoicesSelectMock = vi.fn(() => ({ single: billingInvoicesSingleMock }));
 const billingInvoicesInsertMock = vi.fn(() => ({ select: billingInvoicesSelectMock }));
@@ -29,6 +33,10 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "billing_invoice_records") {
     return { insert: billingInvoicesInsertMock };
+  }
+
+  if (table === "funding_awards") {
+    return { select: fundingAwardsSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -79,6 +87,15 @@ describe("POST /api/billing/invoices", () => {
       data: {
         id: "11111111-1111-4111-8111-111111111111",
         workspace_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      },
+      error: null,
+    });
+
+    fundingAwardsSingleMock.mockResolvedValue({
+      data: {
+        id: "77777777-7777-4777-8777-777777777777",
+        workspace_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        project_id: "11111111-1111-4111-8111-111111111111",
       },
       error: null,
     });
@@ -179,5 +196,24 @@ describe("POST /api/billing/invoices", () => {
         net_amount: 11400,
       },
     });
+  });
+
+  it("links an invoice to a funding award and inherits the award project when needed", async () => {
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        fundingAwardId: "77777777-7777-4777-8777-777777777777",
+        invoiceNumber: "OP-2026-002",
+        amount: 5000,
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project_id: "11111111-1111-4111-8111-111111111111",
+        funding_award_id: "77777777-7777-4777-8777-777777777777",
+      })
+    );
   });
 });

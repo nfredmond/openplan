@@ -91,6 +91,48 @@ function noticeClass(tone: "info" | "success" | "warning") {
   return `border-l-2 px-4 py-3 text-sm ${toneMap[tone]}`;
 }
 
+type FundingAwardListRow = {
+  id: string;
+  project_id: string | null;
+  title: string;
+};
+
+type InvoiceRegisterRow = {
+  id: string;
+  project_id: string | null;
+  funding_award_id: string | null;
+  invoice_number: string;
+  consultant_name: string | null;
+  billing_basis: string;
+  status: string;
+  invoice_date: string | null;
+  due_date: string | null;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  net_amount: number | string | null;
+  supporting_docs_status: string;
+  submitted_to: string | null;
+  caltrans_posture: string;
+  notes: string | null;
+  created_at: string | null;
+  funding_awards:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
+};
+
+function normalizeJoin<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
 export default async function BillingPage({
   searchParams,
 }: {
@@ -223,17 +265,30 @@ export default async function BillingPage({
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
 
+  const fundingAwardsResult = await supabase
+    .from("funding_awards")
+    .select("id, project_id, title")
+    .eq("workspace_id", workspaceId)
+    .order("updated_at", { ascending: false });
+
   const invoiceRecordsResult = await supabase
     .from("billing_invoice_records")
     .select(
-      "id, project_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
+      "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)"
     )
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false })
     .limit(20);
 
   const invoiceRegisterPending = looksLikePendingSchema(invoiceRecordsResult.error?.message);
-  const invoiceRecords = invoiceRegisterPending ? [] : (invoiceRecordsResult.data ?? []);
+  const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
+  const workspaceFundingAwards = fundingAwardsPending ? [] : ((fundingAwardsResult.data ?? []) as FundingAwardListRow[]);
+  const invoiceRecords = invoiceRegisterPending
+    ? []
+    : ((invoiceRecordsResult.data ?? []) as InvoiceRegisterRow[]).map((invoice) => ({
+        ...invoice,
+        fundingAward: normalizeJoin(invoice.funding_awards),
+      }));
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
@@ -414,7 +469,12 @@ export default async function BillingPage({
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <InvoiceRecordComposer workspaceId={workspaceId} projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))} canWrite={canWriteInvoices} />
+          <InvoiceRecordComposer
+            workspaceId={workspaceId}
+            projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))}
+            fundingAwards={workspaceFundingAwards.map((award) => ({ id: award.id, title: award.title, projectId: award.project_id }))}
+            canWrite={canWriteInvoices}
+          />
 
           <article className={panelClass()}>
             <div className="flex items-start gap-3 border-b border-border/60 pb-4">
@@ -476,6 +536,7 @@ export default async function BillingPage({
                     <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
                     <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
                     <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
+                    {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
                     <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
                       {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
                     </p>
@@ -503,6 +564,7 @@ export default async function BillingPage({
                     {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
                     {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
                     {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
+                    {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
                   </div>
                 </li>
               ))}
