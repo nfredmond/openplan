@@ -10,7 +10,7 @@ import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-pack
 import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
 import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
+import { buildProjectFundingStackSummary, projectFundingReimbursementTone } from "@/lib/projects/funding";
 import {
   formatReportStatusLabel,
   getReportNavigationHref,
@@ -82,6 +82,17 @@ type FundingOpportunityRow = {
   decision_state: string;
   opportunity_status: string;
   expected_award_amount: number | string | null;
+};
+
+type BillingInvoiceRow = {
+  project_id: string;
+  funding_award_id: string | null;
+  status: string;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  net_amount: number | string | null;
+  due_date: string | null;
 };
 
 type RtpPacketReportRow = {
@@ -474,7 +485,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
   const linkedProjectIds = [...new Set(projectRtpLinks.map((link) => link.project_id))];
 
-  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -493,6 +504,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .select("project_id, decision_state, opportunity_status, expected_award_amount")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("billing_invoice_records")
+          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -504,9 +521,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
+  const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
+    ? []
+    : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
   const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
+  const fundingInvoicesByProjectId = new Map<string, BillingInvoiceRow[]>();
   for (const award of fundingAwards) {
     const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
     current.push(award);
@@ -516,6 +537,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
     current.push(opportunity);
     fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
+  }
+  for (const invoice of billingInvoices) {
+    if (!invoice.funding_award_id) continue;
+    const current = fundingInvoicesByProjectId.get(invoice.project_id) ?? [];
+    current.push(invoice);
+    fundingInvoicesByProjectId.set(invoice.project_id, current);
   }
 
   const linksByCycleId = new Map<string, ProjectRtpLinkRow[]>();
@@ -624,7 +651,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         buildProjectFundingStackSummary(
           fundingProfileByProjectId.get(link.project_id) ?? null,
           fundingAwardsByProjectId.get(link.project_id) ?? [],
-          fundingOpportunitiesByProjectId.get(link.project_id) ?? []
+          fundingOpportunitiesByProjectId.get(link.project_id) ?? [],
+          fundingInvoicesByProjectId.get(link.project_id) ?? []
         )
       );
       const packetAttention = !packetReport
@@ -648,6 +676,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ).length,
         unfundedProjectCount: cycleFundingSummaries.filter(
           (summary) => summary.pipelineStatus === "unfunded" || summary.pipelineStatus === "partially_covered"
+        ).length,
+        paidReimbursementAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.paidReimbursementAmount,
+          0
+        ),
+        outstandingReimbursementAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.outstandingReimbursementAmount,
+          0
+        ),
+        uninvoicedAwardAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.uninvoicedAwardAmount,
+          0
+        ),
+        reimbursementInFlightCount: cycleFundingSummaries.filter(
+          (summary) => summary.reimbursementStatus === "in_review"
         ).length,
         packetReport,
         packetFreshness,
@@ -717,6 +760,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const fundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.fundedProjectCount, 0);
   const likelyCoveredProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.likelyCoveredProjectCount, 0);
   const unfundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.unfundedProjectCount, 0);
+  const paidReimbursementTotal = typedCycles.reduce((sum, cycle) => sum + cycle.paidReimbursementAmount, 0);
+  const outstandingReimbursementTotal = typedCycles.reduce(
+    (sum, cycle) => sum + cycle.outstandingReimbursementAmount,
+    0
+  );
+  const uninvoicedAwardTotal = typedCycles.reduce((sum, cycle) => sum + cycle.uninvoicedAwardAmount, 0);
   const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
   const outpacedQueueTraceCount = typedCycles.filter((cycle) => cycle.packetQueueTraceState.label === "Outpaced by source").length;
   const latestQueueActionAt = typedCycles
@@ -782,7 +831,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             <div className="module-summary-card">
               <p className="module-summary-label">Portfolio funding</p>
               <p className="module-summary-value">{fundedProjectCount}/{linkedProjectCount}</p>
-              <p className="module-summary-detail">{likelyCoveredProjectCount} more look coverable from pursued funding, while {unfundedProjectCount} still carry a remaining gap.</p>
+              <p className="module-summary-detail">
+                {likelyCoveredProjectCount} more look coverable from pursued funding, {unfundedProjectCount} still carry a gap, and linked award invoices show {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(paidReimbursementTotal)} paid, {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(outstandingReimbursementTotal)} outstanding, and {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(uninvoicedAwardTotal)} not yet invoiced.
+              </p>
             </div>
           </div>
         </article>
@@ -1058,6 +1109,39 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       <div className="module-metric-card">
                         <p className="module-metric-label">Unfunded</p>
                         <p className="module-metric-value text-sm">{cycle.unfundedProjectCount}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Paid reimbursements</p>
+                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.paidReimbursementAmount)}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Outstanding requests</p>
+                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.outstandingReimbursementAmount)}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Uninvoiced awards</p>
+                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.uninvoicedAwardAmount)}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Reimbursement traceability
+                          </p>
+                          <p className="mt-2 text-sm font-medium">
+                            {cycle.reimbursementInFlightCount > 0
+                              ? `${cycle.reimbursementInFlightCount} linked project${cycle.reimbursementInFlightCount === 1 ? "" : "s"} currently have reimbursement requests in flight.`
+                              : "No linked project reimbursement requests are currently in flight."}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Award-linked invoices now show how much of each RTP cycle’s committed funding has already been paid, is still awaiting payment, or has not yet been invoiced.
+                          </p>
+                        </div>
+                        <StatusBadge tone={projectFundingReimbursementTone(cycle.reimbursementInFlightCount > 0 ? "in_review" : "not_started")}>
+                          {cycle.reimbursementInFlightCount > 0 ? "Requests in flight" : "No requests in flight"}
+                        </StatusBadge>
                       </div>
                     </div>
 

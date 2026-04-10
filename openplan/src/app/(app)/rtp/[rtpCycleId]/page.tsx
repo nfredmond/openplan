@@ -9,7 +9,11 @@ import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
-import { buildProjectFundingStackSummary, projectFundingStackTone } from "@/lib/projects/funding";
+import {
+  buildProjectFundingStackSummary,
+  projectFundingReimbursementTone,
+  projectFundingStackTone,
+} from "@/lib/projects/funding";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -92,6 +96,17 @@ type FundingOpportunityRow = {
   decision_state: string;
   opportunity_status: string;
   expected_award_amount: number | string | null;
+};
+
+type BillingInvoiceRow = {
+  project_id: string;
+  funding_award_id: string | null;
+  status: string;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  net_amount: number | string | null;
+  due_date: string | null;
 };
 
 type ProjectRtpLinkRow = {
@@ -233,7 +248,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       }));
 
   const linkedProjectIds = projectLinks.map((link) => link.project_id);
-  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -252,6 +267,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           .select("project_id, decision_state, opportunity_status, expected_award_amount")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("billing_invoice_records")
+          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -263,9 +284,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
+  const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
+    ? []
+    : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
   const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
+  const fundingInvoicesByProjectId = new Map<string, BillingInvoiceRow[]>();
   for (const award of fundingAwards) {
     const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
     current.push(award);
@@ -275,6 +300,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
     current.push(opportunity);
     fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
+  }
+  for (const invoice of billingInvoices) {
+    if (!invoice.funding_award_id) continue;
+    const current = fundingInvoicesByProjectId.get(invoice.project_id) ?? [];
+    current.push(invoice);
+    fundingInvoicesByProjectId.set(invoice.project_id, current);
   }
 
   const engagementCampaigns = looksLikePendingSchema(campaignsResult.error?.message)
@@ -313,7 +344,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     fundingStack: buildProjectFundingStackSummary(
       fundingProfileByProjectId.get(link.project_id) ?? null,
       fundingAwardsByProjectId.get(link.project_id) ?? [],
-      fundingOpportunitiesByProjectId.get(link.project_id) ?? []
+      fundingOpportunitiesByProjectId.get(link.project_id) ?? [],
+      fundingInvoicesByProjectId.get(link.project_id) ?? []
     ),
   }));
 
@@ -324,6 +356,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const unfundedProjectCount = projectLinksWithFunding.filter(
     (link) => link.fundingStack.pipelineStatus === "unfunded" || link.fundingStack.pipelineStatus === "partially_covered"
   ).length;
+  const paidReimbursementTotal = projectLinksWithFunding.reduce(
+    (sum, link) => sum + link.fundingStack.paidReimbursementAmount,
+    0
+  );
+  const outstandingReimbursementTotal = projectLinksWithFunding.reduce(
+    (sum, link) => sum + link.fundingStack.outstandingReimbursementAmount,
+    0
+  );
+  const uninvoicedAwardTotal = projectLinksWithFunding.reduce(
+    (sum, link) => sum + link.fundingStack.uninvoicedAwardAmount,
+    0
+  );
 
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
@@ -593,7 +637,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               />
             ) : (
               <div className="space-y-3">
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Funded</p>
                     <p className="module-metric-value text-sm">{fundedProjectCount}</p>
@@ -609,6 +653,21 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
                     <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
                   </div>
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Paid reimbursements</p>
+                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(paidReimbursementTotal)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
+                  </div>
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Outstanding requests</p>
+                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(outstandingReimbursementTotal)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
+                  </div>
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Uninvoiced awards</p>
+                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(uninvoicedAwardTotal)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
+                  </div>
                 </div>
 
                 {projectLinksWithFunding.map((link) => {
@@ -620,6 +679,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                           {formatRtpPortfolioRoleLabel(link.portfolio_role)}
                         </StatusBadge>
                         <StatusBadge tone={projectFundingStackTone(link.fundingStack.pipelineStatus)}>{link.fundingStack.pipelineLabel}</StatusBadge>
+                        <StatusBadge tone={projectFundingReimbursementTone(link.fundingStack.reimbursementStatus)}>
+                          {link.fundingStack.reimbursementLabel}
+                        </StatusBadge>
                         {project?.status ? (
                           <StatusBadge tone={projectStatusTone(project.status)}>{formatProjectStatusLabel(project.status)}</StatusBadge>
                         ) : null}
@@ -634,6 +696,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         <span className="module-record-chip">Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)}</span>
                         <span className="module-record-chip">Likely {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.likelyFundingAmount)}</span>
                         <span className="module-record-chip">Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)}</span>
+                        <span className="module-record-chip">Paid {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.paidReimbursementAmount)}</span>
+                        <span className="module-record-chip">Outstanding {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.outstandingReimbursementAmount)}</span>
+                        <span className="module-record-chip">Uninvoiced {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.uninvoicedAwardAmount)}</span>
                         {link.fundingStack.awardRiskCount > 0 ? (
                           <span className="module-record-chip">{link.fundingStack.awardRiskCount} award risk</span>
                         ) : null}

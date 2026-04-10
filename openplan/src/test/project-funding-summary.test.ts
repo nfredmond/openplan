@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildProjectFundingStackSummary, projectFundingStackTone } from "@/lib/projects/funding";
+import {
+  buildProjectFundingStackSummary,
+  projectFundingReimbursementTone,
+  projectFundingStackTone,
+} from "@/lib/projects/funding";
 
 describe("project funding stack summary", () => {
   it("marks a project funded when awards meet the target need", () => {
@@ -8,6 +12,11 @@ describe("project funding stack summary", () => {
       [
         { awarded_amount: 1_500_000, match_amount: 150_000, risk_flag: "none" },
         { awarded_amount: 500_000, match_amount: 100_000, risk_flag: "watch" },
+      ],
+      [],
+      [
+        { status: "paid", amount: 900_000, retention_percent: 0, retention_amount: 0, due_date: null },
+        { status: "submitted", amount: 300_000, retention_percent: 0, retention_amount: 0, due_date: null },
       ]
     );
 
@@ -19,8 +28,14 @@ describe("project funding stack summary", () => {
       committedMatchAmount: 250_000,
       remainingMatchGap: 0,
       awardRiskCount: 1,
+      requestedReimbursementAmount: 1_200_000,
+      paidReimbursementAmount: 900_000,
+      outstandingReimbursementAmount: 300_000,
+      uninvoicedAwardAmount: 800_000,
+      reimbursementStatus: "in_review",
     });
     expect(projectFundingStackTone(summary.status)).toBe("success");
+    expect(projectFundingReimbursementTone(summary.reimbursementStatus)).toBe("info");
   });
 
   it("marks a project partially funded when a gap remains", () => {
@@ -69,5 +84,37 @@ describe("project funding stack summary", () => {
       pursuedOpportunityCount: 2,
     });
     expect(projectFundingStackTone(summary.pipelineStatus)).toBe("info");
+  });
+
+  it("marks reimbursement as paid when linked paid invoices fully cover committed awards", () => {
+    const summary = buildProjectFundingStackSummary(
+      { funding_need_amount: 500_000 },
+      [{ awarded_amount: 500_000, match_amount: 0, risk_flag: "none" }],
+      [],
+      [{ status: "paid", amount: 500_000, retention_percent: 0, retention_amount: 0, due_date: null }]
+    );
+
+    expect(summary).toMatchObject({
+      reimbursementStatus: "paid",
+      requestedReimbursementAmount: 500_000,
+      paidReimbursementAmount: 500_000,
+      uninvoicedAwardAmount: 0,
+    });
+    expect(projectFundingReimbursementTone(summary.reimbursementStatus)).toBe("success");
+  });
+
+  it("marks reimbursement as not started when awards exist but no linked invoices do", () => {
+    const summary = buildProjectFundingStackSummary(
+      { funding_need_amount: 750_000 },
+      [{ awarded_amount: 300_000, match_amount: 0, risk_flag: "none" }],
+      []
+    );
+
+    expect(summary).toMatchObject({
+      reimbursementStatus: "not_started",
+      requestedReimbursementAmount: 0,
+      uninvoicedAwardAmount: 300_000,
+    });
+    expect(projectFundingReimbursementTone(summary.reimbursementStatus)).toBe("warning");
   });
 });

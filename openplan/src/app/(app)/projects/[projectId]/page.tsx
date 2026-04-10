@@ -25,7 +25,11 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
-import { buildProjectFundingStackSummary, projectFundingStackTone } from "@/lib/projects/funding";
+import {
+  buildProjectFundingStackSummary,
+  projectFundingReimbursementTone,
+  projectFundingStackTone,
+} from "@/lib/projects/funding";
 import {
   formatFundingAwardMatchPostureLabel,
   formatFundingAwardRiskFlagLabel,
@@ -698,7 +702,13 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
-  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards, fundingOpportunities);
+  const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
+  const fundingStackSummary = buildProjectFundingStackSummary(
+    projectFundingProfile,
+    fundingAwards,
+    fundingOpportunities,
+    awardLinkedProjectInvoices
+  );
   const fundingNeedAmount = fundingStackSummary.fundingNeedAmount;
   const committedFundingAmount = fundingStackSummary.committedFundingAmount;
   const committedMatchAmount = fundingStackSummary.committedMatchAmount;
@@ -1436,7 +1446,7 @@ export default async function ProjectDetailPage({
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 mt-5">
+            <div className="grid gap-4 md:grid-cols-3 mt-5">
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
                 <div className="mt-2">
@@ -1451,6 +1461,24 @@ export default async function ProjectDetailPage({
                   {fundingStackSummary.hasTargetNeed
                     ? `${fmtCurrency(committedFundingAmount)} committed, ${fmtCurrency(likelyFundingAmount)} likely, leaving ${fmtCurrency(remainingFundingGap)} still unfunded against a ${fmtCurrency(fundingNeedAmount)} target need.`
                     : fundingStackSummary.pipelineReason}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reimbursement posture</p>
+                <div className="mt-2">
+                  <StatusBadge tone={projectFundingReimbursementTone(fundingStackSummary.reimbursementStatus)}>
+                    {fundingStackSummary.reimbursementLabel}
+                  </StatusBadge>
+                </div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">
+                  {committedFundingAmount > 0
+                    ? `${Math.round((fundingStackSummary.reimbursementCoverageRatio ?? 0) * 100)}% of committed awards invoiced`
+                    : "No committed awards yet"}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {committedFundingAmount > 0
+                    ? `${fmtCurrency(fundingStackSummary.requestedReimbursementAmount)} requested on linked award invoices, ${fmtCurrency(fundingStackSummary.paidReimbursementAmount)} paid, ${fmtCurrency(fundingStackSummary.outstandingReimbursementAmount)} outstanding, and ${fmtCurrency(fundingStackSummary.uninvoicedAwardAmount)} still not yet invoiced.`
+                    : fundingStackSummary.reimbursementReason}
                 </p>
               </div>
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
