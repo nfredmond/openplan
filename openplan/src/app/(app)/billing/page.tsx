@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
 import { BillingCheckoutLauncher } from "@/components/billing/billing-checkout-launcher";
+import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -566,6 +567,19 @@ export default async function BillingPage({
                     {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
                     {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
                   </div>
+
+                  <InvoiceFundingAwardLinker
+                    invoiceId={invoice.id}
+                    workspaceId={workspaceId}
+                    projectId={invoice.project_id}
+                    currentFundingAwardId={invoice.funding_award_id}
+                    fundingAwards={workspaceFundingAwards.map((award) => ({
+                      id: award.id,
+                      title: award.title,
+                      projectId: award.project_id,
+                    }))}
+                    canWrite={canWriteInvoices}
+                  />
                 </li>
               ))}
             </ul>
