@@ -29,6 +29,7 @@ const patchFundingOpportunitySchema = z
     agencyName: z.union([z.string().trim().max(160), z.null()]).optional(),
     ownerLabel: z.union([z.string().trim().max(160), z.null()]).optional(),
     cadenceLabel: z.union([z.string().trim().max(160), z.null()]).optional(),
+    expectedAwardAmount: z.union([z.number().min(0), z.null()]).optional(),
     opensAt: z.union([z.string().datetime(), z.null()]).optional(),
     closesAt: z.union([z.string().datetime(), z.null()]).optional(),
     decisionDueAt: z.union([z.string().datetime(), z.null()]).optional(),
@@ -99,7 +100,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const updates: Record<string, string | null> = {};
+    const updates: Record<string, string | number | null> = {};
 
     if (parsed.data.title !== undefined) updates.title = parsed.data.title.trim();
     if (parsed.data.status !== undefined) updates.opportunity_status = parsed.data.status;
@@ -107,6 +108,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.agencyName !== undefined) updates.agency_name = parsed.data.agencyName?.trim() || null;
     if (parsed.data.ownerLabel !== undefined) updates.owner_label = parsed.data.ownerLabel?.trim() || null;
     if (parsed.data.cadenceLabel !== undefined) updates.cadence_label = parsed.data.cadenceLabel?.trim() || null;
+    if (parsed.data.expectedAwardAmount !== undefined) updates.expected_award_amount = parsed.data.expectedAwardAmount;
     if (parsed.data.opensAt !== undefined) updates.opens_at = parsed.data.opensAt;
     if (parsed.data.closesAt !== undefined) updates.closes_at = parsed.data.closesAt;
     if (parsed.data.decisionDueAt !== undefined) updates.decision_due_at = parsed.data.decisionDueAt;
@@ -128,7 +130,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .update(updates)
       .eq("id", access.opportunity.id)
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
       )
       .single();
 

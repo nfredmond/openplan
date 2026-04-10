@@ -53,6 +53,7 @@ type FundingOpportunityRow = {
   agency_name?: string | null;
   owner_label?: string | null;
   cadence_label?: string | null;
+  expected_award_amount?: number | string | null;
   opens_at?: string | null;
   closes_at?: string | null;
   decision_due_at?: string | null;
@@ -133,7 +134,7 @@ export async function loadFundingOpportunityAccess(
   const { data: opportunity, error: opportunityError } = (await client
     .from("funding_opportunities")
     .select(
-      "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
+      "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
     )
     .eq("id", opportunityId)
     .maybeSingle()) as Awaited<{ data: FundingOpportunityRow | null; error: QueryError }>;

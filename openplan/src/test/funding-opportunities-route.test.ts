@@ -103,9 +103,11 @@ describe("/api/funding-opportunities", () => {
           project_id: PROJECT_ID,
           title: "2027 ATP countywide active transportation call",
           opportunity_status: "open",
+          decision_state: "pursue",
           agency_name: "Caltrans",
           owner_label: "Grant lead",
           cadence_label: "Biennial",
+          expected_award_amount: 750000,
           opens_at: "2026-04-10T16:00:00.000Z",
           closes_at: "2026-06-14T23:59:00.000Z",
           decision_due_at: "2026-09-10T16:00:00.000Z",
@@ -181,6 +183,8 @@ describe("/api/funding-opportunities", () => {
         byStatus: { open: 1 },
         openCount: 1,
         upcomingCount: 0,
+        pursueCount: 1,
+        likelyAmount: 750000,
       },
     });
   });
@@ -193,6 +197,7 @@ describe("/api/funding-opportunities", () => {
         title: "2027 ATP countywide active transportation call",
         status: "upcoming",
         agencyName: "Caltrans",
+        expectedAwardAmount: 500000,
       })
     );
 
@@ -208,6 +213,7 @@ describe("/api/funding-opportunities", () => {
         title: "2027 ATP countywide active transportation call",
         opportunity_status: "upcoming",
         agency_name: "Caltrans",
+        expected_award_amount: 500000,
       })
     );
   });

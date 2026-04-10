@@ -94,6 +94,7 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
     const response = await patchFundingOpportunity(
       jsonRequest({
         decisionState: "skip",
+        expectedAwardAmount: 325000,
         fitNotes: "Scoring fit is weak.",
         readinessNotes: "Project definition is not mature enough.",
         decisionRationale: "Out of cycle and below threshold for this package.",
@@ -105,6 +106,7 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
     expect(fundingOpportunitiesUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
         decision_state: "skip",
+        expected_award_amount: 325000,
         fit_notes: "Scoring fit is weak.",
         readiness_notes: "Project definition is not mature enough.",
         decision_rationale: "Out of cycle and below threshold for this package.",

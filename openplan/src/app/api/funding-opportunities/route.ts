@@ -35,6 +35,7 @@ const createFundingOpportunitySchema = z.object({
   agencyName: z.string().trim().max(160).optional(),
   ownerLabel: z.string().trim().max(160).optional(),
   cadenceLabel: z.string().trim().max(160).optional(),
+  expectedAwardAmount: z.number().min(0).optional(),
   opensAt: z.string().datetime().optional(),
   closesAt: z.string().datetime().optional(),
   decisionDueAt: z.string().datetime().optional(),
@@ -68,6 +69,7 @@ type FundingOpportunityRow = {
   agency_name: string | null;
   owner_label: string | null;
   cadence_label: string | null;
+  expected_award_amount: number | string | null;
   opens_at: string | null;
   closes_at: string | null;
   decision_due_at: string | null;
@@ -227,7 +229,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -277,6 +279,13 @@ export async function GET(request: NextRequest) {
       }, {}),
       openCount: opportunities.filter((item) => item.opportunity_status === "open").length,
       upcomingCount: opportunities.filter((item) => item.opportunity_status === "upcoming").length,
+      pursueCount: opportunities.filter((item) => item.decision_state === "pursue").length,
+      likelyAmount: opportunities.reduce((sum, item) => {
+        if (item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
+          return sum;
+        }
+        return sum + Number(item.expected_award_amount ?? 0);
+      }, 0),
     };
 
     audit.info("funding_opportunities_listed", {
@@ -352,6 +361,7 @@ export async function POST(request: NextRequest) {
         agency_name: parsed.data.agencyName?.trim() || null,
         owner_label: parsed.data.ownerLabel?.trim() || null,
         cadence_label: parsed.data.cadenceLabel?.trim() || null,
+        expected_award_amount: parsed.data.expectedAwardAmount ?? null,
         opens_at: parsed.data.opensAt ?? null,
         closes_at: parsed.data.closesAt ?? null,
         decision_due_at: parsed.data.decisionDueAt ?? null,
@@ -363,7 +373,7 @@ export async function POST(request: NextRequest) {
         created_by: user.id,
       })
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
       )
       .single();
 

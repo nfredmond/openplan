@@ -75,6 +75,13 @@ type FundingAwardRow = {
   obligation_due_at: string | null;
 };
 
+type FundingOpportunityRow = {
+  project_id: string;
+  decision_state: string;
+  opportunity_status: string;
+  expected_award_amount: number | string | null;
+};
+
 type RtpPacketReportRow = {
   id: string;
   rtp_cycle_id: string;
@@ -369,7 +376,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
   const linkedProjectIds = [...new Set(projectRtpLinks.map((link) => link.project_id))];
 
-  const [fundingProfilesResult, fundingAwardsResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -382,6 +389,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("funding_opportunities")
+          .select("project_id, decision_state, opportunity_status, expected_award_amount")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -390,12 +403,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
+  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+    ? []
+    : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
+  const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
   for (const award of fundingAwards) {
     const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
     current.push(award);
     fundingAwardsByProjectId.set(award.project_id, current);
+  }
+  for (const opportunity of fundingOpportunities) {
+    const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
+    current.push(opportunity);
+    fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
   }
 
   const linksByCycleId = new Map<string, ProjectRtpLinkRow[]>();
@@ -497,7 +519,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       const cycleFundingSummaries = cycleLinks.map((link) =>
         buildProjectFundingStackSummary(
           fundingProfileByProjectId.get(link.project_id) ?? null,
-          fundingAwardsByProjectId.get(link.project_id) ?? []
+          fundingAwardsByProjectId.get(link.project_id) ?? [],
+          fundingOpportunitiesByProjectId.get(link.project_id) ?? []
         )
       );
       const packetAttention = !packetReport
@@ -516,8 +539,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         constrainedProjectCount: cycleLinks.filter((link) => link.portfolio_role === "constrained").length,
         illustrativeProjectCount: cycleLinks.filter((link) => link.portfolio_role === "illustrative").length,
         fundedProjectCount: cycleFundingSummaries.filter((summary) => summary.status === "funded").length,
-        partiallyFundedProjectCount: cycleFundingSummaries.filter((summary) => summary.status === "partially_funded").length,
-        unfundedProjectCount: cycleFundingSummaries.filter((summary) => summary.status === "unfunded").length,
+        likelyCoveredProjectCount: cycleFundingSummaries.filter(
+          (summary) => summary.status !== "funded" && summary.pipelineStatus === "likely_covered"
+        ).length,
+        unfundedProjectCount: cycleFundingSummaries.filter(
+          (summary) => summary.pipelineStatus === "unfunded" || summary.pipelineStatus === "partially_covered"
+        ).length,
         packetReport,
         packetFreshness,
         packetPresetPosture,
@@ -564,7 +591,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const readyFoundationCount = typedCycles.filter((cycle) => cycle.readiness.ready).length;
   const linkedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.linkedProjectCount, 0);
   const fundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.fundedProjectCount, 0);
-  const partiallyFundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.partiallyFundedProjectCount, 0);
+  const likelyCoveredProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.likelyCoveredProjectCount, 0);
   const unfundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.unfundedProjectCount, 0);
 
   return (
@@ -609,9 +636,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               <p className="module-summary-detail">Project-to-cycle portfolio links now visible across the registry.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Funded / partial</p>
-              <p className="module-summary-value">{fundedProjectCount + partiallyFundedProjectCount}</p>
-              <p className="module-summary-detail">{unfundedProjectCount} linked project(s) still explicitly unfunded.</p>
+              <p className="module-summary-label">Portfolio funding</p>
+              <p className="module-summary-value">{fundedProjectCount}/{linkedProjectCount}</p>
+              <p className="module-summary-detail">{likelyCoveredProjectCount} more look coverable from pursued funding, while {unfundedProjectCount} still carry a remaining gap.</p>
             </div>
           </div>
         </article>
@@ -810,8 +837,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         <p className="module-metric-value text-sm">{cycle.fundedProjectCount}</p>
                       </div>
                       <div className="module-metric-card">
-                        <p className="module-metric-label">Partial</p>
-                        <p className="module-metric-value text-sm">{cycle.partiallyFundedProjectCount}</p>
+                        <p className="module-metric-label">Likely</p>
+                        <p className="module-metric-value text-sm">{cycle.likelyCoveredProjectCount}</p>
                       </div>
                       <div className="module-metric-card">
                         <p className="module-metric-label">Unfunded</p>

@@ -175,6 +175,7 @@ type FundingOpportunityRow = {
   agency_name: string | null;
   owner_label: string | null;
   cadence_label: string | null;
+  expected_award_amount: number | string | null;
   opens_at: string | null;
   closes_at: string | null;
   decision_due_at: string | null;
@@ -588,7 +589,7 @@ export default async function ProjectDetailPage({
   const fundingOpportunitiesResult = await supabase
     .from("funding_opportunities")
     .select(
-      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title)"
+      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title)"
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
@@ -681,17 +682,24 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
-  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards);
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards, fundingOpportunities);
   const fundingNeedAmount = fundingStackSummary.fundingNeedAmount;
   const committedFundingAmount = fundingStackSummary.committedFundingAmount;
   const committedMatchAmount = fundingStackSummary.committedMatchAmount;
-  const remainingFundingGap = fundingStackSummary.remainingFundingGap;
+  const likelyFundingAmount = fundingStackSummary.likelyFundingAmount;
+  const remainingFundingGap = fundingStackSummary.unfundedAfterLikelyAmount;
   const awardWatchCount = fundingStackSummary.awardRiskCount;
   const nextObligationAward = fundingAwards.find((award) => award.obligation_due_at === fundingStackSummary.nextObligationAt) ?? null;
   const pursueFundingCount = fundingOpportunities.filter((item) => item.decision_state === "pursue").length;
   const monitorFundingCount = fundingOpportunities.filter((item) => item.decision_state === "monitor").length;
   const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
   const openFundingCount = fundingOpportunities.filter((item) => item.opportunity_status === "open").length;
+  const pursuedFundingAmount = fundingOpportunities.reduce((sum, item) => {
+    if (item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
+      return sum;
+    }
+    return sum + Number(item.expected_award_amount ?? 0);
+  }, 0);
   const linkedRtpCycleCount = existingRtpLinks.length;
   const constrainedRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "constrained").length;
   const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
@@ -1373,7 +1381,7 @@ export default async function ProjectDetailPage({
           <div className="module-alert mt-5 text-sm">Funding stack and award records will appear after the funding award migrations are applied to the database.</div>
         ) : (
           <>
-            <div className="module-summary-grid cols-5 mt-5">
+            <div className="module-summary-grid cols-6 mt-5">
               <div className="module-summary-card">
                 <p className="module-summary-label">Funding need</p>
                 <p className="module-summary-value text-base leading-tight">{fmtCurrency(fundingNeedAmount)}</p>
@@ -1385,9 +1393,14 @@ export default async function ProjectDetailPage({
                 <p className="module-summary-detail">Awarded dollars already attached to this project.</p>
               </div>
               <div className="module-summary-card">
-                <p className="module-summary-label">Remaining gap</p>
+                <p className="module-summary-label">Likely pursued</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(likelyFundingAmount)}</p>
+                <p className="module-summary-detail">Expected dollars tied to opportunities currently marked pursue.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Still unfunded</p>
                 <p className="module-summary-value text-base leading-tight">{fmtCurrency(remainingFundingGap)}</p>
-                <p className="module-summary-detail">Funding need not yet covered by current award records.</p>
+                <p className="module-summary-detail">Gap still remaining after committed awards and likely pursued dollars.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Match tracked</p>
@@ -1405,17 +1418,17 @@ export default async function ProjectDetailPage({
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
                 <div className="mt-2">
-                  <StatusBadge tone={projectFundingStackTone(fundingStackSummary.status)}>{fundingStackSummary.label}</StatusBadge>
+                  <StatusBadge tone={projectFundingStackTone(fundingStackSummary.pipelineStatus)}>{fundingStackSummary.pipelineLabel}</StatusBadge>
                 </div>
                 <h3 className="mt-2 text-sm font-semibold text-foreground">
                   {fundingStackSummary.hasTargetNeed
-                    ? `${Math.round((fundingStackSummary.coverageRatio ?? 0) * 100)}% covered by committed awards`
+                    ? `${Math.round((fundingStackSummary.pipelineCoverageRatio ?? 0) * 100)}% covered by committed + likely funding`
                     : "Funding target not set yet"}
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {fundingStackSummary.hasTargetNeed
-                    ? `${fmtCurrency(committedFundingAmount)} committed against a ${fmtCurrency(fundingNeedAmount)} target need.`
-                    : fundingStackSummary.reason}
+                    ? `${fmtCurrency(committedFundingAmount)} committed, ${fmtCurrency(likelyFundingAmount)} likely, leaving ${fmtCurrency(remainingFundingGap)} still unfunded against a ${fmtCurrency(fundingNeedAmount)} target need.`
+                    : fundingStackSummary.pipelineReason}
                 </p>
               </div>
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
@@ -1493,7 +1506,7 @@ export default async function ProjectDetailPage({
           <div className="module-alert mt-5 text-sm">Funding opportunities will appear after the funding catalog migrations are applied to the database.</div>
         ) : (
           <>
-            <div className="module-summary-grid cols-5 mt-5">
+            <div className="module-summary-grid cols-6 mt-5">
               <div className="module-summary-card">
                 <p className="module-summary-label">Tracked</p>
                 <p className="module-summary-value">{fundingOpportunities.length}</p>
@@ -1508,6 +1521,11 @@ export default async function ProjectDetailPage({
                 <p className="module-summary-label">Monitor</p>
                 <p className="module-summary-value">{monitorFundingCount}</p>
                 <p className="module-summary-detail">Watchlist opportunities not yet fully committed.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Likely dollars</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(pursuedFundingAmount)}</p>
+                <p className="module-summary-detail">Expected dollars attached to pursue decisions.</p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Skip</p>
@@ -1552,6 +1570,7 @@ export default async function ProjectDetailPage({
                         <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
                         <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
                         <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
+                        <span className="module-record-chip">Likely {fmtCurrency(opportunity.expected_award_amount)}</span>
                         <span className="module-record-chip">Opens {fmtDateTime(opportunity.opens_at)}</span>
                         <span className="module-record-chip">Closes {fmtDateTime(opportunity.closes_at)}</span>
                         <span className="module-record-chip">Decision due {fmtDateTime(opportunity.decision_due_at)}</span>
@@ -1576,6 +1595,7 @@ export default async function ProjectDetailPage({
                         <FundingOpportunityDecisionControls
                           opportunityId={opportunity.id}
                           initialDecisionState={opportunity.decision_state as "monitor" | "pursue" | "skip"}
+                          initialExpectedAwardAmount={opportunity.expected_award_amount}
                           initialFitNotes={opportunity.fit_notes}
                           initialReadinessNotes={opportunity.readiness_notes}
                           initialDecisionRationale={opportunity.decision_rationale}

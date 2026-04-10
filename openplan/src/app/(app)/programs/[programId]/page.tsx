@@ -19,12 +19,14 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
+  formatFundingOpportunityDecisionLabel,
   formatFundingOpportunityStatusLabel,
   formatFiscalWindow,
   formatProgramDateTime,
   formatProgramFundingClassificationLabel,
   formatProgramStatusLabel,
   formatProgramTypeLabel,
+  fundingOpportunityDecisionTone,
   fundingOpportunityStatusTone,
   programStatusTone,
   titleizeProgramValue,
@@ -38,6 +40,16 @@ import {
 import { formatPlanStatusLabel, formatPlanTypeLabel, planStatusTone } from "@/lib/plans/catalog";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+function formatCurrency(value: number | string | null | undefined) {
+  return currencyFormatter.format(Number(value ?? 0));
+}
 
 function mergeRecords<T extends { id: string }>(
   projectItems: T[],
@@ -117,9 +129,11 @@ type FundingOpportunityDetailRow = {
   project_id: string | null;
   title: string;
   opportunity_status: string;
+  decision_state: string;
   agency_name: string | null;
   owner_label: string | null;
   cadence_label: string | null;
+  expected_award_amount: number | string | null;
   opens_at: string | null;
   closes_at: string | null;
   decision_due_at: string | null;
@@ -200,7 +214,7 @@ export default async function ProgramDetailPage({
       supabase
         .from("funding_opportunities")
         .select(
-          "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name)"
+          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name)"
         )
         .eq("program_id", program.id)
         .order("updated_at", { ascending: false }),
@@ -475,6 +489,12 @@ export default async function ProgramDetailPage({
     ...item,
     project: Array.isArray(item.projects) ? (item.projects[0] ?? null) : item.projects ?? null,
   }));
+  const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
+    if (opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
+      return sum;
+    }
+    return sum + Number(opportunity.expected_award_amount ?? 0);
+  }, 0);
 
   const readiness = buildProgramReadiness({
     cycleName: program.cycle_name,
@@ -684,6 +704,19 @@ export default async function ProgramDetailPage({
               </span>
             </div>
 
+            <div className="module-summary-grid cols-2 mt-5">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Tracked opportunities</p>
+                <p className="module-summary-value">{fundingOpportunities.length}</p>
+                <p className="module-summary-detail">Open, upcoming, and awarded opportunities tied to this cycle.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Likely dollars</p>
+                <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
+                <p className="module-summary-detail">Expected dollars attached to pursue decisions within this cycle.</p>
+              </div>
+            </div>
+
             <div className="mt-5 space-y-5">
               <FundingOpportunityCreator
                 programs={[{ id: program.id, title: program.title }]}
@@ -709,6 +742,9 @@ export default async function ProgramDetailPage({
                             <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
                               {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
                             </StatusBadge>
+                            <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
+                              {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
+                            </StatusBadge>
                             <StatusBadge tone="neutral">{opportunity.project?.name ?? "No linked project"}</StatusBadge>
                           </div>
 
@@ -724,6 +760,7 @@ export default async function ProgramDetailPage({
                               <MetaItem>Agency {opportunity.agency_name || "Not set"}</MetaItem>
                               <MetaItem>Owner {opportunity.owner_label || "Unassigned"}</MetaItem>
                               <MetaItem>Cadence {opportunity.cadence_label || "Not set"}</MetaItem>
+                              <MetaItem>Likely {formatCurrency(opportunity.expected_award_amount)}</MetaItem>
                               <MetaItem>Opens {formatProgramDateTime(opportunity.opens_at)}</MetaItem>
                               <MetaItem>Closes {formatProgramDateTime(opportunity.closes_at)}</MetaItem>
                               <MetaItem>Decision {formatProgramDateTime(opportunity.decision_due_at)}</MetaItem>

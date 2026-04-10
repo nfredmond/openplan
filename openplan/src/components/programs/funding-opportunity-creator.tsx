@@ -24,6 +24,12 @@ function toIsoDateTime(value: string): string | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
+function toOptionalNumber(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
 export function FundingOpportunityCreator({
   programs,
   projects,
@@ -47,6 +53,7 @@ export function FundingOpportunityCreator({
   const [agencyName, setAgencyName] = useState("");
   const [ownerLabel, setOwnerLabel] = useState("");
   const [cadenceLabel, setCadenceLabel] = useState("");
+  const [expectedAwardAmount, setExpectedAwardAmount] = useState("");
   const [opensAt, setOpensAt] = useState("");
   const [closesAt, setClosesAt] = useState("");
   const [decisionDueAt, setDecisionDueAt] = useState("");
@@ -73,6 +80,7 @@ export function FundingOpportunityCreator({
           agencyName: agencyName || undefined,
           ownerLabel: ownerLabel || undefined,
           cadenceLabel: cadenceLabel || undefined,
+          expectedAwardAmount: toOptionalNumber(expectedAwardAmount),
           opensAt: toIsoDateTime(opensAt),
           closesAt: toIsoDateTime(closesAt),
           decisionDueAt: toIsoDateTime(decisionDueAt),
@@ -90,6 +98,7 @@ export function FundingOpportunityCreator({
       setAgencyName("");
       setOwnerLabel("");
       setCadenceLabel("");
+      setExpectedAwardAmount("");
       setOpensAt("");
       setClosesAt("");
       setDecisionDueAt("");
@@ -196,7 +205,7 @@ export function FundingOpportunityCreator({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-1.5">
             <label htmlFor="funding-opportunity-agency" className="text-[0.82rem] font-semibold">
               Agency
@@ -231,6 +240,21 @@ export function FundingOpportunityCreator({
               placeholder="Annual cycle"
               value={cadenceLabel}
               onChange={(event) => setCadenceLabel(event.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="funding-opportunity-expected-award" className="text-[0.82rem] font-semibold">
+              Likely award amount
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="funding-opportunity-expected-award"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="250000"
+              value={expectedAwardAmount}
+              onChange={(event) => setExpectedAwardAmount(event.target.value)}
             />
           </div>
         </div>

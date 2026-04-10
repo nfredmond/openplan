@@ -87,6 +87,13 @@ type FundingAwardRow = {
   obligation_due_at: string | null;
 };
 
+type FundingOpportunityRow = {
+  project_id: string;
+  decision_state: string;
+  opportunity_status: string;
+  expected_award_amount: number | string | null;
+};
+
 type ProjectRtpLinkRow = {
   id: string;
   project_id: string;
@@ -226,7 +233,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       }));
 
   const linkedProjectIds = projectLinks.map((link) => link.project_id);
-  const [fundingProfilesResult, fundingAwardsResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -239,6 +246,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("funding_opportunities")
+          .select("project_id, decision_state, opportunity_status, expected_award_amount")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -247,12 +260,21 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
+  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+    ? []
+    : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
+  const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
   for (const award of fundingAwards) {
     const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
     current.push(award);
     fundingAwardsByProjectId.set(award.project_id, current);
+  }
+  for (const opportunity of fundingOpportunities) {
+    const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
+    current.push(opportunity);
+    fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
   }
 
   const engagementCampaigns = looksLikePendingSchema(campaignsResult.error?.message)
@@ -290,15 +312,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     ...link,
     fundingStack: buildProjectFundingStackSummary(
       fundingProfileByProjectId.get(link.project_id) ?? null,
-      fundingAwardsByProjectId.get(link.project_id) ?? []
+      fundingAwardsByProjectId.get(link.project_id) ?? [],
+      fundingOpportunitiesByProjectId.get(link.project_id) ?? []
     ),
   }));
 
   const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
-  const partiallyFundedProjectCount = projectLinksWithFunding.filter(
-    (link) => link.fundingStack.status === "partially_funded"
+  const likelyCoveredProjectCount = projectLinksWithFunding.filter(
+    (link) => link.fundingStack.status !== "funded" && link.fundingStack.pipelineStatus === "likely_covered"
   ).length;
-  const unfundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "unfunded").length;
+  const unfundedProjectCount = projectLinksWithFunding.filter(
+    (link) => link.fundingStack.pipelineStatus === "unfunded" || link.fundingStack.pipelineStatus === "partially_covered"
+  ).length;
 
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
@@ -355,7 +380,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             <div className="module-summary-card">
               <p className="module-summary-label">Funding posture</p>
               <p className="module-summary-value">{fundedProjectCount}/{projectLinks.length}</p>
-              <p className="module-summary-detail">Projects currently fully funded by recorded awards.</p>
+              <p className="module-summary-detail">{likelyCoveredProjectCount} more look coverable from pursued funding, while {unfundedProjectCount} still carry a remaining gap.</p>
             </div>
           </div>
         </article>
@@ -575,14 +600,14 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
                   </div>
                   <div className="module-metric-card">
-                    <p className="module-metric-label">Partially funded</p>
-                    <p className="module-metric-value text-sm">{partiallyFundedProjectCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Awards recorded, but a gap remains.</p>
+                    <p className="module-metric-label">Likely covered</p>
+                    <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
                   </div>
                   <div className="module-metric-card">
-                    <p className="module-metric-label">Unfunded</p>
+                    <p className="module-metric-label">Still unfunded</p>
                     <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Target need exists without committed awards.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
                   </div>
                 </div>
 
@@ -594,7 +619,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         <StatusBadge tone={rtpPortfolioRoleTone(link.portfolio_role)}>
                           {formatRtpPortfolioRoleLabel(link.portfolio_role)}
                         </StatusBadge>
-                        <StatusBadge tone={projectFundingStackTone(link.fundingStack.status)}>{link.fundingStack.label}</StatusBadge>
+                        <StatusBadge tone={projectFundingStackTone(link.fundingStack.pipelineStatus)}>{link.fundingStack.pipelineLabel}</StatusBadge>
                         {project?.status ? (
                           <StatusBadge tone={projectStatusTone(project.status)}>{formatProjectStatusLabel(project.status)}</StatusBadge>
                         ) : null}
@@ -607,7 +632,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                         <span className="module-record-chip">Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)}</span>
-                        <span className="module-record-chip">Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.remainingFundingGap)}</span>
+                        <span className="module-record-chip">Likely {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.likelyFundingAmount)}</span>
+                        <span className="module-record-chip">Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)}</span>
                         {link.fundingStack.awardRiskCount > 0 ? (
                           <span className="module-record-chip">{link.fundingStack.awardRiskCount} award risk</span>
                         ) : null}

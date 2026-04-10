@@ -13,6 +13,7 @@ import {
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
 import {
+  formatFundingOpportunityDecisionLabel,
   buildProgramReadiness,
   buildProgramWorkflowSummary,
   formatFundingOpportunityStatusLabel,
@@ -21,9 +22,20 @@ import {
   formatProgramDateTime,
   formatProgramStatusLabel,
   formatProgramTypeLabel,
+  fundingOpportunityDecisionTone,
   fundingOpportunityStatusTone,
   programStatusTone,
 } from "@/lib/programs/catalog";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+function formatCurrency(value: number | string | null | undefined) {
+  return currencyFormatter.format(Number(value ?? 0));
+}
 
 type ProgramsPageSearchParams = Promise<{
   projectId?: string;
@@ -75,9 +87,11 @@ type FundingOpportunityRow = {
   project_id: string | null;
   title: string;
   opportunity_status: string;
+  decision_state: string;
   agency_name: string | null;
   owner_label: string | null;
   cadence_label: string | null;
+  expected_award_amount: number | string | null;
   opens_at: string | null;
   closes_at: string | null;
   decision_due_at: string | null;
@@ -153,7 +167,7 @@ export default async function ProgramsPage({
     supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
       .order("updated_at", { ascending: false }),
   ]);
@@ -286,6 +300,12 @@ export default async function ProgramsPage({
   const rtipStipCount = typedPrograms.filter((program) => ["rtip", "stip"].includes(program.program_type)).length;
   const openOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "open").length;
   const upcomingOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "upcoming").length;
+  const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
+    if (opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
+      return sum;
+    }
+    return sum + Number(opportunity.expected_award_amount ?? 0);
+  }, 0);
 
   return (
     <section className="module-page">
@@ -444,7 +464,7 @@ export default async function ProgramsPage({
             </span>
           </div>
 
-          <div className="module-summary-grid cols-3 mt-5">
+          <div className="module-summary-grid cols-4 mt-5">
             <div className="module-summary-card">
               <p className="module-summary-label">Open now</p>
               <p className="module-summary-value">{openOpportunityCount}</p>
@@ -459,6 +479,11 @@ export default async function ProgramsPage({
               <p className="module-summary-label">Program-linked</p>
               <p className="module-summary-value">{fundingOpportunities.filter((item) => item.program_id).length}</p>
               <p className="module-summary-detail">Opportunities already tied to a funding cycle record.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Likely dollars</p>
+              <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
+              <p className="module-summary-detail">Expected dollars attached to pursue decisions in the shared catalog.</p>
             </div>
           </div>
 
@@ -478,6 +503,9 @@ export default async function ProgramsPage({
                       <div className="module-record-kicker">
                         <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
                           {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
+                        </StatusBadge>
+                        <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
+                          {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
                         </StatusBadge>
                         {opportunity.program ? (
                           <StatusBadge tone="info">{opportunity.program.title}</StatusBadge>
@@ -502,6 +530,7 @@ export default async function ProgramsPage({
                     <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
                     <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
                     <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
+                    <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
                     <span className="module-record-chip">Opens {formatProgramDateTime(opportunity.opens_at)}</span>
                     <span className="module-record-chip">Closes {formatProgramDateTime(opportunity.closes_at)}</span>
                     <span className="module-record-chip">Decision {formatProgramDateTime(opportunity.decision_due_at)}</span>
