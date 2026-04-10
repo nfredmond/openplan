@@ -24,6 +24,10 @@ import {
   type ReportScenarioSupabaseLike,
 } from "@/lib/reports/scenario-provenance";
 
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
+
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
@@ -102,11 +106,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: report, error: reportError } = await supabase
+    let reportLookupResult = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
+
+    if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
+      reportLookupResult = await supabase
+        .from("reports")
+        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, generated_at")
+        .eq("id", parsedParams.data.reportId)
+        .maybeSingle();
+    }
+
+    const { data: report, error: reportError } = reportLookupResult;
 
     if (reportError) {
       audit.error("report_lookup_failed", {
@@ -279,15 +293,41 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
-      const { error: reportUpdateError } = await supabase
+      const nextMetadataJson = {
+        ...(report.metadata_json && typeof report.metadata_json === "object" ? report.metadata_json : {}),
+        queueTrace: {
+          action: report.generated_at ? "refresh_artifact" : "generate_first_artifact",
+          actedAt: generatedAt,
+          actorUserId: user.id,
+          source: "reports.generate",
+          detail: report.generated_at ? "Refreshed RTP packet artifact." : "Generated first RTP packet artifact.",
+        },
+      };
+
+      let reportUpdateResult = await supabase
         .from("reports")
         .update({
           status: "generated",
           generated_at: generatedAt,
           latest_artifact_kind: "html",
           latest_artifact_url: latestArtifactUrl,
+          metadata_json: nextMetadataJson,
         })
         .eq("id", report.id);
+
+      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
+        reportUpdateResult = await supabase
+          .from("reports")
+          .update({
+            status: "generated",
+            generated_at: generatedAt,
+            latest_artifact_kind: "html",
+            latest_artifact_url: latestArtifactUrl,
+          })
+          .eq("id", report.id);
+      }
+
+      const { error: reportUpdateError } = reportUpdateResult;
 
       if (reportUpdateError) {
         audit.error("report_update_failed", {
@@ -661,15 +701,41 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
-    const { error: reportUpdateError } = await supabase
+    const nextMetadataJson = {
+      ...(report.metadata_json && typeof report.metadata_json === "object" ? report.metadata_json : {}),
+      queueTrace: {
+        action: report.generated_at ? "refresh_artifact" : "generate_first_artifact",
+        actedAt: generatedAt,
+        actorUserId: user.id,
+        source: "reports.generate",
+        detail: report.generated_at ? "Refreshed report artifact." : "Generated first report artifact.",
+      },
+    };
+
+    let reportUpdateResult = await supabase
       .from("reports")
       .update({
         status: "generated",
         generated_at: generatedAt,
         latest_artifact_kind: "html",
         latest_artifact_url: latestArtifactUrl,
+        metadata_json: nextMetadataJson,
       })
       .eq("id", report.id);
+
+    if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
+      reportUpdateResult = await supabase
+        .from("reports")
+        .update({
+          status: "generated",
+          generated_at: generatedAt,
+          latest_artifact_kind: "html",
+          latest_artifact_url: latestArtifactUrl,
+        })
+        .eq("id", report.id);
+    }
+
+    const { error: reportUpdateError } = reportUpdateResult;
 
     if (reportUpdateError) {
       audit.error("report_update_failed", {

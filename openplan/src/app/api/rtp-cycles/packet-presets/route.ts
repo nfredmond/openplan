@@ -5,6 +5,10 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createDefaultTargetedReportSections } from "@/lib/reports/catalog";
 
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
+
 const applyPacketPresetsSchema = z.object({
   cycleIds: z.array(z.string().uuid()).min(1).max(50),
 });
@@ -69,11 +73,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { data: reports, error: reportsError } = await supabase
+    const initialReportsLookupResult = await supabase
       .from("reports")
-      .select("id, rtp_cycle_id, title")
+      .select("id, rtp_cycle_id, title, metadata_json")
       .in("rtp_cycle_id", uniqueCycleIds)
       .eq("report_type", "board_packet");
+
+    const reportsLookupResult =
+      initialReportsLookupResult.error && looksLikePendingSchema(initialReportsLookupResult.error.message)
+        ? await supabase
+            .from("reports")
+            .select("id, rtp_cycle_id, title")
+            .in("rtp_cycle_id", uniqueCycleIds)
+            .eq("report_type", "board_packet")
+        : initialReportsLookupResult;
+
+    const { data: reports, error: reportsError } = reportsLookupResult;
 
     if (reportsError) {
       audit.error("reports_lookup_failed", { message: reportsError.message, code: reportsError.code ?? null });
@@ -128,6 +143,32 @@ export async function POST(request: NextRequest) {
           code: insertSectionsError.code ?? null,
         });
         return NextResponse.json({ error: "Failed to apply recommended packet presets" }, { status: 500 });
+      }
+    }
+
+    for (const report of reports ?? []) {
+      const updateResult = await supabase
+        .from("reports")
+        .update({
+          metadata_json: {
+            queueTrace: {
+              action: "reset_layout",
+              actedAt: new Date().toISOString(),
+              actorUserId: user.id,
+              source: "rtp_cycles.packet_presets",
+              detail: "Applied recommended RTP packet preset.",
+            },
+          },
+        })
+        .eq("id", report.id);
+
+      if (updateResult.error && !looksLikePendingSchema(updateResult.error.message)) {
+        audit.error("report_trace_update_failed", {
+          reportId: report.id,
+          message: updateResult.error.message,
+          code: updateResult.error.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to persist packet preset trace" }, { status: 500 });
       }
     }
 

@@ -83,6 +83,7 @@ type RtpPacketReportRow = {
   status: string;
   generated_at: string | null;
   latest_artifact_kind: string | null;
+  metadata_json?: Record<string, unknown> | null;
   updated_at: string;
 };
 
@@ -235,6 +236,68 @@ function buildPacketActivityTrace(input: {
   };
 }
 
+function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
+  if (!packetReport) {
+    return {
+      label: "No queue trace",
+      tone: "neutral" as const,
+      detail: "No packet record exists yet, so there is no recorded queue action.",
+    };
+  }
+
+  const queueTrace =
+    packetReport.metadata_json && typeof packetReport.metadata_json === "object"
+      ? (packetReport.metadata_json as { queueTrace?: Record<string, unknown> }).queueTrace
+      : null;
+
+  const action = typeof queueTrace?.action === "string" ? queueTrace.action : null;
+  const actedAt = typeof queueTrace?.actedAt === "string" ? queueTrace.actedAt : null;
+  const detail = typeof queueTrace?.detail === "string" ? queueTrace.detail : null;
+
+  if (!action) {
+    return {
+      label: "Not recorded",
+      tone: "neutral" as const,
+      detail: "This packet record has no persisted queue action trace yet.",
+    };
+  }
+
+  const actedAtLabel = actedAt ? ` ${formatRtpDateTime(actedAt)}` : "";
+
+  switch (action) {
+    case "create_record":
+      return {
+        label: "Record created",
+        tone: "info" as const,
+        detail: detail ?? `Packet record created${actedAtLabel}.`,
+      };
+    case "reset_layout":
+      return {
+        label: "Preset reset",
+        tone: "warning" as const,
+        detail: detail ?? `Packet layout preset reapplied${actedAtLabel}.`,
+      };
+    case "generate_first_artifact":
+      return {
+        label: "First artifact generated",
+        tone: "success" as const,
+        detail: detail ?? `First packet artifact generated${actedAtLabel}.`,
+      };
+    case "refresh_artifact":
+      return {
+        label: "Artifact refreshed",
+        tone: "success" as const,
+        detail: detail ?? `Packet artifact refreshed${actedAtLabel}.`,
+      };
+    default:
+      return {
+        label: "Recorded action",
+        tone: "neutral" as const,
+        detail: detail ?? `Last recorded queue action: ${action}${actedAtLabel}.`,
+      };
+  }
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
@@ -274,7 +337,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     .order("updated_at", { ascending: false });
 
   const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
-  const [projectRtpLinksResult, packetReportsResult] = await Promise.all([
+  const [projectRtpLinksResult, initialPacketReportsResult] = await Promise.all([
     rtpCycleIds.length
       ? supabase
           .from("project_rtp_cycle_links")
@@ -284,12 +347,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     rtpCycleIds.length
       ? supabase
           .from("reports")
-          .select("id, rtp_cycle_id, title, report_type, status, generated_at, latest_artifact_kind, updated_at")
+          .select("id, rtp_cycle_id, title, report_type, status, generated_at, latest_artifact_kind, metadata_json, updated_at")
           .in("rtp_cycle_id", rtpCycleIds)
           .eq("report_type", "board_packet")
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const packetReportsResult =
+    initialPacketReportsResult.error && looksLikePendingSchema(initialPacketReportsResult.error.message)
+      ? await supabase
+          .from("reports")
+          .select("id, rtp_cycle_id, title, report_type, status, generated_at, latest_artifact_kind, updated_at")
+          .in("rtp_cycle_id", rtpCycleIds)
+          .eq("report_type", "board_packet")
+          .order("updated_at", { ascending: false })
+      : initialPacketReportsResult;
 
   const projectRtpLinks = looksLikePendingSchema(projectRtpLinksResult.error?.message)
     ? []
@@ -454,6 +527,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetFreshness,
           packetPresetPosture,
         }),
+        packetQueueTrace: buildPacketQueueTrace(packetReport),
         packetActivityTrace: buildPacketActivityTrace({
           packetReport,
           packetFreshness,
@@ -796,6 +870,18 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                                 ? "No generated artifact yet"
                                 : "No packet record yet"}
                           </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          Last queue action
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-medium">{cycle.packetQueueTrace.label}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{cycle.packetQueueTrace.detail}</p>
+                          </div>
+                          <StatusBadge tone={cycle.packetQueueTrace.tone}>{cycle.packetQueueTrace.label}</StatusBadge>
                         </div>
                       </div>
                     </div>

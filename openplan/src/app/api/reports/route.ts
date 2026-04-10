@@ -9,6 +9,10 @@ import {
 } from "@/lib/reports/catalog";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
+
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),
   reportType: z.enum(["project_status", "analysis_summary", "board_packet"]).optional(),
@@ -262,19 +266,51 @@ export async function POST(request: NextRequest) {
 
     const reportTitle = parsed.data.title?.trim() || defaultTargetedReportTitle(target.title, parsed.data.reportType as ReportType);
 
-    const { data: report, error: reportError } = await supabase
+    const reportInsertPayload = {
+      workspace_id: target.workspaceId,
+      project_id: target.kind === "project" ? target.id : null,
+      rtp_cycle_id: target.kind === "rtp_cycle" ? target.id : null,
+      title: reportTitle,
+      report_type: parsed.data.reportType,
+      summary: parsed.data.summary?.trim() || null,
+      created_by: user.id,
+      metadata_json:
+        target.kind === "rtp_cycle"
+          ? {
+              queueTrace: {
+                action: "create_record",
+                actedAt: new Date().toISOString(),
+                actorUserId: user.id,
+                source: "reports.create",
+                detail: "Created RTP packet record.",
+              },
+            }
+          : {},
+    };
+
+    let reportInsertResult = await supabase
       .from("reports")
-      .insert({
-        workspace_id: target.workspaceId,
-        project_id: target.kind === "project" ? target.id : null,
-        rtp_cycle_id: target.kind === "rtp_cycle" ? target.id : null,
-        title: reportTitle,
-        report_type: parsed.data.reportType,
-        summary: parsed.data.summary?.trim() || null,
-        created_by: user.id,
-      })
-      .select("id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, created_at, updated_at")
+      .insert(reportInsertPayload)
+      .select("id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, metadata_json, created_at, updated_at")
       .single();
+
+    if (reportInsertResult.error && looksLikePendingSchema(reportInsertResult.error.message)) {
+      reportInsertResult = await supabase
+        .from("reports")
+        .insert({
+          workspace_id: reportInsertPayload.workspace_id,
+          project_id: reportInsertPayload.project_id,
+          rtp_cycle_id: reportInsertPayload.rtp_cycle_id,
+          title: reportInsertPayload.title,
+          report_type: reportInsertPayload.report_type,
+          summary: reportInsertPayload.summary,
+          created_by: reportInsertPayload.created_by,
+        })
+        .select("id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, created_at, updated_at")
+        .single();
+    }
+
+    const { data: report, error: reportError } = reportInsertResult;
 
     if (reportError || !report) {
       audit.error("report_insert_failed", {
