@@ -104,6 +104,8 @@ type ReportSectionRow = {
 
 type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
 
+const RECENT_QUEUE_ACTION_WINDOW_MS = 1000 * 60 * 60 * 24;
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
@@ -244,12 +246,30 @@ function buildPacketActivityTrace(input: {
 }
 
 function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
-  if (!packetReport) {
+  const finalize = (input: {
+    label: string;
+    tone: "neutral" | "info" | "success" | "warning" | "danger";
+    detail: string;
+    actedAt?: string | null;
+  }) => {
+    const actedAt = input.actedAt ?? null;
+    const actedAtTimestamp = actedAt ? new Date(actedAt).getTime() : Number.NaN;
+    const sortTimestamp = Number.isFinite(actedAtTimestamp) ? actedAtTimestamp : 0;
+
     return {
+      ...input,
+      actedAt,
+      sortTimestamp,
+      isRecent: sortTimestamp > 0 && Date.now() - sortTimestamp <= RECENT_QUEUE_ACTION_WINDOW_MS,
+    };
+  };
+
+  if (!packetReport) {
+    return finalize({
       label: "No queue trace",
       tone: "neutral" as const,
       detail: "No packet record exists yet, so there is no recorded queue action.",
-    };
+    });
   }
 
   const queueTrace =
@@ -262,46 +282,49 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
   const detail = typeof queueTrace?.detail === "string" ? queueTrace.detail : null;
 
   if (!action) {
-    return {
+    return finalize({
       label: "Not recorded",
       tone: "neutral" as const,
       detail: "This packet record has no persisted queue action trace yet.",
-    };
+    });
   }
-
-  const actedAtLabel = actedAt ? ` ${formatRtpDateTime(actedAt)}` : "";
 
   switch (action) {
     case "create_record":
-      return {
+      return finalize({
         label: "Record created",
         tone: "info" as const,
-        detail: detail ?? `Packet record created${actedAtLabel}.`,
-      };
+        detail: detail ?? "Packet record created.",
+        actedAt,
+      });
     case "reset_layout":
-      return {
+      return finalize({
         label: "Preset reset",
         tone: "warning" as const,
-        detail: detail ?? `Packet layout preset reapplied${actedAtLabel}.`,
-      };
+        detail: detail ?? "Packet layout preset reapplied.",
+        actedAt,
+      });
     case "generate_first_artifact":
-      return {
+      return finalize({
         label: "First artifact generated",
         tone: "success" as const,
-        detail: detail ?? `First packet artifact generated${actedAtLabel}.`,
-      };
+        detail: detail ?? "First packet artifact generated.",
+        actedAt,
+      });
     case "refresh_artifact":
-      return {
+      return finalize({
         label: "Artifact refreshed",
         tone: "success" as const,
-        detail: detail ?? `Packet artifact refreshed${actedAtLabel}.`,
-      };
+        detail: detail ?? "Packet artifact refreshed.",
+        actedAt,
+      });
     default:
-      return {
+      return finalize({
         label: "Recorded action",
         tone: "neutral" as const,
-        detail: detail ?? `Last recorded queue action: ${action}${actedAtLabel}.`,
-      };
+        detail: detail ?? `Last recorded queue action: ${action}.`,
+        actedAt,
+      });
   }
 }
 
@@ -582,6 +605,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       if (priorityDelta !== 0) {
         return priorityDelta;
       }
+
+      const queueTraceDelta = right.packetQueueTrace.sortTimestamp - left.packetQueueTrace.sortTimestamp;
+      if (queueTraceDelta !== 0) {
+        return queueTraceDelta;
+      }
+
       return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
     });
 
@@ -593,6 +622,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const fundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.fundedProjectCount, 0);
   const likelyCoveredProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.likelyCoveredProjectCount, 0);
   const unfundedProjectCount = typedCycles.reduce((sum, cycle) => sum + cycle.unfundedProjectCount, 0);
+  const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
+  const latestQueueActionAt = typedCycles
+    .map((cycle) => cycle.packetQueueTrace.actedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null;
 
   return (
     <section className="module-page">
@@ -781,6 +815,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           </Link>
                           <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                           <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
+                          {cycle.packetQueueTrace.isRecent ? (
+                            <StatusBadge tone="info">Recently changed</StatusBadge>
+                          ) : null}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {cycle.summary?.trim() || "No cycle summary yet. Add the planning scope, board/adoption posture, and intended review frame."}
@@ -907,8 +944,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           <div>
                             <p className="text-sm font-medium">{cycle.packetQueueTrace.label}</p>
                             <p className="mt-1 text-sm text-muted-foreground">{cycle.packetQueueTrace.detail}</p>
+                            {cycle.packetQueueTrace.actedAt ? (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Recorded {formatRtpDateTime(cycle.packetQueueTrace.actedAt)}
+                              </p>
+                            ) : null}
                           </div>
-                          <StatusBadge tone={cycle.packetQueueTrace.tone}>{cycle.packetQueueTrace.label}</StatusBadge>
+                          <div className="flex flex-col items-end gap-2">
+                            <StatusBadge tone={cycle.packetQueueTrace.tone}>{cycle.packetQueueTrace.label}</StatusBadge>
+                            {cycle.packetQueueTrace.isRecent ? <StatusBadge tone="info">Recent</StatusBadge> : null}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -962,6 +1007,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {recentQueueActivityCount > 0 ? (
+            <article className="rounded-3xl border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Recent queue activity
+              </p>
+              <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{recentQueueActivityCount}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                RTP cycles recorded queue work in the last 24 hours and are now sorted to the top of their current attention lane.
+              </p>
+              {latestQueueActionAt ? (
+                <p className="mt-2 text-xs text-muted-foreground">Latest action {formatRtpDateTime(latestQueueActionAt)}</p>
+              ) : null}
+            </article>
+          ) : null}
+
           {packetAttentionCounts.reset > 0 || packetAttentionCounts.generate > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
             <RtpRegistryPacketQueueCommandBoard
               resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
