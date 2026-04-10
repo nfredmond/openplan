@@ -6,7 +6,11 @@ import { ClipboardPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PROGRAM_STATUS_OPTIONS, PROGRAM_TYPE_OPTIONS } from "@/lib/programs/catalog";
+import {
+  PROGRAM_FUNDING_CLASSIFICATION_OPTIONS,
+  PROGRAM_STATUS_OPTIONS,
+  PROGRAM_TYPE_OPTIONS,
+} from "@/lib/programs/catalog";
 
 type ProjectOption = {
   id: string;
@@ -42,7 +46,12 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
   const [programType, setProgramType] = useState<(typeof PROGRAM_TYPE_OPTIONS)[number]["value"]>("rtip");
   const [status, setStatus] = useState<(typeof PROGRAM_STATUS_OPTIONS)[number]["value"]>("draft");
   const [cycleName, setCycleName] = useState("");
+  const [fundingClassification, setFundingClassification] = useState<
+    (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"]
+  >("discretionary");
   const [sponsorAgency, setSponsorAgency] = useState("");
+  const [ownerLabel, setOwnerLabel] = useState("");
+  const [cadenceLabel, setCadenceLabel] = useState("");
   const [fiscalYearStart, setFiscalYearStart] = useState("");
   const [fiscalYearEnd, setFiscalYearEnd] = useState("");
   const [nominationDueAt, setNominationDueAt] = useState("");
@@ -66,7 +75,10 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
           programType,
           status,
           cycleName,
+          fundingClassification,
           sponsorAgency: sponsorAgency || undefined,
+          ownerLabel: ownerLabel || undefined,
+          cadenceLabel: cadenceLabel || undefined,
           fiscalYearStart: fiscalYearStart ? Number(fiscalYearStart) : undefined,
           fiscalYearEnd: fiscalYearEnd ? Number(fiscalYearEnd) : undefined,
           nominationDueAt: toIsoDateTime(nominationDueAt),
@@ -134,6 +146,30 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
           </div>
 
           <div className="space-y-1.5">
+            <label htmlFor="program-classification" className="text-[0.82rem] font-semibold">
+              Funding classification
+            </label>
+            <select
+              id="program-classification"
+              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+              value={fundingClassification}
+              onChange={(event) =>
+                setFundingClassification(
+                  event.target.value as (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"]
+                )
+              }
+            >
+              {PROGRAM_FUNDING_CLASSIFICATION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
             <label htmlFor="program-sponsor" className="text-[0.82rem] font-semibold">
               Sponsor agency
               <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
@@ -145,6 +181,32 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
               onChange={(event) => setSponsorAgency(event.target.value)}
             />
           </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="program-owner" className="text-[0.82rem] font-semibold">
+              Owner
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="program-owner"
+              placeholder="Regional funding lead"
+              value={ownerLabel}
+              onChange={(event) => setOwnerLabel(event.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="program-cadence" className="text-[0.82rem] font-semibold">
+            Cadence
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </label>
+          <Input
+            id="program-cadence"
+            placeholder="Biennial statewide cycle"
+            value={cadenceLabel}
+            onChange={(event) => setCadenceLabel(event.target.value)}
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

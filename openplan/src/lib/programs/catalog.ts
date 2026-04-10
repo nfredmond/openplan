@@ -16,6 +16,21 @@ export const PROGRAM_STATUS_OPTIONS = [
   { value: "archived", label: "Archived" },
 ] as const;
 
+export const PROGRAM_FUNDING_CLASSIFICATION_OPTIONS = [
+  { value: "formula", label: "Formula" },
+  { value: "discretionary", label: "Discretionary" },
+  { value: "mixed", label: "Mixed" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const FUNDING_OPPORTUNITY_STATUS_OPTIONS = [
+  { value: "upcoming", label: "Upcoming" },
+  { value: "open", label: "Open" },
+  { value: "closed", label: "Closed" },
+  { value: "awarded", label: "Awarded" },
+  { value: "archived", label: "Archived" },
+] as const;
+
 export const PROGRAM_LINK_TYPE_OPTIONS = [
   { value: "plan", label: "Plan Record" },
   { value: "report", label: "Report" },
@@ -26,6 +41,8 @@ export const PROGRAM_LINK_TYPE_OPTIONS = [
 export type ProgramType = (typeof PROGRAM_TYPE_OPTIONS)[number]["value"];
 export type ProgramStatus = (typeof PROGRAM_STATUS_OPTIONS)[number]["value"];
 export type ProgramLinkType = (typeof PROGRAM_LINK_TYPE_OPTIONS)[number]["value"];
+export type ProgramFundingClassification = (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"];
+export type FundingOpportunityStatus = (typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"];
 
 export type ProgramReadinessCheck = {
   key:
@@ -90,6 +107,16 @@ export function formatProgramLinkTypeLabel(value: string | null | undefined): st
   return PROGRAM_LINK_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
 }
 
+export function formatProgramFundingClassificationLabel(value: string | null | undefined): string {
+  return (
+    PROGRAM_FUNDING_CLASSIFICATION_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value)
+  );
+}
+
+export function formatFundingOpportunityStatusLabel(value: string | null | undefined): string {
+  return FUNDING_OPPORTUNITY_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
 export function programStatusTone(
   status: string | null | undefined
 ): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -97,6 +124,16 @@ export function programStatusTone(
   if (status === "submitted") return "info";
   if (status === "assembling") return "warning";
   if (status === "archived" || status === "draft") return "neutral";
+  return "neutral";
+}
+
+export function fundingOpportunityStatusTone(
+  status: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "open") return "success";
+  if (status === "upcoming") return "info";
+  if (status === "awarded") return "success";
+  if (status === "closed" || status === "archived") return "neutral";
   return "neutral";
 }
 

@@ -6,6 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
+  PROGRAM_FUNDING_CLASSIFICATION_OPTIONS,
   PROGRAM_LINK_TYPE_OPTIONS,
   PROGRAM_STATUS_OPTIONS,
   PROGRAM_TYPE_OPTIONS,
@@ -15,6 +16,7 @@ import {
 const PROGRAM_TYPES = PROGRAM_TYPE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 const PROGRAM_STATUSES = PROGRAM_STATUS_OPTIONS.map((option) => option.value) as [string, ...string[]];
 const PROGRAM_LINK_TYPES = PROGRAM_LINK_TYPE_OPTIONS.map((option) => option.value) as [string, ...string[]];
+const PROGRAM_FUNDING_CLASSIFICATIONS = PROGRAM_FUNDING_CLASSIFICATION_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
 const listProgramsSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -34,7 +36,10 @@ const createProgramSchema = z.object({
   programType: z.enum(PROGRAM_TYPES),
   status: z.enum(PROGRAM_STATUSES).optional(),
   cycleName: z.string().trim().min(1).max(160),
+  fundingClassification: z.enum(PROGRAM_FUNDING_CLASSIFICATIONS).optional(),
   sponsorAgency: z.string().trim().max(160).optional(),
+  ownerLabel: z.string().trim().max(160).optional(),
+  cadenceLabel: z.string().trim().max(160).optional(),
   fiscalYearStart: z.number().int().min(2000).max(2300).optional(),
   fiscalYearEnd: z.number().int().min(2000).max(2300).optional(),
   nominationDueAt: z.string().datetime().optional(),
@@ -247,7 +252,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("programs")
       .select(
-        "id, workspace_id, project_id, title, program_type, status, cycle_name, sponsor_agency, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
+        "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -555,7 +560,10 @@ export async function POST(request: NextRequest) {
         program_type: parsed.data.programType,
         status: parsed.data.status ?? "draft",
         cycle_name: parsed.data.cycleName.trim(),
+        funding_classification: parsed.data.fundingClassification ?? null,
         sponsor_agency: parsed.data.sponsorAgency?.trim() || null,
+        owner_label: parsed.data.ownerLabel?.trim() || null,
+        cadence_label: parsed.data.cadenceLabel?.trim() || null,
         fiscal_year_start: parsed.data.fiscalYearStart ?? null,
         fiscal_year_end: parsed.data.fiscalYearEnd ?? null,
         nomination_due_at: parsed.data.nominationDueAt ?? null,
@@ -564,7 +572,7 @@ export async function POST(request: NextRequest) {
         created_by: user.id,
       })
       .select(
-        "id, workspace_id, project_id, title, program_type, status, cycle_name, sponsor_agency, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
+        "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
       )
       .single();
 

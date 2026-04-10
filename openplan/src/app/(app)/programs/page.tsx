@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -14,10 +15,13 @@ import {
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
+  formatFundingOpportunityStatusLabel,
   formatFiscalWindow,
+  formatProgramFundingClassificationLabel,
   formatProgramDateTime,
   formatProgramStatusLabel,
   formatProgramTypeLabel,
+  fundingOpportunityStatusTone,
   programStatusTone,
 } from "@/lib/programs/catalog";
 
@@ -35,7 +39,10 @@ type ProgramRow = {
   program_type: string;
   status: string;
   cycle_name: string;
+  funding_classification: string | null;
   sponsor_agency: string | null;
+  owner_label: string | null;
+  cadence_label: string | null;
   fiscal_year_start: number | null;
   fiscal_year_end: number | null;
   nomination_due_at: string | null;
@@ -59,6 +66,46 @@ type ProgramLinkRow = {
   program_id: string;
   link_type: string;
   linked_id: string;
+};
+
+type FundingOpportunityRow = {
+  id: string;
+  workspace_id: string;
+  program_id: string | null;
+  project_id: string | null;
+  title: string;
+  opportunity_status: string;
+  agency_name: string | null;
+  owner_label: string | null;
+  cadence_label: string | null;
+  opens_at: string | null;
+  closes_at: string | null;
+  decision_due_at: string | null;
+  summary: string | null;
+  updated_at: string;
+  created_at: string;
+  programs:
+    | {
+        id: string;
+        title: string;
+        funding_classification: string | null;
+      }
+    | Array<{
+        id: string;
+        title: string;
+        funding_classification: string | null;
+      }>
+    | null;
+  projects:
+    | {
+        id: string;
+        name: string;
+      }
+    | Array<{
+        id: string;
+        name: string;
+      }>
+    | null;
 };
 
 export default async function ProgramsPage({
@@ -95,17 +142,47 @@ export default async function ProgramsPage({
     );
   }
 
-  const [{ data: programsData }, { data: projectsData }] = await Promise.all([
+  const [{ data: programsData }, { data: projectsData }, { data: fundingOpportunitiesData }] = await Promise.all([
     supabase
       .from("programs")
       .select(
-        "id, workspace_id, project_id, title, program_type, status, cycle_name, sponsor_agency, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
+        "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
       )
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, workspace_id, name").order("updated_at", { ascending: false }),
+    supabase
+      .from("funding_opportunities")
+      .select(
+        "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
+      )
+      .order("updated_at", { ascending: false }),
   ]);
 
   const programs = (programsData ?? []) as ProgramRow[];
+  const fundingOpportunities = ((fundingOpportunitiesData ?? []) as FundingOpportunityRow[])
+    .map((opportunity) => ({
+      ...opportunity,
+      program: Array.isArray(opportunity.programs) ? (opportunity.programs[0] ?? null) : opportunity.programs ?? null,
+      project: Array.isArray(opportunity.projects) ? (opportunity.projects[0] ?? null) : opportunity.projects ?? null,
+    }))
+    .sort((left, right) => {
+      const priority = (value: string) => {
+        if (value === "open") return 0;
+        if (value === "upcoming") return 1;
+        if (value === "closed") return 2;
+        if (value === "awarded") return 3;
+        return 4;
+      };
+
+      const priorityDelta = priority(left.opportunity_status) - priority(right.opportunity_status);
+      if (priorityDelta !== 0) {
+        return priorityDelta;
+      }
+
+      const leftTime = new Date(left.closes_at ?? left.opens_at ?? left.updated_at).getTime();
+      const rightTime = new Date(right.closes_at ?? right.opens_at ?? right.updated_at).getTime();
+      return leftTime - rightTime;
+    });
   const programIds = programs.map((program) => program.id);
   const projectIds = [...new Set(programs.map((program) => program.project_id).filter((value): value is string => Boolean(value)))];
 
@@ -207,6 +284,8 @@ export default async function ProgramsPage({
   const activeCount = typedPrograms.filter((program) => ["assembling", "submitted", "programmed"].includes(program.status)).length;
   const readyCount = typedPrograms.filter((program) => program.readiness.ready).length;
   const rtipStipCount = typedPrograms.filter((program) => ["rtip", "stip"].includes(program.program_type)).length;
+  const openOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "open").length;
+  const upcomingOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "upcoming").length;
 
   return (
     <section className="module-page">
@@ -324,13 +403,111 @@ export default async function ProgramsPage({
 
                   <div className="module-record-meta">
                     <span className="module-record-chip">Cycle {program.cycle_name}</span>
+                    <span className="module-record-chip">
+                      {formatProgramFundingClassificationLabel(program.funding_classification)}
+                    </span>
                     <span className="module-record-chip">Window {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
                     <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
+                    <span className="module-record-chip">Owner {program.owner_label ?? "Unassigned"}</span>
+                    <span className="module-record-chip">Cadence {program.cadence_label ?? "Not set"}</span>
                     <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
                     <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
                     <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
                   </div>
                 </Link>
+              ))}
+            </div>
+          )}
+        </article>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+        <FundingOpportunityCreator
+          programs={typedPrograms.map((program) => ({ id: program.id, title: program.title }))}
+          projects={(projectsData ?? []).map((project) => ({ id: project.id, name: project.name }))}
+          title="Log a funding opportunity"
+          description="Keep open and upcoming opportunities visible even before a full grant workspace exists."
+        />
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Funding catalog</p>
+              <h2 className="module-section-title">Active and upcoming opportunities</h2>
+              <p className="module-section-description">
+                Early Grants OS backbone: track calls, timing, ownership, and linked program/project context in the shared catalog.
+              </p>
+            </div>
+            <span className="module-inline-item">
+              <CalendarClock className="h-3.5 w-3.5" />
+              <strong>{fundingOpportunities.length}</strong> tracked
+            </span>
+          </div>
+
+          <div className="module-summary-grid cols-3 mt-5">
+            <div className="module-summary-card">
+              <p className="module-summary-label">Open now</p>
+              <p className="module-summary-value">{openOpportunityCount}</p>
+              <p className="module-summary-detail">Current calls needing active packaging work.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Upcoming</p>
+              <p className="module-summary-value">{upcomingOpportunityCount}</p>
+              <p className="module-summary-detail">Expected calls or known windows not yet open.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Program-linked</p>
+              <p className="module-summary-value">{fundingOpportunities.filter((item) => item.program_id).length}</p>
+              <p className="module-summary-detail">Opportunities already tied to a funding cycle record.</p>
+            </div>
+          </div>
+
+          {fundingOpportunities.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No funding opportunities logged yet"
+                description="Create the first opportunity so active calls and upcoming cycles can live beside program records."
+              />
+            </div>
+          ) : (
+            <div className="mt-5 module-record-list">
+              {fundingOpportunities.map((opportunity) => (
+                <div key={opportunity.id} className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
+                          {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
+                        </StatusBadge>
+                        {opportunity.program ? (
+                          <StatusBadge tone="info">{opportunity.program.title}</StatusBadge>
+                        ) : (
+                          <StatusBadge tone="neutral">No linked program</StatusBadge>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title text-[1.05rem]">{opportunity.title}</h3>
+                          <p className="module-record-stamp">Updated {formatProgramDateTime(opportunity.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {opportunity.summary || "No summary on file yet for this funding opportunity."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
+                    <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
+                    <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
+                    <span className="module-record-chip">Opens {formatProgramDateTime(opportunity.opens_at)}</span>
+                    <span className="module-record-chip">Closes {formatProgramDateTime(opportunity.closes_at)}</span>
+                    <span className="module-record-chip">Decision {formatProgramDateTime(opportunity.decision_due_at)}</span>
+                    <span className="module-record-chip">Project {opportunity.project?.name ?? "None"}</span>
+                  </div>
+                </div>
               ))}
             </div>
           )}

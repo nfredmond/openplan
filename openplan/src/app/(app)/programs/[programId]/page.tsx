@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
+  CalendarClock,
   ClipboardList,
   Database,
   FileStack,
@@ -9,6 +10,7 @@ import {
   MessagesSquare,
   ShieldCheck,
 } from "lucide-react";
+import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -17,10 +19,13 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
+  formatFundingOpportunityStatusLabel,
   formatFiscalWindow,
   formatProgramDateTime,
+  formatProgramFundingClassificationLabel,
   formatProgramStatusLabel,
   formatProgramTypeLabel,
+  fundingOpportunityStatusTone,
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
@@ -105,6 +110,34 @@ function modelSupportBasisLabel(value: "project" | "plan" | "both"): string {
   return "From linked plan";
 }
 
+type FundingOpportunityDetailRow = {
+  id: string;
+  workspace_id: string;
+  program_id: string | null;
+  project_id: string | null;
+  title: string;
+  opportunity_status: string;
+  agency_name: string | null;
+  owner_label: string | null;
+  cadence_label: string | null;
+  opens_at: string | null;
+  closes_at: string | null;
+  decision_due_at: string | null;
+  summary: string | null;
+  updated_at: string;
+  created_at: string;
+  projects:
+    | {
+        id: string;
+        name: string;
+      }
+    | Array<{
+        id: string;
+        name: string;
+      }>
+    | null;
+};
+
 export default async function ProgramDetailPage({
   params,
 }: {
@@ -123,7 +156,7 @@ export default async function ProgramDetailPage({
   const { data: program } = await supabase
     .from("programs")
     .select(
-      "id, workspace_id, project_id, title, program_type, status, cycle_name, sponsor_agency, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
+      "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
     )
     .eq("id", programId)
     .maybeSingle();
@@ -132,7 +165,7 @@ export default async function ProgramDetailPage({
     notFound();
   }
 
-  const [projectsResult, primaryProjectResult, linksResult, projectPlansResult, projectReportsResult, projectCampaignsResult] =
+  const [projectsResult, primaryProjectResult, linksResult, projectPlansResult, projectReportsResult, projectCampaignsResult, fundingOpportunitiesResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
       program.project_id
@@ -164,6 +197,13 @@ export default async function ProgramDetailPage({
             .eq("project_id", program.project_id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("funding_opportunities")
+        .select(
+          "id, workspace_id, program_id, project_id, title, opportunity_status, agency_name, owner_label, cadence_label, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name)"
+        )
+        .eq("program_id", program.id)
+        .order("updated_at", { ascending: false }),
     ]);
 
   const links = linksResult.data ?? [];
@@ -431,6 +471,11 @@ export default async function ProgramDetailPage({
     };
   });
 
+  const fundingOpportunities = ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityDetailRow[]).map((item) => ({
+    ...item,
+    project: Array.isArray(item.projects) ? (item.projects[0] ?? null) : item.projects ?? null,
+  }));
+
   const readiness = buildProgramReadiness({
     cycleName: program.cycle_name,
     hasProject: linkedProjects.length > 0,
@@ -583,10 +628,24 @@ export default async function ProgramDetailPage({
               </span>
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {formatProgramFundingClassificationLabel(program.funding_classification)}
+                </p>
+              </div>
               <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.sponsor_agency || "Not set"}</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{program.owner_label || "Unassigned"}</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{program.cadence_label || "Not set"}</p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
@@ -607,6 +666,75 @@ export default async function ProgramDetailPage({
             <div className="module-inline-list mt-5">
               <span className="module-inline-item">Created {formatProgramDateTime(program.created_at)}</span>
               <span className="module-inline-item">Updated {formatProgramDateTime(program.updated_at)}</span>
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Funding</p>
+                <h2 className="module-section-title">Linked funding opportunities</h2>
+                <p className="module-section-description">
+                  Track open and upcoming calls against this funding cycle without waiting for the full Grants OS layer.
+                </p>
+              </div>
+              <span className="module-inline-item">
+                <CalendarClock className="h-3.5 w-3.5" />
+                <strong>{fundingOpportunities.length}</strong> linked
+              </span>
+            </div>
+
+            <div className="mt-5 space-y-5">
+              <FundingOpportunityCreator
+                programs={[{ id: program.id, title: program.title }]}
+                projects={(projectsResult.data ?? []).map((project) => ({ id: project.id, name: project.name }))}
+                defaultProgramId={program.id}
+                defaultProjectId={program.project_id}
+                title="Add opportunity to this cycle"
+                description="Log a specific grant or formula opportunity tied to this program record."
+              />
+
+              {fundingOpportunities.length === 0 ? (
+                <EmptyState
+                  title="No funding opportunities linked yet"
+                  description="Add the first open or upcoming opportunity so the cycle record can carry real pursuit timing and ownership."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {fundingOpportunities.map((opportunity) => (
+                    <div key={opportunity.id} className="module-record-row">
+                      <div className="module-record-head">
+                        <div className="module-record-main">
+                          <div className="module-record-kicker">
+                            <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
+                              {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
+                            </StatusBadge>
+                            <StatusBadge tone="neutral">{opportunity.project?.name ?? "No linked project"}</StatusBadge>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <h3 className="module-record-title text-[1.02rem]">{opportunity.title}</h3>
+                              <p className="module-record-stamp">Updated {formatProgramDateTime(opportunity.updated_at)}</p>
+                            </div>
+                            <p className="module-record-summary line-clamp-2">
+                              {opportunity.summary || "No summary on file yet for this funding opportunity."}
+                            </p>
+                            <MetaList>
+                              <MetaItem>Agency {opportunity.agency_name || "Not set"}</MetaItem>
+                              <MetaItem>Owner {opportunity.owner_label || "Unassigned"}</MetaItem>
+                              <MetaItem>Cadence {opportunity.cadence_label || "Not set"}</MetaItem>
+                              <MetaItem>Opens {formatProgramDateTime(opportunity.opens_at)}</MetaItem>
+                              <MetaItem>Closes {formatProgramDateTime(opportunity.closes_at)}</MetaItem>
+                              <MetaItem>Decision {formatProgramDateTime(opportunity.decision_due_at)}</MetaItem>
+                            </MetaList>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </article>
 
