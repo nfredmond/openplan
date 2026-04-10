@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
+import { RtpRegistryPacketBulkRefreshActions } from "@/components/rtp/rtp-registry-packet-bulk-refresh-actions";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
 import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
@@ -802,13 +803,23 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             />
           ) : null}
 
-          {packetAttentionCounts.generate > 0 || packetAttentionCounts.refresh > 0 ? (
+          {packetAttentionCounts.generate > 0 ? (
             <RtpRegistryPacketBulkGenerateActions
               reportIds={allCycles
-                .filter((cycle) => cycle.packetAttention === "generate" || cycle.packetAttention === "refresh")
+                .filter((cycle) => cycle.packetAttention === "generate")
                 .map((cycle) => cycle.packetReport?.id)
                 .filter((reportId): reportId is string => Boolean(reportId))}
-              reportCount={packetAttentionCounts.generate + packetAttentionCounts.refresh}
+              reportCount={packetAttentionCounts.generate}
+            />
+          ) : null}
+
+          {packetAttentionCounts.refresh > 0 ? (
+            <RtpRegistryPacketBulkRefreshActions
+              reportIds={allCycles
+                .filter((cycle) => cycle.packetAttention === "refresh")
+                .map((cycle) => cycle.packetReport?.id)
+                .filter((reportId): reportId is string => Boolean(reportId))}
+              reportCount={packetAttentionCounts.refresh}
             />
           ) : null}
 
