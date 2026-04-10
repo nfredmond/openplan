@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { buildProjectFundingStackSummary, projectFundingStackTone } from "@/lib/projects/funding";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -70,6 +71,20 @@ type ProjectLinkProjectRow = {
   status: string;
   delivery_phase: string;
   summary: string | null;
+};
+
+type ProjectFundingProfileRow = {
+  project_id: string;
+  funding_need_amount: number | null;
+  local_match_need_amount: number | null;
+};
+
+type FundingAwardRow = {
+  project_id: string;
+  awarded_amount: number | string;
+  match_amount: number | string;
+  risk_flag: string;
+  obligation_due_at: string | null;
 };
 
 type ProjectRtpLinkRow = {
@@ -210,6 +225,36 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         project: Array.isArray(link.projects) ? (link.projects[0] ?? null) : link.projects,
       }));
 
+  const linkedProjectIds = projectLinks.map((link) => link.project_id);
+  const [fundingProfilesResult, fundingAwardsResult] = await Promise.all([
+    linkedProjectIds.length
+      ? supabase
+          .from("project_funding_profiles")
+          .select("project_id, funding_need_amount, local_match_need_amount")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("funding_awards")
+          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+          .in("project_id", linkedProjectIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
+    ? []
+    : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
+  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+    ? []
+    : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
+  const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
+  const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
+  for (const award of fundingAwards) {
+    const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
+    current.push(award);
+    fundingAwardsByProjectId.set(award.project_id, current);
+  }
+
   const engagementCampaigns = looksLikePendingSchema(campaignsResult.error?.message)
     ? []
     : ((campaignsResult.data ?? []) as EngagementCampaignRow[]).map((campaign) => ({
@@ -240,6 +285,20 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     publicReviewCloseAt: cycle.public_review_close_at,
   });
   const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
+
+  const projectLinksWithFunding = projectLinks.map((link) => ({
+    ...link,
+    fundingStack: buildProjectFundingStackSummary(
+      fundingProfileByProjectId.get(link.project_id) ?? null,
+      fundingAwardsByProjectId.get(link.project_id) ?? []
+    ),
+  }));
+
+  const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
+  const partiallyFundedProjectCount = projectLinksWithFunding.filter(
+    (link) => link.fundingStack.status === "partially_funded"
+  ).length;
+  const unfundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "unfunded").length;
 
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
@@ -294,9 +353,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               <p className="module-summary-detail">Portfolio records currently attached to this cycle.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Engagement targets</p>
-              <p className="module-summary-value">{engagementCampaigns.length}</p>
-              <p className="module-summary-detail">Cycle-level or chapter-level campaigns tied to this RTP update.</p>
+              <p className="module-summary-label">Funding posture</p>
+              <p className="module-summary-value">{fundedProjectCount}/{projectLinks.length}</p>
+              <p className="module-summary-detail">Projects currently fully funded by recorded awards.</p>
             </div>
           </div>
         </article>
@@ -494,7 +553,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                 <p className="module-section-label">Portfolio posture</p>
                 <h2 className="module-section-title">Cycle-linked projects</h2>
                 <p className="module-section-description">
-                  The RTP chapter workflow and the project portfolio now sit under the same cycle record.
+                  The RTP chapter workflow and project portfolio now sit under the same cycle record, with real funding posture pulled from project funding profiles and awards.
                 </p>
               </div>
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
@@ -509,7 +568,25 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               />
             ) : (
               <div className="space-y-3">
-                {projectLinks.map((link) => {
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Funded</p>
+                    <p className="module-metric-value text-sm">{fundedProjectCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
+                  </div>
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Partially funded</p>
+                    <p className="module-metric-value text-sm">{partiallyFundedProjectCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Awards recorded, but a gap remains.</p>
+                  </div>
+                  <div className="module-metric-card">
+                    <p className="module-metric-label">Unfunded</p>
+                    <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Target need exists without committed awards.</p>
+                  </div>
+                </div>
+
+                {projectLinksWithFunding.map((link) => {
                   const project = link.project;
                   return (
                     <article key={link.id} className="module-row-card gap-3">
@@ -517,6 +594,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         <StatusBadge tone={rtpPortfolioRoleTone(link.portfolio_role)}>
                           {formatRtpPortfolioRoleLabel(link.portfolio_role)}
                         </StatusBadge>
+                        <StatusBadge tone={projectFundingStackTone(link.fundingStack.status)}>{link.fundingStack.label}</StatusBadge>
                         {project?.status ? (
                           <StatusBadge tone={projectStatusTone(project.status)}>{formatProjectStatusLabel(project.status)}</StatusBadge>
                         ) : null}
@@ -526,6 +604,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         <p className="mt-1 text-sm text-muted-foreground">
                           {link.priority_rationale?.trim() || project?.summary?.trim() || "No prioritization rationale recorded yet."}
                         </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span className="module-record-chip">Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)}</span>
+                        <span className="module-record-chip">Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.remainingFundingGap)}</span>
+                        {link.fundingStack.awardRiskCount > 0 ? (
+                          <span className="module-record-chip">{link.fundingStack.awardRiskCount} award risk</span>
+                        ) : null}
                       </div>
                       {project?.id ? (
                         <Link href={`/projects/${project.id}`} className="module-inline-action w-fit">

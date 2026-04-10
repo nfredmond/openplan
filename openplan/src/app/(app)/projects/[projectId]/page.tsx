@@ -25,6 +25,7 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
+import { buildProjectFundingStackSummary, projectFundingStackTone } from "@/lib/projects/funding";
 import {
   formatFundingAwardMatchPostureLabel,
   formatFundingAwardRiskFlagLabel,
@@ -680,14 +681,13 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
-  const committedFundingAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
-  const committedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
-  const fundingNeedAmount = Number(projectFundingProfile?.funding_need_amount ?? 0);
-  const remainingFundingGap = Math.max(fundingNeedAmount - committedFundingAmount, 0);
-  const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
-  const nextObligationAward = fundingAwards
-    .filter((award) => Boolean(award.obligation_due_at))
-    .sort((left, right) => new Date(left.obligation_due_at ?? "").getTime() - new Date(right.obligation_due_at ?? "").getTime())[0] ?? null;
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards);
+  const fundingNeedAmount = fundingStackSummary.fundingNeedAmount;
+  const committedFundingAmount = fundingStackSummary.committedFundingAmount;
+  const committedMatchAmount = fundingStackSummary.committedMatchAmount;
+  const remainingFundingGap = fundingStackSummary.remainingFundingGap;
+  const awardWatchCount = fundingStackSummary.awardRiskCount;
+  const nextObligationAward = fundingAwards.find((award) => award.obligation_due_at === fundingStackSummary.nextObligationAt) ?? null;
   const pursueFundingCount = fundingOpportunities.filter((item) => item.decision_state === "pursue").length;
   const monitorFundingCount = fundingOpportunities.filter((item) => item.decision_state === "monitor").length;
   const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
@@ -1404,15 +1404,18 @@ export default async function ProjectDetailPage({
             <div className="grid gap-4 md:grid-cols-2 mt-5">
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
+                <div className="mt-2">
+                  <StatusBadge tone={projectFundingStackTone(fundingStackSummary.status)}>{fundingStackSummary.label}</StatusBadge>
+                </div>
                 <h3 className="mt-2 text-sm font-semibold text-foreground">
-                  {fundingNeedAmount > 0
-                    ? `${Math.min(100, Math.round((committedFundingAmount / fundingNeedAmount) * 100))}% covered by committed awards`
+                  {fundingStackSummary.hasTargetNeed
+                    ? `${Math.round((fundingStackSummary.coverageRatio ?? 0) * 100)}% covered by committed awards`
                     : "Funding target not set yet"}
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {fundingNeedAmount > 0
+                  {fundingStackSummary.hasTargetNeed
                     ? `${fmtCurrency(committedFundingAmount)} committed against a ${fmtCurrency(fundingNeedAmount)} target need.`
-                    : "Save a funding need so OpenPlan can report a real remaining gap instead of only raw award totals."}
+                    : fundingStackSummary.reason}
                 </p>
               </div>
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
