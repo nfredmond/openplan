@@ -6,6 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
+import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import {
   buildProjectStageGateSnapshot,
   buildProjectStageGateSummary,
@@ -196,7 +197,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapters = chaptersResult.data ?? [];
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
-      const html = buildRtpExportHtml({ cycle, chapters, linkedProjects, campaigns });
+      const enabledSectionKeys = sections.filter((section) => section.enabled).map((section) => section.section_key);
+      const readiness = buildRtpCycleReadiness({
+        geographyLabel: cycle.geography_label,
+        horizonStartYear: cycle.horizon_start_year,
+        horizonEndYear: cycle.horizon_end_year,
+        adoptionTargetDate: cycle.adoption_target_date,
+        publicReviewOpenAt: cycle.public_review_open_at,
+        publicReviewCloseAt: cycle.public_review_close_at,
+      });
+      const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
+      const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
+      const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
+      const html = buildRtpExportHtml({
+        cycle,
+        chapters,
+        linkedProjects,
+        campaigns,
+        options: {
+          sectionKeys: enabledSectionKeys,
+          titleSuffix: "OpenPlan RTP Packet",
+        },
+      });
       const generatedAt = new Date().toISOString();
       const artifactMetadata = {
         htmlContent: html,
@@ -212,9 +234,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           rtpCycleTitle: cycle.title,
           rtpCycleUpdatedAt: cycle.updated_at,
           chapterCount: chapters.length,
+          chapterCompleteCount,
+          chapterReadyForReviewCount,
           linkedProjectCount: linkedProjects.length,
           engagementCampaignCount: campaigns.length,
+          readiness,
+          workflow,
           enabledSectionCount: sections.filter((section) => section.enabled).length,
+          enabledSectionKeys,
         },
         generationMode: "rtp_html_packet",
       };
