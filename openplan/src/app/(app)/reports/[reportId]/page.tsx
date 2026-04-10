@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
+import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -381,7 +382,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const { data: report } = await supabase
     .from("reports")
     .select(
-      "id, workspace_id, project_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at"
+      "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at"
     )
     .eq("id", reportId)
     .maybeSingle();
@@ -392,6 +393,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
 
   const [
     { data: project },
+    { data: rtpCycle },
     { data: workspace },
     { data: sections },
     { data: reportRunLinks },
@@ -399,11 +401,20 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   ] = await Promise.all([
     supabase
       .from("projects")
-      .select(
-        "id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at"
-      )
-      .eq("id", report.project_id)
-      .maybeSingle(),
+        .select(
+          "id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at"
+        )
+        .eq("id", report.project_id)
+        .maybeSingle(),
+    report.rtp_cycle_id
+      ? supabase
+          .from("rtp_cycles")
+          .select(
+            "id, title, status, summary, geography_label, horizon_start_year, horizon_end_year, updated_at"
+          )
+          .eq("id", report.rtp_cycle_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase
       .from("workspaces")
       .select("id, name, plan, slug")
@@ -528,6 +539,30 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     } => Boolean(item.value)
   );
   const artifactList = (artifacts ?? []) as ReportArtifact[];
+
+  if (report.rtp_cycle_id) {
+    return (
+      <RtpReportDetail
+        report={report}
+        workspace={workspace}
+        cycle={rtpCycle}
+        sections={(sections ?? []).map((section) => ({
+          id: section.id,
+          section_key: section.section_key,
+          title: section.title,
+          enabled: section.enabled,
+          sort_order: section.sort_order,
+        }))}
+        artifacts={artifactList.map((artifact) => ({
+          id: artifact.id,
+          artifact_kind: artifact.artifact_kind,
+          generated_at: artifact.generated_at,
+        }))}
+        latestHtml={latestHtml}
+      />
+    );
+  }
+
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
   const liveScenarioSetIds = scenarioSetLinks.map((item) => item.scenarioSetId);

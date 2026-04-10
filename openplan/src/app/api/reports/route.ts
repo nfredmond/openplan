@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   createDefaultReportSections,
-  defaultReportTitle,
+  defaultTargetedReportTitle,
   type ReportType,
 } from "@/lib/reports/catalog";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -15,25 +15,53 @@ const reportsFilterSchema = z.object({
   status: z.enum(["draft", "generated", "archived"]).optional(),
 });
 
-const createReportSchema = z.object({
-  projectId: z.string().uuid(),
-  title: z.string().trim().min(1).max(160).optional(),
-  reportType: z.enum(["project_status", "analysis_summary", "board_packet"]),
-  summary: z.string().trim().max(2000).optional(),
-  runIds: z.array(z.string().uuid()).max(20).optional(),
-  sections: z
-    .array(
-      z.object({
-        sectionKey: z.string().trim().min(1).max(80),
-        title: z.string().trim().min(1).max(160),
-        enabled: z.boolean().default(true),
-        sortOrder: z.number().int().min(0).max(100),
-        configJson: z.record(z.string(), z.unknown()).optional(),
-      })
-    )
-    .max(30)
-    .optional(),
-});
+const createReportSchema = z
+  .object({
+    projectId: z.string().uuid().optional(),
+    rtpCycleId: z.string().uuid().optional(),
+    title: z.string().trim().min(1).max(160).optional(),
+    reportType: z.enum(["project_status", "analysis_summary", "board_packet"]),
+    summary: z.string().trim().max(2000).optional(),
+    runIds: z.array(z.string().uuid()).max(20).optional(),
+    sections: z
+      .array(
+        z.object({
+          sectionKey: z.string().trim().min(1).max(80),
+          title: z.string().trim().min(1).max(160),
+          enabled: z.boolean().default(true),
+          sortOrder: z.number().int().min(0).max(100),
+          configJson: z.record(z.string(), z.unknown()).optional(),
+        })
+      )
+      .max(30)
+      .optional(),
+  })
+  .superRefine((value, ctx) => {
+    const targetCount = Number(Boolean(value.projectId)) + Number(Boolean(value.rtpCycleId));
+    if (targetCount !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide exactly one report target",
+        path: ["projectId"],
+      });
+    }
+
+    if (value.rtpCycleId && value.reportType !== "board_packet") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "RTP cycle reports currently support board packets only",
+        path: ["reportType"],
+      });
+    }
+
+    if (value.rtpCycleId && (value.runIds?.length ?? 0) > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Linked runs are not supported on RTP cycle packet records yet",
+        path: ["runIds"],
+      });
+    }
+  });
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("reports.list", request);
@@ -64,7 +92,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("reports")
       .select(
-        "id, workspace_id, project_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), workspaces(name)"
+        "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), workspaces(name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -129,35 +157,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: project, error: projectError } = await supabase
-      .from("projects")
-      .select("id, workspace_id, name")
-      .eq("id", parsed.data.projectId)
-      .maybeSingle();
+    const runIds = parsed.data.runIds ?? [];
+    const targetKind = parsed.data.projectId ? "project" : "rtp_cycle";
 
-    if (projectError) {
-      audit.error("project_lookup_failed", {
-        projectId: parsed.data.projectId,
-        message: projectError.message,
-        code: projectError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to verify project" }, { status: 500 });
+    let target:
+      | { kind: "project"; id: string; workspaceId: string; title: string }
+      | { kind: "rtp_cycle"; id: string; workspaceId: string; title: string }
+      | null = null;
+
+    if (parsed.data.projectId) {
+      const { data: project, error: projectError } = await supabase
+        .from("projects")
+        .select("id, workspace_id, name")
+        .eq("id", parsed.data.projectId)
+        .maybeSingle();
+
+      if (projectError) {
+        audit.error("project_lookup_failed", {
+          projectId: parsed.data.projectId,
+          message: projectError.message,
+          code: projectError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify project" }, { status: 500 });
+      }
+
+      if (!project) {
+        return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      }
+
+      target = { kind: "project", id: project.id, workspaceId: project.workspace_id, title: project.name };
+    } else if (parsed.data.rtpCycleId) {
+      const { data: cycle, error: cycleError } = await supabase
+        .from("rtp_cycles")
+        .select("id, workspace_id, title")
+        .eq("id", parsed.data.rtpCycleId)
+        .maybeSingle();
+
+      if (cycleError) {
+        audit.error("rtp_cycle_lookup_failed", {
+          rtpCycleId: parsed.data.rtpCycleId,
+          message: cycleError.message,
+          code: cycleError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify RTP cycle" }, { status: 500 });
+      }
+
+      if (!cycle) {
+        return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
+      }
+
+      target = { kind: "rtp_cycle", id: cycle.id, workspaceId: cycle.workspace_id, title: cycle.title };
     }
 
-    if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    if (!target) {
+      return NextResponse.json({ error: "Report target is required" }, { status: 400 });
     }
 
     const { data: membership, error: membershipError } = await supabase
       .from("workspace_members")
       .select("workspace_id, role")
-      .eq("workspace_id", project.workspace_id)
+      .eq("workspace_id", target.workspaceId)
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (membershipError) {
       audit.error("membership_lookup_failed", {
-        workspaceId: project.workspace_id,
+        workspaceId: target.workspaceId,
         userId: user.id,
         message: membershipError.message,
         code: membershipError.code ?? null,
@@ -167,24 +232,23 @@ export async function POST(request: NextRequest) {
 
     if (!membership || !canAccessWorkspaceAction("reports.write", membership.role)) {
       audit.warn("forbidden_workspace", {
-        workspaceId: project.workspace_id,
+        workspaceId: target.workspaceId,
         userId: user.id,
         role: membership?.role ?? null,
       });
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const runIds = parsed.data.runIds ?? [];
-    if (runIds.length > 0) {
+    if (target.kind === "project" && runIds.length > 0) {
       const { data: runRows, error: runError } = await supabase
         .from("runs")
         .select("id")
-        .eq("workspace_id", project.workspace_id)
+        .eq("workspace_id", target.workspaceId)
         .in("id", runIds);
 
       if (runError) {
         audit.error("run_lookup_failed", {
-          workspaceId: project.workspace_id,
+          workspaceId: target.workspaceId,
           message: runError.message,
           code: runError.code ?? null,
         });
@@ -196,24 +260,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const reportTitle = parsed.data.title?.trim() || defaultReportTitle(project.name, parsed.data.reportType as ReportType);
+    const reportTitle = parsed.data.title?.trim() || defaultTargetedReportTitle(target.title, parsed.data.reportType as ReportType);
 
     const { data: report, error: reportError } = await supabase
       .from("reports")
       .insert({
-        workspace_id: project.workspace_id,
-        project_id: project.id,
+        workspace_id: target.workspaceId,
+        project_id: target.kind === "project" ? target.id : null,
+        rtp_cycle_id: target.kind === "rtp_cycle" ? target.id : null,
         title: reportTitle,
         report_type: parsed.data.reportType,
         summary: parsed.data.summary?.trim() || null,
         created_by: user.id,
       })
-      .select("id, workspace_id, project_id, title, report_type, status, summary, created_at, updated_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, created_at, updated_at")
       .single();
 
     if (reportError || !report) {
       audit.error("report_insert_failed", {
-        workspaceId: project.workspace_id,
+        workspaceId: target.workspaceId,
         message: reportError?.message ?? "unknown",
         code: reportError?.code ?? null,
       });
@@ -244,7 +309,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (runIds.length > 0) {
+    if (target.kind === "project" && runIds.length > 0) {
       const { error: reportRunsError } = await supabase.from("report_runs").insert(
         runIds.map((runId, index) => ({
           report_id: report.id,
@@ -265,8 +330,9 @@ export async function POST(request: NextRequest) {
 
     audit.info("report_created", {
       reportId: report.id,
-      projectId: project.id,
-      workspaceId: project.workspace_id,
+      targetKind,
+      targetId: target.id,
+      workspaceId: target.workspaceId,
       userId: user.id,
       linkedRunCount: runIds.length,
       durationMs: Date.now() - startedAt,

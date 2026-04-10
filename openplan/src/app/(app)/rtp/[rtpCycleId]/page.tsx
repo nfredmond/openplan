@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
+import { RtpReportCreator } from "@/components/rtp/rtp-report-creator";
 import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -448,6 +449,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <RtpReportCreator rtpCycleId={cycle.id} defaultTitle={`${cycle.title} Board / Binder`} />
               <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
                 Open digital RTP document
               </Link>

@@ -45,7 +45,8 @@ type ReportsPageSearchParams = Promise<{
 type ReportRow = {
   id: string;
   workspace_id: string;
-  project_id: string;
+  project_id: string | null;
+  rtp_cycle_id: string | null;
   title: string;
   report_type: string;
   status: string;
@@ -62,6 +63,16 @@ type ReportRow = {
     | Array<{
         id: string;
         name: string;
+      }>
+    | null;
+  rtp_cycles:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
       }>
     | null;
 };
@@ -170,7 +181,7 @@ export default async function ReportsPage({
       supabase
         .from("reports")
         .select(
-          "id, workspace_id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name)"
+          "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title)"
         )
         .order("updated_at", { ascending: false }),
       supabase
@@ -210,6 +221,9 @@ export default async function ReportsPage({
         project: Array.isArray(report.projects)
           ? report.projects[0] ?? null
           : report.projects ?? null,
+        rtpCycle: Array.isArray(report.rtp_cycles)
+          ? report.rtp_cycles[0] ?? null
+          : report.rtp_cycles ?? null,
         packetFreshness: getReportPacketFreshness({
           latestArtifactKind: report.latest_artifact_kind,
           generatedAt: report.generated_at,
@@ -632,7 +646,9 @@ export default async function ReportsPage({
                   </div>
 
                   <div className="module-record-meta">
-                    <span className="module-record-chip">Project {report.project?.name ?? "Unknown project"}</span>
+                    <span className="module-record-chip">
+                      {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
+                    </span>
                     <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
                     {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
                   </div>

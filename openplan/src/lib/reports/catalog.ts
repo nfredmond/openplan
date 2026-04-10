@@ -279,6 +279,11 @@ export function defaultReportTitle(projectName: string, reportType: ReportType):
   return `${projectName} ${label}`;
 }
 
+export function defaultTargetedReportTitle(targetTitle: string, reportType: ReportType): string {
+  const label = formatReportTypeLabel(reportType).replace(/\s+Packet$/i, "").trim();
+  return `${targetTitle} ${label}`;
+}
+
 export function reportStatusTone(
   status: string | null | undefined
 ): ReportStatusTone {

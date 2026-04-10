@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
+import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import {
   buildProjectStageGateSnapshot,
   buildProjectStageGateSummary,
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: report, error: reportError } = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, title, summary, report_type, status, created_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
 
@@ -137,6 +138,147 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!membership || !canAccessWorkspaceAction("report.generate", membership.role)) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (report.rtp_cycle_id) {
+      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult] = await Promise.all([
+        supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
+        supabase
+          .from("rtp_cycles")
+          .select(
+            "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, updated_at"
+          )
+          .eq("id", report.rtp_cycle_id)
+          .maybeSingle(),
+        supabase
+          .from("report_sections")
+          .select("id, section_key, title, enabled, sort_order, config_json")
+          .eq("report_id", report.id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("rtp_cycle_chapters")
+          .select("id, title, section_type, status, summary, guidance, content_markdown, sort_order")
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("project_rtp_cycle_links")
+          .select("id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary)")
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("engagement_campaigns")
+          .select("id, title, status, engagement_type, summary, rtp_cycle_chapter_id")
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+          .order("updated_at", { ascending: false }),
+      ]);
+
+      const loadErrors = [
+        workspaceResult.error,
+        cycleResult.error,
+        sectionsResult.error,
+        chaptersResult.error,
+        linksResult.error,
+        campaignsResult.error,
+      ].filter(Boolean);
+
+      if (loadErrors.length > 0 || !cycleResult.data) {
+        const firstError = loadErrors[0];
+        audit.error("rtp_report_generation_load_failed", {
+          reportId: report.id,
+          message: firstError?.message ?? "RTP cycle not found",
+          code: firstError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load RTP packet source records" }, { status: 500 });
+      }
+
+      const cycle = cycleResult.data;
+      const sections = sectionsResult.data ?? [];
+      const chapters = chaptersResult.data ?? [];
+      const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
+      const campaigns = campaignsResult.data ?? [];
+      const html = buildRtpExportHtml({ cycle, chapters, linkedProjects, campaigns });
+      const generatedAt = new Date().toISOString();
+      const artifactMetadata = {
+        htmlContent: html,
+        generatedAt,
+        auditability: {
+          posture: "rtp_packet_v1",
+          note: "This output assembles RTP cycle narrative, portfolio posture, and engagement targets into a packet record artifact.",
+        },
+        sourceContext: {
+          reportOrigin: "rtp_cycle_packet",
+          reportReason: "board_packet_record",
+          rtpCycleId: cycle.id,
+          rtpCycleTitle: cycle.title,
+          rtpCycleUpdatedAt: cycle.updated_at,
+          chapterCount: chapters.length,
+          linkedProjectCount: linkedProjects.length,
+          engagementCampaignCount: campaigns.length,
+          enabledSectionCount: sections.filter((section) => section.enabled).length,
+        },
+        generationMode: "rtp_html_packet",
+      };
+
+      const { data: artifact, error: artifactError } = await supabase
+        .from("report_artifacts")
+        .insert({
+          report_id: report.id,
+          artifact_kind: "html",
+          storage_path: null,
+          generated_by: user.id,
+          generated_at: generatedAt,
+          metadata_json: artifactMetadata,
+        })
+        .select("id, report_id, artifact_kind, generated_at, metadata_json")
+        .single();
+
+      if (artifactError || !artifact) {
+        audit.error("artifact_insert_failed", {
+          reportId: report.id,
+          message: artifactError?.message ?? "unknown",
+          code: artifactError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to persist report artifact" }, { status: 500 });
+      }
+
+      const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
+      const { error: reportUpdateError } = await supabase
+        .from("reports")
+        .update({
+          status: "generated",
+          generated_at: generatedAt,
+          latest_artifact_kind: "html",
+          latest_artifact_url: latestArtifactUrl,
+        })
+        .eq("id", report.id);
+
+      if (reportUpdateError) {
+        audit.error("report_update_failed", {
+          reportId: report.id,
+          message: reportUpdateError.message,
+          code: reportUpdateError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+      }
+
+      audit.info("rtp_report_generated", {
+        reportId: report.id,
+        artifactId: artifact.id,
+        userId: user.id,
+        linkedProjectCount: linkedProjects.length,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          reportId: report.id,
+          artifactId: artifact.id,
+          format: "html",
+          latestArtifactUrl,
+          warnings: [],
+        },
+        { status: 200 }
+      );
     }
 
     const [
