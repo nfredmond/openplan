@@ -31,6 +31,17 @@ type ProgramRow = {
   updated_at?: string | null;
 };
 
+type ProjectRow = {
+  id: string;
+  workspace_id: string;
+  name?: string | null;
+  summary?: string | null;
+  status?: string | null;
+  plan_type?: string | null;
+  delivery_phase?: string | null;
+  updated_at?: string | null;
+};
+
 type FundingOpportunityRow = {
   id: string;
   workspace_id: string;
@@ -149,6 +160,47 @@ export async function loadFundingOpportunityAccess(
   return {
     supabase,
     opportunity,
+    membership,
+    error: null,
+    allowed: Boolean(membership && canAccessWorkspaceAction(action, membership.role)),
+  };
+}
+
+export async function loadProjectAccess(
+  supabase: unknown,
+  projectId: string,
+  userId: string,
+  action: "programs.read" | "programs.write"
+) {
+  const client = asQueryClient(supabase);
+  const { data: project, error: projectError } = (await client
+    .from("projects")
+    .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
+    .eq("id", projectId)
+    .maybeSingle()) as Awaited<{ data: ProjectRow | null; error: QueryError }>;
+
+  if (projectError) {
+    return { supabase, project: null, membership: null, error: projectError }; 
+  }
+
+  if (!project) {
+    return { supabase, project: null, membership: null, error: null };
+  }
+
+  const { data: membership, error: membershipError } = (await client
+    .from("workspace_members")
+    .select("workspace_id, role")
+    .eq("workspace_id", project.workspace_id)
+    .eq("user_id", userId)
+    .maybeSingle()) as Awaited<{ data: MembershipRow | null; error: QueryError }>;
+
+  if (membershipError) {
+    return { supabase, project, membership: null, error: membershipError };
+  }
+
+  return {
+    supabase,
+    project,
     membership,
     error: null,
     allowed: Boolean(membership && canAccessWorkspaceAction(action, membership.role)),

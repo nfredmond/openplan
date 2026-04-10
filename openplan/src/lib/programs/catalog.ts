@@ -37,6 +37,26 @@ export const FUNDING_OPPORTUNITY_DECISION_OPTIONS = [
   { value: "skip", label: "Skip" },
 ] as const;
 
+export const FUNDING_AWARD_MATCH_POSTURE_OPTIONS = [
+  { value: "secured", label: "Secured" },
+  { value: "partial", label: "Partial" },
+  { value: "unfunded", label: "Unfunded" },
+  { value: "not_required", label: "Not required" },
+] as const;
+
+export const FUNDING_AWARD_SPENDING_STATUS_OPTIONS = [
+  { value: "not_started", label: "Not started" },
+  { value: "active", label: "Active" },
+  { value: "delayed", label: "Delayed" },
+  { value: "fully_spent", label: "Fully spent" },
+] as const;
+
+export const FUNDING_AWARD_RISK_FLAG_OPTIONS = [
+  { value: "none", label: "No active risk" },
+  { value: "watch", label: "Watch" },
+  { value: "critical", label: "Critical" },
+] as const;
+
 export const PROGRAM_LINK_TYPE_OPTIONS = [
   { value: "plan", label: "Plan Record" },
   { value: "report", label: "Report" },
@@ -50,6 +70,9 @@ export type ProgramLinkType = (typeof PROGRAM_LINK_TYPE_OPTIONS)[number]["value"
 export type ProgramFundingClassification = (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"];
 export type FundingOpportunityStatus = (typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"];
 export type FundingOpportunityDecision = (typeof FUNDING_OPPORTUNITY_DECISION_OPTIONS)[number]["value"];
+export type FundingAwardMatchPosture = (typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"];
+export type FundingAwardSpendingStatus = (typeof FUNDING_AWARD_SPENDING_STATUS_OPTIONS)[number]["value"];
+export type FundingAwardRiskFlag = (typeof FUNDING_AWARD_RISK_FLAG_OPTIONS)[number]["value"];
 
 export type ProgramReadinessCheck = {
   key:
@@ -128,6 +151,18 @@ export function formatFundingOpportunityDecisionLabel(value: string | null | und
   return FUNDING_OPPORTUNITY_DECISION_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
 }
 
+export function formatFundingAwardMatchPostureLabel(value: string | null | undefined): string {
+  return FUNDING_AWARD_MATCH_POSTURE_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
+export function formatFundingAwardSpendingStatusLabel(value: string | null | undefined): string {
+  return FUNDING_AWARD_SPENDING_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
+export function formatFundingAwardRiskFlagLabel(value: string | null | undefined): string {
+  return FUNDING_AWARD_RISK_FLAG_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
 export function programStatusTone(
   status: string | null | undefined
 ): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -154,6 +189,34 @@ export function fundingOpportunityDecisionTone(
   if (decision === "pursue") return "success";
   if (decision === "monitor") return "info";
   if (decision === "skip") return "warning";
+  return "neutral";
+}
+
+export function fundingAwardMatchPostureTone(
+  posture: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (posture === "secured" || posture === "not_required") return "success";
+  if (posture === "partial") return "warning";
+  if (posture === "unfunded") return "danger";
+  return "neutral";
+}
+
+export function fundingAwardSpendingStatusTone(
+  status: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "active") return "info";
+  if (status === "fully_spent") return "success";
+  if (status === "delayed") return "warning";
+  if (status === "not_started") return "neutral";
+  return "neutral";
+}
+
+export function fundingAwardRiskFlagTone(
+  riskFlag: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (riskFlag === "critical") return "danger";
+  if (riskFlag === "watch") return "warning";
+  if (riskFlag === "none") return "success";
   return "neutral";
 }
 

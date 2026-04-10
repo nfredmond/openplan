@@ -18,14 +18,22 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
+import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
+import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
+  formatFundingAwardMatchPostureLabel,
+  formatFundingAwardRiskFlagLabel,
+  formatFundingAwardSpendingStatusLabel,
   formatFundingOpportunityDecisionLabel,
   formatFundingOpportunityStatusLabel,
+  fundingAwardMatchPostureTone,
+  fundingAwardRiskFlagTone,
+  fundingAwardSpendingStatusTone,
   fundingOpportunityDecisionTone,
   fundingOpportunityStatusTone,
 } from "@/lib/programs/catalog";
@@ -176,6 +184,52 @@ type FundingOpportunityRow = {
   summary: string | null;
   updated_at: string;
   created_at: string;
+  programs:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
+};
+
+type ProjectFundingProfileRow = {
+  id: string;
+  project_id: string;
+  funding_need_amount: number | null;
+  local_match_need_amount: number | null;
+  notes: string | null;
+  updated_at: string;
+};
+
+type FundingAwardRow = {
+  id: string;
+  project_id: string;
+  program_id: string | null;
+  funding_opportunity_id: string | null;
+  title: string;
+  awarded_amount: number | string;
+  match_amount: number | string;
+  match_posture: string;
+  obligation_due_at: string | null;
+  spending_status: string;
+  risk_flag: string;
+  notes: string | null;
+  updated_at: string;
+  created_at: string;
+  funding_opportunities:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
   programs:
     | {
         id: string;
@@ -501,6 +555,35 @@ export default async function ProjectDetailPage({
   const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message) ? [] : ((invoiceResult.data ?? []) as BillingInvoiceRow[]);
   const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
+  const projectFundingProfileResult = await supabase
+    .from("project_funding_profiles")
+    .select("id, project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
+    .eq("project_id", project.id)
+    .maybeSingle();
+  const projectFundingProfile = looksLikePendingSchema(projectFundingProfileResult.error?.message)
+    ? null
+    : ((projectFundingProfileResult.data ?? null) as ProjectFundingProfileRow | null);
+  const projectFundingProfilePending = looksLikePendingSchema(projectFundingProfileResult.error?.message);
+
+  const fundingAwardsResult = await supabase
+    .from("funding_awards")
+    .select(
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
+    )
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false })
+    .limit(8);
+  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+    ? []
+    : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]).map((item) => ({
+        ...item,
+        opportunity: Array.isArray(item.funding_opportunities)
+          ? (item.funding_opportunities[0] ?? null)
+          : item.funding_opportunities ?? null,
+        program: Array.isArray(item.programs) ? (item.programs[0] ?? null) : item.programs ?? null,
+      }));
+  const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
+
   const fundingOpportunitiesResult = await supabase
     .from("funding_opportunities")
     .select(
@@ -597,6 +680,14 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
+  const committedFundingAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
+  const committedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
+  const fundingNeedAmount = Number(projectFundingProfile?.funding_need_amount ?? 0);
+  const remainingFundingGap = Math.max(fundingNeedAmount - committedFundingAmount, 0);
+  const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
+  const nextObligationAward = fundingAwards
+    .filter((award) => Boolean(award.obligation_due_at))
+    .sort((left, right) => new Date(left.obligation_due_at ?? "").getTime() - new Date(right.obligation_due_at ?? "").getTime())[0] ?? null;
   const pursueFundingCount = fundingOpportunities.filter((item) => item.decision_state === "pursue").length;
   const monitorFundingCount = fundingOpportunities.filter((item) => item.decision_state === "monitor").length;
   const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
@@ -1277,6 +1368,123 @@ export default async function ProjectDetailPage({
             </div>
           </div>
         </div>
+
+        {projectFundingProfilePending || fundingAwardsPending ? (
+          <div className="module-alert mt-5 text-sm">Funding stack and award records will appear after the funding award migrations are applied to the database.</div>
+        ) : (
+          <>
+            <div className="module-summary-grid cols-5 mt-5">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Funding need</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(fundingNeedAmount)}</p>
+                <p className="module-summary-detail">Current project-level target need for funding stack planning.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Committed awards</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(committedFundingAmount)}</p>
+                <p className="module-summary-detail">Awarded dollars already attached to this project.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Remaining gap</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(remainingFundingGap)}</p>
+                <p className="module-summary-detail">Funding need not yet covered by current award records.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Match tracked</p>
+                <p className="module-summary-value text-base leading-tight">{fmtCurrency(committedMatchAmount)}</p>
+                <p className="module-summary-detail">Local or partner match currently attached to awards.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Award risk</p>
+                <p className="module-summary-value">{awardWatchCount}</p>
+                <p className="module-summary-detail">Award record(s) flagged watch or critical.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 mt-5">
+              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">
+                  {fundingNeedAmount > 0
+                    ? `${Math.min(100, Math.round((committedFundingAmount / fundingNeedAmount) * 100))}% covered by committed awards`
+                    : "Funding target not set yet"}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {fundingNeedAmount > 0
+                    ? `${fmtCurrency(committedFundingAmount)} committed against a ${fmtCurrency(fundingNeedAmount)} target need.`
+                    : "Save a funding need so OpenPlan can report a real remaining gap instead of only raw award totals."}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next obligation</p>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? "No obligation date recorded"}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {nextObligationAward
+                    ? `Obligation due ${fmtDateTime(nextObligationAward.obligation_due_at)}.`
+                    : "Record obligation timing on awards so reimbursement and delivery risk can surface earlier."}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] mt-5">
+              <ProjectFundingProfileEditor
+                projectId={project.id}
+                initialFundingNeedAmount={projectFundingProfile?.funding_need_amount ?? null}
+                initialLocalMatchNeedAmount={projectFundingProfile?.local_match_need_amount ?? null}
+                initialNotes={projectFundingProfile?.notes ?? null}
+              />
+
+              <ProjectFundingAwardCreator
+                projectId={project.id}
+                opportunityOptions={fundingOpportunities.map((opportunity) => ({ id: opportunity.id, title: opportunity.title }))}
+              />
+            </div>
+
+            {projectFundingProfile?.notes ? (
+              <div className="module-note mt-5 text-sm">Funding notes: {projectFundingProfile.notes}</div>
+            ) : null}
+
+            {fundingAwards.length === 0 ? (
+              <div className="module-empty-state mt-5 text-sm">No funding awards are recorded for this project yet.</div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {fundingAwards.map((award) => (
+                  <div key={award.id} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={fundingAwardMatchPostureTone(award.match_posture)}>
+                          {formatFundingAwardMatchPostureLabel(award.match_posture)}
+                        </StatusBadge>
+                        <StatusBadge tone={fundingAwardSpendingStatusTone(award.spending_status)}>
+                          {formatFundingAwardSpendingStatusLabel(award.spending_status)}
+                        </StatusBadge>
+                        <StatusBadge tone={fundingAwardRiskFlagTone(award.risk_flag)}>
+                          {formatFundingAwardRiskFlagLabel(award.risk_flag)}
+                        </StatusBadge>
+                        {award.program ? <StatusBadge tone="info">{award.program.title}</StatusBadge> : null}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{award.title}</h3>
+                          <p className="module-record-stamp">Updated {fmtDateTime(award.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
+                      </div>
+
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">Awarded {fmtCurrency(award.awarded_amount)}</span>
+                        <span className="module-record-chip">Match {fmtCurrency(award.match_amount)}</span>
+                        <span className="module-record-chip">Obligation {fmtDateTime(award.obligation_due_at)}</span>
+                        <span className="module-record-chip">Opportunity {award.opportunity?.title ?? "Not linked"}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
 
         {fundingOpportunitiesPending ? (
           <div className="module-alert mt-5 text-sm">Funding opportunities will appear after the funding catalog migrations are applied to the database.</div>
