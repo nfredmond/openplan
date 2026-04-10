@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 
 export function RtpRegistryPacketQueueCommandBoard({
   resetCycleIds,
+  missingCycleIds,
   generateReportIds,
   resetCount,
   missingCount,
 }: {
   resetCycleIds: string[];
+  missingCycleIds: string[];
   generateReportIds: string[];
   resetCount: number;
   missingCount: number;
@@ -22,7 +24,7 @@ export function RtpRegistryPacketQueueCommandBoard({
   const [error, setError] = useState<string | null>(null);
 
   const actionableReportCount = generateReportIds.length;
-  const hasActionableQueue = resetCycleIds.length > 0 || actionableReportCount > 0;
+  const hasActionableQueue = resetCycleIds.length > 0 || actionableReportCount > 0 || missingCycleIds.length > 0;
 
   async function handleClearQueue() {
     setIsSubmitting(true);
@@ -30,10 +32,35 @@ export function RtpRegistryPacketQueueCommandBoard({
     setError(null);
 
     let resetUpdatedCount = 0;
+    let createdReportCount = 0;
     let regenerateSuccessCount = 0;
     let warningCount = 0;
+    const reportIdsToGenerate = [...generateReportIds];
 
     try {
+      for (const cycleId of missingCycleIds) {
+        const createResponse = await fetch("/api/reports", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            rtpCycleId: cycleId,
+            reportType: "board_packet",
+          }),
+        });
+
+        const createPayload = (await createResponse.json()) as {
+          error?: string;
+          reportId?: string;
+        };
+
+        if (!createResponse.ok || !createPayload.reportId) {
+          throw new Error(createPayload.error || "Failed while creating RTP packet records for missing cycles");
+        }
+
+        createdReportCount += 1;
+        reportIdsToGenerate.push(createPayload.reportId);
+      }
+
       if (resetCycleIds.length > 0) {
         const resetResponse = await fetch("/api/rtp-cycles/packet-presets", {
           method: "POST",
@@ -53,7 +80,7 @@ export function RtpRegistryPacketQueueCommandBoard({
         resetUpdatedCount = resetPayload.updatedReportCount ?? 0;
       }
 
-      for (const reportId of generateReportIds) {
+      for (const reportId of [...new Set(reportIdsToGenerate)]) {
         const response = await fetch(`/api/reports/${reportId}/generate`, {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -74,6 +101,9 @@ export function RtpRegistryPacketQueueCommandBoard({
       }
 
       const fragments = [] as string[];
+      if (createdReportCount > 0) {
+        fragments.push(`created ${createdReportCount} first packet ${createdReportCount === 1 ? "record" : "records"}`);
+      }
       if (resetUpdatedCount > 0) {
         fragments.push(`reset ${resetUpdatedCount} packet ${resetUpdatedCount === 1 ? "layout" : "layouts"}`);
       }
@@ -81,7 +111,10 @@ export function RtpRegistryPacketQueueCommandBoard({
         fragments.push(`regenerated ${regenerateSuccessCount} packet ${regenerateSuccessCount === 1 ? "record" : "records"}`);
       }
       if (missingCount > 0) {
-        fragments.push(`${missingCount} cycle${missingCount === 1 ? " still needs" : "s still need"} a first packet record`);
+        const remainingMissingCount = Math.max(missingCount - createdReportCount, 0);
+        if (remainingMissingCount > 0) {
+          fragments.push(`${remainingMissingCount} cycle${remainingMissingCount === 1 ? " still needs" : "s still need"} a first packet record`);
+        }
       }
 
       setMessage(
@@ -132,9 +165,9 @@ export function RtpRegistryPacketQueueCommandBoard({
         <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4 text-sm text-muted-foreground">
           <p className="font-semibold text-foreground">Recommended sequence</p>
           <ol className="mt-2 space-y-2">
-            <li>1. Reset all cycles marked as needing a phase-aligned packet layout.</li>
-            <li>2. Regenerate every packet still flagged as stale.</li>
-            <li>3. Review any cycles that still show missing packet records.</li>
+            <li>1. Create first packet records for cycles that still have none.</li>
+            <li>2. Reset all cycles marked as needing a phase-aligned packet layout.</li>
+            <li>3. Regenerate every packet still flagged as stale.</li>
           </ol>
         </div>
 

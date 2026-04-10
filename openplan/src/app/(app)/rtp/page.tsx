@@ -630,6 +630,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           {packetAttentionCounts.reset > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
             <RtpRegistryPacketQueueCommandBoard
               resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
+              missingCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "missing").map((cycle) => cycle.id)}
               generateReportIds={[
                 ...new Set(
                   allCycles
