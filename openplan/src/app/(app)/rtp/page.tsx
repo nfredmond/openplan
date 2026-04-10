@@ -4,6 +4,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
+import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   formatReportStatusLabel,
@@ -624,6 +625,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {packetAttentionCounts.reset > 0 ? (
+            <RtpRegistryPacketBulkActions
+              cycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
+              cycleCount={packetAttentionCounts.reset}
+            />
+          ) : null}
+
           <RtpCycleCreator />
 
           <article className="module-section-surface">
