@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
+import { RtpReportSectionControls } from "@/components/reports/rtp-report-section-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { formatRtpCycleStatusLabel, rtpCycleStatusTone } from "@/lib/rtp/catalog";
@@ -97,6 +98,7 @@ export function RtpReportDetail({
     title: string;
     enabled: boolean;
     sort_order: number;
+    config_json?: Record<string, unknown>;
   }>;
   artifacts: Array<{
     id: string;
@@ -409,26 +411,34 @@ export function RtpReportDetail({
               <div className="module-section-heading">
                 <p className="module-section-label">Sections</p>
                 <h2 className="module-section-title">Packet structure</h2>
-                <p className="module-section-description">This record still uses the shared report section system.</p>
+                <p className="module-section-description">Tune packet structure here, then reset back to the current cycle-stage preset when needed.</p>
               </div>
             </div>
             {sections.length === 0 ? (
               <EmptyState title="No sections configured" description="This packet record has no sections yet." compact />
             ) : (
-              <div className="space-y-2">
+              <RtpReportSectionControls
+                reportId={report.id}
+                cycleStatus={cycle?.status ?? null}
+                sections={sections.map((section) => ({
+                  id: section.id,
+                  sectionKey: section.section_key,
+                  title: section.title,
+                  enabled: section.enabled,
+                  sortOrder: section.sort_order,
+                  configJson: section.config_json ?? {},
+                }))}
+              />
+            )}
+            {sections.length > 0 ? (
+              <div className="mt-4 space-y-2 border-t border-border/50 pt-4">
                 {sections.map((section) => (
-                  <div key={section.id} className="module-row-card gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={section.enabled ? "success" : "neutral"}>{section.enabled ? "Enabled" : "Disabled"}</StatusBadge>
-                      <StatusBadge tone="neutral">Sort {section.sort_order}</StatusBadge>
-                    </div>
-                    <p className="text-sm font-semibold tracking-tight">{section.title}</p>
-                    <p className="text-xs text-muted-foreground">{section.section_key}</p>
-                    <p className="text-xs text-muted-foreground">{describeReportSectionKey(section.section_key)}</p>
+                  <div key={`${section.id}-descriptor`} className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">{section.title}</span>, {describeReportSectionKey(section.section_key)}
                   </div>
                 ))}
               </div>
-            )}
+            ) : null}
           </article>
 
           <article className="module-section-surface">

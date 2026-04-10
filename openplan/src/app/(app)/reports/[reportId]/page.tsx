@@ -598,6 +598,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           title: section.title,
           enabled: section.enabled,
           sort_order: section.sort_order,
+          config_json: (section.config_json as Record<string, unknown> | null) ?? {},
         }))}
         artifacts={artifactList.map((artifact) => ({
           id: artifact.id,
