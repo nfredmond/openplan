@@ -737,6 +737,11 @@ export default async function ProjectDetailPage({
       summarizeBillingInvoiceRecords(projectInvoices.filter((invoice) => invoice.funding_award_id === award.id)),
     ])
   );
+  const invoiceRecordsByFundingAwardId = new Map(
+    fundingAwards.map((award) => [award.id, projectInvoices.filter((invoice) => invoice.funding_award_id === award.id)])
+  );
+  const unlinkedProjectInvoices = projectInvoices.filter((invoice) => !invoice.funding_award_id);
+  const unlinkedProjectInvoiceSummary = summarizeBillingInvoiceRecords(unlinkedProjectInvoices);
   const projectReportIds = ((projectReportData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
   );
@@ -1480,6 +1485,11 @@ export default async function ProjectDetailPage({
                     ? `${fmtCurrency(fundingStackSummary.requestedReimbursementAmount)} requested on linked award invoices, ${fmtCurrency(fundingStackSummary.paidReimbursementAmount)} paid, ${fmtCurrency(fundingStackSummary.outstandingReimbursementAmount)} outstanding, and ${fmtCurrency(fundingStackSummary.uninvoicedAwardAmount)} still not yet invoiced.`
                     : fundingStackSummary.reimbursementReason}
                 </p>
+                {unlinkedProjectInvoices.length > 0 ? (
+                  <div className="module-note mt-3 text-sm">
+                    {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award, totaling {fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}. Those records are excluded from award reimbursement posture until linked in the billing register below.
+                  </div>
+                ) : null}
               </div>
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next obligation</p>
@@ -1510,12 +1520,19 @@ export default async function ProjectDetailPage({
               <div className="module-note mt-5 text-sm">Funding notes: {projectFundingProfile.notes}</div>
             ) : null}
 
+            {unlinkedProjectInvoices.length > 0 ? (
+              <div className="module-alert mt-5 text-sm">
+                {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} not yet linked to a funding award. Reimbursement posture for the award stack only counts linked invoice chains, so review the billing register below to resolve the mismatch.
+              </div>
+            ) : null}
+
             {fundingAwards.length === 0 ? (
               <div className="module-empty-state mt-5 text-sm">No funding awards are recorded for this project yet.</div>
             ) : (
               <div className="mt-5 module-record-list">
                 {fundingAwards.map((award) => {
                   const awardInvoiceSummary = invoiceSummaryByFundingAwardId.get(award.id);
+                  const awardInvoices = invoiceRecordsByFundingAwardId.get(award.id) ?? [];
 
                   return (
                     <div key={award.id} className="module-record-row">
@@ -1546,8 +1563,55 @@ export default async function ProjectDetailPage({
                           <span className="module-record-chip">Match {fmtCurrency(award.match_amount)}</span>
                           <span className="module-record-chip">Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)}</span>
                           <span className="module-record-chip">Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)}</span>
+                          <span className="module-record-chip">Uninvoiced {fmtCurrency(Math.max(Number(award.awarded_amount ?? 0) - Number(awardInvoiceSummary?.totalNetAmount ?? 0), 0))}</span>
                           <span className="module-record-chip">Obligation {fmtDateTime(award.obligation_due_at)}</span>
                           <span className="module-record-chip">Opportunity {award.opportunity?.title ?? "Not linked"}</span>
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                                Linked invoice chain
+                              </p>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {awardInvoices.length > 0
+                                  ? `${awardInvoices.length} linked invoice record${awardInvoices.length === 1 ? "" : "s"} totaling ${fmtCurrency(awardInvoiceSummary?.totalNetAmount ?? 0)} net requested.`
+                                  : "No invoice records are linked to this award yet."}
+                              </p>
+                            </div>
+                            <Link href="#project-billing-register" className="module-inline-action w-fit">
+                              Review billing register
+                            </Link>
+                          </div>
+
+                          {awardInvoices.length > 0 ? (
+                            <div className="mt-3 space-y-2">
+                              {awardInvoices.map((invoice) => (
+                                <div key={invoice.id} className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
+                                    <StatusBadge tone="info">{titleize(invoice.billing_basis)}</StatusBadge>
+                                    <StatusBadge tone="neutral">{fmtCurrency(invoice.net_amount)}</StatusBadge>
+                                  </div>
+                                  <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        {invoice.invoice_date ? `Invoice ${fmtDateTime(invoice.invoice_date)}` : "Invoice date not set"}
+                                        {invoice.due_date ? ` · Due ${fmtDateTime(invoice.due_date)}` : ""}
+                                        {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
+                                      </p>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      Gross {fmtCurrency(invoice.amount)}
+                                      {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${fmtCurrency(invoice.retention_amount)}` : ""}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -1746,7 +1810,7 @@ export default async function ProjectDetailPage({
       </article>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <article className="module-section-surface">
+        <article id="project-billing-register" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
