@@ -13,6 +13,53 @@ import {
   reportStatusTone,
 } from "@/lib/reports/catalog";
 
+function compareCountMetric(label: string, generated: number | null, current: number | null) {
+  if (generated === null && current === null) {
+    return null;
+  }
+
+  if (generated === current) {
+    return {
+      label,
+      status: "unchanged" as const,
+      detail: `Still ${current ?? generated ?? 0}.`,
+    };
+  }
+
+  return {
+    label,
+    status: "count_changed" as const,
+    detail: `Generated with ${generated ?? 0}, current source is ${current ?? 0}.`,
+  };
+}
+
+function normalizeKeys(keys: string[]) {
+  return [...new Set(keys.map((key) => key.trim()).filter(Boolean))].sort();
+}
+
+function areKeySetsEqual(left: string[], right: string[]) {
+  const leftKeys = normalizeKeys(left);
+  const rightKeys = normalizeKeys(right);
+
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  return leftKeys.every((key, index) => key === rightKeys[index]);
+}
+
+function driftStatusTone(status: "unchanged" | "updated" | "count_changed") {
+  if (status === "updated") return "warning" as const;
+  if (status === "count_changed") return "info" as const;
+  return "success" as const;
+}
+
+function driftStatusLabel(status: "unchanged" | "updated" | "count_changed") {
+  if (status === "updated") return "Updated";
+  if (status === "count_changed") return "Count changed";
+  return "Unchanged";
+}
+
 export function RtpReportDetail({
   report,
   workspace,
@@ -21,6 +68,7 @@ export function RtpReportDetail({
   artifacts,
   latestHtml,
   generationContext,
+  currentContext,
 }: {
   report: {
     id: string;
@@ -69,6 +117,19 @@ export function RtpReportDetail({
     linkedProjectCount: number | null;
     engagementCampaignCount: number | null;
   };
+  currentContext: {
+    enabledSectionKeys: string[];
+    readinessLabel: string | null;
+    readinessReason: string | null;
+    workflowLabel: string | null;
+    workflowDetail: string | null;
+    chapterCount: number | null;
+    chapterCompleteCount: number | null;
+    chapterReadyForReviewCount: number | null;
+    linkedProjectCount: number | null;
+    engagementCampaignCount: number | null;
+    cycleUpdatedAt: string | null;
+  };
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
   const packetFreshness = getReportPacketFreshness({
@@ -76,6 +137,75 @@ export function RtpReportDetail({
     generatedAt: report.generated_at,
     updatedAt: cycle?.updated_at ?? report.updated_at,
   });
+  const driftItems = [
+    compareCountMetric("Chapters in scope", generationContext.chapterCount, currentContext.chapterCount),
+    compareCountMetric(
+      "Review-ready chapters",
+      generationContext.chapterReadyForReviewCount,
+      currentContext.chapterReadyForReviewCount
+    ),
+    compareCountMetric(
+      "Complete chapters",
+      generationContext.chapterCompleteCount,
+      currentContext.chapterCompleteCount
+    ),
+    compareCountMetric("Linked projects", generationContext.linkedProjectCount, currentContext.linkedProjectCount),
+    compareCountMetric(
+      "Engagement targets",
+      generationContext.engagementCampaignCount,
+      currentContext.engagementCampaignCount
+    ),
+    generationContext.readinessLabel || currentContext.readinessLabel
+      ? {
+          label: "Readiness posture",
+          status:
+            generationContext.readinessLabel === currentContext.readinessLabel &&
+            generationContext.readinessReason === currentContext.readinessReason
+              ? ("unchanged" as const)
+              : ("updated" as const),
+          detail:
+            generationContext.readinessLabel === currentContext.readinessLabel &&
+            generationContext.readinessReason === currentContext.readinessReason
+              ? `Still ${currentContext.readinessLabel ?? generationContext.readinessLabel ?? "unknown"}.`
+              : `Generated as ${generationContext.readinessLabel ?? "unknown"}; current source is ${currentContext.readinessLabel ?? "unknown"}.`,
+        }
+      : null,
+    generationContext.workflowLabel || currentContext.workflowLabel
+      ? {
+          label: "Workflow posture",
+          status:
+            generationContext.workflowLabel === currentContext.workflowLabel &&
+            generationContext.workflowDetail === currentContext.workflowDetail
+              ? ("unchanged" as const)
+              : ("updated" as const),
+          detail:
+            generationContext.workflowLabel === currentContext.workflowLabel &&
+            generationContext.workflowDetail === currentContext.workflowDetail
+              ? `Still ${currentContext.workflowLabel ?? generationContext.workflowLabel ?? "unknown"}.`
+              : `Generated as ${generationContext.workflowLabel ?? "unknown"}; current source is ${currentContext.workflowLabel ?? "unknown"}.`,
+        }
+      : null,
+    generationContext.enabledSectionKeys.length > 0 || currentContext.enabledSectionKeys.length > 0
+      ? {
+          label: "Section composition",
+          status: areKeySetsEqual(generationContext.enabledSectionKeys, currentContext.enabledSectionKeys)
+            ? ("unchanged" as const)
+            : ("updated" as const),
+          detail: areKeySetsEqual(generationContext.enabledSectionKeys, currentContext.enabledSectionKeys)
+            ? "Enabled section set still matches the packet artifact."
+            : `Generated with ${generationContext.enabledSectionKeys.length} sections; current source has ${currentContext.enabledSectionKeys.length}.`,
+        }
+      : null,
+  ].filter(
+    (
+      item
+    ): item is {
+      label: string;
+      status: "unchanged" | "updated" | "count_changed";
+      detail: string;
+    } => Boolean(item)
+  );
+  const changedDriftItems = driftItems.filter((item) => item.status !== "unchanged");
 
   return (
     <section className="module-page">
@@ -192,6 +322,39 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
+                <p className="module-section-label">Source drift</p>
+                <h2 className="module-section-title">What changed since this packet was generated</h2>
+                <p className="module-section-description">Explicit comparison between the saved packet snapshot and the current RTP source state.</p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={changedDriftItems.length === 0 ? "success" : "warning"}>
+                  {changedDriftItems.length === 0
+                    ? "No source drift detected"
+                    : `${changedDriftItems.length} drift ${changedDriftItems.length === 1 ? "signal" : "signals"}`}
+                </StatusBadge>
+                {currentContext.cycleUpdatedAt ? (
+                  <StatusBadge tone="neutral">Current source updated {formatDateTime(currentContext.cycleUpdatedAt)}</StatusBadge>
+                ) : null}
+              </div>
+              <div className="mt-4 space-y-2">
+                {driftItems.map((item) => (
+                  <div key={item.label} className="module-row-card gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={driftStatusTone(item.status)}>{driftStatusLabel(item.status)}</StatusBadge>
+                    </div>
+                    <p className="text-sm font-semibold tracking-tight text-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
                 <p className="module-section-label">Packet source trace</p>
                 <h2 className="module-section-title">What this packet was built from</h2>
                 <p className="module-section-description">Snapshot of the RTP cycle posture captured at generation time.</p>
@@ -229,6 +392,14 @@ export function RtpReportDetail({
                 {generationContext.enabledSectionKeys.length > 0
                   ? generationContext.enabledSectionKeys.join(", ")
                   : "No section composition captured on this artifact."}
+              </p>
+            </div>
+            <div className="mt-4 rounded-2xl border border-border/70 bg-background px-4 py-4">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current source composition</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {currentContext.enabledSectionKeys.length > 0
+                  ? currentContext.enabledSectionKeys.join(", ")
+                  : "No enabled section composition is currently configured on this packet record."}
               </p>
             </div>
           </article>

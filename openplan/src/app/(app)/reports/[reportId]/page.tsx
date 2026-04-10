@@ -15,6 +15,7 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   describeEvidenceChainSummary,
@@ -398,6 +399,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     { data: sections },
     { data: reportRunLinks },
     { data: artifacts },
+    { data: rtpChapters },
+    { data: rtpProjectLinks },
+    { data: rtpCampaigns },
   ] = await Promise.all([
     supabase
       .from("projects")
@@ -410,7 +414,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       ? supabase
           .from("rtp_cycles")
           .select(
-            "id, title, status, summary, geography_label, horizon_start_year, horizon_end_year, updated_at"
+            "id, title, status, summary, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, updated_at"
           )
           .eq("id", report.rtp_cycle_id)
           .maybeSingle()
@@ -435,6 +439,25 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       .select("id, artifact_kind, generated_at, metadata_json")
       .eq("report_id", report.id)
       .order("generated_at", { ascending: false }),
+    report.rtp_cycle_id
+      ? supabase
+          .from("rtp_cycle_chapters")
+          .select("id, status")
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+      : Promise.resolve({ data: [] }),
+    report.rtp_cycle_id
+      ? supabase
+          .from("project_rtp_cycle_links")
+          .select("id")
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+      : Promise.resolve({ data: [] }),
+    report.rtp_cycle_id
+      ? supabase
+          .from("engagement_campaigns")
+          .select("id")
+          .eq("workspace_id", report.workspace_id)
+          .eq("rtp_cycle_id", report.rtp_cycle_id)
+      : Promise.resolve({ data: [] }),
   ]);
 
   const runIds = (reportRunLinks ?? []).map((item) => item.run_id);
@@ -548,6 +571,22 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : [];
     const readinessRecord = asRecord(sourceContext?.readiness);
     const workflowRecord = asRecord(sourceContext?.workflow);
+    const currentRtpReadiness = rtpCycle
+      ? buildRtpCycleReadiness({
+          geographyLabel: rtpCycle.geography_label,
+          horizonStartYear: rtpCycle.horizon_start_year,
+          horizonEndYear: rtpCycle.horizon_end_year,
+          adoptionTargetDate: (rtpCycle as Record<string, unknown>).adoption_target_date as string | null | undefined,
+          publicReviewOpenAt: (rtpCycle as Record<string, unknown>).public_review_open_at as string | null | undefined,
+          publicReviewCloseAt: (rtpCycle as Record<string, unknown>).public_review_close_at as string | null | undefined,
+        })
+      : null;
+    const currentRtpWorkflow = currentRtpReadiness
+      ? buildRtpCycleWorkflowSummary({ status: rtpCycle?.status, readiness: currentRtpReadiness })
+      : null;
+    const currentRtpChapterRows = (rtpChapters ?? []) as Array<{ id: string; status: string | null }>;
+    const currentRtpProjectLinks = (rtpProjectLinks ?? []) as Array<{ id: string }>;
+    const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string }>;
     return (
       <RtpReportDetail
         report={report}
@@ -578,6 +617,21 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           chapterReadyForReviewCount: asNullableNumber(sourceContext?.chapterReadyForReviewCount),
           linkedProjectCount: asNullableNumber(sourceContext?.linkedProjectCount),
           engagementCampaignCount: asNullableNumber(sourceContext?.engagementCampaignCount),
+        }}
+        currentContext={{
+          enabledSectionKeys: (sections ?? [])
+            .filter((section) => section.enabled)
+            .map((section) => section.section_key),
+          readinessLabel: currentRtpReadiness?.label ?? null,
+          readinessReason: currentRtpReadiness?.reason ?? null,
+          workflowLabel: currentRtpWorkflow?.label ?? null,
+          workflowDetail: currentRtpWorkflow?.detail ?? null,
+          chapterCount: currentRtpChapterRows.length,
+          chapterCompleteCount: currentRtpChapterRows.filter((chapter) => chapter.status === "complete").length,
+          chapterReadyForReviewCount: currentRtpChapterRows.filter((chapter) => chapter.status === "ready_for_review").length,
+          linkedProjectCount: currentRtpProjectLinks.length,
+          engagementCampaignCount: currentRtpCampaigns.length,
+          cycleUpdatedAt: rtpCycle?.updated_at ?? null,
         }}
       />
     );
