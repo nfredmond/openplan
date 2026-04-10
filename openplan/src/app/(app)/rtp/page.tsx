@@ -172,6 +172,50 @@ function buildPacketOperatorStatus(input: {
   };
 }
 
+function buildPacketActivityTrace(input: {
+  packetReport: RtpPacketReportRow | null;
+  packetFreshness: { label: string };
+  packetAttention: Exclude<PacketAttentionFilter, "all">;
+}) {
+  if (!input.packetReport) {
+    return {
+      label: "No packet activity",
+      tone: "warning" as const,
+      detail: "No linked RTP packet record exists yet for this cycle.",
+    };
+  }
+
+  if (!input.packetReport.generated_at || input.packetFreshness.label === "No packet") {
+    return {
+      label: "Record created",
+      tone: "info" as const,
+      detail: `Packet record updated ${formatRtpDateTime(input.packetReport.updated_at)} and still awaiting its first generated artifact.`,
+    };
+  }
+
+  if (input.packetAttention === "reset") {
+    return {
+      label: "Artifact drift detected",
+      tone: "warning" as const,
+      detail: `Latest ${input.packetReport.latest_artifact_kind ?? "packet"} artifact was generated ${formatRtpDateTime(input.packetReport.generated_at)}, but layout drift now requires a preset reset.`,
+    };
+  }
+
+  if (input.packetAttention === "refresh") {
+    return {
+      label: "Artifact behind source",
+      tone: "info" as const,
+      detail: `Latest ${input.packetReport.latest_artifact_kind ?? "packet"} artifact was generated ${formatRtpDateTime(input.packetReport.generated_at)} and should be refreshed from current cycle state.`,
+    };
+  }
+
+  return {
+    label: "Artifact current",
+    tone: "success" as const,
+    detail: `Latest ${input.packetReport.latest_artifact_kind ?? "packet"} artifact was generated ${formatRtpDateTime(input.packetReport.generated_at)} and remains current.`,
+  };
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
@@ -348,6 +392,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetReport,
           packetFreshness,
           packetPresetPosture,
+        }),
+        packetActivityTrace: buildPacketActivityTrace({
+          packetReport,
+          packetFreshness,
+          packetAttention,
         }),
         packetNavigationHref,
         readiness,
@@ -608,7 +657,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                       <div className="module-metric-card">
                         <p className="module-metric-label">Linked packet</p>
                         <p className="module-metric-value text-sm">{cycle.packetReport?.title ?? "Not created"}</p>
@@ -631,6 +680,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           <StatusBadge tone={cycle.packetPresetPosture.tone}>{cycle.packetPresetPosture.label}</StatusBadge>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">{cycle.packetPresetPosture.detail}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Packet activity</p>
+                        <div className="mt-1">
+                          <StatusBadge tone={cycle.packetActivityTrace.tone}>{cycle.packetActivityTrace.label}</StatusBadge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetActivityTrace.detail}</p>
                       </div>
                     </div>
 
