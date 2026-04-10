@@ -135,7 +135,7 @@ export function RtpRegistryPacketQueueCommandBoard({
           <p className="module-section-label">Packet queue command board</p>
           <h2 className="module-section-title">Clear the RTP packet queue</h2>
           <p className="module-section-description">
-            Run the recommended packet-queue sequence from the registry: reset stale customized layouts first, then regenerate every stale packet artifact.
+            Run the recommended packet-queue sequence from the registry: create missing records, reset stale customized layouts, then generate every queued packet artifact.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -151,9 +151,9 @@ export function RtpRegistryPacketQueueCommandBoard({
             <p className="mt-1 text-xs text-muted-foreground">Reapply the recommended phase preset before regeneration.</p>
           </div>
           <div className="module-metric-card">
-            <p className="module-metric-label">Step 2: regenerate</p>
+            <p className="module-metric-label">Step 2: generate</p>
             <p className="module-metric-value text-sm">{actionableReportCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Sequentially rebuild packet artifacts for every stale record in queue.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Sequentially build first or refreshed packet artifacts for every queued record.</p>
           </div>
           <div className="module-metric-card">
             <p className="module-metric-label">Missing packet records</p>
@@ -167,7 +167,7 @@ export function RtpRegistryPacketQueueCommandBoard({
           <ol className="mt-2 space-y-2">
             <li>1. Create first packet records for cycles that still have none.</li>
             <li>2. Reset all cycles marked as needing a phase-aligned packet layout.</li>
-            <li>3. Regenerate every packet still flagged as stale.</li>
+            <li>3. Generate every packet still flagged for first-artifact or refresh work.</li>
           </ol>
         </div>
 

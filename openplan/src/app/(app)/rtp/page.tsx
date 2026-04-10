@@ -331,7 +331,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ? ("missing" as const)
         : packetPresetPosture.label === "Needs reset"
           ? ("reset" as const)
-          : packetFreshness.label === "Refresh recommended"
+          : packetFreshness.label === "Refresh recommended" || packetFreshness.label === "No packet"
             ? ("refresh" as const)
             : ("current" as const);
 
@@ -482,7 +482,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     {[
                       { value: "all" as const, label: "All", count: allCycles.length },
                       { value: "reset" as const, label: "Needs reset", count: packetAttentionCounts.reset },
-                      { value: "refresh" as const, label: "Refresh", count: packetAttentionCounts.refresh },
+                      { value: "refresh" as const, label: "Generate / refresh", count: packetAttentionCounts.refresh },
                       { value: "missing" as const, label: "Missing", count: packetAttentionCounts.missing },
                       { value: "current" as const, label: "Current", count: packetAttentionCounts.current },
                     ].map((option) => {
@@ -514,7 +514,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               <div className="module-metric-card">
                 <p className="module-metric-label">Refresh</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.refresh}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but source cycle changed after generation.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but it still needs a first artifact or a fresh regeneration.</p>
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Missing packet</p>
@@ -694,6 +694,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         cycleId={cycle.id}
                         reportId={cycle.packetReport?.id ?? null}
                         packetAttention={cycle.packetAttention}
+                        needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
                       />
                     </div>
                   </article>

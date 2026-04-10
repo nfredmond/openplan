@@ -11,10 +11,12 @@ export function RtpRegistryPacketRowAction({
   cycleId,
   reportId,
   packetAttention,
+  needsFirstArtifact = false,
 }: {
   cycleId: string;
   reportId: string | null;
   packetAttention: PacketAttention;
+  needsFirstArtifact?: boolean;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +109,7 @@ export function RtpRegistryPacketRowAction({
 
         warningCount = await generateReport(activeReportId);
         setMessage(
-          `Regenerated the RTP packet from current source state.${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned.` : ""}`
+          `${needsFirstArtifact ? "Generated the first RTP packet artifact." : "Regenerated the RTP packet from current source state."}${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned.` : ""}`
         );
       }
 
@@ -124,7 +126,9 @@ export function RtpRegistryPacketRowAction({
       ? "Create and generate packet"
       : packetAttention === "reset"
         ? "Reset and regenerate packet"
-        : "Regenerate packet";
+        : needsFirstArtifact
+          ? "Generate first artifact"
+          : "Regenerate packet";
 
   const Icon =
     packetAttention === "missing" ? FilePlus2 : packetAttention === "reset" ? WandSparkles : FileCog;

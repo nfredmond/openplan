@@ -61,10 +61,10 @@ export function RtpRegistryPacketBulkGenerateActions({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Packet regeneration queue</p>
-          <h2 className="module-section-title">Regenerate stale RTP packets in bulk</h2>
+          <p className="module-section-label">Packet generation queue</p>
+          <h2 className="module-section-title">Generate or refresh RTP packets in bulk</h2>
           <p className="module-section-description">
-            Sequentially regenerate every linked RTP board packet record currently flagged for refresh from the registry.
+            Sequentially generate first artifacts or refresh existing RTP board packet records currently flagged from the registry.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -77,13 +77,13 @@ export function RtpRegistryPacketBulkGenerateActions({
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Queued packets</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{reportCount}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Use this after packet layouts are already aligned. The batch runs one record at a time and refreshes the registry when complete.
+            Use this after packet layouts are already aligned. The batch runs one record at a time, whether the packet needs its first artifact or a fresh regeneration.
           </p>
         </div>
 
         <Button type="button" onClick={handleGenerate} disabled={isSubmitting || reportIds.length === 0}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCog className="h-4 w-4" />}
-          Regenerate all refresh-flagged packets
+          Generate all queued packets
         </Button>
 
         {message ? <p className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
