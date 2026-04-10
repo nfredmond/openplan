@@ -222,6 +222,19 @@ function getPacketAttentionPriority(packetAttention: Exclude<PacketAttentionFilt
   }
 }
 
+function getQueueTraceStatePriority(queueTraceState: QueueTraceStateFilter) {
+  switch (queueTraceState) {
+    case "outpaced":
+      return 0;
+    case "unrecorded":
+      return 1;
+    case "aligned":
+      return 2;
+    default:
+      return 3;
+  }
+}
+
 function matchesPacketAttentionFilter(filter: PacketAttentionFilter, packetAttention: Exclude<PacketAttentionFilter, "all">) {
   if (filter === "all") {
     return true;
@@ -782,6 +795,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         return priorityDelta;
       }
 
+      const queueTraceStateDelta =
+        getQueueTraceStatePriority(left.packetQueueTraceState.state) -
+        getQueueTraceStatePriority(right.packetQueueTraceState.state);
+      if (queueTraceStateDelta !== 0) {
+        return queueTraceStateDelta;
+      }
+
       const queueTraceDelta = right.packetQueueTrace.sortTimestamp - left.packetQueueTrace.sortTimestamp;
       if (queueTraceDelta !== 0) {
         return queueTraceDelta;
@@ -1118,6 +1138,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           </Link>
                           <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                           <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
+                          {cycle.packetQueueTraceState.state === "outpaced" ? (
+                            <StatusBadge tone="warning">Trace outpaced</StatusBadge>
+                          ) : cycle.packetQueueTraceState.state === "unrecorded" ? (
+                            <StatusBadge tone="neutral">Trace unrecorded</StatusBadge>
+                          ) : null}
                           {cycle.packetQueueTrace.isRecent ? (
                             <StatusBadge tone="info">Recently changed</StatusBadge>
                           ) : null}
