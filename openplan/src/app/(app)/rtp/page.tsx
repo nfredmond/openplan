@@ -247,6 +247,7 @@ function buildPacketActivityTrace(input: {
 
 function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
   const finalize = (input: {
+    action?: string | null;
     label: string;
     tone: "neutral" | "info" | "success" | "warning" | "danger";
     detail: string;
@@ -258,6 +259,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
 
     return {
       ...input,
+      action: input.action ?? null,
       actedAt,
       sortTimestamp,
       isRecent: sortTimestamp > 0 && Date.now() - sortTimestamp <= RECENT_QUEUE_ACTION_WINDOW_MS,
@@ -292,6 +294,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
   switch (action) {
     case "create_record":
       return finalize({
+        action,
         label: "Record created",
         tone: "info" as const,
         detail: detail ?? "Packet record created.",
@@ -299,6 +302,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
       });
     case "reset_layout":
       return finalize({
+        action,
         label: "Preset reset",
         tone: "warning" as const,
         detail: detail ?? "Packet layout preset reapplied.",
@@ -306,6 +310,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
       });
     case "generate_first_artifact":
       return finalize({
+        action,
         label: "First artifact generated",
         tone: "success" as const,
         detail: detail ?? "First packet artifact generated.",
@@ -313,6 +318,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
       });
     case "refresh_artifact":
       return finalize({
+        action,
         label: "Artifact refreshed",
         tone: "success" as const,
         detail: detail ?? "Packet artifact refreshed.",
@@ -320,6 +326,7 @@ function buildPacketQueueTrace(packetReport: RtpPacketReportRow | null) {
       });
     default:
       return finalize({
+        action,
         label: "Recorded action",
         tone: "neutral" as const,
         detail: detail ?? `Last recorded queue action: ${action}.`,
@@ -627,6 +634,20 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     .map((cycle) => cycle.packetQueueTrace.actedAt)
     .filter((value): value is string => Boolean(value))
     .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null;
+  const recentQueueActionBreakdown = {
+    createRecord: typedCycles.filter(
+      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "create_record"
+    ).length,
+    resetLayout: typedCycles.filter(
+      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "reset_layout"
+    ).length,
+    generateFirstArtifact: typedCycles.filter(
+      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "generate_first_artifact"
+    ).length,
+    refreshArtifact: typedCycles.filter(
+      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "refresh_artifact"
+    ).length,
+  };
 
   return (
     <section className="module-page">
@@ -1016,6 +1037,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               <p className="mt-2 text-sm text-muted-foreground">
                 RTP cycles recorded queue work in the last 24 hours and are now sorted to the top of their current attention lane.
               </p>
+              <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                <li>• Record creation: {recentQueueActionBreakdown.createRecord}</li>
+                <li>• Preset resets: {recentQueueActionBreakdown.resetLayout}</li>
+                <li>• First artifacts: {recentQueueActionBreakdown.generateFirstArtifact}</li>
+                <li>• Refreshes: {recentQueueActionBreakdown.refreshArtifact}</li>
+              </ul>
               {latestQueueActionAt ? (
                 <p className="mt-2 text-xs text-muted-foreground">Latest action {formatRtpDateTime(latestQueueActionAt)}</p>
               ) : null}
