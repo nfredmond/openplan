@@ -6,6 +6,7 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
+import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   formatReportStatusLabel,
@@ -626,6 +627,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {packetAttentionCounts.reset > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
+            <RtpRegistryPacketQueueCommandBoard
+              resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
+              generateReportIds={[
+                ...new Set(
+                  allCycles
+                    .filter((cycle) => cycle.packetAttention === "reset" || cycle.packetAttention === "refresh")
+                    .map((cycle) => cycle.packetReport?.id)
+                    .filter((reportId): reportId is string => Boolean(reportId))
+                ),
+              ]}
+              resetCount={packetAttentionCounts.reset}
+              missingCount={packetAttentionCounts.missing}
+            />
+          ) : null}
+
           {packetAttentionCounts.reset > 0 ? (
             <RtpRegistryPacketBulkActions
               cycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
