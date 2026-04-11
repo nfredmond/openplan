@@ -1896,6 +1896,65 @@ export default async function ProjectDetailPage({
           </div>
         ) : null}
 
+        {(projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ||
+          projectControlsSummary.attentionSummary.overdueMilestones.count > 0 ||
+          projectControlsSummary.attentionSummary.overdueSubmittals.count > 0 ||
+          projectControlsSummary.attentionSummary.overdueInvoices.count > 0) ? (
+          <div className="mt-5 rounded-3xl border border-border/70 bg-background/80 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Attention lanes</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Fast paths into the control lanes currently creating schedule or payment risk.
+                </p>
+              </div>
+              <StatusBadge tone="danger">Operator attention</StatusBadge>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ? (
+                <Link
+                  href={`#${projectControlsSummary.attentionSummary.blockedMilestones.targetId}`}
+                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Blocked milestones</p>
+                  <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.blockedMilestones.count}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Clear milestone blockers before the next delivery move.</p>
+                </Link>
+              ) : null}
+              {projectControlsSummary.attentionSummary.overdueMilestones.count > 0 ? (
+                <Link
+                  href={`#${projectControlsSummary.attentionSummary.overdueMilestones.targetId}`}
+                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue milestones</p>
+                  <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueMilestones.count}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Rebaseline checkpoints that are already behind target.</p>
+                </Link>
+              ) : null}
+              {projectControlsSummary.attentionSummary.overdueSubmittals.count > 0 ? (
+                <Link
+                  href={`#${projectControlsSummary.attentionSummary.overdueSubmittals.targetId}`}
+                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue submittals</p>
+                  <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueSubmittals.count}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Bring late packets back into explicit review cadence.</p>
+                </Link>
+              ) : null}
+              {projectControlsSummary.attentionSummary.overdueInvoices.count > 0 ? (
+                <Link
+                  href={`#${projectControlsSummary.attentionSummary.overdueInvoices.targetId}`}
+                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue invoices</p>
+                  <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueInvoices.count}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Resolve payment or documentation drift in the invoice lane.</p>
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         <div className="module-note mt-5 text-sm">
           Exact CALTRANS/LAPM exhibit/form IDs, claim packet generation, and agency-specific packet templates remain deferred. What works now is the operator control surface: milestone tracking, submittal tracking, and invoice register scaffolding tied to the project record.
         </div>

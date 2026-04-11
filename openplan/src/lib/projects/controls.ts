@@ -56,6 +56,12 @@ export type ProjectControlsSummary = {
   nextSubmittal: ProjectSubmittalRecordLike | null;
   invoiceSummary: BillingInvoiceSummary;
   controlHealth: "stable" | "active" | "attention";
+  attentionSummary: {
+    blockedMilestones: { count: number; targetId: string };
+    overdueMilestones: { count: number; targetId: string };
+    overdueSubmittals: { count: number; targetId: string };
+    overdueInvoices: { count: number; targetId: string };
+  };
   deadlineSummary: {
     totalCount: number;
     overdueCount: number;
@@ -179,6 +185,12 @@ export function buildProjectControlsSummary(
       : openMilestones.length > 0 || pendingSubmittals.length > 0 || invoiceSummary.outstandingNetAmount > 0
         ? "active"
         : "stable";
+  const attentionSummary = {
+    blockedMilestones: { count: blockedMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
+    overdueMilestones: { count: overdueMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
+    overdueSubmittals: { count: overdueSubmittalCount, targetId: PROJECT_CONTROL_TARGET_IDS.submittal },
+    overdueInvoices: { count: invoiceSummary.overdueCount, targetId: PROJECT_CONTROL_TARGET_IDS.invoice },
+  };
 
   const recommendedNextAction =
     blockedMilestoneCount > 0
@@ -248,6 +260,7 @@ export function buildProjectControlsSummary(
     nextSubmittal,
     invoiceSummary,
     controlHealth,
+    attentionSummary,
     deadlineSummary,
     recommendedNextAction,
   };
