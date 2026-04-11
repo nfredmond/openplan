@@ -72,6 +72,35 @@ Acceptance target:
 Acceptance target:
 - RTP and grants can consume project-control posture instead of inventing parallel health logic
 
+### Slice 4
+**Standards-first scenario/data spine**
+
+Acceptance target:
+- OpenPlan has explicit baseline/branch/assumption contracts for scenarios
+- data/network package flows follow shared provenance and standards-aware rules instead of accumulating one-off module logic
+
+### Slice 5
+**Reusable indicator contracts**
+
+Acceptance target:
+- accessibility, equity, and environmental outputs can be stored and reused across modeling, RTP, reports, and public-facing plan narratives
+
+## Research-driven guardrail update (2026-04-10)
+
+The new deep-research synthesis changes what counts as high-compounding follow-on work after the control-room lane.
+
+### Also defer unless it clearly compounds
+- isolated dashboard ornamentation with no scenario or operator value,
+- one-off data integrations that ignore reusable standards/contracts,
+- modeling UI expansion that is not tied to a shared scenario/evidence contract,
+- product-language drift that implies a full planning super-app before the shared data/scenario spine is real.
+
+### Prioritize next after the current control-shell lane
+1. shared scenario/versioning contracts,
+2. standards-first data and network package contracts,
+3. reusable accessibility/equity/environment indicator posture,
+4. modeling and RTP/grants integration through those shared contracts.
+
 ## Decision rule
 
 If a next slice improves:

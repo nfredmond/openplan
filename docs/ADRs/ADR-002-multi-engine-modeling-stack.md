@@ -79,6 +79,18 @@ Instead, implementation order is:
 
 ## Implementation Notes
 
+### 2026-04-10 research alignment update
+The later deep research synthesis expands the implications of this ADR in four durable ways:
+
+1. **Transportation Modeling OS is a named product lane**
+   - modeling is not just a backend concern. It is one of the core operating systems inside the broader planning platform.
+2. **Scenario workspace is shared infrastructure**
+   - baselines, branches, assumptions, and comparison snapshots should be shared across planning, modeling, and reporting instead of remaining engine-local metadata.
+3. **Standards-first inputs and outputs matter**
+   - the modeling stack should align where practical with shared, standards-aware data contracts around network packages, schedule data, artifacts, and exports.
+4. **Indicators must write back into planning decisions**
+   - accessibility, equity, and environmental outputs should be reusable product artifacts that can feed RTP prioritization, scenario comparison, grant strategy, and public reporting.
+
 ### Product posture
 OpenPlan should package this as **analysis packages** and **run modes**, not primarily as engine names.
 
@@ -103,6 +115,7 @@ The current `model_runs` schema is a good starting point but should be extended 
 - Add ActivitySim when demand-side behavioral structure materially matters.
 - Use MATSim only where dynamic network/agent effects materially change the answer.
 - Never overstate model credibility beyond calibration and validation evidence.
+- Treat land-use, zoning, and urban-design scenario logic as adjacent shared inputs to the modeling stack, not as justification to prematurely collapse everything into one giant engine.
 
 ## Related Documents
 - `docs/ops/2026-03-15-openplan-v1-command-board.md`

@@ -205,6 +205,24 @@ To keep #1 small and reviewable, this checkpoint should **not** require:
 
 If a proposed addition does not improve the reviewability of the **project-controls shell**, it is likely outside the smallest viable checkpoint.
 
+## 5.5) Research-aligned extension boundary (2026-04-10)
+
+The later platform research confirms that the project-controls shell is still the correct smallest checkpoint, but it also clarifies what this shell should eventually connect to.
+
+In the larger OpenPlan architecture, project controls should later be able to consume:
+- scenario context,
+- report and artifact provenance,
+- modeling evidence where relevant,
+- accessibility/equity/environment indicator outputs,
+- and field evidence from aerial workflows.
+
+That future connection is important, but it should **not** expand this checkpoint into a giant all-in-one delivery screen right now.
+
+The practical rule remains:
+- build the honest operator shell first,
+- keep approved vs pending posture explicit,
+- then let later platform modules write into that shell through shared evidence and control contracts.
+
 ---
 
 ## 6) Review-clarity checklist for next checkpoint

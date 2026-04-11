@@ -200,6 +200,28 @@ At this stage, the fastest honest backend pattern is:
 
 That keeps the product adaptable while the modeling lane is still evolving.
 
+## Research-driven alignment additions (2026-04-10)
+
+The later deep research synthesis suggests this county-onramp backend model should converge toward a broader standards-aware platform data plane.
+
+### Additional future-alignment objects to plan for
+- `scenario_baselines` / `scenario_branches` linked to county or regional runs
+- `network_packages` with provenance and standards-aware metadata
+- `indicator_snapshots` for accessibility, equity, and environmental summaries
+- standards-aware dataset metadata for OSM/GTFS and future external feeds where relevant
+
+### Design implication
+County onboarding should not remain a one-off modeling cul-de-sac.
+It should become one entry path into the broader Transportation Modeling OS and shared scenario/evidence spine.
+
+### Practical rule
+Do **not** replace the current lean two-table posture yet.
+Do record the future relationship clearly so county runs can later connect to:
+- reusable scenarios,
+- network packages,
+- report-ready indicator outputs,
+- and RTP/project decision workflows.
+
 ## Product implication
 This data model is enough to support an early web flow like:
 1. user selects county,  

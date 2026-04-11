@@ -45,6 +45,7 @@ The first pilot should promise only this:
 - guided supervised onboarding,
 - clear operator support,
 - bounded scenario coordination where relevant.
+- small, explainable decision-support outputs such as accessibility or comparison summaries where the evidence is real.
 
 It should **not** promise:
 - validated forecasting claims,
@@ -97,6 +98,11 @@ The pilot should end with one tangible artifact such as:
 - traceable scenario comparison,
 - or documented project-status/report handoff.
 
+Where feasible, the preferred form is:
+- one report-centered artifact,
+- plus one small, clearly explained scenario or accessibility comparison,
+- without implying calibrated forecasting if the evidence is not there.
+
 ### Step 5: close with operator review
 Before calling the pilot successful, ask:
 - did the workflow remain understandable?
@@ -121,6 +127,11 @@ The pilot is only counted as successful if all of these are true:
 ### Checkpoint 3: traceability
 - report output or reporting context clearly linked back to source records,
 - reviewer could inspect where key output context came from.
+
+### Checkpoint 3A: bounded analytical honesty
+- any scenario/modeling/accessibility output used in the pilot must stay within current evidence limits,
+- no behavioral or validated-forecast claims are made unless the exact proof exists,
+- assumptions remain inspectable enough for a reviewer to explain the result back to another planner.
 
 ### Checkpoint 4: supportability
 - onboarding was understandable,
@@ -147,6 +158,7 @@ At pilot close, the team should produce:
 3. traceability proof artifact or screenshots,
 4. operator friction list,
 5. recommended next pilot extension or stop decision.
+6. if a comparison was used, one explicit assumptions/indicator note describing what the comparison does and does not prove.
 
 ## Recommended internal working sentence
 

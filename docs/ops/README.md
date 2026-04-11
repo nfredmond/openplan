@@ -19,6 +19,7 @@
 | [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) | **Canonical frontend anti-generic design rules** — worksurface, rails, low-card, low-pill UI posture |
 | [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) | **Practical screen-by-screen UI implementation checklist** — use during redesign and QA |
 | [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) | **Reusable Codex/Claude prompt starter** — copy/paste for OpenPlan UI tasks |
+| [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) | **Canonical April 2026 architecture expansion memo** — four-system planning OS, standards-first data plane, scenario/evidence spine |
 | [v1-internal-ship-gate.md](2026-03-16-openplan-v1-internal-ship-gate.md) | Internal ship gate checklist |
 | [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) | **Canonical** Elena approval (2026-03-17) |
 
@@ -27,6 +28,7 @@
 ## By Category
 
 ### Governance & Decisions
+- [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
 - [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) — canonical principal approval
 - [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
@@ -49,6 +51,7 @@
 - [nevada-county-decision.md](2026-03-19-pilot-geography-decision-nevada-county.md) — pilot geography + rationale
 
 ### Modeling Stack
+- [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — shared platform implications for modeling, standards, and scenario architecture
 - [technical-spec.md](2026-03-17-openplan-modeling-stack-technical-spec.md) — AequilibraE + ActivitySim + MATSIM
 - [build-backlog.md](2026-03-17-openplan-modeling-stack-build-backlog-and-execution-plan.md) — execution plan
 - [phase1-prd.md](2026-03-18-modeling-stack-phase1-artifacts-prd.md) — Phase 1 PRD

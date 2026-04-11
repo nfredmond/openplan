@@ -19,11 +19,69 @@ It is optimized for:
 Order of operations:
 
 1. Strengthen the **shared project control room** inside OpenPlan
-2. Build the **RTP Cycle + portfolio spine**
-3. Add the first **Grants OS** objects and workflows
-4. Connect grants to the RTP financial and prioritization logic
-5. Link in **Aerial Operations OS** artifacts and mission records
-6. Expand toward mission planning and deeper automation later
+2. Formalize the **standards-first scenario and data spine**
+3. Build the **RTP Cycle + portfolio spine**
+4. Continue the first **Transportation Modeling OS** contracts and surfaces
+5. Add the first **Grants OS** objects and workflows
+6. Connect grants to the RTP financial and prioritization logic
+7. Link in **Aerial Operations OS** artifacts and mission records
+8. Expand toward mission planning, land-use/zoning hooks, and deeper automation later
+
+## Research-driven expansion rule (2026-04-10)
+
+The deep research synthesis expands this plan in five durable ways:
+
+1. OpenPlan should explicitly maintain a **scenario workspace** with baselines, branches, assumptions, and publishable comparisons.
+2. OpenPlan should adopt a **standards-first data posture** wherever practical instead of over-investing in one-off integrations.
+3. Accessibility, equity, and environmental metrics should become reusable **indicator services**, not appendix-only outputs.
+4. Transportation Modeling OS should remain a distinct build lane with clear contracts back into planning, reports, and project controls.
+5. Land-use allocation, zoning/regulatory simulation, and urban design testing should be planned as explicit later platform capabilities, not forgotten side ideas.
+
+## Workstream A0: Standards-first scenario and data spine
+
+### Goal
+Create the shared scenario/versioning/data contract layer that later RTP, modeling, grants, and engagement work can all depend on.
+
+### Why now
+The research confirms that OpenPlan will become brittle if scenarios, assumptions, accessibility/equity indicators, and network/data contracts remain scattered across module-specific implementations.
+
+### Build slice A0.1
+Define shared scenario objects and comparison posture.
+
+#### Scope
+- baseline / branch / snapshot model
+- assumptions record
+- publishable comparison metadata
+- stable links back to projects, plans, and model runs
+
+#### Acceptance criteria
+- one scenario can be named, versioned, and compared without hiding assumptions in ad hoc notes
+- reports and model runs can point to the same scenario snapshot
+
+### Build slice A0.2
+Define standards-aware data contracts for the first external data plane.
+
+#### Scope
+- OSM / GTFS / county input posture
+- network package metadata and provenance rules
+- export/import posture for GeoPackage, COG/GeoParquet where relevant, and standards-aware API notes
+
+#### Acceptance criteria
+- the first data and network package flows have explicit provenance and format expectations
+- later modeling and county onboarding lanes can extend the same contract instead of inventing parallel ingestion logic
+
+### Build slice A0.3
+Define reusable indicator contracts.
+
+#### Scope
+- accessibility summary contract
+- equity/distribution summary contract
+- environmental-impact summary contract
+- report-ready / scenario-ready metadata posture
+
+#### Acceptance criteria
+- one indicator family can be computed, stored, and surfaced as a reusable product output
+- RTP, modeling, and report lanes can consume the same indicator objects
 
 ## Workstream A: Shared Project Control Room
 
@@ -129,6 +187,38 @@ Create digital RTP narrative scaffolding.
 
 #### Acceptance criteria
 - one RTP cycle can render a minimal digital plan shell with chapters and linked projects
+
+## Workstream B0: Transportation Modeling OS contracts
+
+### Goal
+Turn the existing models/county-runs/network-package lane into a clearer Transportation Modeling OS that feeds planning decisions rather than behaving like a detached technical sandbox.
+
+### Build slice B0.1
+Stabilize the shared run and artifact contract.
+
+#### Scope
+- scenario snapshot linkage
+- network package reference
+- run manifest posture
+- artifact/evidence packet conventions
+- planner-safe run class language
+
+#### Acceptance criteria
+- a model run can point cleanly back to a scenario/project context
+- one evidence packet can explain what was run, with what inputs, and what the outputs are safe to mean
+
+### Build slice B0.2
+Define reusable indicator outputs for planning consumption.
+
+#### Scope
+- accessibility summaries
+- screening KPI summaries
+- comparison-ready output posture
+- links into RTP/report/project surfaces
+
+#### Acceptance criteria
+- one model output family can be reused in reports and planning context without bespoke one-off formatting
+- the modeling lane strengthens RTP/project decision support instead of drifting into isolated tooling
 
 ## Workstream C: Grants OS foundation
 

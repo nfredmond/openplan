@@ -8,11 +8,12 @@ Status: Proposed operating architecture
 
 OpenPlan should not evolve into one shapeless municipal super-app.
 
-It should become a **shared planning platform core** with three tightly-linked operating systems:
+It should become a **shared planning platform core** with four tightly-linked operating systems:
 
 1. **RTP OS** for digital plan authoring, project portfolio management, public engagement, and adoption support
 2. **Grants OS** for opportunity tracking, application strategy, awards, spending, reimbursement, and compliance
 3. **Aerial Operations OS** for mission planning, imagery ingest, ODM/WebODM processing, measurable deliverables, and project-linked field evidence
+4. **Transportation Modeling OS** for network packages, scenarios, managed runs, accessibility outputs, demand-model artifacts, and evidence-backed analytical comparison
 
 This architecture fits Nathaniel's actual product vision, aligns with California rural RTPA reality, and reuses the strongest existing repo assets instead of starting over.
 
@@ -42,6 +43,23 @@ Current evidence supports the following platform posture:
 
 ## Platform structure
 
+### Research-driven additions (2026-04-10)
+
+The deep research synthesis adds six durable architecture requirements:
+
+1. **Shared scenario workspace**
+   - baselines, scenario branches, intervention assumptions, comparison snapshots, and publishable scenario artifacts should be first-class platform objects rather than scattered report-side metadata.
+2. **Standards-first data plane**
+   - OpenPlan should prefer open standards and interoperable formats where practical, including OSM, GTFS/GTFS-Realtime, GBFS, OGC API Features, GeoPackage, COG, GeoParquet, and STAC-style metadata patterns.
+3. **Accessibility/equity/environment as reusable outputs**
+   - these should feed RTP prioritization, scenario comparison, grant strategy, and public reporting instead of living only in bespoke spreadsheets or one-off appendix tables.
+4. **Land use + zoning + urban design as explicit scenario capabilities**
+   - OpenPlan should reserve product architecture for land-use allocation, zoning/regulatory simulation, and place-testing workflows instead of limiting itself to project tracking plus transportation analytics.
+5. **Composable engine strategy**
+   - OpenPlan should wrap mature engines and standards-based services inside a unified planning/evidence/governance layer rather than attempting to replace every specialist tool internally.
+6. **Privacy and provenance discipline**
+   - higher-sensitivity mobility and operational data should be handled with privacy-by-design posture and explicit provenance/audit metadata.
+
 ## 1. Shared Platform Core
 
 The shared core should live conceptually inside OpenPlan and provide the common objects used by all modules.
@@ -51,6 +69,7 @@ The shared core should live conceptually inside OpenPlan and provide the common 
 - Workspace / Agency
 - User / Membership / Role
 - Project
+- Scenario Baseline / Scenario Branch / Assumption Set
 - Geography / Corridor / Site
 - Plan / RTP Cycle / Chapter
 - Program
@@ -63,6 +82,7 @@ The shared core should live conceptually inside OpenPlan and provide the common 
 - Invoice / Reimbursement Record
 - Risk / Issue / Decision / Meeting
 - Dataset
+- Network Package / Run Bundle / Indicator Snapshot
 - Artifact
 - Engagement Campaign / Item / Comment
 - Stage Gate / Control Decision
@@ -72,11 +92,14 @@ The shared core should live conceptually inside OpenPlan and provide the common 
 
 - Auth, tenancy, permissions
 - PostGIS-backed geometry and map context
+- standards-aware ingestion + validation
 - Artifact storage and signed delivery
 - Evidence-chain / provenance tracking
 - Audit logging
 - Shared search and linked-record context
 - Shared action-center / deadline aggregation
+- shared scenario comparison + impact ledger
+- reusable accessibility / equity / environmental indicator services
 
 ## 2. RTP OS
 
@@ -187,6 +210,34 @@ Do not force aerial processing to become an RTP subfeature.
 
 It is a sister operating system that feeds evidence and measurable outputs into the planning platform.
 
+## 5. Transportation Modeling OS
+
+Transportation Modeling OS should be treated as a full operating system, not a hidden technical subsystem.
+
+### Core modeling domains
+
+- Model
+- Model Run
+- Run Stage / Orchestration State
+- Network Package
+- County / regional onboarding package
+- Scenario assumptions and run manifests
+- Skim / assignment / KPI artifacts
+- Accessibility outputs
+- Evidence packet / validation packet
+
+### Critical design rule
+
+The modeling stack should remain planner-facing and evidence-safe.
+
+That means:
+- OpenPlan owns project/scenario/evidence context,
+- engines run behind explicit manifests and artifacts,
+- AequilibraE is the first practical backbone,
+- ActivitySim follows when behavioral demand materially matters,
+- MATSim remains a later bounded advanced engine,
+- and modeling outputs write back into RTP, grants, reports, and project controls instead of living in a detached lab lane.
+
 ## Repo strategy
 
 ## Canonical bases
@@ -291,6 +342,7 @@ Use the current report/artifact/evidence-chain patterns as the base for:
 At minimum, the following cross-links should exist:
 
 - Project <-> RTP Cycle
+- Project <-> Scenario Baseline / Scenario Branch
 - Project <-> Funding Opportunity / Award
 - Project <-> Plan Chapter
 - Project <-> Engagement Campaign
@@ -298,6 +350,7 @@ At minimum, the following cross-links should exist:
 - Project <-> Stage Gate / Control Decision
 - Project <-> Invoice / Reimbursement Record
 - Project <-> Dataset / Artifact
+- Project <-> Model / Model Run / Indicator Snapshot
 - Project <-> Aerial Mission / Aerial Artifact
 
 Optional but high-value links:
@@ -328,6 +381,12 @@ Optional but high-value links:
 6. **Keep compliance labels disciplined**  
    Internal control ready is not the same as LAPM-ready. Candidate is not the same as approved.
 
+7. **Adopt open standards where they reduce lock-in and integration cost**  
+   Prefer standards-aware ingestion and export over fragile one-off connectors whenever the standards are mature enough to help.
+
+8. **Treat scenarios and indicators as shared infrastructure**  
+   Scenario baselines, impact deltas, and publishable evidence should be reusable across planning, modeling, engagement, and reporting.
+
 ## Recommended phase sequence
 
 ### Phase 1: Shared Project Control Room
@@ -352,6 +411,6 @@ Optional but high-value links:
 
 The correct north star is:
 
-**OpenPlan as a shared planning platform core with RTP OS, Grants OS, and Aerial Operations OS linked through one project/evidence spine.**
+**OpenPlan as a shared planning platform core with RTP OS, Grants OS, Aerial Operations OS, and Transportation Modeling OS linked through one project/scenario/evidence spine.**
 
 That gives Nathaniel a coherent product family instead of a pile of disconnected modules, while staying grounded in the strongest code and product truth already present in the workspace.

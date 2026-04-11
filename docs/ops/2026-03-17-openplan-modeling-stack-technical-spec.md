@@ -20,6 +20,8 @@ This document defines how OpenPlan should evolve its current `models` and `model
 - future controlled feedback loops,
 - artifact-level traceability and report-grade evidence.
 
+As of the 2026-04-10 research synthesis, this spec should also be read as part of a broader **Transportation Modeling OS** inside OpenPlan, not as an isolated backend subsystem.
+
 This is a technical implementation spec, not a marketing document.
 
 ---
@@ -36,6 +38,9 @@ The system must:
 6. allow explicit versioning of engines and adapters,
 7. support evidence and validation packets,
 8. expose clean planner-facing outputs rather than raw engine dumps.
+9. align with shared scenario/versioning contracts used elsewhere in the platform.
+10. support reusable accessibility, equity, and environmental indicator outputs.
+11. prefer standards-aware data and artifact contracts where practical.
 
 ---
 
@@ -90,6 +95,16 @@ OpenPlan KPI / Comparison / Reporting Surfaces
 
 ## 4.2 Architectural rule
 The web app may create runs and inspect state, but **must not** directly execute long-running modeling engines.
+
+## 4.3 Research-driven platform alignment
+This modeling stack should integrate with a larger shared platform spine:
+
+- shared scenario baselines and branches,
+- standards-aware network/data package metadata,
+- reusable indicator outputs,
+- and report/RTP/project control surfaces.
+
+It should not drift into a detached technical lab that cannot write back into planning decisions.
 
 ---
 

@@ -77,6 +77,19 @@ The following are **screening**, not behavioral or validated demand:
 - **Client-safe forecasting claims** are unproven. Nothing here supports defensible future-year behavioral forecasting.
 - **Full run traceability** is incomplete. Provenance/QC artifacts exist in proof lanes, but are not yet co-located as part of the canonical root run bundle.
 
+## 3.5) Research-driven platform implication (2026-04-10)
+
+The later deep research synthesis does not make these claims stronger.
+It changes how this pilot should fit into the broader platform roadmap.
+
+This Nevada County lane should now be treated as an early **Transportation Modeling OS** proof point that must eventually plug into:
+- shared scenario baselines and branches,
+- standards-aware network/data package contracts,
+- reusable accessibility/equity/environment indicators,
+- and RTP/report/project decision workflows.
+
+Practical rule: keep the current methodological honesty exactly as strict as before, while designing the surrounding platform so later validated and better-scoped runs can reuse the same scenario/evidence spine.
+
 ## 4) Safe claims vs unsafe claims
 
 ### Safe claims for internal use

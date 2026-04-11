@@ -24,6 +24,21 @@ OpenPlan’s current product stage still rewards:
 That means the first win is **not** “most academically ambitious model.”
 It is **the first engine OpenPlan can wrap cleanly and operate reliably.**
 
+## Research-driven scope expansion (2026-04-10)
+
+The deep research synthesis clarifies that this roadmap is not just a technical engine sequence.
+It is the roadmap for a broader **Transportation Modeling OS** inside OpenPlan.
+
+That means the modeling lane should eventually connect to:
+- shared scenario baselines and branches,
+- standards-aware network/data packages,
+- accessibility/equity/environment indicators,
+- RTP and grant decision support,
+- and later land-use/zoning/urban-design scenario inputs where those capabilities become real.
+
+It does **not** change the engine order.
+It changes the surrounding platform expectations.
+
 ---
 
 ## Phase 0 — Prerequisites (now)
@@ -31,12 +46,14 @@ Before any real engine integration, OpenPlan needs a stable model-run contract.
 
 ### Must-have platform primitives
 - scenario snapshot input bundle
+- baseline / branch / assumption contract
 - versioned model configuration record
 - run status + logs
 - normalized output manifest
 - artifact storage conventions
 - provenance / reviewer metadata
 - run-to-plan / run-to-report linkage
+- reusable indicator output contract
 
 ### Acceptance criteria
 - one shared run contract documented in the repo
@@ -61,6 +78,7 @@ Before any real engine integration, OpenPlan needs a stable model-run contract.
 - stored skims and assignment outputs
 - accessibility summaries
 - map/report-ready output packages
+- standards-aware provenance about what data/network package was used
 
 ### Exit criteria
 - one reproducible managed run works end-to-end
@@ -83,6 +101,7 @@ Before any real engine integration, OpenPlan needs a stable model-run contract.
 - clean skim/assignment support
 - strong data contracts
 - scenario definitions mature enough to feed ABM inputs
+- clear boundaries between prototype/preflight posture and client-safe behavioral claims
 
 ### Exit criteria
 - one bounded ActivitySim workflow can run under OpenPlan control
@@ -152,3 +171,7 @@ If we want to be both ambitious and sane:
 - **SUMO as specialist ops validation**
 
 That is the best match for OpenPlan’s current maturity, the original long-range vision, and the need to ship real value without collapsing under integration complexity.
+
+It should now also be read as part of a larger rule:
+
+**Transportation Modeling OS should become a standards-aware, evidence-linked planning system, not just a run launcher.**

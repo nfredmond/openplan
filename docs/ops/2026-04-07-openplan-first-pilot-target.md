@@ -32,6 +32,11 @@ Primary workflow:
 4. support one bounded scenario or analysis comparison,
 5. close the loop with a human-supported handoff.
 
+Research-aligned preferred shape for that bounded comparison:
+- one corridor, ATP/RTP, or programming-oriented scenario,
+- one clear accessibility or comparable decision-support readout,
+- and, where feasible, one small equity or public-review-ready narrative output that remains easy to explain.
+
 This should be framed as:
 - one real planning workflow,
 - one named project context,
@@ -45,6 +50,7 @@ Best current candidates:
 - corridor safety / multimodal analysis support,
 - scoped RTP / programming coordination support,
 - project-package continuity for report assembly and revision tracking.
+- scenario-centered planning support where one comparison can be explained with honest assumptions and traceable source context.
 
 ## Why this target is the right first move
 
@@ -77,6 +83,7 @@ The first pilot is **in scope** for:
 - supervised onboarding,
 - human-guided support,
 - report-centric proof of value.
+- one bounded scenario/accessibility comparison where the evidence is real and legible.
 
 The first pilot is **out of scope** for:
 - broad public launch rhetoric,

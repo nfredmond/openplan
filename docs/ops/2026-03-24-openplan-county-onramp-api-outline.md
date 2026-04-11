@@ -215,6 +215,20 @@ It only needs:
 
 That alone would already make the current local workflow visible through a real app shell.
 
+## Research-driven next API posture (2026-04-10)
+
+The later platform research suggests that county-run APIs should eventually grow into a broader standards-aware modeling/data surface.
+
+### Likely next API families after the minimal milestone
+- scenario baseline / branch APIs
+- network package APIs with provenance and standards-aware metadata
+- indicator snapshot APIs for accessibility, equity, and environmental outputs
+- standards-aware dataset registration for OSM/GTFS-style inputs where relevant
+
+### Practical rule
+Do not bloat the first county-run milestone.
+But do make sure route naming, payload shape, and manifest/artifact handling can evolve into the larger Transportation Modeling OS without a full rewrite.
+
 ## Guardrail
 The API should not erase modeling truth constraints.
 

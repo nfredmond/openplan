@@ -47,6 +47,10 @@ It is the planning-operations surface where a workspace can:
 - structure themes and categories,
 - and trace what input influenced planning outputs.
 
+As of the 2026-04-10 research synthesis, this should also be read as part of a larger rule:
+- engagement should connect to shared scenarios, accessibility/equity/environment indicators, and publishable planning comparisons,
+- but those richer feedback loops should arrive through the same shared scenario/evidence spine rather than via one-off engagement-only logic.
+
 ## V1 Goal
 
 Enable Nathaniel to create an engagement campaign linked to a project, define a few intake categories, record/map public input items, moderate them, and review the campaign from a real `/engagement` module.
