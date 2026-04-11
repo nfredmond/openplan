@@ -966,6 +966,17 @@ export default async function BillingPage({
               {filteredInvoiceRecords.map((invoice) => {
                 const riskState = billingRowRiskState(invoice);
                 const isFocusedRow = activeFocusedInvoiceId === invoice.id;
+                const rowTriageHref = riskState.title
+                  ? buildBillingInvoiceTriageHref({
+                      workspaceId,
+                      checkoutState,
+                      checkoutPlan,
+                      invoiceId: invoice.id,
+                      linkage: invoice.funding_award_id ? "linked" : "unlinked",
+                      overdue: isInvoiceOverdue(invoice.status, invoice.due_date) ? "overdue" : "all",
+                      projectId: invoice.project_id,
+                    })
+                  : null;
 
                 return (
                   <li
@@ -1020,6 +1031,15 @@ export default async function BillingPage({
                       {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
                       {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
                     </div>
+
+                    {rowTriageHref ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
+                        <BillingTriageLinkCopy href={rowTriageHref} />
+                        <span className="text-xs text-muted-foreground">
+                          Copies a shareable billing triage link for this exact invoice, including project scope, filters, and row anchor.
+                        </span>
+                      </div>
+                    ) : null}
 
                     <InvoiceFundingAwardLinker
                       invoiceId={invoice.id}
