@@ -7,6 +7,8 @@ import {
 import type {
   AssistantContext,
   ModelAssistantContext,
+  PlanAssistantContext,
+  ProgramAssistantContext,
   ProjectAssistantContext,
   ReportAssistantContext,
   RunAssistantContext,
@@ -103,6 +105,50 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
       `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
       `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
       `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.` ,
+    ],
+    suggestedActions: getAssistantActions(context.kind),
+  };
+}
+
+function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
+  return {
+    kind: context.kind,
+    title: context.plan.title,
+    summary: `Grounded to this plan record's readiness, linked evidence posture, and the shared workspace command queue around it.`,
+    stats: [
+      { label: "Status", value: context.plan.status },
+      { label: "Readiness", value: context.readiness.label },
+      { label: "Reports", value: `${context.linkageCounts.reports}` },
+      { label: "Queue", value: `${context.operationsSummary.counts.queueDepth}` },
+    ],
+    facts: [
+      context.project ? `Primary project: ${context.project.name}` : "No primary project is attached to this plan yet.",
+      `${context.linkageCounts.scenarios} scenarios, ${context.linkageCounts.engagementCampaigns} campaigns, and ${context.linkageCounts.reports} reports are visible in the current plan basis.`,
+      context.operationsSummary.nextCommand
+        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}`
+        : "Workspace command queue is currently clear from this snapshot.",
+    ],
+    suggestedActions: getAssistantActions(context.kind),
+  };
+}
+
+function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview {
+  return {
+    kind: context.kind,
+    title: context.program.title,
+    summary: `Grounded to this program package's readiness, packet posture, and the shared workspace command queue around it.`,
+    stats: [
+      { label: "Status", value: context.program.status },
+      { label: "Readiness", value: context.readiness.label },
+      { label: "Packet attention", value: `${context.packetSummary.attentionCount}` },
+      { label: "Queue", value: `${context.operationsSummary.counts.queueDepth}` },
+    ],
+    facts: [
+      context.project ? `Primary project: ${context.project.name}` : "No primary project is attached to this program yet.",
+      `${context.linkageCounts.plans} plans, ${context.linkageCounts.engagementCampaigns} campaigns, and ${context.linkageCounts.reports} reports are visible in the current package basis.`,
+      context.packetSummary.recommendedReport
+        ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
+        : "No linked report packet is available yet for this program.",
     ],
     suggestedActions: getAssistantActions(context.kind),
   };
@@ -206,6 +252,10 @@ export function buildAssistantPreview(context: AssistantContext): AssistantPrevi
   switch (context.kind) {
     case "project":
       return buildProjectPreview(context);
+    case "plan":
+      return buildPlanPreview(context);
+    case "program":
+      return buildProgramPreview(context);
     case "scenario_set":
       return buildScenarioPreview(context);
     case "model":
@@ -380,6 +430,124 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       `Plan type: ${context.project.planType}`,
       `Stage-gate pass count: ${context.stageGateSummary.passCount}`,
       `Recent run count: ${context.counts.recentRuns}`,
+    ],
+  };
+}
+
+function buildPlanResponse(context: PlanAssistantContext, workflowId: string): AssistantResponse {
+  const label = findAssistantAction(context.kind, workflowId)?.label ?? "Plan brief";
+
+  if (workflowId === "plan-gaps") {
+    return {
+      workflowId,
+      label,
+      title: `Plan gaps: ${context.plan.title}`,
+      summary: `${context.plan.title} is currently ${context.readiness.label.toLowerCase()}, with ${context.readiness.missingCheckCount} explicit gap${context.readiness.missingCheckCount === 1 ? "" : "s"} still visible in the record-driven setup check.` ,
+      findings: [
+        context.readiness.reason,
+        context.readiness.missingCheckLabels.length > 0
+          ? `Missing basis: ${context.readiness.missingCheckLabels.join(", ")}.`
+          : "No explicit setup gaps are currently flagged on this plan.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking this plan from the current snapshot.",
+      ],
+      nextSteps: [
+        context.readiness.nextSteps[0] ?? "Tighten the missing plan basis before treating this as handoff-ready.",
+        context.linkageCounts.reports > 0 ? "Recheck linked reports after the missing basis is closed." : "Create or attach a report only after the plan basis is less thin.",
+      ],
+      evidence: [
+        `Scenarios: ${context.linkageCounts.scenarios}`,
+        `Campaigns: ${context.linkageCounts.engagementCampaigns}`,
+        `Reports: ${context.linkageCounts.reports}`,
+      ],
+    };
+  }
+
+  return {
+    workflowId,
+    label,
+    title: `Plan brief: ${context.plan.title}`,
+    summary: `${context.plan.title} is currently ${context.plan.status}, ${context.readiness.label.toLowerCase()}, and ${context.workflow.label.toLowerCase()}.`,
+    findings: [
+      context.plan.summary || "The plan record does not yet carry a strong summary narrative.",
+      context.artifactCoverage.detail,
+      context.operationsSummary.nextCommand
+        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
+        : "Workspace command queue is currently clear from this snapshot.",
+    ],
+    nextSteps: [
+      context.readiness.missingCheckCount > 0
+        ? `Close the remaining ${context.readiness.missingCheckCount} setup gap${context.readiness.missingCheckCount === 1 ? "" : "s"} before treating the plan as review-ready.`
+        : "Use the current plan basis to drive the next packet, scenario, or engagement move.",
+      context.project ? `Keep ${context.project.name} as the main delivery anchor while this plan evolves.` : "Attach a project anchor if this plan should drive downstream reporting or controls.",
+    ],
+    evidence: [
+      `Plan type: ${context.plan.planType}`,
+      `Geography: ${context.plan.geographyLabel ?? "Missing"}`,
+      `Horizon year: ${context.plan.horizonYear ?? "Missing"}`,
+    ],
+  };
+}
+
+function buildProgramResponse(context: ProgramAssistantContext, workflowId: string): AssistantResponse {
+  const label = findAssistantAction(context.kind, workflowId)?.label ?? "Program brief";
+
+  if (workflowId === "program-packet") {
+    return {
+      workflowId,
+      label,
+      title: `Packet posture: ${context.program.title}`,
+      summary: context.packetSummary.recommendedReport
+        ? `${context.program.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead report packet"}, which is marked ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+        : `${context.program.title} does not yet have a linked report packet, so the packet trail still needs to be established.`,
+      findings: [
+        `${context.packetSummary.linkedReportCount} linked report${context.packetSummary.linkedReportCount === 1 ? "" : "s"}, ${context.packetSummary.attentionCount} with packet attention.`,
+        context.packetSummary.recommendedReport
+          ? context.packetSummary.recommendedReport.packetFreshness.detail
+          : "No linked report packet is available to refresh or review yet.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking this package from the current snapshot.",
+      ],
+      nextSteps: [
+        context.packetSummary.recommendedReport
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current packet posture.`
+          : "Create or attach the first report packet before treating this package as packet-ready.",
+        context.readiness.missingCheckCount > 0
+          ? `Close the remaining ${context.readiness.missingCheckCount} readiness gap${context.readiness.missingCheckCount === 1 ? "" : "s"} so packet work is based on a cleaner package record.`
+          : "Once packet posture is current, keep the program narrative aligned with linked plans and engagement evidence.",
+      ],
+      evidence: [
+        `Plans: ${context.linkageCounts.plans}`,
+        `Reports: ${context.linkageCounts.reports}`,
+        `Campaigns: ${context.linkageCounts.engagementCampaigns}`,
+      ],
+    };
+  }
+
+  return {
+    workflowId,
+    label,
+    title: `Program brief: ${context.program.title}`,
+    summary: `${context.program.title} is currently ${context.program.status}, ${context.readiness.label.toLowerCase()}, and ${context.workflow.label.toLowerCase()}.`,
+    findings: [
+      context.program.summary || "The program record does not yet carry a strong package summary narrative.",
+      `${context.linkageCounts.plans} plans, ${context.linkageCounts.engagementCampaigns} engagement campaigns, and ${context.linkageCounts.reports} reports are visible in the package basis.`,
+      context.packetSummary.attentionCount > 0
+        ? `${context.packetSummary.attentionCount} linked packet${context.packetSummary.attentionCount === 1 ? " needs" : "s need"} attention before this package reads as clean.`
+        : "No linked packet attention is currently visible on this package.",
+    ],
+    nextSteps: [
+      context.packetSummary.attentionCount > 0
+        ? "Work the packet posture first so the package basis stays current."
+        : "Use the current package basis to support the next submission or funding move.",
+      context.project ? `Keep ${context.project.name} as the main delivery anchor while this package evolves.` : "Attach a project anchor if this package should flow through broader project controls.",
+    ],
+    evidence: [
+      `Cycle: ${context.program.cycleName}`,
+      `Sponsor agency: ${context.program.sponsorAgency ?? "Missing"}`,
+      `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
     ],
   };
 }
@@ -641,6 +809,10 @@ export function buildAssistantResponse(
   switch (context.kind) {
     case "project":
       return buildProjectResponse(context, workflowId);
+    case "plan":
+      return buildPlanResponse(context, workflowId);
+    case "program":
+      return buildProgramResponse(context, workflowId);
     case "scenario_set":
       return buildScenarioResponse(context, workflowId);
     case "model":

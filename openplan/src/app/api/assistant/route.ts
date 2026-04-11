@@ -7,7 +7,7 @@ import { buildAssistantResponse } from "@/lib/assistant/respond";
 import { resolveAssistantWorkflowId } from "@/lib/assistant/catalog";
 
 const requestSchema = z.object({
-  kind: z.enum(["workspace", "analysis_studio", "project", "scenario_set", "model", "report", "run"]),
+  kind: z.enum(["workspace", "analysis_studio", "project", "plan", "program", "scenario_set", "model", "report", "run"]),
   id: z.string().uuid().nullable().optional(),
   workspaceId: z.string().uuid().nullable().optional(),
   runId: z.string().uuid().nullable().optional(),
