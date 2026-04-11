@@ -67,6 +67,7 @@ export function RtpReportDetail({
   cycle,
   sections,
   artifacts,
+  comparisonDigest,
   latestHtml,
   generationContext,
   currentContext,
@@ -105,6 +106,10 @@ export function RtpReportDetail({
     artifact_kind: string;
     generated_at: string;
   }>;
+  comparisonDigest: {
+    headline: string;
+    detail: string;
+  } | null;
   latestHtml: string | null;
   generationContext: {
     generatedAt: string | null;
@@ -325,8 +330,18 @@ export function RtpReportDetail({
                 <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
                 {cycle ? <StatusBadge tone="neutral">Cycle updated {formatDateTime(cycle.updated_at)}</StatusBadge> : null}
                 {report.generated_at ? <StatusBadge tone="neutral">Packet generated {formatDateTime(report.generated_at)}</StatusBadge> : null}
+                {comparisonDigest ? <StatusBadge tone="info">Comparison-backed</StatusBadge> : null}
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{packetFreshness.detail}</p>
+              {comparisonDigest ? (
+                <div className="mt-4 rounded-xl border border-border/70 bg-background px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Comparison posture
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{comparisonDigest.headline}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{comparisonDigest.detail}</p>
+                </div>
+              ) : null}
               {generationContext.readinessLabel || generationContext.workflowLabel ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">

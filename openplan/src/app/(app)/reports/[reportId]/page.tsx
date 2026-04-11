@@ -18,10 +18,12 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
+  describeComparisonSnapshotAggregate,
   getRtpPacketPresetAlignment,
   describeEvidenceChainSummary,
   formatDateTime,
   formatReportStatusLabel,
+  parseStoredComparisonSnapshotAggregate,
   formatReportTypeLabel,
   parseStoredEvidenceChainSummary,
   parseStoredScenarioSpineSummary,
@@ -609,6 +611,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     const currentRtpWorkflow = currentRtpReadiness
       ? buildRtpCycleWorkflowSummary({ status: rtpCycle?.status, readiness: currentRtpReadiness })
       : null;
+    const rtpComparisonDigest = describeComparisonSnapshotAggregate(
+      parseStoredComparisonSnapshotAggregate(latestArtifact?.metadata_json ?? null)
+    );
     const currentRtpChapterRows = (rtpChapters ?? []) as Array<{ id: string; status: string | null }>;
     const currentRtpProjectLinks = (rtpProjectLinks ?? []) as Array<{ id: string }>;
     const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string }>;
@@ -630,6 +635,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           artifact_kind: artifact.artifact_kind,
           generated_at: artifact.generated_at,
         }))}
+        comparisonDigest={rtpComparisonDigest}
         latestHtml={latestHtml}
         generationContext={{
           generatedAt: latestArtifact?.generated_at ?? null,
