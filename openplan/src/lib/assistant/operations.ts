@@ -241,8 +241,11 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           actionClass: "review_controls",
           executionMode: "future_agent_action",
           priority: "primary",
-          statusLabel: "Missing grant record",
-          reason: "This project still has no linked funding opportunity records, so the grants lane is not anchored at the project level yet.",
+          statusLabel: context.fundingSummary.fundingNeedAmount !== null ? "Needs sourcing" : "Missing grant record",
+          reason:
+            context.fundingSummary.fundingNeedAmount !== null
+              ? "This project already has a recorded funding need but still no linked funding opportunities, so sourcing candidate programs is the next honest move."
+              : "This project still has no linked funding opportunity records, so the grants lane is not anchored at the project level yet.",
           approval: "approval_required",
           auditEvent: "assistant.operation.project.create_funding_opportunity",
           auditNote: "Creates the first funding opportunity record on the project so grant tracking can start from the project control room.",
@@ -654,8 +657,11 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           actionClass: "review_controls",
           executionMode: "future_agent_action",
           priority: "primary",
-          statusLabel: "Missing record",
-          reason: "This package still has no linked funding opportunity records, so the grants operating lane is not anchored yet.",
+          statusLabel: context.fundingSummary.fundingNeedAmount !== null ? "Needs sourcing" : "Missing record",
+          reason:
+            context.fundingSummary.fundingNeedAmount !== null
+              ? "This package already carries a linked project funding need but still no funding opportunities, so sourcing candidate programs is the next honest move."
+              : "This package still has no linked funding opportunity records, so the grants operating lane is not anchored yet.",
           approval: "approval_required",
           auditEvent: "assistant.operation.program.create_funding_opportunity",
           auditNote: "Creates the first funding opportunity record for this package so grant tracking can start inside OpenPlan.",
