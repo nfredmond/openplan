@@ -1973,6 +1973,15 @@ export default async function ProjectDetailPage({
               </div>
             </div>
           </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <StatusBadge tone={projectControlsSummary.blockedMilestoneCount > 0 ? "danger" : "neutral"}>
+              {projectControlsSummary.blockedMilestoneCount} blocked
+            </StatusBadge>
+            <StatusBadge tone={projectControlsSummary.overdueMilestoneCount > 0 ? "warning" : "info"}>
+              {projectControlsSummary.overdueMilestoneCount} overdue
+            </StatusBadge>
+            <StatusBadge tone="neutral">{projectControlsSummary.completedMilestoneCount} complete</StatusBadge>
+          </div>
           {projectMilestonesPending ? (
             <div className="module-alert mt-5 text-sm">Project milestones will appear after the Lane C migration is applied to the database.</div>
           ) : milestones.length === 0 ? (
@@ -2017,6 +2026,15 @@ export default async function ProjectDetailPage({
               </div>
             </div>
           </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <StatusBadge tone={projectControlsSummary.overdueSubmittalCount > 0 ? "danger" : "info"}>
+              {projectControlsSummary.overdueSubmittalCount} overdue
+            </StatusBadge>
+            <StatusBadge tone="neutral">{projectControlsSummary.pendingSubmittalCount} pending</StatusBadge>
+            {projectControlsSummary.nextSubmittal ? (
+              <StatusBadge tone="info">Next due {fmtDateTime(projectControlsSummary.nextSubmittal.due_date)}</StatusBadge>
+            ) : null}
+          </div>
           {projectSubmittalsPending ? (
             <div className="module-alert mt-5 text-sm">Project submittals will appear after the Lane C migration is applied to the database.</div>
           ) : submittals.length === 0 ? (
@@ -2060,6 +2078,11 @@ export default async function ProjectDetailPage({
                 <h2 className="module-section-title">Project-linked billing register</h2>
               </div>
             </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <StatusBadge tone={invoiceSummary.overdueCount > 0 ? "danger" : "info"}>{invoiceSummary.overdueCount} overdue</StatusBadge>
+            <StatusBadge tone="neutral">{invoiceSummary.submittedCount} in review/payment</StatusBadge>
+            <StatusBadge tone="info">Outstanding {fmtCurrency(invoiceSummary.outstandingNetAmount)}</StatusBadge>
           </div>
           {projectInvoicesPending ? (
             <div className="module-alert mt-5 text-sm">Invoice records will appear after the Lane C migration is applied to the database.</div>
