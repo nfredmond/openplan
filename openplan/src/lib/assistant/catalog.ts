@@ -44,6 +44,9 @@ export type AssistantQuickLink = {
   auditNote?: string;
 };
 
+export type AssistantOperationUrgency = "high" | "medium" | "low";
+export type AssistantOperationTone = "danger" | "warning" | "info" | "success" | "neutral";
+
 export type AssistantPreview = {
   kind: AssistantTargetKind;
   title: string;
@@ -208,6 +211,83 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
 
 export function getAssistantActions(kind: AssistantTargetKind): AssistantAction[] {
   return ACTIONS_BY_KIND[kind] ?? ACTIONS_BY_KIND.workspace;
+}
+
+export function formatAssistantOperationActionClass(link: AssistantQuickLink): string {
+  switch (link.actionClass) {
+    case "review_controls":
+      return "Review controls";
+    case "review_analysis":
+      return "Review analysis";
+    case "review_packet":
+      return "Review packet";
+    case "inspect_readiness":
+      return "Inspect readiness";
+    case "open_surface":
+    default:
+      return "Open surface";
+  }
+}
+
+export function resolveAssistantOperationUrgency(link: AssistantQuickLink): AssistantOperationUrgency {
+  if (link.approval === "approval_required") return "high";
+  if (link.priority === "primary" && (link.actionClass === "review_controls" || link.actionClass === "review_packet")) {
+    return "high";
+  }
+  if (link.priority === "primary" || link.approval === "review" || link.priority === "secondary") {
+    return "medium";
+  }
+  return "low";
+}
+
+export function resolveAssistantOperationTone(link: AssistantQuickLink): AssistantOperationTone {
+  if (link.approval === "approval_required") return "danger";
+  switch (link.actionClass) {
+    case "review_controls":
+    case "review_packet":
+      return "warning";
+    case "review_analysis":
+    case "inspect_readiness":
+      return "info";
+    case "open_surface":
+      return link.approval === "safe" ? "success" : "neutral";
+    default:
+      return "neutral";
+  }
+}
+
+function operationUrgencyRank(urgency: AssistantOperationUrgency): number {
+  switch (urgency) {
+    case "high":
+      return 0;
+    case "medium":
+      return 1;
+    case "low":
+    default:
+      return 2;
+  }
+}
+
+function operationPriorityRank(priority: AssistantQuickLink["priority"]): number {
+  switch (priority) {
+    case "primary":
+      return 0;
+    case "secondary":
+      return 1;
+    case "supporting":
+    default:
+      return 2;
+  }
+}
+
+export function compareAssistantOperations(a: AssistantQuickLink, b: AssistantQuickLink): number {
+  const urgencyDelta = operationUrgencyRank(resolveAssistantOperationUrgency(a)) - operationUrgencyRank(resolveAssistantOperationUrgency(b));
+  if (urgencyDelta !== 0) return urgencyDelta;
+
+  const priorityDelta = operationPriorityRank(a.priority) - operationPriorityRank(b.priority);
+  if (priorityDelta !== 0) return priorityDelta;
+
+  return a.label.localeCompare(b.label);
 }
 
 export function resolveAssistantTarget(

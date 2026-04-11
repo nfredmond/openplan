@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Bot, Loader2, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  compareAssistantOperations,
+  formatAssistantOperationActionClass,
+  resolveAssistantOperationTone,
+  resolveAssistantOperationUrgency,
   resolveAssistantTarget,
   type AssistantPreview,
   type AssistantQuickLink,
@@ -42,22 +46,6 @@ function quickLinkBadge(link: AssistantQuickLink) {
   }
 }
 
-function quickLinkActionClassLabel(link: AssistantQuickLink) {
-  switch (link.actionClass) {
-    case "review_controls":
-      return "Review controls";
-    case "review_analysis":
-      return "Review analysis";
-    case "review_packet":
-      return "Review packet";
-    case "inspect_readiness":
-      return "Inspect readiness";
-    case "open_surface":
-    default:
-      return "Open surface";
-  }
-}
-
 function quickLinkPriorityBadge(link: AssistantQuickLink) {
   switch (link.priority) {
     case "primary":
@@ -70,23 +58,47 @@ function quickLinkPriorityBadge(link: AssistantQuickLink) {
   }
 }
 
+function operationCardClasses(link: AssistantQuickLink) {
+  const tone = resolveAssistantOperationTone(link);
+  const urgency = resolveAssistantOperationUrgency(link);
+
+  if (tone === "danger") {
+    return "border-rose-300/26 bg-rose-400/10 hover:border-rose-300/40 hover:bg-rose-400/14";
+  }
+  if (tone === "warning") {
+    return urgency === "high"
+      ? "border-amber-300/28 bg-amber-400/10 hover:border-amber-300/42 hover:bg-amber-400/14"
+      : "border-amber-300/20 bg-amber-400/8 hover:border-amber-300/34 hover:bg-amber-400/12";
+  }
+  if (tone === "info") {
+    return "border-sky-300/20 bg-sky-400/8 hover:border-sky-300/34 hover:bg-sky-400/12";
+  }
+  if (tone === "success") {
+    return "border-emerald-300/20 bg-emerald-400/8 hover:border-emerald-300/34 hover:bg-emerald-400/12";
+  }
+  return "border-white/10 bg-white/[0.04] hover:border-emerald-300/26 hover:bg-emerald-400/10";
+}
+
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
+  const orderedLinks = [...links].sort(compareAssistantOperations);
+
   return (
     <div className="grid gap-2 sm:grid-cols-2">
-      {links.map((link) => {
+      {orderedLinks.map((link) => {
         const badge = quickLinkBadge(link);
         const priorityBadge = quickLinkPriorityBadge(link);
+        const urgency = resolveAssistantOperationUrgency(link);
         return (
           <Link
             key={`${link.label}-${link.href}`}
             href={link.href}
-            className="rounded-[20px] border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left transition hover:border-emerald-300/26 hover:bg-emerald-400/10"
+            className={`rounded-[20px] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-slate-50">{link.label}</p>
                 <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
-                  {quickLinkActionClassLabel(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"}
+                  {formatAssistantOperationActionClass(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"} · {urgency}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span
