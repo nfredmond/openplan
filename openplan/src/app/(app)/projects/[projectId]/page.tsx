@@ -753,6 +753,19 @@ export default async function ProjectDetailPage({
     if (priorityDiff !== 0) return priorityDiff;
     return compareDateValues(left.due_date, right.due_date);
   });
+  const firstBlockedMilestone = prioritizedMilestones.find((milestone) => milestone.status === "blocked") ?? null;
+  const firstOverdueMilestone =
+    prioritizedMilestones.find(
+      (milestone) => milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()
+    ) ?? null;
+  const firstOverdueSubmittal =
+    prioritizedSubmittals.find(
+      (submittal) => submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()
+    ) ?? null;
+  const firstOverdueInvoice =
+    prioritizedProjectInvoices.find(
+      (invoice) => !["paid", "rejected"].includes(invoice.status) && parseSortableDate(invoice.due_date) < now.getTime()
+    ) ?? null;
   const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const fundingStackSummary = buildProjectFundingStackSummary(
     projectFundingProfile,
@@ -2001,42 +2014,66 @@ export default async function ProjectDetailPage({
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ? (
                 <Link
-                  href={`#${projectControlsSummary.attentionSummary.blockedMilestones.targetId}`}
+                  href={buildProjectControlHref(
+                    projectControlsSummary.attentionSummary.blockedMilestones.targetId,
+                    firstBlockedMilestone ? `project-milestone-${firstBlockedMilestone.id}` : undefined
+                  )}
                   className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Blocked milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.blockedMilestones.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Clear milestone blockers before the next delivery move.</p>
+                  {firstBlockedMilestone ? (
+                    <p className="mt-2 text-xs text-muted-foreground">First: {firstBlockedMilestone.title}</p>
+                  ) : null}
                 </Link>
               ) : null}
               {projectControlsSummary.attentionSummary.overdueMilestones.count > 0 ? (
                 <Link
-                  href={`#${projectControlsSummary.attentionSummary.overdueMilestones.targetId}`}
+                  href={buildProjectControlHref(
+                    projectControlsSummary.attentionSummary.overdueMilestones.targetId,
+                    firstOverdueMilestone ? `project-milestone-${firstOverdueMilestone.id}` : undefined
+                  )}
                   className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueMilestones.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Rebaseline checkpoints that are already behind target.</p>
+                  {firstOverdueMilestone ? (
+                    <p className="mt-2 text-xs text-muted-foreground">First: {firstOverdueMilestone.title}</p>
+                  ) : null}
                 </Link>
               ) : null}
               {projectControlsSummary.attentionSummary.overdueSubmittals.count > 0 ? (
                 <Link
-                  href={`#${projectControlsSummary.attentionSummary.overdueSubmittals.targetId}`}
+                  href={buildProjectControlHref(
+                    projectControlsSummary.attentionSummary.overdueSubmittals.targetId,
+                    firstOverdueSubmittal ? `project-submittal-${firstOverdueSubmittal.id}` : undefined
+                  )}
                   className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue submittals</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueSubmittals.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Bring late packets back into explicit review cadence.</p>
+                  {firstOverdueSubmittal ? (
+                    <p className="mt-2 text-xs text-muted-foreground">First: {firstOverdueSubmittal.title}</p>
+                  ) : null}
                 </Link>
               ) : null}
               {projectControlsSummary.attentionSummary.overdueInvoices.count > 0 ? (
                 <Link
-                  href={`#${projectControlsSummary.attentionSummary.overdueInvoices.targetId}`}
+                  href={buildProjectControlHref(
+                    projectControlsSummary.attentionSummary.overdueInvoices.targetId,
+                    firstOverdueInvoice ? `project-invoice-${firstOverdueInvoice.id}` : undefined
+                  )}
                   className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue invoices</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueInvoices.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Resolve payment or documentation drift in the invoice lane.</p>
+                  {firstOverdueInvoice ? (
+                    <p className="mt-2 text-xs text-muted-foreground">First: {firstOverdueInvoice.invoice_number}</p>
+                  ) : null}
                 </Link>
               ) : null}
             </div>
