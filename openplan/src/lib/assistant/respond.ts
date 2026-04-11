@@ -140,10 +140,31 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
 }
 
 function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
+  const registryPosture =
+    context.counts.noPacketCount > 0
+      ? {
+          title: "First packet queue is live",
+          detail: `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work outranks refresh or release review right now.`,
+          summary: `Grounded to the RTP cycle registry, with first-packet generation currently outranking refresh and release work across the visible cycles.`,
+        }
+      : context.counts.refreshRecommendedCount > 0
+        ? {
+            title: "Refresh queue is live",
+            detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the main registry posture right now.`,
+            summary: `Grounded to the RTP cycle registry, with stale packet refresh currently outranking first-generation and release review work across the visible cycles.`,
+          }
+        : {
+            title: "Board-ready queue is live",
+            detail: context.recommendedCycle
+              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for board-ready review from the registry.`
+              : "The visible RTP packet queue is materially current enough that board-ready review is now the main registry posture.",
+            summary: `Grounded to the RTP cycle registry, with board-ready review currently outranking packet generation and refresh work across the visible cycles.`,
+          };
+
   return {
     kind: context.kind,
     title: `${context.workspace.name ?? "Workspace"} RTP registry`,
-    summary: `Grounded to the RTP cycle registry, packet pressure across cycles, and the shared workspace command queue around the regional planning lane.`,
+    summary: registryPosture.summary,
     stats: [
       { label: "Cycles", value: `${context.counts.cycles}` },
       { label: "Public review", value: `${context.counts.publicReviewCycles}` },
@@ -157,7 +178,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
         : "No RTP cycle is visible yet from this registry snapshot.",
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
-        : "No broader workspace command is currently outranking the RTP registry surface.",
+        : registryPosture.detail,
     ],
     operatorCue: context.operationsSummary.nextCommand
       ? {
@@ -165,23 +186,40 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
           title: context.operationsSummary.nextCommand.title,
           detail: context.operationsSummary.nextCommand.detail,
         }
-      : context.recommendedCycle
-        ? {
-            label: "Current runtime cue",
-            title: context.recommendedCycle.title,
-            detail: `${context.recommendedCycle.packetFreshnessLabel} is the strongest current RTP packet signal in the registry.`,
-          }
-        : undefined,
+      : {
+          label: "Current runtime cue",
+          title: registryPosture.title,
+          detail: registryPosture.detail,
+        },
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
+  const cyclePacketPosture =
+    !context.packetSummary.recommendedReport || context.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+      ? {
+          title: "First packet work comes first",
+          detail: "This cycle still lacks a usable current packet artifact, so first-generation planning outranks refresh or release review right now.",
+          summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and first-packet setup posture before release work begins.`,
+        }
+      : context.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+        ? {
+            title: "Refresh work comes first",
+            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and stale packet refresh posture before release review.`,
+          }
+        : {
+            title: "Release review comes first",
+            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and board-ready packet review posture.`,
+          };
+
   return {
     kind: context.kind,
     title: context.rtpCycle.title,
-    summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, packet posture, and the shared workspace command queue around it.`,
+    summary: cyclePacketPosture.summary,
     stats: [
       { label: "Status", value: context.rtpCycle.status },
       { label: "Chapters", value: `${context.counts.chapters}` },
@@ -201,13 +239,11 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
           title: context.operationsSummary.nextCommand.title,
           detail: context.operationsSummary.nextCommand.detail,
         }
-      : context.packetSummary.recommendedReport
-        ? {
-            label: "Current runtime cue",
-            title: context.packetSummary.recommendedReport.title ?? "Recommended packet anchor",
-            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
-          }
-        : undefined,
+      : {
+          label: "Current runtime cue",
+          title: cyclePacketPosture.title,
+          detail: cyclePacketPosture.detail,
+        },
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
