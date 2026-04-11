@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { PlanCreator } from "@/components/plans/plan-creator";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -90,14 +92,29 @@ export default async function PlansPage({
     );
   }
 
-  const [{ data: plansData }, { data: projectsData }] = await Promise.all([
+  const [{ data: plansData }, { data: projectsData }, { data: programsData }, { data: fundingOpportunitiesData }, { data: workspaceReportsData }] = await Promise.all([
     supabase
       .from("plans")
       .select(
         "id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, created_at, updated_at, projects(id, name)"
       )
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, workspace_id, name").order("updated_at", { ascending: false }),
+    supabase.from("projects").select("id, workspace_id, name, status, delivery_phase, updated_at").order("updated_at", { ascending: false }),
+    supabase
+      .from("programs")
+      .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("funding_opportunities")
+      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("reports")
+      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
   ]);
 
   const plans = (plansData ?? []) as PlanRow[];
@@ -144,7 +161,7 @@ export default async function PlansPage({
     reportCountsByProject.set(row.project_id, (reportCountsByProject.get(row.project_id) ?? 0) + 1);
   }
 
-  const typedPlans = plans
+  const allTypedPlans = plans
     .map((plan) => {
       const project = Array.isArray(plan.projects) ? plan.projects[0] ?? null : plan.projects ?? null;
       const planLinks = linksByPlan.get(plan.id) ?? [];
@@ -197,7 +214,9 @@ export default async function PlansPage({
         generatedReportCount: 0,
         reportArtifactCount: 0,
       }),
-    }))
+    }));
+
+  const typedPlans = allTypedPlans
     .filter((plan) => (filters.projectId ? plan.project_id === filters.projectId : true))
     .filter((plan) => (filters.planType ? plan.plan_type === filters.planType : true))
     .filter((plan) => (filters.status ? plan.status === filters.status : true));
@@ -205,6 +224,80 @@ export default async function PlansPage({
   const activeCount = typedPlans.filter((plan) => plan.status === "active").length;
   const adoptedCount = typedPlans.filter((plan) => plan.status === "adopted").length;
   const readyFoundationCount = typedPlans.filter((plan) => plan.readiness.ready).length;
+
+  const operationsSummary = buildWorkspaceOperationsSummary({
+    projects: ((projectsData ?? []) as Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      delivery_phase: string | null;
+      updated_at: string | null;
+    }>).map((project) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      deliveryPhase: project.delivery_phase,
+      updatedAt: project.updated_at,
+    })),
+    plans: allTypedPlans.map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      status: plan.status,
+      geographyLabel: plan.geography_label,
+      horizonYear: plan.horizon_year,
+      projectId: plan.project_id,
+      updatedAt: plan.updated_at,
+    })),
+    programs: ((programsData ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      nomination_due_at: string | null;
+      adoption_target_at: string | null;
+      updated_at: string | null;
+    }>).map((program) => ({
+      id: program.id,
+      title: program.title,
+      status: program.status,
+      nominationDueAt: program.nomination_due_at,
+      adoptionTargetAt: program.adoption_target_at,
+      updatedAt: program.updated_at,
+    })),
+    reports: ((workspaceReportsData ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      latest_artifact_kind: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>).map((report) => ({
+      id: report.id,
+      title: report.title,
+      status: report.status,
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+      metadataJson: report.metadata_json,
+    })),
+    fundingOpportunities: ((fundingOpportunitiesData ?? []) as Array<{
+      id: string;
+      title: string;
+      opportunity_status: string | null;
+      closes_at: string | null;
+      decision_due_at: string | null;
+      program_id: string | null;
+      updated_at: string | null;
+    }>).map((opportunity) => ({
+      id: opportunity.id,
+      title: opportunity.title,
+      opportunityStatus: opportunity.opportunity_status,
+      closesAt: opportunity.closes_at,
+      decisionDueAt: opportunity.decision_due_at,
+      programId: opportunity.program_id,
+      updatedAt: opportunity.updated_at,
+    })),
+  });
 
   return (
     <section className="module-page">
@@ -262,7 +355,15 @@ export default async function PlansPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <PlanCreator projects={projectsData ?? []} />
+        <div className="space-y-6">
+          <PlanCreator projects={projectsData ?? []} />
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move before another plan revision"
+            description="The Plans lane now shares the same workspace command queue used by the dashboard and assistant runtime, so packet pressure and setup gaps stay visible while you work the registry."
+          />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">

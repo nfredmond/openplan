@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileText, FolderKanban, Radar, ShieldCheck } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
@@ -367,71 +367,13 @@ export default async function DashboardPage() {
           </div>
         </article>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Operations command board</p>
-              <h2 className="module-section-title">What the workspace should do next</h2>
-              <p className="module-section-description">{operationsSummary.detail}</p>
+        <WorkspaceCommandBoard summary={operationsSummary}>
+          {baselineItems.map((item) => (
+            <div key={item} className="module-subpanel text-sm text-muted-foreground">
+              {item}
             </div>
-            <StatusBadge tone={operationsSummary.posture === "attention" ? "warning" : operationsSummary.posture === "active" ? "info" : "success"}>
-              {operationsSummary.posture === "attention" ? "Attention" : operationsSummary.posture === "active" ? "Active" : "Stable"}
-            </StatusBadge>
-          </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="module-subpanel">
-              <p className="module-summary-label">Packet pressure</p>
-              <p className="module-summary-value">
-                {operationsSummary.counts.reportRefreshRecommended + operationsSummary.counts.reportNoPacket}
-              </p>
-              <p className="module-summary-detail">
-                {operationsSummary.counts.reportRefreshRecommended} refresh recommended, {operationsSummary.counts.reportNoPacket} without packets.
-              </p>
-            </div>
-            <div className="module-subpanel">
-              <p className="module-summary-label">Funding windows</p>
-              <p className="module-summary-value">{operationsSummary.counts.openFundingOpportunities}</p>
-              <p className="module-summary-detail">
-                {operationsSummary.counts.closingSoonFundingOpportunities} closing within 14 days.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {operationsSummary.commandQueue.length > 0 ? (
-              operationsSummary.commandQueue.map((item) => (
-                <Link key={item.key} href={item.href} className="module-subpanel block transition-colors hover:border-primary/35">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
-                    </div>
-                    <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {item.badges.map((badge) => (
-                      <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
-                        {badge.label}
-                        {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
-                      </StatusBadge>
-                    ))}
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="module-subpanel text-sm text-muted-foreground">No immediate queue pressure is visible from the current workspace snapshot.</div>
-            )}
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {baselineItems.map((item) => (
-              <div key={item} className="module-subpanel text-sm text-muted-foreground">
-                {item}
-              </div>
-            ))}
-          </div>
-        </article>
+          ))}
+        </WorkspaceCommandBoard>
       </div>
 
       <RunHistory workspaceId={workspaceId} />
