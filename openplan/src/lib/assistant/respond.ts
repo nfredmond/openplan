@@ -15,7 +15,7 @@ import type {
   ScenarioAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
-import type { AssistantLocalConsoleState } from "@/lib/assistant/local-console-state";
+import { applyLocalConsoleStateToResponse, type AssistantLocalConsoleState } from "@/lib/assistant/local-console-state";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
 
@@ -45,36 +45,6 @@ function pluralize(count: number, singular: string, plural = `${singular}s`): st
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
   const value = asNumber(metrics[key]);
   return value === null ? "N/A" : `${value}`;
-}
-
-function applyLocalConsoleState(response: AssistantResponse, localConsoleState?: AssistantLocalConsoleState | null): AssistantResponse {
-  if (!localConsoleState) return response;
-
-  const filterLabel =
-    localConsoleState.filter === "all"
-      ? "all operation groups"
-      : localConsoleState.filter === "act_now"
-        ? "act-now pressure"
-        : localConsoleState.filter === "review_soon"
-          ? "review-soon work"
-          : "support context";
-
-  return {
-    ...response,
-    summary: `${response.summary} Local board posture: ${localConsoleState.title}.`,
-    findings: [
-      `Local board cue: ${localConsoleState.detail}`,
-      ...response.findings,
-    ],
-    evidence: [
-      ...response.evidence,
-      `Console mode: ${localConsoleState.viewMode}`,
-      `Console filter: ${filterLabel}`,
-      `Local shaped ops: ${localConsoleState.shapedCount}`,
-      `Local snoozed ops: ${localConsoleState.snoozedCount}`,
-      `Returning soon: ${localConsoleState.returningSoonCount}`,
-    ],
-  };
 }
 
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
@@ -925,5 +895,5 @@ export function buildAssistantResponse(
     }
   })();
 
-  return applyLocalConsoleState(response, localConsoleState);
+  return applyLocalConsoleStateToResponse(response, localConsoleState);
 }

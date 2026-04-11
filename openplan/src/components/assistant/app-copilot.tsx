@@ -17,10 +17,11 @@ import {
   type AssistantAction,
   type AssistantOperationGroupKey,
 } from "@/lib/assistant/catalog";
-import type {
-  AssistantLocalConsoleFilter,
-  AssistantLocalConsoleState,
-  AssistantLocalConsoleViewMode,
+import {
+  applyLocalConsoleStateToPreview,
+  type AssistantLocalConsoleFilter,
+  type AssistantLocalConsoleState,
+  type AssistantLocalConsoleViewMode,
 } from "@/lib/assistant/local-console-state";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1038,13 +1039,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         const payload = (await response.json()) as { preview: AssistantPreview };
         if (ignore) return;
 
-        setPreview(payload.preview);
+        const localConsoleState = buildLocalConsoleStateSnapshot(payload.preview.quickLinks);
+        const previewWithLocalState = applyLocalConsoleStateToPreview(payload.preview, localConsoleState);
+
+        setPreview(previewWithLocalState);
         setMessages([
           {
             id: `intro-${Date.now()}`,
             role: "assistant",
             type: "intro",
-            preview: payload.preview,
+            preview: previewWithLocalState,
           },
         ]);
         setDraft("");
