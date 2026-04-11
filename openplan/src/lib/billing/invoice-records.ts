@@ -18,6 +18,10 @@ export type BillingInvoiceRecordLike = {
   due_date?: string | null;
 };
 
+export type BillingInvoiceLinkageRecordLike = BillingInvoiceRecordLike & {
+  funding_award_id?: string | null;
+};
+
 export type BillingInvoiceSummary = {
   totalCount: number;
   draftCount: number;
@@ -28,6 +32,17 @@ export type BillingInvoiceSummary = {
   outstandingNetAmount: number;
   paidNetAmount: number;
   draftNetAmount: number;
+};
+
+export type BillingInvoiceLinkageSummary = {
+  linkedCount: number;
+  unlinkedCount: number;
+  linkedNetAmount: number;
+  unlinkedNetAmount: number;
+  linkedOutstandingNetAmount: number;
+  unlinkedOutstandingNetAmount: number;
+  linkedPaidNetAmount: number;
+  unlinkedPaidNetAmount: number;
 };
 
 function roundCurrency(value: number): number {
@@ -131,4 +146,25 @@ export function summarizeBillingInvoiceRecords(
       draftNetAmount: 0,
     }
   );
+}
+
+export function summarizeBillingInvoiceLinkage(
+  records: BillingInvoiceLinkageRecordLike[] | null | undefined,
+  nowInput: Date | string = new Date()
+): BillingInvoiceLinkageSummary {
+  const linkedRecords = (records ?? []).filter((record) => Boolean(record.funding_award_id));
+  const unlinkedRecords = (records ?? []).filter((record) => !record.funding_award_id);
+  const linkedSummary = summarizeBillingInvoiceRecords(linkedRecords, nowInput);
+  const unlinkedSummary = summarizeBillingInvoiceRecords(unlinkedRecords, nowInput);
+
+  return {
+    linkedCount: linkedSummary.totalCount,
+    unlinkedCount: unlinkedSummary.totalCount,
+    linkedNetAmount: linkedSummary.totalNetAmount,
+    unlinkedNetAmount: unlinkedSummary.totalNetAmount,
+    linkedOutstandingNetAmount: linkedSummary.outstandingNetAmount,
+    unlinkedOutstandingNetAmount: unlinkedSummary.outstandingNetAmount,
+    linkedPaidNetAmount: linkedSummary.paidNetAmount,
+    unlinkedPaidNetAmount: unlinkedSummary.paidNetAmount,
+  };
 }

@@ -7,7 +7,7 @@ import { InvoiceRecordComposer } from "@/components/billing/invoice-record-compo
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { summarizeBillingInvoiceLinkage, summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { resolveBillingSupportState } from "@/lib/billing/support";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
 import { createClient } from "@/lib/supabase/server";
@@ -291,6 +291,7 @@ export default async function BillingPage({
         fundingAward: normalizeJoin(invoice.funding_awards),
       }));
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
+  const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
     name: string;
@@ -493,7 +494,7 @@ export default async function BillingPage({
                 Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
               </div>
             ) : (
-              <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2">
+              <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-3">
                 <div className="bg-background/70 px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Records</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{invoiceSummary.totalCount}</p>
@@ -514,8 +515,24 @@ export default async function BillingPage({
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.paidNetAmount)}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.overdueCount} overdue invoice record(s) still need attention.</p>
                 </div>
+                <div className="bg-background/70 px-4 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Award-linked</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceLinkageSummary.linkedNetAmount)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{invoiceLinkageSummary.linkedCount} invoice record(s) are currently part of the funding-award reimbursement chain.</p>
+                </div>
+                <div className="bg-background/70 px-4 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Unlinked to award</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{invoiceLinkageSummary.unlinkedCount} invoice record(s) still sit outside award-backed reimbursement reporting.</p>
+                </div>
               </div>
             )}
+
+            {!invoiceRegisterPending && invoiceLinkageSummary.unlinkedCount > 0 ? (
+              <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
+                {invoiceLinkageSummary.unlinkedCount} invoice record{invoiceLinkageSummary.unlinkedCount === 1 ? " is" : "s are"} still unlinked to a funding award, totaling <strong>{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</strong>. That means reimbursement posture remains understated until those records are attached to award-backed funding.
+              </div>
+            ) : null}
           </article>
         </div>
 
