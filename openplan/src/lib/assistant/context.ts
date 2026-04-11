@@ -341,6 +341,7 @@ export type ReportAssistantContext = {
     summary: string | null;
     status: string;
     reportType: string;
+    rtpCycleId: string | null;
     generatedAt: string | null;
     latestArtifactKind: string | null;
     updatedAt: string;
@@ -374,6 +375,12 @@ export type ReportAssistantContext = {
     id: string;
     title: string;
     status: string;
+  } | null;
+  rtpCycle: {
+    id: string;
+    title: string;
+    status: string;
+    updatedAt: string;
   } | null;
 };
 
@@ -1511,7 +1518,7 @@ async function loadReportContext(
   const { data: report } = await supabase
     .from("reports")
     .select(
-      "id, workspace_id, project_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at"
+      "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at"
     )
     .eq("id", reportId)
     .maybeSingle();
@@ -1525,12 +1532,19 @@ async function loadReportContext(
     return null;
   }
 
-  const [{ data: project }, { data: sections }, { data: reportRunLinks }, { data: artifacts }] = await Promise.all([
+  const [{ data: project }, { data: rtpCycle }, { data: sections }, { data: reportRunLinks }, { data: artifacts }] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, summary, updated_at")
       .eq("id", report.project_id)
       .maybeSingle(),
+    report.rtp_cycle_id
+      ? supabase
+          .from("rtp_cycles")
+          .select("id, title, status, updated_at")
+          .eq("id", report.rtp_cycle_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase
       .from("report_sections")
       .select("id, section_key, enabled, config_json")
@@ -1593,6 +1607,7 @@ async function loadReportContext(
       summary: report.summary,
       status: report.status,
       reportType: report.report_type,
+      rtpCycleId: report.rtp_cycle_id,
       generatedAt: report.generated_at,
       latestArtifactKind: report.latest_artifact_kind,
       updatedAt: report.updated_at,
@@ -1623,6 +1638,14 @@ async function loadReportContext(
           id: engagementCampaignResult.data.id,
           title: engagementCampaignResult.data.title,
           status: engagementCampaignResult.data.status,
+        }
+      : null,
+    rtpCycle: rtpCycle
+      ? {
+          id: rtpCycle.id,
+          title: rtpCycle.title,
+          status: rtpCycle.status,
+          updatedAt: rtpCycle.updated_at,
         }
       : null,
   };

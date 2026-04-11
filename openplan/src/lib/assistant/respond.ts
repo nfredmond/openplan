@@ -20,6 +20,7 @@ import type {
 import { applyLocalConsoleStateToResponse, type AssistantLocalConsoleState } from "@/lib/assistant/local-console-state";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
+import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function asNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -327,17 +328,26 @@ function buildModelPreview(context: ModelAssistantContext): AssistantPreview {
 }
 
 function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
+  const packetFreshness = getReportPacketFreshness({
+    latestArtifactKind: context.report.latestArtifactKind,
+    generatedAt: context.report.generatedAt,
+    updatedAt: context.report.updatedAt,
+  });
+
   return {
     kind: context.kind,
     title: context.report.title,
-    summary: `Grounded to this report packet's composition, linked runs, artifact history, and provenance metadata.`,
+    summary: context.rtpCycle
+      ? `Grounded to this RTP-linked packet's composition, cycle anchor, artifact history, and provenance metadata.`
+      : `Grounded to this report packet's composition, linked runs, artifact history, and provenance metadata.`,
     stats: [
       { label: "Status", value: context.report.status },
       { label: "Runs", value: `${context.runs.length}` },
       { label: "Sections", value: `${context.enabledSections}/${context.sectionCount}` },
-      { label: "Artifacts", value: `${context.artifactCount}` },
+      { label: context.rtpCycle ? "Packet" : "Artifacts", value: context.rtpCycle ? packetFreshness.label : `${context.artifactCount}` },
     ],
     facts: [
+      context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
       context.project ? `Project anchor: ${context.project.name}` : "No project anchor is visible on this report snapshot.",
       context.latestArtifact
         ? `Latest artifact: ${context.latestArtifact.artifactKind} generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
@@ -345,7 +355,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
       context.engagementCampaign
         ? `Engagement linkage: ${context.engagementCampaign.title} (${context.engagementCampaign.status}).`
         : "No engagement campaign linkage is attached through report sections.",
-    ],
+    ].filter(Boolean) as string[],
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
@@ -958,6 +968,11 @@ function buildModelResponse(context: ModelAssistantContext, workflowId: string):
 function buildReportResponse(context: ReportAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Report audit";
   const holdCount = context.runAudit.filter((item) => item.gate.decision !== "PASS").length;
+  const packetFreshness = getReportPacketFreshness({
+    latestArtifactKind: context.report.latestArtifactKind,
+    generatedAt: context.report.generatedAt,
+    updatedAt: context.report.updatedAt,
+  });
 
   if (workflowId === "report-release") {
     return {
@@ -965,9 +980,13 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       label,
       title: `Release check for ${context.report.title}`,
       summary: context.latestArtifact
-        ? `${context.report.title} has a generated ${context.latestArtifact.artifactKind} artifact, but release confidence still depends on the run audit, source context, and any unresolved gate holds attached inside that artifact metadata.`
+        ? context.rtpCycle
+          ? `${context.report.title} is an RTP-linked packet for ${context.rtpCycle.title}, and release confidence still depends on packet freshness, cycle drift, the run audit, and unresolved gate holds attached inside artifact metadata.`
+          : `${context.report.title} has a generated ${context.latestArtifact.artifactKind} artifact, but release confidence still depends on the run audit, source context, and any unresolved gate holds attached inside that artifact metadata.`
         : `${context.report.title} is not release-ready yet because no generated artifact exists to review.`,
       findings: [
+        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        context.rtpCycle ? `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}` : null,
         context.latestArtifact
           ? `Latest artifact generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
           : "No artifact has been generated yet.",
@@ -975,18 +994,22 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
         context.sourceContext
           ? `Source snapshot includes ${String(context.sourceContext.linkedRunCount ?? context.runs.length)} linked runs and ${String(context.sourceContext.decisionCount ?? 0)} decisions.`
           : "No structured sourceContext payload was captured on the latest artifact.",
-      ],
+      ].filter(Boolean) as string[],
       nextSteps: [
         context.latestArtifact ? "Review the latest artifact rather than the draft record alone before sharing anything." : "Generate an artifact first so there is a stable packet to review.",
+        context.rtpCycle && packetFreshness.label === "Refresh recommended"
+          ? "Regenerate this RTP packet from current cycle state before treating it as board-ready."
+          : null,
         holdCount > 0
           ? "Clear or explicitly acknowledge the held run-audit items before external release."
           : "Verify citations and narrative accuracy even though the current audit trail is materially cleaner.",
-      ],
+      ].filter(Boolean) as string[],
       evidence: [
+        context.rtpCycle ? `RTP cycle: ${context.rtpCycle.id}` : null,
         `Linked runs: ${context.runs.length}`,
         `Enabled sections: ${context.enabledSections}/${context.sectionCount}`,
         `Artifacts: ${context.artifactCount}`,
-      ],
+      ].filter(Boolean) as string[],
       caution: "A generated packet is not self-certifying; release still requires human verification of claims, citations, and policy-sensitive framing.",
       quickLinks: buildAssistantOperations(context),
     };
@@ -998,6 +1021,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
     title: `Report audit: ${context.report.title}`,
     summary: `${context.report.title} is grounded on ${pluralize(context.runs.length, "linked run")}, ${pluralize(context.enabledSections, "enabled section")}, and ${pluralize(context.artifactCount, "generated artifact")}.`,
     findings: [
+      context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status} · ${packetFreshness.label}.` : null,
       context.project ? `Project anchor: ${context.project.name}.` : "No project anchor is visible from this report snapshot.",
       context.runs.length > 0
         ? `Source runs: ${context.runs.slice(0, 3).map((run) => run.title).join(" · ")}.`
@@ -1005,16 +1029,20 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       context.engagementCampaign
         ? `Engagement linkage is active through ${context.engagementCampaign.title}.`
         : "No engagement linkage is visible through the report sections.",
-    ],
+    ].filter(Boolean) as string[],
     nextSteps: [
+      context.rtpCycle && packetFreshness.label !== "Packet current"
+        ? "Refresh this RTP packet from current cycle state before externalizing it."
+        : null,
       context.runs.length > 0 ? "Cross-check the linked run summaries against the packet storyline." : "Attach source runs before treating the report as analytically grounded.",
       context.latestArtifact ? "Audit the latest artifact metadata rather than only the report record fields." : "Generate the first artifact to create a real review object.",
-    ],
+    ].filter(Boolean) as string[],
     evidence: [
       `Report type: ${context.report.reportType}`,
+      context.rtpCycle ? `RTP cycle updated: ${formatDateTime(context.rtpCycle.updatedAt)}` : null,
       `Latest artifact kind: ${context.report.latestArtifactKind ?? "None"}`,
       `Run-audit rows: ${context.runAudit.length}`,
-    ],
+    ].filter(Boolean) as string[],
     quickLinks: buildAssistantOperations(context),
   };
 }

@@ -464,7 +464,9 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
+      reason: context.rtpCycle
+        ? "Runs the grounded RTP packet release check inside Planner Agent before you jump into full packet detail."
+        : "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
       approval: "safe",
       auditEvent: "assistant.operation.report.release_agent",
       auditNote: "This is a grounded packet review only, it does not publish or mutate the report.",
@@ -476,12 +478,26 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
       targetKind: "report",
       actionClass: "review_packet",
       priority: "primary",
-      statusLabel: "Packet review",
-      reason: "Report detail is the canonical packet audit surface for provenance, drift, and artifact history.",
+      statusLabel: context.rtpCycle ? "RTP packet review" : "Packet review",
+      reason: context.rtpCycle
+        ? "Report detail is the canonical RTP packet audit surface for cycle drift, provenance, and artifact history."
+        : "Report detail is the canonical packet audit surface for provenance, drift, and artifact history.",
       approval: "review",
       auditEvent: "assistant.operation.report.detail",
       auditNote: "Use report detail to inspect provenance, drift, and artifact history before sharing.",
     }),
+    context.rtpCycle
+      ? quickLink("report-rtp-cycle", `Open ${context.rtpCycle.title}`, `/rtp/${context.rtpCycle.id}`, {
+          targetKind: "rtp_cycle",
+          actionClass: "review_controls",
+          priority: "secondary",
+          statusLabel: "Cycle anchor",
+          reason: "This report is tied to an RTP cycle, so the cycle record is the best cross-check for chapter and packet drift.",
+          approval: "review",
+          auditEvent: "assistant.operation.report.rtp_cycle",
+          auditNote: "Use the RTP cycle as the canonical source for chapter, portfolio, and board-packet context.",
+        })
+      : null,
     context.project
       ? quickLink("report-project", `Open ${context.project.name}`, `/projects/${context.project.id}#project-reporting`, {
           targetKind: "project",
