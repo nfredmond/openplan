@@ -457,6 +457,28 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
 
 function buildProgramOperations(context: ProgramAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    context.fundingSummary.opportunityCount === 0
+      ? quickLink("program-create-funding-record", "Create first funding opportunity", `/programs/${context.program.id}#program-funding-opportunities`, {
+          targetKind: "program",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Missing record",
+          reason: "This package still has no linked funding opportunity records, so the grants operating lane is not anchored yet.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.program.create_funding_opportunity",
+          auditNote: "Creates the first funding opportunity record for this package so grant tracking can start inside OpenPlan.",
+          executeAction: {
+            kind: "create_funding_opportunity",
+            programId: context.program.id,
+            projectId: context.project?.id,
+            title: `${context.program.title} funding opportunity`,
+            postActionWorkflowId: "program-funding",
+            postActionPrompt: "A funding opportunity record was created. What fields should be filled next before this package is grant-ready?",
+            postActionPromptLabel: "Review funding posture",
+          },
+        })
+      : null,
     context.fundingSummary.opportunityCount > 0
       ? quickLink(
           "program-funding-agent",

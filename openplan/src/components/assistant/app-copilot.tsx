@@ -1484,6 +1484,46 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         }
         return;
       }
+
+      if (executeAction.kind === "create_funding_opportunity") {
+        const createResponse = await fetch("/api/funding-opportunities", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            programId: executeAction.programId,
+            projectId: executeAction.projectId,
+            title: executeAction.title,
+          }),
+        });
+
+        if (!createResponse.ok) {
+          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to create funding opportunity");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
     } catch (executeError) {
       const failedStatus: OperationInvocationState = {
         linkId: link.id,
