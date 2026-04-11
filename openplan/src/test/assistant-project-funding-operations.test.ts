@@ -244,6 +244,24 @@ describe("project and program funding operations", () => {
     expect(action?.href).toBe("/projects/project-1#project-invoices");
   });
 
+  it("creates a project reimbursement record from uninvoiced award posture", () => {
+    const context = buildProjectContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 180000;
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "project-create-reimbursement-record");
+
+    expect(action).toBeDefined();
+    expect(action?.executeAction?.kind).toBe("create_project_record");
+    if (action?.executeAction?.kind === "create_project_record") {
+      expect(action.executeAction.projectId).toBe("project-1");
+      expect(action.executeAction.recordType).toBe("submittal");
+      expect(action.executeAction.submittalType).toBe("reimbursement");
+    }
+  });
+
   it("surfaces a program reimbursement action when linked-project awards are uninvoiced", () => {
     const context = buildProgramContext();
     context.fundingSummary.pursueCount = 1;
@@ -256,5 +274,23 @@ describe("project and program funding operations", () => {
     expect(action).toBeDefined();
     expect(action?.label).toBe("Open reimbursement lane");
     expect(action?.href).toBe("/projects/project-1#project-invoices");
+  });
+
+  it("creates a program reimbursement record on the linked project from uninvoiced award posture", () => {
+    const context = buildProgramContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 225000;
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "program-create-reimbursement-record");
+
+    expect(action).toBeDefined();
+    expect(action?.executeAction?.kind).toBe("create_project_record");
+    if (action?.executeAction?.kind === "create_project_record") {
+      expect(action.executeAction.projectId).toBe("project-1");
+      expect(action.executeAction.recordType).toBe("submittal");
+      expect(action.executeAction.submittalType).toBe("reimbursement");
+    }
   });
 });

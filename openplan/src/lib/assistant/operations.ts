@@ -400,6 +400,31 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+      ? quickLink("project-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
+          reason: "Committed award dollars are logged on the project, but no reimbursement packet record has been started yet against part of that award stack.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.create_reimbursement_record",
+          auditNote: "Creates a reimbursement submittal record through the existing audited project-record route without inventing payment dates or invoice amounts.",
+          executeAction: {
+            kind: "create_project_record",
+            projectId: context.project.id,
+            recordType: "submittal",
+            title: `${context.project.name} reimbursement packet`,
+            submittalType: "reimbursement",
+            status: "draft",
+            notes: "Planner Agent created this reimbursement packet starter from committed award posture. Link award-specific backup and invoice chain next.",
+            postActionWorkflowId: "project-funding",
+            postActionPrompt: "A reimbursement packet record was created for this project. What funding or reimbursement step should move next?",
+            postActionPromptLabel: "Review reimbursement posture",
+          },
+        })
+      : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
       ? quickLink("project-reimbursement-lane", "Open reimbursement lane", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
@@ -897,6 +922,31 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           approval: "review",
           auditEvent: "assistant.operation.program.record_awarded_funding",
           auditNote: "Use the package funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
+        })
+      : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
+      ? quickLink("program-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
+          reason: "Committed award dollars are logged for this package's linked project, but no reimbursement packet record has been started yet against part of that award stack.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.program.create_reimbursement_record",
+          auditNote: "Creates a reimbursement submittal record on the linked project through the existing audited project-record route without inventing payment dates or invoice amounts.",
+          executeAction: {
+            kind: "create_project_record",
+            projectId: context.project.id,
+            recordType: "submittal",
+            title: `${context.program.title} reimbursement packet`,
+            submittalType: "reimbursement",
+            status: "draft",
+            notes: `Planner Agent created this reimbursement packet starter from ${context.program.title}. Link award-specific backup and invoice chain next.`,
+            postActionWorkflowId: "program-funding",
+            postActionPrompt: "A reimbursement packet record was created for this package's linked project. What funding or reimbursement step should move next?",
+            postActionPromptLabel: "Review package reimbursement posture",
+          },
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project

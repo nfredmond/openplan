@@ -1602,6 +1602,48 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         }
         return;
       }
+
+      if (executeAction.kind === "create_project_record") {
+        const createResponse = await fetch(`/api/projects/${executeAction.projectId}/records`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            recordType: executeAction.recordType,
+            title: executeAction.title,
+            submittalType: executeAction.submittalType,
+            status: executeAction.status,
+            notes: executeAction.notes,
+          }),
+        });
+
+        if (!createResponse.ok) {
+          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to create project record");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
     } catch (executeError) {
       const failedStatus: OperationInvocationState = {
         linkId: link.id,

@@ -72,6 +72,18 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      kind: "create_project_record";
+      projectId: string;
+      recordType: "submittal";
+      title: string;
+      submittalType?: "authorization_packet" | "invoice_backup" | "environmental_package" | "hearing_record" | "ps_e" | "reimbursement" | "progress_report" | "other";
+      status?: "draft" | "internal_review" | "submitted" | "accepted" | "revise_and_resubmit";
+      notes?: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {
