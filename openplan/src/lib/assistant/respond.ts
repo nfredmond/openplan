@@ -72,9 +72,13 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
   const fundingAwardRecordCount = context.operationsSummary.counts.projectFundingAwardRecordProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
+  const reimbursementStartCommand = context.operationsSummary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
+  const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
+  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
+  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -105,8 +109,8 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         value: `${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
       },
       {
-        label: missingFundingAnchorCount > 0 ? "Missing anchors" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : "Gap projects",
-        value: `${missingFundingAnchorCount > 0 ? missingFundingAnchorCount : fundingSourcingCount > 0 ? fundingSourcingCount : fundingDecisionCount > 0 ? fundingDecisionCount : fundingAwardRecordCount > 0 ? fundingAwardRecordCount : gapProjectCount}`,
+        label: missingFundingAnchorCount > 0 ? "Missing anchors" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : reimbursementStartCount > 0 ? "Need packets" : reimbursementAdvanceCount > 0 ? "Reimbursement" : "Gap projects",
+        value: `${missingFundingAnchorCount > 0 ? missingFundingAnchorCount : fundingSourcingCount > 0 ? fundingSourcingCount : fundingDecisionCount > 0 ? fundingDecisionCount : fundingAwardRecordCount > 0 ? fundingAwardRecordCount : reimbursementStartCount > 0 ? reimbursementStartCount : reimbursementAdvanceCount > 0 ? reimbursementAdvanceCount : gapProjectCount}`,
       },
     ],
     facts,
@@ -610,6 +614,10 @@ function buildWorkspaceResponse(
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
   const fundingAwardRecordCount = context.operationsSummary.counts.projectFundingAwardRecordProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
+  const reimbursementStartCommand = context.operationsSummary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
+  const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
+  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
+  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
 
   if (workflowId === "analysis-focus" && context.currentRun) {
     return {
@@ -656,6 +664,10 @@ function buildWorkspaceResponse(
           ? `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but nothing marked pursue yet, so grant-decision work comes before gap-closing math.`
           : fundingAwardRecordCount > 0
           ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " already has" : "s already have"} an opportunity marked awarded but still no funding-award record, so committed-dollar reconciliation comes before final gap math.`
+          : reimbursementStartCount > 0
+          ? `${reimbursementStartCount} project funding stack${reimbursementStartCount === 1 ? " has" : "s have"} committed awards but still no reimbursement packet started, so the next honest move is opening the audited reimbursement trail before only talking about gap closure.`
+          : reimbursementAdvanceCount > 0
+          ? `${reimbursementAdvanceCount} project funding stack${reimbursementAdvanceCount === 1 ? " already has" : "s already have"} reimbursement work underway, but invoicing still trails committed awards, so follow-through now deserves explicit workspace attention.`
           : gapProjectCount > 0
           ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars, so funding gap closure is now a real workspace-level operating lane.`
           : "No uncovered project funding gaps are currently visible from the workspace command queue.",
@@ -671,6 +683,10 @@ function buildWorkspaceResponse(
           ? `Projects needing pursue decisions: ${fundingDecisionCount}.`
           : fundingAwardRecordCount > 0
           ? `Awarded opportunities still missing funding-award records: ${fundingAwardRecordCount}.`
+          : reimbursementStartCount > 0
+          ? `Projects still needing a first reimbursement packet: ${reimbursementStartCount}.`
+          : reimbursementAdvanceCount > 0
+          ? `Projects with reimbursement follow-through still active: ${reimbursementAdvanceCount}.`
           : gapProjectCount > 0
           ? `Project funding gap count: ${gapProjectCount}.`
           : "The current workspace snapshot does not show any gap-flagged project funding stacks.",
@@ -687,6 +703,10 @@ function buildWorkspaceResponse(
           ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions")?.href ?? "/projects"} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
           : fundingAwardRecordCount > 0
           ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "record-awarded-funding")?.href ?? "/projects"} and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          : reimbursementStartCount > 0
+          ? `Open ${reimbursementStartCommand?.href ?? "/projects"} and start the first reimbursement packet before routine funding-gap cleanup.`
+          : reimbursementAdvanceCount > 0
+          ? `Open ${reimbursementAdvanceCommand?.href ?? "/projects"} and move the existing reimbursement work into the invoice lane before closeout posture drifts.`
           : gapProjectCount > 0
           ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps")?.href ?? "/projects"} and reopen the thinnest-funded project first.`
           : "Keep funding need amounts, pursue decisions, and awarded funding records current so future gap posture stays trustworthy.",
@@ -697,6 +717,8 @@ function buildWorkspaceResponse(
         `Needs sourcing: ${fundingSourcingCount}`,
         `Needs decisions: ${fundingDecisionCount}`,
         `Award records needed: ${fundingAwardRecordCount}`,
+        `Need reimbursement packets: ${reimbursementStartCount}`,
+        `Reimbursement follow-through active: ${reimbursementAdvanceCount}`,
         `Gap projects: ${gapProjectCount}`,
         `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
         `Plan: ${context.workspace.plan ?? "Unknown"}`,
@@ -723,6 +745,12 @@ function buildWorkspaceResponse(
         ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} need recorded but still no linked opportunities.`
         : fundingDecisionCount > 0
         ? `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but still nothing marked pursue.`
+        : fundingAwardRecordCount > 0
+        ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " has" : "s have"} an awarded opportunity but still no committed funding-award record.`
+        : reimbursementStartCount > 0
+        ? "At least one project already has committed awards but still no reimbursement packet started."
+        : reimbursementAdvanceCount > 0
+        ? "At least one project already has reimbursement work started, but invoice follow-through still trails the award stack."
         : gapProjectCount > 0
         ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars.`
         : "No uncovered project funding gaps are currently visible from the shared queue.",
@@ -748,6 +776,9 @@ function buildWorkspaceResponse(
       `Missing anchors: ${missingFundingAnchorCount}`,
       `Needs sourcing: ${fundingSourcingCount}`,
       `Needs decisions: ${fundingDecisionCount}`,
+      `Award records needed: ${fundingAwardRecordCount}`,
+      `Need reimbursement packets: ${reimbursementStartCount}`,
+      `Reimbursement follow-through active: ${reimbursementAdvanceCount}`,
       `Gap projects: ${gapProjectCount}`,
     ],
     quickLinks: buildAssistantOperations(context),
