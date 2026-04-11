@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -173,19 +175,35 @@ export default async function ProgramsPage({
     );
   }
 
-  const [{ data: programsData }, { data: projectsData }, { data: fundingOpportunitiesData }] = await Promise.all([
+  const [
+    { data: programsData },
+    { data: projectsData },
+    { data: fundingOpportunitiesData },
+    { data: workspacePlansData },
+    { data: workspaceReportsData },
+  ] = await Promise.all([
     supabase
       .from("programs")
       .select(
         "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
       )
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, workspace_id, name").order("updated_at", { ascending: false }),
+    supabase.from("projects").select("id, workspace_id, name, status, delivery_phase, updated_at").order("updated_at", { ascending: false }),
     supabase
       .from("funding_opportunities")
       .select(
         "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("plans")
+      .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("reports")
+      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
   ]);
 
@@ -317,7 +335,7 @@ export default async function ProgramsPage({
     campaignCountsByProject.set(row.project_id, (campaignCountsByProject.get(row.project_id) ?? 0) + 1);
   }
 
-  const typedPrograms = programs
+  const allTypedPrograms = programs
     .map((program) => {
       const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
       const links = linksByProgram.get(program.id) ?? [];
@@ -407,7 +425,9 @@ export default async function ProgramsPage({
           pendingEngagementItemCount: 0,
         }),
       };
-    })
+    });
+
+  const typedPrograms = allTypedPrograms
     .filter((program) => (filters.projectId ? program.project_id === filters.projectId : true))
     .filter((program) => (filters.programType ? program.program_type === filters.programType : true))
     .filter((program) => (filters.status ? program.status === filters.status : true));
@@ -437,6 +457,73 @@ export default async function ProgramsPage({
   const packetAttentionProgramCount = typedPrograms.filter(
     (program) => program.packetSummary.attentionCount > 0
   ).length;
+
+  const operationsSummary = buildWorkspaceOperationsSummary({
+    projects: ((projectsData ?? []) as Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      delivery_phase: string | null;
+      updated_at: string | null;
+    }>).map((project) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      deliveryPhase: project.delivery_phase,
+      updatedAt: project.updated_at,
+    })),
+    plans: ((workspacePlansData ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      geography_label: string | null;
+      horizon_year: number | null;
+      project_id: string | null;
+      updated_at: string | null;
+    }>).map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      status: plan.status,
+      geographyLabel: plan.geography_label,
+      horizonYear: plan.horizon_year,
+      projectId: plan.project_id,
+      updatedAt: plan.updated_at,
+    })),
+    programs: allTypedPrograms.map((program) => ({
+      id: program.id,
+      title: program.title,
+      status: program.status,
+      nominationDueAt: program.nomination_due_at,
+      adoptionTargetAt: program.adoption_target_at,
+      updatedAt: program.updated_at,
+    })),
+    reports: ((workspaceReportsData ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      latest_artifact_kind: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>).map((report) => ({
+      id: report.id,
+      title: report.title,
+      status: report.status,
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+      metadataJson: report.metadata_json,
+    })),
+    fundingOpportunities: fundingOpportunities.map((opportunity) => ({
+      id: opportunity.id,
+      title: opportunity.title,
+      opportunityStatus: opportunity.opportunity_status,
+      closesAt: opportunity.closes_at,
+      decisionDueAt: opportunity.decision_due_at,
+      programId: opportunity.program_id,
+      updatedAt: opportunity.updated_at,
+    })),
+  });
   const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
     if (!opportunity.program_id) return true;
     const packetSummary = packetSummaryByProgramId.get(opportunity.program_id);
@@ -564,7 +651,15 @@ export default async function ProgramsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <ProgramCreator projects={projectsData ?? []} />
+        <div className="space-y-6">
+          <ProgramCreator projects={projectsData ?? []} />
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move before another program revision"
+            description="The Programs lane now shares the same workspace command queue used by the dashboard, Plans, and assistant runtime, so packet pressure, funding timing, and setup gaps stay visible while you work package records."
+          />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
