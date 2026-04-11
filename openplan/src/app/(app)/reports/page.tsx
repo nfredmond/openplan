@@ -240,6 +240,7 @@ export default async function ReportsPage({
           updatedAt:
             (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
         }),
+        evidenceChainSummary,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
       };
     })
@@ -274,6 +275,25 @@ export default async function ReportsPage({
   const blockedGovernanceCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
+  const scenarioBasisCount = reports.filter(
+    (report) => (report.evidenceChainSummary?.scenarioSetLinkCount ?? 0) > 0
+  ).length;
+  const scenarioSpinePendingCount = reports.filter(
+    (report) => (report.evidenceChainSummary?.scenarioSharedSpinePendingCount ?? 0) > 0
+  ).length;
+  const scenarioSpineVisibleCount = reports.filter((report) => {
+    const summary = report.evidenceChainSummary;
+    if (!summary) {
+      return false;
+    }
+
+    return (
+      summary.scenarioAssumptionSetCount > 0 ||
+      summary.scenarioDataPackageCount > 0 ||
+      summary.scenarioIndicatorSnapshotCount > 0 ||
+      summary.scenarioSharedSpinePendingCount > 0
+    );
+  }).length;
   const filteredReports = reports.filter(
     (report) =>
       matchesReportFreshnessFilter(
@@ -474,7 +494,10 @@ export default async function ReportsPage({
           <div className="module-inline-list">
             <span className="module-inline-item"><strong>{currentPacketCount}</strong> packet current</span>
             <span className="module-inline-item"><strong>{evidenceBackedCount}</strong> evidence-backed</span>
+            <span className="module-inline-item"><strong>{scenarioBasisCount}</strong> scenario-backed</span>
+            <span className="module-inline-item"><strong>{scenarioSpineVisibleCount}</strong> scenario spine visible</span>
             <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
+            {scenarioSpinePendingCount > 0 ? <span className="module-inline-item"><strong>{scenarioSpinePendingCount}</strong> spine pending</span> : null}
           </div>
         </article>
 
@@ -661,6 +684,34 @@ export default async function ReportsPage({
                       {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
                     </span>
                     <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
+                    {report.evidenceChainSummary && report.evidenceChainSummary.scenarioSetLinkCount > 0 ? (
+                      <span className="module-record-chip">
+                        {report.evidenceChainSummary.scenarioSetLinkCount} scenario set{report.evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
+                      </span>
+                    ) : null}
+                    {report.evidenceChainSummary ? (
+                      report.evidenceChainSummary.scenarioSharedSpinePendingCount > 0 ? (
+                        <span className="module-record-chip">Scenario spine pending</span>
+                      ) : (
+                        <>
+                          {(report.evidenceChainSummary.scenarioAssumptionSetCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                            <span className="module-record-chip">
+                              {report.evidenceChainSummary.scenarioAssumptionSetCount} assumptions
+                            </span>
+                          ) : null}
+                          {(report.evidenceChainSummary.scenarioDataPackageCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                            <span className="module-record-chip">
+                              {report.evidenceChainSummary.scenarioDataPackageCount} packages
+                            </span>
+                          ) : null}
+                          {(report.evidenceChainSummary.scenarioIndicatorSnapshotCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                            <span className="module-record-chip">
+                              {report.evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators
+                            </span>
+                          ) : null}
+                        </>
+                      )
+                    ) : null}
                     {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
                   </div>
 

@@ -1362,6 +1362,16 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </div>
                   <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Scenario spine
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {evidenceChainSummary.scenarioSharedSpinePendingCount > 0
+                        ? `${evidenceChainSummary.scenarioSharedSpinePendingCount} pending set${evidenceChainSummary.scenarioSharedSpinePendingCount === 1 ? "" : "s"}`
+                        : `${evidenceChainSummary.scenarioAssumptionSetCount} assumptions · ${evidenceChainSummary.scenarioDataPackageCount} packages · ${evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators`}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Project records
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -1663,6 +1673,12 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Scenario-set provenance was derived from report-linked runs and persisted with this artifact.
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Shared spine totals at generation: {evidenceChainSummary.scenarioAssumptionSetCount} assumption set{evidenceChainSummary.scenarioAssumptionSetCount === 1 ? "" : "s"} · {evidenceChainSummary.scenarioDataPackageCount} data package{evidenceChainSummary.scenarioDataPackageCount === 1 ? "" : "s"} · {evidenceChainSummary.scenarioIndicatorSnapshotCount} indicator snapshot{evidenceChainSummary.scenarioIndicatorSnapshotCount === 1 ? "" : "s"}
+                    {evidenceChainSummary.scenarioSharedSpinePendingCount > 0
+                      ? ` · ${evidenceChainSummary.scenarioSharedSpinePendingCount} pending schema-backed set${evidenceChainSummary.scenarioSharedSpinePendingCount === 1 ? "" : "s"}`
+                      : ""}
                   </p>
                 </div>
                 <div className="grid gap-3">
