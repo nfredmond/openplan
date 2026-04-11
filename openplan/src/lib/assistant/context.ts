@@ -101,6 +101,7 @@ export type ProjectAssistantContext = {
     requestedReimbursementAmount: number | null;
     uninvoicedAwardAmount: number | null;
     reimbursementStatus: string | null;
+    reimbursementPacketCount: number;
     leadOpportunity: {
       id: string;
       title: string;
@@ -287,6 +288,7 @@ export type ProgramAssistantContext = {
     requestedReimbursementAmount: number | null;
     uninvoicedAwardAmount: number | null;
     reimbursementStatus: string | null;
+    reimbursementPacketCount: number;
     leadOpportunity: {
       id: string;
       title: string;
@@ -743,6 +745,7 @@ async function loadProjectContext(
     fundingOpportunitiesResult,
     fundingAwardsResult,
     fundingInvoicesResult,
+    reimbursementSubmittalsResult,
   ] = await Promise.all([
     supabase.from("project_deliverables").select("id").eq("project_id", project.id),
     supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
@@ -783,6 +786,7 @@ async function loadProjectContext(
       .from("billing_invoice_records")
       .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
       .eq("project_id", project.id),
+    supabase.from("project_submittals").select("id").eq("project_id", project.id).eq("submittal_type", "reimbursement"),
   ]);
 
   const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
@@ -955,6 +959,7 @@ async function loadProjectContext(
       requestedReimbursementAmount: fundingAwards.length > 0 ? fundingStackSummary.requestedReimbursementAmount : null,
       uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
       reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
+      reimbursementPacketCount: reimbursementSubmittalsResult.data?.length ?? 0,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,
@@ -1355,7 +1360,7 @@ async function loadProgramContext(
   }
 
   const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
-  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, fundingAwardsResult, fundingInvoicesResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, fundingAwardsResult, fundingInvoicesResult, reimbursementSubmittalsResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
     supabase.from("program_links").select("program_id, link_type, linked_id").eq("program_id", program.id),
     program.project_id
       ? supabase.from("plans").select("id").eq("project_id", program.project_id)
@@ -1382,6 +1387,9 @@ async function loadProgramContext(
           .from("billing_invoice_records")
           .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
           .eq("project_id", program.project_id)
+      : Promise.resolve({ data: [], error: null }),
+    program.project_id
+      ? supabase.from("project_submittals").select("id").eq("project_id", program.project_id).eq("submittal_type", "reimbursement")
       : Promise.resolve({ data: [], error: null }),
     program.project_id
       ? supabase
@@ -1584,6 +1592,7 @@ async function loadProgramContext(
       requestedReimbursementAmount: fundingAwards.length > 0 ? fundingStackSummary.requestedReimbursementAmount : null,
       uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
       reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
+      reimbursementPacketCount: reimbursementSubmittalsResult.data?.length ?? 0,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,

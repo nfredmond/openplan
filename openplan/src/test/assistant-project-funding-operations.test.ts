@@ -42,6 +42,7 @@ function buildProjectContext(): ProjectAssistantContext {
       requestedReimbursementAmount: null,
       uninvoicedAwardAmount: null,
       reimbursementStatus: null,
+      reimbursementPacketCount: 0,
       leadOpportunity: {
         id: "opp-1",
         title: "ATP Cycle 8",
@@ -113,6 +114,7 @@ function buildProgramContext(): ProgramAssistantContext {
       requestedReimbursementAmount: null,
       uninvoicedAwardAmount: null,
       reimbursementStatus: null,
+      reimbursementPacketCount: 0,
       leadOpportunity: {
         id: "opp-2",
         title: "RAISE 2026",
@@ -235,6 +237,7 @@ describe("project and program funding operations", () => {
     context.fundingSummary.pursueCount = 1;
     context.fundingSummary.awardCount = 1;
     context.fundingSummary.uninvoicedAwardAmount = 180000;
+    context.fundingSummary.reimbursementPacketCount = 1;
 
     const links = buildAssistantOperations(context);
     const action = links.find((link) => link.id === "project-reimbursement-lane");
@@ -242,6 +245,7 @@ describe("project and program funding operations", () => {
     expect(action).toBeDefined();
     expect(action?.label).toBe("Open reimbursement lane");
     expect(action?.href).toBe("/projects/project-1#project-invoices");
+    expect(links.find((link) => link.id === "project-create-reimbursement-record")).toBeUndefined();
   });
 
   it("creates a project reimbursement record from uninvoiced award posture", () => {
@@ -267,6 +271,7 @@ describe("project and program funding operations", () => {
     context.fundingSummary.pursueCount = 1;
     context.fundingSummary.awardCount = 1;
     context.fundingSummary.uninvoicedAwardAmount = 225000;
+    context.fundingSummary.reimbursementPacketCount = 1;
 
     const links = buildAssistantOperations(context);
     const action = links.find((link) => link.id === "program-reimbursement-lane");
@@ -274,6 +279,7 @@ describe("project and program funding operations", () => {
     expect(action).toBeDefined();
     expect(action?.label).toBe("Open reimbursement lane");
     expect(action?.href).toBe("/projects/project-1#project-invoices");
+    expect(links.find((link) => link.id === "program-create-reimbursement-record")).toBeUndefined();
   });
 
   it("creates a program reimbursement record on the linked project from uninvoiced award posture", () => {

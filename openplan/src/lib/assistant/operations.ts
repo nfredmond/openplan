@@ -318,6 +318,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
   const awardRecordCount = context.fundingSummary.awardRecordCount;
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
+  const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -399,7 +400,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditNote: "Use the project funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
-    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0
       ? quickLink("project-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
           targetKind: "project",
           actionClass: "review_controls",
@@ -425,12 +426,15 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-      ? quickLink("project-reimbursement-lane", "Open reimbursement lane", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("project-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice lane", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
           statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
-          reason: "Committed award dollars are now logged on the project, but part of that award stack still has no linked invoice request recorded.",
+          reason:
+            reimbursementPacketCount > 0
+              ? "A reimbursement packet record exists, but committed award dollars are still not fully reflected in the invoice chain yet."
+              : "Committed award dollars are now logged on the project, but part of that award stack still has no linked invoice request recorded.",
           approval: "review",
           auditEvent: "assistant.operation.project.reimbursement_lane",
           auditNote: "Use the project invoice lane to tie committed awards into reimbursement workflow before closeout posture drifts.",
@@ -841,6 +845,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
   const awardRecordCount = context.fundingSummary.awardRecordCount;
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
+  const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -924,7 +929,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           auditNote: "Use the package funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
-    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0 && context.project
       ? quickLink("program-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
           targetKind: "project",
           actionClass: "review_controls",
@@ -950,12 +955,15 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
-      ? quickLink("program-reimbursement-lane", "Open reimbursement lane", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("program-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice lane", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
           statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
-          reason: "Committed award dollars are now logged for this package's linked project, but part of that award stack still has no linked invoice request recorded.",
+          reason:
+            reimbursementPacketCount > 0
+              ? "A reimbursement packet record exists on the linked project, but committed award dollars are still not fully reflected in the invoice chain yet."
+              : "Committed award dollars are now logged for this package's linked project, but part of that award stack still has no linked invoice request recorded.",
           approval: "review",
           auditEvent: "assistant.operation.program.reimbursement_lane",
           auditNote: "Use the linked project invoice lane to move committed package awards into reimbursement workflow before delivery posture drifts.",
