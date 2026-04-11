@@ -896,7 +896,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
     { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
   ] satisfies Array<{ key: DominantActionKey; label: string; count: number }>;
-  const dominantCurrentViewActionSelection = dominantCurrentViewAction.sort((left, right) => right.count - left.count)[0];
+  const orderedCurrentViewActions = [...dominantCurrentViewAction].sort((left, right) => right.count - left.count);
+  const dominantCurrentViewActionSelection = orderedCurrentViewActions[0];
+  const runnerUpCurrentViewActionSelection = orderedCurrentViewActions.find(
+    (action) => action.key !== dominantCurrentViewActionSelection.key && action.count > 0
+  );
   const dominantActionCycles = typedCycles.filter((cycle) => {
     switch (dominantCurrentViewActionSelection.key) {
       case "createPacket":
@@ -963,6 +967,47 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     unrecorded: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded").length,
     aligned: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "aligned").length,
   };
+  const runnerUpActionHref = runnerUpCurrentViewActionSelection
+    ? runnerUpCurrentViewActionSelection.key === "createPacket"
+      ? buildRtpRegistryHref({
+          status: filters.status ?? null,
+          packet: "missing",
+          recent: recentOnly,
+          queueAction: selectedQueueActionFilter,
+          queueTraceState: selectedQueueTraceStateFilter,
+        })
+      : runnerUpCurrentViewActionSelection.key === "resetAndRegenerate"
+        ? buildRtpRegistryHref({
+            status: filters.status ?? null,
+            packet: "reset",
+            recent: recentOnly,
+            queueAction: selectedQueueActionFilter,
+            queueTraceState: selectedQueueTraceStateFilter,
+          })
+        : runnerUpCurrentViewActionSelection.key === "generateFirstArtifact"
+          ? buildRtpRegistryHref({
+              status: filters.status ?? null,
+              packet: "generate",
+              recent: recentOnly,
+              queueAction: selectedQueueActionFilter,
+              queueTraceState: selectedQueueTraceStateFilter,
+            })
+          : runnerUpCurrentViewActionSelection.key === "refreshArtifact"
+            ? buildRtpRegistryHref({
+                status: filters.status ?? null,
+                packet: "refresh",
+                recent: recentOnly,
+                queueAction: selectedQueueActionFilter,
+                queueTraceState: selectedQueueTraceStateFilter,
+              })
+            : buildRtpRegistryHref({
+                status: filters.status ?? null,
+                packet: "current",
+                recent: recentOnly,
+                queueAction: selectedQueueActionFilter,
+                queueTraceState: selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
+              })
+    : null;
 
   return (
     <section className="module-page">
@@ -1565,6 +1610,31 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
                 <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
               </ul>
+
+              {runnerUpCurrentViewActionSelection ? (
+                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Next after this lane
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">{runnerUpCurrentViewActionSelection.label}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {runnerUpCurrentViewActionSelection.count} cycle{runnerUpCurrentViewActionSelection.count === 1 ? "" : "s"} remain in the next-largest queue bucket.
+                      </p>
+                    </div>
+                    <StatusBadge tone="neutral">Second priority</StatusBadge>
+                  </div>
+                  {runnerUpActionHref ? (
+                    <div className="mt-3">
+                      <Link href={runnerUpActionHref} className="module-inline-action w-fit">
+                        Queue up the next lane
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
               {dominantCurrentViewActionSelection.count > 0 ? (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
