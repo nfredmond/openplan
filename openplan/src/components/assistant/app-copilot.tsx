@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Loader2, Send, Sparkles, User, X } from "lucide-react";
+import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   formatAssistantOperationActionClass,
@@ -35,10 +35,14 @@ type ConversationEntry =
 const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
 const OPERATION_GROUP_STATE_STORAGE_KEY = "openplan:planner-agent:operation-group-state";
 const OPERATION_VIEW_MODE_STORAGE_KEY = "openplan:planner-agent:operation-view-mode";
+const OPERATION_PINNED_STORAGE_KEY = "openplan:planner-agent:operation-pinned-state";
+const OPERATION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-snoozed-state";
+const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-show-snoozed";
 
 type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
 type OperationViewMode = "full" | "triage";
 type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
+type OperationPreferenceState = Record<string, boolean>;
 
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
   act_now: true,
@@ -68,6 +72,21 @@ function parseOperationGroupState(value: string | null): OperationGroupState {
 
 function isOperationViewMode(value: string | null): value is OperationViewMode {
   return value === "full" || value === "triage";
+}
+
+function parseOperationPreferenceState(value: string | null): OperationPreferenceState {
+  if (!value) return {};
+
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    return Object.fromEntries(Object.entries(parsed).filter((entry): entry is [string, boolean] => typeof entry[1] === "boolean"));
+  } catch {
+    return {};
+  }
+}
+
+function getOperationStorageKey(link: AssistantQuickLink): string {
+  return `${link.id}::${link.href}`;
 }
 
 function actionLabel(action: AssistantAction) {
@@ -134,9 +153,39 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return DEFAULT_OPERATION_GROUP_STATE;
     return parseOperationGroupState(window.localStorage.getItem(OPERATION_GROUP_STATE_STORAGE_KEY));
   });
-  const groups = groupAssistantOperations(links);
+  const [pinnedState, setPinnedState] = useState<OperationPreferenceState>(() => {
+    if (typeof window === "undefined") return {};
+    return parseOperationPreferenceState(window.localStorage.getItem(OPERATION_PINNED_STORAGE_KEY));
+  });
+  const [snoozedState, setSnoozedState] = useState<OperationPreferenceState>(() => {
+    if (typeof window === "undefined") return {};
+    return parseOperationPreferenceState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
+  });
+  const [showSnoozed, setShowSnoozed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true";
+  });
+  const groups = groupAssistantOperations(links).map((group) => {
+    const sortedItems = [...group.items].sort((a, b) => {
+      const aPinned = pinnedState[getOperationStorageKey(a)] ? 1 : 0;
+      const bPinned = pinnedState[getOperationStorageKey(b)] ? 1 : 0;
+      if (aPinned !== bPinned) return bPinned - aPinned;
+      return 0;
+    });
+    const visibleItems = sortedItems.filter((link) => showSnoozed || !snoozedState[getOperationStorageKey(link)]);
+    return {
+      ...group,
+      totalItems: sortedItems.length,
+      snoozedCount: sortedItems.length - visibleItems.length,
+      items: visibleItems,
+    };
+  });
   const summary = summarizeAssistantOperations(links);
-  const filteredGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
+  const pinnedCount = links.filter((link) => pinnedState[getOperationStorageKey(link)]).length;
+  const snoozedCount = links.filter((link) => snoozedState[getOperationStorageKey(link)]).length;
+  const filteredGroups = (filter === "all" ? groups : groups.filter((group) => group.key === filter)).filter(
+    (group) => group.items.length > 0
+  );
   const visibleGroups = viewMode === "triage" ? filteredGroups.filter((group) => group.key === "act_now") : filteredGroups;
   const hasActNowGroup = groups.some((group) => group.key === "act_now");
 
@@ -154,6 +203,21 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(OPERATION_GROUP_STATE_STORAGE_KEY, JSON.stringify(groupState));
   }, [groupState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_PINNED_STORAGE_KEY, JSON.stringify(pinnedState));
+  }, [pinnedState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_SNOOZED_STORAGE_KEY, JSON.stringify(snoozedState));
+  }, [snoozedState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY, String(showSnoozed));
+  }, [showSnoozed]);
 
   return (
     <div className="space-y-4">
@@ -224,6 +288,20 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               </button>
             );
           })}
+
+          <button
+            type="button"
+            onClick={() => setShowSnoozed((current) => !current)}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+              showSnoozed
+                ? "border-sky-300/35 bg-sky-400/14 text-white"
+                : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+            }`}
+          >
+            {showSnoozed ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {showSnoozed ? "Snoozed visible" : "Snoozed hidden"}
+            <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-[0.64rem] text-slate-100">{snoozedCount}</span>
+          </button>
         </div>
 
         <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
@@ -233,6 +311,15 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               : "Triage mode is on, but no act-now operations are currently available."
             : "Full board mode keeps every operation group available for deeper review."}
         </p>
+
+        <div className="mt-2 flex flex-wrap gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+            Pinned · {pinnedCount}
+          </span>
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+            Snoozed · {snoozedCount}
+          </span>
+        </div>
       </div>
       {!visibleGroups.length ? (
         <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
@@ -255,11 +342,16 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                   <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
                     {group.items.length}
                   </span>
+                  {group.snoozedCount > 0 ? (
+                    <span className="inline-flex items-center rounded-full border border-sky-300/16 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
+                      Snoozed {group.snoozedCount}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-slate-300/74">{group.description}</p>
                 {!expanded ? (
                   <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
-                    {group.items.length} operation{group.items.length === 1 ? "" : "s"} hidden
+                    {group.items.length} visible of {group.totalItems} operation{group.totalItems === 1 ? "" : "s"}
                   </p>
                 ) : null}
               </div>
@@ -271,13 +363,15 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             {expanded ? (
               <div className="grid gap-2 sm:grid-cols-2">
                 {group.items.map((link) => {
+                  const operationKey = getOperationStorageKey(link);
                   const badge = quickLinkBadge(link);
                   const priorityBadge = quickLinkPriorityBadge(link);
                   const urgency = resolveAssistantOperationUrgency(link);
+                  const isPinned = Boolean(pinnedState[operationKey]);
+                  const isSnoozed = Boolean(snoozedState[operationKey]);
                   return (
-                    <Link
+                    <div
                       key={`${group.key}-${link.label}-${link.href}`}
-                      href={link.href}
                       className={`rounded-[20px] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -292,6 +386,16 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                             >
                               {priorityBadge.label}
                             </span>
+                            {isPinned ? (
+                              <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-fuchsia-100">
+                                Pinned
+                              </span>
+                            ) : null}
+                            {isSnoozed ? (
+                              <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
+                                Snoozed
+                              </span>
+                            ) : null}
                             {link.statusLabel ? (
                               <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
                                 {link.statusLabel}
@@ -305,20 +409,58 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                             {link.auditNote ?? "Operator review is still expected in the destination surface."}
                           </p>
                         </div>
-                        <span
-                          className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
-                        >
-                          {badge.label}
-                        </span>
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPinnedState((current) => ({
+                                  ...current,
+                                  [operationKey]: !isPinned,
+                                }))
+                              }
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
+                                isPinned
+                                  ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
+                                  : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                              }`}
+                            >
+                              <Pin className="h-3 w-3" />
+                              {isPinned ? "Pinned" : "Pin"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSnoozedState((current) => ({
+                                  ...current,
+                                  [operationKey]: !isSnoozed,
+                                }))
+                              }
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
+                                isSnoozed
+                                  ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
+                                  : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+                              }`}
+                            >
+                              {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                              {isSnoozed ? "Resume" : "Snooze"}
+                            </button>
+                          </div>
+                          <span
+                            className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+                          >
+                            {badge.label}
+                          </span>
+                        </div>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
-                        <div className="flex items-center gap-1">
+                        <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
                           <ArrowUpRight className="h-3.5 w-3.5" />
-                          {link.id}
-                        </div>
+                          Open surface · {link.id}
+                        </Link>
                         {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>
