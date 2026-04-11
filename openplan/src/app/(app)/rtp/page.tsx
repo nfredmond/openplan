@@ -246,6 +246,7 @@ function buildPacketOperatorStatus(input: {
   packetReport: RtpPacketReportRow | null;
   packetFreshness: { label: string };
   packetPresetPosture: { label: string };
+  packetQueueTraceState: { state: QueueTraceStateFilter; label: string };
 }) {
   if (!input.packetReport) {
     return {
@@ -276,6 +277,22 @@ function buildPacketOperatorStatus(input: {
       label: "Record ready",
       tone: "info" as const,
       detail: "A packet record exists, but it still needs its first generated artifact.",
+    };
+  }
+
+  if (input.packetQueueTraceState.state === "outpaced") {
+    return {
+      label: "Trace follow-up",
+      tone: "warning" as const,
+      detail: "The cycle changed after the last recorded queue action, so the saved operator trace needs review against current packet state.",
+    };
+  }
+
+  if (input.packetQueueTraceState.state === "unrecorded") {
+    return {
+      label: "Trace gap",
+      tone: "neutral" as const,
+      detail: "Packet state is visible, but this cycle still lacks durable queue-action trace coverage.",
     };
   }
 
@@ -741,6 +758,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetReport,
           packetFreshness,
           packetPresetPosture,
+          packetQueueTraceState,
         }),
         packetQueueTrace,
         packetQueueTraceState,
