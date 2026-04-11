@@ -663,9 +663,15 @@ function QuickLinkGrid({
             <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
               {summary.total} tracked operation{summary.total === 1 ? "" : "s"} are visible from this grounded assistant context.
             </p>
+            {summary.leadOperation ? (
+              <p className="mt-2 text-sm leading-relaxed text-white">
+                <span className="font-semibold text-white">Lead move:</span> {summary.leadOperation.label}.
+                <span className="text-slate-300/82"> {summary.leadOperation.detail}</span>
+              </p>
+            ) : null}
           </div>
           <StatusBadge tone={summary.actNow > 0 ? "warning" : "neutral"} className="border-white/10 bg-white/[0.05] text-slate-100">
-            Act now · {summary.actNow}
+            {summary.leadOperation?.statusLabel ?? "Act now"} · {summary.actNow}
           </StatusBadge>
         </div>
 

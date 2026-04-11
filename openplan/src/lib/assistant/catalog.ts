@@ -60,12 +60,19 @@ export type AssistantOperationGroup = {
   items: AssistantQuickLink[];
 };
 
+export type AssistantOperationLead = {
+  label: string;
+  detail: string;
+  statusLabel?: string;
+};
+
 export type AssistantOperationSummary = {
   total: number;
   actNow: number;
   reviewSoon: number;
   supportContext: number;
   approvalRequired: number;
+  leadOperation: AssistantOperationLead | null;
 };
 
 export type AssistantOperationExecutionSummary = {
@@ -464,12 +471,24 @@ export function summarizeAssistantOperations(links: AssistantQuickLink[]): Assis
     if (link.approval === "approval_required") approvalRequired += 1;
   }
 
+  const leadLink = [...links].sort(compareAssistantOperations)[0] ?? null;
+
   return {
     total: links.length,
     actNow,
     reviewSoon,
     supportContext,
     approvalRequired,
+    leadOperation: leadLink
+      ? {
+          label: leadLink.label,
+          detail:
+            leadLink.reason ??
+            leadLink.statusLabel ??
+            `${formatAssistantOperationActionClass(leadLink)} is currently the strongest visible operator move.`,
+          statusLabel: leadLink.statusLabel,
+        }
+      : null,
   };
 }
 
