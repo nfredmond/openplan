@@ -211,9 +211,16 @@ export function buildProjectControlsSummary(
   };
 
   const controlHealth =
-    blockedMilestoneCount > 0 || overdueMilestoneCount > 0 || overdueSubmittalCount > 0 || invoiceSummary.overdueCount > 0
+    blockedMilestoneCount > 0 ||
+    overdueMilestoneCount > 0 ||
+    overdueSubmittalCount > 0 ||
+    invoiceSummary.overdueCount > 0 ||
+    reportAttentionCount > 0
       ? "attention"
-      : openMilestones.length > 0 || pendingSubmittals.length > 0 || invoiceSummary.outstandingNetAmount > 0
+      : openMilestones.length > 0 ||
+          pendingSubmittals.length > 0 ||
+          invoiceSummary.outstandingNetAmount > 0 ||
+          comparisonBackedCount > 0
         ? "active"
         : "stable";
   const attentionSummary = {

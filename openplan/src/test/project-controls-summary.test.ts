@@ -82,4 +82,26 @@ describe("project controls summary", () => {
     expect(summary.pendingSubmittalCount).toBe(0);
     expect(summary.invoiceSummary.paidNetAmount).toBe(2500);
   });
+
+  it("treats report packet attention as control-room attention", () => {
+    const summary = buildProjectControlsSummary(
+      [],
+      [],
+      [],
+      {
+        refreshRecommendedCount: 1,
+        noPacketCount: 0,
+        comparisonBackedCount: 1,
+        recommendedReportId: "report-123",
+        recommendedReportTitle: "Board packet",
+      },
+      "2026-03-10T00:00:00.000Z"
+    );
+
+    expect(summary.controlHealth).toBe("attention");
+    expect(summary.attentionSummary.reportPackets.count).toBe(1);
+    expect(summary.recommendedNextAction.label).toBe("Refresh comparison-backed packet");
+    expect(summary.recommendedNextAction.targetId).toBe("project-reporting");
+    expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-123");
+  });
 });
