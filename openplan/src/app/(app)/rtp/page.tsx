@@ -826,6 +826,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const uninvoicedAwardTotal = typedCycles.reduce((sum, cycle) => sum + cycle.uninvoicedAwardAmount, 0);
   const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
   const outpacedQueueTraceCount = typedCycles.filter((cycle) => cycle.packetQueueTraceState.label === "Outpaced by source").length;
+  const outpacedQueueCycles = allCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced");
   const latestQueueActionAt = typedCycles
     .map((cycle) => cycle.packetQueueTrace.actedAt)
     .filter((value): value is string => Boolean(value))
@@ -1378,6 +1379,63 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {outpacedQueueCycles.length > 0 ? (
+            <article className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.06] p-5 shadow-[0_20px_60px_-48px_rgba(180,83,9,0.35)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Outpaced queue traces
+                  </p>
+                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{outpacedQueueCycles.length}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    These cycles changed after their last recorded queue action, so the saved trace is no longer the newest truth by itself.
+                  </p>
+                </div>
+                <StatusBadge tone="warning">Needs review</StatusBadge>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {outpacedQueueCycles.slice(0, 5).map((cycle) => (
+                  <div key={cycle.id} className="rounded-2xl border border-amber-500/20 bg-background/90 px-3 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
+                          {cycle.title}
+                        </Link>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {cycle.packetQueueTrace.label} recorded {cycle.packetQueueTrace.actedAt ? formatRtpDateTime(cycle.packetQueueTrace.actedAt) : "previously"}.
+                        </p>
+                      </div>
+                      <StatusBadge tone={cycle.packetAttention === "reset" ? "warning" : cycle.packetAttention === "refresh" ? "info" : "neutral"}>
+                        {cycle.packetAttention === "reset"
+                          ? "Reset lane"
+                          : cycle.packetAttention === "refresh"
+                            ? "Refresh lane"
+                            : "Review"}
+                      </StatusBadge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href={buildRtpRegistryHref({
+                    status: filters.status ?? null,
+                    packet: selectedPacketFilter,
+                    recent: recentOnly,
+                    queueAction: selectedQueueActionFilter,
+                    queueTraceState: "outpaced",
+                  })}
+                  className="module-inline-action"
+                >
+                  Filter to outpaced traces
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </article>
+          ) : null}
+
           {recentQueueActivityCount > 0 ? (
             <article className="rounded-3xl border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
