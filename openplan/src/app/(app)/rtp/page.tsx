@@ -833,6 +833,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     generate: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "generate").length,
     current: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "current").length,
   };
+  const unrecordedQueueCycles = allCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded");
+  const unrecordedQueueMix = {
+    missing: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "missing").length,
+    generate: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "generate").length,
+    refresh: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
+    current: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "current").length,
+  };
   const latestQueueActionAt = typedCycles
     .map((cycle) => cycle.packetQueueTrace.actedAt)
     .filter((value): value is string => Boolean(value))
@@ -1385,6 +1392,107 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {unrecordedQueueCycles.length > 0 ? (
+            <article className="rounded-3xl border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Unrecorded queue traces
+                  </p>
+                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{unrecordedQueueCycles.length}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    These cycles do not yet have a durable queue-action timestamp, so there is no persisted operator trace to compare against source changes.
+                  </p>
+                </div>
+                <StatusBadge tone="neutral">Trace gap</StatusBadge>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <div className="rounded-2xl border border-slate-500/20 bg-background/90 px-3 py-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Coverage mix
+                  </p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                    <li>• Missing packet lane: {unrecordedQueueMix.missing}</li>
+                    <li>• First artifact lane: {unrecordedQueueMix.generate}</li>
+                    <li>• Refresh lane: {unrecordedQueueMix.refresh}</li>
+                    <li>• Current-without-trace: {unrecordedQueueMix.current}</li>
+                  </ul>
+                </div>
+
+                {unrecordedQueueCycles.slice(0, 5).map((cycle) => (
+                  <div key={cycle.id} className="rounded-2xl border border-slate-500/20 bg-background/90 px-3 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
+                          {cycle.title}
+                        </Link>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {cycle.packetReport
+                            ? "Packet record exists, but no durable queue-action trace has been recorded yet."
+                            : "No packet record exists yet, so trace coverage has not started."}
+                        </p>
+                      </div>
+                      <StatusBadge tone={cycle.packetAttention === "missing" ? "warning" : cycle.packetAttention === "generate" ? "info" : "neutral"}>
+                        {cycle.packetAttention === "missing"
+                          ? "Missing lane"
+                          : cycle.packetAttention === "generate"
+                            ? "Generate lane"
+                            : "Trace gap"}
+                      </StatusBadge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href={buildRtpRegistryHref({
+                    status: filters.status ?? null,
+                    packet: selectedPacketFilter,
+                    recent: recentOnly,
+                    queueAction: selectedQueueActionFilter,
+                    queueTraceState: "unrecorded",
+                  })}
+                  className="module-inline-action"
+                >
+                  Filter to unrecorded traces
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                {unrecordedQueueMix.missing > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "missing",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "unrecorded",
+                    })}
+                    className="module-inline-action"
+                  >
+                    Review missing lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {unrecordedQueueMix.generate > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "generate",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "unrecorded",
+                    })}
+                    className="module-inline-action"
+                  >
+                    Review first-artifact lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+              </div>
+            </article>
+          ) : null}
+
           {outpacedQueueCycles.length > 0 ? (
             <article className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.06] p-5 shadow-[0_20px_60px_-48px_rgba(180,83,9,0.35)]">
               <div className="flex items-start justify-between gap-3">
