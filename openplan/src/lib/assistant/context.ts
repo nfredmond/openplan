@@ -23,8 +23,9 @@ import {
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
 import {
-  buildWorkspaceOperationsSummary,
+  loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSummary,
+  type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
 
@@ -449,126 +450,6 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
   return sourceContext && typeof sourceContext === "object" ? (sourceContext as Record<string, unknown>) : null;
 }
 
-async function loadWorkspaceOperationsSummaryForWorkspace(
-  supabase: SupabaseLike,
-  workspaceId: string
-): Promise<WorkspaceOperationsSummary> {
-  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult] = await Promise.all([
-    supabase
-      .from("projects")
-      .select("id, name, status, delivery_phase, updated_at")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(200),
-    supabase
-      .from("plans")
-      .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(200),
-    supabase
-      .from("programs")
-      .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(200),
-    supabase
-      .from("reports")
-      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(200),
-    supabase
-      .from("funding_opportunities")
-      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(200),
-  ]);
-
-  return buildWorkspaceOperationsSummary({
-    projects: ((projectsResult.data ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>).map((project) => ({
-      id: project.id,
-      name: project.name,
-      status: project.status,
-      deliveryPhase: project.delivery_phase,
-      updatedAt: project.updated_at,
-    })),
-    plans: ((plansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>).map((plan) => ({
-      id: plan.id,
-      title: plan.title,
-      status: plan.status,
-      geographyLabel: plan.geography_label,
-      horizonYear: plan.horizon_year,
-      projectId: plan.project_id,
-      updatedAt: plan.updated_at,
-    })),
-    programs: ((programsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>).map((program) => ({
-      id: program.id,
-      title: program.title,
-      status: program.status,
-      nominationDueAt: program.nomination_due_at,
-      adoptionTargetAt: program.adoption_target_at,
-      updatedAt: program.updated_at,
-    })),
-    reports: ((reportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>).map((report) => ({
-      id: report.id,
-      title: report.title,
-      status: report.status,
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
-      updatedAt: report.updated_at,
-      metadataJson: report.metadata_json,
-    })),
-    fundingOpportunities: ((fundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      updated_at: string | null;
-    }>).map((opportunity) => ({
-      id: opportunity.id,
-      title: opportunity.title,
-      opportunityStatus: opportunity.opportunity_status,
-      closesAt: opportunity.closes_at,
-      decisionDueAt: opportunity.decision_due_at,
-      programId: opportunity.program_id,
-      updatedAt: opportunity.updated_at,
-    })),
-  });
-}
-
 async function loadWorkspaceContext(
   supabase: SupabaseLike,
   userId: string,
@@ -669,7 +550,10 @@ async function loadWorkspaceContext(
     })),
     currentRun,
     baselineRun,
-    operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(supabase, workspace.id),
+    operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      workspace.id
+    ),
   };
 }
 
@@ -861,7 +745,10 @@ async function loadPlanContext(
     plan.project_id
       ? supabase.from("reports").select("id").eq("project_id", plan.project_id)
       : Promise.resolve({ data: [], error: null }),
-    loadWorkspaceOperationsSummaryForWorkspace(supabase, workspace.id),
+    loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      workspace.id
+    ),
   ]);
 
   const planLinks = (planLinksResult.data ?? []) as Array<{ plan_id: string; link_type: string }>;
@@ -966,7 +853,10 @@ async function loadProgramContext(
     program.project_id
       ? supabase.from("engagement_campaigns").select("id").eq("project_id", program.project_id)
       : Promise.resolve({ data: [], error: null }),
-    loadWorkspaceOperationsSummaryForWorkspace(supabase, workspace.id),
+    loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      workspace.id
+    ),
   ]);
 
   const links = (linksResult.data ?? []) as Array<{ program_id: string; link_type: string; linked_id: string }>;

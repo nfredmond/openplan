@@ -5,7 +5,11 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
-import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import {
+  buildWorkspaceOperationsSummaryFromSourceRows,
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -69,7 +73,7 @@ export default async function DashboardPage() {
   const workspaceId = membership?.workspace_id ?? "";
   const workspaceIdSnippet = workspaceId ? workspaceId.slice(0, 8) : "unavailable";
 
-  const [runsResult, projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult] = workspaceId
+  const [runsResult, operationsSummary] = workspaceId
     ? await Promise.all([
         supabase
           .from("runs")
@@ -77,44 +81,20 @@ export default async function DashboardPage() {
           .eq("workspace_id", workspaceId)
           .order("created_at", { ascending: true })
           .limit(500),
-        supabase
-          .from("projects")
-          .select("id, name, status, delivery_phase, updated_at")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("plans")
-          .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("programs")
-          .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("reports")
-          .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("funding_opportunities")
-          .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(200),
+        loadWorkspaceOperationsSummaryForWorkspace(
+          supabase as unknown as WorkspaceOperationsSupabaseLike,
+          workspaceId
+        ),
       ])
     : [
         { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
+        buildWorkspaceOperationsSummaryFromSourceRows({
+          projects: [],
+          plans: [],
+          programs: [],
+          reports: [],
+          fundingOpportunities: [],
+        }),
       ];
 
   const runsData = runsResult.data ?? [];
@@ -127,88 +107,6 @@ export default async function DashboardPage() {
       summary_text: string | null;
       report_generated_count: number | null;
     }>,
-  });
-
-  const operationsSummary = buildWorkspaceOperationsSummary({
-    projects: ((projectsResult.data ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>).map((project) => ({
-      id: project.id,
-      name: project.name,
-      status: project.status,
-      deliveryPhase: project.delivery_phase,
-      updatedAt: project.updated_at,
-    })),
-    plans: ((plansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>).map((plan) => ({
-      id: plan.id,
-      title: plan.title,
-      status: plan.status,
-      geographyLabel: plan.geography_label,
-      horizonYear: plan.horizon_year,
-      projectId: plan.project_id,
-      updatedAt: plan.updated_at,
-    })),
-    programs: ((programsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>).map((program) => ({
-      id: program.id,
-      title: program.title,
-      status: program.status,
-      nominationDueAt: program.nomination_due_at,
-      adoptionTargetAt: program.adoption_target_at,
-      updatedAt: program.updated_at,
-    })),
-    reports: ((reportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>).map((report) => ({
-      id: report.id,
-      title: report.title,
-      status: report.status,
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
-      updatedAt: report.updated_at,
-      metadataJson: report.metadata_json,
-    })),
-    fundingOpportunities: ((fundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      updated_at: string | null;
-    }>).map((opportunity) => ({
-      id: opportunity.id,
-      title: opportunity.title,
-      opportunityStatus: opportunity.opportunity_status,
-      closesAt: opportunity.closes_at,
-      decisionDueAt: opportunity.decision_due_at,
-      programId: opportunity.program_id,
-      updatedAt: opportunity.updated_at,
-    })),
   });
 
   const actions = [
