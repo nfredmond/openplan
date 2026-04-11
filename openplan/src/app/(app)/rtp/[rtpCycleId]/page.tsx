@@ -28,6 +28,10 @@ import {
   rtpPortfolioRoleTone,
   titleizeRtpValue,
 } from "@/lib/rtp/catalog";
+import {
+  describeComparisonSnapshotAggregate,
+  parseStoredComparisonSnapshotAggregate,
+} from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -137,6 +141,13 @@ type EngagementCampaignRow = {
 type RtpPacketReportRow = {
   id: string;
   title: string;
+  updated_at: string;
+};
+
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
 };
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
@@ -218,7 +229,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .order("updated_at", { ascending: false }),
     supabase
       .from("reports")
-      .select("id, title, report_type")
+      .select("id, title, report_type, updated_at")
       .eq("rtp_cycle_id", cycle.id)
       .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
@@ -316,6 +327,29 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       }));
 
   const packetReports = (packetReportsResult.data ?? []) as RtpPacketReportRow[];
+  const packetReportIds = packetReports.map((report) => report.id);
+  const { data: packetArtifactsData } = packetReportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", packetReportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [] };
+  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const artifact of (packetArtifactsData ?? []) as ReportArtifactRow[]) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) {
+      latestArtifactByReportId.set(artifact.report_id, artifact);
+    }
+  }
+  const packetReportsWithComparison = packetReports.map((report) => ({
+    ...report,
+    comparisonDigest: describeComparisonSnapshotAggregate(
+      parseStoredComparisonSnapshotAggregate(
+        latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+      )
+    ),
+    generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? null,
+  }));
 
   const campaignsByChapterId = new Map<string, Array<(typeof engagementCampaigns)[number]>>();
   const cycleLevelCampaigns: Array<(typeof engagementCampaigns)[number]> = [];
@@ -607,6 +641,51 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                 Open PDF export
               </Link>
             </div>
+
+            {packetReportsWithComparison.length > 0 ? (
+              <div className="mt-4 space-y-3 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+                <div>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Existing packet records
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Review which RTP packet records already carry saved comparison context before opening them.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {packetReportsWithComparison.map((report) => (
+                    <Link
+                      key={report.id}
+                      href={`/reports/${report.id}`}
+                      className="block rounded-xl border border-border/70 bg-background px-3 py-3 transition hover:border-primary/35"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{report.title}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {report.generatedAt
+                              ? `Latest packet generated ${formatRtpDateTime(report.generatedAt)}`
+                              : `Report updated ${formatRtpDateTime(report.updated_at)}`}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {report.comparisonDigest ? (
+                            <StatusBadge tone="info">Comparison-backed</StatusBadge>
+                          ) : (
+                            <StatusBadge tone="neutral">No saved comparisons</StatusBadge>
+                          )}
+                        </div>
+                      </div>
+                      {report.comparisonDigest ? (
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                          {report.comparisonDigest.headline} · {report.comparisonDigest.detail}
+                        </p>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </article>
 
           <RtpEngagementCampaignCreator
