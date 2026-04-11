@@ -50,9 +50,9 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  parseStoredEvidenceChainSummary,
   reportStatusTone,
 } from "@/lib/reports/catalog";
-import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
@@ -387,55 +387,6 @@ function invoicePriority(invoice: BillingInvoiceRow, now: Date): number {
   if (["internal_review", "submitted", "approved_for_payment"].includes(invoice.status)) return 1;
   if (invoice.status === "draft") return 2;
   return 3;
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  return value as Record<string, unknown>;
-}
-
-function asNullableString(value: unknown): string | null {
-  return typeof value === "string" ? value : null;
-}
-
-function asNullableNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function asEvidenceChainSummary(
-  metadata: Record<string, unknown> | null | undefined
-): EvidenceChainSummary | null {
-  const sourceContext = asRecord(metadata?.sourceContext);
-  const summary = asRecord(sourceContext?.evidenceChainSummary);
-  if (!summary) {
-    return null;
-  }
-
-  return {
-    linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
-    scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
-    scenarioAssumptionSetCount:
-      asNullableNumber(summary.scenarioAssumptionSetCount) ?? 0,
-    scenarioDataPackageCount:
-      asNullableNumber(summary.scenarioDataPackageCount) ?? 0,
-    scenarioIndicatorSnapshotCount:
-      asNullableNumber(summary.scenarioIndicatorSnapshotCount) ?? 0,
-    scenarioSharedSpinePendingCount:
-      asNullableNumber(summary.scenarioSharedSpinePendingCount) ?? 0,
-    projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
-    totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
-    engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",
-    engagementItemCount: asNullableNumber(summary.engagementItemCount) ?? 0,
-    engagementReadyForHandoffCount:
-      asNullableNumber(summary.engagementReadyForHandoffCount) ?? 0,
-    stageGateLabel: asNullableString(summary.stageGateLabel) ?? "Unknown",
-    stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
-    stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
-    stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
-  };
 }
 
 export default async function ProjectDetailPage({
@@ -834,7 +785,7 @@ export default async function ProjectDetailPage({
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
       const evidenceChainDigest = describeEvidenceChainSummary(
-        asEvidenceChainSummary(
+        parseStoredEvidenceChainSummary(
           latestArtifactByReportId.get(report.id)?.metadata_json ?? null
         )
       );
