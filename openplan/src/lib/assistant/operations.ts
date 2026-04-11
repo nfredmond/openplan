@@ -121,6 +121,32 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           auditNote: "Review the command-board rationale before changing records or regenerating artifacts.",
         })
       : null,
+    context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 && fundingAnchorCommand?.targetProjectId
+      ? quickLink(
+          "workspace-create-funding-profile",
+          "Create lead funding anchor now",
+          fundingAnchorCommand.href,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason: "The workspace already knows the lead project that has grant records but still lacks a funding-need anchor, so Planner Agent can create that anchor directly from the shared queue.",
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.create_funding_profile",
+            auditNote: "Creates the lead project funding-profile anchor through the existing audited route without inventing any funding amounts.",
+            executeAction: {
+              kind: "create_project_funding_profile",
+              projectId: fundingAnchorCommand.targetProjectId,
+              notes: "Planner Agent created this funding profile anchor from the workspace funding queue. Add funding need and local match next.",
+              postActionWorkflowId: "workspace-funding",
+              postActionPrompt: "A lead project funding profile anchor was created from the workspace queue. Which funding lane should move next, and what still needs to be filled in?",
+              postActionPromptLabel: "Review workspace funding posture",
+            },
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 || context.operationsSummary.counts.projectFundingGapProjects > 0
       ? quickLink(
           "workspace-funding-agent",

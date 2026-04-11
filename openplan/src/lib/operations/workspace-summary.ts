@@ -130,6 +130,7 @@ export type WorkspaceCommandQueueItem = {
   title: string;
   detail: string;
   href: string;
+  targetProjectId?: string | null;
   tone: StatusTone;
   priority: number;
   badges: Array<{
@@ -528,6 +529,7 @@ export function buildWorkspaceOperationsSummary({
         : firstClosingOpportunity?.projectId
           ? `/projects/${firstClosingOpportunity.projectId}#project-funding-opportunities`
           : "/programs",
+      targetProjectId: firstClosingOpportunity?.projectId ?? null,
       tone: "warning",
       priority: 2,
       badges: [
@@ -546,6 +548,7 @@ export function buildWorkspaceOperationsSummary({
       href: firstFundingNeedAnchorProject
         ? `/projects/${firstFundingNeedAnchorProject.project.id}#project-funding-opportunities`
         : "/projects",
+      targetProjectId: firstFundingNeedAnchorProject?.project.id ?? null,
       tone: "warning",
       priority: 3,
       badges: [
@@ -562,6 +565,7 @@ export function buildWorkspaceOperationsSummary({
       title: "Close project funding gaps",
       detail: `${fundingGapProjects.length} project funding stack${fundingGapProjects.length === 1 ? " still shows" : "s still show"} an uncovered gap after current pursued dollars.${firstFundingGapProject ? ` ${firstFundingGapProject.project.name} still carries ${formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount)} uncovered.` : ""}`,
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
+      targetProjectId: firstFundingGapProject?.project.id ?? null,
       tone: "warning",
       priority: 4,
       badges: [
