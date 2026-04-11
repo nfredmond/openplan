@@ -38,6 +38,11 @@ export function WorkspaceCommandBoard({
   description?: string;
   children?: ReactNode;
 }) {
+  const reimbursementStartCommand = summary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
+  const reimbursementAdvanceCommand = summary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
+  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
+  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
+
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
@@ -78,6 +83,12 @@ export function WorkspaceCommandBoard({
               : ""}
             {summary.counts.projectFundingAwardRecordProjects > 0
               ? `, ${summary.counts.projectFundingAwardRecordProjects} awarded opportunities missing award records`
+              : ""}
+            {reimbursementStartCount > 0
+              ? `, ${reimbursementStartCount} needing reimbursement packets`
+              : ""}
+            {reimbursementAdvanceCount > 0
+              ? `, ${reimbursementAdvanceCount} with reimbursement follow-through active`
               : ""}
             {summary.counts.projectFundingGapProjects > 0
               ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
