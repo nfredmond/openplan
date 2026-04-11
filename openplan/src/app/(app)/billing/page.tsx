@@ -167,6 +167,23 @@ function buildBillingHref(params: {
   return query ? `/billing?${query}` : "/billing";
 }
 
+function buildBillingInvoiceTriageHref(params: {
+  workspaceId: string | null;
+  checkoutState: string | null;
+  checkoutPlan: string | null;
+  invoiceId: string;
+  linkage: BillingInvoiceLinkageFilter;
+  overdue: BillingInvoiceOverdueFilter;
+}) {
+  return `${buildBillingHref({
+    workspaceId: params.workspaceId,
+    checkoutState: params.checkoutState,
+    checkoutPlan: params.checkoutPlan,
+    linkage: params.linkage,
+    overdue: params.overdue,
+  })}#invoice-record-${params.invoiceId}`;
+}
+
 export default async function BillingPage({
   searchParams,
 }: {
@@ -650,6 +667,14 @@ export default async function BillingPage({
                 <ul className="mt-3 space-y-3">
                   {invoicePriorityQueue.map((entry) => {
                     const invoice = entry.record;
+                    const triageHref = buildBillingInvoiceTriageHref({
+                      workspaceId,
+                      checkoutState,
+                      checkoutPlan,
+                      invoiceId: invoice.id,
+                      linkage: entry.isLinked ? "linked" : "unlinked",
+                      overdue: entry.isOverdue ? "overdue" : "all",
+                    });
                     return (
                       <li key={invoice.id} className="border border-border/50 bg-background/80 px-3 py-3">
                         <div className="flex flex-wrap items-center gap-2">
@@ -668,6 +693,14 @@ export default async function BillingPage({
                           <span className="font-semibold text-foreground">{formatCurrency(entry.netAmount)}</span>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">{entry.reason}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
+                          <Link href={triageHref} className="openplan-inline-label">
+                            {canWriteInvoices ? "Fix now in register" : "Open in register"}
+                          </Link>
+                          <span className="text-xs text-muted-foreground">
+                            Opens the matching linkage and overdue filter state, then jumps to this invoice row.
+                          </span>
+                        </div>
                       </li>
                     );
                   })}
@@ -766,7 +799,7 @@ export default async function BillingPage({
           ) : (
             <ul className="mt-4 space-y-3">
               {filteredInvoiceRecords.map((invoice) => (
-                <li key={invoice.id} className="border border-border/60 bg-background/70 px-4 py-4">
+                <li id={`invoice-record-${invoice.id}`} key={invoice.id} className="scroll-mt-24 border border-border/60 bg-background/70 px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
                     <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
