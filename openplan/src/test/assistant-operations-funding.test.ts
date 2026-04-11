@@ -2,7 +2,54 @@ import { describe, expect, it } from "vitest";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import type { WorkspaceAssistantContext } from "@/lib/assistant/context";
 
-function buildWorkspaceContext(): WorkspaceAssistantContext {
+function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["operationsSummary"]>): WorkspaceAssistantContext {
+  const operationsSummary: WorkspaceAssistantContext["operationsSummary"] = {
+    posture: "attention",
+    headline: "Anchor project funding needs",
+    detail: "A project has linked opportunities but no funding-need anchor.",
+    counts: {
+      projects: 2,
+      activeProjects: 2,
+      plans: 0,
+      plansNeedingSetup: 0,
+      programs: 0,
+      activePrograms: 0,
+      reports: 0,
+      reportRefreshRecommended: 0,
+      reportNoPacket: 0,
+      comparisonBackedReports: 0,
+      fundingOpportunities: 1,
+      openFundingOpportunities: 1,
+      closingSoonFundingOpportunities: 0,
+      projectFundingNeedAnchorProjects: 1,
+      projectFundingSourcingProjects: 0,
+      projectFundingGapProjects: 0,
+      queueDepth: 1,
+    },
+    nextCommand: {
+      key: "anchor-project-funding-needs",
+      title: "Anchor project funding needs",
+      detail: "Reopen Anchor Project first so the gap can be measured honestly.",
+      href: "/projects/project-anchor#project-funding-opportunities",
+      targetProjectId: "project-anchor",
+      tone: "warning",
+      priority: 3,
+      badges: [{ label: "Missing anchors", value: 1 }],
+    },
+    commandQueue: [
+      {
+        key: "anchor-project-funding-needs",
+        title: "Anchor project funding needs",
+        detail: "Reopen Anchor Project first so the gap can be measured honestly.",
+        href: "/projects/project-anchor#project-funding-opportunities",
+        targetProjectId: "project-anchor",
+        tone: "warning",
+        priority: 3,
+        badges: [{ label: "Missing anchors", value: 1 }],
+      },
+    ],
+  };
+
   return {
     kind: "workspace",
     workspace: {
@@ -23,50 +70,14 @@ function buildWorkspaceContext(): WorkspaceAssistantContext {
     currentRun: null,
     baselineRun: null,
     operationsSummary: {
-      posture: "attention",
-      headline: "Anchor project funding needs",
-      detail: "A project has linked opportunities but no funding-need anchor.",
+      ...operationsSummary,
+      ...overrides,
       counts: {
-        projects: 2,
-        activeProjects: 2,
-        plans: 0,
-        plansNeedingSetup: 0,
-        programs: 0,
-        activePrograms: 0,
-        reports: 0,
-        reportRefreshRecommended: 0,
-        reportNoPacket: 0,
-        comparisonBackedReports: 0,
-        fundingOpportunities: 1,
-        openFundingOpportunities: 1,
-        closingSoonFundingOpportunities: 0,
-        projectFundingNeedAnchorProjects: 1,
-        projectFundingSourcingProjects: 0,
-        projectFundingGapProjects: 0,
-        queueDepth: 1,
+        ...operationsSummary.counts,
+        ...overrides?.counts,
       },
-      nextCommand: {
-        key: "anchor-project-funding-needs",
-        title: "Anchor project funding needs",
-        detail: "Reopen Anchor Project first so the gap can be measured honestly.",
-        href: "/projects/project-anchor#project-funding-opportunities",
-        targetProjectId: "project-anchor",
-        tone: "warning",
-        priority: 3,
-        badges: [{ label: "Missing anchors", value: 1 }],
-      },
-      commandQueue: [
-        {
-          key: "anchor-project-funding-needs",
-          title: "Anchor project funding needs",
-          detail: "Reopen Anchor Project first so the gap can be measured honestly.",
-          href: "/projects/project-anchor#project-funding-opportunities",
-          targetProjectId: "project-anchor",
-          tone: "warning",
-          priority: 3,
-          badges: [{ label: "Missing anchors", value: 1 }],
-        },
-      ],
+      nextCommand: overrides?.nextCommand ?? operationsSummary.nextCommand,
+      commandQueue: overrides?.commandQueue ?? operationsSummary.commandQueue,
     },
   };
 }
@@ -81,5 +92,45 @@ describe("assistant funding operations", () => {
     if (action?.executeAction?.kind === "create_project_funding_profile") {
       expect(action.executeAction.projectId).toBe("project-anchor");
     }
+  });
+
+  it("switches the workspace funding agent into sourcing posture when need exists but opportunities do not", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Source project funding opportunities",
+        detail: "A project has recorded need but no linked opportunities.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 1,
+          projectFundingGapProjects: 0,
+        },
+        nextCommand: {
+          key: "source-project-funding-opportunities",
+          title: "Source project funding opportunities",
+          detail: "Reopen Gap Project first and source candidate programs.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          tone: "warning",
+          priority: 4,
+          badges: [{ label: "Needs sourcing", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "source-project-funding-opportunities",
+            title: "Source project funding opportunities",
+            detail: "Reopen Gap Project first and source candidate programs.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            tone: "warning",
+            priority: 4,
+            badges: [{ label: "Needs sourcing", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action?.label).toBe("Review funding sourcing gaps in panel");
+    expect(action?.statusLabel).toBe("1 need sourcing");
   });
 });
