@@ -26,7 +26,7 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
-import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectFundingStackSummary,
@@ -914,20 +914,14 @@ export default async function ProjectDetailPage({
     now
   );
 
-  const operationsSummary = buildWorkspaceOperationsSummary({
+  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
     projects: ((workspaceProjectsResult.data ?? []) as Array<{
       id: string;
       name: string;
       status: string | null;
       delivery_phase: string | null;
       updated_at: string | null;
-    }>).map((workspaceProject) => ({
-      id: workspaceProject.id,
-      name: workspaceProject.name,
-      status: workspaceProject.status,
-      deliveryPhase: workspaceProject.delivery_phase,
-      updatedAt: workspaceProject.updated_at,
-    })),
+    }>),
     plans: ((workspacePlansResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -936,15 +930,7 @@ export default async function ProjectDetailPage({
       horizon_year: number | null;
       project_id: string | null;
       updated_at: string | null;
-    }>).map((planRow) => ({
-      id: planRow.id,
-      title: planRow.title,
-      status: planRow.status,
-      geographyLabel: planRow.geography_label,
-      horizonYear: planRow.horizon_year,
-      projectId: planRow.project_id,
-      updatedAt: planRow.updated_at,
-    })),
+    }>),
     programs: ((workspaceProgramsResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -952,14 +938,7 @@ export default async function ProjectDetailPage({
       nomination_due_at: string | null;
       adoption_target_at: string | null;
       updated_at: string | null;
-    }>).map((programRow) => ({
-      id: programRow.id,
-      title: programRow.title,
-      status: programRow.status,
-      nominationDueAt: programRow.nomination_due_at,
-      adoptionTargetAt: programRow.adoption_target_at,
-      updatedAt: programRow.updated_at,
-    })),
+    }>),
     reports: ((workspaceReportsResult.data ?? []) as Array<{
       id: string;
       title: string | null;
@@ -968,15 +947,7 @@ export default async function ProjectDetailPage({
       generated_at: string | null;
       updated_at: string | null;
       metadata_json: Record<string, unknown> | null;
-    }>).map((reportRow) => ({
-      id: reportRow.id,
-      title: reportRow.title,
-      status: reportRow.status,
-      latestArtifactKind: reportRow.latest_artifact_kind,
-      generatedAt: reportRow.generated_at,
-      updatedAt: reportRow.updated_at,
-      metadataJson: reportRow.metadata_json,
-    })),
+    }>),
     fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -985,15 +956,7 @@ export default async function ProjectDetailPage({
       decision_due_at: string | null;
       program_id: string | null;
       updated_at: string | null;
-    }>).map((opportunity) => ({
-      id: opportunity.id,
-      title: opportunity.title,
-      opportunityStatus: opportunity.opportunity_status,
-      closesAt: opportunity.closes_at,
-      decisionDueAt: opportunity.decision_due_at,
-      programId: opportunity.program_id,
-      updatedAt: opportunity.updated_at,
-    })),
+    }>),
   });
 
   const timelineItems: TimelineItem[] = [

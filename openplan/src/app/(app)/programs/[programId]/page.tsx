@@ -33,7 +33,7 @@ import {
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
-import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import {
   buildModelWorkspaceSummary,
   formatModelFamilyLabel,
@@ -569,20 +569,14 @@ export default async function ProgramDetailPage({
     adoptionTargetAt: program.adoption_target_at,
   });
 
-  const operationsSummary = buildWorkspaceOperationsSummary({
+  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
     projects: ((projectsResult.data ?? []) as Array<{
       id: string;
       name: string;
       status: string | null;
       delivery_phase: string | null;
       updated_at: string | null;
-    }>).map((project) => ({
-      id: project.id,
-      name: project.name,
-      status: project.status,
-      deliveryPhase: project.delivery_phase,
-      updatedAt: project.updated_at,
-    })),
+    }>),
     plans: ((allPlansResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -591,15 +585,7 @@ export default async function ProgramDetailPage({
       horizon_year: number | null;
       project_id: string | null;
       updated_at: string | null;
-    }>).map((planRow) => ({
-      id: planRow.id,
-      title: planRow.title,
-      status: planRow.status,
-      geographyLabel: planRow.geography_label,
-      horizonYear: planRow.horizon_year,
-      projectId: planRow.project_id,
-      updatedAt: planRow.updated_at,
-    })),
+    }>),
     programs: ((workspaceProgramsResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -607,14 +593,7 @@ export default async function ProgramDetailPage({
       nomination_due_at: string | null;
       adoption_target_at: string | null;
       updated_at: string | null;
-    }>).map((programRow) => ({
-      id: programRow.id,
-      title: programRow.title,
-      status: programRow.status,
-      nominationDueAt: programRow.nomination_due_at,
-      adoptionTargetAt: programRow.adoption_target_at,
-      updatedAt: programRow.updated_at,
-    })),
+    }>),
     reports: ((allReportsResult.data ?? []) as Array<{
       id: string;
       title: string | null;
@@ -623,15 +602,7 @@ export default async function ProgramDetailPage({
       generated_at: string | null;
       updated_at: string | null;
       metadata_json: Record<string, unknown> | null;
-    }>).map((report) => ({
-      id: report.id,
-      title: report.title,
-      status: report.status,
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
-      updatedAt: report.updated_at,
-      metadataJson: report.metadata_json,
-    })),
+    }>),
     fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -640,15 +611,7 @@ export default async function ProgramDetailPage({
       decision_due_at: string | null;
       program_id: string | null;
       updated_at: string | null;
-    }>).map((opportunity) => ({
-      id: opportunity.id,
-      title: opportunity.title,
-      opportunityStatus: opportunity.opportunity_status,
-      closesAt: opportunity.closes_at,
-      decisionDueAt: opportunity.decision_due_at,
-      programId: opportunity.program_id,
-      updatedAt: opportunity.updated_at,
-    })),
+    }>),
   });
 
   const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;

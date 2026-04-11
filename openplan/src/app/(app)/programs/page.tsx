@@ -8,7 +8,7 @@ import { ReportPacketCommandQueue } from "@/components/reports/report-packet-com
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -458,20 +458,14 @@ export default async function ProgramsPage({
     (program) => program.packetSummary.attentionCount > 0
   ).length;
 
-  const operationsSummary = buildWorkspaceOperationsSummary({
+  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
     projects: ((projectsData ?? []) as Array<{
       id: string;
       name: string;
       status: string | null;
       delivery_phase: string | null;
       updated_at: string | null;
-    }>).map((project) => ({
-      id: project.id,
-      name: project.name,
-      status: project.status,
-      deliveryPhase: project.delivery_phase,
-      updatedAt: project.updated_at,
-    })),
+    }>),
     plans: ((workspacePlansData ?? []) as Array<{
       id: string;
       title: string;
@@ -480,23 +474,8 @@ export default async function ProgramsPage({
       horizon_year: number | null;
       project_id: string | null;
       updated_at: string | null;
-    }>).map((plan) => ({
-      id: plan.id,
-      title: plan.title,
-      status: plan.status,
-      geographyLabel: plan.geography_label,
-      horizonYear: plan.horizon_year,
-      projectId: plan.project_id,
-      updatedAt: plan.updated_at,
-    })),
-    programs: allTypedPrograms.map((program) => ({
-      id: program.id,
-      title: program.title,
-      status: program.status,
-      nominationDueAt: program.nomination_due_at,
-      adoptionTargetAt: program.adoption_target_at,
-      updatedAt: program.updated_at,
-    })),
+    }>),
+    programs: allTypedPrograms,
     reports: ((workspaceReportsData ?? []) as Array<{
       id: string;
       title: string | null;
@@ -505,24 +484,8 @@ export default async function ProgramsPage({
       generated_at: string | null;
       updated_at: string | null;
       metadata_json: Record<string, unknown> | null;
-    }>).map((report) => ({
-      id: report.id,
-      title: report.title,
-      status: report.status,
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
-      updatedAt: report.updated_at,
-      metadataJson: report.metadata_json,
-    })),
-    fundingOpportunities: fundingOpportunities.map((opportunity) => ({
-      id: opportunity.id,
-      title: opportunity.title,
-      opportunityStatus: opportunity.opportunity_status,
-      closesAt: opportunity.closes_at,
-      decisionDueAt: opportunity.decision_due_at,
-      programId: opportunity.program_id,
-      updatedAt: opportunity.updated_at,
-    })),
+    }>),
+    fundingOpportunities: fundingOpportunities,
   });
   const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
     if (!opportunity.program_id) return true;
