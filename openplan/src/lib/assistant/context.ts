@@ -17,6 +17,7 @@ import {
   buildRtpCycleWorkflowSummary,
   RTP_CHAPTER_TEMPLATES,
 } from "@/lib/rtp/catalog";
+import { compareRtpPacketPostureForCycle } from "@/lib/assistant/rtp-packet-posture";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
   buildScenarioComparisonBoard,
@@ -1065,17 +1066,23 @@ async function loadRtpContext(
         updated_at: string;
       }>);
 
-  const packetSummaries = packetReports.map((report) => ({
-    id: report.id,
-    title: report.title,
-    packetFreshness: getReportPacketFreshness({
-      latestArtifactKind: report.latest_artifact_kind,
-      generatedAt: report.generated_at,
+  const packetSummaries = packetReports
+    .map((report) => ({
+      id: report.id,
+      title: report.title,
       updatedAt: report.updated_at,
-    }),
-  }));
-  const recommendedReport =
-    packetSummaries.find((report) => report.packetFreshness.label !== "Packet current") ?? packetSummaries[0] ?? null;
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    }))
+    .sort((left, right) => {
+      const postureDelta = compareRtpPacketPostureForCycle(left.packetFreshness.label, right.packetFreshness.label);
+      if (postureDelta !== 0) return postureDelta;
+      return new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime();
+    });
+  const recommendedReport = packetSummaries[0] ?? null;
   const readiness = buildRtpCycleReadiness({
     geographyLabel: cycle.geography_label,
     horizonStartYear: cycle.horizon_start_year,
@@ -1215,9 +1222,8 @@ async function loadProgramContext(
   }
 
   const sortedLinkedReports = [...linkedReports.values()].sort((left, right) => {
-    const leftPriority = left.packetFreshness.label === "Refresh recommended" ? 0 : left.packetFreshness.label === "No packet" ? 1 : 2;
-    const rightPriority = right.packetFreshness.label === "Refresh recommended" ? 0 : right.packetFreshness.label === "No packet" ? 1 : 2;
-    if (leftPriority !== rightPriority) return leftPriority - rightPriority;
+    const postureDelta = compareRtpPacketPostureForCycle(left.packetFreshness.label, right.packetFreshness.label);
+    if (postureDelta !== 0) return postureDelta;
     return new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime();
   });
 

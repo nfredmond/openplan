@@ -12,6 +12,10 @@ import type {
   ScenarioAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
+import {
+  resolveRtpPacketWorkPostureFromCounts,
+  resolveRtpPacketWorkPostureFromFreshnessLabel,
+} from "@/lib/assistant/rtp-packet-posture";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function buildAnalysisHref(runId: string, baselineRunId?: string | null): string {
@@ -188,8 +192,12 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
 }
 
 function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): AssistantQuickLink[] {
+  const registryPosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.counts.noPacketCount,
+    refreshRecommendedCount: context.counts.refreshRecommendedCount,
+  });
   const primaryRegistryWorkflow =
-    context.counts.noPacketCount > 0
+    registryPosture === "generate"
       ? {
           label: "Plan first RTP packets in panel",
           reason: "Some RTP cycles still have no generated packet, so first-packet planning outranks refresh or release review.",
@@ -197,7 +205,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           prompt: "Which RTP cycles still need a first board packet, and where should I start?",
           promptLabel: "Plan first RTP packets in panel",
         }
-      : context.counts.refreshRecommendedCount > 0
+      : registryPosture === "refresh"
         ? {
             label: "Plan RTP refresh queue in panel",
             reason: "The registry has stale RTP packets, so refresh planning outranks release review.",
@@ -265,8 +273,12 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
 }
 
 function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] {
+  const cyclePosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.packetSummary.noPacketCount,
+    refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
+  });
   const primaryCycleWorkflow =
-    !context.packetSummary.recommendedReport || context.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+    cyclePosture === "generate"
       ? {
           label: "Plan first RTP packet in panel",
           reason: "This cycle still lacks a usable current packet artifact, so first-generation planning outranks refresh or release review.",
@@ -274,7 +286,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           prompt: "What does this RTP cycle need before creating its first board packet?",
           promptLabel: "Plan first RTP packet in panel",
         }
-      : context.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+      : cyclePosture === "refresh"
         ? {
             label: "Plan RTP refresh in panel",
             reason: "This cycle's lead RTP packet is stale against current cycle state, so refresh planning outranks release review.",
@@ -512,9 +524,10 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
     generatedAt: context.report.generatedAt,
     updatedAt: context.report.updatedAt,
   });
+  const packetPosture = resolveRtpPacketWorkPostureFromFreshnessLabel(packetFreshness.label);
   const primaryPacketWorkflow =
     context.kind === "rtp_packet_report"
-      ? packetFreshness.label === "No packet"
+      ? packetPosture === "generate"
         ? {
             label: "Plan first RTP packet in panel",
             reason: "This RTP packet record still lacks its first generated artifact, so first-generation planning outranks release review.",
@@ -522,7 +535,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
             prompt: "What does this RTP packet need before generating its first board packet artifact?",
             promptLabel: "Plan first RTP packet in panel",
           }
-        : packetFreshness.label === "Refresh recommended"
+        : packetPosture === "refresh"
           ? {
               label: "Plan RTP packet refresh in panel",
               reason: "The RTP packet is stale against current cycle state, so refresh planning outranks release review.",

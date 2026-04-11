@@ -19,6 +19,10 @@ import type {
 } from "@/lib/assistant/context";
 import { applyLocalConsoleStateToResponse, type AssistantLocalConsoleState } from "@/lib/assistant/local-console-state";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
+import {
+  resolveRtpPacketWorkPostureFromCounts,
+  resolveRtpPacketWorkPostureFromFreshnessLabel,
+} from "@/lib/assistant/rtp-packet-posture";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
@@ -140,14 +144,18 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
 }
 
 function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
+  const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.counts.noPacketCount,
+    refreshRecommendedCount: context.counts.refreshRecommendedCount,
+  });
   const registryPosture =
-    context.counts.noPacketCount > 0
+    registryPacketPosture === "generate"
       ? {
           title: "First packet queue is live",
           detail: `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work outranks refresh or release review right now.`,
           summary: `Grounded to the RTP cycle registry, with first-packet generation currently outranking refresh and release work across the visible cycles.`,
         }
-      : context.counts.refreshRecommendedCount > 0
+      : registryPacketPosture === "refresh"
         ? {
             title: "Refresh queue is live",
             detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the main registry posture right now.`,
@@ -197,22 +205,29 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
 }
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
+  const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.packetSummary.noPacketCount,
+    refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
+  });
+  const recommendedPacketDetail =
+    context.packetSummary.recommendedReport?.packetFreshness.detail ??
+    "No linked RTP packet is available yet, so packet review still needs to be established.";
   const cyclePacketPosture =
-    !context.packetSummary.recommendedReport || context.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+    cyclePacketWorkPosture === "generate"
       ? {
           title: "First packet work comes first",
           detail: "This cycle still lacks a usable current packet artifact, so first-generation planning outranks refresh or release review right now.",
           summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and first-packet setup posture before release work begins.`,
         }
-      : context.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+      : cyclePacketWorkPosture === "refresh"
         ? {
             title: "Refresh work comes first",
-            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+            detail: recommendedPacketDetail,
             summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and stale packet refresh posture before release review.`,
           }
         : {
             title: "Release review comes first",
-            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+            detail: recommendedPacketDetail,
             summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and board-ready packet review posture.`,
           };
 
@@ -620,13 +635,17 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
 
 function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP registry brief";
+  const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.counts.noPacketCount,
+    refreshRecommendedCount: context.counts.refreshRecommendedCount,
+  });
 
   if (workflowId === "rtp-registry-generate") {
     return {
       workflowId,
       label,
       title: `First RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
-      summary: context.counts.noPacketCount > 0
+      summary: registryPacketPosture === "generate"
         ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work is the top registry queue posture right now.`
         : "The registry does not currently show any RTP cycles missing a first packet.",
       findings: [
@@ -658,7 +677,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       workflowId,
       label,
       title: `RTP refresh queue: ${context.workspace.name ?? "Current workspace"}`,
-      summary: context.counts.refreshRecommendedCount > 0
+      summary: registryPacketPosture === "refresh"
         ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the top registry queue posture right now.`
         : "The registry does not currently show stale RTP packets that need refresh.",
       findings: [
@@ -784,6 +803,10 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
 
 function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
+  const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
+    noPacketCount: context.packetSummary.noPacketCount,
+    refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
+  });
 
   if (workflowId === "rtp-packet-generate") {
     return {
@@ -883,7 +906,11 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       label,
       title: `Packet posture: ${context.rtpCycle.title}`,
       summary: context.packetSummary.recommendedReport
-        ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is marked ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+        ? cyclePacketWorkPosture === "generate"
+          ? `${context.rtpCycle.title} currently needs first-packet work before board-ready review, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
+          : cyclePacketWorkPosture === "refresh"
+            ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before board-ready review.`
+            : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release review.`
         : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? "" : "s"}, ${context.packetSummary.refreshRecommendedCount} needing refresh, ${context.packetSummary.noPacketCount} with no generated artifact.`,
@@ -1200,6 +1227,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
     generatedAt: context.report.generatedAt,
     updatedAt: context.report.updatedAt,
   });
+  const packetPosture = resolveRtpPacketWorkPostureFromFreshnessLabel(packetFreshness.label);
 
   if (workflowId === "rtp-packet-generate") {
     return {
@@ -1285,7 +1313,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       ].filter(Boolean) as string[],
       nextSteps: [
         context.latestArtifact ? "Review the latest artifact rather than the draft record alone before sharing anything." : "Generate an artifact first so there is a stable packet to review.",
-        context.rtpCycle && packetFreshness.label === "Refresh recommended"
+        context.rtpCycle && packetPosture === "refresh"
           ? "Regenerate this RTP packet from current cycle state before treating it as board-ready."
           : null,
         holdCount > 0
@@ -1319,7 +1347,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
         : "No engagement linkage is visible through the report sections.",
     ].filter(Boolean) as string[],
     nextSteps: [
-      context.rtpCycle && packetFreshness.label !== "Packet current"
+      context.rtpCycle && packetPosture !== "release"
         ? "Refresh this RTP packet from current cycle state before externalizing it."
         : null,
       context.runs.length > 0 ? "Cross-check the linked run summaries against the packet storyline." : "Attach source runs before treating the report as analytically grounded.",
