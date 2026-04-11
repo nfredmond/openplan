@@ -697,7 +697,6 @@ export default async function ProjectDetailPage({
     missing_artifacts?: string[] | null;
   }>);
 
-  const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
   const now = new Date();
   const prioritizedMilestones = [...milestones].sort((left, right) => {
     const priorityDiff = milestonePriority(left, now) - milestonePriority(right, now);
@@ -836,6 +835,19 @@ export default async function ProjectDetailPage({
   ).length;
   const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedReport = projectReports[0] ?? null;
+  const projectControlsSummary = buildProjectControlsSummary(
+    milestones,
+    submittals,
+    projectInvoices,
+    {
+      refreshRecommendedCount: refreshRecommendedReportCount,
+      noPacketCount: noPacketReportCount,
+      comparisonBackedCount: comparisonBackedReportCount,
+      recommendedReportId: recommendedReport?.id ?? null,
+      recommendedReportTitle: recommendedReport?.title ?? null,
+    },
+    now
+  );
 
   const timelineItems: TimelineItem[] = [
     ...milestones.map((item) => ({
@@ -1228,6 +1240,7 @@ export default async function ProjectDetailPage({
                 {projectReports.map((report) => (
                   <Link
                     key={report.id}
+                    id={`project-report-${report.id}`}
                     href={`/reports/${report.id}`}
                     className="block rounded-2xl border border-border/70 bg-card/70 p-4 transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
                   >
@@ -1996,7 +2009,8 @@ export default async function ProjectDetailPage({
           </div>
         ) : null}
 
-        {(projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ||
+        {(projectControlsSummary.attentionSummary.reportPackets.count > 0 ||
+          projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ||
           projectControlsSummary.attentionSummary.overdueMilestones.count > 0 ||
           projectControlsSummary.attentionSummary.overdueSubmittals.count > 0 ||
           projectControlsSummary.attentionSummary.overdueInvoices.count > 0) ? (
@@ -2010,7 +2024,23 @@ export default async function ProjectDetailPage({
               </div>
               <StatusBadge tone="danger">Operator attention</StatusBadge>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {projectControlsSummary.attentionSummary.reportPackets.count > 0 ? (
+                <Link
+                  href={buildProjectControlHref(
+                    projectControlsSummary.attentionSummary.reportPackets.targetId,
+                    projectControlsSummary.attentionSummary.reportPackets.targetRowId
+                  )}
+                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Report packets</p>
+                  <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.reportPackets.count}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Refresh stale packets or generate missing artifacts before delivery review.</p>
+                  {recommendedReport ? (
+                    <p className="mt-2 text-xs text-muted-foreground">First: {recommendedReport.title}</p>
+                  ) : null}
+                </Link>
+              ) : null}
               {projectControlsSummary.attentionSummary.blockedMilestones.count > 0 ? (
                 <Link
                   href={buildProjectControlHref(

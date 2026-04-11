@@ -34,6 +34,7 @@ describe("project controls summary", () => {
           due_date: "2026-03-07",
         },
       ],
+      undefined,
       "2026-03-10T00:00:00.000Z"
     );
 
@@ -73,6 +74,7 @@ describe("project controls summary", () => {
           due_date: "2026-03-01",
         },
       ],
+      undefined,
       "2026-03-10T00:00:00.000Z"
     );
 

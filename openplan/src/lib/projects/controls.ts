@@ -31,6 +31,14 @@ export type ProjectInvoiceControlRecordLike = BillingInvoiceRecordLike & {
   submitted_to?: string | null;
 };
 
+export type ProjectReportControlSummaryLike = {
+  refreshRecommendedCount?: number | null;
+  noPacketCount?: number | null;
+  comparisonBackedCount?: number | null;
+  recommendedReportId?: string | null;
+  recommendedReportTitle?: string | null;
+};
+
 export type ProjectControlDeadlineItem = {
   kind: "milestone" | "submittal" | "invoice";
   title: string;
@@ -44,6 +52,7 @@ export type ProjectControlDeadlineItem = {
 };
 
 const PROJECT_CONTROL_TARGET_IDS = {
+  report: "project-reporting",
   milestone: "project-milestones",
   submittal: "project-submittals",
   invoice: "project-invoices",
@@ -66,6 +75,7 @@ export type ProjectControlsSummary = {
   invoiceSummary: BillingInvoiceSummary;
   controlHealth: "stable" | "active" | "attention";
   attentionSummary: {
+    reportPackets: { count: number; targetId: string; targetRowId?: string };
     blockedMilestones: { count: number; targetId: string };
     overdueMilestones: { count: number; targetId: string };
     overdueSubmittals: { count: number; targetId: string };
@@ -122,6 +132,7 @@ export function buildProjectControlsSummary(
   milestones: ProjectMilestoneRecordLike[] | null | undefined,
   submittals: ProjectSubmittalRecordLike[] | null | undefined,
   invoices: ProjectInvoiceControlRecordLike[] | null | undefined,
+  reportSummary?: ProjectReportControlSummaryLike | null,
   nowInput: Date | string = new Date()
 ): ProjectControlsSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
@@ -142,6 +153,13 @@ export function buildProjectControlsSummary(
   const nextSubmittal = sortByEarliestDate(
     pendingSubmittals.filter((item) => Boolean(item.due_date)) as Array<ProjectSubmittalRecordLike & { due_date: string }>
   )[0] ?? null;
+  const reportRefreshRecommendedCount = reportSummary?.refreshRecommendedCount ?? 0;
+  const reportNoPacketCount = reportSummary?.noPacketCount ?? 0;
+  const comparisonBackedCount = reportSummary?.comparisonBackedCount ?? 0;
+  const reportAttentionCount = reportRefreshRecommendedCount + reportNoPacketCount;
+  const recommendedReportRowId = reportSummary?.recommendedReportId
+    ? `project-report-${reportSummary.recommendedReportId}`
+    : undefined;
   const invoiceSummary = summarizeBillingInvoiceRecords(invoices, now);
   const deadlineItems = sortDeadlineItems([
     ...openMilestones
@@ -199,6 +217,11 @@ export function buildProjectControlsSummary(
         ? "active"
         : "stable";
   const attentionSummary = {
+    reportPackets: {
+      count: reportAttentionCount,
+      targetId: PROJECT_CONTROL_TARGET_IDS.report,
+      targetRowId: recommendedReportRowId,
+    },
     blockedMilestones: { count: blockedMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
     overdueMilestones: { count: overdueMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
     overdueSubmittals: { count: overdueSubmittalCount, targetId: PROJECT_CONTROL_TARGET_IDS.submittal },
@@ -230,13 +253,37 @@ export function buildProjectControlsSummary(
           : invoiceSummary.overdueCount > 0
             ? {
                 label: "Resolve overdue invoice posture",
-                detail: `${invoiceSummary.overdueCount} invoice${invoiceSummary.overdueCount === 1 ? " is" : "s are"} overdue. Confirm supporting docs and payment status before advancing closeout claims.`,
+            detail: `${invoiceSummary.overdueCount} invoice${invoiceSummary.overdueCount === 1 ? " is" : "s are"} overdue. Confirm supporting docs and payment status before advancing closeout claims.`,
+            tone: "warning" as const,
+            targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
+          }
+          : reportRefreshRecommendedCount > 0
+            ? {
+                label: comparisonBackedCount > 0 ? "Refresh comparison-backed packet" : "Refresh report packet",
+                detail: `${reportRefreshRecommendedCount} report packet${reportRefreshRecommendedCount === 1 ? " needs" : "s need"} regeneration. ${reportSummary?.recommendedReportTitle ? `${reportSummary.recommendedReportTitle} is the first report to reopen.` : "Reopen the first flagged report and regenerate its packet."}`,
                 tone: "warning" as const,
-                targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
+                targetId: PROJECT_CONTROL_TARGET_IDS.report,
+                targetRowId: recommendedReportRowId,
               }
-            : nextSubmittal
+            : reportNoPacketCount > 0
               ? {
-                  label: "Prepare next submittal",
+                  label: "Generate first report packet",
+                  detail: `${reportNoPacketCount} report record${reportNoPacketCount === 1 ? " is" : "s are"} missing a packet artifact. ${reportSummary?.recommendedReportTitle ? `${reportSummary.recommendedReportTitle} is the first report to generate.` : "Open the reporting lane and generate the first packet."}`,
+                  tone: "info" as const,
+                  targetId: PROJECT_CONTROL_TARGET_IDS.report,
+                  targetRowId: recommendedReportRowId,
+                }
+              : comparisonBackedCount > 0
+                ? {
+                    label: "Review comparison-backed packet",
+                    detail: `${comparisonBackedCount} report${comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context. ${reportSummary?.recommendedReportTitle ? `Start with ${reportSummary.recommendedReportTitle} before creating another revision.` : "Start in the reporting lane and confirm the saved comparison story is still current."}`,
+                    tone: "info" as const,
+                    targetId: PROJECT_CONTROL_TARGET_IDS.report,
+                    targetRowId: recommendedReportRowId,
+                  }
+              : nextSubmittal
+                ? {
+                    label: "Prepare next submittal",
                   detail: `${nextSubmittal.title} is the next visible packet in the queue. Keep the review cadence explicit before it turns into a hidden hold.`,
                   tone: "info" as const,
                   targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
