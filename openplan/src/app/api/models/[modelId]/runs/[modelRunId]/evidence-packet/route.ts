@@ -3,8 +3,12 @@ import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { loadModelAccess } from "@/lib/models/api";
-import { normalizeEvidencePacket } from "@/lib/models/evidence-packet";
+import {
+  normalizeEvidencePacket,
+  type NormalizedEvidencePacketScenarioBasis,
+} from "@/lib/models/evidence-packet";
 import { getBehavioralDemandDefaultCaveats, getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -21,6 +25,184 @@ type ArtifactRow = {
   content_hash: string | null;
   file_size_bytes: number | null;
 };
+
+type ScenarioSetRow = {
+  id: string;
+  title: string | null;
+  status: string | null;
+};
+
+type ScenarioEntryRow = {
+  id: string;
+  scenario_set_id: string;
+  label: string | null;
+  entry_type: string | null;
+  status: string | null;
+};
+
+type ScenarioSpineRow = {
+  updated_at?: string | null;
+  snapshot_at?: string | null;
+};
+
+function latestTimestamp(values: Array<string | null | undefined>) {
+  const timestamps = values
+    .map((value) => (typeof value === "string" ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
+async function loadScenarioBasis({
+  supabase,
+  scenarioSetId,
+  scenarioEntryId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  scenarioSetId: string | null;
+  scenarioEntryId: string | null;
+}): Promise<{
+  scenarioBasis: NormalizedEvidencePacketScenarioBasis | null;
+  warning: string | null;
+}> {
+  if (!scenarioSetId && !scenarioEntryId) {
+    return { scenarioBasis: null, warning: null };
+  }
+
+  const scenarioEntryResult = scenarioEntryId
+    ? await supabase
+        .from("scenario_entries")
+        .select("id, scenario_set_id, label, entry_type, status")
+        .eq("id", scenarioEntryId)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  if (scenarioEntryResult.error) {
+    return {
+      scenarioBasis: null,
+      warning: "Scenario entry provenance could not be loaded for this run.",
+    };
+  }
+
+  const scenarioEntry = (scenarioEntryResult.data ?? null) as ScenarioEntryRow | null;
+  const effectiveScenarioSetId = scenarioSetId ?? scenarioEntry?.scenario_set_id ?? null;
+
+  if (!effectiveScenarioSetId) {
+    return {
+      scenarioBasis: {
+        scenario_set: null,
+        scenario_entry: scenarioEntry
+          ? {
+              id: scenarioEntry.id,
+              label: scenarioEntry.label,
+              entry_type: scenarioEntry.entry_type,
+              status: scenarioEntry.status,
+            }
+          : null,
+        shared_spine: null,
+      },
+      warning: null,
+    };
+  }
+
+  const [scenarioSetResult, assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
+    supabase
+      .from("scenario_sets")
+      .select("id, title, status")
+      .eq("id", effectiveScenarioSetId)
+      .maybeSingle(),
+    supabase
+      .from("scenario_assumption_sets")
+      .select("updated_at")
+      .eq("scenario_set_id", effectiveScenarioSetId),
+    supabase
+      .from("scenario_data_packages")
+      .select("updated_at")
+      .eq("scenario_set_id", effectiveScenarioSetId),
+    supabase
+      .from("scenario_indicator_snapshots")
+      .select("snapshot_at")
+      .eq("scenario_set_id", effectiveScenarioSetId),
+  ]);
+
+  if (scenarioSetResult.error) {
+    return {
+      scenarioBasis: null,
+      warning: "Scenario set provenance could not be loaded for this run.",
+    };
+  }
+
+  const scenarioSpinePending = [
+    assumptionSetsResult.error,
+    dataPackagesResult.error,
+    indicatorSnapshotsResult.error,
+  ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+  if (
+    !scenarioSpinePending &&
+    (assumptionSetsResult.error || dataPackagesResult.error || indicatorSnapshotsResult.error)
+  ) {
+    return {
+      scenarioBasis: {
+        scenario_set: (scenarioSetResult.data ?? null) as ScenarioSetRow | null,
+        scenario_entry: scenarioEntry
+          ? {
+              id: scenarioEntry.id,
+              label: scenarioEntry.label,
+              entry_type: scenarioEntry.entry_type,
+              status: scenarioEntry.status,
+            }
+          : null,
+        shared_spine: null,
+      },
+      warning: "Scenario shared spine provenance could not be fully loaded for this run.",
+    };
+  }
+
+  const assumptionSets = scenarioSpinePending
+    ? []
+    : ((assumptionSetsResult.data ?? []) as ScenarioSpineRow[]);
+  const dataPackages = scenarioSpinePending
+    ? []
+    : ((dataPackagesResult.data ?? []) as ScenarioSpineRow[]);
+  const indicatorSnapshots = scenarioSpinePending
+    ? []
+    : ((indicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
+
+  return {
+    scenarioBasis: {
+      scenario_set: (scenarioSetResult.data ?? null) as ScenarioSetRow | null,
+      scenario_entry: scenarioEntry
+        ? {
+            id: scenarioEntry.id,
+            label: scenarioEntry.label,
+            entry_type: scenarioEntry.entry_type,
+            status: scenarioEntry.status,
+          }
+        : null,
+      shared_spine: {
+        schema_pending: scenarioSpinePending,
+        assumption_set_count: assumptionSets.length,
+        data_package_count: dataPackages.length,
+        indicator_snapshot_count: indicatorSnapshots.length,
+        latest_assumption_set_updated_at: latestTimestamp(
+          assumptionSets.map((row) => row.updated_at ?? null)
+        ),
+        latest_data_package_updated_at: latestTimestamp(
+          dataPackages.map((row) => row.updated_at ?? null)
+        ),
+        latest_indicator_snapshot_at: latestTimestamp(
+          indicatorSnapshots.map((row) => row.snapshot_at ?? null)
+        ),
+      },
+    },
+    warning: null,
+  };
+}
 
 async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
   if (fileUrl.startsWith("local://")) {
@@ -87,7 +269,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Model run not found." }, { status: 404 });
   }
 
-  const [{ data: stages }, { data: artifacts }, { data: kpis }] = await Promise.all([
+  const [{ data: stages }, { data: artifacts }, { data: kpis }, scenarioBasisResult] = await Promise.all([
     supabase
       .from("model_run_stages")
       .select("*")
@@ -103,6 +285,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .select("*")
       .eq("run_id", parsedParams.data.modelRunId)
       .order("kpi_category", { ascending: true }),
+    loadScenarioBasis({
+      supabase,
+      scenarioSetId:
+        typeof run.scenario_set_id === "string"
+          ? run.scenario_set_id
+          : typeof access.model.scenario_set_id === "string"
+            ? access.model.scenario_set_id
+            : null,
+      scenarioEntryId: typeof run.scenario_entry_id === "string" ? run.scenario_entry_id : null,
+    }),
   ]);
 
   const artifactRows = (artifacts ?? []) as Array<Record<string, unknown>>;
@@ -148,6 +340,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     caveats.push("No KPIs were extracted for this run.");
   }
 
+  if (scenarioBasisResult.warning) {
+    caveats.push(scenarioBasisResult.warning);
+  }
+
   let storedPacket: unknown | undefined;
   let fallbackReason: string | null = null;
 
@@ -176,6 +372,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     stages: stageRows,
     kpis: kpiRows,
     fallbackReason,
+    scenarioBasis: scenarioBasisResult.scenarioBasis,
   });
 
   evidencePacket.caveats = Array.from(new Set([...evidencePacket.caveats, ...caveats]));

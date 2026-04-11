@@ -302,6 +302,67 @@ export function ModelRunEvidencePanel({
                 </div>
 
                 <div className="space-y-4">
+                  {evidence.scenario_basis ? (
+                    <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-foreground">Scenario basis</p>
+                        {evidence.scenario_basis.shared_spine ? (
+                          <StatusBadge tone={evidence.scenario_basis.shared_spine.schema_pending ? "warning" : "info"}>
+                            {evidence.scenario_basis.shared_spine.schema_pending ? "Spine pending" : "Spine linked"}
+                          </StatusBadge>
+                        ) : null}
+                      </div>
+
+                      <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Scenario set</dt>
+                          <dd className="text-right text-foreground">
+                            {evidence.scenario_basis.scenario_set?.title ?? "Not linked"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Scenario entry</dt>
+                          <dd className="text-right text-foreground">
+                            {evidence.scenario_basis.scenario_entry?.label ?? "Not attached"}
+                          </dd>
+                        </div>
+                        {evidence.scenario_basis.shared_spine ? (
+                          <>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt>Assumption sets</dt>
+                              <dd className="text-right text-foreground">
+                                {evidence.scenario_basis.shared_spine.schema_pending
+                                  ? "Pending"
+                                  : evidence.scenario_basis.shared_spine.assumption_set_count}
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt>Data packages</dt>
+                              <dd className="text-right text-foreground">
+                                {evidence.scenario_basis.shared_spine.schema_pending
+                                  ? "Pending"
+                                  : evidence.scenario_basis.shared_spine.data_package_count}
+                              </dd>
+                            </div>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt>Indicator snapshots</dt>
+                              <dd className="text-right text-foreground">
+                                {evidence.scenario_basis.shared_spine.schema_pending
+                                  ? "Pending"
+                                  : evidence.scenario_basis.shared_spine.indicator_snapshot_count}
+                              </dd>
+                            </div>
+                          </>
+                        ) : null}
+                      </dl>
+
+                      {evidence.scenario_basis.shared_spine?.latest_indicator_snapshot_at ? (
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          Latest indicator snapshot {new Date(evidence.scenario_basis.shared_spine.latest_indicator_snapshot_at).toLocaleString()}.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
                     <p className="text-sm font-semibold text-foreground">KPI categories</p>
                     {categories.length === 0 ? (

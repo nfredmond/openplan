@@ -6,6 +6,29 @@ type EvidencePacketKpiItem = {
   geometry_ref?: string | null;
 };
 
+export type NormalizedEvidencePacketScenarioBasis = {
+  scenario_set: {
+    id: string;
+    title: string | null;
+    status: string | null;
+  } | null;
+  scenario_entry: {
+    id: string;
+    label: string | null;
+    entry_type: string | null;
+    status: string | null;
+  } | null;
+  shared_spine: {
+    schema_pending: boolean;
+    assumption_set_count: number;
+    data_package_count: number;
+    indicator_snapshot_count: number;
+    latest_assumption_set_updated_at: string | null;
+    latest_data_package_updated_at: string | null;
+    latest_indicator_snapshot_at: string | null;
+  } | null;
+};
+
 export type NormalizedEvidencePacket = {
   packet_version: string;
   generated_at: string;
@@ -52,6 +75,7 @@ export type NormalizedEvidencePacket = {
     fallback_reason: string | null;
     source_packet_format: string;
   };
+  scenario_basis: NormalizedEvidencePacketScenarioBasis | null;
 };
 
 type NormalizeEvidencePacketOptions = {
@@ -65,6 +89,7 @@ type NormalizeEvidencePacketOptions = {
   kpis: Array<Record<string, unknown>>;
   generatedAt?: string;
   fallbackReason?: string | null;
+  scenarioBasis?: NormalizedEvidencePacketScenarioBasis | null;
 };
 
 type EvidenceHighlight = {
@@ -83,6 +108,10 @@ function asString(value: unknown): string | null {
 
 function asNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
 }
 
 function asArray(value: unknown): unknown[] {
@@ -153,6 +182,7 @@ export function normalizeEvidencePacket({
   kpis,
   generatedAt,
   fallbackReason = null,
+  scenarioBasis = null,
 }: NormalizeEvidencePacketOptions): NormalizedEvidencePacket {
   const nowIso = generatedAt ?? new Date().toISOString();
   const raw = asRecord(rawPacket) ?? {};
@@ -160,6 +190,10 @@ export function normalizeEvidencePacket({
   const rawAssumptions = asRecord(raw.assumptions) ?? {};
   const rawOutputs = asRecord(raw.outputs) ?? {};
   const rawProvenance = asRecord(raw.provenance) ?? {};
+  const rawScenarioBasis = asRecord(raw.scenario_basis);
+  const rawScenarioSet = asRecord(rawScenarioBasis?.scenario_set);
+  const rawScenarioEntry = asRecord(rawScenarioBasis?.scenario_entry);
+  const rawSharedSpine = asRecord(rawScenarioBasis?.shared_spine);
 
   const normalizedArtifacts = buildEvidenceArtifactList(artifacts);
   const normalizedStages = buildEvidenceStageSummaries(stages);
@@ -294,6 +328,60 @@ export function normalizeEvidencePacket({
       fallback_reason: fallbackReason,
       source_packet_format: sourcePacketFormat,
     },
+    scenario_basis:
+      rawScenarioBasis || scenarioBasis
+        ? {
+            scenario_set:
+              rawScenarioSet || scenarioBasis?.scenario_set
+                ? {
+                    id: asString(rawScenarioSet?.id) ?? scenarioBasis?.scenario_set?.id ?? "",
+                    title: asString(rawScenarioSet?.title) ?? scenarioBasis?.scenario_set?.title ?? null,
+                    status: asString(rawScenarioSet?.status) ?? scenarioBasis?.scenario_set?.status ?? null,
+                  }
+                : null,
+            scenario_entry:
+              rawScenarioEntry || scenarioBasis?.scenario_entry
+                ? {
+                    id: asString(rawScenarioEntry?.id) ?? scenarioBasis?.scenario_entry?.id ?? "",
+                    label: asString(rawScenarioEntry?.label) ?? scenarioBasis?.scenario_entry?.label ?? null,
+                    entry_type:
+                      asString(rawScenarioEntry?.entry_type) ?? scenarioBasis?.scenario_entry?.entry_type ?? null,
+                    status: asString(rawScenarioEntry?.status) ?? scenarioBasis?.scenario_entry?.status ?? null,
+                  }
+                : null,
+            shared_spine:
+              rawSharedSpine || scenarioBasis?.shared_spine
+                ? {
+                    schema_pending:
+                      asBoolean(rawSharedSpine?.schema_pending) ?? scenarioBasis?.shared_spine?.schema_pending ?? false,
+                    assumption_set_count:
+                      asNumber(rawSharedSpine?.assumption_set_count) ??
+                      scenarioBasis?.shared_spine?.assumption_set_count ??
+                      0,
+                    data_package_count:
+                      asNumber(rawSharedSpine?.data_package_count) ??
+                      scenarioBasis?.shared_spine?.data_package_count ??
+                      0,
+                    indicator_snapshot_count:
+                      asNumber(rawSharedSpine?.indicator_snapshot_count) ??
+                      scenarioBasis?.shared_spine?.indicator_snapshot_count ??
+                      0,
+                    latest_assumption_set_updated_at:
+                      asString(rawSharedSpine?.latest_assumption_set_updated_at) ??
+                      scenarioBasis?.shared_spine?.latest_assumption_set_updated_at ??
+                      null,
+                    latest_data_package_updated_at:
+                      asString(rawSharedSpine?.latest_data_package_updated_at) ??
+                      scenarioBasis?.shared_spine?.latest_data_package_updated_at ??
+                      null,
+                    latest_indicator_snapshot_at:
+                      asString(rawSharedSpine?.latest_indicator_snapshot_at) ??
+                      scenarioBasis?.shared_spine?.latest_indicator_snapshot_at ??
+                      null,
+                  }
+                : null,
+          }
+        : null,
   };
 }
 
