@@ -224,7 +224,7 @@ export default async function ReportsPage({
     (report) => report.status === "draft"
   ).length;
   const refreshRecommendedCount = reports.filter(
-    (report) => report.packetFreshness.label === "Needs refresh"
+    (report) => report.packetFreshness.label === "Refresh recommended"
   ).length;
   const noPacketCount = reports.filter(
     (report) => report.packetFreshness.label === "No packet"
@@ -272,6 +272,8 @@ export default async function ReportsPage({
       ) &&
       matchesReportPostureFilter(selectedPostureFilter, {
         hasEvidenceChain: Boolean(report.evidenceChainDigest),
+        hasComparisonBacked:
+          (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0,
         hasBlockedGovernance: Boolean(report.evidenceChainDigest?.blockedGateDetail),
       })
   );
@@ -347,6 +349,15 @@ export default async function ReportsPage({
       }),
     },
     {
+      value: "comparison-backed",
+      label: "Comparison-backed",
+      count: comparisonSnapshotVisibleCount,
+      href: buildReportsFilterHref({
+        freshness: selectedFreshnessFilter,
+        posture: "comparison-backed",
+      }),
+    },
+    {
       value: "governance-hold",
       label: "Governance hold",
       count: blockedGovernanceCount,
@@ -397,7 +408,7 @@ export default async function ReportsPage({
       current.latestReportId = report.id;
       current.latestReportTitle = report.title;
     }
-    if (report.packetFreshness.label === "Needs refresh") {
+    if (report.packetFreshness.label === "Refresh recommended") {
       current.refreshRecommendedCount += 1;
       if (!current.recommendedReportId) {
         current.recommendedReportId = report.id;

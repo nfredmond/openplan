@@ -31,6 +31,7 @@ export type ReportFreshnessFilter = "all" | "refresh" | "missing" | "current";
 export type ReportPostureFilter =
   | "all"
   | "evidence-backed"
+  | "comparison-backed"
   | "governance-hold"
   | "no-evidence";
 
@@ -129,6 +130,7 @@ export function normalizeReportPostureFilter(
 ): ReportPostureFilter {
   switch (value) {
     case "evidence-backed":
+    case "comparison-backed":
     case "governance-hold":
     case "no-evidence":
       return value;
@@ -141,12 +143,15 @@ export function matchesReportPostureFilter(
   filter: ReportPostureFilter,
   input: {
     hasEvidenceChain: boolean;
+    hasComparisonBacked: boolean;
     hasBlockedGovernance: boolean;
   }
 ) {
   switch (filter) {
     case "evidence-backed":
       return input.hasEvidenceChain;
+    case "comparison-backed":
+      return input.hasComparisonBacked;
     case "governance-hold":
       return input.hasBlockedGovernance;
     case "no-evidence":
