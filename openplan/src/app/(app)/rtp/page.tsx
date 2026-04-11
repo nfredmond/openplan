@@ -876,6 +876,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "refresh_artifact"
     ).length,
   };
+  const currentViewActionCounts = {
+    createPacket: typedCycles.filter((cycle) => cycle.packetAttention === "missing").length,
+    resetAndRegenerate: typedCycles.filter((cycle) => cycle.packetAttention === "reset").length,
+    generateFirstArtifact: typedCycles.filter((cycle) => cycle.packetAttention === "generate").length,
+    refreshArtifact: typedCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
+    traceFollowUp: typedCycles.filter(
+      (cycle) => cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned"
+    ).length,
+  };
+  const dominantCurrentViewAction = [
+    { key: "createPacket", label: "Create missing packet records", count: currentViewActionCounts.createPacket },
+    { key: "resetAndRegenerate", label: "Reset and regenerate packets", count: currentViewActionCounts.resetAndRegenerate },
+    { key: "generateFirstArtifact", label: "Generate first packet artifacts", count: currentViewActionCounts.generateFirstArtifact },
+    { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
+    { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
+  ].sort((left, right) => right.count - left.count)[0];
 
   return (
     <section className="module-page">
@@ -1450,6 +1466,116 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         </section>
 
         <aside className="space-y-4">
+          {typedCycles.length > 0 ? (
+            <article className="rounded-3xl border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Recommended next queue action
+                  </p>
+                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+                    {dominantCurrentViewAction.count}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {dominantCurrentViewAction.count > 0
+                      ? `${dominantCurrentViewAction.label} is the largest actionable lane in the current filtered view.`
+                      : "The current filtered view has no immediate queue actions beyond passive monitoring."}
+                  </p>
+                </div>
+                <StatusBadge tone={dominantCurrentViewAction.count > 0 ? "info" : "success"}>
+                  {dominantCurrentViewAction.count > 0 ? dominantCurrentViewAction.label : "Queue clear"}
+                </StatusBadge>
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <li>• Create missing packets: {currentViewActionCounts.createPacket}</li>
+                <li>• Reset + regenerate: {currentViewActionCounts.resetAndRegenerate}</li>
+                <li>• Generate first artifacts: {currentViewActionCounts.generateFirstArtifact}</li>
+                <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
+                <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
+              </ul>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                {currentViewActionCounts.createPacket > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "missing",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: selectedQueueTraceStateFilter,
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open missing lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {currentViewActionCounts.resetAndRegenerate > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "reset",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: selectedQueueTraceStateFilter,
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open reset lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {currentViewActionCounts.generateFirstArtifact > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "generate",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: selectedQueueTraceStateFilter,
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open first-artifact lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {currentViewActionCounts.refreshArtifact > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "refresh",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: selectedQueueTraceStateFilter,
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open refresh lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {currentViewActionCounts.traceFollowUp > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "current",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState:
+                        selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open trace follow-up
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+              </div>
+            </article>
+          ) : null}
+
           {unrecordedQueueCycles.length > 0 ? (
             <article className="rounded-3xl border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
               <div className="flex items-start justify-between gap-3">
