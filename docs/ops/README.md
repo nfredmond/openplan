@@ -20,6 +20,7 @@
 | [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) | **Practical screen-by-screen UI implementation checklist** — use during redesign and QA |
 | [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) | **Reusable Codex/Claude prompt starter** — copy/paste for OpenPlan UI tasks |
 | [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) | **Canonical April 2026 architecture expansion memo** — four-system planning OS, standards-first data plane, scenario/evidence spine |
+| [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) | **Shared platform contract spec** — scenarios, assumptions, data packages, indicators, and comparisons |
 | [v1-internal-ship-gate.md](2026-03-16-openplan-v1-internal-ship-gate.md) | Internal ship gate checklist |
 | [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) | **Canonical** Elena approval (2026-03-17) |
 
@@ -29,6 +30,7 @@
 
 ### Governance & Decisions
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
+- [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
 - [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) — canonical principal approval
 - [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path

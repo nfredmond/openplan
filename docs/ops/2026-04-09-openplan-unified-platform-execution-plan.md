@@ -39,6 +39,9 @@ The deep research synthesis expands this plan in five durable ways:
 
 ## Workstream A0: Standards-first scenario and data spine
 
+Canonical companion spec:
+- `docs/ops/2026-04-10-openplan-scenario-data-indicator-spine-spec.md`
+
 ### Goal
 Create the shared scenario/versioning/data contract layer that later RTP, modeling, grants, and engagement work can all depend on.
 
