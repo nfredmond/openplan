@@ -50,10 +50,12 @@ function schemaPendingResponse(scenarioSet: unknown, entries: ScenarioEntryRow[]
         assumptionSets: 0,
         dataPackages: 0,
         indicatorSnapshots: 0,
+        comparisonSnapshots: 0,
       },
       assumptionSets: [],
       dataPackages: [],
       indicatorSnapshots: [],
+      comparisonSnapshots: [],
       schemaPending: true,
     },
     { status: 200 }
@@ -126,7 +128,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       null;
     const branchEntries = scenarioEntries.filter((entry) => entry.entry_type !== "baseline");
 
-    const [assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
+    const [assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult, comparisonSnapshotsResult] = await Promise.all([
       supabase
         .from("scenario_assumption_sets")
         .select("id, scenario_set_id, scenario_entry_id, label, summary, assumptions_json, status, created_at, updated_at")
@@ -146,12 +148,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
         )
         .eq("scenario_set_id", access.scenarioSet.id)
         .order("snapshot_at", { ascending: false }),
+      supabase
+        .from("scenario_comparison_snapshots")
+        .select(
+          "id, scenario_set_id, baseline_entry_id, candidate_entry_id, assumption_set_id, data_package_id, label, summary, narrative, caveats_json, metadata_json, status, created_at, updated_at"
+        )
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("updated_at", { ascending: false }),
     ]);
 
     const pendingSchemaError = [
       assumptionSetsResult.error,
       dataPackagesResult.error,
       indicatorSnapshotsResult.error,
+      comparisonSnapshotsResult.error,
     ].find((error) => looksLikePendingScenarioSpineSchema(error?.message));
 
     if (pendingSchemaError) {
@@ -163,7 +173,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return schemaPendingResponse(access.scenarioSet, scenarioEntries, baselineEntry);
     }
 
-    const spineError = assumptionSetsResult.error ?? dataPackagesResult.error ?? indicatorSnapshotsResult.error;
+    const spineError =
+      assumptionSetsResult.error ??
+      dataPackagesResult.error ??
+      indicatorSnapshotsResult.error ??
+      comparisonSnapshotsResult.error;
     if (spineError) {
       audit.error("scenario_spine_lookup_failed", {
         scenarioSetId: access.scenarioSet.id,
@@ -176,6 +190,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const assumptionSets = assumptionSetsResult.data ?? [];
     const dataPackages = dataPackagesResult.data ?? [];
     const indicatorSnapshots = indicatorSnapshotsResult.data ?? [];
+    const comparisonSnapshots = comparisonSnapshotsResult.data ?? [];
 
     return NextResponse.json(
       {
@@ -186,10 +201,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
           assumptionSets: assumptionSets.length,
           dataPackages: dataPackages.length,
           indicatorSnapshots: indicatorSnapshots.length,
+          comparisonSnapshots: comparisonSnapshots.length,
         },
         assumptionSets,
         dataPackages,
         indicatorSnapshots,
+        comparisonSnapshots,
         schemaPending: false,
       },
       { status: 200 }

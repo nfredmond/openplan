@@ -181,7 +181,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       baselineEntryId: baselineEntry?.id ?? null,
     });
 
-    const [assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
+    const [assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult, comparisonSnapshotsResult] = await Promise.all([
       supabase
         .from("scenario_assumption_sets")
         .select("id, scenario_entry_id, label, status, updated_at")
@@ -197,20 +197,32 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .select("id, scenario_entry_id, indicator_key, indicator_label, snapshot_at")
         .eq("scenario_set_id", access.scenarioSet.id)
         .order("snapshot_at", { ascending: false }),
+      supabase
+        .from("scenario_comparison_snapshots")
+        .select("id, baseline_entry_id, candidate_entry_id, label, status, updated_at")
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("updated_at", { ascending: false }),
     ]);
 
     const pendingScenarioSpineError = [
       assumptionSetsResult.error,
       dataPackagesResult.error,
       indicatorSnapshotsResult.error,
+      comparisonSnapshotsResult.error,
     ].find((error) => looksLikePendingScenarioSpineSchema(error?.message));
 
     if (
       !pendingScenarioSpineError &&
-      (assumptionSetsResult.error || dataPackagesResult.error || indicatorSnapshotsResult.error)
+      (assumptionSetsResult.error ||
+        dataPackagesResult.error ||
+        indicatorSnapshotsResult.error ||
+        comparisonSnapshotsResult.error)
     ) {
       const scenarioSpineError =
-        assumptionSetsResult.error ?? dataPackagesResult.error ?? indicatorSnapshotsResult.error;
+        assumptionSetsResult.error ??
+        dataPackagesResult.error ??
+        indicatorSnapshotsResult.error ??
+        comparisonSnapshotsResult.error;
       audit.error("scenario_spine_lookup_failed", {
         scenarioSetId: access.scenarioSet.id,
         message: scenarioSpineError?.message ?? "unknown",
@@ -291,12 +303,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
             assumptionSets: pendingScenarioSpineError ? 0 : (assumptionSetsResult.data?.length ?? 0),
             dataPackages: pendingScenarioSpineError ? 0 : (dataPackagesResult.data?.length ?? 0),
             indicatorSnapshots: pendingScenarioSpineError ? 0 : (indicatorSnapshotsResult.data?.length ?? 0),
+            comparisonSnapshots: pendingScenarioSpineError ? 0 : (comparisonSnapshotsResult.data?.length ?? 0),
           },
           recentAssumptionSets: pendingScenarioSpineError ? [] : (assumptionSetsResult.data ?? []).slice(0, 5),
           recentDataPackages: pendingScenarioSpineError ? [] : (dataPackagesResult.data ?? []).slice(0, 5),
           recentIndicatorSnapshots: pendingScenarioSpineError
             ? []
             : (indicatorSnapshotsResult.data ?? []).slice(0, 5),
+          recentComparisonSnapshots: pendingScenarioSpineError
+            ? []
+            : (comparisonSnapshotsResult.data ?? []).slice(0, 5),
         },
       },
       { status: 200 }

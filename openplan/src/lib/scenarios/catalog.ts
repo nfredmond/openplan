@@ -4,6 +4,7 @@ export const SCENARIO_ENTRY_STATUSES = ["draft", "ready", "superseded"] as const
 export const SCENARIO_ASSUMPTION_SET_STATUSES = ["draft", "active", "archived"] as const;
 export const SCENARIO_DATA_PACKAGE_TYPES = ["input", "reference", "model_output", "evidence"] as const;
 export const SCENARIO_DATA_PACKAGE_STATUSES = ["draft", "ready", "archived"] as const;
+export const SCENARIO_COMPARISON_SNAPSHOT_STATUSES = ["draft", "ready", "archived"] as const;
 
 export type ScenarioSetStatus = (typeof SCENARIO_SET_STATUSES)[number];
 export type ScenarioEntryType = (typeof SCENARIO_ENTRY_TYPES)[number];
@@ -11,6 +12,8 @@ export type ScenarioEntryStatus = (typeof SCENARIO_ENTRY_STATUSES)[number];
 export type ScenarioAssumptionSetStatus = (typeof SCENARIO_ASSUMPTION_SET_STATUSES)[number];
 export type ScenarioDataPackageType = (typeof SCENARIO_DATA_PACKAGE_TYPES)[number];
 export type ScenarioDataPackageStatus = (typeof SCENARIO_DATA_PACKAGE_STATUSES)[number];
+export type ScenarioComparisonSnapshotStatus =
+  (typeof SCENARIO_COMPARISON_SNAPSHOT_STATUSES)[number];
 export type ScenarioComparisonStatus =
   | "ready"
   | "missing-baseline"
