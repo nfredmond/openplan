@@ -30,8 +30,12 @@ export type AssistantPreviewStat = {
 };
 
 export type AssistantQuickLink = {
+  id: string;
   label: string;
   href: string;
+  targetKind: AssistantTargetKind;
+  actionClass: "open_surface" | "review_controls" | "review_analysis" | "review_packet" | "inspect_readiness";
+  executionMode: "navigate" | "future_agent_action";
   approval?: "safe" | "review" | "approval_required";
   auditNote?: string;
 };

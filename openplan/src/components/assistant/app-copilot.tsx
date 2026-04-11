@@ -42,6 +42,22 @@ function quickLinkBadge(link: AssistantQuickLink) {
   }
 }
 
+function quickLinkActionClassLabel(link: AssistantQuickLink) {
+  switch (link.actionClass) {
+    case "review_controls":
+      return "Review controls";
+    case "review_analysis":
+      return "Review analysis";
+    case "review_packet":
+      return "Review packet";
+    case "inspect_readiness":
+      return "Inspect readiness";
+    case "open_surface":
+    default:
+      return "Open surface";
+  }
+}
+
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
@@ -56,6 +72,9 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-slate-50">{link.label}</p>
+                <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                  {quickLinkActionClassLabel(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"}
+                </p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
                   {link.auditNote ?? "Open this surface to continue the grounded operator workflow."}
                 </p>
@@ -68,7 +87,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             </div>
             <div className="mt-3 flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
               <ArrowUpRight className="h-3.5 w-3.5" />
-              Open target
+              {link.id}
             </div>
           </Link>
         );

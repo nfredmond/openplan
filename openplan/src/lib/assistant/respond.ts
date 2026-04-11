@@ -48,13 +48,24 @@ function buildAnalysisHref(runId: string, baselineRunId?: string | null): string
 }
 
 function quickLink(
+  id: string,
   label: string,
   href: string,
-  options?: { approval?: AssistantQuickLink["approval"]; auditNote?: string }
+  options: {
+    targetKind: AssistantQuickLink["targetKind"];
+    actionClass: AssistantQuickLink["actionClass"];
+    approval?: AssistantQuickLink["approval"];
+    auditNote?: string;
+    executionMode?: AssistantQuickLink["executionMode"];
+  }
 ): AssistantQuickLink {
   return {
+    id,
     label,
     href,
+    targetKind: options.targetKind,
+    actionClass: options.actionClass,
+    executionMode: options.executionMode ?? "navigate",
     approval: options?.approval,
     auditNote: options?.auditNote,
   };
@@ -78,19 +89,25 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 function buildWorkspaceQuickLinks(context: WorkspaceAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
     context.operationsSummary.nextCommand
-      ? quickLink(`Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("workspace-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+          targetKind: "workspace",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Review the command-board rationale before changing records or regenerating artifacts.",
         })
       : null,
     context.currentRun
-      ? quickLink(context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio", buildAnalysisHref(context.currentRun.id, context.baselineRun?.id ?? null), {
+      ? quickLink("workspace-analysis", context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio", buildAnalysisHref(context.currentRun.id, context.baselineRun?.id ?? null), {
+          targetKind: "analysis_studio",
+          actionClass: "review_analysis",
           approval: "review",
           auditNote: "Inspect map posture, filters, and source quality before treating deltas as decision-ready.",
         })
       : null,
     context.recentProject
-      ? quickLink(`Open ${context.recentProject.name}`, `/projects/${context.recentProject.id}`, {
+      ? quickLink("workspace-project", `Open ${context.recentProject.name}`, `/projects/${context.recentProject.id}`, {
+          targetKind: "project",
+          actionClass: "open_surface",
           approval: "safe",
           auditNote: "Navigation only. Record changes still happen inside the target surface.",
         })
@@ -101,16 +118,22 @@ function buildWorkspaceQuickLinks(context: WorkspaceAssistantContext): Assistant
 function buildProjectQuickLinks(context: ProjectAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
     context.stageGateSummary.blockedGate
-      ? quickLink("Open governance controls", `/projects/${context.project.id}#project-governance`, {
+      ? quickLink("project-governance", "Open governance controls", `/projects/${context.project.id}#project-governance`, {
+          targetKind: "project",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Governance updates should preserve rationale, owners, and evidence trail integrity.",
         })
-      : quickLink("Open project controls", `/projects/${context.project.id}#project-milestones`, {
+      : quickLink("project-controls", "Open project controls", `/projects/${context.project.id}#project-milestones`, {
+          targetKind: "project",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Review milestone, submittal, and invoice posture before making downstream commitments.",
         }),
     context.counts.overlayReadyDatasets > 0 || context.counts.recentRuns > 0
-      ? quickLink("Open reporting and analysis context", `/projects/${context.project.id}#project-reporting`, {
+      ? quickLink("project-reporting", "Open reporting and analysis context", `/projects/${context.project.id}#project-reporting`, {
+          targetKind: "project",
+          actionClass: "review_analysis",
           approval: "review",
           auditNote: "Cross-check packet provenance and run basis before externalizing any narrative.",
         })
@@ -121,17 +144,23 @@ function buildProjectQuickLinks(context: ProjectAssistantContext): AssistantQuic
 function buildPlanQuickLinks(context: PlanAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
     context.operationsSummary.nextCommand
-      ? quickLink(`Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("plan-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+          targetKind: "plan",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Use the workspace command rationale before changing packet or plan posture.",
         })
       : null,
-    quickLink("Open plan record", `/plans/${context.plan.id}`, {
+    quickLink("plan-record", "Open plan record", `/plans/${context.plan.id}`, {
+      targetKind: "plan",
+      actionClass: "open_surface",
       approval: "safe",
       auditNote: "Navigation only. Plan edits still require action in the destination screen.",
     }),
     context.project
-      ? quickLink(`Open ${context.project.name}`, `/projects/${context.project.id}`, {
+      ? quickLink("plan-project", `Open ${context.project.name}`, `/projects/${context.project.id}`, {
+          targetKind: "project",
+          actionClass: "open_surface",
           approval: "safe",
           auditNote: "Use the linked project as the delivery anchor before widening scope.",
         })
@@ -142,18 +171,24 @@ function buildPlanQuickLinks(context: PlanAssistantContext): AssistantQuickLink[
 function buildProgramQuickLinks(context: ProgramAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
     context.packetSummary.recommendedReport
-      ? quickLink("Open recommended packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
+      ? quickLink("program-recommended-packet", "Open recommended packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
+          targetKind: "report",
+          actionClass: "review_packet",
           approval: "review",
           auditNote: "Verify freshness, source drift, and packet audit posture before release decisions.",
         })
       : null,
     context.operationsSummary.nextCommand
-      ? quickLink(`Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("program-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+          targetKind: "program",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Keep program/package actions aligned with the shared workspace queue before changing records.",
         })
       : null,
-    quickLink("Open program record", `/programs/${context.program.id}`, {
+    quickLink("program-record", "Open program record", `/programs/${context.program.id}`, {
+      targetKind: "program",
+      actionClass: "open_surface",
       approval: "safe",
       auditNote: "Navigation only. Funding and packet changes still happen inside the destination screen.",
     }),
@@ -162,7 +197,9 @@ function buildProgramQuickLinks(context: ProgramAssistantContext): AssistantQuic
 
 function buildScenarioQuickLinks(context: ScenarioAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
-    quickLink("Open scenario set", `/scenarios/${context.scenarioSet.id}`, {
+    quickLink("scenario-record", "Open scenario set", `/scenarios/${context.scenarioSet.id}`, {
+      targetKind: "scenario_set",
+      actionClass: "review_analysis",
       approval: "review",
       auditNote: "Check baseline pairing and assumptions before pushing scenario claims downstream.",
     }),
@@ -171,7 +208,9 @@ function buildScenarioQuickLinks(context: ScenarioAssistantContext): AssistantQu
 
 function buildModelQuickLinks(context: ModelAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
-    quickLink("Open model record", `/models/${context.model.id}`, {
+    quickLink("model-record", "Open model record", `/models/${context.model.id}`, {
+      targetKind: "model",
+      actionClass: "inspect_readiness",
       approval: "review",
       auditNote: "Readiness and validation posture should be reviewed before launch or reuse.",
     }),
@@ -180,12 +219,16 @@ function buildModelQuickLinks(context: ModelAssistantContext): AssistantQuickLin
 
 function buildReportQuickLinks(context: ReportAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
-    quickLink("Open report detail", `/reports/${context.report.id}`, {
+    quickLink("report-detail", "Open report detail", `/reports/${context.report.id}`, {
+      targetKind: "report",
+      actionClass: "review_packet",
       approval: "review",
       auditNote: "Use report detail to inspect provenance, drift, and artifact history before sharing.",
     }),
     context.project
-      ? quickLink(`Open ${context.project.name}`, `/projects/${context.project.id}#project-reporting`, {
+      ? quickLink("report-project", `Open ${context.project.name}`, `/projects/${context.project.id}#project-reporting`, {
+          targetKind: "project",
+          actionClass: "review_controls",
           approval: "review",
           auditNote: "Keep packet work tied back to the project control room and reporting lane.",
         })
@@ -195,7 +238,9 @@ function buildReportQuickLinks(context: ReportAssistantContext): AssistantQuickL
 
 function buildRunQuickLinks(context: RunAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
-    quickLink(context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio", buildAnalysisHref(context.run.id, context.baselineRun?.id ?? null), {
+    quickLink("run-analysis", context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio", buildAnalysisHref(context.run.id, context.baselineRun?.id ?? null), {
+      targetKind: "analysis_studio",
+      actionClass: "review_analysis",
       approval: "review",
       auditNote: "Inspect map posture, filters, and source quality before using the run in decisions.",
     }),
