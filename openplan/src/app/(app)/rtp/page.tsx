@@ -908,6 +908,47 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         return false;
     }
   });
+  const dominantActionHref =
+    dominantCurrentViewAction.key === "createPacket"
+      ? buildRtpRegistryHref({
+          status: filters.status ?? null,
+          packet: "missing",
+          recent: recentOnly,
+          queueAction: selectedQueueActionFilter,
+          queueTraceState: selectedQueueTraceStateFilter,
+        })
+      : dominantCurrentViewAction.key === "resetAndRegenerate"
+        ? buildRtpRegistryHref({
+            status: filters.status ?? null,
+            packet: "reset",
+            recent: recentOnly,
+            queueAction: selectedQueueActionFilter,
+            queueTraceState: selectedQueueTraceStateFilter,
+          })
+        : dominantCurrentViewAction.key === "generateFirstArtifact"
+          ? buildRtpRegistryHref({
+              status: filters.status ?? null,
+              packet: "generate",
+              recent: recentOnly,
+              queueAction: selectedQueueActionFilter,
+              queueTraceState: selectedQueueTraceStateFilter,
+            })
+          : dominantCurrentViewAction.key === "refreshArtifact"
+            ? buildRtpRegistryHref({
+                status: filters.status ?? null,
+                packet: "refresh",
+                recent: recentOnly,
+                queueAction: selectedQueueActionFilter,
+                queueTraceState: selectedQueueTraceStateFilter,
+              })
+            : buildRtpRegistryHref({
+                status: filters.status ?? null,
+                packet: "current",
+                recent: recentOnly,
+                queueAction: selectedQueueActionFilter,
+                queueTraceState:
+                  selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
+              });
 
   return (
     <section className="module-page">
@@ -1510,6 +1551,15 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
                 <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
               </ul>
+
+              {dominantCurrentViewAction.count > 0 ? (
+                <div className="mt-4">
+                  <Link href={dominantActionHref} className="module-inline-action w-fit">
+                    Review {dominantCurrentViewAction.count} cycle{dominantCurrentViewAction.count === 1 ? "" : "s"} in this lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              ) : null}
 
               {dominantCurrentViewAction.count > 0 ? (
                 <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
