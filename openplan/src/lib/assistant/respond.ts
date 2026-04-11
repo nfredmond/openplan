@@ -977,6 +977,67 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
     updatedAt: context.report.updatedAt,
   });
 
+  if (workflowId === "rtp-packet-generate") {
+    return {
+      workflowId,
+      label,
+      title: `First packet plan for ${context.report.title}`,
+      summary: `${context.report.title} still needs its first usable RTP board packet artifact. The main job now is confirming that the cycle basis, packet sections, and source runs are strong enough to justify generation.`,
+      findings: [
+        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}`,
+        context.sectionCount > 0
+          ? `${context.enabledSections} of ${context.sectionCount} packet sections are enabled on the record.`
+          : "No report sections are currently attached to this packet record.",
+        context.runs.length > 0
+          ? `${context.runs.length} linked run${context.runs.length === 1 ? " is" : "s are"} available to support the first artifact.`
+          : "No source runs are attached yet, so first-packet generation would be thinly grounded.",
+      ].filter(Boolean) as string[],
+      nextSteps: [
+        "Confirm the packet layout and section coverage before generating the first artifact.",
+        context.runs.length > 0
+          ? "Use the linked run summaries and cycle context as the minimum provenance basis for first generation."
+          : "Attach at least one defendable source run or equivalent basis before treating first generation as meaningful.",
+      ],
+      evidence: [
+        context.rtpCycle ? `RTP cycle: ${context.rtpCycle.id}` : null,
+        `Enabled sections: ${context.enabledSections}/${context.sectionCount}`,
+        `Linked runs: ${context.runs.length}`,
+        `Artifacts: ${context.artifactCount}`,
+      ].filter(Boolean) as string[],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  if (workflowId === "rtp-packet-refresh") {
+    return {
+      workflowId,
+      label,
+      title: `Refresh plan for ${context.report.title}`,
+      summary: `${context.report.title} already has a packet trail, but the current cycle or packet record changed after the last generation. Refresh work should verify what drifted before regenerating.`,
+      findings: [
+        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}`,
+        context.latestArtifact
+          ? `Latest artifact generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
+          : "No previous artifact is attached, so this behaves more like first-packet generation than a true refresh.",
+        `${context.runAudit.length} run-audit entries are attached, with ${holdCount} non-pass gate decision${holdCount === 1 ? "" : "s"}.`,
+      ].filter(Boolean) as string[],
+      nextSteps: [
+        "Review cycle drift, enabled sections, and packet basis before regenerating the artifact.",
+        holdCount > 0
+          ? "Clear or explicitly acknowledge held audit items before refreshing the packet."
+          : "Once drift is understood, regenerate the packet from current cycle state.",
+      ],
+      evidence: [
+        context.rtpCycle ? `RTP cycle updated: ${formatDateTime(context.rtpCycle.updatedAt)}` : null,
+        `Latest artifact kind: ${context.report.latestArtifactKind ?? "None"}`,
+        `Run-audit rows: ${context.runAudit.length}`,
+      ].filter(Boolean) as string[],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
   if (workflowId === "report-release" || workflowId === "rtp-packet-release") {
     return {
       workflowId,
@@ -1021,7 +1082,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
   return {
     workflowId,
     label,
-    title: `Report audit: ${context.report.title}`,
+    title: `${context.kind === "rtp_packet_report" ? "RTP packet audit" : "Report audit"}: ${context.report.title}`,
     summary: `${context.report.title} is grounded on ${pluralize(context.runs.length, "linked run")}, ${pluralize(context.enabledSections, "enabled section")}, and ${pluralize(context.artifactCount, "generated artifact")}.`,
     findings: [
       context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status} · ${packetFreshness.label}.` : null,

@@ -12,6 +12,7 @@ import type {
   ScenarioAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
+import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function buildAnalysisHref(runId: string, baselineRunId?: string | null): string {
   const params = new URLSearchParams({ runId });
@@ -458,31 +459,63 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
 
 function buildReportOperations(context: ReportAssistantContext): AssistantQuickLink[] {
   const reportTargetKind: AssistantQuickLink["targetKind"] = context.kind === "rtp_packet_report" ? "rtp_packet_report" : "report";
+  const packetFreshness = getReportPacketFreshness({
+    latestArtifactKind: context.report.latestArtifactKind,
+    generatedAt: context.report.generatedAt,
+    updatedAt: context.report.updatedAt,
+  });
+  const primaryPacketWorkflow =
+    context.kind === "rtp_packet_report"
+      ? packetFreshness.label === "No packet"
+        ? {
+            label: "Plan first RTP packet in panel",
+            reason: "This RTP packet record still lacks its first generated artifact, so first-generation planning outranks release review.",
+            workflowId: "rtp-packet-generate",
+            prompt: "What does this RTP packet need before generating its first board packet artifact?",
+            promptLabel: "Plan first RTP packet in panel",
+          }
+        : packetFreshness.label === "Refresh recommended"
+          ? {
+              label: "Plan RTP packet refresh in panel",
+              reason: "The RTP packet is stale against current cycle state, so refresh planning outranks release review.",
+              workflowId: "rtp-packet-refresh",
+              prompt: "What changed since the last RTP packet generation, and what should I verify before refreshing it?",
+              promptLabel: "Plan RTP packet refresh in panel",
+            }
+          : {
+              label: "Run RTP release check in panel",
+              reason: "The RTP packet is current enough that board/public release review is now the main operator move.",
+              workflowId: "rtp-packet-release",
+              prompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+              promptLabel: "Run RTP release check in panel",
+            }
+      : {
+          label: "Run release check in panel",
+          reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
+          workflowId: "report-release",
+          prompt: "Is this report ready to share, and what still needs verification?",
+          promptLabel: "Run release check in panel",
+        };
   return compactQuickLinks([
-    quickLink("report-release-agent", context.kind === "rtp_packet_report" ? "Run RTP release check in panel" : "Run release check in panel", `/reports/${context.report.id}`, {
+    quickLink("report-release-agent", primaryPacketWorkflow.label, `/reports/${context.report.id}`, {
       targetKind: reportTargetKind,
       actionClass: "review_packet",
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: context.rtpCycle
-        ? "Runs the grounded RTP packet release check inside Planner Agent before you jump into full packet detail."
-        : "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
+      reason: primaryPacketWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.report.release_agent",
       auditNote: "This is a grounded packet review only, it does not publish or mutate the report.",
-      workflowId: context.kind === "rtp_packet_report" ? "rtp-packet-release" : "report-release",
-      prompt:
-        context.kind === "rtp_packet_report"
-          ? "Is this RTP board packet ready to share, and what still needs verification before release?"
-          : "Is this report ready to share, and what still needs verification?",
-      promptLabel: context.kind === "rtp_packet_report" ? "Run RTP release check in panel" : "Run release check in panel",
+      workflowId: primaryPacketWorkflow.workflowId,
+      prompt: primaryPacketWorkflow.prompt,
+      promptLabel: primaryPacketWorkflow.promptLabel,
     }),
     quickLink("report-detail", context.kind === "rtp_packet_report" ? "Open RTP packet detail" : "Open report detail", `/reports/${context.report.id}`, {
       targetKind: reportTargetKind,
       actionClass: "review_packet",
       priority: "primary",
-      statusLabel: context.rtpCycle ? "RTP packet review" : "Packet review",
+      statusLabel: context.kind === "rtp_packet_report" ? packetFreshness.label : context.rtpCycle ? "RTP packet review" : "Packet review",
       reason: context.rtpCycle
         ? "Report detail is the canonical RTP packet audit surface for cycle drift, provenance, and artifact history."
         : "Report detail is the canonical packet audit surface for provenance, drift, and artifact history.",

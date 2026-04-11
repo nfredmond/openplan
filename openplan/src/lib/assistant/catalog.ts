@@ -263,6 +263,18 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "Audit this RTP packet for cycle provenance, packet freshness, and board-packet posture.",
     },
     {
+      id: "rtp-packet-generate",
+      label: "First packet plan",
+      description: "Explain what is missing before generating the first RTP board packet artifact.",
+      prompt: "What does this RTP packet need before generating its first board packet artifact?",
+    },
+    {
+      id: "rtp-packet-refresh",
+      label: "Refresh plan",
+      description: "Explain what changed and what should be checked before regenerating a stale RTP board packet.",
+      prompt: "What changed since the last RTP packet generation, and what should I verify before refreshing it?",
+    },
+    {
       id: "rtp-packet-release",
       label: "RTP release check",
       description: "Call out what still needs review before this RTP board packet is ready for board or public use.",
@@ -578,6 +590,8 @@ export function resolveAssistantWorkflowId(
   }
 
   if (kind === "rtp_packet_report") {
+    if (includesAny(normalized, ["generate", "first packet", "first artifact", "missing artifact", "no packet"])) return "rtp-packet-generate";
+    if (includesAny(normalized, ["refresh", "stale", "regenerate", "changed", "drift"])) return "rtp-packet-refresh";
     if (includesAny(normalized, ["share", "release", "board", "public", "ready", "verify"])) return "rtp-packet-release";
     return "rtp-packet-audit";
   }
