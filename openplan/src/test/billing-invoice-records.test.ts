@@ -3,6 +3,7 @@ import {
   computeNetInvoiceAmount,
   computeRetentionAmount,
   filterBillingInvoiceRecordsByLinkage,
+  filterBillingInvoiceRecordsByOverdueStatus,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
@@ -85,5 +86,21 @@ describe("billing invoice record helpers", () => {
     expect(filterBillingInvoiceRecordsByLinkage(records, "unlinked").map((record) => record.invoice_number)).toEqual([
       "OP-002",
     ]);
+  });
+
+  it("filters invoice records down to overdue items only", () => {
+    const records = [
+      { invoice_number: "OP-001", status: "submitted", due_date: "2026-03-01" },
+      { invoice_number: "OP-002", status: "draft", due_date: "2026-03-20" },
+      { invoice_number: "OP-003", status: "paid", due_date: "2026-02-15" },
+      { invoice_number: "OP-004", status: "internal_review", due_date: "2026-03-10" },
+    ];
+
+    expect(filterBillingInvoiceRecordsByOverdueStatus(records, "all", "2026-03-15T12:00:00.000Z")).toHaveLength(4);
+    expect(
+      filterBillingInvoiceRecordsByOverdueStatus(records, "overdue", "2026-03-15T12:00:00.000Z").map(
+        (record) => record.invoice_number
+      )
+    ).toEqual(["OP-001", "OP-004"]);
   });
 });

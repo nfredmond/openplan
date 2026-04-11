@@ -9,6 +9,8 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   filterBillingInvoiceRecordsByLinkage,
+  filterBillingInvoiceRecordsByOverdueStatus,
+  type BillingInvoiceOverdueFilter,
   type BillingInvoiceLinkageFilter,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
@@ -143,17 +145,23 @@ function normalizeInvoiceLinkageFilter(value: string | string[] | undefined): Bi
   return value === "linked" || value === "unlinked" ? value : "all";
 }
 
+function normalizeInvoiceOverdueFilter(value: string | string[] | undefined): BillingInvoiceOverdueFilter {
+  return value === "overdue" ? value : "all";
+}
+
 function buildBillingHref(params: {
   workspaceId: string | null;
   checkoutState: string | null;
   checkoutPlan: string | null;
   linkage: BillingInvoiceLinkageFilter;
+  overdue: BillingInvoiceOverdueFilter;
 }) {
   const search = new URLSearchParams();
   if (params.workspaceId) search.set("workspaceId", params.workspaceId);
   if (params.checkoutState) search.set("checkout", params.checkoutState);
   if (params.checkoutPlan) search.set("plan", params.checkoutPlan);
   if (params.linkage !== "all") search.set("linkage", params.linkage);
+  if (params.overdue !== "all") search.set("overdue", params.overdue);
   const query = search.toString();
   return query ? `/billing?${query}` : "/billing";
 }
@@ -168,6 +176,7 @@ export default async function BillingPage({
   const checkoutPlan = typeof resolvedParams.plan === "string" ? resolvedParams.plan : null;
   const requestedWorkspaceId = typeof resolvedParams.workspaceId === "string" ? resolvedParams.workspaceId : null;
   const linkageFilter = normalizeInvoiceLinkageFilter(resolvedParams.linkage);
+  const overdueFilter = normalizeInvoiceOverdueFilter(resolvedParams.overdue);
 
   const supabase = await createClient();
   const {
@@ -317,7 +326,9 @@ export default async function BillingPage({
       }));
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
-  const filteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
+  const linkageFilteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
+  const filteredInvoiceRecords = filterBillingInvoiceRecordsByOverdueStatus(linkageFilteredInvoiceRecords, overdueFilter);
+  const linkageScopedInvoiceSummary = summarizeBillingInvoiceRecords(linkageFilteredInvoiceRecords);
   const linkageFilterOptions = [
     {
       value: "all" as const,
@@ -356,6 +367,26 @@ export default async function BillingPage({
     overdueNetAmount: number;
   }>;
   const activeLinkageFilterOption = linkageFilterOptions.find((option) => option.value === linkageFilter) ?? linkageFilterOptions[0];
+  const overdueFilterOptions = [
+    {
+      value: "all" as const,
+      label: "All due states",
+      count: linkageScopedInvoiceSummary.totalCount,
+      netAmount: linkageScopedInvoiceSummary.totalNetAmount,
+    },
+    {
+      value: "overdue" as const,
+      label: "Overdue only",
+      count: linkageScopedInvoiceSummary.overdueCount,
+      netAmount: linkageScopedInvoiceSummary.overdueNetAmount,
+    },
+  ] satisfies Array<{
+    value: BillingInvoiceOverdueFilter;
+    label: string;
+    count: number;
+    netAmount: number;
+  }>;
+  const activeOverdueFilterOption = overdueFilterOptions.find((option) => option.value === overdueFilter) ?? overdueFilterOptions[0];
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
     name: string;
@@ -622,11 +653,36 @@ export default async function BillingPage({
                       checkoutState,
                       checkoutPlan,
                       linkage: option.value,
+                      overdue: overdueFilter,
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
                     {option.label} · {option.count} · {formatCurrency(option.outstandingNetAmount)} outstanding
                     {option.overdueCount > 0 ? ` · ${option.overdueCount} overdue` : ""}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {!invoiceRegisterPending ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {overdueFilterOptions.map((option) => {
+                const active = overdueFilter === option.value;
+                return (
+                  <Link
+                    key={option.value}
+                    href={buildBillingHref({
+                      workspaceId,
+                      checkoutState,
+                      checkoutPlan,
+                      linkage: linkageFilter,
+                      overdue: option.value,
+                    })}
+                    className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                  >
+                    {option.label} · {option.count}
+                    {option.value === "overdue" ? ` · ${formatCurrency(option.netAmount)} late` : ""}
                   </Link>
                 );
               })}
@@ -643,6 +699,9 @@ export default async function BillingPage({
               {activeLinkageFilterOption.overdueCount > 0
                 ? ` ${activeLinkageFilterOption.overdueCount} overdue record${activeLinkageFilterOption.overdueCount === 1 ? " is" : "s are"} already late, totaling ${formatCurrency(activeLinkageFilterOption.overdueNetAmount)}.`
                 : ""}
+              {overdueFilter === "overdue"
+                ? ` Register view is currently narrowed to overdue invoices only, showing ${activeOverdueFilterOption.count} late record${activeOverdueFilterOption.count === 1 ? "" : "s"} totaling ${formatCurrency(activeOverdueFilterOption.netAmount)}.`
+                : ""}
             </p>
           ) : null}
 
@@ -650,11 +709,17 @@ export default async function BillingPage({
             <p className="mt-4 text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
           ) : filteredInvoiceRecords.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
-              {linkageFilter === "linked"
-                ? "No award-linked invoice records are visible in this workspace yet."
-                : linkageFilter === "unlinked"
-                  ? "No unlinked invoice records are visible in this workspace right now."
-                  : "No invoice records recorded yet for this workspace."}
+              {overdueFilter === "overdue"
+                ? linkageFilter === "linked"
+                  ? "No overdue award-linked invoice records are visible in this workspace right now."
+                  : linkageFilter === "unlinked"
+                    ? "No overdue unlinked invoice records are visible in this workspace right now."
+                    : "No overdue invoice records are visible in this workspace right now."
+                : linkageFilter === "linked"
+                  ? "No award-linked invoice records are visible in this workspace yet."
+                  : linkageFilter === "unlinked"
+                    ? "No unlinked invoice records are visible in this workspace right now."
+                    : "No invoice records recorded yet for this workspace."}
             </p>
           ) : (
             <ul className="mt-4 space-y-3">

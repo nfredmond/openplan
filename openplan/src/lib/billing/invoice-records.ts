@@ -23,6 +23,7 @@ export type BillingInvoiceLinkageRecordLike = BillingInvoiceRecordLike & {
 };
 
 export type BillingInvoiceLinkageFilter = "all" | "linked" | "unlinked";
+export type BillingInvoiceOverdueFilter = "all" | "overdue";
 
 export type BillingInvoiceSummary = {
   totalCount: number;
@@ -197,4 +198,19 @@ export function filterBillingInvoiceRecordsByLinkage<T extends BillingInvoiceLin
   }
 
   return items;
+}
+
+export function filterBillingInvoiceRecordsByOverdueStatus<T extends BillingInvoiceRecordLike>(
+  records: T[] | null | undefined,
+  filter: BillingInvoiceOverdueFilter,
+  nowInput: Date | string = new Date()
+): T[] {
+  const items = records ?? [];
+
+  if (filter !== "overdue") {
+    return items;
+  }
+
+  const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
+  return items.filter((record) => isOverdue(typeof record.status === "string" ? record.status : "draft", record.due_date, now));
 }
