@@ -131,6 +131,7 @@ export type WorkspaceCommandQueueItem = {
   detail: string;
   href: string;
   targetProjectId?: string | null;
+  targetProjectName?: string | null;
   targetOpportunityId?: string | null;
   tone: StatusTone;
   priority: number;
@@ -618,6 +619,7 @@ export function buildWorkspaceOperationsSummary({
         ? `/projects/${firstFundingNeedAnchorProject.project.id}#project-funding-opportunities`
         : "/projects",
       targetProjectId: firstFundingNeedAnchorProject?.project.id ?? null,
+      targetProjectName: firstFundingNeedAnchorProject?.project.name ?? null,
       tone: "warning",
       priority: 3,
       badges: [
@@ -635,6 +637,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${fundingGapProjects.length} project funding stack${fundingGapProjects.length === 1 ? " still shows" : "s still show"} an uncovered gap after current pursued dollars.${firstFundingGapProject ? ` ${firstFundingGapProject.project.name} still carries ${formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount)} uncovered.` : ""}`,
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
       targetProjectId: firstFundingGapProject?.project.id ?? null,
+      targetProjectName: firstFundingGapProject?.project.name ?? null,
       tone: "warning",
       priority: 6,
       badges: [
@@ -654,6 +657,7 @@ export function buildWorkspaceOperationsSummary({
         ? `/projects/${firstFundingSourcingProject.project.id}#project-funding-opportunities`
         : "/projects",
       targetProjectId: firstFundingSourcingProject?.project.id ?? null,
+      targetProjectName: firstFundingSourcingProject?.project.name ?? null,
       tone: "warning",
       priority: 4,
       badges: [
@@ -676,6 +680,7 @@ export function buildWorkspaceOperationsSummary({
         ? `/projects/${firstFundingDecisionProject.project.id}#project-funding-opportunities`
         : "/projects",
       targetProjectId: firstFundingDecisionProject?.project.id ?? null,
+      targetProjectName: firstFundingDecisionProject?.project.name ?? null,
       targetOpportunityId: firstFundingDecisionProject?.leadOpportunity?.id ?? null,
       tone: "warning",
       priority: 5,

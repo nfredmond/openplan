@@ -33,6 +33,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       detail: "Reopen Anchor Project first so the gap can be measured honestly.",
       href: "/projects/project-anchor#project-funding-opportunities",
       targetProjectId: "project-anchor",
+      targetProjectName: "Anchor Project",
       tone: "warning",
       priority: 3,
       badges: [{ label: "Missing anchors", value: 1 }],
@@ -44,6 +45,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
         detail: "Reopen Anchor Project first so the gap can be measured honestly.",
         href: "/projects/project-anchor#project-funding-opportunities",
         targetProjectId: "project-anchor",
+        targetProjectName: "Anchor Project",
         tone: "warning",
         priority: 3,
         badges: [{ label: "Missing anchors", value: 1 }],
@@ -112,6 +114,7 @@ describe("assistant funding operations", () => {
           detail: "Reopen Gap Project first and source candidate programs.",
           href: "/projects/project-gap#project-funding-opportunities",
           targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
           tone: "warning",
           priority: 4,
           badges: [{ label: "Needs sourcing", value: 1 }],
@@ -123,6 +126,7 @@ describe("assistant funding operations", () => {
             detail: "Reopen Gap Project first and source candidate programs.",
             href: "/projects/project-gap#project-funding-opportunities",
             targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
             tone: "warning",
             priority: 4,
             badges: [{ label: "Needs sourcing", value: 1 }],
@@ -134,6 +138,53 @@ describe("assistant funding operations", () => {
 
     expect(action?.label).toBe("Review funding sourcing gaps in panel");
     expect(action?.statusLabel).toBe("1 need sourcing");
+  });
+
+  it("exposes a workspace-level execute action for the lead sourcing project", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Source project funding opportunities",
+        detail: "A project has recorded need but no linked opportunities.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 1,
+          projectFundingDecisionProjects: 0,
+          projectFundingGapProjects: 0,
+        },
+        nextCommand: {
+          key: "source-project-funding-opportunities",
+          title: "Source project funding opportunities",
+          detail: "Reopen Gap Project first and source candidate programs.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 4,
+          badges: [{ label: "Needs sourcing", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "source-project-funding-opportunities",
+            title: "Source project funding opportunities",
+            detail: "Reopen Gap Project first and source candidate programs.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 4,
+            badges: [{ label: "Needs sourcing", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-create-funding-opportunity");
+
+    expect(action).toBeDefined();
+    expect(action?.executeAction?.kind).toBe("create_funding_opportunity");
+    if (action?.executeAction?.kind === "create_funding_opportunity") {
+      expect(action.executeAction.projectId).toBe("project-gap");
+      expect(action.executeAction.title).toBe("Gap Project funding opportunity");
+    }
   });
 
   it("switches the workspace funding agent into decision posture when opportunities exist but nothing is pursue", () => {
@@ -153,6 +204,7 @@ describe("assistant funding operations", () => {
           detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
           href: "/projects/project-gap#project-funding-opportunities",
           targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
           targetOpportunityId: "opp-gap-1",
           tone: "warning",
           priority: 5,
@@ -165,6 +217,7 @@ describe("assistant funding operations", () => {
             detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
             href: "/projects/project-gap#project-funding-opportunities",
             targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
             targetOpportunityId: "opp-gap-1",
             tone: "warning",
             priority: 5,
@@ -196,6 +249,7 @@ describe("assistant funding operations", () => {
           detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
           href: "/projects/project-gap#project-funding-opportunities",
           targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
           targetOpportunityId: "opp-gap-1",
           tone: "warning",
           priority: 5,
@@ -208,6 +262,7 @@ describe("assistant funding operations", () => {
             detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
             href: "/projects/project-gap#project-funding-opportunities",
             targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
             targetOpportunityId: "opp-gap-1",
             tone: "warning",
             priority: 5,

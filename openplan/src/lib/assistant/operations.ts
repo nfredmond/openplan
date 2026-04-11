@@ -153,6 +153,32 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           }
         )
       : null,
+    context.operationsSummary.counts.projectFundingSourcingProjects > 0 && fundingSourcingCommand?.targetProjectId
+      ? quickLink(
+          "workspace-create-funding-opportunity",
+          "Create lead funding opportunity now",
+          fundingSourcingCommand.href,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason: "The workspace queue already knows the lead project that has a grounded need but still no funding opportunity record, so Planner Agent can create that first grant record directly from the sourcing queue.",
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.create_funding_opportunity",
+            auditNote: "Creates the first funding opportunity record for the lead sourcing project through the existing audited route.",
+            executeAction: {
+              kind: "create_funding_opportunity",
+              projectId: fundingSourcingCommand.targetProjectId,
+              title: `${fundingSourcingCommand.targetProjectName ?? "Project"} funding opportunity`,
+              postActionWorkflowId: "workspace-funding",
+              postActionPrompt: "A lead workspace funding opportunity record was created from the sourcing queue. Which grant lane should move next?",
+              postActionPromptLabel: "Review workspace funding posture",
+            },
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingDecisionProjects > 0 && fundingDecisionCommand?.targetOpportunityId
       ? quickLink(
           "workspace-advance-funding-opportunity",
