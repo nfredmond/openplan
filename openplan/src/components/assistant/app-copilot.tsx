@@ -53,6 +53,15 @@ type OperationSnoozeRecord = {
 };
 type OperationPersistentSnoozeState = Record<string, OperationSnoozeRecord>;
 type OperationNotesState = Record<string, string>;
+type LocalConsoleStateSnapshot = {
+  title: string;
+  detail: string;
+  shapedCount: number;
+  snoozedCount: number;
+  returningSoonCount: number;
+  viewMode: OperationViewMode;
+  filter: OperationFilter;
+};
 
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
   act_now: true,
@@ -260,6 +269,48 @@ function buildBoardStateNarrative(args: {
   return {
     title: "The board is running in clean review mode",
     detail: `No local pin or snooze state is active right now, and the console is showing ${filterLabel}.`,
+  };
+}
+
+function buildLocalConsoleStateSnapshot(
+  links: AssistantQuickLink[] | undefined,
+  nowMs = Date.now()
+): LocalConsoleStateSnapshot | null {
+  if (!links?.length || typeof window === "undefined") return null;
+
+  const filterSaved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
+  const filter = isOperationFilter(filterSaved) ? filterSaved : "all";
+  const viewModeSaved = window.localStorage.getItem(OPERATION_VIEW_MODE_STORAGE_KEY);
+  const viewMode = isOperationViewMode(viewModeSaved) ? viewModeSaved : "full";
+  const pinnedState = parseOperationPreferenceState(window.localStorage.getItem(OPERATION_PINNED_STORAGE_KEY));
+  const sessionSnoozeState = parseOperationSessionSnoozeState(window.sessionStorage.getItem(OPERATION_SESSION_SNOOZED_STORAGE_KEY));
+  const persistentSnoozeState = parseOperationPersistentSnoozeState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
+  const showSnoozed = window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true";
+
+  const snoozedCount = links.filter((link) => resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)).length;
+  const returningSoonCount = links.filter((link) => isReturningSoon(getOperationStorageKey(link), persistentSnoozeState, nowMs)).length;
+  const shapedCount = links.filter(
+    (link) => pinnedState[getOperationStorageKey(link)] || resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)
+  ).length;
+  const hiddenSnoozedCount = showSnoozed ? 0 : snoozedCount;
+  const narrative = buildBoardStateNarrative({
+    viewMode,
+    filter,
+    shapedCount,
+    snoozedCount,
+    returningSoonCount,
+    hiddenSnoozedCount,
+    showSnoozed,
+  });
+
+  return {
+    title: narrative.title,
+    detail: narrative.detail,
+    shapedCount,
+    snoozedCount,
+    returningSoonCount,
+    viewMode,
+    filter,
   };
 }
 
@@ -1027,6 +1078,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       return;
     }
 
+    const latestAssistantQuickLinks = [...messages]
+      .reverse()
+      .find((entry): entry is Extract<ConversationEntry, { type: "response" }> => entry.type === "response" && Boolean(entry.response.quickLinks?.length))
+      ?.response.quickLinks;
+    const localConsoleState = buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
+
     const promptLabel = options?.promptLabel ?? question;
     setResponding(true);
     setError(null);
@@ -1052,6 +1109,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           workspaceId: target.workspaceId ?? workspaceId,
           workflowId: options?.workflowId ?? null,
           question: question || null,
+          localConsoleState,
         }),
       });
 

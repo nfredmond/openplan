@@ -14,6 +14,18 @@ const requestSchema = z.object({
   baselineRunId: z.string().uuid().nullable().optional(),
   workflowId: z.string().min(1).max(80).nullable().optional(),
   question: z.string().trim().max(1200).nullable().optional(),
+  localConsoleState: z
+    .object({
+      title: z.string().trim().max(160),
+      detail: z.string().trim().max(600),
+      shapedCount: z.number().int().min(0).max(500),
+      snoozedCount: z.number().int().min(0).max(500),
+      returningSoonCount: z.number().int().min(0).max(500),
+      viewMode: z.enum(["full", "triage"]),
+      filter: z.enum(["all", "act_now", "review_soon", "support_context"]),
+    })
+    .nullable()
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -60,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const workflowId = resolveAssistantWorkflowId(context.kind, parsed.data.workflowId, parsed.data.question);
-    const response = buildAssistantResponse(context, workflowId, parsed.data.question);
+    const response = buildAssistantResponse(context, workflowId, parsed.data.question, parsed.data.localConsoleState ?? null);
 
     audit.info("assistant_response_built", {
       kind: context.kind,
