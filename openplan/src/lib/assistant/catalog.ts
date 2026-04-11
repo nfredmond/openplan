@@ -32,13 +32,22 @@ export type AssistantPreviewStat = {
   value: string;
 };
 
-export type AssistantQuickLinkExecuteAction = {
-  kind: "generate_report_artifact";
-  reportId: string;
-  postActionWorkflowId?: string;
-  postActionPrompt?: string;
-  postActionPromptLabel?: string;
-};
+export type AssistantQuickLinkExecuteAction =
+  | {
+      kind: "generate_report_artifact";
+      reportId: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
+    }
+  | {
+      kind: "create_rtp_packet_record";
+      rtpCycleId: string;
+      generateAfterCreate?: boolean;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
+    };
 
 export type AssistantQuickLink = {
   id: string;

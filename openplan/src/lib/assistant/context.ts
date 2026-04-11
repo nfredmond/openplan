@@ -864,8 +864,8 @@ async function loadRtpRegistryContext(
         packetFreshnessLabel: firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet",
       }))
       .sort((left, right) => {
-        const leftPriority = left.packetFreshnessLabel === "Refresh recommended" ? 0 : left.packetFreshnessLabel === "No packet" ? 1 : 2;
-        const rightPriority = right.packetFreshnessLabel === "Refresh recommended" ? 0 : right.packetFreshnessLabel === "No packet" ? 1 : 2;
+        const leftPriority = left.packetFreshnessLabel === "No packet" ? 0 : left.packetFreshnessLabel === "Refresh recommended" ? 1 : 2;
+        const rightPriority = right.packetFreshnessLabel === "No packet" ? 0 : right.packetFreshnessLabel === "Refresh recommended" ? 1 : 2;
         if (leftPriority !== rightPriority) return leftPriority - rightPriority;
         return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
       })[0] ?? null;

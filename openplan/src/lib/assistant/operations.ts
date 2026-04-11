@@ -60,6 +60,7 @@ function quickLink(
     workflowId: options.workflowId,
     prompt: options.prompt,
     promptLabel: options.promptLabel,
+    executeAction: options.executeAction,
   };
 }
 
@@ -222,6 +223,29 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             promptLabel: "Review board-ready RTP queue in panel",
           };
   return compactQuickLinks([
+    context.recommendedCycle?.packetFreshnessLabel === "No packet"
+      ? quickLink("rtp-registry-create-first-packet", `Create first packet for ${context.recommendedCycle.title}`, `/rtp/${context.recommendedCycle.id}`, {
+          targetKind: "rtp_registry",
+          actionClass: "review_packet",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Create + generate",
+          reason:
+            "The registry's lead cycle is still missing its first RTP packet, so creating the record and generating the first artifact now is the highest-leverage direct action.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp_registry.create_first_packet",
+          auditNote:
+            "This creates one RTP board-packet record for the recommended cycle and immediately generates its first artifact through the existing audited report routes.",
+          executeAction: {
+            kind: "create_rtp_packet_record",
+            rtpCycleId: context.recommendedCycle.id,
+            generateAfterCreate: true,
+            postActionWorkflowId: "rtp-registry-release",
+            postActionPrompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
+            postActionPromptLabel: "Review updated RTP registry",
+          },
+        })
+      : null,
     quickLink("rtp-registry-brief-agent", primaryRegistryWorkflow.label, "/rtp", {
       targetKind: "rtp_registry",
       actionClass: "review_controls",
@@ -275,6 +299,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
 
 function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] {
   const cyclePosture = resolveRtpPacketWorkPostureFromCounts({
+    linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
     refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
   });
@@ -303,6 +328,29 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             promptLabel: "Run RTP release review in panel",
           };
   return compactQuickLinks([
+    cyclePosture === "generate" && context.packetSummary.linkedReportCount === 0
+      ? quickLink("rtp-create-first-packet", "Create first RTP packet now", `/rtp/${context.rtpCycle.id}`, {
+          targetKind: "rtp_cycle",
+          actionClass: "review_packet",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Create + generate",
+          reason:
+            "Creates the first RTP board-packet record through the existing reports.create route, generates its first artifact, and then returns to in-panel review.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp.create_first_packet",
+          auditNote:
+            "This creates one RTP board-packet record for the cycle and immediately runs the existing packet generation route, preserving report auth and artifact provenance.",
+          executeAction: {
+            kind: "create_rtp_packet_record",
+            rtpCycleId: context.rtpCycle.id,
+            generateAfterCreate: true,
+            postActionWorkflowId: "rtp-packet-release",
+            postActionPrompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+            postActionPromptLabel: "Review generated RTP packet",
+          },
+        })
+      : null,
     quickLink("rtp-brief-agent", primaryCycleWorkflow.label, `/rtp/${context.rtpCycle.id}`, {
       targetKind: "rtp_cycle",
       actionClass: "review_controls",

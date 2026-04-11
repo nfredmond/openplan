@@ -206,6 +206,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
+    linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
     refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
   });
@@ -831,6 +832,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
 function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
+    linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
     refreshRecommendedCount: context.packetSummary.refreshRecommendedCount,
   });
@@ -842,10 +844,12 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       title: `First packet plan: ${context.rtpCycle.title}`,
       summary: `${context.rtpCycle.title} still needs a usable current RTP board packet artifact, so first-generation planning is the top cycle-level packet move right now.`,
       findings: [
-        `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.noPacketCount} missing a generated artifact.`,
+        context.packetSummary.linkedReportCount > 0
+          ? `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.noPacketCount} missing a generated artifact.`
+          : "No linked packet record exists yet, so the cycle still needs its first RTP board-packet trail.",
         context.packetSummary.recommendedReport
           ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
-          : "No linked packet record is available yet, so the cycle still needs its first packet trail.",
+          : "Once the first packet record exists, it can be generated and reviewed in the normal RTP packet lane.",
         context.readiness.ready
           ? "Cycle readiness is materially in place for first-packet generation."
           : context.readiness.reason,

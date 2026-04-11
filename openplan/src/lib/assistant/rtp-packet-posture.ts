@@ -11,9 +11,11 @@ export function resolveRtpPacketWorkPostureFromFreshnessLabel(
 }
 
 export function resolveRtpPacketWorkPostureFromCounts(args: {
+  linkedReportCount?: number;
   noPacketCount: number;
   refreshRecommendedCount: number;
 }): RtpPacketWorkPosture {
+  if (args.linkedReportCount === 0) return "generate";
   if (args.noPacketCount > 0) return "generate";
   if (args.refreshRecommendedCount > 0) return "refresh";
   return "release";
