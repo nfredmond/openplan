@@ -8,6 +8,7 @@ import {
   buildPlanReadiness,
   buildPlanWorkflowSummary,
 } from "@/lib/plans/catalog";
+import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -94,6 +95,7 @@ export type ProjectAssistantContext = {
     closingSoonCount: number;
     pursueCount: number;
     fundingNeedAmount: number | null;
+    gapAmount: number | null;
   };
   stageGateSummary: ReturnType<typeof buildProjectStageGateSummary>;
   linkedDatasets: Array<{
@@ -257,6 +259,8 @@ export type ProgramAssistantContext = {
     openCount: number;
     closingSoonCount: number;
     pursueCount: number;
+    fundingNeedAmount: number | null;
+    gapAmount: number | null;
   };
   packetSummary: {
     linkedReportCount: number;
@@ -718,10 +722,14 @@ async function loadProjectContext(
       .select("dataset_id, relationship_type, linked_at")
       .eq("project_id", project.id)
       .order("linked_at", { ascending: false }),
-    supabase.from("project_funding_profiles").select("funding_need_amount").eq("project_id", project.id).maybeSingle(),
+    supabase
+      .from("project_funding_profiles")
+      .select("funding_need_amount, local_match_need_amount")
+      .eq("project_id", project.id)
+      .maybeSingle(),
     supabase
       .from("funding_opportunities")
-      .select("id, opportunity_status, decision_state, closes_at, decision_due_at")
+      .select("id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at")
       .eq("project_id", project.id),
   ]);
 
@@ -734,16 +742,21 @@ async function loadProjectContext(
       }>);
   const projectFundingProfile = looksLikePendingSchema(projectFundingProfileResult.error?.message)
     ? null
-    : ((projectFundingProfileResult.data ?? null) as { funding_need_amount: number | null } | null);
+    : ((projectFundingProfileResult.data ?? null) as {
+        funding_need_amount: number | null;
+        local_match_need_amount?: number | null;
+      } | null);
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as Array<{
         id: string;
         opportunity_status: string | null;
         decision_state: string | null;
+        expected_award_amount?: number | null;
         closes_at: string | null;
         decision_due_at: string | null;
       }>);
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
   const datasetsResult = linkedDatasetIds.length
@@ -833,6 +846,7 @@ async function loadProjectContext(
       }).length,
       pursueCount: fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
+      gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
     },
     stageGateSummary: buildProjectStageGateSummary(
       ((stageGatesResult.data ?? []) as Array<{
@@ -1213,7 +1227,7 @@ async function loadProgramContext(
   }
 
   const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
-  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, operationsSummary] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
     supabase.from("program_links").select("program_id, link_type, linked_id").eq("program_id", program.id),
     program.project_id
       ? supabase.from("plans").select("id").eq("project_id", program.project_id)
@@ -1229,8 +1243,15 @@ async function loadProgramContext(
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("funding_opportunities")
-      .select("id, opportunity_status, decision_state, closes_at, decision_due_at")
+      .select("id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at")
       .eq("program_id", program.id),
+    program.project_id
+      ? supabase
+          .from("project_funding_profiles")
+          .select("project_id, funding_need_amount, local_match_need_amount")
+          .eq("project_id", program.project_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
@@ -1248,9 +1269,16 @@ async function loadProgramContext(
     id: string;
     opportunity_status: string | null;
     decision_state: string | null;
+    expected_award_amount?: number | null;
     closes_at: string | null;
     decision_due_at: string | null;
   }>;
+  const projectFundingProfile = projectFundingProfileResult.data as {
+    project_id: string;
+    funding_need_amount: number | null;
+    local_match_need_amount?: number | null;
+  } | null;
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
   const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
     ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
   ).length;
@@ -1364,6 +1392,8 @@ async function loadProgramContext(
       openCount: fundingOpenCount,
       closingSoonCount: fundingClosingSoonCount,
       pursueCount: fundingPursueCount,
+      fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
+      gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
     },
     packetSummary: {
       linkedReportCount: sortedLinkedReports.length,

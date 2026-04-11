@@ -151,6 +151,12 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "Give me the key workspace brief and the next operator move.",
     },
     {
+      id: "workspace-funding",
+      label: "Funding gap posture",
+      description: "Show which project funding gaps still remain visible across the workspace.",
+      prompt: "Which project funding gaps need attention across this workspace, and where should I start?",
+    },
+    {
       id: "analysis-focus",
       label: "Analysis focus",
       description: "Call out the most decision-useful analysis or run context.",

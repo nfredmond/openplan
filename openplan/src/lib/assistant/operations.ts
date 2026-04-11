@@ -18,6 +18,17 @@ import {
 } from "@/lib/assistant/rtp-packet-posture";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
+function formatCurrency(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "$0";
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 function buildAnalysisHref(runId: string, baselineRunId?: string | null): string {
   const params = new URLSearchParams({ runId });
   if (baselineRunId) params.set("baselineRunId", baselineRunId);
@@ -80,6 +91,8 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 }
 
 function buildWorkspaceOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const fundingGapCommand = context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps");
+
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
       targetKind: "workspace",
@@ -105,6 +118,22 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           approval: "review",
           auditEvent: "assistant.operation.workspace.next_command",
           auditNote: "Review the command-board rationale before changing records or regenerating artifacts.",
+        })
+      : null,
+    context.operationsSummary.counts.projectFundingGapProjects > 0
+      ? quickLink("workspace-funding-agent", "Review funding gaps in panel", fundingGapCommand?.href ?? "/projects", {
+          targetKind: "workspace",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: fundingGapCommand ? "primary" : "secondary",
+          statusLabel: `${context.operationsSummary.counts.projectFundingGapProjects} gap project${context.operationsSummary.counts.projectFundingGapProjects === 1 ? "" : "s"}`,
+          reason: "The workspace now shows real project funding gaps beyond deadline-only grant pressure, so the assistant should help rank which thinly funded project to reopen first.",
+          approval: "safe",
+          auditEvent: "assistant.operation.workspace.funding_agent",
+          auditNote: "This produces a grounded funding-gap brief only, it does not change funding records or project assumptions.",
+          workflowId: "workspace-funding",
+          prompt: "Which project funding gaps need attention across this workspace, and where should I start?",
+          promptLabel: "Review funding gaps in panel",
         })
       : null,
     context.currentRun
@@ -142,6 +171,8 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
 }
 
 function buildProjectOperations(context: ProjectAssistantContext): AssistantQuickLink[] {
+  const projectGapAmount = context.fundingSummary.gapAmount;
+
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
       ? quickLink("project-create-funding-record", "Create first funding opportunity", `/projects/${context.project.id}#project-funding-opportunities`, {
@@ -169,21 +200,25 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           "project-funding-agent",
           context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : "Check funding posture in panel",
           `/projects/${context.project.id}#project-funding-opportunities`,
-          {
-            targetKind: "project",
-            actionClass: "review_controls",
-            executionMode: "future_agent_action",
-            priority: context.fundingSummary.closingSoonCount > 0 ? "primary" : "secondary",
-            statusLabel:
-              context.fundingSummary.closingSoonCount > 0
-                ? `${context.fundingSummary.closingSoonCount} closing soon`
+        {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: context.fundingSummary.closingSoonCount > 0 || (projectGapAmount ?? 0) > 0 ? "primary" : "secondary",
+          statusLabel:
+            context.fundingSummary.closingSoonCount > 0
+              ? `${context.fundingSummary.closingSoonCount} closing soon`
+              : (projectGapAmount ?? 0) > 0
+                ? `Gap ${formatCurrency(projectGapAmount)}`
                 : `${context.fundingSummary.opportunityCount} linked`,
-            reason:
-              context.fundingSummary.closingSoonCount > 0
-                ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
+          reason:
+            context.fundingSummary.closingSoonCount > 0
+              ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
+              : (projectGapAmount ?? 0) > 0
+                ? "This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup."
                 : "Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.",
-            approval: "review",
-            auditEvent: "assistant.operation.project.funding_agent",
+          approval: "review",
+          auditEvent: "assistant.operation.project.funding_agent",
             auditNote: "Use the project funding section to verify pursue, monitor, skip, and funding-gap posture before changing delivery assumptions.",
             workflowId: "project-funding",
             prompt: "What funding opportunities or funding gaps need action on this project right now?",
@@ -234,8 +269,16 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           targetKind: "project",
           actionClass: "review_controls",
           priority: "secondary",
-          statusLabel: context.fundingSummary.pursueCount > 0 ? `${context.fundingSummary.pursueCount} pursue` : "Funding linked",
-          reason: "Use the project funding section as the canonical grant strategy lane for this project.",
+          statusLabel:
+            (projectGapAmount ?? 0) > 0
+              ? `Gap ${formatCurrency(projectGapAmount)}`
+              : context.fundingSummary.pursueCount > 0
+                ? `${context.fundingSummary.pursueCount} pursue`
+                : "Funding linked",
+          reason:
+            (projectGapAmount ?? 0) > 0
+              ? "Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality."
+              : "Use the project funding section as the canonical grant strategy lane for this project.",
           approval: "review",
           auditEvent: "assistant.operation.project.funding_record",
           auditNote: "Confirm funding gap, opportunity posture, and award timing before promising delivery scope.",
@@ -519,6 +562,8 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
 }
 
 function buildProgramOperations(context: ProgramAssistantContext): AssistantQuickLink[] {
+  const programGapAmount = context.fundingSummary.gapAmount;
+
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
       ? quickLink("program-create-funding-record", "Create first funding opportunity", `/programs/${context.program.id}#program-funding-opportunities`, {
@@ -547,21 +592,25 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           "program-funding-agent",
           context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : "Check funding posture in panel",
           `/programs/${context.program.id}#program-funding-opportunities`,
-          {
-            targetKind: "program",
-            actionClass: "review_controls",
-            executionMode: "future_agent_action",
-            priority: context.fundingSummary.closingSoonCount > 0 ? "primary" : "secondary",
-            statusLabel:
-              context.fundingSummary.closingSoonCount > 0
-                ? `${context.fundingSummary.closingSoonCount} closing soon`
+        {
+          targetKind: "program",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: context.fundingSummary.closingSoonCount > 0 || (programGapAmount ?? 0) > 0 ? "primary" : "secondary",
+          statusLabel:
+            context.fundingSummary.closingSoonCount > 0
+              ? `${context.fundingSummary.closingSoonCount} closing soon`
+              : (programGapAmount ?? 0) > 0
+                ? `Gap ${formatCurrency(programGapAmount)}`
                 : `${context.fundingSummary.opportunityCount} linked`,
-            reason:
-              context.fundingSummary.closingSoonCount > 0
-                ? "This package has near-term funding windows, so grant timing and pursue decisions should be checked before less urgent package cleanup."
+          reason:
+            context.fundingSummary.closingSoonCount > 0
+              ? "This package has near-term funding windows, so grant timing and pursue decisions should be checked before less urgent package cleanup."
+              : (programGapAmount ?? 0) > 0
+                ? "The linked project still shows uncovered funding need after current pursued dollars, so package funding posture should stay visible alongside packet work."
                 : "Funding opportunities are already linked to this package, so grant posture should stay visible alongside packet and readiness work.",
-            approval: "review",
-            auditEvent: "assistant.operation.program.funding_agent",
+          approval: "review",
+          auditEvent: "assistant.operation.program.funding_agent",
             auditNote: "Use the program funding section to verify pursue, monitor, or skip posture before changing linked package strategy.",
             workflowId: "program-funding",
             prompt: "Which funding opportunities tied to this package need action next, and why?",
@@ -615,8 +664,16 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           targetKind: "program",
           actionClass: "review_controls",
           priority: "secondary",
-          statusLabel: context.fundingSummary.pursueCount > 0 ? `${context.fundingSummary.pursueCount} pursue` : "Funding linked",
-          reason: "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
+          statusLabel:
+            (programGapAmount ?? 0) > 0
+              ? `Gap ${formatCurrency(programGapAmount)}`
+              : context.fundingSummary.pursueCount > 0
+                ? `${context.fundingSummary.pursueCount} pursue`
+                : "Funding linked",
+          reason:
+            (programGapAmount ?? 0) > 0
+              ? "Use the package funding section to close the linked project funding gap before downstream packet or delivery assumptions harden."
+              : "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_record",
           auditNote: "Funding decisions should stay tied to this package before they ripple into broader project or RTP posture.",
