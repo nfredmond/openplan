@@ -81,8 +81,10 @@ function operationCardClasses(link: AssistantQuickLink) {
 }
 
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
+  const [filter, setFilter] = useState<"all" | "act_now" | "review_soon" | "support_context">("all");
   const groups = groupAssistantOperations(links);
   const summary = summarizeAssistantOperations(links);
+  const visibleGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
 
   return (
     <div className="space-y-4">
@@ -113,8 +115,34 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
           </div>
         </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            { key: "all", label: "All operations", count: summary.total },
+            { key: "act_now", label: "Act now", count: summary.actNow },
+            { key: "review_soon", label: "Review soon", count: summary.reviewSoon },
+            { key: "support_context", label: "Support context", count: summary.supportContext },
+          ].map((option) => {
+            const active = filter === option.key;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setFilter(option.key as "all" | "act_now" | "review_soon" | "support_context")}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+                  active
+                    ? "border-emerald-300/35 bg-emerald-400/14 text-white"
+                    : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-emerald-300/22 hover:bg-emerald-400/10"
+                }`}
+              >
+                {option.label}
+                <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-[0.64rem] text-slate-100">{option.count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {groups.map((group) => (
+      {visibleGroups.map((group) => (
         <section key={group.key} className="space-y-2">
           <div>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{group.label}</p>
