@@ -18,14 +18,15 @@ It is optimized for:
 
 Order of operations:
 
-1. Strengthen the **shared project control room** inside OpenPlan
-2. Formalize the **standards-first scenario and data spine**
-3. Build the **RTP Cycle + portfolio spine**
-4. Continue the first **Transportation Modeling OS** contracts and surfaces
-5. Add the first **Grants OS** objects and workflows
-6. Connect grants to the RTP financial and prioritization logic
-7. Link in **Aerial Operations OS** artifacts and mission records
-8. Expand toward mission planning, land-use/zoning hooks, and deeper automation later
+1. Establish the **AI-enabled operations runtime foundation**
+2. Strengthen the **shared project control room** inside OpenPlan
+3. Formalize the **standards-first scenario and data spine**
+4. Build the **RTP Cycle + portfolio spine**
+5. Continue the first **Transportation Modeling OS** contracts and surfaces
+6. Add the first **Grants OS** objects and workflows
+7. Connect grants to the RTP financial and prioritization logic
+8. Link in **Aerial Operations OS** artifacts and mission records
+9. Expand toward mission planning, land-use/zoning hooks, and deeper automation later
 
 ## Research-driven expansion rule (2026-04-10)
 
@@ -36,6 +37,84 @@ The deep research synthesis expands this plan in five durable ways:
 3. Accessibility, equity, and environmental metrics should become reusable **indicator services**, not appendix-only outputs.
 4. Transportation Modeling OS should remain a distinct build lane with clear contracts back into planning, reports, and project controls.
 5. Land-use allocation, zoning/regulatory simulation, and urban design testing should be planned as explicit later platform capabilities, not forgotten side ideas.
+
+## Workstream O0: AI-enabled operations runtime foundation
+
+Canonical companion spec:
+- `docs/ops/2026-04-11-openplan-ai-enabled-operations-runtime-spec.md`
+
+### Goal
+Turn OpenPlan into an app-wide AI-enabled operations system instead of leaving intelligence trapped in page-local assistant prompts.
+
+### Why first
+The platform direction is now clear: the long-term product is not only a record system plus modules, but an agent-enabled operating environment that can see the whole workspace, gather outside information, recommend next actions, and eventually perform approved work.
+
+The recent packet-command work is a useful early primitive, but it needs to be generalized into app-wide command logic.
+
+### Build slice O0.1
+Define a shared workspace operations summary contract.
+
+#### Scope
+- workspace-level operational brief
+- cross-module counts for packet pressure, controls, deadlines, and drift
+- stable summary object usable by dashboard, copilot, and future action-center surfaces
+
+#### Acceptance criteria
+- one workspace can render a truthful operations brief across projects, programs, reports, and controls
+- the same summary can power both UI surfaces and assistant responses
+
+### Build slice O0.2
+Define a shared command queue contract.
+
+#### Scope
+- normalized queue item shape
+- priority scoring
+- target navigation
+- evidence/reason strings
+- module-agnostic command categories
+
+#### Acceptance criteria
+- packet pressure, stale-state logic, and next-action posture no longer require page-local custom logic
+- projects, programs, reports, and later plans/grants can reuse one command model
+
+### Build slice O0.3
+Expand assistant context from page-target prompts into an operations copilot.
+
+#### Scope
+- workspace operations target kind
+- multi-record context assembly
+- operations brief, blockers brief, and next-action workflows
+- linkage to shared command queue and controls summaries
+
+#### Acceptance criteria
+- the assistant can answer whole-workspace operational questions truthfully
+- the answer is based on shared context assembly, not prompt-only guessing
+
+### Build slice O0.4
+Define internet-connected signal ingestion posture.
+
+#### Scope
+- source objects
+- provenance contract
+- fetch/review status
+- attachment of outside signals to funding, planning, and operational records
+
+#### Acceptance criteria
+- outside data can be gathered and cited inside the app
+- grants/program/project recommendations can reflect current external context
+
+### Build slice O0.5
+Define role-aware agent action runtime.
+
+#### Scope
+- safe action registry
+- approval model
+- audit trail requirements
+- mutation vs recommendation boundaries
+
+#### Acceptance criteria
+- the future agent can do real work in-app under explicit permissions
+- all actions are reviewable and tied to records/artifacts
 
 ## Workstream A0: Standards-first scenario and data spine
 

@@ -8,12 +8,18 @@ Status: Proposed operating architecture
 
 OpenPlan should not evolve into one shapeless municipal super-app.
 
+It should also not stop at being a planning record system with a few assistant prompts.
+
 It should become a **shared planning platform core** with four tightly-linked operating systems:
 
 1. **RTP OS** for digital plan authoring, project portfolio management, public engagement, and adoption support
 2. **Grants OS** for opportunity tracking, application strategy, awards, spending, reimbursement, and compliance
 3. **Aerial Operations OS** for mission planning, imagery ingest, ODM/WebODM processing, measurable deliverables, and project-linked field evidence
 4. **Transportation Modeling OS** for network packages, scenarios, managed runs, accessibility outputs, demand-model artifacts, and evidence-backed analytical comparison
+
+Wrapped around those four systems, OpenPlan should add a fifth cross-cutting layer:
+
+5. **AI-enabled Operations Runtime** for app-wide situational awareness, internet-connected data gathering, conversational operations support, and role-aware agent actions inside the platform
 
 This architecture fits Nathaniel's actual product vision, aligns with California rural RTPA reality, and reuses the strongest existing repo assets instead of starting over.
 
@@ -30,6 +36,10 @@ The real problem is:
 - and grounding project narratives in real, current site evidence.
 
 OpenPlan should therefore act as a **regional planning operating system with shared evidence, funding, and delivery context**.
+
+That operating system should be **AI-enabled at the platform level**, not just decorated with a page-local chatbot.
+
+The user should be able to talk to OpenPlan about the whole state of the firm, not only the current record on screen.
 
 ## Honest current posture
 
@@ -100,6 +110,37 @@ The shared core should live conceptually inside OpenPlan and provide the common 
 - Shared action-center / deadline aggregation
 - shared scenario comparison + impact ledger
 - reusable accessibility / equity / environmental indicator services
+
+## 1A. AI-Enabled Operations Runtime
+
+Canonical companion spec:
+- `docs/ops/2026-04-11-openplan-ai-enabled-operations-runtime-spec.md`
+
+The operating system should include a first-class AI runtime layer that can:
+
+- see app-wide workspace state across projects, RTP cycles, plans, programs, funding, scenarios, models, reports, engagement, and controls
+- gather relevant outside information from the internet and public sources using explicit provenance rules
+- assemble shared operational context instead of relying only on page-local prompt fragments
+- converse with the user about their whole operation
+- perform approved actions in the app with visible audit trails
+
+### Critical design rule
+
+The AI layer should not behave like a generic chatbot bolted onto a dashboard.
+
+It should behave like an **agent-enabled planning operations layer** sitting on top of the shared platform core.
+
+### Runtime sublayers
+
+1. system-of-record layer
+2. internet/data-gathering layer
+3. shared operations-context layer
+4. agent action runtime
+5. conversation and control layer
+
+### Immediate implication for architecture
+
+Packet queues, drift logic, deadline aggregation, and next-action recommendations should converge toward shared app-wide command services, because those are the early building blocks of the future operations runtime.
 
 ## 2. RTP OS
 

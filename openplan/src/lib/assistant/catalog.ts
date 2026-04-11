@@ -2,6 +2,8 @@ export type AssistantTargetKind =
   | "workspace"
   | "analysis_studio"
   | "project"
+  | "plan"
+  | "program"
   | "scenario_set"
   | "model"
   | "report"
@@ -96,6 +98,34 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "How strong is the data and analysis support for this project?",
     },
   ],
+  plan: [
+    {
+      id: "plan-brief",
+      label: "Plan brief",
+      description: "Summarize plan readiness, linked evidence, and the next operator move.",
+      prompt: "Give me the plan brief and the next operator move.",
+    },
+    {
+      id: "plan-gaps",
+      label: "Plan gaps",
+      description: "Surface what this plan is still missing before it is trustworthy for handoff.",
+      prompt: "What is this plan still missing, and what should I fix next?",
+    },
+  ],
+  program: [
+    {
+      id: "program-brief",
+      label: "Program brief",
+      description: "Summarize package readiness, packet posture, and linked funding context.",
+      prompt: "Give me the program brief and the next operator move.",
+    },
+    {
+      id: "program-packet",
+      label: "Packet posture",
+      description: "Explain packet readiness, stale basis, and what should be refreshed or created next.",
+      prompt: "What packet or evidence work does this program need next?",
+    },
+  ],
   scenario_set: [
     {
       id: "scenario-compare",
@@ -172,6 +202,14 @@ export function resolveAssistantTarget(
     return { kind: "project", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
 
+  if (segments[0] === "plans" && secondSegment) {
+    return { kind: "plan", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "programs" && secondSegment) {
+    return { kind: "program", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
+  }
+
   if (segments[0] === "scenarios" && secondSegment) {
     return { kind: "scenario_set", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
@@ -220,6 +258,16 @@ export function resolveAssistantWorkflowId(
     if (includesAny(normalized, ["block", "risk", "issue", "hold", "gate"])) return "project-blockers";
     if (includesAny(normalized, ["data", "dataset", "source", "coverage", "overlay"])) return "project-data";
     return "project-brief";
+  }
+
+  if (kind === "plan") {
+    if (includesAny(normalized, ["gap", "missing", "fix", "trust", "ready"])) return "plan-gaps";
+    return "plan-brief";
+  }
+
+  if (kind === "program") {
+    if (includesAny(normalized, ["packet", "report", "refresh", "evidence", "basis"])) return "program-packet";
+    return "program-brief";
   }
 
   if (kind === "scenario_set") {
