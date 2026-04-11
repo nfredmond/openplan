@@ -1089,7 +1089,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
               <div className="module-metric-card">
                 <p className="module-metric-label">Needs reset</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
@@ -1114,6 +1114,46 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <p className="module-metric-label">Packet current</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.current}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Packet is current with the cycle, whether preset-aligned or intentionally customized.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Trace outpaced</p>
+                <p className="module-metric-value text-sm">{queueTraceStateCounts.outpaced}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Queue evidence exists, but the cycle has changed since it was recorded.</p>
+                {queueTraceStateCounts.outpaced > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: selectedPacketFilter,
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "outpaced",
+                    })}
+                    className="module-inline-action mt-3 w-fit"
+                  >
+                    Focus outpaced
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Trace gaps</p>
+                <p className="module-metric-value text-sm">{queueTraceStateCounts.unrecorded}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Cycles still missing durable queue-action coverage.</p>
+                {queueTraceStateCounts.unrecorded > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: selectedPacketFilter,
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "unrecorded",
+                    })}
+                    className="module-inline-action mt-3 w-fit"
+                  >
+                    Focus trace gaps
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
               </div>
             </div>
 
