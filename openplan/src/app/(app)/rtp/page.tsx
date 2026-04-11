@@ -967,6 +967,15 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     unrecorded: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded").length,
     aligned: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "aligned").length,
   };
+  const totalActionableCurrentViewCount = orderedCurrentViewActions.reduce((sum, action) => sum + action.count, 0);
+  const dominantActionImpactPercent =
+    totalActionableCurrentViewCount > 0
+      ? Math.round((dominantCurrentViewActionSelection.count / totalActionableCurrentViewCount) * 100)
+      : 0;
+  const remainingActionableAfterDominantCount = Math.max(
+    totalActionableCurrentViewCount - dominantCurrentViewActionSelection.count,
+    0
+  );
   const runnerUpActionHref = runnerUpCurrentViewActionSelection
     ? runnerUpCurrentViewActionSelection.key === "createPacket"
       ? buildRtpRegistryHref({
@@ -1610,6 +1619,26 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
                 <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
               </ul>
+
+              {dominantCurrentViewActionSelection.count > 0 ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Actionable now</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{totalActionableCurrentViewCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">All queueable cycles in the current filtered view.</p>
+                  </div>
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Dominant share</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{dominantActionImpactPercent}%</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Queue load removed if this first lane is cleared.</p>
+                  </div>
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Remaining after first pass</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{remainingActionableAfterDominantCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Cycles still needing follow-up after the dominant lane.</p>
+                  </div>
+                </div>
+              ) : null}
 
               {runnerUpCurrentViewActionSelection ? (
                 <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
