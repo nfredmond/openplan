@@ -196,6 +196,28 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
         })
       : null,
     context.fundingSummary.opportunityCount > 0
+      && context.fundingSummary.fundingNeedAmount === null
+      ? quickLink("project-create-funding-profile", "Create funding need anchor", `/projects/${context.project.id}#project-funding-opportunities`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Missing funding need",
+          reason: "This project has funding opportunities but no recorded funding-need anchor yet, so Planner Agent cannot measure the gap honestly until that record exists.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.create_funding_profile",
+          auditNote: "Creates the project funding-profile anchor through the existing audited route without inventing funding numbers.",
+          executeAction: {
+            kind: "create_project_funding_profile",
+            projectId: context.project.id,
+            notes: "Planner Agent created this funding profile anchor. Add funding need and local match next.",
+            postActionWorkflowId: "project-funding",
+            postActionPrompt: "A project funding profile anchor was created. What should be filled in next before this funding gap can be measured honestly?",
+            postActionPromptLabel: "Review project funding posture",
+          },
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0
       ? quickLink(
           "project-funding-agent",
           context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : "Check funding posture in panel",
@@ -584,6 +606,29 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             postActionWorkflowId: "program-funding",
             postActionPrompt: "A funding opportunity record was created. What fields should be filled next before this package is grant-ready?",
             postActionPromptLabel: "Review funding posture",
+          },
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0
+      && context.fundingSummary.fundingNeedAmount === null
+      && context.project
+      ? quickLink("program-create-funding-profile", "Create funding need anchor", `/programs/${context.program.id}#program-funding-opportunities`, {
+          targetKind: "program",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Missing funding need",
+          reason: "This package has funding opportunities but its linked project still lacks a funding-need anchor, so gap posture cannot be measured honestly yet.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.program.create_funding_profile",
+          auditNote: "Creates the linked project funding-profile anchor through the existing audited route without inventing funding numbers.",
+          executeAction: {
+            kind: "create_project_funding_profile",
+            projectId: context.project.id,
+            notes: `Planner Agent created this funding profile anchor from ${context.program.title}. Add funding need and local match next.`,
+            postActionWorkflowId: "program-funding",
+            postActionPrompt: "A project funding profile anchor was created for this package. What should be filled in next before the funding gap can be measured honestly?",
+            postActionPromptLabel: "Review package funding posture",
           },
         })
       : null,

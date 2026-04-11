@@ -1524,6 +1524,46 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         }
         return;
       }
+
+      if (executeAction.kind === "create_project_funding_profile") {
+        const createResponse = await fetch(`/api/projects/${executeAction.projectId}/funding-profile`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            fundingNeedAmount: null,
+            localMatchNeedAmount: null,
+            notes: executeAction.notes ?? "Planner Agent created this funding profile anchor. Add funding need and local match next.",
+          }),
+        });
+
+        if (!createResponse.ok) {
+          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to create project funding profile");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
     } catch (executeError) {
       const failedStatus: OperationInvocationState = {
         linkId: link.id,
