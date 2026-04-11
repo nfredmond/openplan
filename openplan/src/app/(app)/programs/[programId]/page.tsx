@@ -10,6 +10,7 @@ import {
   MessagesSquare,
   ShieldCheck,
 } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
@@ -32,6 +33,7 @@ import {
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
+import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import {
   buildModelWorkspaceSummary,
   formatModelFamilyLabel,
@@ -189,7 +191,11 @@ export default async function ProgramDetailPage({
 
   const [projectsResult, primaryProjectResult, linksResult, projectPlansResult, projectReportsResult, projectCampaignsResult, fundingOpportunitiesResult] =
     await Promise.all([
-      supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
+      supabase
+        .from("projects")
+        .select("id, name, status, delivery_phase, updated_at")
+        .eq("workspace_id", program.workspace_id)
+        .order("updated_at", { ascending: false }),
       program.project_id
         ? supabase
             .from("projects")
@@ -234,10 +240,27 @@ export default async function ProgramDetailPage({
   const campaignLinkIds = links.filter((link) => link.link_type === "engagement_campaign").map((link) => link.linked_id);
   const projectLinkIds = links.filter((link) => link.link_type === "project_record").map((link) => link.linked_id);
 
-  const [allPlansResult, allReportsResult, allCampaignsResult, explicitPlansResult, explicitReportsResult, explicitCampaignsResult, explicitProjectsResult] =
-    await Promise.all([
-      supabase.from("plans").select("id, title").eq("workspace_id", program.workspace_id).order("updated_at", { ascending: false }),
-      supabase.from("reports").select("id, title").eq("workspace_id", program.workspace_id).order("updated_at", { ascending: false }),
+  const [
+    allPlansResult,
+    allReportsResult,
+    allCampaignsResult,
+    explicitPlansResult,
+    explicitReportsResult,
+    explicitCampaignsResult,
+    explicitProjectsResult,
+    workspaceProgramsResult,
+    workspaceFundingOpportunitiesResult,
+  ] = await Promise.all([
+      supabase
+        .from("plans")
+        .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
+        .eq("workspace_id", program.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("reports")
+        .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+        .eq("workspace_id", program.workspace_id)
+        .order("updated_at", { ascending: false }),
       supabase
         .from("engagement_campaigns")
         .select("id, title")
@@ -267,6 +290,16 @@ export default async function ProgramDetailPage({
             .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
             .in("id", projectLinkIds)
         : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("programs")
+        .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
+        .eq("workspace_id", program.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("funding_opportunities")
+        .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+        .eq("workspace_id", program.workspace_id)
+        .order("updated_at", { ascending: false }),
     ]);
 
   const campaignIds = Array.from(
@@ -536,6 +569,88 @@ export default async function ProgramDetailPage({
     adoptionTargetAt: program.adoption_target_at,
   });
 
+  const operationsSummary = buildWorkspaceOperationsSummary({
+    projects: ((projectsResult.data ?? []) as Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      delivery_phase: string | null;
+      updated_at: string | null;
+    }>).map((project) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      deliveryPhase: project.delivery_phase,
+      updatedAt: project.updated_at,
+    })),
+    plans: ((allPlansResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      geography_label: string | null;
+      horizon_year: number | null;
+      project_id: string | null;
+      updated_at: string | null;
+    }>).map((planRow) => ({
+      id: planRow.id,
+      title: planRow.title,
+      status: planRow.status,
+      geographyLabel: planRow.geography_label,
+      horizonYear: planRow.horizon_year,
+      projectId: planRow.project_id,
+      updatedAt: planRow.updated_at,
+    })),
+    programs: ((workspaceProgramsResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      nomination_due_at: string | null;
+      adoption_target_at: string | null;
+      updated_at: string | null;
+    }>).map((programRow) => ({
+      id: programRow.id,
+      title: programRow.title,
+      status: programRow.status,
+      nominationDueAt: programRow.nomination_due_at,
+      adoptionTargetAt: programRow.adoption_target_at,
+      updatedAt: programRow.updated_at,
+    })),
+    reports: ((allReportsResult.data ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      latest_artifact_kind: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>).map((report) => ({
+      id: report.id,
+      title: report.title,
+      status: report.status,
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+      metadataJson: report.metadata_json,
+    })),
+    fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      opportunity_status: string | null;
+      closes_at: string | null;
+      decision_due_at: string | null;
+      program_id: string | null;
+      updated_at: string | null;
+    }>).map((opportunity) => ({
+      id: opportunity.id,
+      title: opportunity.title,
+      opportunityStatus: opportunity.opportunity_status,
+      closesAt: opportunity.closes_at,
+      decisionDueAt: opportunity.decision_due_at,
+      programId: opportunity.program_id,
+      updatedAt: opportunity.updated_at,
+    })),
+  });
+
   const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;
   const projectBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "plan").length;
   const planBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "project").length;
@@ -616,19 +731,27 @@ export default async function ProgramDetailPage({
           </div>
         </article>
 
-        <ProgramDetailControls
-          program={program}
-          projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
-          plans={(allPlansResult.data ?? []) as Array<{ id: string; title: string }>}
-          reports={(allReportsResult.data ?? []) as Array<{ id: string; title: string }>}
-          engagementCampaigns={(allCampaignsResult.data ?? []) as Array<{ id: string; title: string }>}
-          selectedLinks={{
-            plans: planLinkIds,
-            reports: reportLinkIds,
-            engagementCampaigns: campaignLinkIds,
-            relatedProjects: projectLinkIds,
-          }}
-        />
+        <div className="space-y-6">
+          <ProgramDetailControls
+            program={program}
+            projects={(projectsResult.data ?? []) as Array<{ id: string; name: string }>}
+            plans={(allPlansResult.data ?? []) as Array<{ id: string; title: string }>}
+            reports={(allReportsResult.data ?? []) as Array<{ id: string; title: string }>}
+            engagementCampaigns={(allCampaignsResult.data ?? []) as Array<{ id: string; title: string }>}
+            selectedLinks={{
+              plans: planLinkIds,
+              reports: reportLinkIds,
+              engagementCampaigns: campaignLinkIds,
+              relatedProjects: projectLinkIds,
+            }}
+          />
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move around this program"
+            description={`This package now sits inside the same shared workspace command queue as the dashboard, plans, programs, and assistant runtime. Use it to keep ${program.title} aligned with broader packet, funding-window, and setup pressure.`}
+          />
+        </div>
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
