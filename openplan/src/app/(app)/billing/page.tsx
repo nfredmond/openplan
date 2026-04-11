@@ -318,6 +318,35 @@ export default async function BillingPage({
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
   const filteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
+  const linkageFilterOptions = [
+    {
+      value: "all" as const,
+      label: "All records",
+      count: invoiceSummary.totalCount,
+      outstandingNetAmount: invoiceSummary.outstandingNetAmount,
+      totalNetAmount: invoiceSummary.totalNetAmount,
+    },
+    {
+      value: "linked" as const,
+      label: "Award-linked",
+      count: invoiceLinkageSummary.linkedCount,
+      outstandingNetAmount: invoiceLinkageSummary.linkedOutstandingNetAmount,
+      totalNetAmount: invoiceLinkageSummary.linkedNetAmount,
+    },
+    {
+      value: "unlinked" as const,
+      label: "Unlinked",
+      count: invoiceLinkageSummary.unlinkedCount,
+      outstandingNetAmount: invoiceLinkageSummary.unlinkedOutstandingNetAmount,
+      totalNetAmount: invoiceLinkageSummary.unlinkedNetAmount,
+    },
+  ] satisfies Array<{
+    value: BillingInvoiceLinkageFilter;
+    label: string;
+    count: number;
+    outstandingNetAmount: number;
+    totalNetAmount: number;
+  }>;
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
     name: string;
@@ -570,23 +599,7 @@ export default async function BillingPage({
 
           {!invoiceRegisterPending ? (
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              {([
-                {
-                  value: "all" as const,
-                  label: "All records",
-                  count: invoiceSummary.totalCount,
-                },
-                {
-                  value: "linked" as const,
-                  label: "Award-linked",
-                  count: invoiceLinkageSummary.linkedCount,
-                },
-                {
-                  value: "unlinked" as const,
-                  label: "Unlinked",
-                  count: invoiceLinkageSummary.unlinkedCount,
-                },
-              ] satisfies Array<{ value: BillingInvoiceLinkageFilter; label: string; count: number }>).map((option) => {
+              {linkageFilterOptions.map((option) => {
                 const active = linkageFilter === option.value;
                 return (
                   <Link
@@ -599,11 +612,21 @@ export default async function BillingPage({
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
-                    {option.label} · {option.count}
+                    {option.label} · {option.count} · {formatCurrency(option.outstandingNetAmount)} outstanding
                   </Link>
                 );
               })}
             </div>
+          ) : null}
+
+          {!invoiceRegisterPending ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {linkageFilter === "all"
+                ? `Workspace invoice register currently tracks ${formatCurrency(invoiceSummary.totalNetAmount)} net requested, with ${formatCurrency(invoiceSummary.outstandingNetAmount)} still in review or payment flow.`
+                : linkageFilter === "linked"
+                  ? `Award-linked records currently account for ${formatCurrency(invoiceLinkageSummary.linkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
+                  : `Unlinked records currently account for ${formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
+            </p>
           ) : null}
 
           {invoiceRegisterPending ? (
