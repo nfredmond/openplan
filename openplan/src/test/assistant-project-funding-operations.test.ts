@@ -35,9 +35,13 @@ function buildProjectContext(): ProjectAssistantContext {
       openCount: 1,
       closingSoonCount: 0,
       pursueCount: 0,
+      awardCount: 0,
       awardRecordCount: 0,
       fundingNeedAmount: 500000,
       gapAmount: 500000,
+      requestedReimbursementAmount: null,
+      uninvoicedAwardAmount: null,
+      reimbursementStatus: null,
       leadOpportunity: {
         id: "opp-1",
         title: "ATP Cycle 8",
@@ -102,9 +106,13 @@ function buildProgramContext(): ProgramAssistantContext {
       openCount: 1,
       closingSoonCount: 0,
       pursueCount: 0,
+      awardCount: 0,
       awardRecordCount: 0,
       fundingNeedAmount: 500000,
       gapAmount: 500000,
+      requestedReimbursementAmount: null,
+      uninvoicedAwardAmount: null,
+      reimbursementStatus: null,
       leadOpportunity: {
         id: "opp-2",
         title: "RAISE 2026",
@@ -220,5 +228,33 @@ describe("project and program funding operations", () => {
     expect(action).toBeDefined();
     expect(action?.label).toBe("Record awarded funding");
     expect(action?.statusLabel).toBe("Award record needed");
+  });
+
+  it("surfaces a project reimbursement action when awards are recorded but uninvoiced", () => {
+    const context = buildProjectContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 180000;
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "project-reimbursement-lane");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Open reimbursement lane");
+    expect(action?.href).toBe("/projects/project-1#project-invoices");
+  });
+
+  it("surfaces a program reimbursement action when linked-project awards are uninvoiced", () => {
+    const context = buildProgramContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 225000;
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "program-reimbursement-lane");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Open reimbursement lane");
+    expect(action?.href).toBe("/projects/project-1#project-invoices");
   });
 });

@@ -94,9 +94,13 @@ export type ProjectAssistantContext = {
     openCount: number;
     closingSoonCount: number;
     pursueCount: number;
+    awardCount: number;
     awardRecordCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
+    requestedReimbursementAmount: number | null;
+    uninvoicedAwardAmount: number | null;
+    reimbursementStatus: string | null;
     leadOpportunity: {
       id: string;
       title: string;
@@ -276,9 +280,13 @@ export type ProgramAssistantContext = {
     openCount: number;
     closingSoonCount: number;
     pursueCount: number;
+    awardCount: number;
     awardRecordCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
+    requestedReimbursementAmount: number | null;
+    uninvoicedAwardAmount: number | null;
+    reimbursementStatus: string | null;
     leadOpportunity: {
       id: string;
       title: string;
@@ -734,6 +742,7 @@ async function loadProjectContext(
     projectFundingProfileResult,
     fundingOpportunitiesResult,
     fundingAwardsResult,
+    fundingInvoicesResult,
   ] = await Promise.all([
     supabase.from("project_deliverables").select("id").eq("project_id", project.id),
     supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
@@ -766,7 +775,14 @@ async function loadProjectContext(
       .from("funding_opportunities")
       .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("project_id", project.id),
-    supabase.from("funding_awards").select("id, funding_opportunity_id").eq("project_id", project.id),
+    supabase
+      .from("funding_awards")
+      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+      .eq("project_id", project.id),
+    supabase
+      .from("billing_invoice_records")
+      .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+      .eq("project_id", project.id),
   ]);
 
   const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
@@ -799,11 +815,25 @@ async function loadProjectContext(
     : ((fundingAwardsResult.data ?? []) as Array<{
         id: string;
         funding_opportunity_id: string | null;
+        awarded_amount: number | null;
+        match_amount: number | null;
+        risk_flag: string | null;
+        obligation_due_at: string | null;
+      }>);
+  const fundingInvoices = looksLikePendingSchema(fundingInvoicesResult.error?.message)
+    ? []
+    : ((fundingInvoicesResult.data ?? []) as Array<{
+        funding_award_id: string | null;
+        status: string | null;
+        amount: number | null;
+        retention_percent: number | null;
+        retention_amount: number | null;
+        due_date: string | null;
       }>);
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
-  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards, fundingOpportunities, fundingInvoices);
   const actionableFundingOpportunities = fundingOpportunities.filter(
     (opportunity) => !["awarded", "archived"].includes(opportunity.opportunity_status ?? "")
   );
@@ -916,11 +946,15 @@ async function loadProjectContext(
         return days !== null && days <= 14;
       }).length,
       pursueCount: actionableFundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
+      awardCount: fundingAwards.length,
       awardRecordCount: fundingOpportunities.filter(
         (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
       ).length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
+      requestedReimbursementAmount: fundingAwards.length > 0 ? fundingStackSummary.requestedReimbursementAmount : null,
+      uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
+      reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,
@@ -1321,7 +1355,7 @@ async function loadProgramContext(
   }
 
   const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
-  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, fundingAwardsResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, fundingAwardsResult, fundingInvoicesResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
     supabase.from("program_links").select("program_id, link_type, linked_id").eq("program_id", program.id),
     program.project_id
       ? supabase.from("plans").select("id").eq("project_id", program.project_id)
@@ -1339,7 +1373,16 @@ async function loadProgramContext(
       .from("funding_opportunities")
       .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("program_id", program.id),
-    supabase.from("funding_awards").select("id, funding_opportunity_id").eq("program_id", program.id),
+    supabase
+      .from("funding_awards")
+      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+      .eq("program_id", program.id),
+    program.project_id
+      ? supabase
+          .from("billing_invoice_records")
+          .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+          .eq("project_id", program.project_id)
+      : Promise.resolve({ data: [], error: null }),
     program.project_id
       ? supabase
           .from("project_funding_profiles")
@@ -1378,11 +1421,23 @@ async function loadProgramContext(
   const fundingAwards = (fundingAwardsResult.data ?? []) as Array<{
     id: string;
     funding_opportunity_id: string | null;
+    awarded_amount: number | null;
+    match_amount: number | null;
+    risk_flag: string | null;
+    obligation_due_at: string | null;
   }>;
+  const fundingInvoices = ((fundingInvoicesResult.data ?? []) as Array<{
+    funding_award_id: string | null;
+    status: string | null;
+    amount: number | null;
+    retention_percent: number | null;
+    retention_amount: number | null;
+    due_date: string | null;
+  }>).filter((invoice) => fundingAwards.some((award) => award.id === invoice.funding_award_id));
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
-  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
+  const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, fundingAwards, fundingOpportunities, fundingInvoices);
   const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
     ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
   ).length;
@@ -1520,11 +1575,15 @@ async function loadProgramContext(
       openCount: fundingOpenCount,
       closingSoonCount: fundingClosingSoonCount,
       pursueCount: fundingPursueCount,
+      awardCount: fundingAwards.length,
       awardRecordCount: fundingOpportunities.filter(
         (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
       ).length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
+      requestedReimbursementAmount: fundingAwards.length > 0 ? fundingStackSummary.requestedReimbursementAmount : null,
+      uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
+      reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,

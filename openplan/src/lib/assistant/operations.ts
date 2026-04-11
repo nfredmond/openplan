@@ -316,6 +316,8 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
   const leadFundingOpportunity = context.fundingSummary.leadOpportunity;
   const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
   const awardRecordCount = context.fundingSummary.awardRecordCount;
+  const awardCount = context.fundingSummary.awardCount;
+  const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -397,46 +399,76 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditNote: "Use the project funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+      ? quickLink("project-reimbursement-lane", "Open reimbursement lane", `/projects/${context.project.id}#project-invoices`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
+          reason: "Committed award dollars are now logged on the project, but part of that award stack still has no linked invoice request recorded.",
+          approval: "review",
+          auditEvent: "assistant.operation.project.reimbursement_lane",
+          auditNote: "Use the project invoice lane to tie committed awards into reimbursement workflow before closeout posture drifts.",
+        })
+      : null,
     context.fundingSummary.opportunityCount > 0
       ? quickLink(
           "project-funding-agent",
-          context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : awardRecordCount > 0 ? "Check awarded funding record posture in panel" : "Check funding posture in panel",
+          context.fundingSummary.closingSoonCount > 0
+            ? "Check funding deadline posture in panel"
+            : awardRecordCount > 0
+              ? "Check awarded funding record posture in panel"
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? "Check reimbursement posture in panel"
+                : "Check funding posture in panel",
           `/projects/${context.project.id}#project-funding-opportunities`,
         {
           targetKind: "project",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
-          priority: context.fundingSummary.closingSoonCount > 0 || awardRecordCount > 0 || (projectGapAmount ?? 0) > 0 ? "primary" : "secondary",
+          priority:
+            context.fundingSummary.closingSoonCount > 0 ||
+            awardRecordCount > 0 ||
+            (uninvoicedAwardAmount ?? 0) > 0 ||
+            (projectGapAmount ?? 0) > 0
+              ? "primary"
+              : "secondary",
           statusLabel:
             context.fundingSummary.closingSoonCount > 0
               ? `${context.fundingSummary.closingSoonCount} closing soon`
               : awardRecordCount > 0
                 ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
-                : (projectGapAmount ?? 0) > 0
-                  ? `Gap ${formatCurrency(projectGapAmount)}`
-                  : `${context.fundingSummary.opportunityCount} linked`,
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
+                  : (projectGapAmount ?? 0) > 0
+                    ? `Gap ${formatCurrency(projectGapAmount)}`
+                    : `${context.fundingSummary.opportunityCount} linked`,
           reason:
             context.fundingSummary.closingSoonCount > 0
               ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
               : awardRecordCount > 0
                 ? "This project already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden."
-                : (projectGapAmount ?? 0) > 0
-                  ? "This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup."
-                  : "Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.",
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? "Committed awards are recorded, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
+                  : (projectGapAmount ?? 0) > 0
+                    ? "This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup."
+                    : "Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.",
           approval: "review",
           auditEvent: "assistant.operation.project.funding_agent",
-            auditNote: "Use the project funding section to verify pursue, monitor, skip, and funding-gap posture before changing delivery assumptions.",
-            workflowId: "project-funding",
-            prompt: "What funding opportunities or funding gaps need action on this project right now?",
-            promptLabel:
-              context.fundingSummary.closingSoonCount > 0
-                ? "Check funding deadline posture in panel"
-                : awardRecordCount > 0
-                  ? "Check awarded funding record posture in panel"
+          auditNote: "Use the project funding section to verify pursue, monitor, skip, award, reimbursement, and funding-gap posture before changing delivery assumptions.",
+          workflowId: "project-funding",
+          prompt: "What funding opportunities, award records, reimbursements, or funding gaps need action on this project right now?",
+          promptLabel:
+            context.fundingSummary.closingSoonCount > 0
+              ? "Check funding deadline posture in panel"
+              : awardRecordCount > 0
+                ? "Check awarded funding record posture in panel"
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? "Check reimbursement posture in panel"
                   : "Check funding posture in panel",
-          }
-        )
-      : null,
+        }
+      )
+    : null,
     quickLink("project-blockers-agent", "Check blockers in panel", `/projects/${context.project.id}`, {
       targetKind: "project",
       actionClass: "review_controls",
@@ -480,20 +512,24 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           statusLabel:
             awardRecordCount > 0
               ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
-              : (projectGapAmount ?? 0) > 0
-                ? `Gap ${formatCurrency(projectGapAmount)}`
-                : context.fundingSummary.pursueCount > 0
-                  ? `${context.fundingSummary.pursueCount} pursue`
-                  : "Funding linked",
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
+                : (projectGapAmount ?? 0) > 0
+                  ? `Gap ${formatCurrency(projectGapAmount)}`
+                  : context.fundingSummary.pursueCount > 0
+                    ? `${context.fundingSummary.pursueCount} pursue`
+                    : "Funding linked",
           reason:
             awardRecordCount > 0
               ? "Use the project funding section to record awarded dollars before relying on remaining gap math."
-              : (projectGapAmount ?? 0) > 0
-                ? "Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality."
-                : "Use the project funding section as the canonical grant strategy lane for this project.",
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? "Use the project invoice lane to move committed awards into reimbursement workflow before delivery posture drifts."
+                : (projectGapAmount ?? 0) > 0
+                  ? "Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality."
+                  : "Use the project funding section as the canonical grant strategy lane for this project.",
           approval: "review",
           auditEvent: "assistant.operation.project.funding_record",
-          auditNote: "Confirm funding gap, opportunity posture, and award timing before promising delivery scope.",
+          auditNote: "Confirm funding gap, opportunity posture, award timing, and reimbursement posture before promising delivery scope.",
         })
       : null,
     context.counts.overlayReadyDatasets > 0 || context.counts.recentRuns > 0
@@ -778,6 +814,8 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
   const leadFundingOpportunity = context.fundingSummary.leadOpportunity;
   const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
   const awardRecordCount = context.fundingSummary.awardRecordCount;
+  const awardCount = context.fundingSummary.awardCount;
+  const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -861,45 +899,75 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           auditNote: "Use the package funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
+      ? quickLink("program-reimbursement-lane", "Open reimbursement lane", `/projects/${context.project.id}#project-invoices`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
+          reason: "Committed award dollars are now logged for this package's linked project, but part of that award stack still has no linked invoice request recorded.",
+          approval: "review",
+          auditEvent: "assistant.operation.program.reimbursement_lane",
+          auditNote: "Use the linked project invoice lane to move committed package awards into reimbursement workflow before delivery posture drifts.",
+        })
+      : null,
     context.fundingSummary.opportunityCount > 0
       ? quickLink(
           "program-funding-agent",
-          context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : awardRecordCount > 0 ? "Check awarded funding record posture in panel" : "Check funding posture in panel",
+          context.fundingSummary.closingSoonCount > 0
+            ? "Check funding deadline posture in panel"
+            : awardRecordCount > 0
+              ? "Check awarded funding record posture in panel"
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? "Check reimbursement posture in panel"
+                : "Check funding posture in panel",
           `/programs/${context.program.id}#program-funding-opportunities`,
         {
           targetKind: "program",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
-          priority: context.fundingSummary.closingSoonCount > 0 || awardRecordCount > 0 || (programGapAmount ?? 0) > 0 ? "primary" : "secondary",
+          priority:
+            context.fundingSummary.closingSoonCount > 0 ||
+            awardRecordCount > 0 ||
+            (uninvoicedAwardAmount ?? 0) > 0 ||
+            (programGapAmount ?? 0) > 0
+              ? "primary"
+              : "secondary",
           statusLabel:
             context.fundingSummary.closingSoonCount > 0
               ? `${context.fundingSummary.closingSoonCount} closing soon`
               : awardRecordCount > 0
                 ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
-                : (programGapAmount ?? 0) > 0
-                  ? `Gap ${formatCurrency(programGapAmount)}`
-                  : `${context.fundingSummary.opportunityCount} linked`,
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
+                  : (programGapAmount ?? 0) > 0
+                    ? `Gap ${formatCurrency(programGapAmount)}`
+                    : `${context.fundingSummary.opportunityCount} linked`,
           reason:
             context.fundingSummary.closingSoonCount > 0
               ? "This package has near-term funding windows, so grant timing and pursue decisions should be checked before less urgent package cleanup."
               : awardRecordCount > 0
                 ? "This package already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden."
-                : (programGapAmount ?? 0) > 0
-                  ? "The linked project still shows uncovered funding need after current pursued dollars, so package funding posture should stay visible alongside packet work."
-                  : "Funding opportunities are already linked to this package, so grant posture should stay visible alongside packet and readiness work.",
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? "Committed awards are recorded for this package's linked project, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
+                  : (programGapAmount ?? 0) > 0
+                    ? "The linked project still shows uncovered funding need after current pursued dollars, so package funding posture should stay visible alongside packet work."
+                    : "Funding opportunities are already linked to this package, so grant posture should stay visible alongside packet and readiness work.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_agent",
-            auditNote: "Use the program funding section to verify pursue, monitor, or skip posture before changing linked package strategy.",
-            workflowId: "program-funding",
-            prompt: "Which funding opportunities tied to this package need action next, and why?",
-            promptLabel:
-              context.fundingSummary.closingSoonCount > 0
-                ? "Check funding deadline posture in panel"
-                : awardRecordCount > 0
-                  ? "Check awarded funding record posture in panel"
+          auditNote: "Use the program funding section to verify pursue, monitor, skip, award, reimbursement, and gap posture before changing linked package strategy.",
+          workflowId: "program-funding",
+          prompt: "Which funding opportunities, award records, reimbursements, or funding gaps tied to this package need action next, and why?",
+          promptLabel:
+            context.fundingSummary.closingSoonCount > 0
+              ? "Check funding deadline posture in panel"
+              : awardRecordCount > 0
+                ? "Check awarded funding record posture in panel"
+                : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                  ? "Check reimbursement posture in panel"
                   : "Check funding posture in panel",
-          }
-        )
+        }
+      )
       : null,
     quickLink("program-packet-agent", "Check packet posture in panel", `/programs/${context.program.id}`, {
       targetKind: "program",
@@ -947,17 +1015,21 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           statusLabel:
             awardRecordCount > 0
               ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
-              : (programGapAmount ?? 0) > 0
-                ? `Gap ${formatCurrency(programGapAmount)}`
-                : context.fundingSummary.pursueCount > 0
-                  ? `${context.fundingSummary.pursueCount} pursue`
-                  : "Funding linked",
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
+                : (programGapAmount ?? 0) > 0
+                  ? `Gap ${formatCurrency(programGapAmount)}`
+                  : context.fundingSummary.pursueCount > 0
+                    ? `${context.fundingSummary.pursueCount} pursue`
+                    : "Funding linked",
           reason:
             awardRecordCount > 0
               ? "Use the package funding section to record awarded dollars before relying on remaining gap math."
-              : (programGapAmount ?? 0) > 0
-                ? "Use the package funding section to close the linked project funding gap before downstream packet or delivery assumptions harden."
-                : "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
+              : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
+                ? "Use the linked project invoice lane to move committed package awards into reimbursement workflow before downstream delivery posture drifts."
+                : (programGapAmount ?? 0) > 0
+                  ? "Use the package funding section to close the linked project funding gap before downstream packet or delivery assumptions harden."
+                  : "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_record",
           auditNote: "Funding decisions should stay tied to this package before they ripple into broader project or RTP posture.",
