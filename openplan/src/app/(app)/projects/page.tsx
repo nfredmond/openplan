@@ -75,6 +75,75 @@ function fmtDate(value: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
 }
 
+function getProjectPacketCommandPriority(project: {
+  reportSummary: {
+    attentionCount: number;
+    governanceHoldCount: number;
+    comparisonBackedCount: number;
+  };
+}) {
+  if (project.reportSummary.attentionCount > 0) return 0;
+  if (project.reportSummary.governanceHoldCount > 0) return 1;
+  if (project.reportSummary.comparisonBackedCount > 0) return 2;
+  return 3;
+}
+
+function describeProjectPacketCommand(project: {
+  reportSummary: {
+    attentionCount: number;
+    refreshRecommendedCount: number;
+    noPacketCount: number;
+    comparisonBackedCount: number;
+    governanceHoldCount: number;
+    recommendedReport: {
+      title: string;
+      packetFreshness: { label: string; detail: string };
+    } | null;
+  };
+}) {
+  const report = project.reportSummary.recommendedReport;
+
+  if (project.reportSummary.refreshRecommendedCount > 0 && report) {
+    return {
+      label: `First action: refresh ${report.title}`,
+      detail: report.packetFreshness.detail,
+    };
+  }
+
+  if (project.reportSummary.noPacketCount > 0 && report) {
+    return {
+      label: `First action: generate ${report.title}`,
+      detail: report.packetFreshness.detail,
+    };
+  }
+
+  if (project.reportSummary.governanceHoldCount > 0 && report) {
+    return {
+      label: `First action: review governance hold in ${report.title}`,
+      detail: "Evidence-backed packet exists, but at least one report still surfaces a governance blocker.",
+    };
+  }
+
+  if (project.reportSummary.comparisonBackedCount > 0 && report) {
+    return {
+      label: `First action: review comparison-backed packet ${report.title}`,
+      detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context for this project.`,
+    };
+  }
+
+  if (report) {
+    return {
+      label: `First action: review ${report.title}`,
+      detail: report.packetFreshness.detail,
+    };
+  }
+
+  return {
+    label: "First action: create the first report packet",
+    detail: "No report records linked yet. Open the project to start the packet trail.",
+  };
+}
+
 export default async function ProjectsPage() {
   const supabase = await createClient();
   const {
@@ -198,7 +267,7 @@ export default async function ProjectsPage() {
       Boolean(report.comparisonDigest)
     ).length;
 
-    return {
+    const projectRecord = {
       ...project,
       workspace: Array.isArray(project.workspaces)
         ? project.workspaces[0] ?? null
@@ -220,6 +289,18 @@ export default async function ProjectsPage() {
         candidateCount: rtpLinks.filter((link) => link.portfolio_role === "candidate").length,
       },
     };
+
+    return {
+      ...projectRecord,
+      packetCommand: describeProjectPacketCommand(projectRecord),
+    };
+  }).sort((left, right) => {
+    const commandPriority = getProjectPacketCommandPriority(left) - getProjectPacketCommandPriority(right);
+    if (commandPriority !== 0) {
+      return commandPriority;
+    }
+
+    return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
   });
 
   const activeCount = projects.filter((project) => project.status === "active").length;
@@ -396,20 +477,20 @@ export default async function ProjectsPage() {
 
                   <div className="mt-3 border-t border-border/70 pt-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Report packet posture
+                      Portfolio packet command
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {project.packetCommand.label}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {project.packetCommand.detail}
                     </p>
                     {project.reportSummary.recommendedReport ? (
                       <>
-                        <p className="mt-1 text-sm font-semibold text-foreground">
-                          {project.reportSummary.recommendedReport.title}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                           {getReportPacketActionLabel(
                             project.reportSummary.recommendedReport.packetFreshness.label
                           )}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          {project.reportSummary.recommendedReport.packetFreshness.detail}
                         </p>
                         {project.reportSummary.recommendedReport.evidenceChainDigest ? (
                           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
