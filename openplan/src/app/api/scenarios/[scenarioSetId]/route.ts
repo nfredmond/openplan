@@ -10,7 +10,7 @@ import {
   buildScenarioStudioHref,
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
-import { loadScenarioSetAccess } from "@/lib/scenarios/api";
+import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -181,6 +181,44 @@ export async function GET(request: NextRequest, context: RouteContext) {
       baselineEntryId: baselineEntry?.id ?? null,
     });
 
+    const [assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
+      supabase
+        .from("scenario_assumption_sets")
+        .select("id, scenario_entry_id, label, status, updated_at")
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("scenario_data_packages")
+        .select("id, scenario_entry_id, label, package_type, status, updated_at")
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("scenario_indicator_snapshots")
+        .select("id, scenario_entry_id, indicator_key, indicator_label, snapshot_at")
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("snapshot_at", { ascending: false }),
+    ]);
+
+    const pendingScenarioSpineError = [
+      assumptionSetsResult.error,
+      dataPackagesResult.error,
+      indicatorSnapshotsResult.error,
+    ].find((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+    if (
+      !pendingScenarioSpineError &&
+      (assumptionSetsResult.error || dataPackagesResult.error || indicatorSnapshotsResult.error)
+    ) {
+      const scenarioSpineError =
+        assumptionSetsResult.error ?? dataPackagesResult.error ?? indicatorSnapshotsResult.error;
+      audit.error("scenario_spine_lookup_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        message: scenarioSpineError?.message ?? "unknown",
+        code: scenarioSpineError?.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load scenario spine summary" }, { status: 500 });
+    }
+
     return NextResponse.json(
       {
         scenarioSet: access.scenarioSet,
@@ -247,6 +285,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
         }),
         comparisonSummary,
         linkedReports: reportLinkage.linkedReports,
+        sharedSpine: {
+          schemaPending: Boolean(pendingScenarioSpineError),
+          counts: {
+            assumptionSets: pendingScenarioSpineError ? 0 : (assumptionSetsResult.data?.length ?? 0),
+            dataPackages: pendingScenarioSpineError ? 0 : (dataPackagesResult.data?.length ?? 0),
+            indicatorSnapshots: pendingScenarioSpineError ? 0 : (indicatorSnapshotsResult.data?.length ?? 0),
+          },
+          recentAssumptionSets: pendingScenarioSpineError ? [] : (assumptionSetsResult.data ?? []).slice(0, 5),
+          recentDataPackages: pendingScenarioSpineError ? [] : (dataPackagesResult.data ?? []).slice(0, 5),
+          recentIndicatorSnapshots: pendingScenarioSpineError
+            ? []
+            : (indicatorSnapshotsResult.data ?? []).slice(0, 5),
+        },
       },
       { status: 200 }
     );
