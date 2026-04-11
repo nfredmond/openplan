@@ -1076,7 +1076,7 @@ export default async function ProjectDetailPage({
           </div>
         </div>
 
-        <div className="module-summary-grid cols-5 mt-5">
+        <div className="module-summary-grid cols-6 mt-5">
           <div className="module-summary-card">
             <p className="module-summary-label">Report records</p>
             <p className="module-summary-value">{reportRecordCount}</p>
@@ -1772,9 +1772,16 @@ export default async function ProjectDetailPage({
             <p className="module-summary-value text-base leading-tight">{fmtCurrency(invoiceSummary.outstandingNetAmount)}</p>
             <p className="module-summary-detail">{invoiceSummary.submittedCount} invoice record(s) still in review or payment flow.</p>
           </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Control deadlines</p>
+            <p className="module-summary-value">{projectControlsSummary.deadlineSummary.totalCount}</p>
+            <p className="module-summary-detail">
+              {projectControlsSummary.deadlineSummary.overdueCount} overdue · {projectControlsSummary.deadlineSummary.upcomingCount} upcoming.
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4 mt-5">
+        <div className="grid gap-4 md:grid-cols-5 mt-5">
           <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recommended next action</p>
             <div className="mt-2 flex items-center gap-2">
@@ -1816,6 +1823,33 @@ export default async function ProjectDetailPage({
                 ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
                 : "The register is ready for consulting/project-delivery invoices instead of SaaS-only subscription state."}
             </p>
+          </div>
+          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Deadline queue</p>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">
+              {projectControlsSummary.deadlineSummary.nextDeadline?.title ?? "No control deadlines recorded"}
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {projectControlsSummary.deadlineSummary.nextDeadline
+                ? `${projectControlsSummary.deadlineSummary.nextDeadline.label} · ${fmtDateTime(projectControlsSummary.deadlineSummary.nextDeadline.deadlineAt)}`
+                : "Add milestone, submittal, or invoice due dates so the control room can surface real deadline pressure."}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {projectControlsSummary.deadlineSummary.nextDeadline ? (
+                <StatusBadge tone={projectControlsSummary.deadlineSummary.nextDeadline.tone}>
+                  {projectControlsSummary.deadlineSummary.nextDeadline.label}
+                </StatusBadge>
+              ) : null}
+              {projectControlsSummary.deadlineSummary.overdueCount > 0 ? (
+                <StatusBadge tone="danger">{projectControlsSummary.deadlineSummary.overdueCount} overdue</StatusBadge>
+              ) : null}
+            </div>
+            <div className="mt-3">
+              <Link href="#project-billing-register" className="module-inline-action w-fit">
+                Open deadline lane
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
 

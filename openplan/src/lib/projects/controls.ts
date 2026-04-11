@@ -23,6 +23,22 @@ export type ProjectSubmittalRecordLike = {
   agency_label?: string | null;
 };
 
+export type ProjectInvoiceControlRecordLike = BillingInvoiceRecordLike & {
+  invoice_number?: string | null;
+  submitted_to?: string | null;
+};
+
+export type ProjectControlDeadlineItem = {
+  kind: "milestone" | "submittal" | "invoice";
+  title: string;
+  deadlineAt: string;
+  label: string;
+  detail: string;
+  tone: StatusTone;
+  isOverdue: boolean;
+  targetId: string;
+};
+
 export type ProjectControlsSummary = {
   milestoneCount: number;
   completedMilestoneCount: number;
@@ -34,6 +50,13 @@ export type ProjectControlsSummary = {
   nextSubmittal: ProjectSubmittalRecordLike | null;
   invoiceSummary: BillingInvoiceSummary;
   controlHealth: "stable" | "active" | "attention";
+  deadlineSummary: {
+    totalCount: number;
+    overdueCount: number;
+    upcomingCount: number;
+    nextDeadline: ProjectControlDeadlineItem | null;
+    items: ProjectControlDeadlineItem[];
+  };
   recommendedNextAction: {
     label: string;
     detail: string;
@@ -63,18 +86,30 @@ function sortByEarliestDate<T extends { target_date?: string | null; due_date?: 
   });
 }
 
+function sortDeadlineItems(items: ProjectControlDeadlineItem[]): ProjectControlDeadlineItem[] {
+  return [...items].sort((left, right) => {
+    if (left.isOverdue !== right.isOverdue) {
+      return left.isOverdue ? -1 : 1;
+    }
+
+    return new Date(left.deadlineAt).getTime() - new Date(right.deadlineAt).getTime();
+  });
+}
+
 export function buildProjectControlsSummary(
   milestones: ProjectMilestoneRecordLike[] | null | undefined,
   submittals: ProjectSubmittalRecordLike[] | null | undefined,
-  invoices: BillingInvoiceRecordLike[] | null | undefined,
+  invoices: ProjectInvoiceControlRecordLike[] | null | undefined,
   nowInput: Date | string = new Date()
 ): ProjectControlsSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
   const milestoneRows = milestones ?? [];
   const submittalRows = submittals ?? [];
+  const invoiceRows = invoices ?? [];
 
   const openMilestones = milestoneRows.filter((item) => item.status !== "complete");
   const pendingSubmittals = submittalRows.filter((item) => item.status !== "accepted");
+  const activeInvoices = invoiceRows.filter((item) => !["paid", "rejected"].includes(item.status ?? "draft"));
   const overdueMilestoneCount = openMilestones.filter((item) => isPast(item.target_date, now)).length;
   const overdueSubmittalCount = pendingSubmittals.filter((item) => isPast(item.due_date, now)).length;
   const blockedMilestoneCount = milestoneRows.filter((item) => item.status === "blocked").length;
@@ -86,6 +121,51 @@ export function buildProjectControlsSummary(
     pendingSubmittals.filter((item) => Boolean(item.due_date)) as Array<ProjectSubmittalRecordLike & { due_date: string }>
   )[0] ?? null;
   const invoiceSummary = summarizeBillingInvoiceRecords(invoices, now);
+  const deadlineItems = sortDeadlineItems([
+    ...openMilestones
+      .filter((item): item is ProjectMilestoneRecordLike & { target_date: string } => Boolean(item.target_date))
+      .map((item) => ({
+        kind: "milestone" as const,
+        title: item.title,
+        deadlineAt: item.target_date,
+        label: isPast(item.target_date, now) ? "Milestone overdue" : "Milestone due",
+        detail: `${item.phase_code ? `${item.phase_code} phase` : "Project phase"} checkpoint is scheduled for ${item.target_date}.`,
+        tone: isPast(item.target_date, now) ? ("danger" as const) : ("info" as const),
+        isOverdue: isPast(item.target_date, now),
+        targetId: "project-billing-register",
+      })),
+    ...pendingSubmittals
+      .filter((item): item is ProjectSubmittalRecordLike & { due_date: string } => Boolean(item.due_date))
+      .map((item) => ({
+        kind: "submittal" as const,
+        title: item.title,
+        deadlineAt: item.due_date,
+        label: isPast(item.due_date, now) ? "Submittal overdue" : "Submittal due",
+        detail: `${item.submittal_type ? `${item.submittal_type} packet` : "Project packet"} ${item.agency_label ? `for ${item.agency_label}` : ""} is due ${item.due_date}.`.trim(),
+        tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
+        isOverdue: isPast(item.due_date, now),
+        targetId: "project-billing-register",
+      })),
+    ...activeInvoices
+      .filter((item): item is ProjectInvoiceControlRecordLike & { due_date: string } => Boolean(item.due_date))
+      .map((item) => ({
+        kind: "invoice" as const,
+        title: item.invoice_number ? `Invoice ${item.invoice_number}` : "Invoice record",
+        deadlineAt: item.due_date,
+        label: isPast(item.due_date, now) ? "Invoice overdue" : "Invoice due",
+        detail: `${item.submitted_to ? `Submitted to ${item.submitted_to}` : "Invoice review/payment lane"} is tracking a due date of ${item.due_date}.`,
+        tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
+        isOverdue: isPast(item.due_date, now),
+        targetId: "project-billing-register",
+      })),
+  ]);
+  const deadlineSummary = {
+    totalCount: deadlineItems.length,
+    overdueCount: deadlineItems.filter((item) => item.isOverdue).length,
+    upcomingCount: deadlineItems.filter((item) => !item.isOverdue).length,
+    nextDeadline: deadlineItems[0] ?? null,
+    items: deadlineItems.slice(0, 4),
+  };
 
   const controlHealth =
     blockedMilestoneCount > 0 || overdueMilestoneCount > 0 || overdueSubmittalCount > 0 || invoiceSummary.overdueCount > 0
@@ -162,6 +242,7 @@ export function buildProjectControlsSummary(
     nextSubmittal,
     invoiceSummary,
     controlHealth,
+    deadlineSummary,
     recommendedNextAction,
   };
 }
