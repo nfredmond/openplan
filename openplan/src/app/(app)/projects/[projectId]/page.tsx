@@ -1862,6 +1862,15 @@ export default async function ProjectDetailPage({
                 ? `${titleize(projectControlsSummary.nextMilestone.phase_code)} · target ${fmtDateTime(projectControlsSummary.nextMilestone.target_date)}`
                 : "Add the next phase checkpoint or approval target to make schedule pressure visible."}
             </p>
+            <div className="mt-3">
+              <Link
+                href={buildProjectControlHref("project-milestones", projectControlsSummary.nextMilestone?.id ? `project-milestone-${projectControlsSummary.nextMilestone.id}` : undefined)}
+                className="module-inline-action w-fit"
+              >
+                Open milestone
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
           <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next submittal</p>
@@ -1871,6 +1880,15 @@ export default async function ProjectDetailPage({
                 ? `${titleize(projectControlsSummary.nextSubmittal.submittal_type)} · due ${fmtDateTime(projectControlsSummary.nextSubmittal.due_date)}`
                 : "Add the next packet, reimbursement claim, or agency handoff to expose review cadence."}
             </p>
+            <div className="mt-3">
+              <Link
+                href={buildProjectControlHref("project-submittals", projectControlsSummary.nextSubmittal?.id ? `project-submittal-${projectControlsSummary.nextSubmittal.id}` : undefined)}
+                className="module-inline-action w-fit"
+              >
+                Open submittal
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
           <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice posture</p>
@@ -1880,6 +1898,12 @@ export default async function ProjectDetailPage({
                 ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
                 : "The register is ready for consulting/project-delivery invoices instead of SaaS-only subscription state."}
             </p>
+            <div className="mt-3">
+              <Link href="#project-invoices" className="module-inline-action w-fit">
+                Open invoice lane
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
           <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Deadline queue</p>
