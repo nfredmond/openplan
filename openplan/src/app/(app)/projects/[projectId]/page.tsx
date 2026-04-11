@@ -17,6 +17,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
@@ -25,6 +26,7 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectFundingStackSummary,
@@ -485,6 +487,35 @@ export default async function ProjectDetailPage({
     .order("created_at", { ascending: false })
     .limit(5);
 
+  const [workspaceProjectsResult, workspacePlansResult, workspaceProgramsResult, workspaceReportsResult, workspaceFundingOpportunitiesResult] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select("id, name, status, delivery_phase, updated_at")
+        .eq("workspace_id", project.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("plans")
+        .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
+        .eq("workspace_id", project.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("programs")
+        .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
+        .eq("workspace_id", project.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("reports")
+        .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+        .eq("workspace_id", project.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("funding_opportunities")
+        .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+        .eq("workspace_id", project.workspace_id)
+        .order("updated_at", { ascending: false }),
+    ]);
+
   const {
     data: projectReportData,
     count: projectReportCount,
@@ -882,6 +913,88 @@ export default async function ProjectDetailPage({
     },
     now
   );
+
+  const operationsSummary = buildWorkspaceOperationsSummary({
+    projects: ((workspaceProjectsResult.data ?? []) as Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      delivery_phase: string | null;
+      updated_at: string | null;
+    }>).map((workspaceProject) => ({
+      id: workspaceProject.id,
+      name: workspaceProject.name,
+      status: workspaceProject.status,
+      deliveryPhase: workspaceProject.delivery_phase,
+      updatedAt: workspaceProject.updated_at,
+    })),
+    plans: ((workspacePlansResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      geography_label: string | null;
+      horizon_year: number | null;
+      project_id: string | null;
+      updated_at: string | null;
+    }>).map((planRow) => ({
+      id: planRow.id,
+      title: planRow.title,
+      status: planRow.status,
+      geographyLabel: planRow.geography_label,
+      horizonYear: planRow.horizon_year,
+      projectId: planRow.project_id,
+      updatedAt: planRow.updated_at,
+    })),
+    programs: ((workspaceProgramsResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      nomination_due_at: string | null;
+      adoption_target_at: string | null;
+      updated_at: string | null;
+    }>).map((programRow) => ({
+      id: programRow.id,
+      title: programRow.title,
+      status: programRow.status,
+      nominationDueAt: programRow.nomination_due_at,
+      adoptionTargetAt: programRow.adoption_target_at,
+      updatedAt: programRow.updated_at,
+    })),
+    reports: ((workspaceReportsResult.data ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      latest_artifact_kind: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>).map((reportRow) => ({
+      id: reportRow.id,
+      title: reportRow.title,
+      status: reportRow.status,
+      latestArtifactKind: reportRow.latest_artifact_kind,
+      generatedAt: reportRow.generated_at,
+      updatedAt: reportRow.updated_at,
+      metadataJson: reportRow.metadata_json,
+    })),
+    fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      opportunity_status: string | null;
+      closes_at: string | null;
+      decision_due_at: string | null;
+      program_id: string | null;
+      updated_at: string | null;
+    }>).map((opportunity) => ({
+      id: opportunity.id,
+      title: opportunity.title,
+      opportunityStatus: opportunity.opportunity_status,
+      closesAt: opportunity.closes_at,
+      decisionDueAt: opportunity.decision_due_at,
+      programId: opportunity.program_id,
+      updatedAt: opportunity.updated_at,
+    })),
+  });
 
   const timelineItems: TimelineItem[] = [
     ...milestones.map((item) => ({
@@ -1350,7 +1463,15 @@ export default async function ProjectDetailPage({
       </article>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <ProjectRecordComposer projectId={project.id} />
+        <div className="space-y-6">
+          <ProjectRecordComposer projectId={project.id} />
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move around this project"
+            description={`This project now sits inside the same shared workspace command queue as the dashboard, registries, detail pages, and assistant runtime. Use it to keep ${project.name} aligned with broader packet, funding-window, and setup pressure across the workspace.`}
+          />
+        </div>
 
         <article id="project-governance" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
