@@ -31,6 +31,9 @@ function quickLink(
     approval?: AssistantQuickLink["approval"];
     auditEvent?: string;
     auditNote?: string;
+    workflowId?: string;
+    prompt?: string;
+    promptLabel?: string;
   }
 ): AssistantQuickLink {
   return {
@@ -46,6 +49,9 @@ function quickLink(
     approval: options.approval,
     auditEvent: options.auditEvent,
     auditNote: options.auditNote,
+    workflowId: options.workflowId,
+    prompt: options.prompt,
+    promptLabel: options.promptLabel,
   };
 }
 
@@ -66,6 +72,20 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 
 function buildWorkspaceOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
+      targetKind: "workspace",
+      actionClass: "review_controls",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded workspace brief inside Planner Agent without leaving the current surface.",
+      approval: "safe",
+      auditEvent: "assistant.operation.workspace.brief_agent",
+      auditNote: "This runs a grounded assistant brief only, it does not mutate records.",
+      workflowId: "workspace-overview",
+      prompt: "Give me the key workspace brief and the next operator move.",
+      promptLabel: "Generate workspace brief",
+    }),
     context.operationsSummary.nextCommand
       ? quickLink("workspace-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
           targetKind: "workspace",
@@ -114,6 +134,20 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
 
 function buildProjectOperations(context: ProjectAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("project-blockers-agent", "Check blockers in panel", `/projects/${context.project.id}`, {
+      targetKind: "project",
+      actionClass: "review_controls",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded blocker read inside Planner Agent instead of sending you into the project page first.",
+      approval: "safe",
+      auditEvent: "assistant.operation.project.blockers_agent",
+      auditNote: "This produces a grounded assistant read only, it does not change project data.",
+      workflowId: "project-blockers",
+      prompt: "What is blocking this project right now?",
+      promptLabel: "Check blockers in panel",
+    }),
     context.stageGateSummary.blockedGate
       ? quickLink("project-governance", "Open governance controls", `/projects/${context.project.id}#project-governance`, {
           targetKind: "project",
@@ -152,6 +186,20 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
 
 function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("plan-gaps-agent", "Check plan gaps in panel", `/plans/${context.plan.id}`, {
+      targetKind: "plan",
+      actionClass: "inspect_readiness",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded missing-work review inside Planner Agent before you jump into the full plan record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.plan.gaps_agent",
+      auditNote: "This runs a grounded assistant gap review only, it does not modify the plan.",
+      workflowId: "plan-gaps",
+      prompt: "What is this plan still missing, and what should I fix next?",
+      promptLabel: "Check plan gaps in panel",
+    }),
     context.operationsSummary.nextCommand
       ? quickLink("plan-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
           targetKind: "plan",
@@ -191,6 +239,20 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
 
 function buildProgramOperations(context: ProgramAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("program-packet-agent", "Check packet posture in panel", `/programs/${context.program.id}`, {
+      targetKind: "program",
+      actionClass: "review_packet",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded packet-posture check inside Planner Agent before you navigate away.",
+      approval: "safe",
+      auditEvent: "assistant.operation.program.packet_agent",
+      auditNote: "This is a grounded assistant read only, it does not mutate packet records.",
+      workflowId: "program-packet",
+      prompt: "What packet or evidence work does this program need next?",
+      promptLabel: "Check packet posture in panel",
+    }),
     context.packetSummary.recommendedReport
       ? quickLink("program-recommended-packet", "Open recommended packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
           targetKind: "report",
@@ -230,6 +292,20 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
 
 function buildScenarioOperations(context: ScenarioAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("scenario-compare-agent", "Compare scenarios in panel", `/scenarios/${context.scenarioSet.id}`, {
+      targetKind: "scenario_set",
+      actionClass: "review_analysis",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded scenario comparison read inside Planner Agent without leaving the current surface.",
+      approval: "safe",
+      auditEvent: "assistant.operation.scenario.compare_agent",
+      auditNote: "This produces a grounded comparison summary only, it does not alter scenario data.",
+      workflowId: "scenario-compare",
+      prompt: "Compare the ready alternatives against baseline and tell me what moved.",
+      promptLabel: "Compare scenarios in panel",
+    }),
     quickLink("scenario-record", "Open scenario set", `/scenarios/${context.scenarioSet.id}`, {
       targetKind: "scenario_set",
       actionClass: "review_analysis",
@@ -245,6 +321,20 @@ function buildScenarioOperations(context: ScenarioAssistantContext): AssistantQu
 
 function buildModelOperations(context: ModelAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("model-readiness-agent", "Check model readiness in panel", `/models/${context.model.id}`, {
+      targetKind: "model",
+      actionClass: "inspect_readiness",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded readiness read inside Planner Agent before you move into the full model surface.",
+      approval: "safe",
+      auditEvent: "assistant.operation.model.readiness_agent",
+      auditNote: "This runs a grounded readiness brief only, it does not launch or modify the model.",
+      workflowId: "model-readiness",
+      prompt: "Is this model ready for serious use, and what still needs work?",
+      promptLabel: "Check model readiness in panel",
+    }),
     quickLink("model-record", "Open model record", `/models/${context.model.id}`, {
       targetKind: "model",
       actionClass: "inspect_readiness",
@@ -260,6 +350,20 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
 
 function buildReportOperations(context: ReportAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink("report-release-agent", "Run release check in panel", `/reports/${context.report.id}`, {
+      targetKind: "report",
+      actionClass: "review_packet",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
+      approval: "safe",
+      auditEvent: "assistant.operation.report.release_agent",
+      auditNote: "This is a grounded packet review only, it does not publish or mutate the report.",
+      workflowId: "report-release",
+      prompt: "Is this report ready to share, and what still needs verification?",
+      promptLabel: "Run release check in panel",
+    }),
     quickLink("report-detail", "Open report detail", `/reports/${context.report.id}`, {
       targetKind: "report",
       actionClass: "review_packet",
@@ -287,6 +391,29 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
 
 function buildRunOperations(context: RunAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    quickLink(
+      "run-brief-agent",
+      context.baselineRun ? "Compare run in panel" : "Generate run brief",
+      buildAnalysisHref(context.run.id, context.baselineRun?.id ?? null),
+      {
+        targetKind: "run",
+        actionClass: "review_analysis",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason: context.baselineRun
+          ? "Runs the grounded comparison read inside Planner Agent before you move into full Analysis Studio."
+          : "Runs the grounded run brief inside Planner Agent without leaving the current screen.",
+        approval: "safe",
+        auditEvent: "assistant.operation.run.brief_agent",
+        auditNote: "This produces a grounded run summary only, it does not alter analysis state.",
+        workflowId: context.baselineRun ? "run-compare" : "run-brief",
+        prompt: context.baselineRun
+          ? "Compare this run to baseline and tell me what changed."
+          : "Give me a concise operator brief for this run.",
+        promptLabel: context.baselineRun ? "Compare run in panel" : "Generate run brief",
+      }
+    ),
     quickLink(
       "run-analysis",
       context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio",

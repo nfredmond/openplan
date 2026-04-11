@@ -401,9 +401,11 @@ function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
 function QuickLinkGrid({
   links,
   onConsoleStateChange,
+  onRunOperation,
 }: {
   links: AssistantQuickLink[];
   onConsoleStateChange?: (state: AssistantLocalConsoleState | null) => void;
+  onRunOperation?: (link: AssistantQuickLink) => void;
 }) {
   const [filter, setFilter] = useState<OperationFilter>(() => {
     if (typeof window === "undefined") return "all";
@@ -1085,10 +1087,22 @@ function QuickLinkGrid({
                         </div>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
-                        <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                          {link.executionMode === "future_agent_action" ? "Tracked action" : "Open surface"} · {link.id}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {link.executionMode === "future_agent_action" && link.workflowId ? (
+                            <button
+                              type="button"
+                              onClick={() => onRunOperation?.(link)}
+                              className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/12 px-2.5 py-1 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-400/16 hover:text-white"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Run in panel · {link.id}
+                            </button>
+                          ) : null}
+                          <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                            Open surface · {link.id}
+                          </Link>
+                        </div>
                         {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>
                     </div>
@@ -1239,6 +1253,15 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     } finally {
       setResponding(false);
     }
+  }
+
+  function runOperation(link: AssistantQuickLink) {
+    if (link.executionMode !== "future_agent_action" || !link.workflowId) return;
+    void submitPrompt({
+      workflowId: link.workflowId,
+      question: link.prompt,
+      promptLabel: link.promptLabel ?? link.label,
+    });
   }
 
   const summaryLabel = preview?.title ?? workspaceName;
@@ -1392,7 +1415,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {introPreview.quickLinks?.length ? (
                             <div className="mt-4">
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Action surfaces</p>
-                              <QuickLinkGrid links={introPreview.quickLinks} onConsoleStateChange={setLiveConsoleState} />
+                              <QuickLinkGrid links={introPreview.quickLinks} onConsoleStateChange={setLiveConsoleState} onRunOperation={runOperation} />
                             </div>
                           ) : null}
                         </div>
@@ -1447,7 +1470,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {message.response.quickLinks?.length ? (
                             <section>
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Take action</p>
-                              <QuickLinkGrid links={message.response.quickLinks} />
+                              <QuickLinkGrid links={message.response.quickLinks} onRunOperation={runOperation} />
                             </section>
                           ) : null}
 

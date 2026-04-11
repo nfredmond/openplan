@@ -42,6 +42,9 @@ export type AssistantQuickLink = {
   approval?: "safe" | "review" | "approval_required";
   auditEvent?: string;
   auditNote?: string;
+  workflowId?: string;
+  prompt?: string;
+  promptLabel?: string;
 };
 
 export type AssistantOperationUrgency = "high" | "medium" | "low";
