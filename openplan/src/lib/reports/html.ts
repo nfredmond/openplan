@@ -410,6 +410,9 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
             link.sharedSpine?.latestIndicatorSnapshotAt
               ? `Indicators updated ${formatDateTime(link.sharedSpine.latestIndicatorSnapshotAt)}`
               : null,
+            link.sharedSpine?.latestComparisonSnapshotUpdatedAt
+              ? `Comparisons updated ${formatDateTime(link.sharedSpine.latestComparisonSnapshotUpdatedAt)}`
+              : null,
           ]
             .filter(Boolean)
             .join(" • ");
@@ -417,8 +420,23 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
           const sharedSpineMeta = link.sharedSpine
             ? link.sharedSpine.schemaPending
               ? "Shared scenario spine schema pending at generation"
-              : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} • ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} • ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"}`
+              : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} • ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} • ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"} • ${link.sharedSpine.comparisonSnapshotCount} comparison snapshot${link.sharedSpine.comparisonSnapshotCount === 1 ? "" : "s"}`
             : null;
+
+          const comparisonSnapshotsMarkup = (link.comparisonSnapshots ?? []).length > 0
+            ? `<ul class="record-list" style="margin-top: 12px;">
+                ${(link.comparisonSnapshots ?? [])
+                  .slice(0, 3)
+                  .map(
+                    (snapshot) => `<li>
+                      <strong>${esc(snapshot.label)}</strong>
+                      <p>${esc(titleize(snapshot.status))} • ${snapshot.candidateEntryLabel ? `${esc(snapshot.candidateEntryLabel)} vs ${esc(link.baselineLabel ?? "Baseline")}` : "Saved comparison"}</p>
+                      <span class="meta">${snapshot.indicatorDeltaCount} indicator delta${snapshot.indicatorDeltaCount === 1 ? "" : "s"}${snapshot.updatedAt ? ` • Updated ${esc(formatDateTime(snapshot.updatedAt))}` : ""}</span>
+                    </li>`
+                  )
+                  .join("")}
+              </ul>`
+            : "";
 
           return `<article class="metric-card">
             <h3>${esc(link.scenarioSetTitle)}</h3>
@@ -428,6 +446,7 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
             }</p>
             ${snapshotMeta ? `<p class="meta">${esc(snapshotMeta)}</p>` : ""}
             ${sharedSpineMeta ? `<p class="meta">${esc(sharedSpineMeta)}</p>` : ""}
+            ${comparisonSnapshotsMarkup}
             <p><a href="/scenarios/${esc(link.scenarioSetId)}">Open scenario set</a></p>
             <ul class="record-list" style="margin-top: 12px;">${matchedEntries}</ul>
           </article>`;

@@ -1818,7 +1818,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         <p className="mt-2 text-xs text-muted-foreground">
                           {link.sharedSpine.schemaPending
                             ? "Shared scenario spine schema was still pending when this artifact was generated."
-                            : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} · ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} · ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"}`}
+                            : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} · ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} · ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"} · ${link.sharedSpine.comparisonSnapshotCount} comparison snapshot${link.sharedSpine.comparisonSnapshotCount === 1 ? "" : "s"}`}
                         </p>
                       ) : null}
                       {(link.scenarioSetUpdatedAt || link.latestMatchedEntryUpdatedAt) ? (
@@ -1832,7 +1832,51 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                           {link.sharedSpine?.latestIndicatorSnapshotAt
                             ? ` · Indicators updated ${formatDateTime(link.sharedSpine.latestIndicatorSnapshotAt)}`
                             : ""}
+                          {link.sharedSpine?.latestComparisonSnapshotUpdatedAt
+                            ? ` · Comparisons updated ${formatDateTime(link.sharedSpine.latestComparisonSnapshotUpdatedAt)}`
+                            : ""}
                         </p>
+                      ) : null}
+                      {link.comparisonSnapshots && link.comparisonSnapshots.length > 0 ? (
+                        <div className="mt-3 grid gap-2">
+                          {link.comparisonSnapshots.slice(0, 3).map((snapshot) => (
+                            <div
+                              key={snapshot.comparisonSnapshotId}
+                              className="rounded-xl border border-border/70 bg-card px-3 py-2"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-sm font-medium text-foreground">
+                                  {snapshot.label}
+                                </p>
+                                <StatusBadge
+                                  tone={
+                                    snapshot.status === "ready"
+                                      ? "success"
+                                      : snapshot.status === "archived"
+                                        ? "warning"
+                                        : "neutral"
+                                  }
+                                >
+                                  {titleize(snapshot.status)}
+                                </StatusBadge>
+                              </div>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {snapshot.candidateEntryLabel
+                                  ? `${snapshot.candidateEntryLabel} vs ${link.baselineLabel ?? "Baseline"}`
+                                  : "Saved comparison snapshot"}
+                                {snapshot.updatedAt
+                                  ? ` · Updated ${formatDateTime(snapshot.updatedAt)}`
+                                  : ""}
+                                {` · ${snapshot.indicatorDeltaCount} indicator delta${snapshot.indicatorDeltaCount === 1 ? "" : "s"}`}
+                              </p>
+                              {snapshot.summary ? (
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {snapshot.summary}
+                                </p>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
                       ) : null}
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Link

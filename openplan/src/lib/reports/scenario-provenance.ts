@@ -54,6 +54,21 @@ type ScenarioSpineRow = {
   snapshot_at?: string | null;
 };
 
+type ScenarioComparisonSnapshotRow = {
+  id: string;
+  scenario_set_id: string;
+  baseline_entry_id: string;
+  candidate_entry_id: string;
+  label: string;
+  summary: string | null;
+  status: string;
+  updated_at: string | null;
+};
+
+type ScenarioComparisonIndicatorDeltaRow = {
+  comparison_snapshot_id: string;
+};
+
 export type ReportScenarioMatchedEntry = {
   entryId: string;
   entryType: string;
@@ -72,9 +87,22 @@ export type ReportScenarioSharedSpineSummary = {
   assumptionSetCount: number;
   dataPackageCount: number;
   indicatorSnapshotCount: number;
+  comparisonSnapshotCount: number;
   latestAssumptionSetUpdatedAt: string | null;
   latestDataPackageUpdatedAt: string | null;
   latestIndicatorSnapshotAt: string | null;
+  latestComparisonSnapshotUpdatedAt: string | null;
+};
+
+export type ReportScenarioComparisonSnapshot = {
+  comparisonSnapshotId: string;
+  label: string;
+  summary: string | null;
+  status: string;
+  candidateEntryId: string;
+  candidateEntryLabel: string | null;
+  indicatorDeltaCount: number;
+  updatedAt: string | null;
 };
 
 export type ReportScenarioSetLink = {
@@ -99,6 +127,7 @@ export type ReportScenarioSetLink = {
   latestMatchedEntryUpdatedAt: string | null;
   latestMatchedRunCreatedAt: string | null;
   sharedSpine?: ReportScenarioSharedSpineSummary;
+  comparisonSnapshots?: ReportScenarioComparisonSnapshot[];
 };
 
 function unique<T>(values: T[]): T[] {
@@ -194,7 +223,7 @@ export async function loadReportScenarioSetLinks({
 
   const scenarioSetIds = unique(matchedEntries.map((entry) => entry.scenario_set_id));
 
-  const [scenarioSetsResult, allEntriesResult, assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
+  const [scenarioSetsResult, allEntriesResult, assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult, comparisonSnapshotsResult] = await Promise.all([
     supabase
       .from("scenario_sets")
       .select("id, title, baseline_entry_id, updated_at")
@@ -217,6 +246,12 @@ export async function loadReportScenarioSetLinks({
       .from("scenario_indicator_snapshots")
       .select("scenario_set_id, snapshot_at")
       .in("scenario_set_id", scenarioSetIds),
+    supabase
+      .from("scenario_comparison_snapshots")
+      .select(
+        "id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at"
+      )
+      .in("scenario_set_id", scenarioSetIds),
   ]);
 
   if (scenarioSetsResult.error) {
@@ -231,11 +266,17 @@ export async function loadReportScenarioSetLinks({
     assumptionSetsResult.error,
     dataPackagesResult.error,
     indicatorSnapshotsResult.error,
+    comparisonSnapshotsResult.error,
   ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
 
   if (
     !scenarioSpinePending &&
-    (assumptionSetsResult.error || dataPackagesResult.error || indicatorSnapshotsResult.error)
+    (
+      assumptionSetsResult.error ||
+      dataPackagesResult.error ||
+      indicatorSnapshotsResult.error ||
+      comparisonSnapshotsResult.error
+    )
   ) {
     return {
       data: [],
@@ -243,6 +284,7 @@ export async function loadReportScenarioSetLinks({
         assumptionSetsResult.error ??
         dataPackagesResult.error ??
         indicatorSnapshotsResult.error ??
+        comparisonSnapshotsResult.error ??
         null,
     };
   }
@@ -258,6 +300,38 @@ export async function loadReportScenarioSetLinks({
   const indicatorSnapshots = scenarioSpinePending
     ? []
     : ((indicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
+  const comparisonSnapshots = scenarioSpinePending
+    ? []
+    : ((comparisonSnapshotsResult.data ?? []) as ScenarioComparisonSnapshotRow[]);
+
+  const comparisonSnapshotIds = comparisonSnapshots.map((item) => item.id);
+  const comparisonIndicatorDeltasResult = comparisonSnapshotIds.length
+    ? await supabase
+        .from("scenario_comparison_indicator_deltas")
+        .select("comparison_snapshot_id")
+        .in("comparison_snapshot_id", comparisonSnapshotIds)
+    : { data: [], error: null };
+
+  if (
+    !scenarioSpinePending &&
+    comparisonIndicatorDeltasResult.error &&
+    !looksLikePendingScenarioSpineSchema(comparisonIndicatorDeltasResult.error.message)
+  ) {
+    return { data: [], error: comparisonIndicatorDeltasResult.error };
+  }
+
+  const comparisonIndicatorDeltas =
+    scenarioSpinePending || looksLikePendingScenarioSpineSchema(comparisonIndicatorDeltasResult.error?.message)
+      ? []
+      : ((comparisonIndicatorDeltasResult.data ?? []) as ScenarioComparisonIndicatorDeltaRow[]);
+
+  const comparisonIndicatorDeltaCountBySnapshotId = new Map<string, number>();
+  for (const delta of comparisonIndicatorDeltas) {
+    comparisonIndicatorDeltaCountBySnapshotId.set(
+      delta.comparison_snapshot_id,
+      (comparisonIndicatorDeltaCountBySnapshotId.get(delta.comparison_snapshot_id) ?? 0) + 1
+    );
+  }
 
   const scenarioRunIds = unique(
     allEntries
@@ -370,6 +444,21 @@ export async function loadReportScenarioSetLinks({
         const indicatorRowsForSet = indicatorSnapshots.filter(
           (item) => item.scenario_set_id === scenarioSetId
         );
+        const comparisonRowsForSet = comparisonSnapshots.filter(
+          (item) => item.scenario_set_id === scenarioSetId
+        );
+        const comparisonSnapshotsForSet = comparisonRowsForSet.map((item) => ({
+          comparisonSnapshotId: item.id,
+          label: item.label,
+          summary: item.summary,
+          status: item.status,
+          candidateEntryId: item.candidate_entry_id,
+          candidateEntryLabel:
+            setEntries.find((entry) => entry.id === item.candidate_entry_id)?.label ?? null,
+          indicatorDeltaCount:
+            comparisonIndicatorDeltaCountBySnapshotId.get(item.id) ?? 0,
+          updatedAt: item.updated_at,
+        }));
 
         return {
           scenarioSetId,
@@ -401,6 +490,7 @@ export async function loadReportScenarioSetLinks({
             assumptionSetCount: assumptionRowsForSet.length,
             dataPackageCount: dataPackageRowsForSet.length,
             indicatorSnapshotCount: indicatorRowsForSet.length,
+            comparisonSnapshotCount: comparisonRowsForSet.length,
             latestAssumptionSetUpdatedAt: latestTimestamp(
               assumptionRowsForSet.map((item) => item.updated_at)
             ),
@@ -410,7 +500,11 @@ export async function loadReportScenarioSetLinks({
             latestIndicatorSnapshotAt: latestTimestamp(
               indicatorRowsForSet.map((item) => item.snapshot_at)
             ),
+            latestComparisonSnapshotUpdatedAt: latestTimestamp(
+              comparisonRowsForSet.map((item) => item.updated_at)
+            ),
           },
+          comparisonSnapshots: comparisonSnapshotsForSet,
         } satisfies ReportScenarioSetLink;
       });
 
