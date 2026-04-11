@@ -1535,6 +1535,10 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                                       ? "Artifact is behind current cycle state."
                                       : "Queue trace needs follow-up against current state."}
                             </p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <StatusBadge tone={cycle.packetFreshness.tone}>{cycle.packetFreshness.label}</StatusBadge>
+                              <StatusBadge tone={cycle.packetQueueTraceState.tone}>{cycle.packetQueueTraceState.label}</StatusBadge>
+                            </div>
                           </div>
                           <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
                         </div>
