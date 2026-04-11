@@ -58,11 +58,24 @@ function quickLinkActionClassLabel(link: AssistantQuickLink) {
   }
 }
 
+function quickLinkPriorityBadge(link: AssistantQuickLink) {
+  switch (link.priority) {
+    case "primary":
+      return { label: "Primary", className: "border-fuchsia-300/22 bg-fuchsia-400/12 text-fuchsia-100" };
+    case "secondary":
+      return { label: "Secondary", className: "border-violet-300/22 bg-violet-400/12 text-violet-100" };
+    case "supporting":
+    default:
+      return { label: "Supporting", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+  }
+}
+
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {links.map((link) => {
         const badge = quickLinkBadge(link);
+        const priorityBadge = quickLinkPriorityBadge(link);
         return (
           <Link
             key={`${link.label}-${link.href}`}
@@ -75,8 +88,23 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                 <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
                   {quickLinkActionClassLabel(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"}
                 </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${priorityBadge.className}`}
+                  >
+                    {priorityBadge.label}
+                  </span>
+                  {link.statusLabel ? (
+                    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
+                      {link.statusLabel}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-slate-200/88">
+                  {link.reason ?? "Open this surface to continue the grounded operator workflow."}
+                </p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
-                  {link.auditNote ?? "Open this surface to continue the grounded operator workflow."}
+                  {link.auditNote ?? "Operator review is still expected in the destination surface."}
                 </p>
               </div>
               <span
@@ -85,9 +113,12 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                 {badge.label}
               </span>
             </div>
-            <div className="mt-3 flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
-              <ArrowUpRight className="h-3.5 w-3.5" />
-              {link.id}
+            <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
+              <div className="flex items-center gap-1">
+                <ArrowUpRight className="h-3.5 w-3.5" />
+                {link.id}
+              </div>
+              {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
             </div>
           </Link>
         );

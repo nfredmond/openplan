@@ -36,7 +36,11 @@ export type AssistantQuickLink = {
   targetKind: AssistantTargetKind;
   actionClass: "open_surface" | "review_controls" | "review_analysis" | "review_packet" | "inspect_readiness";
   executionMode: "navigate" | "future_agent_action";
+  priority?: "primary" | "secondary" | "supporting";
+  statusLabel?: string;
+  reason?: string;
   approval?: "safe" | "review" | "approval_required";
+  auditEvent?: string;
   auditNote?: string;
 };
 
