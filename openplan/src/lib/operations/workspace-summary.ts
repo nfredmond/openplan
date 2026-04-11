@@ -55,6 +55,7 @@ export type WorkspaceOperationsFundingOpportunityRow = {
   closesAt: string | null;
   decisionDueAt: string | null;
   programId: string | null;
+  projectId: string | null;
   updatedAt: string | null;
 };
 
@@ -102,6 +103,7 @@ export type WorkspaceOperationsFundingOpportunitySourceRow = {
   closes_at: string | null;
   decision_due_at: string | null;
   program_id: string | null;
+  project_id: string | null;
   updated_at: string | null;
 };
 
@@ -218,6 +220,7 @@ function mapWorkspaceOperationsFundingOpportunityRows(
     closesAt: opportunity.closes_at,
     decisionDueAt: opportunity.decision_due_at,
     programId: opportunity.program_id,
+    projectId: opportunity.project_id,
     updatedAt: opportunity.updated_at,
   }));
 }
@@ -278,7 +281,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, project_id, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
@@ -364,6 +367,9 @@ export function buildWorkspaceOperationsSummary({
   const firstClosingProgram = firstClosingOpportunity?.programId
     ? programs.find((program) => program.id === firstClosingOpportunity.programId) ?? null
     : null;
+  const firstClosingProject = firstClosingOpportunity?.projectId
+    ? projects.find((project) => project.id === firstClosingOpportunity.projectId) ?? null
+    : null;
   const firstPlanNeedingSetup = plans.find((plan) => {
     const readiness = buildPlanReadiness({
       hasProject: Boolean(plan.projectId),
@@ -418,10 +424,12 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "funding-windows-closing",
       title: "Advance near-term funding windows",
-      detail: `${closingSoonFundingOpportunities} open funding opportunit${closingSoonFundingOpportunities === 1 ? "y closes" : "ies close"} within 14 days.${firstClosingOpportunity?.title ? ` ${firstClosingOpportunity.title} is the first deadline to reopen.` : ""}${firstClosingProgram?.title ? ` Reopen ${firstClosingProgram.title} first.` : ""}`,
+      detail: `${closingSoonFundingOpportunities} open funding opportunit${closingSoonFundingOpportunities === 1 ? "y closes" : "ies close"} within 14 days.${firstClosingOpportunity?.title ? ` ${firstClosingOpportunity.title} is the first deadline to reopen.` : ""}${firstClosingProgram?.title ? ` Reopen ${firstClosingProgram.title} first.` : firstClosingProject?.name ? ` Reopen ${firstClosingProject.name} first.` : ""}`,
       href: firstClosingOpportunity?.programId
         ? `/programs/${firstClosingOpportunity.programId}#program-funding-opportunities`
-        : "/programs",
+        : firstClosingOpportunity?.projectId
+          ? `/projects/${firstClosingOpportunity.projectId}#project-funding-opportunities`
+          : "/programs",
       tone: "warning",
       priority: 2,
       badges: [

@@ -297,7 +297,7 @@ export default async function ProgramDetailPage({
         .order("updated_at", { ascending: false }),
       supabase
         .from("funding_opportunities")
-        .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+        .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, project_id, updated_at")
         .eq("workspace_id", program.workspace_id)
         .order("updated_at", { ascending: false }),
     ]);
@@ -610,6 +610,7 @@ export default async function ProgramDetailPage({
       closes_at: string | null;
       decision_due_at: string | null;
       program_id: string | null;
+      project_id: string | null;
       updated_at: string | null;
     }>),
   });
