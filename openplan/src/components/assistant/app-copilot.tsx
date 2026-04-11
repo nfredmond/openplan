@@ -34,8 +34,10 @@ type ConversationEntry =
 
 const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
 const OPERATION_GROUP_STATE_STORAGE_KEY = "openplan:planner-agent:operation-group-state";
+const OPERATION_VIEW_MODE_STORAGE_KEY = "openplan:planner-agent:operation-view-mode";
 
 type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
+type OperationViewMode = "full" | "triage";
 type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
 
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
@@ -62,6 +64,10 @@ function parseOperationGroupState(value: string | null): OperationGroupState {
   } catch {
     return DEFAULT_OPERATION_GROUP_STATE;
   }
+}
+
+function isOperationViewMode(value: string | null): value is OperationViewMode {
+  return value === "full" || value === "triage";
 }
 
 function actionLabel(action: AssistantAction) {
@@ -119,18 +125,30 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     const saved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
     return isOperationFilter(saved) ? saved : "all";
   });
+  const [viewMode, setViewMode] = useState<OperationViewMode>(() => {
+    if (typeof window === "undefined") return "full";
+    const saved = window.localStorage.getItem(OPERATION_VIEW_MODE_STORAGE_KEY);
+    return isOperationViewMode(saved) ? saved : "full";
+  });
   const [groupState, setGroupState] = useState<OperationGroupState>(() => {
     if (typeof window === "undefined") return DEFAULT_OPERATION_GROUP_STATE;
     return parseOperationGroupState(window.localStorage.getItem(OPERATION_GROUP_STATE_STORAGE_KEY));
   });
   const groups = groupAssistantOperations(links);
   const summary = summarizeAssistantOperations(links);
-  const visibleGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
+  const filteredGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
+  const visibleGroups = viewMode === "triage" ? filteredGroups.filter((group) => group.key === "act_now") : filteredGroups;
+  const hasActNowGroup = groups.some((group) => group.key === "act_now");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(OPERATION_FILTER_STORAGE_KEY, filter);
   }, [filter]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_VIEW_MODE_STORAGE_KEY, viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -167,7 +185,22 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setViewMode((current) => (current === "triage" ? "full" : "triage"))}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+              viewMode === "triage"
+                ? "border-amber-300/35 bg-amber-400/14 text-white"
+                : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-amber-300/22 hover:bg-amber-400/10"
+            }`}
+          >
+            {viewMode === "triage" ? "Triage mode" : "Full board"}
+            <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-[0.64rem] text-slate-100">
+              {hasActNowGroup ? summary.actNow : 0}
+            </span>
+          </button>
+
           {[
             { key: "all", label: "All operations", count: summary.total },
             { key: "act_now", label: "Act now", count: summary.actNow },
@@ -192,7 +225,20 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             );
           })}
         </div>
+
+        <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+          {viewMode === "triage"
+            ? hasActNowGroup
+              ? "Triage mode narrows the board to act-now pressure only."
+              : "Triage mode is on, but no act-now operations are currently available."
+            : "Full board mode keeps every operation group available for deeper review."}
+        </p>
       </div>
+      {!visibleGroups.length ? (
+        <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
+          No operations match the current board mode and filter.
+        </div>
+      ) : null}
       {visibleGroups.map((group) => {
         const expanded = groupState[group.key] ?? DEFAULT_OPERATION_GROUP_STATE[group.key];
         return (
