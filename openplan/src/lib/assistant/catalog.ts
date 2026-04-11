@@ -32,6 +32,8 @@ export type AssistantPreviewStat = {
 export type AssistantQuickLink = {
   label: string;
   href: string;
+  approval?: "safe" | "review" | "approval_required";
+  auditNote?: string;
 };
 
 export type AssistantPreview = {

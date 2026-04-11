@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   resolveAssistantTarget,
   type AssistantPreview,
+  type AssistantQuickLink,
   type AssistantResponse,
   type AssistantAction,
 } from "@/lib/assistant/catalog";
@@ -27,6 +28,53 @@ type ConversationEntry =
 
 function actionLabel(action: AssistantAction) {
   return action.label;
+}
+
+function quickLinkBadge(link: AssistantQuickLink) {
+  switch (link.approval) {
+    case "approval_required":
+      return { label: "Approval", className: "border-amber-300/25 bg-amber-400/14 text-amber-100" };
+    case "review":
+      return { label: "Review", className: "border-sky-300/22 bg-sky-400/12 text-sky-100" };
+    case "safe":
+    default:
+      return { label: "Open", className: "border-emerald-300/22 bg-emerald-400/12 text-emerald-100" };
+  }
+}
+
+function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {links.map((link) => {
+        const badge = quickLinkBadge(link);
+        return (
+          <Link
+            key={`${link.label}-${link.href}`}
+            href={link.href}
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left transition hover:border-emerald-300/26 hover:bg-emerald-400/10"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-50">{link.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
+                  {link.auditNote ?? "Open this surface to continue the grounded operator workflow."}
+                </p>
+              </div>
+              <span
+                className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+              >
+                {badge.label}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              Open target
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
@@ -290,21 +338,9 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </ul>
 
                           {message.preview.quickLinks?.length ? (
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              {message.preview.quickLinks.map((link) => (
-                                <Button
-                                  key={`${link.label}-${link.href}`}
-                                  asChild
-                                  variant="outline"
-                                  size="xs"
-                                  className="border-emerald-300/20 bg-emerald-400/8 text-emerald-50 hover:border-emerald-300/38 hover:bg-emerald-400/14"
-                                >
-                                  <Link href={link.href}>
-                                    <ArrowUpRight className="h-3.5 w-3.5 text-emerald-300" />
-                                    {link.label}
-                                  </Link>
-                                </Button>
-                              ))}
+                            <div className="mt-4">
+                              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Action surfaces</p>
+                              <QuickLinkGrid links={message.preview.quickLinks} />
                             </div>
                           ) : null}
                         </div>
@@ -357,22 +393,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {message.response.quickLinks?.length ? (
                             <section>
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Take action</p>
-                              <div className="flex flex-wrap gap-2">
-                                {message.response.quickLinks.map((link) => (
-                                  <Button
-                                    key={`${link.label}-${link.href}`}
-                                    asChild
-                                    variant="outline"
-                                    size="xs"
-                                    className="border-emerald-300/20 bg-emerald-400/8 text-emerald-50 hover:border-emerald-300/38 hover:bg-emerald-400/14"
-                                  >
-                                    <Link href={link.href}>
-                                      <ArrowUpRight className="h-3.5 w-3.5 text-emerald-300" />
-                                      {link.label}
-                                    </Link>
-                                  </Button>
-                                ))}
-                              </div>
+                              <QuickLinkGrid links={message.response.quickLinks} />
                             </section>
                           ) : null}
 
@@ -406,7 +427,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   className="min-h-[108px] border-white/10 bg-white/[0.04] text-slate-50 placeholder:text-slate-400/75"
                 />
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="text-xs text-slate-400">Grounded to {preview?.title ?? workspaceName}. Deterministic workflow answers only for now.</p>
+                  <p className="text-xs text-slate-400">Grounded to {preview?.title ?? workspaceName}. Planner Agent only opens tracked surfaces for now, record changes still happen inside the destination screen.</p>
                   <Button
                     type="button"
                     onClick={() => submitPrompt()}
