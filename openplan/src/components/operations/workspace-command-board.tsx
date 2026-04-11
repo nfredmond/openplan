@@ -63,10 +63,13 @@ export function WorkspaceCommandBoard({
           <p className="module-summary-detail">{summary.counts.plans} total plans, {summary.counts.activeProjects} active projects in scope.</p>
         </div>
         <div className="module-subpanel">
-          <p className="module-summary-label">Funding windows</p>
+          <p className="module-summary-label">Funding pressure</p>
           <p className="module-summary-value">{summary.counts.openFundingOpportunities}</p>
           <p className="module-summary-detail">
-            {summary.counts.closingSoonFundingOpportunities} closing within 14 days.
+            {summary.counts.closingSoonFundingOpportunities} closing within 14 days
+            {summary.counts.projectFundingGapProjects > 0
+              ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
+              : "."}
           </p>
         </div>
       </div>

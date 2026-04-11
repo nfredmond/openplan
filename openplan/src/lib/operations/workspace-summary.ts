@@ -1,4 +1,5 @@
 import { buildPlanReadiness } from "@/lib/plans/catalog";
+import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
   describeComparisonSnapshotAggregate,
   getReportNavigationHref,
@@ -7,12 +8,15 @@ import {
 } from "@/lib/reports/catalog";
 import type { StatusTone } from "@/lib/ui/status";
 
-type WorkspaceOperationsSelectChain = {
-  eq: (column: string, value: string) => {
-    order: (column: string, options: { ascending: boolean }) => {
-      limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
-    };
+type WorkspaceOperationsPostEqChain = {
+  order: (column: string, options: { ascending: boolean }) => {
+    limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
   };
+  limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
+};
+
+type WorkspaceOperationsSelectChain = {
+  eq: (column: string, value: string) => WorkspaceOperationsPostEqChain;
 };
 
 export type WorkspaceOperationsSupabaseLike = {
@@ -52,10 +56,12 @@ export type WorkspaceOperationsFundingOpportunityRow = {
   id: string;
   title: string;
   opportunityStatus: string | null;
+  decisionState?: string | null;
+  expectedAwardAmount?: number | string | null;
   closesAt: string | null;
   decisionDueAt: string | null;
   programId: string | null;
-  projectId: string | null;
+  projectId?: string | null;
   updatedAt: string | null;
 };
 
@@ -100,10 +106,12 @@ export type WorkspaceOperationsFundingOpportunitySourceRow = {
   id: string;
   title: string;
   opportunity_status: string | null;
+  decision_state?: string | null;
+  expected_award_amount?: number | string | null;
   closes_at: string | null;
   decision_due_at: string | null;
   program_id: string | null;
-  project_id: string | null;
+  project_id?: string | null;
   updated_at: string | null;
 };
 
@@ -130,6 +138,12 @@ export type WorkspaceCommandQueueItem = {
   }>;
 };
 
+export type WorkspaceOperationsProjectFundingProfileSourceRow = {
+  project_id: string;
+  funding_need_amount: number | string | null;
+  local_match_need_amount?: number | string | null;
+};
+
 export type WorkspaceOperationsSummary = {
   posture: "stable" | "active" | "attention";
   headline: string;
@@ -148,6 +162,7 @@ export type WorkspaceOperationsSummary = {
     fundingOpportunities: number;
     openFundingOpportunities: number;
     closingSoonFundingOpportunities: number;
+    projectFundingGapProjects: number;
     queueDepth: number;
   };
   nextCommand: WorkspaceCommandQueueItem | null;
@@ -159,6 +174,15 @@ function daysUntil(value: string | null | undefined, now: Date) {
   const parsed = new Date(value).getTime();
   if (!Number.isFinite(parsed)) return null;
   return Math.round((parsed - now.getTime()) / 86400000);
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "$0";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 function mapWorkspaceOperationsProjectRows(
@@ -217,6 +241,8 @@ function mapWorkspaceOperationsFundingOpportunityRows(
     id: opportunity.id,
     title: opportunity.title,
     opportunityStatus: opportunity.opportunity_status,
+    decisionState: opportunity.decision_state,
+    expectedAwardAmount: opportunity.expected_award_amount,
     closesAt: opportunity.closes_at,
     decisionDueAt: opportunity.decision_due_at,
     programId: opportunity.program_id,
@@ -231,6 +257,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   programs,
   reports,
   fundingOpportunities,
+  projectFundingProfiles = [],
   now,
 }: {
   projects: WorkspaceOperationsProjectSourceRow[];
@@ -238,6 +265,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   programs: WorkspaceOperationsProgramSourceRow[];
   reports: WorkspaceOperationsReportSourceRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunitySourceRow[];
+  projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }) {
   return buildWorkspaceOperationsSummary({
@@ -246,6 +274,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     programs: mapWorkspaceOperationsProgramRows(programs),
     reports: mapWorkspaceOperationsReportRows(reports),
     fundingOpportunities: mapWorkspaceOperationsFundingOpportunityRows(fundingOpportunities),
+    projectFundingProfiles,
     now,
   });
 }
@@ -254,7 +283,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   supabase: WorkspaceOperationsSupabaseLike,
   workspaceId: string
 ): Promise<WorkspaceOperationsSummary> {
-  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult] = await Promise.all([
+  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, projectFundingProfilesResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase, updated_at")
@@ -281,9 +310,14 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, project_id, updated_at")
+      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("project_funding_profiles")
+      .select("project_id, funding_need_amount, local_match_need_amount")
+      .eq("workspace_id", workspaceId)
       .limit(200),
   ]);
 
@@ -293,6 +327,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     programs: (programsResult.data ?? []) as WorkspaceOperationsProgramSourceRow[],
     reports: (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[],
     fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as WorkspaceOperationsFundingOpportunitySourceRow[],
+    projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
   });
 }
 
@@ -302,6 +337,7 @@ export function buildWorkspaceOperationsSummary({
   programs,
   reports,
   fundingOpportunities,
+  projectFundingProfiles = [],
   now = new Date(),
 }: {
   projects: WorkspaceOperationsProjectRow[];
@@ -309,6 +345,7 @@ export function buildWorkspaceOperationsSummary({
   programs: WorkspaceOperationsProgramRow[];
   reports: WorkspaceOperationsReportRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunityRow[];
+  projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }): WorkspaceOperationsSummary {
   const reportRows = reports.map((report) => {
@@ -353,6 +390,37 @@ export function buildWorkspaceOperationsSummary({
     const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
     return days !== null && days <= 14;
   }).length;
+
+  const fundingOpportunitiesByProjectId = new Map<string, WorkspaceOperationsFundingOpportunityRow[]>();
+  fundingOpportunities.forEach((opportunity) => {
+    if (!opportunity.projectId) return;
+    const current = fundingOpportunitiesByProjectId.get(opportunity.projectId) ?? [];
+    current.push(opportunity);
+    fundingOpportunitiesByProjectId.set(opportunity.projectId, current);
+  });
+  const fundingGapProjects = projectFundingProfiles
+    .map((profile) => {
+      const project = projects.find((item) => item.id === profile.project_id);
+      if (!project) return null;
+      const summary = buildProjectFundingStackSummary(
+        profile,
+        [],
+        (fundingOpportunitiesByProjectId.get(profile.project_id) ?? []).map((opportunity) => ({
+          expected_award_amount: opportunity.expectedAwardAmount ?? null,
+          decision_state: opportunity.decisionState ?? null,
+          opportunity_status: opportunity.opportunityStatus ?? null,
+        }))
+      );
+      if (!summary.hasTargetNeed || summary.unfundedAfterLikelyAmount <= 0) {
+        return null;
+      }
+      return {
+        project,
+        summary,
+      };
+    })
+    .filter((item): item is { project: WorkspaceOperationsProjectRow; summary: ReturnType<typeof buildProjectFundingStackSummary> } => Boolean(item))
+    .sort((left, right) => right.summary.unfundedAfterLikelyAmount - left.summary.unfundedAfterLikelyAmount);
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -439,6 +507,22 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (fundingGapProjects.length > 0) {
+    const firstFundingGapProject = fundingGapProjects[0];
+    queueCandidates.push({
+      key: "close-project-funding-gaps",
+      title: "Close project funding gaps",
+      detail: `${fundingGapProjects.length} project funding stack${fundingGapProjects.length === 1 ? " still shows" : "s still show"} an uncovered gap after current pursued dollars.${firstFundingGapProject ? ` ${firstFundingGapProject.project.name} still carries ${formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount)} uncovered.` : ""}`,
+      href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
+      tone: "warning",
+      priority: 3,
+      badges: [
+        { label: "Gap projects", value: fundingGapProjects.length },
+        { label: "Largest gap", value: firstFundingGapProject ? formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount) : null },
+      ],
+    });
+  }
+
   if (plansNeedingSetup > 0) {
     queueCandidates.push({
       key: "tighten-plan-foundations",
@@ -446,7 +530,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${plansNeedingSetup} plan record${plansNeedingSetup === 1 ? " still needs" : "s still need"} core setup around project linkage, geography, or horizon year.${firstPlanNeedingSetup?.title ? ` Reopen ${firstPlanNeedingSetup.title} first.` : ""}`,
       href: "/plans",
       tone: "info",
-      priority: 3,
+      priority: 4,
       badges: [
         { label: "Needs setup", value: plansNeedingSetup },
         { label: "Plans", value: plans.length },
@@ -461,7 +545,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${activePrograms} program package${activePrograms === 1 ? " is" : "s are"} still in assembly, submission, or review posture.${firstActiveProgram?.title ? ` ${firstActiveProgram.title} is a good next package anchor.` : ""}`,
       href: "/programs",
       tone: "info",
-      priority: 4,
+      priority: 5,
       badges: [
         { label: "Active programs", value: activePrograms },
         { label: "Programs", value: programs.length },
@@ -476,7 +560,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can shape refresh and narrative choices.${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
       href: "/reports?posture=comparison-backed",
       tone: "info",
-      priority: 5,
+      priority: 6,
       badges: [
         { label: "Comparison-backed", value: comparisonBackedReports },
         { label: "Ready comparisons", value: firstComparisonBackedReport?.comparisonAggregate?.readyComparisonSnapshotCount ?? null },
@@ -518,6 +602,7 @@ export function buildWorkspaceOperationsSummary({
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,
       closingSoonFundingOpportunities,
+      projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },
     nextCommand,
