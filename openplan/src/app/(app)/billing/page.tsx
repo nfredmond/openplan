@@ -150,12 +150,17 @@ function normalizeInvoiceOverdueFilter(value: string | string[] | undefined): Bi
   return value === "overdue" ? value : "all";
 }
 
+function normalizeProjectFilterId(value: string | string[] | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 function buildBillingHref(params: {
   workspaceId: string | null;
   checkoutState: string | null;
   checkoutPlan: string | null;
   linkage: BillingInvoiceLinkageFilter;
   overdue: BillingInvoiceOverdueFilter;
+  projectId?: string | null;
 }) {
   const search = new URLSearchParams();
   if (params.workspaceId) search.set("workspaceId", params.workspaceId);
@@ -163,6 +168,7 @@ function buildBillingHref(params: {
   if (params.checkoutPlan) search.set("plan", params.checkoutPlan);
   if (params.linkage !== "all") search.set("linkage", params.linkage);
   if (params.overdue !== "all") search.set("overdue", params.overdue);
+  if (params.projectId) search.set("projectId", params.projectId);
   const query = search.toString();
   return query ? `/billing?${query}` : "/billing";
 }
@@ -174,6 +180,7 @@ function buildBillingInvoiceTriageHref(params: {
   invoiceId: string;
   linkage: BillingInvoiceLinkageFilter;
   overdue: BillingInvoiceOverdueFilter;
+  projectId?: string | null;
 }) {
   return `${buildBillingHref({
     workspaceId: params.workspaceId,
@@ -181,6 +188,7 @@ function buildBillingInvoiceTriageHref(params: {
     checkoutPlan: params.checkoutPlan,
     linkage: params.linkage,
     overdue: params.overdue,
+    projectId: params.projectId,
   })}#invoice-record-${params.invoiceId}`;
 }
 
@@ -195,6 +203,7 @@ export default async function BillingPage({
   const requestedWorkspaceId = typeof resolvedParams.workspaceId === "string" ? resolvedParams.workspaceId : null;
   const linkageFilter = normalizeInvoiceLinkageFilter(resolvedParams.linkage);
   const overdueFilter = normalizeInvoiceOverdueFilter(resolvedParams.overdue);
+  const requestedProjectFilterId = normalizeProjectFilterId(resolvedParams.projectId);
 
   const supabase = await createClient();
   const {
@@ -344,37 +353,51 @@ export default async function BillingPage({
       }));
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
-  const linkageFilteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
+  const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
+    id: string;
+    name: string;
+    status: string;
+    delivery_phase: string | null;
+  }>;
+  const projectNameById = new Map(workspaceProjects.map((project) => [project.id, project.name]));
+  const activeProjectFilterId = requestedProjectFilterId && projectNameById.has(requestedProjectFilterId) ? requestedProjectFilterId : null;
+  const activeProjectFilterName = activeProjectFilterId ? projectNameById.get(activeProjectFilterId) ?? activeProjectFilterId : null;
+  const registerScopedInvoiceRecords = activeProjectFilterId
+    ? invoiceRecords.filter((invoice) => invoice.project_id === activeProjectFilterId)
+    : invoiceRecords;
+  const registerScopedInvoiceSummary = summarizeBillingInvoiceRecords(registerScopedInvoiceRecords);
+  const registerScopedLinkageSummary = summarizeBillingInvoiceLinkage(registerScopedInvoiceRecords);
+  const linkageFilteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(registerScopedInvoiceRecords, linkageFilter);
   const filteredInvoiceRecords = filterBillingInvoiceRecordsByOverdueStatus(linkageFilteredInvoiceRecords, overdueFilter);
   const linkageScopedInvoiceSummary = summarizeBillingInvoiceRecords(linkageFilteredInvoiceRecords);
-  const invoicePriorityQueue = buildBillingInvoicePriorityQueue(invoiceRecords, { limit: 3 });
+  const invoicePriorityQueue = buildBillingInvoicePriorityQueue(registerScopedInvoiceRecords, { limit: 3 });
   const linkageFilterOptions = [
     {
       value: "all" as const,
       label: "All records",
-      count: invoiceSummary.totalCount,
-      outstandingNetAmount: invoiceSummary.outstandingNetAmount,
-      totalNetAmount: invoiceSummary.totalNetAmount,
-      overdueCount: invoiceSummary.overdueCount,
-      overdueNetAmount: invoiceSummary.overdueNetAmount,
+      count: registerScopedInvoiceSummary.totalCount,
+      outstandingNetAmount: registerScopedInvoiceSummary.outstandingNetAmount,
+      totalNetAmount: registerScopedInvoiceSummary.totalNetAmount,
+      overdueCount: registerScopedInvoiceSummary.overdueCount,
+      overdueNetAmount: registerScopedInvoiceSummary.overdueNetAmount,
     },
     {
       value: "linked" as const,
       label: "Award-linked",
-      count: invoiceLinkageSummary.linkedCount,
-      outstandingNetAmount: invoiceLinkageSummary.linkedOutstandingNetAmount,
-      totalNetAmount: invoiceLinkageSummary.linkedNetAmount,
-      overdueCount: invoiceLinkageSummary.linkedOverdueCount,
-      overdueNetAmount: invoiceLinkageSummary.linkedOverdueNetAmount,
+      count: registerScopedLinkageSummary.linkedCount,
+      outstandingNetAmount: registerScopedLinkageSummary.linkedOutstandingNetAmount,
+      totalNetAmount: registerScopedLinkageSummary.linkedNetAmount,
+      overdueCount: registerScopedLinkageSummary.linkedOverdueCount,
+      overdueNetAmount: registerScopedLinkageSummary.linkedOverdueNetAmount,
     },
     {
       value: "unlinked" as const,
       label: "Unlinked",
-      count: invoiceLinkageSummary.unlinkedCount,
-      outstandingNetAmount: invoiceLinkageSummary.unlinkedOutstandingNetAmount,
-      totalNetAmount: invoiceLinkageSummary.unlinkedNetAmount,
-      overdueCount: invoiceLinkageSummary.unlinkedOverdueCount,
-      overdueNetAmount: invoiceLinkageSummary.unlinkedOverdueNetAmount,
+      count: registerScopedLinkageSummary.unlinkedCount,
+      outstandingNetAmount: registerScopedLinkageSummary.unlinkedOutstandingNetAmount,
+      totalNetAmount: registerScopedLinkageSummary.unlinkedNetAmount,
+      overdueCount: registerScopedLinkageSummary.unlinkedOverdueCount,
+      overdueNetAmount: registerScopedLinkageSummary.unlinkedOverdueNetAmount,
     },
   ] satisfies Array<{
     value: BillingInvoiceLinkageFilter;
@@ -406,13 +429,6 @@ export default async function BillingPage({
     netAmount: number;
   }>;
   const activeOverdueFilterOption = overdueFilterOptions.find((option) => option.value === overdueFilter) ?? overdueFilterOptions[0];
-  const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
-    id: string;
-    name: string;
-    status: string;
-    delivery_phase: string | null;
-  }>;
-  const projectNameById = new Map(workspaceProjects.map((project) => [project.id, project.name]));
 
   const identityReviewEvent = billingEvents?.find((event) => event.event_type === "checkout_identity_review_required");
   const identityReviewPayload =
@@ -660,6 +676,9 @@ export default async function BillingPage({
                     <p className="mt-1 text-sm text-muted-foreground">
                       Highest reimbursement-risk records first, ranked by unlinked status, overdue posture, and net amount.
                     </p>
+                    {activeProjectFilterName ? (
+                      <p className="mt-1 text-xs text-muted-foreground">Currently narrowed to project scope: {activeProjectFilterName}.</p>
+                    ) : null}
                   </div>
                   <StatusBadge tone="warning">Top {invoicePriorityQueue.length}</StatusBadge>
                 </div>
@@ -674,6 +693,7 @@ export default async function BillingPage({
                       invoiceId: invoice.id,
                       linkage: entry.isLinked ? "linked" : "unlinked",
                       overdue: entry.isOverdue ? "overdue" : "all",
+                      projectId: invoice.project_id,
                     });
                     return (
                       <li key={invoice.id} className="border border-border/50 bg-background/80 px-3 py-3">
@@ -716,6 +736,29 @@ export default async function BillingPage({
             <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
           </div>
 
+          {!invoiceRegisterPending && activeProjectFilterId && activeProjectFilterName ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border border-border/60 bg-background/70 px-3 py-3 text-sm">
+              <StatusBadge tone="info">Project scope</StatusBadge>
+              <span className="font-semibold text-foreground">{activeProjectFilterName}</span>
+              <span className="text-muted-foreground">
+                {registerScopedInvoiceSummary.totalCount} invoice record{registerScopedInvoiceSummary.totalCount === 1 ? "" : "s"} in this narrowed register.
+              </span>
+              <Link
+                href={buildBillingHref({
+                  workspaceId,
+                  checkoutState,
+                  checkoutPlan,
+                  linkage: linkageFilter,
+                  overdue: overdueFilter,
+                  projectId: null,
+                })}
+                className="openplan-inline-label"
+              >
+                Show all projects
+              </Link>
+            </div>
+          ) : null}
+
           {!invoiceRegisterPending ? (
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {linkageFilterOptions.map((option) => {
@@ -729,6 +772,7 @@ export default async function BillingPage({
                       checkoutPlan,
                       linkage: option.value,
                       overdue: overdueFilter,
+                      projectId: activeProjectFilterId,
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
@@ -753,6 +797,7 @@ export default async function BillingPage({
                       checkoutPlan,
                       linkage: linkageFilter,
                       overdue: option.value,
+                      projectId: activeProjectFilterId,
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
@@ -767,10 +812,10 @@ export default async function BillingPage({
           {!invoiceRegisterPending ? (
             <p className="mt-3 text-xs text-muted-foreground">
               {linkageFilter === "all"
-                ? `Workspace invoice register currently tracks ${formatCurrency(invoiceSummary.totalNetAmount)} net requested, with ${formatCurrency(invoiceSummary.outstandingNetAmount)} still in review or payment flow.`
+                ? `${activeProjectFilterName ? `${activeProjectFilterName} register scope currently tracks` : `Workspace invoice register currently tracks`} ${formatCurrency(registerScopedInvoiceSummary.totalNetAmount)} net requested, with ${formatCurrency(registerScopedInvoiceSummary.outstandingNetAmount)} still in review or payment flow.`
                 : linkageFilter === "linked"
-                  ? `Award-linked records currently account for ${formatCurrency(invoiceLinkageSummary.linkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
-                  : `Unlinked records currently account for ${formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
+                  ? `Award-linked records currently account for ${formatCurrency(registerScopedLinkageSummary.linkedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
+                  : `Unlinked records currently account for ${formatCurrency(registerScopedLinkageSummary.unlinkedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
               {activeLinkageFilterOption.overdueCount > 0
                 ? ` ${activeLinkageFilterOption.overdueCount} overdue record${activeLinkageFilterOption.overdueCount === 1 ? " is" : "s are"} already late, totaling ${formatCurrency(activeLinkageFilterOption.overdueNetAmount)}.`
                 : ""}
