@@ -39,7 +39,28 @@ type AppCopilotProps = {
 type ConversationEntry =
   | { id: string; role: "assistant"; type: "intro"; preview: AssistantPreview }
   | { id: string; role: "assistant"; type: "response"; response: AssistantResponse }
-  | { id: string; role: "user"; type: "prompt"; text: string };
+  | {
+      id: string;
+      role: "user";
+      type: "prompt";
+      text: string;
+      operation?: {
+        label: string;
+        workflowId?: string;
+        auditEvent?: string;
+      };
+    };
+
+type OperationInvocationState = {
+  linkId: string;
+  label: string;
+  workflowId?: string;
+  auditEvent?: string;
+  status: "running" | "completed" | "failed";
+  startedAt: number;
+  finishedAt?: number;
+  error?: string;
+};
 
 const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
 const OPERATION_GROUP_STATE_STORAGE_KEY = "openplan:planner-agent:operation-group-state";
@@ -398,14 +419,21 @@ function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
   );
 }
 
+function formatOperationTimestamp(timestamp: number | undefined): string | null {
+  if (!timestamp) return null;
+  return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 function QuickLinkGrid({
   links,
   onConsoleStateChange,
   onRunOperation,
+  runningOperationId,
 }: {
   links: AssistantQuickLink[];
   onConsoleStateChange?: (state: AssistantLocalConsoleState | null) => void;
   onRunOperation?: (link: AssistantQuickLink) => void;
+  runningOperationId?: string | null;
 }) {
   const [filter, setFilter] = useState<OperationFilter>(() => {
     if (typeof window === "undefined") return "all";
@@ -981,6 +1009,7 @@ function QuickLinkGrid({
                   const priorityBadge = quickLinkPriorityBadge(link);
                   const executionBadge = quickLinkExecutionBadge(link);
                   const urgency = resolveAssistantOperationUrgency(link);
+                  const isRunningOperation = runningOperationId === link.id;
                   const isPinned = Boolean(pinnedState[operationKey]);
                   const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
                   const isSnoozed = Boolean(snoozeLabel);
@@ -1092,10 +1121,11 @@ function QuickLinkGrid({
                             <button
                               type="button"
                               onClick={() => onRunOperation?.(link)}
+                              disabled={isRunningOperation}
                               className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/12 px-2.5 py-1 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-400/16 hover:text-white"
                             >
-                              <Sparkles className="h-3.5 w-3.5" />
-                              Run in panel · {link.id}
+                              {isRunningOperation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                              {isRunningOperation ? `Running · ${link.id}` : `Run in panel · ${link.id}`}
                             </button>
                           ) : null}
                           <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
@@ -1123,6 +1153,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const [open, setOpen] = useState(false);
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
   const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
+  const [operationStatus, setOperationStatus] = useState<OperationInvocationState | null>(null);
   const [messages, setMessages] = useState<ConversationEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [loadingContext, setLoadingContext] = useState(true);
@@ -1135,6 +1166,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     () => (basePreview ? applyLocalConsoleStateToPreview(basePreview, liveConsoleState) : null),
     [basePreview, liveConsoleState]
   );
+  const runningOperationId = operationStatus?.status === "running" ? operationStatus.linkId : null;
 
   useEffect(() => {
     let ignore = false;
@@ -1161,6 +1193,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         if (ignore) return;
 
         setLiveConsoleState(null);
+        setOperationStatus(null);
         setBasePreview(payload.preview);
         setMessages([
           {
@@ -1190,7 +1223,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     };
   }, [targetKey, target.kind, target.id, target.runId, target.baselineRunId, target.workspaceId, workspaceId]);
 
-  async function submitPrompt(options?: { workflowId?: string; question?: string; promptLabel?: string }) {
+  async function submitPrompt(options?: {
+    workflowId?: string;
+    question?: string;
+    promptLabel?: string;
+    operationLink?: AssistantQuickLink;
+  }) {
     const question = (options?.question ?? draft).trim();
     if (!question && !options?.workflowId) {
       return;
@@ -1204,8 +1242,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       liveConsoleState ?? buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
 
     const promptLabel = options?.promptLabel ?? question;
+    const operationLink = options?.operationLink;
+    const operationStartedAt = operationLink ? Date.now() : null;
     setResponding(true);
     setError(null);
+    if (operationLink && operationStartedAt) {
+      setOperationStatus({
+        linkId: operationLink.id,
+        label: operationLink.label,
+        workflowId: operationLink.workflowId,
+        auditEvent: operationLink.auditEvent,
+        status: "running",
+        startedAt: operationStartedAt,
+      });
+    }
     setMessages((current) => [
       ...current,
       {
@@ -1213,6 +1263,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         role: "user",
         type: "prompt",
         text: promptLabel,
+        operation: operationLink
+          ? {
+              label: operationLink.label,
+              workflowId: operationLink.workflowId,
+              auditEvent: operationLink.auditEvent,
+            }
+          : undefined,
       },
     ]);
 
@@ -1247,8 +1304,31 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           response: payload.response,
         },
       ]);
+      if (operationLink && operationStartedAt) {
+        setOperationStatus({
+          linkId: operationLink.id,
+          label: operationLink.label,
+          workflowId: operationLink.workflowId,
+          auditEvent: operationLink.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        });
+      }
       setDraft("");
     } catch (submitError) {
+      if (operationLink && operationStartedAt) {
+        setOperationStatus({
+          linkId: operationLink.id,
+          label: operationLink.label,
+          workflowId: operationLink.workflowId,
+          auditEvent: operationLink.auditEvent,
+          status: "failed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+          error: submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response",
+        });
+      }
       setError(submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response");
     } finally {
       setResponding(false);
@@ -1261,6 +1341,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       workflowId: link.workflowId,
       question: link.prompt,
       promptLabel: link.promptLabel ?? link.label,
+      operationLink: link,
     });
   }
 
@@ -1333,6 +1414,54 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   <BoardStateCueCard cue={preview.boardStateCue} />
                 </div>
               ) : null}
+
+              {operationStatus ? (
+                <div className="mt-4 rounded-[22px] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/76">In-panel operation</p>
+                    <StatusBadge
+                      tone={operationStatus.status === "failed" ? "danger" : operationStatus.status === "completed" ? "success" : "info"}
+                      className="border-white/10 bg-white/[0.05] text-slate-100"
+                    >
+                      {operationStatus.status === "running"
+                        ? "Running"
+                        : operationStatus.status === "completed"
+                          ? "Completed"
+                          : "Failed"}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-2 text-sm font-semibold text-white">{operationStatus.label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-200/82">
+                    {operationStatus.status === "running"
+                      ? "Planner Agent is running this grounded workflow in panel now."
+                      : operationStatus.status === "completed"
+                        ? "This grounded workflow completed in panel and posted its response below."
+                        : operationStatus.error ?? "This grounded workflow failed before a response could be posted."}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {operationStatus.workflowId ? (
+                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                        Workflow · {operationStatus.workflowId}
+                      </StatusBadge>
+                    ) : null}
+                    {operationStatus.auditEvent ? (
+                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                        Audit · {operationStatus.auditEvent}
+                      </StatusBadge>
+                    ) : null}
+                    {formatOperationTimestamp(operationStatus.startedAt) ? (
+                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                        Started · {formatOperationTimestamp(operationStatus.startedAt)}
+                      </StatusBadge>
+                    ) : null}
+                    {operationStatus.finishedAt && formatOperationTimestamp(operationStatus.finishedAt) ? (
+                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                        Finished · {formatOperationTimestamp(operationStatus.finishedAt)}
+                      </StatusBadge>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto]">
@@ -1385,6 +1514,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               <User className="h-3.5 w-3.5" />
                             </div>
                             <p>{message.text}</p>
+                            {message.operation ? (
+                              <div className="mt-3 flex flex-wrap justify-end gap-2">
+                                {message.operation.workflowId ? (
+                                  <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                                    Workflow · {message.operation.workflowId}
+                                  </StatusBadge>
+                                ) : null}
+                                {message.operation.auditEvent ? (
+                                  <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                                    Audit · {message.operation.auditEvent}
+                                  </StatusBadge>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -1415,7 +1558,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {introPreview.quickLinks?.length ? (
                             <div className="mt-4">
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Action surfaces</p>
-                              <QuickLinkGrid links={introPreview.quickLinks} onConsoleStateChange={setLiveConsoleState} onRunOperation={runOperation} />
+                              <QuickLinkGrid
+                                links={introPreview.quickLinks}
+                                onConsoleStateChange={setLiveConsoleState}
+                                onRunOperation={runOperation}
+                                runningOperationId={runningOperationId}
+                              />
                             </div>
                           ) : null}
                         </div>
@@ -1470,7 +1618,11 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {message.response.quickLinks?.length ? (
                             <section>
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Take action</p>
-                              <QuickLinkGrid links={message.response.quickLinks} onRunOperation={runOperation} />
+                              <QuickLinkGrid
+                                links={message.response.quickLinks}
+                                onRunOperation={runOperation}
+                                runningOperationId={runningOperationId}
+                              />
                             </section>
                           ) : null}
 
