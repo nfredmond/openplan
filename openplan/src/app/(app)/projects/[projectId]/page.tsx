@@ -22,6 +22,7 @@ import { ProjectFundingAwardCreator } from "@/components/projects/project-fundin
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
+import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
@@ -835,6 +836,39 @@ export default async function ProjectDetailPage({
   ).length;
   const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedReport = projectReports[0] ?? null;
+  const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
+    const badges: Array<{ label: string; value?: string | number | null }> = [];
+    if (report.packetFreshness.label !== "Packet current") {
+      badges.push({ label: report.packetFreshness.label });
+    }
+    if (report.comparisonDigest) {
+      badges.push({ label: "Comparison-backed" });
+    }
+    if (report.evidenceChainDigest?.blockedGateDetail) {
+      badges.push({ label: "Governance hold" });
+    }
+
+    return {
+      key: report.id,
+      href: getReportNavigationHref(report.id, report.packetFreshness.label),
+      title: report.title,
+      subtitle:
+        report.packetFreshness.label === "Refresh recommended"
+          ? `First action: refresh ${report.title}`
+          : report.packetFreshness.label === "No packet"
+            ? `First action: generate ${report.title}`
+            : report.evidenceChainDigest?.blockedGateDetail
+              ? `First action: review governance hold in ${report.title}`
+              : report.comparisonDigest
+                ? `First action: review comparison-backed packet ${report.title}`
+                : `First action: review ${report.title}`,
+      detail:
+        report.evidenceChainDigest?.blockedGateDetail ??
+        report.comparisonDigest?.detail ??
+        report.packetFreshness.detail,
+      badges,
+    };
+  });
   const projectControlsSummary = buildProjectControlsSummary(
     milestones,
     submittals,
@@ -1155,7 +1189,15 @@ export default async function ProjectDetailPage({
             No reports are linked to this project yet. Create the first report packet to start a review trail.
           </div>
         ) : (
-          <div className="mt-5 grid gap-4 md:grid-cols-[0.92fr_1.08fr]">
+          <div className="mt-5 space-y-4">
+            <ReportPacketCommandQueue
+              title="Project packet queue"
+              description="The next report packet actions inside this project, ordered before the full report list below."
+              items={projectReportQueueItems}
+              emptyLabel="No queued report packet work in this project right now."
+            />
+
+            <div className="grid gap-4 md:grid-cols-[0.92fr_1.08fr]">
             <div
               className={`rounded-3xl border p-5 ${
                 reportAttentionCount > 0
@@ -1301,6 +1343,7 @@ export default async function ProjectDetailPage({
                   </Link>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         )}
