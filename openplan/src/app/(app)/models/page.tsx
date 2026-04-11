@@ -20,6 +20,7 @@ import {
   MODEL_STATUS_OPTIONS,
   modelStatusTone,
 } from "@/lib/models/catalog";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
 type ModelsPageSearchParams = Promise<{
   projectId?: string;
@@ -76,6 +77,14 @@ type ModelLinkRow = {
   linked_id: string;
 };
 
+type ScenarioSpineCountRow = {
+  scenario_set_id: string;
+};
+
+function incrementCount(map: Map<string, number>, key: string) {
+  map.set(key, (map.get(key) ?? 0) + 1);
+}
+
 export default async function ModelsPage({
   searchParams,
 }: {
@@ -122,6 +131,58 @@ export default async function ModelsPage({
   ]);
 
   const modelIds = ((modelsData ?? []) as ModelRow[]).map((model) => model.id);
+  const scenarioSetIds = Array.from(
+    new Set(
+      ((modelsData ?? []) as ModelRow[])
+        .map((model) => model.scenario_set_id)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  const [scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult] =
+    scenarioSetIds.length
+      ? await Promise.all([
+          supabase
+            .from("scenario_assumption_sets")
+            .select("scenario_set_id")
+            .in("scenario_set_id", scenarioSetIds),
+          supabase
+            .from("scenario_data_packages")
+            .select("scenario_set_id")
+            .in("scenario_set_id", scenarioSetIds),
+          supabase
+            .from("scenario_indicator_snapshots")
+            .select("scenario_set_id")
+            .in("scenario_set_id", scenarioSetIds),
+        ])
+      : [
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+        ];
+
+  const scenarioSpineSchemaPending = [
+    scenarioAssumptionSetsResult.error,
+    scenarioDataPackagesResult.error,
+    scenarioIndicatorSnapshotsResult.error,
+  ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+  const scenarioAssumptionCounts = new Map<string, number>();
+  const scenarioDataPackageCounts = new Map<string, number>();
+  const scenarioIndicatorSnapshotCounts = new Map<string, number>();
+
+  if (!scenarioSpineSchemaPending) {
+    for (const row of (scenarioAssumptionSetsResult.data ?? []) as ScenarioSpineCountRow[]) {
+      incrementCount(scenarioAssumptionCounts, row.scenario_set_id);
+    }
+    for (const row of (scenarioDataPackagesResult.data ?? []) as ScenarioSpineCountRow[]) {
+      incrementCount(scenarioDataPackageCounts, row.scenario_set_id);
+    }
+    for (const row of (scenarioIndicatorSnapshotsResult.data ?? []) as ScenarioSpineCountRow[]) {
+      incrementCount(scenarioIndicatorSnapshotCounts, row.scenario_set_id);
+    }
+  }
+
   let modelLinksData: ModelLinkRow[] = [];
   if (modelIds.length) {
     const { data } = await supabase.from("model_links").select("model_id, link_type, linked_id").in("model_id", modelIds);
@@ -160,6 +221,14 @@ export default async function ModelsPage({
         ...model,
         project,
         scenarioSet,
+        scenarioSpine: model.scenario_set_id
+          ? {
+              schemaPending: scenarioSpineSchemaPending,
+              assumptionSetCount: scenarioAssumptionCounts.get(model.scenario_set_id) ?? 0,
+              dataPackageCount: scenarioDataPackageCounts.get(model.scenario_set_id) ?? 0,
+              indicatorSnapshotCount: scenarioIndicatorSnapshotCounts.get(model.scenario_set_id) ?? 0,
+            }
+          : null,
         ...workspaceSummary,
       };
     })
@@ -388,6 +457,17 @@ export default async function ModelsPage({
                   <div className="module-record-meta">
                     <span className="module-record-chip">Project {model.project?.name ?? "Pending"}</span>
                     <span className="module-record-chip">Scenario {model.scenarioSet?.title ?? "Pending"}</span>
+                    {model.scenarioSpine ? (
+                      model.scenarioSpine.schemaPending ? (
+                        <span className="module-record-chip">Scenario spine pending</span>
+                      ) : (
+                        <>
+                          <span className="module-record-chip">{model.scenarioSpine.assumptionSetCount} assumptions</span>
+                          <span className="module-record-chip">{model.scenarioSpine.dataPackageCount} data packages</span>
+                          <span className="module-record-chip">{model.scenarioSpine.indicatorSnapshotCount} indicators</span>
+                        </>
+                      )
+                    ) : null}
                     <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config version pending"}</span>
                     <span className="module-record-chip">{model.linkageCounts.plans} plans</span>
                     <span className="module-record-chip">{model.linkageCounts.datasets} datasets</span>

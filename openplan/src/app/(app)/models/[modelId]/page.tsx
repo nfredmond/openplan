@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildModelWorkspaceSummary,
   formatModelDateTime,
@@ -34,6 +35,23 @@ type LinkedRecordCard = {
   timestampLabel: string;
   meta: string[];
 };
+
+type ScenarioSpineRow = {
+  updated_at?: string | null;
+  snapshot_at?: string | null;
+};
+
+function latestTimestamp(values: Array<string | null | undefined>) {
+  const timestamps = values
+    .map((value) => (typeof value === "string" ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
+}
 
 function titleForRecord(record: { title?: string | null; name?: string | null }) {
   return record.title ?? record.name ?? "Untitled";
@@ -62,7 +80,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     notFound();
   }
 
-  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult] =
+  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("scenario_sets").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
@@ -101,6 +119,24 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
         .limit(12),
+      model.scenario_set_id
+        ? supabase
+            .from("scenario_assumption_sets")
+            .select("updated_at")
+            .eq("scenario_set_id", model.scenario_set_id)
+        : Promise.resolve({ data: [], error: null }),
+      model.scenario_set_id
+        ? supabase
+            .from("scenario_data_packages")
+            .select("updated_at")
+            .eq("scenario_set_id", model.scenario_set_id)
+        : Promise.resolve({ data: [], error: null }),
+      model.scenario_set_id
+        ? supabase
+            .from("scenario_indicator_snapshots")
+            .select("snapshot_at")
+            .eq("scenario_set_id", model.scenario_set_id)
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
   const links = (linksResult.data ?? []) as ModelLinkRow[];
@@ -267,6 +303,34 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       })),
     },
   ];
+
+  const scenarioSpineSchemaPending = [
+    scenarioAssumptionSetsResult.error,
+    scenarioDataPackagesResult.error,
+    scenarioIndicatorSnapshotsResult.error,
+  ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+  const primaryScenarioSpine = model.scenario_set_id
+    ? {
+        schemaPending: scenarioSpineSchemaPending,
+        assumptionSetCount: scenarioSpineSchemaPending
+          ? 0
+          : ((scenarioAssumptionSetsResult.data ?? []) as ScenarioSpineRow[]).length,
+        dataPackageCount: scenarioSpineSchemaPending
+          ? 0
+          : ((scenarioDataPackagesResult.data ?? []) as ScenarioSpineRow[]).length,
+        indicatorSnapshotCount: scenarioSpineSchemaPending
+          ? 0
+          : ((scenarioIndicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]).length,
+        latestIndicatorSnapshotAt: scenarioSpineSchemaPending
+          ? null
+          : latestTimestamp(
+              ((scenarioIndicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]).map(
+                (row) => row.snapshot_at ?? null
+              )
+            ),
+      }
+    : null;
 
   const hasAnyLinkedRecords = linkedRecordSections.some((section) => section.count > 0);
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
@@ -487,6 +551,22 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                     <MetaList>
                       <MetaItem>{primaryScenarioResult.data.status || "Scenario record"}</MetaItem>
                       <MetaItem>Updated {formatModelDateTime(primaryScenarioResult.data.updated_at)}</MetaItem>
+                      {primaryScenarioSpine ? (
+                        primaryScenarioSpine.schemaPending ? (
+                          <MetaItem>Scenario spine schema pending</MetaItem>
+                        ) : (
+                          <>
+                            <MetaItem>{primaryScenarioSpine.assumptionSetCount} assumption sets</MetaItem>
+                            <MetaItem>{primaryScenarioSpine.dataPackageCount} data packages</MetaItem>
+                            <MetaItem>{primaryScenarioSpine.indicatorSnapshotCount} indicator snapshots</MetaItem>
+                            {primaryScenarioSpine.latestIndicatorSnapshotAt ? (
+                              <MetaItem>
+                                Latest indicator {formatModelDateTime(primaryScenarioSpine.latestIndicatorSnapshotAt)}
+                              </MetaItem>
+                            ) : null}
+                          </>
+                        )
+                      ) : null}
                     </MetaList>
                   ) : null}
                 </div>
