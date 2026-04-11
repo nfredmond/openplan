@@ -61,6 +61,7 @@ describe("workspace operations summary", () => {
 
     expect(summary.counts.projectFundingNeedAnchorProjects).toBe(1);
     expect(summary.counts.projectFundingDecisionProjects).toBe(0);
+    expect(summary.counts.projectFundingAwardRecordProjects).toBe(0);
     expect(summary.counts.projectFundingGapProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("anchor-project-funding-needs");
     expect(summary.nextCommand?.targetProjectId).toBe("project-anchor");
@@ -94,6 +95,7 @@ describe("workspace operations summary", () => {
     expect(summary.counts.projectFundingNeedAnchorProjects).toBe(0);
     expect(summary.counts.projectFundingSourcingProjects).toBe(1);
     expect(summary.counts.projectFundingDecisionProjects).toBe(0);
+    expect(summary.counts.projectFundingAwardRecordProjects).toBe(0);
     expect(summary.counts.projectFundingGapProjects).toBe(0);
     expect(summary.nextCommand?.key).toBe("source-project-funding-opportunities");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
@@ -140,9 +142,57 @@ describe("workspace operations summary", () => {
     expect(summary.counts.projectFundingNeedAnchorProjects).toBe(0);
     expect(summary.counts.projectFundingSourcingProjects).toBe(0);
     expect(summary.counts.projectFundingDecisionProjects).toBe(1);
+    expect(summary.counts.projectFundingAwardRecordProjects).toBe(0);
     expect(summary.counts.projectFundingGapProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("advance-project-funding-decisions");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
+  });
+
+  it("surfaces awarded opportunities without award records before final gap closure", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-gap",
+          name: "Gap Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
+      fundingOpportunities: [
+        {
+          id: "opp-gap-1",
+          title: "ATP Cycle 8",
+          opportunity_status: "awarded",
+          decision_state: "pursue",
+          expected_award_amount: 250000,
+          closes_at: null,
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-gap",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      fundingAwards: [],
+      projectFundingProfiles: [
+        {
+          project_id: "project-gap",
+          funding_need_amount: 500000,
+          local_match_need_amount: 50000,
+        },
+      ],
+      now: new Date("2026-04-11T12:00:00.000Z"),
+    });
+
+    expect(summary.counts.projectFundingDecisionProjects).toBe(0);
+    expect(summary.counts.projectFundingAwardRecordProjects).toBe(1);
+    expect(summary.counts.projectFundingGapProjects).toBe(1);
+    expect(summary.nextCommand?.key).toBe("record-awarded-funding");
+    expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
+    expect(summary.nextCommand?.targetOpportunityId).toBe("opp-gap-1");
   });
 
   it("surfaces measurable funding gaps after sourcing exists", () => {
@@ -186,6 +236,7 @@ describe("workspace operations summary", () => {
     expect(summary.counts.projectFundingNeedAnchorProjects).toBe(0);
     expect(summary.counts.projectFundingSourcingProjects).toBe(0);
     expect(summary.counts.projectFundingDecisionProjects).toBe(0);
+    expect(summary.counts.projectFundingAwardRecordProjects).toBe(0);
     expect(summary.counts.projectFundingGapProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("close-project-funding-gaps");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");

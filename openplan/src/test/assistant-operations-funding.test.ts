@@ -24,6 +24,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       projectFundingNeedAnchorProjects: 1,
       projectFundingSourcingProjects: 0,
       projectFundingDecisionProjects: 0,
+      projectFundingAwardRecordProjects: 0,
       projectFundingGapProjects: 0,
       queueDepth: 1,
     },
@@ -106,6 +107,7 @@ describe("assistant funding operations", () => {
           projectFundingNeedAnchorProjects: 0,
           projectFundingSourcingProjects: 1,
           projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
           projectFundingGapProjects: 0,
         },
         nextCommand: {
@@ -149,6 +151,7 @@ describe("assistant funding operations", () => {
           projectFundingNeedAnchorProjects: 0,
           projectFundingSourcingProjects: 1,
           projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
           projectFundingGapProjects: 0,
         },
         nextCommand: {
@@ -196,6 +199,7 @@ describe("assistant funding operations", () => {
           projectFundingNeedAnchorProjects: 0,
           projectFundingSourcingProjects: 0,
           projectFundingDecisionProjects: 1,
+          projectFundingAwardRecordProjects: 0,
           projectFundingGapProjects: 0,
         },
         nextCommand: {
@@ -241,6 +245,7 @@ describe("assistant funding operations", () => {
           projectFundingNeedAnchorProjects: 0,
           projectFundingSourcingProjects: 0,
           projectFundingDecisionProjects: 1,
+          projectFundingAwardRecordProjects: 0,
           projectFundingGapProjects: 0,
         },
         nextCommand: {
@@ -279,5 +284,51 @@ describe("assistant funding operations", () => {
       expect(action.executeAction.opportunityId).toBe("opp-gap-1");
       expect(action.executeAction.decisionState).toBe("pursue");
     }
+  });
+
+  it("switches the workspace funding agent into award-record posture when an opportunity is awarded but not yet recorded", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Record awarded funding",
+        detail: "A project has an awarded opportunity but no funding-award record yet.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 1,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "record-awarded-funding",
+          title: "Record awarded funding",
+          detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          targetOpportunityId: "opp-gap-1",
+          tone: "warning",
+          priority: 6,
+          badges: [{ label: "Award records needed", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "record-awarded-funding",
+            title: "Record awarded funding",
+            detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            targetOpportunityId: "opp-gap-1",
+            tone: "warning",
+            priority: 6,
+            badges: [{ label: "Award records needed", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action?.label).toBe("Review awarded funding records in panel");
+    expect(action?.statusLabel).toBe("1 award record missing");
   });
 });

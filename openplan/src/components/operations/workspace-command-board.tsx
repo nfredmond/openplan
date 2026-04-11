@@ -76,6 +76,9 @@ export function WorkspaceCommandBoard({
             {summary.counts.projectFundingDecisionProjects > 0
               ? `, ${summary.counts.projectFundingDecisionProjects} needing pursue decisions`
               : ""}
+            {summary.counts.projectFundingAwardRecordProjects > 0
+              ? `, ${summary.counts.projectFundingAwardRecordProjects} awarded opportunities missing award records`
+              : ""}
             {summary.counts.projectFundingGapProjects > 0
               ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
               : "."}

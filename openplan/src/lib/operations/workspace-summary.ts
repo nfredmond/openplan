@@ -65,6 +65,15 @@ export type WorkspaceOperationsFundingOpportunityRow = {
   updatedAt: string | null;
 };
 
+export type WorkspaceOperationsFundingAwardRow = {
+  id: string;
+  projectId: string;
+  fundingOpportunityId: string | null;
+  title: string;
+  awardedAmount: number | string | null;
+  updatedAt: string | null;
+};
+
 export type WorkspaceOperationsReportRow = {
   id: string;
   title: string | null;
@@ -112,6 +121,15 @@ export type WorkspaceOperationsFundingOpportunitySourceRow = {
   decision_due_at: string | null;
   program_id: string | null;
   project_id?: string | null;
+  updated_at: string | null;
+};
+
+export type WorkspaceOperationsFundingAwardSourceRow = {
+  id: string;
+  project_id: string;
+  funding_opportunity_id: string | null;
+  title: string;
+  awarded_amount: number | string | null;
   updated_at: string | null;
 };
 
@@ -168,6 +186,7 @@ export type WorkspaceOperationsSummary = {
     projectFundingNeedAnchorProjects: number;
     projectFundingSourcingProjects: number;
     projectFundingDecisionProjects: number;
+    projectFundingAwardRecordProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
   };
@@ -257,12 +276,26 @@ function mapWorkspaceOperationsFundingOpportunityRows(
   }));
 }
 
+function mapWorkspaceOperationsFundingAwardRows(
+  rows: WorkspaceOperationsFundingAwardSourceRow[]
+): WorkspaceOperationsFundingAwardRow[] {
+  return rows.map((award) => ({
+    id: award.id,
+    projectId: award.project_id,
+    fundingOpportunityId: award.funding_opportunity_id,
+    title: award.title,
+    awardedAmount: award.awarded_amount,
+    updatedAt: award.updated_at,
+  }));
+}
+
 export function buildWorkspaceOperationsSummaryFromSourceRows({
   projects,
   plans,
   programs,
   reports,
   fundingOpportunities,
+  fundingAwards = [],
   projectFundingProfiles = [],
   now,
 }: {
@@ -271,6 +304,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   programs: WorkspaceOperationsProgramSourceRow[];
   reports: WorkspaceOperationsReportSourceRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunitySourceRow[];
+  fundingAwards?: WorkspaceOperationsFundingAwardSourceRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }) {
@@ -280,6 +314,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     programs: mapWorkspaceOperationsProgramRows(programs),
     reports: mapWorkspaceOperationsReportRows(reports),
     fundingOpportunities: mapWorkspaceOperationsFundingOpportunityRows(fundingOpportunities),
+    fundingAwards: mapWorkspaceOperationsFundingAwardRows(fundingAwards),
     projectFundingProfiles,
     now,
   });
@@ -289,7 +324,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   supabase: WorkspaceOperationsSupabaseLike,
   workspaceId: string
 ): Promise<WorkspaceOperationsSummary> {
-  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, projectFundingProfilesResult] = await Promise.all([
+  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, fundingAwardsResult, projectFundingProfilesResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase, updated_at")
@@ -321,6 +356,12 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .order("updated_at", { ascending: false })
       .limit(200),
     supabase
+      .from("funding_awards")
+      .select("id, project_id, funding_opportunity_id, title, awarded_amount, updated_at")
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
       .from("project_funding_profiles")
       .select("project_id, funding_need_amount, local_match_need_amount")
       .eq("workspace_id", workspaceId)
@@ -333,6 +374,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     programs: (programsResult.data ?? []) as WorkspaceOperationsProgramSourceRow[],
     reports: (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[],
     fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as WorkspaceOperationsFundingOpportunitySourceRow[],
+    fundingAwards: (fundingAwardsResult.data ?? []) as WorkspaceOperationsFundingAwardSourceRow[],
     projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
   });
 }
@@ -343,6 +385,7 @@ export function buildWorkspaceOperationsSummary({
   programs,
   reports,
   fundingOpportunities,
+  fundingAwards = [],
   projectFundingProfiles = [],
   now = new Date(),
 }: {
@@ -351,6 +394,7 @@ export function buildWorkspaceOperationsSummary({
   programs: WorkspaceOperationsProgramRow[];
   reports: WorkspaceOperationsReportRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunityRow[];
+  fundingAwards?: WorkspaceOperationsFundingAwardRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }): WorkspaceOperationsSummary {
@@ -405,6 +449,9 @@ export function buildWorkspaceOperationsSummary({
     fundingOpportunitiesByProjectId.set(opportunity.projectId, current);
   });
   const fundingProfileProjectIds = new Set(projectFundingProfiles.map((profile) => profile.project_id));
+  const fundingAwardOpportunityIds = new Set(
+    fundingAwards.map((award) => award.fundingOpportunityId).filter((value): value is string => Boolean(value))
+  );
   const projectFundingNeedAnchorProjects = [...fundingOpportunitiesByProjectId.entries()]
     .map(([projectId, opportunities]) => {
       if (fundingProfileProjectIds.has(projectId)) return null;
@@ -486,19 +533,22 @@ export function buildWorkspaceOperationsSummary({
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
       const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const actionableOpportunities = opportunities.filter(
+        (opportunity) => !["awarded", "archived"].includes(opportunity.opportunityStatus ?? "")
+      );
       const summary = buildProjectFundingStackSummary(
         profile,
         [],
-        opportunities.map((opportunity) => ({
+        actionableOpportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
         }))
       );
-      if (!summary.hasTargetNeed || opportunities.length === 0 || summary.pursuedOpportunityCount > 0) {
+      if (!summary.hasTargetNeed || actionableOpportunities.length === 0 || summary.pursuedOpportunityCount > 0) {
         return null;
       }
-      const leadOpportunity = [...opportunities].sort((left, right) => {
+      const leadOpportunity = [...actionableOpportunities].sort((left, right) => {
         const leftStatusPriority = left.opportunityStatus === "open" ? 0 : left.opportunityStatus === "upcoming" ? 1 : 2;
         const rightStatusPriority = right.opportunityStatus === "open" ? 0 : right.opportunityStatus === "upcoming" ? 1 : 2;
         if (leftStatusPriority !== rightStatusPriority) return leftStatusPriority - rightStatusPriority;
@@ -522,6 +572,44 @@ export function buildWorkspaceOperationsSummary({
       ): item is NonNullable<typeof item> => Boolean(item)
     )
     .sort((left, right) => right.summary.fundingNeedAmount - left.summary.fundingNeedAmount);
+  const fundingAwardRecordProjects = projectFundingProfiles
+    .map((profile) => {
+      const project = projects.find((item) => item.id === profile.project_id);
+      if (!project) return null;
+      const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const summary = buildProjectFundingStackSummary(
+        profile,
+        [],
+        opportunities.map((opportunity) => ({
+          expected_award_amount: opportunity.expectedAwardAmount ?? null,
+          decision_state: opportunity.decisionState ?? null,
+          opportunity_status: opportunity.opportunityStatus ?? null,
+        }))
+      );
+      const awardedOpportunity = [...opportunities]
+        .filter(
+          (opportunity) =>
+            opportunity.opportunityStatus === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+        )
+        .sort((left, right) => new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime())[0] ?? null;
+      if (!summary.hasTargetNeed || !awardedOpportunity) {
+        return null;
+      }
+      return {
+        project,
+        summary,
+        awardedOpportunity,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => {
+      const rightAwardAmount = Number(right.awardedOpportunity.expectedAwardAmount ?? 0);
+      const leftAwardAmount = Number(left.awardedOpportunity.expectedAwardAmount ?? 0);
+      if (rightAwardAmount !== leftAwardAmount) {
+        return rightAwardAmount - leftAwardAmount;
+      }
+      return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
+    });
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -629,6 +717,32 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (fundingAwardRecordProjects.length > 0) {
+    const firstFundingAwardRecordProject = fundingAwardRecordProjects[0];
+    queueCandidates.push({
+      key: "record-awarded-funding",
+      title: "Record awarded funding",
+      detail: `${fundingAwardRecordProjects.length} project funding stack${fundingAwardRecordProjects.length === 1 ? " has" : "s have"} an opportunity already marked awarded but no funding-award record yet.${firstFundingAwardRecordProject ? ` Reopen ${firstFundingAwardRecordProject.project.name} first and convert ${firstFundingAwardRecordProject.awardedOpportunity.title} into a committed award entry.` : ""}`,
+      href: firstFundingAwardRecordProject
+        ? `/projects/${firstFundingAwardRecordProject.project.id}#project-funding-opportunities`
+        : "/projects",
+      targetProjectId: firstFundingAwardRecordProject?.project.id ?? null,
+      targetProjectName: firstFundingAwardRecordProject?.project.name ?? null,
+      targetOpportunityId: firstFundingAwardRecordProject?.awardedOpportunity.id ?? null,
+      tone: "warning",
+      priority: 6,
+      badges: [
+        { label: "Award records needed", value: fundingAwardRecordProjects.length },
+        {
+          label: "Lead awarded",
+          value: firstFundingAwardRecordProject
+            ? formatCurrency(Number(firstFundingAwardRecordProject.awardedOpportunity.expectedAwardAmount ?? 0))
+            : null,
+        },
+      ],
+    });
+  }
+
   if (fundingGapProjects.length > 0) {
     const firstFundingGapProject = fundingGapProjects[0];
     queueCandidates.push({
@@ -639,7 +753,7 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingGapProject?.project.id ?? null,
       targetProjectName: firstFundingGapProject?.project.name ?? null,
       tone: "warning",
-      priority: 6,
+      priority: 7,
       badges: [
         { label: "Gap projects", value: fundingGapProjects.length },
         { label: "Largest gap", value: firstFundingGapProject ? formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount) : null },
@@ -773,6 +887,7 @@ export function buildWorkspaceOperationsSummary({
       projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
       projectFundingSourcingProjects: fundingSourcingProjects.length,
       projectFundingDecisionProjects: fundingDecisionProjects.length,
+      projectFundingAwardRecordProjects: fundingAwardRecordProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },

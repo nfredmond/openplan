@@ -188,6 +188,7 @@ type AnalysisContextResponse = {
       projectFundingNeedAnchorProjects: number;
       projectFundingSourcingProjects: number;
       projectFundingDecisionProjects: number;
+      projectFundingAwardRecordProjects: number;
       projectFundingGapProjects: number;
       queueDepth: number;
     };

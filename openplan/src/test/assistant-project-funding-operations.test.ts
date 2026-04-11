@@ -138,6 +138,8 @@ function buildProgramContext(): ProgramAssistantContext {
         closingSoonFundingOpportunities: 0,
         projectFundingNeedAnchorProjects: 0,
         projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
         projectFundingGapProjects: 1,
         queueDepth: 1,
       },
