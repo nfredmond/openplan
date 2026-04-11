@@ -35,6 +35,7 @@ describe("billing invoice record helpers", () => {
       submittedCount: 2,
       paidCount: 1,
       overdueCount: 2,
+      overdueNetAmount: 16125,
       totalNetAmount: 23225,
       outstandingNetAmount: 12125,
       paidNetAmount: 1200,
@@ -62,6 +63,10 @@ describe("billing invoice record helpers", () => {
       unlinkedOutstandingNetAmount: 2000,
       linkedPaidNetAmount: 5000,
       unlinkedPaidNetAmount: 0,
+      linkedOverdueCount: 1,
+      unlinkedOverdueCount: 2,
+      linkedOverdueNetAmount: 2700,
+      unlinkedOverdueNetAmount: 3500,
     });
   });
 

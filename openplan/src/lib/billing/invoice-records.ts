@@ -30,6 +30,7 @@ export type BillingInvoiceSummary = {
   submittedCount: number;
   paidCount: number;
   overdueCount: number;
+  overdueNetAmount: number;
   totalNetAmount: number;
   outstandingNetAmount: number;
   paidNetAmount: number;
@@ -45,6 +46,10 @@ export type BillingInvoiceLinkageSummary = {
   unlinkedOutstandingNetAmount: number;
   linkedPaidNetAmount: number;
   unlinkedPaidNetAmount: number;
+  linkedOverdueCount: number;
+  unlinkedOverdueCount: number;
+  linkedOverdueNetAmount: number;
+  unlinkedOverdueNetAmount: number;
 };
 
 function roundCurrency(value: number): number {
@@ -132,6 +137,7 @@ export function summarizeBillingInvoiceRecords(
 
       if (isOverdue(status, record.due_date, now)) {
         summary.overdueCount += 1;
+        summary.overdueNetAmount = roundCurrency(summary.overdueNetAmount + netAmount);
       }
 
       return summary;
@@ -142,6 +148,7 @@ export function summarizeBillingInvoiceRecords(
       submittedCount: 0,
       paidCount: 0,
       overdueCount: 0,
+      overdueNetAmount: 0,
       totalNetAmount: 0,
       outstandingNetAmount: 0,
       paidNetAmount: 0,
@@ -168,6 +175,10 @@ export function summarizeBillingInvoiceLinkage(
     unlinkedOutstandingNetAmount: unlinkedSummary.outstandingNetAmount,
     linkedPaidNetAmount: linkedSummary.paidNetAmount,
     unlinkedPaidNetAmount: unlinkedSummary.paidNetAmount,
+    linkedOverdueCount: linkedSummary.overdueCount,
+    unlinkedOverdueCount: unlinkedSummary.overdueCount,
+    linkedOverdueNetAmount: linkedSummary.overdueNetAmount,
+    unlinkedOverdueNetAmount: unlinkedSummary.overdueNetAmount,
   };
 }
 

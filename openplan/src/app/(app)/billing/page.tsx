@@ -325,6 +325,8 @@ export default async function BillingPage({
       count: invoiceSummary.totalCount,
       outstandingNetAmount: invoiceSummary.outstandingNetAmount,
       totalNetAmount: invoiceSummary.totalNetAmount,
+      overdueCount: invoiceSummary.overdueCount,
+      overdueNetAmount: invoiceSummary.overdueNetAmount,
     },
     {
       value: "linked" as const,
@@ -332,6 +334,8 @@ export default async function BillingPage({
       count: invoiceLinkageSummary.linkedCount,
       outstandingNetAmount: invoiceLinkageSummary.linkedOutstandingNetAmount,
       totalNetAmount: invoiceLinkageSummary.linkedNetAmount,
+      overdueCount: invoiceLinkageSummary.linkedOverdueCount,
+      overdueNetAmount: invoiceLinkageSummary.linkedOverdueNetAmount,
     },
     {
       value: "unlinked" as const,
@@ -339,6 +343,8 @@ export default async function BillingPage({
       count: invoiceLinkageSummary.unlinkedCount,
       outstandingNetAmount: invoiceLinkageSummary.unlinkedOutstandingNetAmount,
       totalNetAmount: invoiceLinkageSummary.unlinkedNetAmount,
+      overdueCount: invoiceLinkageSummary.unlinkedOverdueCount,
+      overdueNetAmount: invoiceLinkageSummary.unlinkedOverdueNetAmount,
     },
   ] satisfies Array<{
     value: BillingInvoiceLinkageFilter;
@@ -346,7 +352,10 @@ export default async function BillingPage({
     count: number;
     outstandingNetAmount: number;
     totalNetAmount: number;
+    overdueCount: number;
+    overdueNetAmount: number;
   }>;
+  const activeLinkageFilterOption = linkageFilterOptions.find((option) => option.value === linkageFilter) ?? linkageFilterOptions[0];
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
     name: string;
@@ -585,7 +594,11 @@ export default async function BillingPage({
 
             {!invoiceRegisterPending && invoiceLinkageSummary.unlinkedCount > 0 ? (
               <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-                {invoiceLinkageSummary.unlinkedCount} invoice record{invoiceLinkageSummary.unlinkedCount === 1 ? " is" : "s are"} still unlinked to a funding award, totaling <strong>{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</strong>. That means reimbursement posture remains understated until those records are attached to award-backed funding.
+                {invoiceLinkageSummary.unlinkedCount} invoice record{invoiceLinkageSummary.unlinkedCount === 1 ? " is" : "s are"} still unlinked to a funding award, totaling <strong>{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</strong>.
+                {invoiceLinkageSummary.unlinkedOverdueCount > 0
+                  ? ` ${invoiceLinkageSummary.unlinkedOverdueCount} of those record${invoiceLinkageSummary.unlinkedOverdueCount === 1 ? " is" : "s are"} already overdue, totaling ${formatCurrency(invoiceLinkageSummary.unlinkedOverdueNetAmount)}.`
+                  : ""}{" "}
+                That means reimbursement posture remains understated until those records are attached to award-backed funding.
               </div>
             ) : null}
           </article>
@@ -613,6 +626,7 @@ export default async function BillingPage({
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
                     {option.label} · {option.count} · {formatCurrency(option.outstandingNetAmount)} outstanding
+                    {option.overdueCount > 0 ? ` · ${option.overdueCount} overdue` : ""}
                   </Link>
                 );
               })}
@@ -626,6 +640,9 @@ export default async function BillingPage({
                 : linkageFilter === "linked"
                   ? `Award-linked records currently account for ${formatCurrency(invoiceLinkageSummary.linkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
                   : `Unlinked records currently account for ${formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)} net requested, with ${formatCurrency(invoiceLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
+              {activeLinkageFilterOption.overdueCount > 0
+                ? ` ${activeLinkageFilterOption.overdueCount} overdue record${activeLinkageFilterOption.overdueCount === 1 ? " is" : "s are"} already late, totaling ${formatCurrency(activeLinkageFilterOption.overdueNetAmount)}.`
+                : ""}
             </p>
           ) : null}
 
