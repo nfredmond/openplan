@@ -39,6 +39,12 @@ export type ProjectControlDeadlineItem = {
   targetId: string;
 };
 
+const PROJECT_CONTROL_TARGET_IDS = {
+  milestone: "project-milestones",
+  submittal: "project-submittals",
+  invoice: "project-invoices",
+} as const;
+
 export type ProjectControlsSummary = {
   milestoneCount: number;
   completedMilestoneCount: number;
@@ -132,7 +138,7 @@ export function buildProjectControlsSummary(
         detail: `${item.phase_code ? `${item.phase_code} phase` : "Project phase"} checkpoint is scheduled for ${item.target_date}.`,
         tone: isPast(item.target_date, now) ? ("danger" as const) : ("info" as const),
         isOverdue: isPast(item.target_date, now),
-        targetId: "project-billing-register",
+        targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
       })),
     ...pendingSubmittals
       .filter((item): item is ProjectSubmittalRecordLike & { due_date: string } => Boolean(item.due_date))
@@ -144,7 +150,7 @@ export function buildProjectControlsSummary(
         detail: `${item.submittal_type ? `${item.submittal_type} packet` : "Project packet"} ${item.agency_label ? `for ${item.agency_label}` : ""} is due ${item.due_date}.`.trim(),
         tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
         isOverdue: isPast(item.due_date, now),
-        targetId: "project-billing-register",
+        targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
       })),
     ...activeInvoices
       .filter((item): item is ProjectInvoiceControlRecordLike & { due_date: string } => Boolean(item.due_date))
@@ -156,7 +162,7 @@ export function buildProjectControlsSummary(
         detail: `${item.submitted_to ? `Submitted to ${item.submitted_to}` : "Invoice review/payment lane"} is tracking a due date of ${item.due_date}.`,
         tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
         isOverdue: isPast(item.due_date, now),
-        targetId: "project-billing-register",
+        targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
       })),
   ]);
   const deadlineSummary = {
@@ -180,55 +186,55 @@ export function buildProjectControlsSummary(
           label: "Resolve blocked milestone",
           detail: `${blockedMilestoneCount} milestone${blockedMilestoneCount === 1 ? " is" : "s are"} blocked. Clear the blocker before pushing invoicing or delivery posture forward.`,
           tone: "danger" as const,
-          targetId: "project-billing-register",
+          targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
         }
       : overdueSubmittalCount > 0
         ? {
             label: "Recover overdue submittal",
             detail: `${overdueSubmittalCount} submittal${overdueSubmittalCount === 1 ? " is" : "s are"} overdue for review or agency response. Reconfirm the next packet owner and due date.`,
             tone: "danger" as const,
-            targetId: "project-billing-register",
+            targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
           }
         : overdueMilestoneCount > 0
           ? {
               label: "Recover overdue milestone",
               detail: `${overdueMilestoneCount} milestone${overdueMilestoneCount === 1 ? " is" : "s are"} behind target date. Rebaseline the next checkpoint and owner.`,
               tone: "warning" as const,
-              targetId: "project-billing-register",
+              targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
             }
           : invoiceSummary.overdueCount > 0
             ? {
                 label: "Resolve overdue invoice posture",
                 detail: `${invoiceSummary.overdueCount} invoice${invoiceSummary.overdueCount === 1 ? " is" : "s are"} overdue. Confirm supporting docs and payment status before advancing closeout claims.`,
                 tone: "warning" as const,
-                targetId: "project-billing-register",
+                targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
               }
             : nextSubmittal
               ? {
                   label: "Prepare next submittal",
                   detail: `${nextSubmittal.title} is the next visible packet in the queue. Keep the review cadence explicit before it turns into a hidden hold.`,
                   tone: "info" as const,
-                  targetId: "project-billing-register",
+                  targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
                 }
               : nextMilestone
                 ? {
                     label: "Advance next milestone",
                     detail: `${nextMilestone.title} is the next project checkpoint. Confirm scope, owner, and evidence needed to hit the target date.`,
                     tone: "info" as const,
-                    targetId: "project-billing-register",
+                    targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
                   }
                 : invoiceSummary.draftCount > 0
                   ? {
                       label: "Move draft invoice into review",
                       detail: `${invoiceSummary.draftCount} invoice draft${invoiceSummary.draftCount === 1 ? " is" : "s are"} parked in setup. Decide whether they should stay draft or move into the formal review/payment lane.`,
                       tone: "neutral" as const,
-                      targetId: "project-billing-register",
+                      targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
                     }
                   : {
                       label: "Establish the next control checkpoint",
                       detail: "Add the next milestone, submittal, or invoice record so this project has an explicit operator-controlled next step instead of implied status.",
                       tone: "neutral" as const,
-                      targetId: "project-billing-register",
+                      targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
                     };
 
   return {

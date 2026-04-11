@@ -1845,7 +1845,10 @@ export default async function ProjectDetailPage({
               ) : null}
             </div>
             <div className="mt-3">
-              <Link href="#project-billing-register" className="module-inline-action w-fit">
+              <Link
+                href={projectControlsSummary.deadlineSummary.nextDeadline ? `#${projectControlsSummary.deadlineSummary.nextDeadline.targetId}` : "#project-milestones"}
+                className="module-inline-action w-fit"
+              >
                 Open deadline lane
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -1853,13 +1856,53 @@ export default async function ProjectDetailPage({
           </div>
         </div>
 
+        {projectControlsSummary.deadlineSummary.items.length > 0 ? (
+          <div className="mt-5 rounded-3xl border border-border/70 bg-background/80 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Control deadline queue</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  The first few dated control items across milestones, submittals, and invoices, ordered by urgency.
+                </p>
+              </div>
+              <StatusBadge tone={projectControlsSummary.deadlineSummary.overdueCount > 0 ? "danger" : "info"}>
+                {projectControlsSummary.deadlineSummary.overdueCount > 0
+                  ? `${projectControlsSummary.deadlineSummary.overdueCount} overdue`
+                  : `${projectControlsSummary.deadlineSummary.upcomingCount} upcoming`}
+              </StatusBadge>
+            </div>
+            <div className="mt-4 space-y-3">
+              {projectControlsSummary.deadlineSummary.items.map((item) => (
+                <Link
+                  key={`${item.kind}-${item.title}-${item.deadlineAt}`}
+                  href={`#${item.targetId}`}
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
+                      <StatusBadge tone="neutral">{titleize(item.kind)}</StatusBadge>
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-foreground">{item.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-foreground">{fmtDateTime(item.deadlineAt)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Open lane</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <div className="module-note mt-5 text-sm">
           Exact CALTRANS/LAPM exhibit/form IDs, claim packet generation, and agency-specific packet templates remain deferred. What works now is the operator control surface: milestone tracking, submittal tracking, and invoice register scaffolding tied to the project record.
         </div>
       </article>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <article id="project-billing-register" className="module-section-surface scroll-mt-24">
+        <article id="project-milestones" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
@@ -1903,7 +1946,7 @@ export default async function ProjectDetailPage({
           )}
         </article>
 
-        <article className="module-section-surface">
+        <article id="project-submittals" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
@@ -1947,7 +1990,7 @@ export default async function ProjectDetailPage({
           )}
         </article>
 
-        <article className="module-section-surface">
+        <article id="project-invoices" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
