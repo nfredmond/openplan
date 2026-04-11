@@ -737,6 +737,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     scenarioAssumptionSetsResult,
     scenarioDataPackagesResult,
     scenarioIndicatorSnapshotsResult,
+    scenarioComparisonSnapshotsResult,
     stageGateDecisionsResult,
     deliverablesResult,
     risksResult,
@@ -783,6 +784,12 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       ? supabase
           .from("scenario_indicator_snapshots")
           .select("scenario_set_id, snapshot_at")
+          .in("scenario_set_id", liveScenarioSetIds)
+      : Promise.resolve({ data: [], error: null }),
+    liveScenarioSetIds.length > 0
+      ? supabase
+          .from("scenario_comparison_snapshots")
+          .select("scenario_set_id, updated_at")
           .in("scenario_set_id", liveScenarioSetIds)
       : Promise.resolve({ data: [], error: null }),
     stageGateSnapshot
@@ -846,6 +853,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     scenarioAssumptionSetsResult.error,
     scenarioDataPackagesResult.error,
     scenarioIndicatorSnapshotsResult.error,
+    scenarioComparisonSnapshotsResult.error,
   ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
   const liveScenarioAssumptionRows = liveScenarioSpinePending
     ? []
@@ -856,27 +864,35 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const liveScenarioIndicatorRows = liveScenarioSpinePending
     ? []
     : ((scenarioIndicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
+  const liveScenarioComparisonRows = liveScenarioSpinePending
+    ? []
+    : ((scenarioComparisonSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
   const liveScenarioSpineSummaryById = new Map<string, {
     assumptionSetCount: number;
     dataPackageCount: number;
     indicatorSnapshotCount: number;
+    comparisonSnapshotCount: number;
     latestAssumptionSetUpdatedAt: string | null;
     latestDataPackageUpdatedAt: string | null;
     latestIndicatorSnapshotAt: string | null;
+    latestComparisonSnapshotUpdatedAt: string | null;
   }>();
 
   for (const scenarioSetId of liveScenarioSetIds) {
     const assumptionRows = liveScenarioAssumptionRows.filter((row) => row.scenario_set_id === scenarioSetId);
     const dataPackageRows = liveScenarioDataPackageRows.filter((row) => row.scenario_set_id === scenarioSetId);
     const indicatorRows = liveScenarioIndicatorRows.filter((row) => row.scenario_set_id === scenarioSetId);
+    const comparisonRows = liveScenarioComparisonRows.filter((row) => row.scenario_set_id === scenarioSetId);
 
     liveScenarioSpineSummaryById.set(scenarioSetId, {
       assumptionSetCount: assumptionRows.length,
       dataPackageCount: dataPackageRows.length,
       indicatorSnapshotCount: indicatorRows.length,
+      comparisonSnapshotCount: comparisonRows.length,
       latestAssumptionSetUpdatedAt: maxTimestamp(...assumptionRows.map((row) => row.updated_at ?? null)),
       latestDataPackageUpdatedAt: maxTimestamp(...dataPackageRows.map((row) => row.updated_at ?? null)),
       latestIndicatorSnapshotAt: maxTimestamp(...indicatorRows.map((row) => row.snapshot_at ?? null)),
+      latestComparisonSnapshotUpdatedAt: maxTimestamp(...comparisonRows.map((row) => row.updated_at ?? null)),
     });
   }
   const currentStageGateSummary: ProjectStageGateSummary | null = stageGateSnapshot
@@ -992,7 +1008,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           link.latestMatchedEntryUpdatedAt,
           link.sharedSpine?.latestAssumptionSetUpdatedAt ?? null,
           link.sharedSpine?.latestDataPackageUpdatedAt ?? null,
-          link.sharedSpine?.latestIndicatorSnapshotAt ?? null
+          link.sharedSpine?.latestIndicatorSnapshotAt ?? null,
+          link.sharedSpine?.latestComparisonSnapshotUpdatedAt ?? null
         );
         const currentSetAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
         const currentSpine = liveScenarioSpineSummaryById.get(link.scenarioSetId) ?? null;
@@ -1000,17 +1017,20 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           currentSetAt,
           currentSpine?.latestAssumptionSetUpdatedAt ?? null,
           currentSpine?.latestDataPackageUpdatedAt ?? null,
-          currentSpine?.latestIndicatorSnapshotAt ?? null
+          currentSpine?.latestIndicatorSnapshotAt ?? null,
+          currentSpine?.latestComparisonSnapshotUpdatedAt ?? null
         );
 
         const countChanged = currentSpine
           ? link.sharedSpine
             ? link.sharedSpine.assumptionSetCount !== currentSpine.assumptionSetCount ||
               link.sharedSpine.dataPackageCount !== currentSpine.dataPackageCount ||
-              link.sharedSpine.indicatorSnapshotCount !== currentSpine.indicatorSnapshotCount
+              link.sharedSpine.indicatorSnapshotCount !== currentSpine.indicatorSnapshotCount ||
+              link.sharedSpine.comparisonSnapshotCount !== currentSpine.comparisonSnapshotCount
             : currentSpine.assumptionSetCount > 0 ||
               currentSpine.dataPackageCount > 0 ||
-              currentSpine.indicatorSnapshotCount > 0
+              currentSpine.indicatorSnapshotCount > 0 ||
+              currentSpine.comparisonSnapshotCount > 0
           : false;
 
         if (!countChanged && (!currentAt || !snapshotAt || currentAt === snapshotAt)) {
@@ -1018,7 +1038,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         }
 
         if (countChanged && currentSpine) {
-          return `${link.scenarioSetTitle}: assumptions ${link.sharedSpine?.assumptionSetCount ?? 0} -> ${currentSpine.assumptionSetCount}, packages ${link.sharedSpine?.dataPackageCount ?? 0} -> ${currentSpine.dataPackageCount}, indicators ${link.sharedSpine?.indicatorSnapshotCount ?? 0} -> ${currentSpine.indicatorSnapshotCount}.`;
+          return `${link.scenarioSetTitle}: assumptions ${link.sharedSpine?.assumptionSetCount ?? 0} -> ${currentSpine.assumptionSetCount}, packages ${link.sharedSpine?.dataPackageCount ?? 0} -> ${currentSpine.dataPackageCount}, indicators ${link.sharedSpine?.indicatorSnapshotCount ?? 0} -> ${currentSpine.indicatorSnapshotCount}, comparisons ${link.sharedSpine?.comparisonSnapshotCount ?? 0} -> ${currentSpine.comparisonSnapshotCount}.`;
         }
 
         return `${link.scenarioSetTitle}: ${formatCompactDateTime(snapshotAt)} -> ${formatCompactDateTime(currentAt)}.`;
