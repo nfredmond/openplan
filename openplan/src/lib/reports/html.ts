@@ -303,6 +303,52 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
   </section>`;
 }
 
+function latestScenarioTimestamp(values: Array<string | null | undefined>): string | null {
+  const timestamps = values
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
+function buildScenarioSpineAggregate(data: ReportGenerationData) {
+  const assumptionSetCount = data.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.assumptionSetCount ?? 0),
+    0
+  );
+  const dataPackageCount = data.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.dataPackageCount ?? 0),
+    0
+  );
+  const indicatorSnapshotCount = data.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.indicatorSnapshotCount ?? 0),
+    0
+  );
+  const pendingCount = data.scenarioSetLinks.filter(
+    (link) => link.sharedSpine?.schemaPending
+  ).length;
+
+  return {
+    assumptionSetCount,
+    dataPackageCount,
+    indicatorSnapshotCount,
+    pendingCount,
+    latestAssumptionSetUpdatedAt: latestScenarioTimestamp(
+      data.scenarioSetLinks.map((link) => link.sharedSpine?.latestAssumptionSetUpdatedAt ?? null)
+    ),
+    latestDataPackageUpdatedAt: latestScenarioTimestamp(
+      data.scenarioSetLinks.map((link) => link.sharedSpine?.latestDataPackageUpdatedAt ?? null)
+    ),
+    latestIndicatorSnapshotAt: latestScenarioTimestamp(
+      data.scenarioSetLinks.map((link) => link.sharedSpine?.latestIndicatorSnapshotAt ?? null)
+    ),
+  };
+}
+
 function evidenceChainMarkup(summary: EvidenceChainSummary): string {
   return `<section>
     <h2 class="section-title">Evidence chain summary</h2>
@@ -392,6 +438,8 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
 }
 
 function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
+  const scenarioSpineAggregate = buildScenarioSpineAggregate(data);
+
   if (sectionKey === "project_overview" || sectionKey === "cover_page") {
     return `<div class="two-col">
       <div>
@@ -403,6 +451,8 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
         <div><dt>Workspace</dt><dd>${esc(data.workspace?.name ?? "Unknown")}</dd></div>
         <div><dt>Plan tier</dt><dd>${esc(titleize(data.workspace?.plan ?? "pilot"))}</dd></div>
         <div><dt>Generated basis</dt><dd>Project records + linked runs</dd></div>
+        <div><dt>Scenario basis</dt><dd>${data.scenarioSetLinks.length > 0 ? `${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"}` : "Not linked"}</dd></div>
+        <div><dt>Scenario spine</dt><dd>${data.scenarioSetLinks.length > 0 ? (scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} pending` : `${scenarioSpineAggregate.assumptionSetCount} assumptions • ${scenarioSpineAggregate.dataPackageCount} packages • ${scenarioSpineAggregate.indicatorSnapshotCount} indicators`) : "No scenario spine captured"}</dd></div>
       </dl>
     </div>`;
   }
@@ -488,8 +538,10 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   if (sectionKey === "methods_assumptions" || sectionKey === "assumptions_provenance" || sectionKey === "appendix_references") {
     return `<div class="warning-box">
       <strong>Auditability posture</strong>
-      <p>This report is a structured packet assembled from current OpenPlan project records and linked analysis runs. Reviewers should treat it as evidence-backed output, not freeform narrative copy.</p>
+      <p>This report is a structured packet assembled from current OpenPlan project records, linked analysis runs, and scenario basis context. Reviewers should treat it as evidence-backed output, not freeform narrative copy.</p>
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
+      ${data.scenarioSetLinks.length > 0 ? `<p>Scenario basis at generation: ${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"} • ${scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} shared-spine pending` : `${scenarioSpineAggregate.assumptionSetCount} assumption set${scenarioSpineAggregate.assumptionSetCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.dataPackageCount} data package${scenarioSpineAggregate.dataPackageCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.indicatorSnapshotCount} indicator snapshot${scenarioSpineAggregate.indicatorSnapshotCount === 1 ? "" : "s"}`}</p>` : ""}
+      ${(scenarioSpineAggregate.latestAssumptionSetUpdatedAt || scenarioSpineAggregate.latestDataPackageUpdatedAt || scenarioSpineAggregate.latestIndicatorSnapshotAt) ? `<p>Latest scenario spine timing: ${scenarioSpineAggregate.latestAssumptionSetUpdatedAt ? `assumptions ${esc(formatDateTime(scenarioSpineAggregate.latestAssumptionSetUpdatedAt))}` : "assumptions unavailable"}${scenarioSpineAggregate.latestDataPackageUpdatedAt ? ` • packages ${esc(formatDateTime(scenarioSpineAggregate.latestDataPackageUpdatedAt))}` : ""}${scenarioSpineAggregate.latestIndicatorSnapshotAt ? ` • indicators ${esc(formatDateTime(scenarioSpineAggregate.latestIndicatorSnapshotAt))}` : ""}</p>` : ""}
     </div>`;
   }
 

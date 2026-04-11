@@ -46,6 +46,18 @@ type ProjectRecordSnapshotEntry = {
   latestAt: string | null;
 };
 
+function maxTimestamp(values: Array<string | null | undefined>) {
+  const timestamps = values
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
+}
+
 function buildProjectRecordSnapshot(entries: {
   deliverables: Array<{ title: string; due_date: string | null; created_at: string }>;
   risks: Array<{ title: string; created_at: string }>;
@@ -581,6 +593,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
       stageGateSnapshot,
     });
 
+    const scenarioSpineSummary = {
+      assumptionSetCount: scenarioSetLinks.reduce(
+        (sum, link) => sum + (link.sharedSpine?.assumptionSetCount ?? 0),
+        0
+      ),
+      dataPackageCount: scenarioSetLinks.reduce(
+        (sum, link) => sum + (link.sharedSpine?.dataPackageCount ?? 0),
+        0
+      ),
+      indicatorSnapshotCount: scenarioSetLinks.reduce(
+        (sum, link) => sum + (link.sharedSpine?.indicatorSnapshotCount ?? 0),
+        0
+      ),
+      pendingCount: scenarioSetLinks.filter((link) => link.sharedSpine?.schemaPending).length,
+      latestAssumptionSetUpdatedAt: maxTimestamp(
+        scenarioSetLinks.map((link) => link.sharedSpine?.latestAssumptionSetUpdatedAt ?? null)
+      ),
+      latestDataPackageUpdatedAt: maxTimestamp(
+        scenarioSetLinks.map((link) => link.sharedSpine?.latestDataPackageUpdatedAt ?? null)
+      ),
+      latestIndicatorSnapshotAt: maxTimestamp(
+        scenarioSetLinks.map((link) => link.sharedSpine?.latestIndicatorSnapshotAt ?? null)
+      ),
+    };
+
     const html = buildReportHtml({
       report,
       workspace: workspaceResult.data,
@@ -642,6 +679,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         linkedRunCount: linkedRuns.length,
         scenarioSetLinkCount: scenarioSetLinks.length,
         scenarioSetLinks,
+        scenarioSpineSummary,
         deliverableCount: deliverablesResult.data?.length ?? 0,
         riskCount: risksResult.data?.length ?? 0,
         issueCount: issuesResult.data?.length ?? 0,
