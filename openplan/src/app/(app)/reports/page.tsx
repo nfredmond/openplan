@@ -129,6 +129,14 @@ function asEvidenceChainSummary(
   return {
     linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
     scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
+    scenarioAssumptionSetCount:
+      asNullableNumber(summary.scenarioAssumptionSetCount) ?? 0,
+    scenarioDataPackageCount:
+      asNullableNumber(summary.scenarioDataPackageCount) ?? 0,
+    scenarioIndicatorSnapshotCount:
+      asNullableNumber(summary.scenarioIndicatorSnapshotCount) ?? 0,
+    scenarioSharedSpinePendingCount:
+      asNullableNumber(summary.scenarioSharedSpinePendingCount) ?? 0,
     projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
     totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
     engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",

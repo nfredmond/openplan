@@ -5,6 +5,10 @@ import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 export type EvidenceChainSummary = {
   linkedRunCount: number;
   scenarioSetLinkCount: number;
+  scenarioAssumptionSetCount: number;
+  scenarioDataPackageCount: number;
+  scenarioIndicatorSnapshotCount: number;
+  scenarioSharedSpinePendingCount: number;
   projectRecordGroupCount: number;
   totalProjectRecordCount: number;
   engagementLabel: string;
@@ -49,10 +53,29 @@ export function buildEvidenceChainSummary(input: {
 
   const engagementStatus = input.engagementCampaignCurrent?.status ?? null;
   const blockedGate = input.stageGateSnapshot.blockedGate;
+  const scenarioAssumptionSetCount = input.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.assumptionSetCount ?? 0),
+    0
+  );
+  const scenarioDataPackageCount = input.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.dataPackageCount ?? 0),
+    0
+  );
+  const scenarioIndicatorSnapshotCount = input.scenarioSetLinks.reduce(
+    (sum, link) => sum + (link.sharedSpine?.indicatorSnapshotCount ?? 0),
+    0
+  );
+  const scenarioSharedSpinePendingCount = input.scenarioSetLinks.filter(
+    (link) => link.sharedSpine?.schemaPending
+  ).length;
 
   return {
     linkedRunCount: input.linkedRunCount,
     scenarioSetLinkCount: input.scenarioSetLinks.length,
+    scenarioAssumptionSetCount,
+    scenarioDataPackageCount,
+    scenarioIndicatorSnapshotCount,
+    scenarioSharedSpinePendingCount,
     projectRecordGroupCount,
     totalProjectRecordCount,
     engagementLabel: engagementStatus ? titleize(engagementStatus) : "Not linked",

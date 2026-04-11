@@ -503,12 +503,15 @@ export function describeEvidenceChainSummary(
   }
 
   const scenarioLabel = `${summary.scenarioSetLinkCount} scenario set${summary.scenarioSetLinkCount === 1 ? "" : "s"}`;
+  const scenarioSpineLabel = summary.scenarioSharedSpinePendingCount > 0
+    ? `${summary.scenarioSharedSpinePendingCount} spine pending`
+    : `${summary.scenarioAssumptionSetCount} assumptions · ${summary.scenarioDataPackageCount} packages · ${summary.scenarioIndicatorSnapshotCount} indicators`;
   const projectRecordLabel = `${summary.totalProjectRecordCount} project record${summary.totalProjectRecordCount === 1 ? "" : "s"}`;
   const linkedRunLabel = `${summary.linkedRunCount} linked run${summary.linkedRunCount === 1 ? "" : "s"}`;
 
   return {
     headline: `${linkedRunLabel} · ${scenarioLabel} · ${projectRecordLabel}`,
-    detail: `${summary.engagementLabel} engagement · ${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready · ${summary.stageGateLabel} governance`,
+    detail: `${scenarioSpineLabel} · ${summary.engagementLabel} engagement · ${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready · ${summary.stageGateLabel} governance`,
     blockedGateDetail: summary.stageGateBlockedGateLabel
       ? `Blocked gate: ${summary.stageGateBlockedGateLabel}`
       : null,

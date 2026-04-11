@@ -310,6 +310,9 @@ function evidenceChainMarkup(summary: EvidenceChainSummary): string {
     <div class="metrics-grid">
       <div><span class="metric-label">Linked runs</span><strong>${summary.linkedRunCount}</strong></div>
       <div><span class="metric-label">Scenario sets</span><strong>${summary.scenarioSetLinkCount}</strong></div>
+      <div><span class="metric-label">Scenario assumptions</span><strong>${summary.scenarioAssumptionSetCount}</strong></div>
+      <div><span class="metric-label">Scenario data packages</span><strong>${summary.scenarioDataPackageCount}</strong></div>
+      <div><span class="metric-label">Indicator snapshots</span><strong>${summary.scenarioIndicatorSnapshotCount}</strong></div>
       <div><span class="metric-label">Project record groups</span><strong>${summary.projectRecordGroupCount}</strong></div>
       <div><span class="metric-label">Project records</span><strong>${summary.totalProjectRecordCount}</strong></div>
       <div><span class="metric-label">Engagement posture</span><strong>${esc(summary.engagementLabel)}</strong></div>
@@ -317,6 +320,11 @@ function evidenceChainMarkup(summary: EvidenceChainSummary): string {
       <div><span class="metric-label">Stage-gate posture</span><strong>${esc(summary.stageGateLabel)}</strong></div>
       <div><span class="metric-label">Governance counts</span><strong>${summary.stageGatePassCount} pass • ${summary.stageGateHoldCount} hold</strong></div>
     </div>
+    ${
+      summary.scenarioSharedSpinePendingCount > 0
+        ? `<p class="meta" style="margin-top: 14px;">Scenario shared-spine schema was pending for ${summary.scenarioSharedSpinePendingCount} linked set${summary.scenarioSharedSpinePendingCount === 1 ? "" : "s"} at generation.</p>`
+        : ""
+    }
     ${
       summary.stageGateBlockedGateLabel
         ? `<p class="meta" style="margin-top: 14px;">Blocked gate at generation: ${esc(summary.stageGateBlockedGateLabel)}</p>`
