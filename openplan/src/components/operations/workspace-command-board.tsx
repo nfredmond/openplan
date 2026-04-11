@@ -70,6 +70,9 @@ export function WorkspaceCommandBoard({
             {summary.counts.projectFundingNeedAnchorProjects > 0
               ? `, ${summary.counts.projectFundingNeedAnchorProjects} missing funding anchors`
               : ""}
+            {summary.counts.projectFundingSourcingProjects > 0
+              ? `, ${summary.counts.projectFundingSourcingProjects} needing sourcing`
+              : ""}
             {summary.counts.projectFundingGapProjects > 0
               ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
               : "."}

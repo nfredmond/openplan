@@ -41,6 +41,7 @@ function buildWorkspaceContext(): WorkspaceAssistantContext {
         openFundingOpportunities: 1,
         closingSoonFundingOpportunities: 0,
         projectFundingNeedAnchorProjects: 1,
+        projectFundingSourcingProjects: 0,
         projectFundingGapProjects: 0,
         queueDepth: 1,
       },

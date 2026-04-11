@@ -79,6 +79,38 @@ describe("workspace operations summary", () => {
       plans: [],
       programs: [],
       reports: [],
+      fundingOpportunities: [],
+      projectFundingProfiles: [
+        {
+          project_id: "project-gap",
+          funding_need_amount: 500000,
+          local_match_need_amount: 50000,
+        },
+      ],
+      now: new Date("2026-04-11T12:00:00.000Z"),
+    });
+
+    expect(summary.counts.projectFundingNeedAnchorProjects).toBe(0);
+    expect(summary.counts.projectFundingSourcingProjects).toBe(1);
+    expect(summary.counts.projectFundingGapProjects).toBe(0);
+    expect(summary.nextCommand?.key).toBe("source-project-funding-opportunities");
+    expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
+  });
+
+  it("surfaces measurable funding gaps after sourcing exists", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-gap",
+          name: "Gap Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
       fundingOpportunities: [
         {
           id: "opp-gap-1",
@@ -104,6 +136,7 @@ describe("workspace operations summary", () => {
     });
 
     expect(summary.counts.projectFundingNeedAnchorProjects).toBe(0);
+    expect(summary.counts.projectFundingSourcingProjects).toBe(0);
     expect(summary.counts.projectFundingGapProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("close-project-funding-gaps");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");

@@ -164,6 +164,7 @@ export type WorkspaceOperationsSummary = {
     openFundingOpportunities: number;
     closingSoonFundingOpportunities: number;
     projectFundingNeedAnchorProjects: number;
+    projectFundingSourcingProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
   };
@@ -433,16 +434,17 @@ export function buildWorkspaceOperationsSummary({
     .map((profile) => {
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
+      const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
       const summary = buildProjectFundingStackSummary(
         profile,
         [],
-        (fundingOpportunitiesByProjectId.get(profile.project_id) ?? []).map((opportunity) => ({
+        opportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
         }))
       );
-      if (!summary.hasTargetNeed || summary.unfundedAfterLikelyAmount <= 0) {
+      if (!summary.hasTargetNeed || opportunities.length === 0 || summary.unfundedAfterLikelyAmount <= 0) {
         return null;
       }
       return {
@@ -452,6 +454,30 @@ export function buildWorkspaceOperationsSummary({
     })
     .filter((item): item is { project: WorkspaceOperationsProjectRow; summary: ReturnType<typeof buildProjectFundingStackSummary> } => Boolean(item))
     .sort((left, right) => right.summary.unfundedAfterLikelyAmount - left.summary.unfundedAfterLikelyAmount);
+  const fundingSourcingProjects = projectFundingProfiles
+    .map((profile) => {
+      const project = projects.find((item) => item.id === profile.project_id);
+      if (!project) return null;
+      const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const summary = buildProjectFundingStackSummary(
+        profile,
+        [],
+        opportunities.map((opportunity) => ({
+          expected_award_amount: opportunity.expectedAwardAmount ?? null,
+          decision_state: opportunity.decisionState ?? null,
+          opportunity_status: opportunity.opportunityStatus ?? null,
+        }))
+      );
+      if (!summary.hasTargetNeed || opportunities.length > 0) {
+        return null;
+      }
+      return {
+        project,
+        summary,
+      };
+    })
+    .filter((item): item is { project: WorkspaceOperationsProjectRow; summary: ReturnType<typeof buildProjectFundingStackSummary> } => Boolean(item))
+    .sort((left, right) => right.summary.fundingNeedAmount - left.summary.fundingNeedAmount);
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -567,10 +593,32 @@ export function buildWorkspaceOperationsSummary({
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
       targetProjectId: firstFundingGapProject?.project.id ?? null,
       tone: "warning",
-      priority: 4,
+      priority: 5,
       badges: [
         { label: "Gap projects", value: fundingGapProjects.length },
         { label: "Largest gap", value: firstFundingGapProject ? formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount) : null },
+      ],
+    });
+  }
+
+  if (fundingSourcingProjects.length > 0) {
+    const firstFundingSourcingProject = fundingSourcingProjects[0];
+    queueCandidates.push({
+      key: "source-project-funding-opportunities",
+      title: "Source project funding opportunities",
+      detail: `${fundingSourcingProjects.length} project funding stack${fundingSourcingProjects.length === 1 ? " has" : "s have"} a recorded funding need but still no linked funding opportunities.${firstFundingSourcingProject ? ` Reopen ${firstFundingSourcingProject.project.name} first and source candidate programs.` : ""}`,
+      href: firstFundingSourcingProject
+        ? `/projects/${firstFundingSourcingProject.project.id}#project-funding-opportunities`
+        : "/projects",
+      targetProjectId: firstFundingSourcingProject?.project.id ?? null,
+      tone: "warning",
+      priority: 4,
+      badges: [
+        { label: "Needs sourcing", value: fundingSourcingProjects.length },
+        {
+          label: "Largest unfunded need",
+          value: firstFundingSourcingProject ? formatCurrency(firstFundingSourcingProject.summary.fundingNeedAmount) : null,
+        },
       ],
     });
   }
@@ -582,7 +630,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${plansNeedingSetup} plan record${plansNeedingSetup === 1 ? " still needs" : "s still need"} core setup around project linkage, geography, or horizon year.${firstPlanNeedingSetup?.title ? ` Reopen ${firstPlanNeedingSetup.title} first.` : ""}`,
       href: "/plans",
       tone: "info",
-      priority: 5,
+      priority: 6,
       badges: [
         { label: "Needs setup", value: plansNeedingSetup },
         { label: "Plans", value: plans.length },
@@ -597,7 +645,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${activePrograms} program package${activePrograms === 1 ? " is" : "s are"} still in assembly, submission, or review posture.${firstActiveProgram?.title ? ` ${firstActiveProgram.title} is a good next package anchor.` : ""}`,
       href: "/programs",
       tone: "info",
-      priority: 6,
+      priority: 7,
       badges: [
         { label: "Active programs", value: activePrograms },
         { label: "Programs", value: programs.length },
@@ -612,7 +660,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can shape refresh and narrative choices.${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
       href: "/reports?posture=comparison-backed",
       tone: "info",
-      priority: 7,
+      priority: 8,
       badges: [
         { label: "Comparison-backed", value: comparisonBackedReports },
         { label: "Ready comparisons", value: firstComparisonBackedReport?.comparisonAggregate?.readyComparisonSnapshotCount ?? null },
@@ -655,6 +703,7 @@ export function buildWorkspaceOperationsSummary({
       openFundingOpportunities,
       closingSoonFundingOpportunities,
       projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
+      projectFundingSourcingProjects: fundingSourcingProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },
