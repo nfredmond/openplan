@@ -457,9 +457,10 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
 }
 
 function buildReportOperations(context: ReportAssistantContext): AssistantQuickLink[] {
+  const reportTargetKind: AssistantQuickLink["targetKind"] = context.kind === "rtp_packet_report" ? "rtp_packet_report" : "report";
   return compactQuickLinks([
-    quickLink("report-release-agent", "Run release check in panel", `/reports/${context.report.id}`, {
-      targetKind: "report",
+    quickLink("report-release-agent", context.kind === "rtp_packet_report" ? "Run RTP release check in panel" : "Run release check in panel", `/reports/${context.report.id}`, {
+      targetKind: reportTargetKind,
       actionClass: "review_packet",
       executionMode: "future_agent_action",
       priority: "primary",
@@ -470,12 +471,15 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
       approval: "safe",
       auditEvent: "assistant.operation.report.release_agent",
       auditNote: "This is a grounded packet review only, it does not publish or mutate the report.",
-      workflowId: "report-release",
-      prompt: "Is this report ready to share, and what still needs verification?",
-      promptLabel: "Run release check in panel",
+      workflowId: context.kind === "rtp_packet_report" ? "rtp-packet-release" : "report-release",
+      prompt:
+        context.kind === "rtp_packet_report"
+          ? "Is this RTP board packet ready to share, and what still needs verification before release?"
+          : "Is this report ready to share, and what still needs verification?",
+      promptLabel: context.kind === "rtp_packet_report" ? "Run RTP release check in panel" : "Run release check in panel",
     }),
-    quickLink("report-detail", "Open report detail", `/reports/${context.report.id}`, {
-      targetKind: "report",
+    quickLink("report-detail", context.kind === "rtp_packet_report" ? "Open RTP packet detail" : "Open report detail", `/reports/${context.report.id}`, {
+      targetKind: reportTargetKind,
       actionClass: "review_packet",
       priority: "primary",
       statusLabel: context.rtpCycle ? "RTP packet review" : "Packet review",
@@ -575,6 +579,7 @@ export function buildAssistantOperations(context: AssistantContext): AssistantQu
     case "model":
       return buildModelOperations(context);
     case "report":
+    case "rtp_packet_report":
       return buildReportOperations(context);
     case "run":
       return buildRunOperations(context);

@@ -403,6 +403,7 @@ export function buildAssistantPreview(context: AssistantContext): AssistantPrevi
     case "model":
       return buildModelPreview(context);
     case "report":
+    case "rtp_packet_report":
       return buildReportPreview(context);
     case "run":
       return buildRunPreview(context);
@@ -966,7 +967,9 @@ function buildModelResponse(context: ModelAssistantContext, workflowId: string):
 }
 
 function buildReportResponse(context: ReportAssistantContext, workflowId: string): AssistantResponse {
-  const label = findAssistantAction(context.kind, workflowId)?.label ?? "Report audit";
+  const label =
+    findAssistantAction(context.kind, workflowId)?.label ??
+    (context.kind === "rtp_packet_report" ? "RTP packet audit" : "Report audit");
   const holdCount = context.runAudit.filter((item) => item.gate.decision !== "PASS").length;
   const packetFreshness = getReportPacketFreshness({
     latestArtifactKind: context.report.latestArtifactKind,
@@ -974,7 +977,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
     updatedAt: context.report.updatedAt,
   });
 
-  if (workflowId === "report-release") {
+  if (workflowId === "report-release" || workflowId === "rtp-packet-release") {
     return {
       workflowId,
       label,
@@ -1133,6 +1136,7 @@ export function buildAssistantResponse(
     case "model":
       return buildModelResponse(context, workflowId);
     case "report":
+    case "rtp_packet_report":
       return buildReportResponse(context, workflowId);
     case "run":
       return buildRunResponse(context, workflowId);

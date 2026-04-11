@@ -328,7 +328,7 @@ export type ModelAssistantContext = {
 };
 
 export type ReportAssistantContext = {
-  kind: "report";
+  kind: "report" | "rtp_packet_report";
   workspace: {
     id: string;
     name: string | null;
@@ -1599,7 +1599,7 @@ async function loadReportContext(
     : { data: null };
 
   return {
-    kind: "report",
+    kind: report.report_type === "board_packet" && report.rtp_cycle_id ? "rtp_packet_report" : "report",
     workspace,
     report: {
       id: report.id,

@@ -9,6 +9,7 @@ export type AssistantTargetKind =
   | "scenario_set"
   | "model"
   | "report"
+  | "rtp_packet_report"
   | "run";
 
 export type AssistantTarget = {
@@ -252,6 +253,20 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       label: "Release check",
       description: "Call out what still needs review before sharing the packet.",
       prompt: "Is this report ready to share, and what still needs verification?",
+    },
+  ],
+  rtp_packet_report: [
+    {
+      id: "rtp-packet-audit",
+      label: "RTP packet audit",
+      description: "Summarize RTP board-packet provenance, cycle linkage, and artifact posture.",
+      prompt: "Audit this RTP packet for cycle provenance, packet freshness, and board-packet posture.",
+    },
+    {
+      id: "rtp-packet-release",
+      label: "RTP release check",
+      description: "Call out what still needs review before this RTP board packet is ready for board or public use.",
+      prompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
     },
   ],
   run: [
@@ -560,6 +575,11 @@ export function resolveAssistantWorkflowId(
   if (kind === "report") {
     if (includesAny(normalized, ["share", "release", "client", "ready", "verify"])) return "report-release";
     return "report-audit";
+  }
+
+  if (kind === "rtp_packet_report") {
+    if (includesAny(normalized, ["share", "release", "board", "public", "ready", "verify"])) return "rtp-packet-release";
+    return "rtp-packet-audit";
   }
 
   if (kind === "run" || kind === "analysis_studio") {
