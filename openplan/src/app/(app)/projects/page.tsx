@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import {
+  describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
@@ -132,6 +134,7 @@ export default async function ProjectsPage() {
       ProjectReportRow & {
         packetFreshness: ReturnType<typeof getReportPacketFreshness>;
         evidenceChainDigest: ReturnType<typeof describeEvidenceChainSummary>;
+        comparisonDigest: ReturnType<typeof describeComparisonSnapshotAggregate>;
       }
     >
   >();
@@ -151,6 +154,11 @@ export default async function ProjectsPage() {
         generatedAt: report.generated_at,
         updatedAt: report.updated_at,
       }),
+      comparisonDigest: describeComparisonSnapshotAggregate(
+        parseStoredComparisonSnapshotAggregate(
+          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+        )
+      ),
       evidenceChainDigest: describeEvidenceChainSummary(
         parseStoredEvidenceChainSummary(
           latestArtifactByReportId.get(report.id)?.metadata_json ?? null
@@ -186,6 +194,9 @@ export default async function ProjectsPage() {
     const governanceHoldCount = reports.filter((report) =>
       Boolean(report.evidenceChainDigest?.blockedGateDetail)
     ).length;
+    const comparisonBackedCount = reports.filter((report) =>
+      Boolean(report.comparisonDigest)
+    ).length;
 
     return {
       ...project,
@@ -198,6 +209,7 @@ export default async function ProjectsPage() {
         refreshRecommendedCount,
         noPacketCount,
         evidenceBackedCount,
+        comparisonBackedCount,
         governanceHoldCount,
         recommendedReport: reports[0] ?? null,
       },
@@ -218,6 +230,9 @@ export default async function ProjectsPage() {
   ).length;
   const projectsWithEvidenceBackedReportsCount = projects.filter(
     (project) => project.reportSummary.evidenceBackedCount > 0
+  ).length;
+  const projectsWithComparisonBackedReportsCount = projects.filter(
+    (project) => project.reportSummary.comparisonBackedCount > 0
   ).length;
   const projectsLinkedToRtpCount = projects.filter((project) => project.rtpSummary.totalCount > 0).length;
   const governanceHoldReportCount = projects.reduce(
@@ -267,6 +282,10 @@ export default async function ProjectsPage() {
             <div className="module-record-chip">
               <span>Evidence-backed</span>
               <strong>{projectsWithEvidenceBackedReportsCount}</strong>
+            </div>
+            <div className="module-record-chip">
+              <span>Comparison-backed</span>
+              <strong>{projectsWithComparisonBackedReportsCount}</strong>
             </div>
             <div className="module-record-chip">
               <span>Governance hold</span>
@@ -367,6 +386,9 @@ export default async function ProjectsPage() {
                     {project.reportSummary.evidenceBackedCount > 0 ? (
                       <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
                     ) : null}
+                    {project.reportSummary.comparisonBackedCount > 0 ? (
+                      <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
+                    ) : null}
                     {project.reportSummary.governanceHoldCount > 0 ? (
                       <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
                     ) : null}
@@ -395,6 +417,12 @@ export default async function ProjectsPage() {
                             {project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail
                               ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
                               : ""}
+                          </p>
+                        ) : null}
+                        {project.reportSummary.recommendedReport.comparisonDigest ? (
+                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                            {project.reportSummary.recommendedReport.comparisonDigest.headline}
+                            {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
                           </p>
                         ) : null}
                       </>

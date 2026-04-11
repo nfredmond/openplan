@@ -57,6 +57,11 @@ export type ReportComparisonSnapshotAggregate = {
   latestComparisonSnapshotUpdatedAt: string | null;
 };
 
+export type ReportComparisonSnapshotDigest = {
+  headline: string;
+  detail: string;
+};
+
 export function getReportPacketActionLabel(freshnessLabel: string) {
   switch (freshnessLabel) {
     case "Refresh recommended":
@@ -669,6 +674,26 @@ export function describeEvidenceChainSummary(
     blockedGateDetail: summary.stageGateBlockedGateLabel
       ? `Blocked gate: ${summary.stageGateBlockedGateLabel}`
       : null,
+  };
+}
+
+export function describeComparisonSnapshotAggregate(
+  summary: ReportComparisonSnapshotAggregate | null | undefined
+): ReportComparisonSnapshotDigest | null {
+  if (!summary || summary.comparisonSnapshotCount <= 0) {
+    return null;
+  }
+
+  const comparisonLabel = `${summary.comparisonSnapshotCount} saved comparison${summary.comparisonSnapshotCount === 1 ? "" : "s"}`;
+  const readyLabel = `${summary.readyComparisonSnapshotCount} ready`;
+  const deltaLabel = `${summary.indicatorDeltaCount} indicator delta${summary.indicatorDeltaCount === 1 ? "" : "s"}`;
+  const updatedLabel = summary.latestComparisonSnapshotUpdatedAt
+    ? `Latest comparison updated ${formatDateTime(summary.latestComparisonSnapshotUpdatedAt)}`
+    : "Latest comparison timing unavailable";
+
+  return {
+    headline: `${comparisonLabel} · ${readyLabel}`,
+    detail: `${deltaLabel} · ${updatedLabel}`,
   };
 }
 

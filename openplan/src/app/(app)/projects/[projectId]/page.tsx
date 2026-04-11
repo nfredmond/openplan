@@ -43,6 +43,7 @@ import {
   fundingOpportunityStatusTone,
 } from "@/lib/programs/catalog";
 import {
+  describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   formatReportStatusLabel,
   formatReportTypeLabel,
@@ -50,6 +51,7 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
   reportStatusTone,
 } from "@/lib/reports/catalog";
@@ -784,6 +786,11 @@ export default async function ProjectDetailPage({
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
+      const comparisonDigest = describeComparisonSnapshotAggregate(
+        parseStoredComparisonSnapshotAggregate(
+          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+        )
+      );
       const evidenceChainDigest = describeEvidenceChainSummary(
         parseStoredEvidenceChainSummary(
           latestArtifactByReportId.get(report.id)?.metadata_json ?? null
@@ -797,6 +804,7 @@ export default async function ProjectDetailPage({
           generatedAt: report.generated_at,
           updatedAt: report.updated_at,
         }),
+        comparisonDigest,
         evidenceChainDigest,
       };
     })
@@ -819,6 +827,9 @@ export default async function ProjectDetailPage({
   ).length;
   const evidenceBackedReportCount = projectReports.filter(
     (report) => Boolean(report.evidenceChainDigest)
+  ).length;
+  const comparisonBackedReportCount = projectReports.filter(
+    (report) => Boolean(report.comparisonDigest)
   ).length;
   const governanceHoldReportCount = projectReports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
@@ -1157,6 +1168,19 @@ export default async function ProjectDetailPage({
                 {recommendedReport?.packetFreshness.detail ??
                   "No reports are linked to this project yet."}
               </p>
+              {recommendedReport?.comparisonDigest ? (
+                <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Comparison posture
+                  </p>
+                  <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
+                    {recommendedReport.comparisonDigest.headline}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {recommendedReport.comparisonDigest.detail}
+                  </p>
+                </div>
+              ) : null}
               <div className="mt-4 flex flex-wrap gap-2">
                 {recommendedReport ? (
                   <Link
@@ -1195,6 +1219,9 @@ export default async function ProjectDetailPage({
                 ) : (
                   <StatusBadge tone="success">Packets current</StatusBadge>
                 )}
+                {comparisonBackedReportCount > 0 ? (
+                  <StatusBadge tone="info">{comparisonBackedReportCount} comparison-backed</StatusBadge>
+                ) : null}
               </div>
 
               <div className="mt-4 space-y-3">
@@ -1243,6 +1270,19 @@ export default async function ProjectDetailPage({
                             {report.evidenceChainDigest.blockedGateDetail}
                           </p>
                         ) : null}
+                      </div>
+                    ) : null}
+                    {report.comparisonDigest ? (
+                      <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                          Comparison posture
+                        </p>
+                        <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
+                          {report.comparisonDigest.headline}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {report.comparisonDigest.detail}
+                        </p>
                       </div>
                     ) : null}
                   </Link>
