@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
 import { BillingCheckoutLauncher } from "@/components/billing/billing-checkout-launcher";
+import { BillingTriageLinkCopy } from "@/components/billing/billing-triage-link-copy";
 import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -454,6 +455,17 @@ export default async function BillingPage({
     requestedFocusedInvoiceId && registerScopedInvoiceRecords.some((invoice) => invoice.id === requestedFocusedInvoiceId)
       ? requestedFocusedInvoiceId
       : null;
+  const focusedTriageHref = activeFocusedInvoiceId
+    ? buildBillingInvoiceTriageHref({
+        workspaceId,
+        checkoutState,
+        checkoutPlan,
+        invoiceId: activeFocusedInvoiceId,
+        linkage: linkageFilter,
+        overdue: overdueFilter,
+        projectId: activeProjectFilterId,
+      })
+    : null;
   const linkageFilterOptions = [
     {
       value: "all" as const,
@@ -847,6 +859,7 @@ export default async function BillingPage({
             <div className="mt-3 flex flex-wrap items-center gap-2 border border-sky-300/70 bg-sky-50/70 px-3 py-3 text-sm text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100">
               <StatusBadge tone="info">Focused row</StatusBadge>
               <span>The register is highlighting the invoice you opened from billing triage.</span>
+              {focusedTriageHref ? <BillingTriageLinkCopy href={focusedTriageHref} /> : null}
               <Link
                 href={buildBillingHref({
                   workspaceId,
