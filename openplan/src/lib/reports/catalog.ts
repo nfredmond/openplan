@@ -40,6 +40,16 @@ export type ReportEvidenceChainDigest = {
   blockedGateDetail: string | null;
 };
 
+export type ReportScenarioSpineSummary = {
+  assumptionSetCount: number;
+  dataPackageCount: number;
+  indicatorSnapshotCount: number;
+  pendingCount: number;
+  latestAssumptionSetUpdatedAt: string | null;
+  latestDataPackageUpdatedAt: string | null;
+  latestIndicatorSnapshotAt: string | null;
+};
+
 export function getReportPacketActionLabel(freshnessLabel: string) {
   switch (freshnessLabel) {
     case "Refresh recommended":
@@ -492,6 +502,79 @@ export function getReportPacketFreshness({
     label: "Packet current",
     tone: "success",
     detail: "The latest packet is current with the saved report record.",
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asNullableNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
+  return metadata ? asRecord(metadata.sourceContext) : null;
+}
+
+export function parseStoredEvidenceChainSummary(
+  metadata: Record<string, unknown> | null | undefined
+): EvidenceChainSummary | null {
+  const sourceContext = asSourceContext(metadata);
+  const summary = asRecord(sourceContext?.evidenceChainSummary);
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
+    scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
+    scenarioAssumptionSetCount:
+      asNullableNumber(summary.scenarioAssumptionSetCount) ?? 0,
+    scenarioDataPackageCount:
+      asNullableNumber(summary.scenarioDataPackageCount) ?? 0,
+    scenarioIndicatorSnapshotCount:
+      asNullableNumber(summary.scenarioIndicatorSnapshotCount) ?? 0,
+    scenarioSharedSpinePendingCount:
+      asNullableNumber(summary.scenarioSharedSpinePendingCount) ?? 0,
+    projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
+    totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
+    engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",
+    engagementItemCount: asNullableNumber(summary.engagementItemCount) ?? 0,
+    engagementReadyForHandoffCount:
+      asNullableNumber(summary.engagementReadyForHandoffCount) ?? 0,
+    stageGateLabel: asNullableString(summary.stageGateLabel) ?? "Unknown",
+    stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
+    stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
+    stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
+  };
+}
+
+export function parseStoredScenarioSpineSummary(
+  metadata: Record<string, unknown> | null | undefined
+): ReportScenarioSpineSummary | null {
+  const sourceContext = asSourceContext(metadata);
+  const summary = asRecord(sourceContext?.scenarioSpineSummary);
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    assumptionSetCount: asNullableNumber(summary.assumptionSetCount) ?? 0,
+    dataPackageCount: asNullableNumber(summary.dataPackageCount) ?? 0,
+    indicatorSnapshotCount: asNullableNumber(summary.indicatorSnapshotCount) ?? 0,
+    pendingCount: asNullableNumber(summary.pendingCount) ?? 0,
+    latestAssumptionSetUpdatedAt: asNullableString(summary.latestAssumptionSetUpdatedAt),
+    latestDataPackageUpdatedAt: asNullableString(summary.latestDataPackageUpdatedAt),
+    latestIndicatorSnapshotAt: asNullableString(summary.latestIndicatorSnapshotAt),
   };
 }
 

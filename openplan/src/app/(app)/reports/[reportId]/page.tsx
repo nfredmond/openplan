@@ -23,6 +23,8 @@ import {
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
+  parseStoredEvidenceChainSummary,
+  parseStoredScenarioSpineSummary,
   reportStatusTone,
   titleize,
 } from "@/lib/reports/catalog";
@@ -500,6 +502,12 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
   const runAudit = asRunAudit(latestArtifact?.metadata_json);
   const sourceContext = asSourceContext(latestArtifact?.metadata_json);
+  const storedEvidenceChainSummary = parseStoredEvidenceChainSummary(
+    latestArtifact?.metadata_json ?? null
+  );
+  const storedScenarioSpineSummary = parseStoredScenarioSpineSummary(
+    latestArtifact?.metadata_json ?? null
+  );
   const engagementCampaign =
     (engagementCampaignResult.data as EngagementCampaignLinkRow | null) ?? null;
   const engagementPublicHref =
@@ -666,7 +674,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const enabledSections = sectionList.filter((s) => s.enabled).length;
   const runTitleById = new Map(runs.map((run) => [run.id, run.title]));
   const liveScenarioSetIds = scenarioSetLinks.map((item) => item.scenarioSetId);
-  const evidenceChainSummary = buildEvidenceChainSummary({
+  const liveEvidenceChainSummary = buildEvidenceChainSummary({
     linkedRunCount: runs.length,
     scenarioSetLinks,
     projectRecordsSnapshot: {
@@ -932,6 +940,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     ],
   ]);
 
+  const evidenceChainSummary = storedEvidenceChainSummary ?? liveEvidenceChainSummary;
   const evidenceSummaryDigest = describeEvidenceChainSummary(
     sourceContext ? evidenceChainSummary : null
   );
@@ -1455,9 +1464,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       Scenario spine
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      {evidenceChainSummary.scenarioSharedSpinePendingCount > 0
-                        ? `${evidenceChainSummary.scenarioSharedSpinePendingCount} pending set${evidenceChainSummary.scenarioSharedSpinePendingCount === 1 ? "" : "s"}`
-                        : `${evidenceChainSummary.scenarioAssumptionSetCount} assumptions · ${evidenceChainSummary.scenarioDataPackageCount} packages · ${evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators`}
+                      {(storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount) > 0
+                        ? `${storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount} pending set${(storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount) === 1 ? "" : "s"}`
+                        : `${storedScenarioSpineSummary?.assumptionSetCount ?? evidenceChainSummary.scenarioAssumptionSetCount} assumptions · ${storedScenarioSpineSummary?.dataPackageCount ?? evidenceChainSummary.scenarioDataPackageCount} packages · ${storedScenarioSpineSummary?.indicatorSnapshotCount ?? evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators`}
                     </p>
                   </div>
                   <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
@@ -1765,9 +1774,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     Scenario-set provenance was derived from report-linked runs and persisted with this artifact.
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Shared spine totals at generation: {evidenceChainSummary.scenarioAssumptionSetCount} assumption set{evidenceChainSummary.scenarioAssumptionSetCount === 1 ? "" : "s"} · {evidenceChainSummary.scenarioDataPackageCount} data package{evidenceChainSummary.scenarioDataPackageCount === 1 ? "" : "s"} · {evidenceChainSummary.scenarioIndicatorSnapshotCount} indicator snapshot{evidenceChainSummary.scenarioIndicatorSnapshotCount === 1 ? "" : "s"}
-                    {evidenceChainSummary.scenarioSharedSpinePendingCount > 0
-                      ? ` · ${evidenceChainSummary.scenarioSharedSpinePendingCount} pending schema-backed set${evidenceChainSummary.scenarioSharedSpinePendingCount === 1 ? "" : "s"}`
+                    Shared spine totals at generation: {storedScenarioSpineSummary?.assumptionSetCount ?? evidenceChainSummary.scenarioAssumptionSetCount} assumption set{(storedScenarioSpineSummary?.assumptionSetCount ?? evidenceChainSummary.scenarioAssumptionSetCount) === 1 ? "" : "s"} · {storedScenarioSpineSummary?.dataPackageCount ?? evidenceChainSummary.scenarioDataPackageCount} data package{(storedScenarioSpineSummary?.dataPackageCount ?? evidenceChainSummary.scenarioDataPackageCount) === 1 ? "" : "s"} · {storedScenarioSpineSummary?.indicatorSnapshotCount ?? evidenceChainSummary.scenarioIndicatorSnapshotCount} indicator snapshot{(storedScenarioSpineSummary?.indicatorSnapshotCount ?? evidenceChainSummary.scenarioIndicatorSnapshotCount) === 1 ? "" : "s"}
+                    {(storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount) > 0
+                      ? ` · ${storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount} pending schema-backed set${(storedScenarioSpineSummary?.pendingCount ?? evidenceChainSummary.scenarioSharedSpinePendingCount) === 1 ? "" : "s"}`
                       : ""}
                   </p>
                 </div>

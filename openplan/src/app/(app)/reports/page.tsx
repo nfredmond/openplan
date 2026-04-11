@@ -31,11 +31,12 @@ import {
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
   normalizeReportPostureFilter,
+  parseStoredEvidenceChainSummary,
+  parseStoredScenarioSpineSummary,
   reportStatusTone,
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
-import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
@@ -85,22 +86,6 @@ type ReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  return value as Record<string, unknown>;
-}
-
-function asNullableString(value: unknown): string | null {
-  return typeof value === "string" ? value : null;
-}
-
-function asNullableNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
 function buildReportsFilterHref(filters: {
   freshness: ReportFreshnessFilter;
   posture: ReportPostureFilter;
@@ -115,39 +100,6 @@ function buildReportsFilterHref(filters: {
 
   const query = params.toString();
   return query ? `/reports?${query}` : "/reports";
-}
-
-function asEvidenceChainSummary(
-  metadata: Record<string, unknown> | null | undefined
-): EvidenceChainSummary | null {
-  const sourceContext = asRecord(metadata?.sourceContext);
-  const summary = asRecord(sourceContext?.evidenceChainSummary);
-  if (!summary) {
-    return null;
-  }
-
-  return {
-    linkedRunCount: asNullableNumber(summary.linkedRunCount) ?? 0,
-    scenarioSetLinkCount: asNullableNumber(summary.scenarioSetLinkCount) ?? 0,
-    scenarioAssumptionSetCount:
-      asNullableNumber(summary.scenarioAssumptionSetCount) ?? 0,
-    scenarioDataPackageCount:
-      asNullableNumber(summary.scenarioDataPackageCount) ?? 0,
-    scenarioIndicatorSnapshotCount:
-      asNullableNumber(summary.scenarioIndicatorSnapshotCount) ?? 0,
-    scenarioSharedSpinePendingCount:
-      asNullableNumber(summary.scenarioSharedSpinePendingCount) ?? 0,
-    projectRecordGroupCount: asNullableNumber(summary.projectRecordGroupCount) ?? 0,
-    totalProjectRecordCount: asNullableNumber(summary.totalProjectRecordCount) ?? 0,
-    engagementLabel: asNullableString(summary.engagementLabel) ?? "Unknown",
-    engagementItemCount: asNullableNumber(summary.engagementItemCount) ?? 0,
-    engagementReadyForHandoffCount:
-      asNullableNumber(summary.engagementReadyForHandoffCount) ?? 0,
-    stageGateLabel: asNullableString(summary.stageGateLabel) ?? "Unknown",
-    stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
-    stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
-    stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
-  };
 }
 
 export default async function ReportsPage({
@@ -224,7 +176,12 @@ export default async function ReportsPage({
   const reports = ((reportsData ?? []) as ReportRow[])
     .map((report) => {
       const latestArtifact = latestArtifactByReportId.get(report.id) ?? null;
-      const evidenceChainSummary = asEvidenceChainSummary(latestArtifact?.metadata_json ?? null);
+      const evidenceChainSummary = parseStoredEvidenceChainSummary(
+        latestArtifact?.metadata_json ?? null
+      );
+      const scenarioSpineSummary = parseStoredScenarioSpineSummary(
+        latestArtifact?.metadata_json ?? null
+      );
 
       return {
         ...report,
@@ -241,6 +198,7 @@ export default async function ReportsPage({
             (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
         }),
         evidenceChainSummary,
+        scenarioSpineSummary,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
       };
     })
@@ -282,16 +240,16 @@ export default async function ReportsPage({
     (report) => (report.evidenceChainSummary?.scenarioSharedSpinePendingCount ?? 0) > 0
   ).length;
   const scenarioSpineVisibleCount = reports.filter((report) => {
-    const summary = report.evidenceChainSummary;
+    const summary = report.scenarioSpineSummary;
     if (!summary) {
       return false;
     }
 
     return (
-      summary.scenarioAssumptionSetCount > 0 ||
-      summary.scenarioDataPackageCount > 0 ||
-      summary.scenarioIndicatorSnapshotCount > 0 ||
-      summary.scenarioSharedSpinePendingCount > 0
+      summary.assumptionSetCount > 0 ||
+      summary.dataPackageCount > 0 ||
+      summary.indicatorSnapshotCount > 0 ||
+      summary.pendingCount > 0
     );
   }).length;
   const filteredReports = reports.filter(
@@ -689,24 +647,24 @@ export default async function ReportsPage({
                         {report.evidenceChainSummary.scenarioSetLinkCount} scenario set{report.evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
                       </span>
                     ) : null}
-                    {report.evidenceChainSummary ? (
-                      report.evidenceChainSummary.scenarioSharedSpinePendingCount > 0 ? (
+                    {report.scenarioSpineSummary ? (
+                      report.scenarioSpineSummary.pendingCount > 0 ? (
                         <span className="module-record-chip">Scenario spine pending</span>
                       ) : (
                         <>
-                          {(report.evidenceChainSummary.scenarioAssumptionSetCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                          {(report.scenarioSpineSummary.assumptionSetCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
                             <span className="module-record-chip">
-                              {report.evidenceChainSummary.scenarioAssumptionSetCount} assumptions
+                              {report.scenarioSpineSummary.assumptionSetCount} assumptions
                             </span>
                           ) : null}
-                          {(report.evidenceChainSummary.scenarioDataPackageCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                          {(report.scenarioSpineSummary.dataPackageCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
                             <span className="module-record-chip">
-                              {report.evidenceChainSummary.scenarioDataPackageCount} packages
+                              {report.scenarioSpineSummary.dataPackageCount} packages
                             </span>
                           ) : null}
-                          {(report.evidenceChainSummary.scenarioIndicatorSnapshotCount > 0 || report.evidenceChainSummary.scenarioSetLinkCount > 0) ? (
+                          {(report.scenarioSpineSummary.indicatorSnapshotCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
                             <span className="module-record-chip">
-                              {report.evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators
+                              {report.scenarioSpineSummary.indicatorSnapshotCount} indicators
                             </span>
                           ) : null}
                         </>
