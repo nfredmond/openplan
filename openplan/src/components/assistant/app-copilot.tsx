@@ -270,18 +270,29 @@ function buildBoardStateNarrative(args: {
 
 function buildLocalConsoleStateSnapshot(
   links: AssistantQuickLink[] | undefined,
-  nowMs = Date.now()
+  options?: {
+    nowMs?: number;
+    filter?: OperationFilter;
+    viewMode?: OperationViewMode;
+    pinnedState?: OperationPreferenceState;
+    sessionSnoozeState?: OperationSessionSnoozeState;
+    persistentSnoozeState?: OperationPersistentSnoozeState;
+    showSnoozed?: boolean;
+  }
 ): AssistantLocalConsoleState | null {
   if (!links?.length || typeof window === "undefined") return null;
 
+  const nowMs = options?.nowMs ?? Date.now();
   const filterSaved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
-  const filter = isOperationFilter(filterSaved) ? filterSaved : "all";
+  const filter = options?.filter ?? (isOperationFilter(filterSaved) ? filterSaved : "all");
   const viewModeSaved = window.localStorage.getItem(OPERATION_VIEW_MODE_STORAGE_KEY);
-  const viewMode = isOperationViewMode(viewModeSaved) ? viewModeSaved : "full";
-  const pinnedState = parseOperationPreferenceState(window.localStorage.getItem(OPERATION_PINNED_STORAGE_KEY));
-  const sessionSnoozeState = parseOperationSessionSnoozeState(window.sessionStorage.getItem(OPERATION_SESSION_SNOOZED_STORAGE_KEY));
-  const persistentSnoozeState = parseOperationPersistentSnoozeState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
-  const showSnoozed = window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true";
+  const viewMode = options?.viewMode ?? (isOperationViewMode(viewModeSaved) ? viewModeSaved : "full");
+  const pinnedState = options?.pinnedState ?? parseOperationPreferenceState(window.localStorage.getItem(OPERATION_PINNED_STORAGE_KEY));
+  const sessionSnoozeState =
+    options?.sessionSnoozeState ?? parseOperationSessionSnoozeState(window.sessionStorage.getItem(OPERATION_SESSION_SNOOZED_STORAGE_KEY));
+  const persistentSnoozeState =
+    options?.persistentSnoozeState ?? parseOperationPersistentSnoozeState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
+  const showSnoozed = options?.showSnoozed ?? (window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true");
 
   const snoozedCount = links.filter((link) => resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)).length;
   const returningSoonCount = links.filter((link) => isReturningSoon(getOperationStorageKey(link), persistentSnoozeState, nowMs)).length;
@@ -359,7 +370,13 @@ function operationCardClasses(link: AssistantQuickLink) {
   return "border-white/10 bg-white/[0.04] hover:border-emerald-300/26 hover:bg-emerald-400/10";
 }
 
-function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
+function QuickLinkGrid({
+  links,
+  onConsoleStateChange,
+}: {
+  links: AssistantQuickLink[];
+  onConsoleStateChange?: (state: AssistantLocalConsoleState | null) => void;
+}) {
   const [filter, setFilter] = useState<OperationFilter>(() => {
     if (typeof window === "undefined") return "all";
     const saved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
@@ -453,6 +470,19 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     hiddenSnoozedCount,
     showSnoozed,
   });
+  const liveConsoleState = useMemo(
+    () =>
+      buildLocalConsoleStateSnapshot(links, {
+        nowMs,
+        filter,
+        viewMode,
+        pinnedState,
+        sessionSnoozeState,
+        persistentSnoozeState,
+        showSnoozed,
+      }),
+    [links, nowMs, filter, viewMode, pinnedState, sessionSnoozeState, persistentSnoozeState, showSnoozed]
+  );
   const filteredGroups = (filter === "all" ? groups : groups.filter((group) => group.key === filter)).filter(
     (group) => group.items.length > 0
   );
@@ -550,6 +580,10 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
       window.clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    onConsoleStateChange?.(liveConsoleState);
+  }, [liveConsoleState, onConsoleStateChange]);
 
   return (
     <div className="space-y-4">
@@ -1005,7 +1039,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [preview, setPreview] = useState<AssistantPreview | null>(null);
+  const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
+  const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
   const [messages, setMessages] = useState<ConversationEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [loadingContext, setLoadingContext] = useState(true);
@@ -1014,6 +1049,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   const target = useMemo(() => resolveAssistantTarget(pathname, searchParams), [pathname, searchParams]);
   const targetKey = JSON.stringify({ ...target, workspaceId: target.workspaceId ?? workspaceId ?? null });
+  const preview = useMemo(
+    () => (basePreview ? applyLocalConsoleStateToPreview(basePreview, liveConsoleState) : null),
+    [basePreview, liveConsoleState]
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -1039,22 +1078,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         const payload = (await response.json()) as { preview: AssistantPreview };
         if (ignore) return;
 
-        const localConsoleState = buildLocalConsoleStateSnapshot(payload.preview.quickLinks);
-        const previewWithLocalState = applyLocalConsoleStateToPreview(payload.preview, localConsoleState);
-
-        setPreview(previewWithLocalState);
+        setLiveConsoleState(null);
+        setBasePreview(payload.preview);
         setMessages([
           {
             id: `intro-${Date.now()}`,
             role: "assistant",
             type: "intro",
-            preview: previewWithLocalState,
+            preview: payload.preview,
           },
         ]);
         setDraft("");
       } catch (loadError) {
         if (ignore) return;
-        setPreview(null);
+        setBasePreview(null);
         setMessages([]);
         setError(loadError instanceof Error ? loadError.message : "Failed to load Planner Agent context");
       } finally {
@@ -1081,7 +1118,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       .reverse()
       .find((entry): entry is Extract<ConversationEntry, { type: "response" }> => entry.type === "response" && Boolean(entry.response.quickLinks?.length))
       ?.response.quickLinks;
-    const localConsoleState = buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
+    const localConsoleState =
+      liveConsoleState ?? buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
 
     const promptLabel = options?.promptLabel ?? question;
     setResponding(true);
@@ -1256,25 +1294,26 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     }
 
                     if (message.type === "intro") {
+                      const introPreview = preview ?? message.preview;
                       return (
                         <div key={message.id} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
                           <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
                             Planning context
                           </div>
-                          <p className="text-sm leading-relaxed text-slate-100">{message.preview.summary}</p>
+                          <p className="text-sm leading-relaxed text-slate-100">{introPreview.summary}</p>
                           <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
-                            {message.preview.facts.map((fact) => (
+                            {introPreview.facts.map((fact) => (
                               <li key={fact} className="rounded-2xl border border-white/8 bg-black/10 px-3.5 py-2.5">
                                 {fact}
                               </li>
                             ))}
                           </ul>
 
-                          {message.preview.quickLinks?.length ? (
+                          {introPreview.quickLinks?.length ? (
                             <div className="mt-4">
                               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Action surfaces</p>
-                              <QuickLinkGrid links={message.preview.quickLinks} />
+                              <QuickLinkGrid links={introPreview.quickLinks} onConsoleStateChange={setLiveConsoleState} />
                             </div>
                           ) : null}
                         </div>
