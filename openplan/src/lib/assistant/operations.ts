@@ -95,6 +95,9 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
   const fundingSourcingCommand = context.operationsSummary.commandQueue.find(
     (item) => item.key === "source-project-funding-opportunities"
   );
+  const fundingDecisionCommand = context.operationsSummary.commandQueue.find(
+    (item) => item.key === "advance-project-funding-decisions"
+  );
   const fundingGapCommand = context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps");
 
   return compactQuickLinks([
@@ -152,6 +155,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 ||
     context.operationsSummary.counts.projectFundingSourcingProjects > 0 ||
+    context.operationsSummary.counts.projectFundingDecisionProjects > 0 ||
     context.operationsSummary.counts.projectFundingGapProjects > 0
       ? quickLink(
           "workspace-funding-agent",
@@ -159,24 +163,30 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             ? "Review missing funding anchors in panel"
             : context.operationsSummary.counts.projectFundingSourcingProjects > 0
               ? "Review funding sourcing gaps in panel"
+              : context.operationsSummary.counts.projectFundingDecisionProjects > 0
+                ? "Review funding decision gaps in panel"
             : "Review funding gaps in panel",
-          fundingAnchorCommand?.href ?? fundingSourcingCommand?.href ?? fundingGapCommand?.href ?? "/projects",
+          fundingAnchorCommand?.href ?? fundingSourcingCommand?.href ?? fundingDecisionCommand?.href ?? fundingGapCommand?.href ?? "/projects",
           {
           targetKind: "workspace",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
-          priority: fundingAnchorCommand || fundingSourcingCommand || fundingGapCommand ? "primary" : "secondary",
+          priority: fundingAnchorCommand || fundingSourcingCommand || fundingDecisionCommand || fundingGapCommand ? "primary" : "secondary",
           statusLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
               ? `${context.operationsSummary.counts.projectFundingNeedAnchorProjects} missing anchor${context.operationsSummary.counts.projectFundingNeedAnchorProjects === 1 ? "" : "s"}`
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? `${context.operationsSummary.counts.projectFundingSourcingProjects} need sourcing`
+                : context.operationsSummary.counts.projectFundingDecisionProjects > 0
+                  ? `${context.operationsSummary.counts.projectFundingDecisionProjects} need decisions`
               : `${context.operationsSummary.counts.projectFundingGapProjects} gap project${context.operationsSummary.counts.projectFundingGapProjects === 1 ? "" : "s"}`,
           reason:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
               ? "Some projects already have funding opportunities but still lack a funding-need anchor, so the assistant should close that honesty gap before ranking dollars-to-go."
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Some projects already have a grounded funding need but still no linked opportunities, so the assistant should surface sourcing work before it talks about closing gaps."
+                : context.operationsSummary.counts.projectFundingDecisionProjects > 0
+                  ? "Some projects already have linked opportunities but nothing marked pursue yet, so the assistant should surface grant-decision work before it treats the lane as a true funding stack."
               : "The workspace now shows real project funding gaps beyond deadline-only grant pressure, so the assistant should help rank which thinly funded project to reopen first.",
           approval: "safe",
           auditEvent: "assistant.operation.workspace.funding_agent",
@@ -187,12 +197,16 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               ? "Which projects have funding opportunities but still lack a funding-need anchor, and where should I start?"
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Which projects already have funding need recorded but still no linked funding opportunities, and where should I start sourcing?"
+                : context.operationsSummary.counts.projectFundingDecisionProjects > 0
+                  ? "Which projects already have linked funding opportunities but still nothing marked pursue, and where should I start deciding?"
               : "Which project funding gaps need attention across this workspace, and where should I start?",
           promptLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
               ? "Review missing funding anchors in panel"
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Review funding sourcing gaps in panel"
+                : context.operationsSummary.counts.projectFundingDecisionProjects > 0
+                  ? "Review funding decision gaps in panel"
               : "Review funding gaps in panel",
         }
         )

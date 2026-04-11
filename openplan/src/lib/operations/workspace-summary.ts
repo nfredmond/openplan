@@ -165,6 +165,7 @@ export type WorkspaceOperationsSummary = {
     closingSoonFundingOpportunities: number;
     projectFundingNeedAnchorProjects: number;
     projectFundingSourcingProjects: number;
+    projectFundingDecisionProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
   };
@@ -478,6 +479,47 @@ export function buildWorkspaceOperationsSummary({
     })
     .filter((item): item is { project: WorkspaceOperationsProjectRow; summary: ReturnType<typeof buildProjectFundingStackSummary> } => Boolean(item))
     .sort((left, right) => right.summary.fundingNeedAmount - left.summary.fundingNeedAmount);
+  const fundingDecisionProjects = projectFundingProfiles
+    .map((profile) => {
+      const project = projects.find((item) => item.id === profile.project_id);
+      if (!project) return null;
+      const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const summary = buildProjectFundingStackSummary(
+        profile,
+        [],
+        opportunities.map((opportunity) => ({
+          expected_award_amount: opportunity.expectedAwardAmount ?? null,
+          decision_state: opportunity.decisionState ?? null,
+          opportunity_status: opportunity.opportunityStatus ?? null,
+        }))
+      );
+      if (!summary.hasTargetNeed || opportunities.length === 0 || summary.pursuedOpportunityCount > 0) {
+        return null;
+      }
+      const leadOpportunity = [...opportunities].sort((left, right) => {
+        const leftStatusPriority = left.opportunityStatus === "open" ? 0 : left.opportunityStatus === "upcoming" ? 1 : 2;
+        const rightStatusPriority = right.opportunityStatus === "open" ? 0 : right.opportunityStatus === "upcoming" ? 1 : 2;
+        if (leftStatusPriority !== rightStatusPriority) return leftStatusPriority - rightStatusPriority;
+        const leftDueAt = left.closesAt ?? left.decisionDueAt;
+        const rightDueAt = right.closesAt ?? right.decisionDueAt;
+        if (leftDueAt && rightDueAt) {
+          const dueDelta = new Date(leftDueAt).getTime() - new Date(rightDueAt).getTime();
+          if (dueDelta !== 0) return dueDelta;
+        }
+        return new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime();
+      })[0] ?? null;
+      return {
+        project,
+        summary,
+        leadOpportunity,
+      };
+    })
+    .filter(
+      (
+        item
+      ): item is NonNullable<typeof item> => Boolean(item)
+    )
+    .sort((left, right) => right.summary.fundingNeedAmount - left.summary.fundingNeedAmount);
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -593,7 +635,7 @@ export function buildWorkspaceOperationsSummary({
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
       targetProjectId: firstFundingGapProject?.project.id ?? null,
       tone: "warning",
-      priority: 5,
+      priority: 6,
       badges: [
         { label: "Gap projects", value: fundingGapProjects.length },
         { label: "Largest gap", value: firstFundingGapProject ? formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount) : null },
@@ -623,6 +665,25 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (fundingDecisionProjects.length > 0) {
+    const firstFundingDecisionProject = fundingDecisionProjects[0];
+    queueCandidates.push({
+      key: "advance-project-funding-decisions",
+      title: "Advance project funding decisions",
+      detail: `${fundingDecisionProjects.length} project funding stack${fundingDecisionProjects.length === 1 ? " has" : "s have"} linked opportunities but nothing marked pursue yet.${firstFundingDecisionProject?.leadOpportunity ? ` ${firstFundingDecisionProject.leadOpportunity.title} is the first grant decision to advance for ${firstFundingDecisionProject.project.name}.` : firstFundingDecisionProject ? ` Reopen ${firstFundingDecisionProject.project.name} first and choose the lead opportunity.` : ""}`,
+      href: firstFundingDecisionProject
+        ? `/projects/${firstFundingDecisionProject.project.id}#project-funding-opportunities`
+        : "/projects",
+      targetProjectId: firstFundingDecisionProject?.project.id ?? null,
+      tone: "warning",
+      priority: 5,
+      badges: [
+        { label: "Decision gaps", value: fundingDecisionProjects.length },
+        { label: "Lead need", value: firstFundingDecisionProject ? formatCurrency(firstFundingDecisionProject.summary.fundingNeedAmount) : null },
+      ],
+    });
+  }
+
   if (plansNeedingSetup > 0) {
     queueCandidates.push({
       key: "tighten-plan-foundations",
@@ -630,7 +691,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${plansNeedingSetup} plan record${plansNeedingSetup === 1 ? " still needs" : "s still need"} core setup around project linkage, geography, or horizon year.${firstPlanNeedingSetup?.title ? ` Reopen ${firstPlanNeedingSetup.title} first.` : ""}`,
       href: "/plans",
       tone: "info",
-      priority: 6,
+      priority: 7,
       badges: [
         { label: "Needs setup", value: plansNeedingSetup },
         { label: "Plans", value: plans.length },
@@ -645,7 +706,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${activePrograms} program package${activePrograms === 1 ? " is" : "s are"} still in assembly, submission, or review posture.${firstActiveProgram?.title ? ` ${firstActiveProgram.title} is a good next package anchor.` : ""}`,
       href: "/programs",
       tone: "info",
-      priority: 7,
+      priority: 8,
       badges: [
         { label: "Active programs", value: activePrograms },
         { label: "Programs", value: programs.length },
@@ -660,7 +721,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can shape refresh and narrative choices.${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
       href: "/reports?posture=comparison-backed",
       tone: "info",
-      priority: 8,
+      priority: 9,
       badges: [
         { label: "Comparison-backed", value: comparisonBackedReports },
         { label: "Ready comparisons", value: firstComparisonBackedReport?.comparisonAggregate?.readyComparisonSnapshotCount ?? null },
@@ -704,6 +765,7 @@ export function buildWorkspaceOperationsSummary({
       closingSoonFundingOpportunities,
       projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
       projectFundingSourcingProjects: fundingSourcingProjects.length,
+      projectFundingDecisionProjects: fundingDecisionProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },

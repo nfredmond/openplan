@@ -23,6 +23,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       closingSoonFundingOpportunities: 0,
       projectFundingNeedAnchorProjects: 1,
       projectFundingSourcingProjects: 0,
+      projectFundingDecisionProjects: 0,
       projectFundingGapProjects: 0,
       queueDepth: 1,
     },
@@ -102,6 +103,7 @@ describe("assistant funding operations", () => {
         counts: {
           projectFundingNeedAnchorProjects: 0,
           projectFundingSourcingProjects: 1,
+          projectFundingDecisionProjects: 0,
           projectFundingGapProjects: 0,
         },
         nextCommand: {
@@ -132,5 +134,46 @@ describe("assistant funding operations", () => {
 
     expect(action?.label).toBe("Review funding sourcing gaps in panel");
     expect(action?.statusLabel).toBe("1 need sourcing");
+  });
+
+  it("switches the workspace funding agent into decision posture when opportunities exist but nothing is pursue", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance project funding decisions",
+        detail: "A project has linked opportunities but nothing marked pursue.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 1,
+          projectFundingGapProjects: 0,
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          tone: "warning",
+          priority: 5,
+          badges: [{ label: "Decision gaps", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            tone: "warning",
+            priority: 5,
+            badges: [{ label: "Decision gaps", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action?.label).toBe("Review funding decision gaps in panel");
+    expect(action?.statusLabel).toBe("1 need decisions");
   });
 });
