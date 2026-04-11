@@ -35,6 +35,7 @@ type ProjectReportGuidance = {
   reportCount: number;
   refreshRecommendedCount: number;
   noPacketCount: number;
+  comparisonBackedCount: number;
   recommendedReportId: string | null;
   recommendedReportTitle: string | null;
 };
@@ -46,7 +47,11 @@ function formatReportCountLabel(count: number) {
 function formatGuidanceCounts({
   refreshRecommendedCount,
   noPacketCount,
-}: Pick<ProjectReportGuidance, "refreshRecommendedCount" | "noPacketCount">) {
+  comparisonBackedCount,
+}: Pick<
+  ProjectReportGuidance,
+  "refreshRecommendedCount" | "noPacketCount" | "comparisonBackedCount"
+>) {
   const parts: string[] = [];
 
   if (refreshRecommendedCount > 0) {
@@ -55,6 +60,10 @@ function formatGuidanceCounts({
 
   if (noPacketCount > 0) {
     parts.push(`${noPacketCount} without packet`);
+  }
+
+  if (comparisonBackedCount > 0) {
+    parts.push(`${comparisonBackedCount} comparison-backed`);
   }
 
   if (parts.length === 0) {
@@ -220,6 +229,8 @@ export function ReportCreator({
                 selectedProjectGuidance.refreshRecommendedCount > 0 ||
                 selectedProjectGuidance.noPacketCount > 0
                   ? "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+                  : selectedProjectGuidance.comparisonBackedCount > 0
+                    ? "border-sky-300/70 bg-sky-50 text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100"
                   : "border-border/70 bg-muted/35 text-foreground"
               }`}
             >

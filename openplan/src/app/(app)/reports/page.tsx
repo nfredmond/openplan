@@ -381,6 +381,7 @@ export default async function ReportsPage({
     reportCount: number;
     refreshRecommendedCount: number;
     noPacketCount: number;
+    comparisonBackedCount: number;
     recommendedReportId: string | null;
     recommendedReportTitle: string | null;
     latestReportId: string | null;
@@ -397,6 +398,7 @@ export default async function ReportsPage({
         reportCount: 0,
         refreshRecommendedCount: 0,
         noPacketCount: 0,
+        comparisonBackedCount: 0,
         recommendedReportId: null,
         recommendedReportTitle: null,
         latestReportId: null,
@@ -421,6 +423,9 @@ export default async function ReportsPage({
         current.recommendedReportId = report.id;
         current.recommendedReportTitle = report.title;
       }
+    }
+    if ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0) {
+      current.comparisonBackedCount += 1;
     }
 
     acc[projectId] = current;
