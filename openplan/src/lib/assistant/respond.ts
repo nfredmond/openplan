@@ -39,6 +39,17 @@ function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function formatCurrency(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "$0";
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
@@ -115,17 +126,20 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   return {
     kind: context.kind,
     title: context.project.name,
-    summary: `Grounded to the full project record: delivery posture, stage-gate signals, linked datasets, and recent run activity are all in scope for this copilot pass.`,
+    summary: `Grounded to the full project record: delivery posture, stage-gate signals, funding strategy, linked datasets, and recent run activity are all in scope for this copilot pass.`,
     stats: [
       { label: "Status", value: context.project.status },
       { label: "Open risks", value: `${openRisks}` },
-      { label: "Open issues", value: `${openIssues}` },
+      { label: "Funding", value: `${context.fundingSummary.opportunityCount}` },
       { label: "Blocked gate", value: blockedGate },
     ],
     facts: [
       `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
+      context.fundingSummary.opportunityCount > 0
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Target need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}`
+        : "No funding opportunities are linked to this project yet.",
       `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
-      `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.` ,
+      `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.`,
     ],
     operatorCue: context.stageGateSummary.blockedGate
       ? {
@@ -133,11 +147,17 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
           title: `Unblock ${context.stageGateSummary.blockedGate.name}`,
           detail: context.stageGateSummary.blockedGate.rationale || "A stage gate is currently on hold and needs evidence or rationale cleanup.",
         }
-      : {
-          label: "Current runtime cue",
-          title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
-          detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
-        },
+      : context.fundingSummary.closingSoonCount > 0
+        ? {
+            label: "Current runtime cue",
+            title: `${context.fundingSummary.closingSoonCount} funding deadline${context.fundingSummary.closingSoonCount === 1 ? "" : "s"} need attention`,
+            detail: "Near-term funding windows are active on this project, so grant timing should be reviewed before less urgent control cleanup.",
+          }
+        : {
+            label: "Current runtime cue",
+            title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
+            detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
+          },
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
@@ -607,6 +627,43 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     };
   }
 
+  if (workflowId === "project-funding") {
+    return {
+      workflowId,
+      label,
+      title: `Funding posture for ${context.project.name}`,
+      summary:
+        context.fundingSummary.opportunityCount > 0
+          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}`
+          : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
+      findings: [
+        context.fundingSummary.opportunityCount > 0
+          ? `${context.fundingSummary.openCount} open or upcoming funding opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this project.`
+          : "No open or upcoming funding opportunities are visible on this project yet.",
+        context.fundingSummary.closingSoonCount > 0
+          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
+          : "No near-term funding window is currently closing inside the next 14 days.",
+        context.fundingSummary.fundingNeedAmount !== null
+          ? `Recorded funding need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.`
+          : "No project-level funding need amount is recorded yet.",
+      ],
+      nextSteps: [
+        context.fundingSummary.opportunityCount > 0
+          ? `Open /projects/${context.project.id}#project-funding-opportunities to confirm pursue, monitor, or skip posture and update the project funding stack.`
+          : `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record for this project.`,
+        context.fundingSummary.fundingNeedAmount !== null
+          ? "Keep the target funding need aligned with current pursue and award posture before promising delivery scope."
+          : "Set the project funding need so future opportunity and award posture can be measured against a real gap.",
+      ],
+      evidence: [
+        `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
+        `Closing soon: ${context.fundingSummary.closingSoonCount}`,
+        `Pursue decisions: ${context.fundingSummary.pursueCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
   if (workflowId === "project-data") {
     return {
       workflowId,
@@ -645,12 +702,17 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     findings: [
       context.project.summary || "The project does not yet carry a strong summary narrative on the record itself.",
       `Project controls attached: ${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, ${context.counts.meetings} meetings.`,
+      context.fundingSummary.opportunityCount > 0
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked to the project, with ${context.fundingSummary.closingSoonCount} closing soon.`
+        : "No linked funding opportunities are currently visible on this project.",
       blockedGate
         ? `Gate pressure exists at ${blockedGate.gateId} · ${blockedGate.name}.`
         : `No formal stage gate is currently on hold; next gate cue is ${context.stageGateSummary.nextGate?.gateId ?? "not yet set"}.`,
     ],
     nextSteps: [
-      blockedGate ? `Resolve ${blockedGate.gateId} evidence gaps before claiming the project is fully ready.` : "Use the next-gate cue to keep the project moving through the recorded workflow.",
+      blockedGate ? `Resolve ${blockedGate.gateId} evidence gaps before claiming the project is fully ready.` : context.fundingSummary.closingSoonCount > 0
+        ? "Recheck the near-term funding windows before less urgent project cleanup so grant timing does not slip."
+        : "Use the next-gate cue to keep the project moving through the recorded workflow.",
       context.counts.overlayReadyDatasets > 0
         ? "Bring one overlay-ready dataset plus a current run into Analysis Studio for the next decision memo."
         : "Strengthen data linkage before leaning too hard on analytical claims.",

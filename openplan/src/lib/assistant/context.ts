@@ -88,6 +88,13 @@ export type ProjectAssistantContext = {
     overlayReadyDatasets: number;
     recentRuns: number;
   };
+  fundingSummary: {
+    opportunityCount: number;
+    openCount: number;
+    closingSoonCount: number;
+    pursueCount: number;
+    fundingNeedAmount: number | null;
+  };
   stageGateSummary: ReturnType<typeof buildProjectStageGateSummary>;
   linkedDatasets: Array<{
     datasetId: string;
@@ -677,31 +684,46 @@ async function loadProjectContext(
     return null;
   }
 
-  const [deliverablesResult, risksResult, issuesResult, decisionsResult, meetingsResult, stageGatesResult, runsResult, datasetLinksResult] =
-    await Promise.all([
-      supabase.from("project_deliverables").select("id").eq("project_id", project.id),
-      supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
-      supabase.from("project_issues").select("id, status, severity").eq("project_id", project.id),
-      supabase.from("project_decisions").select("id").eq("project_id", project.id),
-      supabase.from("project_meetings").select("id").eq("project_id", project.id),
-      supabase
-        .from("stage_gate_decisions")
-        .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
-        .eq("workspace_id", project.workspace_id)
-        .order("decided_at", { ascending: false })
-        .limit(200),
-      supabase
-        .from("runs")
-        .select("id, title, created_at, summary_text")
-        .eq("workspace_id", project.workspace_id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("data_dataset_project_links")
-        .select("dataset_id, relationship_type, linked_at")
-        .eq("project_id", project.id)
-        .order("linked_at", { ascending: false }),
-    ]);
+  const [
+    deliverablesResult,
+    risksResult,
+    issuesResult,
+    decisionsResult,
+    meetingsResult,
+    stageGatesResult,
+    runsResult,
+    datasetLinksResult,
+    projectFundingProfileResult,
+    fundingOpportunitiesResult,
+  ] = await Promise.all([
+    supabase.from("project_deliverables").select("id").eq("project_id", project.id),
+    supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
+    supabase.from("project_issues").select("id, status, severity").eq("project_id", project.id),
+    supabase.from("project_decisions").select("id").eq("project_id", project.id),
+    supabase.from("project_meetings").select("id").eq("project_id", project.id),
+    supabase
+      .from("stage_gate_decisions")
+      .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
+      .eq("workspace_id", project.workspace_id)
+      .order("decided_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("runs")
+      .select("id, title, created_at, summary_text")
+      .eq("workspace_id", project.workspace_id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("data_dataset_project_links")
+      .select("dataset_id, relationship_type, linked_at")
+      .eq("project_id", project.id)
+      .order("linked_at", { ascending: false }),
+    supabase.from("project_funding_profiles").select("funding_need_amount").eq("project_id", project.id).maybeSingle(),
+    supabase
+      .from("funding_opportunities")
+      .select("id, opportunity_status, decision_state, closes_at, decision_due_at")
+      .eq("project_id", project.id),
+  ]);
 
   const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
     ? []
@@ -709,6 +731,18 @@ async function loadProjectContext(
         dataset_id: string;
         relationship_type: string;
         linked_at: string;
+      }>);
+  const projectFundingProfile = looksLikePendingSchema(projectFundingProfileResult.error?.message)
+    ? null
+    : ((projectFundingProfileResult.data ?? null) as { funding_need_amount: number | null } | null);
+  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+    ? []
+    : ((fundingOpportunitiesResult.data ?? []) as Array<{
+        id: string;
+        opportunity_status: string | null;
+        decision_state: string | null;
+        closes_at: string | null;
+        decision_due_at: string | null;
       }>);
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
@@ -788,6 +822,17 @@ async function loadProjectContext(
       linkedDatasets: linkedDatasets.length,
       overlayReadyDatasets: linkedDatasets.filter((dataset) => dataset.overlayReady).length,
       recentRuns: runsResult.data?.length ?? 0,
+    },
+    fundingSummary: {
+      opportunityCount: fundingOpportunities.length,
+      openCount: fundingOpportunities.filter((opportunity) => ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")).length,
+      closingSoonCount: fundingOpportunities.filter((opportunity) => {
+        if ((opportunity.opportunity_status ?? "") !== "open") return false;
+        const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
+        return days !== null && days <= 14;
+      }).length,
+      pursueCount: fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
+      fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
     },
     stageGateSummary: buildProjectStageGateSummary(
       ((stageGatesResult.data ?? []) as Array<{

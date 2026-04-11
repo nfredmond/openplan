@@ -1601,7 +1601,7 @@ export default async function ProjectDetailPage({
         </article>
       </div>
 
-      <article className="module-section-surface">
+      <article id="project-funding-opportunities" className="module-section-surface">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">

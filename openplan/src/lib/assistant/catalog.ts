@@ -50,7 +50,7 @@ export type AssistantQuickLinkExecuteAction =
     }
   | {
       kind: "create_funding_opportunity";
-      programId: string;
+      programId?: string;
       projectId?: string;
       title: string;
       postActionWorkflowId?: string;
@@ -183,6 +183,12 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       label: "Blockers",
       description: "Surface open risks, issues, and gate blockers.",
       prompt: "What is blocking this project right now?",
+    },
+    {
+      id: "project-funding",
+      label: "Funding posture",
+      description: "Show funding-gap pressure, linked opportunities, and grant timing around this project.",
+      prompt: "What funding opportunities or funding gaps need action on this project right now?",
     },
     {
       id: "project-data",

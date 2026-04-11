@@ -143,6 +143,57 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
 
 function buildProjectOperations(context: ProjectAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    context.fundingSummary.opportunityCount === 0
+      ? quickLink("project-create-funding-record", "Create first funding opportunity", `/projects/${context.project.id}#project-funding-opportunities`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Missing grant record",
+          reason: "This project still has no linked funding opportunity records, so the grants lane is not anchored at the project level yet.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.create_funding_opportunity",
+          auditNote: "Creates the first funding opportunity record on the project so grant tracking can start from the project control room.",
+          executeAction: {
+            kind: "create_funding_opportunity",
+            projectId: context.project.id,
+            title: `${context.project.name} funding opportunity`,
+            postActionWorkflowId: "project-funding",
+            postActionPrompt: "A funding opportunity record was created on this project. What should be filled in next before the project is truly grant-ready?",
+            postActionPromptLabel: "Review project funding posture",
+          },
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0
+      ? quickLink(
+          "project-funding-agent",
+          context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : "Check funding posture in panel",
+          `/projects/${context.project.id}#project-funding-opportunities`,
+          {
+            targetKind: "project",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: context.fundingSummary.closingSoonCount > 0 ? "primary" : "secondary",
+            statusLabel:
+              context.fundingSummary.closingSoonCount > 0
+                ? `${context.fundingSummary.closingSoonCount} closing soon`
+                : `${context.fundingSummary.opportunityCount} linked`,
+            reason:
+              context.fundingSummary.closingSoonCount > 0
+                ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
+                : "Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.",
+            approval: "review",
+            auditEvent: "assistant.operation.project.funding_agent",
+            auditNote: "Use the project funding section to verify pursue, monitor, skip, and funding-gap posture before changing delivery assumptions.",
+            workflowId: "project-funding",
+            prompt: "What funding opportunities or funding gaps need action on this project right now?",
+            promptLabel:
+              context.fundingSummary.closingSoonCount > 0
+                ? "Check funding deadline posture in panel"
+                : "Check funding posture in panel",
+          }
+        )
+      : null,
     quickLink("project-blockers-agent", "Check blockers in panel", `/projects/${context.project.id}`, {
       targetKind: "project",
       actionClass: "review_controls",
@@ -178,6 +229,18 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditEvent: "assistant.operation.project.controls",
           auditNote: "Review milestone, submittal, and invoice posture before making downstream commitments.",
         }),
+    context.fundingSummary.opportunityCount > 0
+      ? quickLink("project-funding-record", "Open project funding strategy", `/projects/${context.project.id}#project-funding-opportunities`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          priority: "secondary",
+          statusLabel: context.fundingSummary.pursueCount > 0 ? `${context.fundingSummary.pursueCount} pursue` : "Funding linked",
+          reason: "Use the project funding section as the canonical grant strategy lane for this project.",
+          approval: "review",
+          auditEvent: "assistant.operation.project.funding_record",
+          auditNote: "Confirm funding gap, opportunity posture, and award timing before promising delivery scope.",
+        })
+      : null,
     context.counts.overlayReadyDatasets > 0 || context.counts.recentRuns > 0
       ? quickLink("project-reporting", "Open reporting and analysis context", `/projects/${context.project.id}#project-reporting`, {
           targetKind: "project",
