@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
+import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -430,61 +431,36 @@ export default async function ProjectsPage() {
             </div>
           ) : (
             <>
-              {packetQueueProjects.length > 0 ? (
-                <div className="mt-5 rounded-3xl border border-border/70 bg-background/80 p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        Portfolio packet queue
-                      </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        The highest-priority packet actions across the workspace, ordered before the full project registry.
-                      </p>
-                    </div>
-                    <span className="module-record-chip">
-                      <span>Queued</span>
-                      <strong>{packetQueueProjects.length}</strong>
-                    </span>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {packetQueueProjects.slice(0, 5).map((project) => {
-                      const report = project.reportSummary.recommendedReport;
-                      const href = report
+              <div className="mt-5">
+                <ReportPacketCommandQueue
+                  title="Portfolio packet queue"
+                  description="The highest-priority packet actions across the workspace, ordered before the full project registry."
+                  items={packetQueueProjects.slice(0, 5).map((project) => {
+                    const report = project.reportSummary.recommendedReport;
+                    const badges: Array<{ label: string; value?: string | number | null }> = [];
+                    if (project.reportSummary.attentionCount > 0) {
+                      badges.push({ label: "Attention", value: project.reportSummary.attentionCount });
+                    }
+                    if (project.reportSummary.comparisonBackedCount > 0) {
+                      badges.push({ label: "Comparison-backed", value: project.reportSummary.comparisonBackedCount });
+                    }
+                    if (project.reportSummary.governanceHoldCount > 0) {
+                      badges.push({ label: "Governance hold", value: project.reportSummary.governanceHoldCount });
+                    }
+                    return {
+                      key: `queue-${project.id}`,
+                      href: report
                         ? getReportNavigationHref(report.id, report.packetFreshness.label)
-                        : `/projects/${project.id}`;
-
-                      return (
-                        <Link
-                          key={`queue-${project.id}`}
-                          href={href}
-                          className="block rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">{project.name}</p>
-                              <p className="mt-1 text-xs text-muted-foreground">{project.packetCommand.label}</p>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {project.reportSummary.attentionCount > 0 ? (
-                                <span className="module-record-chip"><span>Attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
-                              ) : null}
-                              {project.reportSummary.comparisonBackedCount > 0 ? (
-                                <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
-                              ) : null}
-                              {project.reportSummary.governanceHoldCount > 0 ? (
-                                <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
-                              ) : null}
-                            </div>
-                          </div>
-                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                            {project.packetCommand.detail}
-                          </p>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
+                        : `/projects/${project.id}`,
+                      title: project.name,
+                      subtitle: project.packetCommand.label,
+                      detail: project.packetCommand.detail,
+                      badges,
+                    };
+                  })}
+                  emptyLabel="No queued packet work across the portfolio."
+                />
+              </div>
 
               <div className="mt-5 module-record-list">
                 {projects.map((project) => (

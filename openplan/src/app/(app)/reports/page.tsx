@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { ReportCreator } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -277,6 +278,47 @@ export default async function ReportsPage({
         hasBlockedGovernance: Boolean(report.evidenceChainDigest?.blockedGateDetail),
       })
   );
+  const reportQueueItems = reports
+    .filter(
+      (report) =>
+        report.packetFreshness.label !== "Packet current" ||
+        Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
+        (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+    )
+    .slice(0, 5)
+    .map((report) => {
+      const badges: Array<{ label: string; value?: string | number | null }> = [];
+      if (report.packetFreshness.label !== "Packet current") {
+        badges.push({ label: report.packetFreshness.label });
+      }
+      if ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0) {
+        badges.push({
+          label: "Comparison-backed",
+          value: report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0,
+        });
+      }
+      if (report.evidenceChainDigest?.blockedGateDetail) {
+        badges.push({ label: "Governance hold" });
+      }
+
+      return {
+        key: report.id,
+        href: getReportNavigationHref(report.id, report.packetFreshness.label),
+        title: report.title,
+        subtitle:
+          report.packetFreshness.label === "Refresh recommended"
+            ? `First action: refresh ${report.title}`
+            : report.packetFreshness.label === "No packet"
+              ? `First action: generate ${report.title}`
+              : report.evidenceChainDigest?.blockedGateDetail
+                ? `First action: review governance hold in ${report.title}`
+                : `First action: review comparison-backed packet ${report.title}`,
+        detail:
+          report.evidenceChainDigest?.blockedGateDetail ??
+          report.packetFreshness.detail,
+        badges,
+      };
+    });
   const distinctProjects = new Set(
     reports.map((report) => report.project_id).filter(Boolean)
   ).size;
@@ -621,6 +663,15 @@ export default async function ReportsPage({
                   .filter(Boolean)
                   .join(" + ")} filters.`}
           </p>
+
+          <div className="mt-5">
+            <ReportPacketCommandQueue
+              title="Report packet queue"
+              description="The top report packet actions across the workspace, ordered before the full registry below."
+              items={reportQueueItems}
+              emptyLabel="No queued report packet work right now."
+            />
+          </div>
 
           {reports.length === 0 ? (
             <div className="mt-5">
