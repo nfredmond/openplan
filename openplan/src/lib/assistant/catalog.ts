@@ -32,6 +32,14 @@ export type AssistantPreviewStat = {
   value: string;
 };
 
+export type AssistantQuickLinkExecuteAction = {
+  kind: "generate_report_artifact";
+  reportId: string;
+  postActionWorkflowId?: string;
+  postActionPrompt?: string;
+  postActionPromptLabel?: string;
+};
+
 export type AssistantQuickLink = {
   id: string;
   label: string;
@@ -48,6 +56,7 @@ export type AssistantQuickLink = {
   workflowId?: string;
   prompt?: string;
   promptLabel?: string;
+  executeAction?: AssistantQuickLinkExecuteAction;
 };
 
 export type AssistantOperationUrgency = "high" | "medium" | "low";
@@ -349,7 +358,8 @@ export function formatAssistantOperationActionClass(link: AssistantQuickLink): s
 }
 
 export function formatAssistantOperationExecutionMode(link: AssistantQuickLink): string {
-  return link.executionMode === "future_agent_action" ? "Agent action" : "Navigate only";
+  if (link.executionMode !== "future_agent_action") return "Navigate only";
+  return link.executeAction ? "Execute action" : "Agent action";
 }
 
 export function resolveAssistantOperationUrgency(link: AssistantQuickLink): AssistantOperationUrgency {

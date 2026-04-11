@@ -375,9 +375,13 @@ function quickLinkPriorityBadge(link: AssistantQuickLink) {
 }
 
 function quickLinkExecutionBadge(link: AssistantQuickLink) {
-  return link.executionMode === "future_agent_action"
-    ? { label: "Agent action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" }
-    : { label: "Navigate only", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+  if (link.executionMode !== "future_agent_action") {
+    return { label: "Navigate only", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+  }
+
+  return link.executeAction
+    ? { label: "Execute action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" }
+    : { label: "Agent action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" };
 }
 
 function operationCardClasses(link: AssistantQuickLink) {
@@ -1141,7 +1145,11 @@ function QuickLinkGrid({
                               className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/12 px-2.5 py-1 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-400/16 hover:text-white"
                             >
                               {isRunningOperation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                              {isRunningOperation ? `Running · ${link.id}` : `Run in panel · ${link.id}`}
+                              {isRunningOperation
+                                ? `Running · ${link.id}`
+                                : link.executeAction
+                                  ? `Execute now · ${link.id}`
+                                  : `Run in panel · ${link.id}`}
                             </button>
                           ) : null}
                           <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
@@ -1246,6 +1254,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     question?: string;
     promptLabel?: string;
     operationLink?: AssistantQuickLink;
+    suppressOperationTracking?: boolean;
   }) {
     const question = (options?.question ?? draft).trim();
     if (!question && !options?.workflowId) {
@@ -1261,7 +1270,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
     const promptLabel = options?.promptLabel ?? question;
     const operationLink = options?.operationLink;
-    const operationStartedAt = operationLink ? Date.now() : null;
+    const operationStartedAt = operationLink && !options?.suppressOperationTracking ? Date.now() : null;
     setResponding(true);
     setError(null);
     if (operationLink && operationStartedAt) {
@@ -1359,8 +1368,86 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     }
   }
 
+  async function executeOperation(link: AssistantQuickLink) {
+    const executeAction = link.executeAction;
+    if (!executeAction) return;
+
+    const operationStartedAt = Date.now();
+    setResponding(true);
+    setError(null);
+
+    const runningStatus: OperationInvocationState = {
+      linkId: link.id,
+      label: link.label,
+      workflowId: link.workflowId,
+      auditEvent: link.auditEvent,
+      status: "running",
+      startedAt: operationStartedAt,
+    };
+    setOperationStatus(runningStatus);
+    setOperationHistory((current) => upsertOperationHistory(current, runningStatus));
+
+    try {
+      if (executeAction.kind === "generate_report_artifact") {
+        const response = await fetch(`/api/reports/${executeAction.reportId}/generate`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        });
+
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to generate report artifact");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
+    } catch (executeError) {
+      const failedStatus: OperationInvocationState = {
+        linkId: link.id,
+        label: link.label,
+        workflowId: link.workflowId,
+        auditEvent: link.auditEvent,
+        status: "failed",
+        startedAt: operationStartedAt,
+        finishedAt: Date.now(),
+        error: executeError instanceof Error ? executeError.message : "Failed to execute Planner Agent action",
+      };
+      setOperationStatus(failedStatus);
+      setOperationHistory((current) => upsertOperationHistory(current, failedStatus));
+      setError(executeError instanceof Error ? executeError.message : "Failed to execute Planner Agent action");
+      setResponding(false);
+    }
+  }
+
   function runOperation(link: AssistantQuickLink) {
-    if (link.executionMode !== "future_agent_action" || !link.workflowId) return;
+    if (link.executionMode !== "future_agent_action") return;
+    if (link.executeAction) {
+      void executeOperation(link);
+      return;
+    }
+    if (!link.workflowId) return;
     void submitPrompt({
       workflowId: link.workflowId,
       question: link.prompt,

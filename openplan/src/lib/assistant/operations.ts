@@ -41,6 +41,7 @@ function quickLink(
     workflowId?: string;
     prompt?: string;
     promptLabel?: string;
+    executeAction?: AssistantQuickLink["executeAction"];
   }
 ): AssistantQuickLink {
   return {
@@ -558,6 +559,39 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
           promptLabel: "Run release check in panel",
         };
   return compactQuickLinks([
+    context.kind === "rtp_packet_report" && packetPosture !== "release"
+      ? quickLink(
+          packetPosture === "generate" ? "report-generate-artifact" : "report-refresh-artifact",
+          packetPosture === "generate" ? "Generate RTP packet now" : "Refresh RTP packet now",
+          `/reports/${context.report.id}`,
+          {
+            targetKind: reportTargetKind,
+            actionClass: "review_packet",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: packetPosture === "generate" ? "Generate artifact" : "Refresh artifact",
+            reason:
+              packetPosture === "generate"
+                ? "Uses the existing report generation route to create the first RTP packet artifact now, then returns a fresh in-panel review."
+                : "Uses the existing report generation route to refresh the stale RTP packet now, then returns a fresh in-panel review.",
+            approval: "review",
+            auditEvent:
+              packetPosture === "generate"
+                ? "assistant.operation.report.generate_artifact"
+                : "assistant.operation.report.refresh_artifact",
+            auditNote:
+              "This executes the existing report.generate route and keeps report auth, artifact provenance, and packet audit posture intact.",
+            executeAction: {
+              kind: "generate_report_artifact",
+              reportId: context.report.id,
+              postActionWorkflowId: "rtp-packet-release",
+              postActionPrompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+              postActionPromptLabel:
+                packetPosture === "generate" ? "Review generated RTP packet" : "Review refreshed RTP packet",
+            },
+          }
+        )
+      : null,
     quickLink("report-release-agent", primaryPacketWorkflow.label, `/reports/${context.report.id}`, {
       targetKind: reportTargetKind,
       actionClass: "review_packet",
