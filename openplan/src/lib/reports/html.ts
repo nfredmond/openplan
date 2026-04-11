@@ -353,9 +353,18 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
           const snapshotMeta = [
             link.scenarioSetUpdatedAt ? `Scenario set updated ${formatDateTime(link.scenarioSetUpdatedAt)}` : null,
             link.latestMatchedEntryUpdatedAt ? `Matched entries updated ${formatDateTime(link.latestMatchedEntryUpdatedAt)}` : null,
+            link.sharedSpine?.latestIndicatorSnapshotAt
+              ? `Indicators updated ${formatDateTime(link.sharedSpine.latestIndicatorSnapshotAt)}`
+              : null,
           ]
             .filter(Boolean)
             .join(" • ");
+
+          const sharedSpineMeta = link.sharedSpine
+            ? link.sharedSpine.schemaPending
+              ? "Shared scenario spine schema pending at generation"
+              : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} • ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} • ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"}`
+            : null;
 
           return `<article class="metric-card">
             <h3>${esc(link.scenarioSetTitle)}</h3>
@@ -364,6 +373,7 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
               link.baselineRunTitle ? ` • ${esc(link.baselineRunTitle)}` : ""
             }</p>
             ${snapshotMeta ? `<p class="meta">${esc(snapshotMeta)}</p>` : ""}
+            ${sharedSpineMeta ? `<p class="meta">${esc(sharedSpineMeta)}</p>` : ""}
             <p><a href="/scenarios/${esc(link.scenarioSetId)}">Open scenario set</a></p>
             <ul class="record-list" style="margin-top: 12px;">${matchedEntries}</ul>
           </article>`;

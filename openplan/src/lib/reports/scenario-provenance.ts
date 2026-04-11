@@ -2,6 +2,7 @@ import {
   buildScenarioComparisonSummary,
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
 export type ReportScenarioSupabaseLike = {
   from: (table: string) => {
@@ -47,6 +48,12 @@ type RunLookupRow = {
   created_at: string | null;
 };
 
+type ScenarioSpineRow = {
+  scenario_set_id: string;
+  updated_at?: string | null;
+  snapshot_at?: string | null;
+};
+
 export type ReportScenarioMatchedEntry = {
   entryId: string;
   entryType: string;
@@ -58,6 +65,16 @@ export type ReportScenarioMatchedEntry = {
   comparisonReady: boolean;
   entryUpdatedAt: string | null;
   runCreatedAt: string | null;
+};
+
+export type ReportScenarioSharedSpineSummary = {
+  schemaPending: boolean;
+  assumptionSetCount: number;
+  dataPackageCount: number;
+  indicatorSnapshotCount: number;
+  latestAssumptionSetUpdatedAt: string | null;
+  latestDataPackageUpdatedAt: string | null;
+  latestIndicatorSnapshotAt: string | null;
 };
 
 export type ReportScenarioSetLink = {
@@ -81,6 +98,7 @@ export type ReportScenarioSetLink = {
   scenarioSetUpdatedAt: string | null;
   latestMatchedEntryUpdatedAt: string | null;
   latestMatchedRunCreatedAt: string | null;
+  sharedSpine?: ReportScenarioSharedSpineSummary;
 };
 
 function unique<T>(values: T[]): T[] {
@@ -176,7 +194,7 @@ export async function loadReportScenarioSetLinks({
 
   const scenarioSetIds = unique(matchedEntries.map((entry) => entry.scenario_set_id));
 
-  const [scenarioSetsResult, allEntriesResult] = await Promise.all([
+  const [scenarioSetsResult, allEntriesResult, assumptionSetsResult, dataPackagesResult, indicatorSnapshotsResult] = await Promise.all([
     supabase
       .from("scenario_sets")
       .select("id, title, baseline_entry_id, updated_at")
@@ -186,6 +204,18 @@ export async function loadReportScenarioSetLinks({
       .select(
         "id, scenario_set_id, entry_type, label, attached_run_id, sort_order, created_at, updated_at"
       )
+      .in("scenario_set_id", scenarioSetIds),
+    supabase
+      .from("scenario_assumption_sets")
+      .select("scenario_set_id, updated_at")
+      .in("scenario_set_id", scenarioSetIds),
+    supabase
+      .from("scenario_data_packages")
+      .select("scenario_set_id, updated_at")
+      .in("scenario_set_id", scenarioSetIds),
+    supabase
+      .from("scenario_indicator_snapshots")
+      .select("scenario_set_id, snapshot_at")
       .in("scenario_set_id", scenarioSetIds),
   ]);
 
@@ -197,8 +227,37 @@ export async function loadReportScenarioSetLinks({
     return { data: [], error: allEntriesResult.error };
   }
 
+  const scenarioSpinePending = [
+    assumptionSetsResult.error,
+    dataPackagesResult.error,
+    indicatorSnapshotsResult.error,
+  ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+  if (
+    !scenarioSpinePending &&
+    (assumptionSetsResult.error || dataPackagesResult.error || indicatorSnapshotsResult.error)
+  ) {
+    return {
+      data: [],
+      error:
+        assumptionSetsResult.error ??
+        dataPackagesResult.error ??
+        indicatorSnapshotsResult.error ??
+        null,
+    };
+  }
+
   const allEntries = ((allEntriesResult.data ?? []) as ScenarioEntryRow[]).sort(sortScenarioEntries);
   const scenarioSets = (scenarioSetsResult.data ?? []) as ScenarioSetRow[];
+  const assumptionSets = scenarioSpinePending
+    ? []
+    : ((assumptionSetsResult.data ?? []) as ScenarioSpineRow[]);
+  const dataPackages = scenarioSpinePending
+    ? []
+    : ((dataPackagesResult.data ?? []) as ScenarioSpineRow[]);
+  const indicatorSnapshots = scenarioSpinePending
+    ? []
+    : ((indicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
 
   const scenarioRunIds = unique(
     allEntries
@@ -218,9 +277,7 @@ export async function loadReportScenarioSetLinks({
     ((scenarioRunsResult.data ?? []) as RunLookupRow[]).map((run) => [run.id, run])
   );
 
-  return {
-    data: scenarioSetIds
-      .map((scenarioSetId) => {
+  const rawScenarioSetLinks = scenarioSetIds.map((scenarioSetId) => {
         const scenarioSet = scenarioSets.find((item) => item.id === scenarioSetId);
         if (!scenarioSet) {
           return null;
@@ -304,6 +361,16 @@ export async function loadReportScenarioSetLinks({
             null
           : null;
 
+        const assumptionRowsForSet = assumptionSets.filter(
+          (item) => item.scenario_set_id === scenarioSetId
+        );
+        const dataPackageRowsForSet = dataPackages.filter(
+          (item) => item.scenario_set_id === scenarioSetId
+        );
+        const indicatorRowsForSet = indicatorSnapshots.filter(
+          (item) => item.scenario_set_id === scenarioSetId
+        );
+
         return {
           scenarioSetId,
           scenarioSetTitle: scenarioSet.title ?? "Scenario set",
@@ -329,9 +396,30 @@ export async function loadReportScenarioSetLinks({
           latestMatchedRunCreatedAt: latestTimestamp(
             matchedEntriesForSet.map((entry) => entry.runCreatedAt)
           ),
+          sharedSpine: {
+            schemaPending: scenarioSpinePending,
+            assumptionSetCount: assumptionRowsForSet.length,
+            dataPackageCount: dataPackageRowsForSet.length,
+            indicatorSnapshotCount: indicatorRowsForSet.length,
+            latestAssumptionSetUpdatedAt: latestTimestamp(
+              assumptionRowsForSet.map((item) => item.updated_at)
+            ),
+            latestDataPackageUpdatedAt: latestTimestamp(
+              dataPackageRowsForSet.map((item) => item.updated_at)
+            ),
+            latestIndicatorSnapshotAt: latestTimestamp(
+              indicatorRowsForSet.map((item) => item.snapshot_at)
+            ),
+          },
         } satisfies ReportScenarioSetLink;
-      })
-      .filter((item): item is ReportScenarioSetLink => Boolean(item)),
+      });
+
+  const scenarioSetLinks: ReportScenarioSetLink[] = rawScenarioSetLinks.filter(
+    (item): item is NonNullable<(typeof rawScenarioSetLinks)[number]> => item !== null
+  );
+
+  return {
+    data: scenarioSetLinks,
     error: null,
   };
 }

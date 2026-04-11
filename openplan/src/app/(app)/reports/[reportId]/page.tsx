@@ -1699,6 +1699,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         </span>
                         {link.baselineRunTitle ? ` · ${link.baselineRunTitle}` : ""}
                       </p>
+                      {link.sharedSpine ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {link.sharedSpine.schemaPending
+                            ? "Shared scenario spine schema was still pending when this artifact was generated."
+                            : `${link.sharedSpine.assumptionSetCount} assumption set${link.sharedSpine.assumptionSetCount === 1 ? "" : "s"} · ${link.sharedSpine.dataPackageCount} data package${link.sharedSpine.dataPackageCount === 1 ? "" : "s"} · ${link.sharedSpine.indicatorSnapshotCount} indicator snapshot${link.sharedSpine.indicatorSnapshotCount === 1 ? "" : "s"}`}
+                        </p>
+                      ) : null}
                       {(link.scenarioSetUpdatedAt || link.latestMatchedEntryUpdatedAt) ? (
                         <p className="mt-2 text-xs text-muted-foreground">
                           {link.scenarioSetUpdatedAt
@@ -1706,6 +1713,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                             : "Scenario set timing unavailable"}
                           {link.latestMatchedEntryUpdatedAt
                             ? ` · Matched entries updated ${formatDateTime(link.latestMatchedEntryUpdatedAt)}`
+                            : ""}
+                          {link.sharedSpine?.latestIndicatorSnapshotAt
+                            ? ` · Indicators updated ${formatDateTime(link.sharedSpine.latestIndicatorSnapshotAt)}`
                             : ""}
                         </p>
                       ) : null}
