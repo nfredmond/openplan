@@ -54,6 +54,14 @@ export type AssistantOperationGroup = {
   items: AssistantQuickLink[];
 };
 
+export type AssistantOperationSummary = {
+  total: number;
+  actNow: number;
+  reviewSoon: number;
+  supportContext: number;
+  approvalRequired: number;
+};
+
 export type AssistantPreview = {
   kind: AssistantTargetKind;
   title: string;
@@ -338,6 +346,30 @@ export function groupAssistantOperations(links: AssistantQuickLink[]): Assistant
       items: buckets[key],
     }))
     .filter((group) => group.items.length > 0);
+}
+
+export function summarizeAssistantOperations(links: AssistantQuickLink[]): AssistantOperationSummary {
+  let actNow = 0;
+  let reviewSoon = 0;
+  let supportContext = 0;
+  let approvalRequired = 0;
+
+  for (const link of links) {
+    const groupKey = resolveAssistantOperationGroupKey(link);
+    if (groupKey === "act_now") actNow += 1;
+    else if (groupKey === "review_soon") reviewSoon += 1;
+    else supportContext += 1;
+
+    if (link.approval === "approval_required") approvalRequired += 1;
+  }
+
+  return {
+    total: links.length,
+    actNow,
+    reviewSoon,
+    supportContext,
+    approvalRequired,
+  };
 }
 
 export function resolveAssistantTarget(

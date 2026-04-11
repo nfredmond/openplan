@@ -10,6 +10,7 @@ import {
   resolveAssistantOperationTone,
   resolveAssistantOperationUrgency,
   resolveAssistantTarget,
+  summarizeAssistantOperations,
   type AssistantPreview,
   type AssistantQuickLink,
   type AssistantResponse,
@@ -81,9 +82,38 @@ function operationCardClasses(link: AssistantQuickLink) {
 
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   const groups = groupAssistantOperations(links);
+  const summary = summarizeAssistantOperations(links);
 
   return (
     <div className="space-y-4">
+      <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Operations summary</p>
+            <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+              {summary.total} tracked operation{summary.total === 1 ? "" : "s"} are visible from this grounded assistant context.
+            </p>
+          </div>
+          <StatusBadge tone={summary.actNow > 0 ? "warning" : "neutral"} className="border-white/10 bg-white/[0.05] text-slate-100">
+            Act now · {summary.actNow}
+          </StatusBadge>
+        </div>
+
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Review soon</p>
+            <p className="mt-1 text-lg font-semibold text-white">{summary.reviewSoon}</p>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Support context</p>
+            <p className="mt-1 text-lg font-semibold text-white">{summary.supportContext}</p>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Approval required</p>
+            <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
+          </div>
+        </div>
+      </div>
       {groups.map((group) => (
         <section key={group.key} className="space-y-2">
           <div>
