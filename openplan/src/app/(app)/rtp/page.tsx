@@ -902,6 +902,43 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const runnerUpCurrentViewActionSelection = orderedCurrentViewActions.find(
     (action) => action.key !== dominantCurrentViewActionSelection.key && action.count > 0
   );
+  const actionHrefByKey: Record<DominantActionKey, string> = {
+    createPacket: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "missing",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter,
+    }),
+    resetAndRegenerate: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "reset",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter,
+    }),
+    generateFirstArtifact: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "generate",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter,
+    }),
+    refreshArtifact: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "refresh",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter,
+    }),
+    traceFollowUp: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "current",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
+    }),
+  };
   const dominantActionCycles = typedCycles.filter((cycle) => {
     switch (dominantCurrentViewActionSelection.key) {
       case "createPacket":
@@ -918,47 +955,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         return false;
     }
   });
-  const dominantActionHref =
-    dominantCurrentViewActionSelection.key === "createPacket"
-      ? buildRtpRegistryHref({
-          status: filters.status ?? null,
-          packet: "missing",
-          recent: recentOnly,
-          queueAction: selectedQueueActionFilter,
-          queueTraceState: selectedQueueTraceStateFilter,
-        })
-      : dominantCurrentViewActionSelection.key === "resetAndRegenerate"
-        ? buildRtpRegistryHref({
-            status: filters.status ?? null,
-            packet: "reset",
-            recent: recentOnly,
-            queueAction: selectedQueueActionFilter,
-            queueTraceState: selectedQueueTraceStateFilter,
-          })
-        : dominantCurrentViewActionSelection.key === "generateFirstArtifact"
-          ? buildRtpRegistryHref({
-              status: filters.status ?? null,
-              packet: "generate",
-              recent: recentOnly,
-              queueAction: selectedQueueActionFilter,
-              queueTraceState: selectedQueueTraceStateFilter,
-            })
-          : dominantCurrentViewActionSelection.key === "refreshArtifact"
-            ? buildRtpRegistryHref({
-                status: filters.status ?? null,
-                packet: "refresh",
-                recent: recentOnly,
-                queueAction: selectedQueueActionFilter,
-                queueTraceState: selectedQueueTraceStateFilter,
-              })
-            : buildRtpRegistryHref({
-                status: filters.status ?? null,
-                packet: "current",
-                recent: recentOnly,
-                queueAction: selectedQueueActionFilter,
-                queueTraceState:
-                  selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
-              });
+  const dominantActionHref = actionHrefByKey[dominantCurrentViewActionSelection.key];
   const dominantActionCycleIds = dominantActionCycles.map((cycle) => cycle.id);
   const dominantActionReportIds = dominantActionCycles
     .map((cycle) => cycle.packetReport?.id ?? null)
@@ -977,47 +974,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     totalActionableCurrentViewCount - dominantCurrentViewActionSelection.count,
     0
   );
-  const runnerUpActionHref = runnerUpCurrentViewActionSelection
-    ? runnerUpCurrentViewActionSelection.key === "createPacket"
-      ? buildRtpRegistryHref({
-          status: filters.status ?? null,
-          packet: "missing",
-          recent: recentOnly,
-          queueAction: selectedQueueActionFilter,
-          queueTraceState: selectedQueueTraceStateFilter,
-        })
-      : runnerUpCurrentViewActionSelection.key === "resetAndRegenerate"
-        ? buildRtpRegistryHref({
-            status: filters.status ?? null,
-            packet: "reset",
-            recent: recentOnly,
-            queueAction: selectedQueueActionFilter,
-            queueTraceState: selectedQueueTraceStateFilter,
-          })
-        : runnerUpCurrentViewActionSelection.key === "generateFirstArtifact"
-          ? buildRtpRegistryHref({
-              status: filters.status ?? null,
-              packet: "generate",
-              recent: recentOnly,
-              queueAction: selectedQueueActionFilter,
-              queueTraceState: selectedQueueTraceStateFilter,
-            })
-          : runnerUpCurrentViewActionSelection.key === "refreshArtifact"
-            ? buildRtpRegistryHref({
-                status: filters.status ?? null,
-                packet: "refresh",
-                recent: recentOnly,
-                queueAction: selectedQueueActionFilter,
-                queueTraceState: selectedQueueTraceStateFilter,
-              })
-            : buildRtpRegistryHref({
-                status: filters.status ?? null,
-                packet: "current",
-                recent: recentOnly,
-                queueAction: selectedQueueActionFilter,
-                queueTraceState: selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
-              })
-    : null;
+  const runnerUpActionHref = runnerUpCurrentViewActionSelection ? actionHrefByKey[runnerUpCurrentViewActionSelection.key] : null;
 
   return (
     <section className="module-page">
@@ -1616,8 +1573,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               <div className="mt-4 space-y-2">
                 {rankedCurrentViewActions.length > 0 ? (
                   rankedCurrentViewActions.map((action, index) => (
-                    <div
+                    <Link
                       key={action.key}
+                      href={actionHrefByKey[action.key]}
                       className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3"
                     >
                       <div>
@@ -1632,7 +1590,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         </StatusBadge>
                         <span className="text-sm font-semibold tracking-tight text-foreground">{action.count}</span>
                       </div>
-                    </div>
+                    </Link>
                   ))
                 ) : (
                   <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
