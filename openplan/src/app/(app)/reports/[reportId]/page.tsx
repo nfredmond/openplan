@@ -29,6 +29,7 @@ import {
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildProjectStageGateSummary,
   type ProjectStageGateSummary,
@@ -85,6 +86,12 @@ type DriftItem = {
   label: string;
   status: DriftStatus;
   detail: string;
+};
+
+type ScenarioSpineRow = {
+  scenario_set_id?: string | null;
+  updated_at?: string | null;
+  snapshot_at?: string | null;
 };
 
 type ProjectRecordSnapshotKey =
@@ -719,6 +726,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     engagementCategoriesResult,
     engagementItemsResult,
     scenarioSetsResult,
+    scenarioAssumptionSetsResult,
+    scenarioDataPackagesResult,
+    scenarioIndicatorSnapshotsResult,
     stageGateDecisionsResult,
     deliverablesResult,
     risksResult,
@@ -748,6 +758,24 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           .from("scenario_sets")
           .select("id, updated_at")
           .in("id", liveScenarioSetIds)
+      : Promise.resolve({ data: [], error: null }),
+    liveScenarioSetIds.length > 0
+      ? supabase
+          .from("scenario_assumption_sets")
+          .select("scenario_set_id, updated_at")
+          .in("scenario_set_id", liveScenarioSetIds)
+      : Promise.resolve({ data: [], error: null }),
+    liveScenarioSetIds.length > 0
+      ? supabase
+          .from("scenario_data_packages")
+          .select("scenario_set_id, updated_at")
+          .in("scenario_set_id", liveScenarioSetIds)
+      : Promise.resolve({ data: [], error: null }),
+    liveScenarioSetIds.length > 0
+      ? supabase
+          .from("scenario_indicator_snapshots")
+          .select("scenario_set_id, snapshot_at")
+          .in("scenario_set_id", liveScenarioSetIds)
       : Promise.resolve({ data: [], error: null }),
     stageGateSnapshot
       ? supabase
@@ -806,6 +834,43 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       item.updated_at,
     ])
   );
+  const liveScenarioSpinePending = [
+    scenarioAssumptionSetsResult.error,
+    scenarioDataPackagesResult.error,
+    scenarioIndicatorSnapshotsResult.error,
+  ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+  const liveScenarioAssumptionRows = liveScenarioSpinePending
+    ? []
+    : ((scenarioAssumptionSetsResult.data ?? []) as ScenarioSpineRow[]);
+  const liveScenarioDataPackageRows = liveScenarioSpinePending
+    ? []
+    : ((scenarioDataPackagesResult.data ?? []) as ScenarioSpineRow[]);
+  const liveScenarioIndicatorRows = liveScenarioSpinePending
+    ? []
+    : ((scenarioIndicatorSnapshotsResult.data ?? []) as ScenarioSpineRow[]);
+  const liveScenarioSpineSummaryById = new Map<string, {
+    assumptionSetCount: number;
+    dataPackageCount: number;
+    indicatorSnapshotCount: number;
+    latestAssumptionSetUpdatedAt: string | null;
+    latestDataPackageUpdatedAt: string | null;
+    latestIndicatorSnapshotAt: string | null;
+  }>();
+
+  for (const scenarioSetId of liveScenarioSetIds) {
+    const assumptionRows = liveScenarioAssumptionRows.filter((row) => row.scenario_set_id === scenarioSetId);
+    const dataPackageRows = liveScenarioDataPackageRows.filter((row) => row.scenario_set_id === scenarioSetId);
+    const indicatorRows = liveScenarioIndicatorRows.filter((row) => row.scenario_set_id === scenarioSetId);
+
+    liveScenarioSpineSummaryById.set(scenarioSetId, {
+      assumptionSetCount: assumptionRows.length,
+      dataPackageCount: dataPackageRows.length,
+      indicatorSnapshotCount: indicatorRows.length,
+      latestAssumptionSetUpdatedAt: maxTimestamp(...assumptionRows.map((row) => row.updated_at ?? null)),
+      latestDataPackageUpdatedAt: maxTimestamp(...dataPackageRows.map((row) => row.updated_at ?? null)),
+      latestIndicatorSnapshotAt: maxTimestamp(...indicatorRows.map((row) => row.snapshot_at ?? null)),
+    });
+  }
   const currentStageGateSummary: ProjectStageGateSummary | null = stageGateSnapshot
     ? buildProjectStageGateSummary(
         (stageGateDecisionsResult.data ?? []) as StageGateDecisionRow[]
@@ -915,11 +980,36 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       .map((link) => {
         const snapshotAt = maxTimestamp(
           link.scenarioSetUpdatedAt,
-          link.latestMatchedEntryUpdatedAt
+          link.latestMatchedEntryUpdatedAt,
+          link.sharedSpine?.latestAssumptionSetUpdatedAt ?? null,
+          link.sharedSpine?.latestDataPackageUpdatedAt ?? null,
+          link.sharedSpine?.latestIndicatorSnapshotAt ?? null
         );
-        const currentAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
-        if (!currentAt || !snapshotAt || currentAt === snapshotAt) {
+        const currentSetAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
+        const currentSpine = liveScenarioSpineSummaryById.get(link.scenarioSetId) ?? null;
+        const currentAt = maxTimestamp(
+          currentSetAt,
+          currentSpine?.latestAssumptionSetUpdatedAt ?? null,
+          currentSpine?.latestDataPackageUpdatedAt ?? null,
+          currentSpine?.latestIndicatorSnapshotAt ?? null
+        );
+
+        const countChanged = currentSpine
+          ? link.sharedSpine
+            ? link.sharedSpine.assumptionSetCount !== currentSpine.assumptionSetCount ||
+              link.sharedSpine.dataPackageCount !== currentSpine.dataPackageCount ||
+              link.sharedSpine.indicatorSnapshotCount !== currentSpine.indicatorSnapshotCount
+            : currentSpine.assumptionSetCount > 0 ||
+              currentSpine.dataPackageCount > 0 ||
+              currentSpine.indicatorSnapshotCount > 0
+          : false;
+
+        if (!countChanged && (!currentAt || !snapshotAt || currentAt === snapshotAt)) {
           return null;
+        }
+
+        if (countChanged && currentSpine) {
+          return `${link.scenarioSetTitle}: assumptions ${link.sharedSpine?.assumptionSetCount ?? 0} -> ${currentSpine.assumptionSetCount}, packages ${link.sharedSpine?.dataPackageCount ?? 0} -> ${currentSpine.dataPackageCount}, indicators ${link.sharedSpine?.indicatorSnapshotCount ?? 0} -> ${currentSpine.indicatorSnapshotCount}.`;
         }
 
         return `${link.scenarioSetTitle}: ${formatCompactDateTime(snapshotAt)} -> ${formatCompactDateTime(currentAt)}.`;
@@ -933,7 +1023,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       detail:
         scenarioChanges.length > 0
           ? scenarioChanges.join(" ")
-          : "Scenario-set update timing still matches the artifact snapshot.",
+          : "Scenario-set and shared-spine timing still matches the artifact snapshot.",
     });
   }
 
