@@ -892,6 +892,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
     { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
   ].sort((left, right) => right.count - left.count)[0];
+  const dominantActionCycles = typedCycles.filter((cycle) => {
+    switch (dominantCurrentViewAction.key) {
+      case "createPacket":
+        return cycle.packetAttention === "missing";
+      case "resetAndRegenerate":
+        return cycle.packetAttention === "reset";
+      case "generateFirstArtifact":
+        return cycle.packetAttention === "generate";
+      case "refreshArtifact":
+        return cycle.packetAttention === "refresh";
+      case "traceFollowUp":
+        return cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned";
+      default:
+        return false;
+    }
+  });
 
   return (
     <section className="module-page">
@@ -1494,6 +1510,39 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
                 <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
               </ul>
+
+              {dominantCurrentViewAction.count > 0 ? (
+                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Top affected cycles
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {dominantActionCycles.slice(0, 3).map((cycle) => (
+                      <div key={cycle.id} className="rounded-2xl border border-border/50 bg-background px-3 py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
+                              {cycle.title}
+                            </Link>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {cycle.packetAttention === "missing"
+                                ? "No packet record yet."
+                                : cycle.packetAttention === "reset"
+                                  ? "Packet preset drift requires reset and regeneration."
+                                  : cycle.packetAttention === "generate"
+                                    ? "Packet record exists but first artifact is still missing."
+                                    : cycle.packetAttention === "refresh"
+                                      ? "Artifact is behind current cycle state."
+                                      : "Queue trace needs follow-up against current state."}
+                            </p>
+                          </div>
+                          <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-4 flex flex-wrap gap-3">
                 {currentViewActionCounts.createPacket > 0 ? (
