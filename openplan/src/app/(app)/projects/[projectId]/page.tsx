@@ -1774,7 +1774,22 @@ export default async function ProjectDetailPage({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3 mt-5">
+        <div className="grid gap-4 md:grid-cols-4 mt-5">
+          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recommended next action</p>
+            <div className="mt-2 flex items-center gap-2">
+              <StatusBadge tone={projectControlsSummary.recommendedNextAction.tone}>
+                {projectControlsSummary.recommendedNextAction.label}
+              </StatusBadge>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{projectControlsSummary.recommendedNextAction.detail}</p>
+            <div className="mt-3">
+              <Link href={`#${projectControlsSummary.recommendedNextAction.targetId}`} className="module-inline-action w-fit">
+                Open control lane
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
           <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextMilestone?.title ?? "No upcoming milestone recorded"}</h3>

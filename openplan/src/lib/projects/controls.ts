@@ -3,6 +3,7 @@ import {
   type BillingInvoiceRecordLike,
   type BillingInvoiceSummary,
 } from "@/lib/billing/invoice-records";
+import type { StatusTone } from "@/lib/ui/status";
 
 export type ProjectMilestoneRecordLike = {
   title: string;
@@ -33,6 +34,12 @@ export type ProjectControlsSummary = {
   nextSubmittal: ProjectSubmittalRecordLike | null;
   invoiceSummary: BillingInvoiceSummary;
   controlHealth: "stable" | "active" | "attention";
+  recommendedNextAction: {
+    label: string;
+    detail: string;
+    tone: StatusTone;
+    targetId: string;
+  };
 };
 
 function isPast(dateInput: string | null | undefined, now: Date): boolean {
@@ -87,6 +94,63 @@ export function buildProjectControlsSummary(
         ? "active"
         : "stable";
 
+  const recommendedNextAction =
+    blockedMilestoneCount > 0
+      ? {
+          label: "Resolve blocked milestone",
+          detail: `${blockedMilestoneCount} milestone${blockedMilestoneCount === 1 ? " is" : "s are"} blocked. Clear the blocker before pushing invoicing or delivery posture forward.`,
+          tone: "danger" as const,
+          targetId: "project-billing-register",
+        }
+      : overdueSubmittalCount > 0
+        ? {
+            label: "Recover overdue submittal",
+            detail: `${overdueSubmittalCount} submittal${overdueSubmittalCount === 1 ? " is" : "s are"} overdue for review or agency response. Reconfirm the next packet owner and due date.`,
+            tone: "danger" as const,
+            targetId: "project-billing-register",
+          }
+        : overdueMilestoneCount > 0
+          ? {
+              label: "Recover overdue milestone",
+              detail: `${overdueMilestoneCount} milestone${overdueMilestoneCount === 1 ? " is" : "s are"} behind target date. Rebaseline the next checkpoint and owner.`,
+              tone: "warning" as const,
+              targetId: "project-billing-register",
+            }
+          : invoiceSummary.overdueCount > 0
+            ? {
+                label: "Resolve overdue invoice posture",
+                detail: `${invoiceSummary.overdueCount} invoice${invoiceSummary.overdueCount === 1 ? " is" : "s are"} overdue. Confirm supporting docs and payment status before advancing closeout claims.`,
+                tone: "warning" as const,
+                targetId: "project-billing-register",
+              }
+            : nextSubmittal
+              ? {
+                  label: "Prepare next submittal",
+                  detail: `${nextSubmittal.title} is the next visible packet in the queue. Keep the review cadence explicit before it turns into a hidden hold.`,
+                  tone: "info" as const,
+                  targetId: "project-billing-register",
+                }
+              : nextMilestone
+                ? {
+                    label: "Advance next milestone",
+                    detail: `${nextMilestone.title} is the next project checkpoint. Confirm scope, owner, and evidence needed to hit the target date.`,
+                    tone: "info" as const,
+                    targetId: "project-billing-register",
+                  }
+                : invoiceSummary.draftCount > 0
+                  ? {
+                      label: "Move draft invoice into review",
+                      detail: `${invoiceSummary.draftCount} invoice draft${invoiceSummary.draftCount === 1 ? " is" : "s are"} parked in setup. Decide whether they should stay draft or move into the formal review/payment lane.`,
+                      tone: "neutral" as const,
+                      targetId: "project-billing-register",
+                    }
+                  : {
+                      label: "Establish the next control checkpoint",
+                      detail: "Add the next milestone, submittal, or invoice record so this project has an explicit operator-controlled next step instead of implied status.",
+                      tone: "neutral" as const,
+                      targetId: "project-billing-register",
+                    };
+
   return {
     milestoneCount: milestoneRows.length,
     completedMilestoneCount,
@@ -98,5 +162,6 @@ export function buildProjectControlsSummary(
     nextSubmittal,
     invoiceSummary,
     controlHealth,
+    recommendedNextAction,
   };
 }
