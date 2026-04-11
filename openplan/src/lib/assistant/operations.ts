@@ -101,7 +101,17 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
   const fundingAwardRecordCommand = context.operationsSummary.commandQueue.find(
     (item) => item.key === "record-awarded-funding"
   );
+  const reimbursementStartCommand = context.operationsSummary.commandQueue.find(
+    (item) => item.key === "start-project-reimbursement-packets"
+  );
+  const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find(
+    (item) => item.key === "advance-project-reimbursement-invoicing"
+  );
   const fundingGapCommand = context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps");
+  const reimbursementStartCount =
+    typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
+  const reimbursementAdvanceCount =
+    typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
 
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
@@ -208,10 +218,42 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           }
         )
       : null,
+    reimbursementStartCommand?.targetProjectId
+      ? quickLink(
+          "workspace-create-reimbursement-record",
+          "Create lead reimbursement record now",
+          reimbursementStartCommand.href,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason: "The workspace queue already knows the lead project that has committed awards but still no reimbursement packet, so Planner Agent can start that audited record directly from the shared funding board.",
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.create_reimbursement_record",
+            auditNote: "Creates a reimbursement submittal record through the existing audited project-record route without inventing invoice amounts or dates.",
+            executeAction: {
+              kind: "create_project_record",
+              projectId: reimbursementStartCommand.targetProjectId,
+              recordType: "submittal",
+              title: `${reimbursementStartCommand.targetProjectName ?? "Project"} reimbursement packet`,
+              submittalType: "reimbursement",
+              status: "draft",
+              notes: "Planner Agent created this reimbursement packet starter from the workspace funding queue. Link award-specific backup and invoice chain next.",
+              postActionWorkflowId: "workspace-funding",
+              postActionPrompt: "A lead reimbursement packet was created from the workspace queue. Which funding or invoicing lane should move next?",
+              postActionPromptLabel: "Review workspace reimbursement posture",
+            },
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 ||
     context.operationsSummary.counts.projectFundingSourcingProjects > 0 ||
     context.operationsSummary.counts.projectFundingDecisionProjects > 0 ||
     context.operationsSummary.counts.projectFundingAwardRecordProjects > 0 ||
+    Boolean(reimbursementStartCommand) ||
+    Boolean(reimbursementAdvanceCommand) ||
     context.operationsSummary.counts.projectFundingGapProjects > 0
       ? quickLink(
           "workspace-funding-agent",
@@ -223,22 +265,30 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
                 ? "Review funding decision gaps in panel"
                 : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
                   ? "Review awarded funding records in panel"
+                  : reimbursementStartCommand
+                    ? "Review reimbursement packet starts in panel"
+                    : reimbursementAdvanceCommand
+                      ? "Review reimbursement follow-through in panel"
             : "Review funding gaps in panel",
-          fundingAnchorCommand?.href ?? fundingSourcingCommand?.href ?? fundingDecisionCommand?.href ?? fundingAwardRecordCommand?.href ?? fundingGapCommand?.href ?? "/projects",
+          fundingAnchorCommand?.href ?? fundingSourcingCommand?.href ?? fundingDecisionCommand?.href ?? fundingAwardRecordCommand?.href ?? reimbursementStartCommand?.href ?? reimbursementAdvanceCommand?.href ?? fundingGapCommand?.href ?? "/projects",
           {
           targetKind: "workspace",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
-          priority: fundingAnchorCommand || fundingSourcingCommand || fundingDecisionCommand || fundingAwardRecordCommand || fundingGapCommand ? "primary" : "secondary",
+          priority: fundingAnchorCommand || fundingSourcingCommand || fundingDecisionCommand || fundingAwardRecordCommand || reimbursementStartCommand || reimbursementAdvanceCommand || fundingGapCommand ? "primary" : "secondary",
           statusLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
               ? `${context.operationsSummary.counts.projectFundingNeedAnchorProjects} missing anchor${context.operationsSummary.counts.projectFundingNeedAnchorProjects === 1 ? "" : "s"}`
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? `${context.operationsSummary.counts.projectFundingSourcingProjects} need sourcing`
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
-                  ? `${context.operationsSummary.counts.projectFundingDecisionProjects} need decisions`
-                  : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
-                    ? `${context.operationsSummary.counts.projectFundingAwardRecordProjects} award record${context.operationsSummary.counts.projectFundingAwardRecordProjects === 1 ? "" : "s"} missing`
+                ? `${context.operationsSummary.counts.projectFundingDecisionProjects} need decisions`
+                : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
+                  ? `${context.operationsSummary.counts.projectFundingAwardRecordProjects} award record${context.operationsSummary.counts.projectFundingAwardRecordProjects === 1 ? "" : "s"} missing`
+                  : reimbursementStartCommand
+                    ? `${reimbursementStartCount} need packet${reimbursementStartCount === 1 ? "" : "s"}`
+                    : reimbursementAdvanceCommand
+                      ? `${reimbursementAdvanceCount} reimbursement active`
               : `${context.operationsSummary.counts.projectFundingGapProjects} gap project${context.operationsSummary.counts.projectFundingGapProjects === 1 ? "" : "s"}`,
           reason:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
@@ -246,9 +296,13 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Some projects already have a grounded funding need but still no linked opportunities, so the assistant should surface sourcing work before it talks about closing gaps."
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
-                  ? "Some projects already have linked opportunities but nothing marked pursue yet, so the assistant should surface grant-decision work before it treats the lane as a true funding stack."
-                  : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
-                    ? "Some projects already have opportunities marked awarded but still no matching funding-award record, so the assistant should close that committed-dollar bookkeeping gap before treating the remaining shortfall as final."
+                ? "Some projects already have linked opportunities but nothing marked pursue yet, so the assistant should surface grant-decision work before it treats the lane as a true funding stack."
+                : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
+                  ? "Some projects already have opportunities marked awarded but still no matching funding-award record, so the assistant should close that committed-dollar bookkeeping gap before treating the remaining shortfall as final."
+                  : reimbursementStartCommand
+                    ? "Some projects already have committed awards logged but still no reimbursement packet started, so the assistant should open that audited reimbursement trail before it only talks about funding gaps."
+                    : reimbursementAdvanceCommand
+                      ? "Some projects already have reimbursement work started, but the invoice lane still has not caught up to the committed award stack, so follow-through deserves explicit triage."
               : "The workspace now shows real project funding gaps beyond deadline-only grant pressure, so the assistant should help rank which thinly funded project to reopen first.",
           approval: "safe",
           auditEvent: "assistant.operation.workspace.funding_agent",
@@ -260,9 +314,13 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Which projects already have funding need recorded but still no linked funding opportunities, and where should I start sourcing?"
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
-                  ? "Which projects already have linked funding opportunities but still nothing marked pursue, and where should I start deciding?"
-                  : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
-                    ? "Which projects already have awarded opportunities but still no funding-award record, and where should I start reconciling committed dollars?"
+                ? "Which projects already have linked funding opportunities but still nothing marked pursue, and where should I start deciding?"
+                : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
+                  ? "Which projects already have awarded opportunities but still no funding-award record, and where should I start reconciling committed dollars?"
+                  : reimbursementStartCommand
+                    ? "Which projects already have committed awards but still need their first reimbursement packet, and where should I start?"
+                    : reimbursementAdvanceCommand
+                      ? "Which projects already have reimbursement work underway but still need invoice follow-through, and where should I start?"
               : "Which project funding gaps need attention across this workspace, and where should I start?",
           promptLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
@@ -270,9 +328,13 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Review funding sourcing gaps in panel"
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
-                  ? "Review funding decision gaps in panel"
-                  : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
-                    ? "Review awarded funding records in panel"
+                ? "Review funding decision gaps in panel"
+                : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
+                  ? "Review awarded funding records in panel"
+                  : reimbursementStartCommand
+                    ? "Review reimbursement packet starts in panel"
+                    : reimbursementAdvanceCommand
+                      ? "Review reimbursement follow-through in panel"
               : "Review funding gaps in panel",
         }
         )

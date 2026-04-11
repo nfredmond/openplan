@@ -331,4 +331,141 @@ describe("assistant funding operations", () => {
     expect(action?.label).toBe("Review awarded funding records in panel");
     expect(action?.statusLabel).toBe("1 award record missing");
   });
+
+  it("exposes a workspace-level execute action for the lead reimbursement packet start", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Start reimbursement packets",
+        detail: "A project has committed awards but no reimbursement packet started yet.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "start-project-reimbursement-packets",
+          title: "Start reimbursement packets",
+          detail: "Reopen Gap Project first and start the packet against uninvoiced award dollars.",
+          href: "/projects/project-gap#project-submittals",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 6.2,
+          badges: [{ label: "Packets needed", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "start-project-reimbursement-packets",
+            title: "Start reimbursement packets",
+            detail: "Reopen Gap Project first and start the packet against uninvoiced award dollars.",
+            href: "/projects/project-gap#project-submittals",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 6.2,
+            badges: [{ label: "Packets needed", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-create-reimbursement-record");
+
+    expect(action).toBeDefined();
+    expect(action?.executeAction?.kind).toBe("create_project_record");
+    if (action?.executeAction?.kind === "create_project_record") {
+      expect(action.executeAction.projectId).toBe("project-gap");
+      expect(action.executeAction.recordType).toBe("submittal");
+      expect(action.executeAction.submittalType).toBe("reimbursement");
+    }
+  });
+
+  it("switches the workspace funding agent into reimbursement-start posture when packets are still missing", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Start reimbursement packets",
+        detail: "A project has committed awards but no reimbursement packet started yet.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "start-project-reimbursement-packets",
+          title: "Start reimbursement packets",
+          detail: "Reopen Gap Project first and start the packet against uninvoiced award dollars.",
+          href: "/projects/project-gap#project-submittals",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 6.2,
+          badges: [{ label: "Packets needed", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "start-project-reimbursement-packets",
+            title: "Start reimbursement packets",
+            detail: "Reopen Gap Project first and start the packet against uninvoiced award dollars.",
+            href: "/projects/project-gap#project-submittals",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 6.2,
+            badges: [{ label: "Packets needed", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action?.label).toBe("Review reimbursement packet starts in panel");
+    expect(action?.statusLabel).toBe("1 need packet");
+  });
+
+  it("switches the workspace funding agent into reimbursement follow-through posture once packets exist", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance reimbursement invoicing",
+        detail: "A project already has reimbursement work started but invoicing still trails the award stack.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "advance-project-reimbursement-invoicing",
+          title: "Advance reimbursement invoicing",
+          detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+          href: "/projects/project-gap#project-invoices",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 6.3,
+          badges: [{ label: "Reimbursement active", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-reimbursement-invoicing",
+            title: "Advance reimbursement invoicing",
+            detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+            href: "/projects/project-gap#project-invoices",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 6.3,
+            badges: [{ label: "Reimbursement active", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action?.label).toBe("Review reimbursement follow-through in panel");
+    expect(action?.statusLabel).toBe("1 reimbursement active");
+  });
 });
