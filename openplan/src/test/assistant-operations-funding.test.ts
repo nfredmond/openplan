@@ -153,6 +153,7 @@ describe("assistant funding operations", () => {
           detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
           href: "/projects/project-gap#project-funding-opportunities",
           targetProjectId: "project-gap",
+          targetOpportunityId: "opp-gap-1",
           tone: "warning",
           priority: 5,
           badges: [{ label: "Decision gaps", value: 1 }],
@@ -164,6 +165,7 @@ describe("assistant funding operations", () => {
             detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
             href: "/projects/project-gap#project-funding-opportunities",
             targetProjectId: "project-gap",
+            targetOpportunityId: "opp-gap-1",
             tone: "warning",
             priority: 5,
             badges: [{ label: "Decision gaps", value: 1 }],
@@ -175,5 +177,52 @@ describe("assistant funding operations", () => {
 
     expect(action?.label).toBe("Review funding decision gaps in panel");
     expect(action?.statusLabel).toBe("1 need decisions");
+  });
+
+  it("exposes a workspace-level execute action for the lead funding decision gap", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance project funding decisions",
+        detail: "A project has linked opportunities but nothing marked pursue.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 1,
+          projectFundingGapProjects: 0,
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          targetOpportunityId: "opp-gap-1",
+          tone: "warning",
+          priority: 5,
+          badges: [{ label: "Decision gaps", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            targetOpportunityId: "opp-gap-1",
+            tone: "warning",
+            priority: 5,
+            badges: [{ label: "Decision gaps", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-advance-funding-opportunity");
+
+    expect(action).toBeDefined();
+    expect(action?.executeAction?.kind).toBe("update_funding_opportunity_decision");
+    if (action?.executeAction?.kind === "update_funding_opportunity_decision") {
+      expect(action.executeAction.opportunityId).toBe("opp-gap-1");
+      expect(action.executeAction.decisionState).toBe("pursue");
+    }
   });
 });

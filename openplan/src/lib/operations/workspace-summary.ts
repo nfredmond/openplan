@@ -131,6 +131,7 @@ export type WorkspaceCommandQueueItem = {
   detail: string;
   href: string;
   targetProjectId?: string | null;
+  targetOpportunityId?: string | null;
   tone: StatusTone;
   priority: number;
   badges: Array<{
@@ -675,6 +676,7 @@ export function buildWorkspaceOperationsSummary({
         ? `/projects/${firstFundingDecisionProject.project.id}#project-funding-opportunities`
         : "/projects",
       targetProjectId: firstFundingDecisionProject?.project.id ?? null,
+      targetOpportunityId: firstFundingDecisionProject?.leadOpportunity?.id ?? null,
       tone: "warning",
       priority: 5,
       badges: [

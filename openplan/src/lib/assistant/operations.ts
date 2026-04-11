@@ -153,6 +153,32 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           }
         )
       : null,
+    context.operationsSummary.counts.projectFundingDecisionProjects > 0 && fundingDecisionCommand?.targetOpportunityId
+      ? quickLink(
+          "workspace-advance-funding-opportunity",
+          "Mark lead opportunity pursue now",
+          fundingDecisionCommand.href,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason: "The workspace queue already knows the lead funding opportunity that still needs a pursue decision, so Planner Agent can advance it directly from the shared grants board.",
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.advance_funding_opportunity",
+            auditNote: "Updates the lead funding opportunity decision through the existing audited route so the workspace has a real pursue posture.",
+            executeAction: {
+              kind: "update_funding_opportunity_decision",
+              opportunityId: fundingDecisionCommand.targetOpportunityId,
+              decisionState: "pursue",
+              postActionWorkflowId: "workspace-funding",
+              postActionPrompt: "A lead funding opportunity was marked pursue from the workspace queue. Which grant lane should move next?",
+              postActionPromptLabel: "Review workspace funding posture",
+            },
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 ||
     context.operationsSummary.counts.projectFundingSourcingProjects > 0 ||
     context.operationsSummary.counts.projectFundingDecisionProjects > 0 ||
