@@ -14,6 +14,7 @@ import mapboxgl, {
   type ExpressionSpecification,
 } from "mapbox-gl";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import type { Run } from "@/components/runs/RunHistory";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,45 @@ type AnalysisContextResponse = {
     title: string;
     created_at: string;
   }>;
+  operationsSummary: {
+    posture: "stable" | "active" | "attention";
+    headline: string;
+    detail: string;
+    counts: {
+      projects: number;
+      activeProjects: number;
+      plans: number;
+      plansNeedingSetup: number;
+      programs: number;
+      activePrograms: number;
+      reports: number;
+      reportRefreshRecommended: number;
+      reportNoPacket: number;
+      comparisonBackedReports: number;
+      fundingOpportunities: number;
+      openFundingOpportunities: number;
+      closingSoonFundingOpportunities: number;
+      queueDepth: number;
+    };
+    nextCommand: {
+      key: string;
+      title: string;
+      detail: string;
+      href: string;
+      tone: "info" | "success" | "warning" | "danger" | "neutral";
+      priority: number;
+      badges: Array<{ label: string; value?: string | number | null }>;
+    } | null;
+    commandQueue: Array<{
+      key: string;
+      title: string;
+      detail: string;
+      href: string;
+      tone: "info" | "success" | "warning" | "danger" | "neutral";
+      priority: number;
+      badges: Array<{ label: string; value?: string | number | null }>;
+    }>;
+  };
 };
 
 type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
@@ -3082,6 +3122,13 @@ export default function ExplorePage() {
                       <p className="module-summary-detail">Latest analysis history for this workspace</p>
                     </div>
                   </div>
+
+                  <WorkspaceCommandBoard
+                    summary={analysisContext.operationsSummary}
+                    label="Workspace command board"
+                    title="What should move around this analysis workspace"
+                    description="Analysis Studio now inherits the same shared workspace command queue as the rest of the runtime, so packet pressure, funding windows, and setup gaps stay visible while you work corridor and map analysis."
+                  />
 
                   {analysisContext.migrationPending ? (
                     <div className="module-alert text-xs">
