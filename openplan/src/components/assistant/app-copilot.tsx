@@ -201,12 +201,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <StatusBadge tone="info">{preview?.kind.replace(/_/g, " ") ?? "workspace"}</StatusBadge>
-                {preview?.stats.slice(0, 3).map((stat) => (
+                {preview?.stats.map((stat) => (
                   <StatusBadge key={`${stat.label}-${stat.value}`} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
                     {stat.label} · {stat.value}
                   </StatusBadge>
                 ))}
               </div>
+
+              {preview?.operatorCue ? (
+                <div className="mt-4 rounded-[22px] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-100/72">{preview.operatorCue.label}</p>
+                  <p className="mt-2 text-sm font-semibold text-white">{preview.operatorCue.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{preview.operatorCue.detail}</p>
+                </div>
+              ) : null}
             </div>
 
             <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto]">

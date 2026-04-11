@@ -82,6 +82,17 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
       { label: "Plan", value: context.workspace.plan ?? "Unknown" },
     ],
     facts,
+    operatorCue: context.operationsSummary.nextCommand
+      ? {
+          label: "Current runtime cue",
+          title: context.operationsSummary.nextCommand.title,
+          detail: context.operationsSummary.nextCommand.detail,
+        }
+      : {
+          label: "Current runtime cue",
+          title: "Workspace command queue is clear",
+          detail: context.operationsSummary.detail,
+        },
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -106,6 +117,17 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
       `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
       `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.` ,
     ],
+    operatorCue: context.stageGateSummary.blockedGate
+      ? {
+          label: "Current runtime cue",
+          title: `Unblock ${context.stageGateSummary.blockedGate.name}`,
+          detail: context.stageGateSummary.blockedGate.rationale || "A stage gate is currently on hold and needs evidence or rationale cleanup.",
+        }
+      : {
+          label: "Current runtime cue",
+          title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
+          detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
+        },
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -128,6 +150,13 @@ function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}`
         : "Workspace command queue is currently clear from this snapshot.",
     ],
+    operatorCue: context.operationsSummary.nextCommand
+      ? {
+          label: "Current runtime cue",
+          title: context.operationsSummary.nextCommand.title,
+          detail: context.operationsSummary.nextCommand.detail,
+        }
+      : undefined,
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -150,6 +179,19 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
         ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No linked report packet is available yet for this program.",
     ],
+    operatorCue: context.operationsSummary.nextCommand
+      ? {
+          label: "Current runtime cue",
+          title: context.operationsSummary.nextCommand.title,
+          detail: context.operationsSummary.nextCommand.detail,
+        }
+      : context.packetSummary.recommendedReport
+        ? {
+            label: "Current runtime cue",
+            title: context.packetSummary.recommendedReport.title ?? "Recommended packet anchor",
+            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+          }
+        : undefined,
     suggestedActions: getAssistantActions(context.kind),
   };
 }

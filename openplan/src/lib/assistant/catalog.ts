@@ -35,6 +35,11 @@ export type AssistantPreview = {
   summary: string;
   stats: AssistantPreviewStat[];
   facts: string[];
+  operatorCue?: {
+    label: string;
+    title: string;
+    detail: string;
+  };
   suggestedActions: AssistantAction[];
 };
 
