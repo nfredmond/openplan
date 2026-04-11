@@ -132,6 +132,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   const blockedGate = context.stageGateSummary.blockedGate?.name ?? "No hold gate";
   const gapAmount = context.fundingSummary.gapAmount;
   const needsFundingSourcing = context.fundingSummary.fundingNeedAmount !== null && context.fundingSummary.opportunityCount === 0;
+  const awardRecordCount = context.fundingSummary.awardRecordCount;
 
   return {
     kind: context.kind,
@@ -146,12 +147,15 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
     facts: [
       `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
       context.fundingSummary.opportunityCount > 0
-        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Target need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars: ${formatCurrency(gapAmount)}.` : ""}`
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars: ${formatCurrency(gapAmount)}.` : ""}`
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but this project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this project yet.",
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
+        : null,
+      awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
+        ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
         : null,
       `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
       `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.`,
@@ -168,6 +172,12 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
             title: `${context.fundingSummary.closingSoonCount} funding deadline${context.fundingSummary.closingSoonCount === 1 ? "" : "s"} need attention`,
             detail: "Near-term funding windows are active on this project, so grant timing should be reviewed before less urgent control cleanup.",
           }
+        : awardRecordCount > 0
+          ? {
+              label: "Current runtime cue",
+              title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
+              detail: "An opportunity is already marked awarded, but the committed funding record has not been logged yet.",
+            }
         : needsFundingSourcing
           ? {
               label: "Current runtime cue",
@@ -345,6 +355,7 @@ function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
 function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview {
   const gapAmount = context.fundingSummary.gapAmount;
   const needsFundingSourcing = context.fundingSummary.fundingNeedAmount !== null && context.fundingSummary.opportunityCount === 0;
+  const awardRecordCount = context.fundingSummary.awardRecordCount;
 
   return {
     kind: context.kind,
@@ -360,12 +371,15 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
       context.project ? `Primary project: ${context.project.name}` : "No primary project is attached to this program yet.",
       `${context.linkageCounts.plans} plans, ${context.linkageCounts.engagementCampaigns} campaigns, and ${context.linkageCounts.reports} reports are visible in the current package basis.`,
       context.fundingSummary.opportunityCount > 0
-        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars: ${formatCurrency(gapAmount)}.` : ""}`
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars: ${formatCurrency(gapAmount)}.` : ""}`
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but the linked project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this program yet.",
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No package opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
+        : null,
+      awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
+        ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
         : null,
       context.packetSummary.recommendedReport
         ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
@@ -383,6 +397,12 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
             title: context.packetSummary.recommendedReport.title ?? "Recommended packet anchor",
             detail: context.packetSummary.recommendedReport.packetFreshness.detail,
           }
+        : awardRecordCount > 0
+          ? {
+              label: "Current runtime cue",
+              title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
+              detail: "An opportunity is already marked awarded on this package, but the committed funding record has not been logged yet.",
+            }
         : undefined,
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
@@ -746,16 +766,17 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
   }
 
   if (workflowId === "project-funding") {
+    const awardRecordCount = context.fundingSummary.awardRecordCount;
     return {
       workflowId,
       label,
       title: `Funding posture for ${context.project.name}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.project.name} already has a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no linked funding opportunities yet. The next honest move is sourcing candidate programs, not pretending the gap has already been worked.`
-          : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
+            : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
       findings: [
         context.fundingSummary.opportunityCount > 0
           ? `${context.fundingSummary.openCount} open or upcoming funding opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this project.`
@@ -765,6 +786,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
           ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
           : "At least one linked opportunity is already marked pursue, or no opportunity record exists yet.",
+        awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
+          ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+          : "No awarded opportunity is currently waiting on a project award record.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
@@ -776,23 +800,28 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
           : "No uncovered funding gap remains after current pursued dollars, or no target need is recorded yet.",
       ],
       nextSteps: [
-        context.fundingSummary.opportunityCount > 0
-          ? `Open /projects/${context.project.id}#project-funding-opportunities to confirm pursue, monitor, or skip posture and update the project funding stack.`
-          : needsFundingSourcing
-            ? `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record against the recorded need.`
-          : `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record for this project.`,
-        gapAmount !== null && gapAmount > 0
-          ? "Close the remaining uncovered gap before treating current pursue posture as enough to support full delivery scope."
-          : needsFundingSourcing
-            ? "Source candidate programs before treating this project as a quantified gap-closing lane."
-          : context.fundingSummary.fundingNeedAmount !== null
-            ? "Keep the target funding need aligned with current pursue and award posture before promising delivery scope."
-            : "Set the project funding need so future opportunity and award posture can be measured against a real gap.",
+        awardRecordCount > 0
+          ? `Open /projects/${context.project.id}#project-funding-opportunities to convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          : context.fundingSummary.opportunityCount > 0
+            ? `Open /projects/${context.project.id}#project-funding-opportunities to confirm pursue, monitor, or skip posture and update the project funding stack.`
+            : needsFundingSourcing
+              ? `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record against the recorded need.`
+              : `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record for this project.`,
+        awardRecordCount > 0
+          ? "Record the committed award first so the remaining uncovered gap reflects real booked dollars instead of only likely dollars."
+          : gapAmount !== null && gapAmount > 0
+            ? "Close the remaining uncovered gap before treating current pursue posture as enough to support full delivery scope."
+            : needsFundingSourcing
+              ? "Source candidate programs before treating this project as a quantified gap-closing lane."
+              : context.fundingSummary.fundingNeedAmount !== null
+                ? "Keep the target funding need aligned with current pursue and award posture before promising delivery scope."
+                : "Set the project funding need so future opportunity and award posture can be measured against a real gap.",
       ],
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
+        `Award records needed: ${awardRecordCount}`,
         `Gap after likely dollars: ${gapAmount !== null ? formatCurrency(gapAmount) : "Unknown"}`,
       ],
       quickLinks: buildAssistantOperations(context),
@@ -1264,6 +1293,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Program brief";
   const gapAmount = context.fundingSummary.gapAmount;
   const needsFundingSourcing = context.fundingSummary.fundingNeedAmount !== null && context.fundingSummary.opportunityCount === 0;
+  const awardRecordCount = context.fundingSummary.awardRecordCount;
 
   if (workflowId === "program-funding") {
     return {
@@ -1272,10 +1302,10 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       title: `Funding posture: ${context.program.title}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.program.title} already sits on a linked project funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no funding opportunities are linked yet. The next honest move is sourcing candidate programs before talking about gap closure.`
-          : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
+            : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
       findings: [
         context.fundingSummary.opportunityCount > 0
           ? `${context.fundingSummary.openCount} open or upcoming opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this package.`
@@ -1285,6 +1315,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
           ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
           : "At least one linked package opportunity is already marked pursue, or no opportunity record exists yet.",
+        awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
+          ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+          : "No awarded opportunity is currently waiting on a package award record.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
@@ -1296,23 +1329,28 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
           : "No uncovered linked-project funding gap remains after current pursued dollars, or no target need is recorded yet.",
       ],
       nextSteps: [
-        context.fundingSummary.opportunityCount > 0
-          ? `Open /programs/${context.program.id}#program-funding-opportunities to confirm pursue, monitor, or skip posture on the linked opportunities.`
-          : needsFundingSourcing
-            ? `Open /programs/${context.program.id}#program-funding-opportunities and add the first funding opportunity tied to the recorded need.`
-          : `Open /programs/${context.program.id}#program-funding-opportunities and log the first funding opportunity tied to this package.`,
-        gapAmount !== null && gapAmount > 0 && context.project
-          ? `Keep ${context.project.name} aligned with this package while you close the remaining uncovered funding gap.`
-          : needsFundingSourcing && context.project
-          ? `Keep ${context.project.name} aligned with this package while you source candidate funding programs.`
-          : context.project
-          ? `Keep ${context.project.name} aligned with the package funding posture before shifting RTP or delivery assumptions.`
-          : "Attach or confirm the main project anchor so funding posture can flow into the wider control room cleanly.",
+        awardRecordCount > 0
+          ? `Open /programs/${context.program.id}#program-funding-opportunities and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          : context.fundingSummary.opportunityCount > 0
+            ? `Open /programs/${context.program.id}#program-funding-opportunities to confirm pursue, monitor, or skip posture on the linked opportunities.`
+            : needsFundingSourcing
+              ? `Open /programs/${context.program.id}#program-funding-opportunities and add the first funding opportunity tied to the recorded need.`
+              : `Open /programs/${context.program.id}#program-funding-opportunities and log the first funding opportunity tied to this package.`,
+        awardRecordCount > 0 && context.project
+          ? `Keep ${context.project.name} aligned with this package while you reconcile the awarded dollars into a committed funding record.`
+          : gapAmount !== null && gapAmount > 0 && context.project
+            ? `Keep ${context.project.name} aligned with this package while you close the remaining uncovered funding gap.`
+            : needsFundingSourcing && context.project
+              ? `Keep ${context.project.name} aligned with this package while you source candidate funding programs.`
+              : context.project
+                ? `Keep ${context.project.name} aligned with the package funding posture before shifting RTP or delivery assumptions.`
+                : "Attach or confirm the main project anchor so funding posture can flow into the wider control room cleanly.",
       ],
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
+        `Award records needed: ${awardRecordCount}`,
         `Gap after likely dollars: ${gapAmount !== null ? formatCurrency(gapAmount) : "Unknown"}`,
       ],
       quickLinks: buildAssistantOperations(context),

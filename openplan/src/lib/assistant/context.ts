@@ -94,9 +94,18 @@ export type ProjectAssistantContext = {
     openCount: number;
     closingSoonCount: number;
     pursueCount: number;
+    awardRecordCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
     leadOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
+    leadAwardOpportunity: {
       id: string;
       title: string;
       status: string | null;
@@ -267,9 +276,18 @@ export type ProgramAssistantContext = {
     openCount: number;
     closingSoonCount: number;
     pursueCount: number;
+    awardRecordCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
     leadOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
+    leadAwardOpportunity: {
       id: string;
       title: string;
       status: string | null;
@@ -715,6 +733,7 @@ async function loadProjectContext(
     datasetLinksResult,
     projectFundingProfileResult,
     fundingOpportunitiesResult,
+    fundingAwardsResult,
   ] = await Promise.all([
     supabase.from("project_deliverables").select("id").eq("project_id", project.id),
     supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
@@ -747,6 +766,7 @@ async function loadProjectContext(
       .from("funding_opportunities")
       .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("project_id", project.id),
+    supabase.from("funding_awards").select("id, funding_opportunity_id").eq("project_id", project.id),
   ]);
 
   const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
@@ -774,8 +794,20 @@ async function loadProjectContext(
         decision_due_at: string | null;
         updated_at: string | null;
       }>);
+  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+    ? []
+    : ((fundingAwardsResult.data ?? []) as Array<{
+        id: string;
+        funding_opportunity_id: string | null;
+      }>);
+  const fundingAwardOpportunityIds = new Set(
+    fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
+  );
   const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
-  const leadFundingOpportunity = [...fundingOpportunities].sort((left, right) => {
+  const actionableFundingOpportunities = fundingOpportunities.filter(
+    (opportunity) => !["awarded", "archived"].includes(opportunity.opportunity_status ?? "")
+  );
+  const leadFundingOpportunity = [...actionableFundingOpportunities].sort((left, right) => {
     const leftDecisionPriority = left.decision_state === "skip" ? 2 : left.decision_state === "pursue" ? 1 : 0;
     const rightDecisionPriority = right.decision_state === "skip" ? 2 : right.decision_state === "pursue" ? 1 : 0;
     if (leftDecisionPriority !== rightDecisionPriority) return leftDecisionPriority - rightDecisionPriority;
@@ -790,6 +822,12 @@ async function loadProjectContext(
     }
     return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
   })[0] ?? null;
+  const leadAwardOpportunity = [...fundingOpportunities]
+    .filter(
+      (opportunity) =>
+        opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+    )
+    .sort((left, right) => new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime())[0] ?? null;
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
   const datasetsResult = linkedDatasetIds.length
@@ -877,7 +915,10 @@ async function loadProjectContext(
         const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
         return days !== null && days <= 14;
       }).length,
-      pursueCount: fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
+      pursueCount: actionableFundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
+      awardRecordCount: fundingOpportunities.filter(
+        (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+      ).length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
       leadOpportunity: leadFundingOpportunity
@@ -888,6 +929,16 @@ async function loadProjectContext(
             decisionState: leadFundingOpportunity.decision_state,
             closesAt: leadFundingOpportunity.closes_at,
             decisionDueAt: leadFundingOpportunity.decision_due_at,
+          }
+        : null,
+      leadAwardOpportunity: leadAwardOpportunity
+        ? {
+            id: leadAwardOpportunity.id,
+            title: leadAwardOpportunity.title,
+            status: leadAwardOpportunity.opportunity_status,
+            decisionState: leadAwardOpportunity.decision_state,
+            closesAt: leadAwardOpportunity.closes_at,
+            decisionDueAt: leadAwardOpportunity.decision_due_at,
           }
         : null,
     },
@@ -1270,7 +1321,7 @@ async function loadProgramContext(
   }
 
   const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
-  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, fundingAwardsResult, projectFundingProfileResult, operationsSummary] = await Promise.all([
     supabase.from("program_links").select("program_id, link_type, linked_id").eq("program_id", program.id),
     program.project_id
       ? supabase.from("plans").select("id").eq("project_id", program.project_id)
@@ -1288,6 +1339,7 @@ async function loadProgramContext(
       .from("funding_opportunities")
       .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("program_id", program.id),
+    supabase.from("funding_awards").select("id, funding_opportunity_id").eq("program_id", program.id),
     program.project_id
       ? supabase
           .from("project_funding_profiles")
@@ -1323,6 +1375,13 @@ async function loadProgramContext(
     funding_need_amount: number | null;
     local_match_need_amount?: number | null;
   } | null;
+  const fundingAwards = (fundingAwardsResult.data ?? []) as Array<{
+    id: string;
+    funding_opportunity_id: string | null;
+  }>;
+  const fundingAwardOpportunityIds = new Set(
+    fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
+  );
   const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
   const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
     ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
@@ -1332,8 +1391,11 @@ async function loadProgramContext(
     const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
     return days !== null && days <= 14;
   }).length;
-  const fundingPursueCount = fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
-  const leadFundingOpportunity = [...fundingOpportunities].sort((left, right) => {
+  const actionableFundingOpportunities = fundingOpportunities.filter(
+    (opportunity) => !["awarded", "archived"].includes(opportunity.opportunity_status ?? "")
+  );
+  const fundingPursueCount = actionableFundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
+  const leadFundingOpportunity = [...actionableFundingOpportunities].sort((left, right) => {
     const leftDecisionPriority = left.decision_state === "skip" ? 2 : left.decision_state === "pursue" ? 1 : 0;
     const rightDecisionPriority = right.decision_state === "skip" ? 2 : right.decision_state === "pursue" ? 1 : 0;
     if (leftDecisionPriority !== rightDecisionPriority) return leftDecisionPriority - rightDecisionPriority;
@@ -1348,6 +1410,12 @@ async function loadProgramContext(
     }
     return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
   })[0] ?? null;
+  const leadAwardOpportunity = [...fundingOpportunities]
+    .filter(
+      (opportunity) =>
+        opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+    )
+    .sort((left, right) => new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime())[0] ?? null;
 
   const explicitReportIds = links.filter((link) => link.link_type === "report").map((link) => link.linked_id);
   const explicitReportsResult = explicitReportIds.length
@@ -1452,6 +1520,9 @@ async function loadProgramContext(
       openCount: fundingOpenCount,
       closingSoonCount: fundingClosingSoonCount,
       pursueCount: fundingPursueCount,
+      awardRecordCount: fundingOpportunities.filter(
+        (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+      ).length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
       leadOpportunity: leadFundingOpportunity
@@ -1462,6 +1533,16 @@ async function loadProgramContext(
             decisionState: leadFundingOpportunity.decision_state,
             closesAt: leadFundingOpportunity.closes_at,
             decisionDueAt: leadFundingOpportunity.decision_due_at,
+          }
+        : null,
+      leadAwardOpportunity: leadAwardOpportunity
+        ? {
+            id: leadAwardOpportunity.id,
+            title: leadAwardOpportunity.title,
+            status: leadAwardOpportunity.opportunity_status,
+            decisionState: leadAwardOpportunity.decision_state,
+            closesAt: leadAwardOpportunity.closes_at,
+            decisionDueAt: leadAwardOpportunity.decision_due_at,
           }
         : null,
     },

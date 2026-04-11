@@ -35,6 +35,7 @@ function buildProjectContext(): ProjectAssistantContext {
       openCount: 1,
       closingSoonCount: 0,
       pursueCount: 0,
+      awardRecordCount: 0,
       fundingNeedAmount: 500000,
       gapAmount: 500000,
       leadOpportunity: {
@@ -45,6 +46,7 @@ function buildProjectContext(): ProjectAssistantContext {
         closesAt: null,
         decisionDueAt: null,
       },
+      leadAwardOpportunity: null,
     },
     stageGateSummary: {
       blockedGate: null,
@@ -100,6 +102,7 @@ function buildProgramContext(): ProgramAssistantContext {
       openCount: 1,
       closingSoonCount: 0,
       pursueCount: 0,
+      awardRecordCount: 0,
       fundingNeedAmount: 500000,
       gapAmount: 500000,
       leadOpportunity: {
@@ -110,6 +113,7 @@ function buildProgramContext(): ProgramAssistantContext {
         closesAt: null,
         decisionDueAt: null,
       },
+      leadAwardOpportunity: null,
     },
     packetSummary: {
       linkedReportCount: 0,
@@ -172,5 +176,49 @@ describe("project and program funding operations", () => {
       expect(action.executeAction.opportunityId).toBe("opp-2");
       expect(action.executeAction.decisionState).toBe("pursue");
     }
+  });
+
+  it("surfaces a project award-record action when an awarded opportunity is not yet recorded", () => {
+    const context = buildProjectContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardRecordCount = 1;
+    context.fundingSummary.leadOpportunity = null;
+    context.fundingSummary.leadAwardOpportunity = {
+      id: "opp-award-1",
+      title: "ATP Cycle 8 Award",
+      status: "awarded",
+      decisionState: "pursue",
+      closesAt: null,
+      decisionDueAt: null,
+    };
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "project-record-awarded-funding");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Record awarded funding");
+    expect(action?.statusLabel).toBe("Award record needed");
+  });
+
+  it("surfaces a program award-record action when an awarded opportunity is not yet recorded", () => {
+    const context = buildProgramContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardRecordCount = 1;
+    context.fundingSummary.leadOpportunity = null;
+    context.fundingSummary.leadAwardOpportunity = {
+      id: "opp-award-2",
+      title: "RAISE 2026 Award",
+      status: "awarded",
+      decisionState: "pursue",
+      closesAt: null,
+      decisionDueAt: null,
+    };
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "program-record-awarded-funding");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Record awarded funding");
+    expect(action?.statusLabel).toBe("Award record needed");
   });
 });
