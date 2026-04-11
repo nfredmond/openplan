@@ -185,6 +185,7 @@ type AnalysisContextResponse = {
       fundingOpportunities: number;
       openFundingOpportunities: number;
       closingSoonFundingOpportunities: number;
+      projectFundingNeedAnchorProjects: number;
       projectFundingGapProjects: number;
       queueDepth: number;
     };

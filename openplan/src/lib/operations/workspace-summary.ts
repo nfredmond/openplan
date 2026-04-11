@@ -162,6 +162,7 @@ export type WorkspaceOperationsSummary = {
     fundingOpportunities: number;
     openFundingOpportunities: number;
     closingSoonFundingOpportunities: number;
+    projectFundingNeedAnchorProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
   };
@@ -398,6 +399,35 @@ export function buildWorkspaceOperationsSummary({
     current.push(opportunity);
     fundingOpportunitiesByProjectId.set(opportunity.projectId, current);
   });
+  const fundingProfileProjectIds = new Set(projectFundingProfiles.map((profile) => profile.project_id));
+  const projectFundingNeedAnchorProjects = [...fundingOpportunitiesByProjectId.entries()]
+    .map(([projectId, opportunities]) => {
+      if (fundingProfileProjectIds.has(projectId)) return null;
+      const project = projects.find((item) => item.id === projectId);
+      if (!project) return null;
+      const closingSoonCount = opportunities.filter((opportunity) => {
+        if ((opportunity.opportunityStatus ?? "") !== "open") return false;
+        const days = daysUntil(opportunity.closesAt ?? opportunity.decisionDueAt, now);
+        return days !== null && days <= 14;
+      }).length;
+      const openCount = opportunities.filter((opportunity) => ["open", "upcoming"].includes(opportunity.opportunityStatus ?? "")).length;
+      return {
+        project,
+        opportunityCount: opportunities.length,
+        openCount,
+        closingSoonCount,
+      };
+    })
+    .filter((item): item is { project: WorkspaceOperationsProjectRow; opportunityCount: number; openCount: number; closingSoonCount: number } => Boolean(item))
+    .sort((left, right) => {
+      if (right.closingSoonCount !== left.closingSoonCount) {
+        return right.closingSoonCount - left.closingSoonCount;
+      }
+      if (right.openCount !== left.openCount) {
+        return right.openCount - left.openCount;
+      }
+      return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
+    });
   const fundingGapProjects = projectFundingProfiles
     .map((profile) => {
       const project = projects.find((item) => item.id === profile.project_id);
@@ -507,6 +537,24 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (projectFundingNeedAnchorProjects.length > 0) {
+    const firstFundingNeedAnchorProject = projectFundingNeedAnchorProjects[0];
+    queueCandidates.push({
+      key: "anchor-project-funding-needs",
+      title: "Anchor project funding needs",
+      detail: `${projectFundingNeedAnchorProjects.length} project funding lane${projectFundingNeedAnchorProjects.length === 1 ? " has" : "s have"} linked opportunities but still no recorded funding-need anchor.${firstFundingNeedAnchorProject ? ` Reopen ${firstFundingNeedAnchorProject.project.name} first so the gap can be measured honestly.` : ""}`,
+      href: firstFundingNeedAnchorProject
+        ? `/projects/${firstFundingNeedAnchorProject.project.id}#project-funding-opportunities`
+        : "/projects",
+      tone: "warning",
+      priority: 3,
+      badges: [
+        { label: "Missing anchors", value: projectFundingNeedAnchorProjects.length },
+        { label: "Open windows", value: firstFundingNeedAnchorProject?.openCount ?? null },
+      ],
+    });
+  }
+
   if (fundingGapProjects.length > 0) {
     const firstFundingGapProject = fundingGapProjects[0];
     queueCandidates.push({
@@ -515,7 +563,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${fundingGapProjects.length} project funding stack${fundingGapProjects.length === 1 ? " still shows" : "s still show"} an uncovered gap after current pursued dollars.${firstFundingGapProject ? ` ${firstFundingGapProject.project.name} still carries ${formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount)} uncovered.` : ""}`,
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
       tone: "warning",
-      priority: 3,
+      priority: 4,
       badges: [
         { label: "Gap projects", value: fundingGapProjects.length },
         { label: "Largest gap", value: firstFundingGapProject ? formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount) : null },
@@ -530,7 +578,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${plansNeedingSetup} plan record${plansNeedingSetup === 1 ? " still needs" : "s still need"} core setup around project linkage, geography, or horizon year.${firstPlanNeedingSetup?.title ? ` Reopen ${firstPlanNeedingSetup.title} first.` : ""}`,
       href: "/plans",
       tone: "info",
-      priority: 4,
+      priority: 5,
       badges: [
         { label: "Needs setup", value: plansNeedingSetup },
         { label: "Plans", value: plans.length },
@@ -545,7 +593,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${activePrograms} program package${activePrograms === 1 ? " is" : "s are"} still in assembly, submission, or review posture.${firstActiveProgram?.title ? ` ${firstActiveProgram.title} is a good next package anchor.` : ""}`,
       href: "/programs",
       tone: "info",
-      priority: 5,
+      priority: 6,
       badges: [
         { label: "Active programs", value: activePrograms },
         { label: "Programs", value: programs.length },
@@ -560,7 +608,7 @@ export function buildWorkspaceOperationsSummary({
       detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can shape refresh and narrative choices.${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
       href: "/reports?posture=comparison-backed",
       tone: "info",
-      priority: 6,
+      priority: 7,
       badges: [
         { label: "Comparison-backed", value: comparisonBackedReports },
         { label: "Ready comparisons", value: firstComparisonBackedReport?.comparisonAggregate?.readyComparisonSnapshotCount ?? null },
@@ -602,6 +650,7 @@ export function buildWorkspaceOperationsSummary({
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,
       closingSoonFundingOpportunities,
+      projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },

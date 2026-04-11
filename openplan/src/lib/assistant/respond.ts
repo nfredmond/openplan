@@ -67,10 +67,11 @@ function metricLabel(metrics: Record<string, unknown>, key: string): string {
 
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
   const title = context.kind === "analysis_studio" ? "Analysis Studio copilot" : context.workspace.name ?? "Workspace copilot";
+  const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -100,7 +101,10 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         label: "Packet pressure",
         value: `${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
       },
-      { label: "Gap projects", value: `${gapProjectCount}` },
+      {
+        label: missingFundingAnchorCount > 0 ? "Missing anchors" : "Gap projects",
+        value: `${missingFundingAnchorCount > 0 ? missingFundingAnchorCount : gapProjectCount}`,
+      },
     ],
     facts,
     operatorCue: context.operationsSummary.nextCommand
@@ -532,6 +536,7 @@ function buildWorkspaceResponse(
   question?: string | null
 ): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Workspace overview";
+  const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
 
   if (workflowId === "analysis-focus" && context.currentRun) {
@@ -571,14 +576,18 @@ function buildWorkspaceResponse(
       label,
       title: `${context.workspace.name ?? "Workspace"} funding gap posture`,
       summary:
-        gapProjectCount > 0
+        missingFundingAnchorCount > 0
+          ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist, so the first honest move is anchoring need before ranking dollar gaps.`
+          : gapProjectCount > 0
           ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars, so funding gap closure is now a real workspace-level operating lane.`
           : "No uncovered project funding gaps are currently visible from the workspace command queue.",
       findings: [
         context.operationsSummary.nextCommand
           ? `Current queue lead: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
           : "No queue-leading workspace command is currently visible.",
-        gapProjectCount > 0
+        missingFundingAnchorCount > 0
+          ? `Missing funding anchors: ${missingFundingAnchorCount}.`
+          : gapProjectCount > 0
           ? `Project funding gap count: ${gapProjectCount}.`
           : "The current workspace snapshot does not show any gap-flagged project funding stacks.",
         context.recentProject
@@ -586,12 +595,15 @@ function buildWorkspaceResponse(
           : "No recent project anchor is visible from this workspace snapshot.",
       ],
       nextSteps: [
-        gapProjectCount > 0
+        missingFundingAnchorCount > 0
+          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs")?.href ?? "/projects"} and add a funding-need anchor before trying to quantify the gap.`
+          : gapProjectCount > 0
           ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps")?.href ?? "/projects"} and reopen the thinnest-funded project first.`
           : "Keep funding need amounts and pursue decisions current so future gap posture stays trustworthy.",
         "Use the project funding sections, not generic notes, as the canonical place to close uncovered scope-versus-funding gaps.",
       ],
       evidence: [
+        `Missing anchors: ${missingFundingAnchorCount}`,
         `Gap projects: ${gapProjectCount}`,
         `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
         `Plan: ${context.workspace.plan ?? "Unknown"}`,
@@ -612,7 +624,9 @@ function buildWorkspaceResponse(
       context.operationsSummary.nextCommand
         ? `Next command: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
         : "No immediate command-queue pressure is visible from the workspace snapshot.",
-      gapProjectCount > 0
+      missingFundingAnchorCount > 0
+        ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist.`
+        : gapProjectCount > 0
         ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars.`
         : "No uncovered project funding gaps are currently visible from the shared queue.",
       context.currentRun
@@ -634,6 +648,7 @@ function buildWorkspaceResponse(
       `Role: ${context.workspace.role ?? "Unknown"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
       `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
+      `Missing anchors: ${missingFundingAnchorCount}`,
       `Gap projects: ${gapProjectCount}`,
     ],
     quickLinks: buildAssistantOperations(context),
