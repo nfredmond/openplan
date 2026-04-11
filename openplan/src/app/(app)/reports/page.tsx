@@ -31,6 +31,7 @@ import {
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
   normalizeReportPostureFilter,
+  parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
@@ -182,6 +183,9 @@ export default async function ReportsPage({
       const scenarioSpineSummary = parseStoredScenarioSpineSummary(
         latestArtifact?.metadata_json ?? null
       );
+      const comparisonSnapshotAggregate = parseStoredComparisonSnapshotAggregate(
+        latestArtifact?.metadata_json ?? null
+      );
 
       return {
         ...report,
@@ -199,6 +203,7 @@ export default async function ReportsPage({
         }),
         evidenceChainSummary,
         scenarioSpineSummary,
+        comparisonSnapshotAggregate,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
       };
     })
@@ -252,6 +257,13 @@ export default async function ReportsPage({
       summary.pendingCount > 0
     );
   }).length;
+  const comparisonSnapshotVisibleCount = reports.filter(
+    (report) => (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+  ).length;
+  const readyComparisonSnapshotCount = reports.reduce(
+    (sum, report) => sum + (report.comparisonSnapshotAggregate?.readyComparisonSnapshotCount ?? 0),
+    0
+  );
   const filteredReports = reports.filter(
     (report) =>
       matchesReportFreshnessFilter(
@@ -454,6 +466,8 @@ export default async function ReportsPage({
             <span className="module-inline-item"><strong>{evidenceBackedCount}</strong> evidence-backed</span>
             <span className="module-inline-item"><strong>{scenarioBasisCount}</strong> scenario-backed</span>
             <span className="module-inline-item"><strong>{scenarioSpineVisibleCount}</strong> scenario spine visible</span>
+            <span className="module-inline-item"><strong>{comparisonSnapshotVisibleCount}</strong> comparison-backed</span>
+            <span className="module-inline-item"><strong>{readyComparisonSnapshotCount}</strong> ready saved comparisons</span>
             <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
             {scenarioSpinePendingCount > 0 ? <span className="module-inline-item"><strong>{scenarioSpinePendingCount}</strong> spine pending</span> : null}
           </div>
@@ -670,6 +684,17 @@ export default async function ReportsPage({
                         </>
                       )
                     ) : null}
+                    {report.comparisonSnapshotAggregate &&
+                    report.comparisonSnapshotAggregate.comparisonSnapshotCount > 0 ? (
+                      <>
+                        <span className="module-record-chip">
+                          {report.comparisonSnapshotAggregate.comparisonSnapshotCount} saved comparison{report.comparisonSnapshotAggregate.comparisonSnapshotCount === 1 ? "" : "s"}
+                        </span>
+                        <span className="module-record-chip">
+                          {report.comparisonSnapshotAggregate.indicatorDeltaCount} comparison delta{report.comparisonSnapshotAggregate.indicatorDeltaCount === 1 ? "" : "s"}
+                        </span>
+                      </>
+                    ) : null}
                     {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
                   </div>
 
@@ -684,6 +709,14 @@ export default async function ReportsPage({
                         <p className="mt-2 font-medium text-foreground/90">{report.evidenceChainDigest.headline}</p>
                         <p className="mt-1">{report.evidenceChainDigest.detail}</p>
                         {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
+                        {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
+                          <p className="mt-1">
+                            Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
+                            {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
+                              ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
+                              : ""}
+                          </p>
+                        ) : null}
                       </div>
                     ) : (
                       <div className="module-note text-sm">

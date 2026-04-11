@@ -50,6 +50,13 @@ export type ReportScenarioSpineSummary = {
   latestIndicatorSnapshotAt: string | null;
 };
 
+export type ReportComparisonSnapshotAggregate = {
+  comparisonSnapshotCount: number;
+  readyComparisonSnapshotCount: number;
+  indicatorDeltaCount: number;
+  latestComparisonSnapshotUpdatedAt: string | null;
+};
+
 export function getReportPacketActionLabel(freshnessLabel: string) {
   switch (freshnessLabel) {
     case "Refresh recommended":
@@ -575,6 +582,70 @@ export function parseStoredScenarioSpineSummary(
     latestAssumptionSetUpdatedAt: asNullableString(summary.latestAssumptionSetUpdatedAt),
     latestDataPackageUpdatedAt: asNullableString(summary.latestDataPackageUpdatedAt),
     latestIndicatorSnapshotAt: asNullableString(summary.latestIndicatorSnapshotAt),
+  };
+}
+
+export function parseStoredComparisonSnapshotAggregate(
+  metadata: Record<string, unknown> | null | undefined
+): ReportComparisonSnapshotAggregate | null {
+  const sourceContext = asSourceContext(metadata);
+  const scenarioSetLinks = sourceContext?.scenarioSetLinks;
+  if (!Array.isArray(scenarioSetLinks)) {
+    return null;
+  }
+
+  let comparisonSnapshotCount = 0;
+  let readyComparisonSnapshotCount = 0;
+  let indicatorDeltaCount = 0;
+  const updatedAtValues: string[] = [];
+
+  for (const item of scenarioSetLinks) {
+    const record = asRecord(item);
+    const comparisonSnapshots = record?.comparisonSnapshots;
+    if (!Array.isArray(comparisonSnapshots)) {
+      continue;
+    }
+
+    for (const snapshot of comparisonSnapshots) {
+      const snapshotRecord = asRecord(snapshot);
+      if (!snapshotRecord) {
+        continue;
+      }
+
+      comparisonSnapshotCount += 1;
+      if (asNullableString(snapshotRecord.status) === "ready") {
+        readyComparisonSnapshotCount += 1;
+      }
+      indicatorDeltaCount += asNullableNumber(snapshotRecord.indicatorDeltaCount) ?? 0;
+
+      const updatedAt = asNullableString(snapshotRecord.updatedAt);
+      if (updatedAt) {
+        updatedAtValues.push(updatedAt);
+      }
+    }
+  }
+
+  if (comparisonSnapshotCount === 0) {
+    return {
+      comparisonSnapshotCount: 0,
+      readyComparisonSnapshotCount: 0,
+      indicatorDeltaCount: 0,
+      latestComparisonSnapshotUpdatedAt: null,
+    };
+  }
+
+  const latestComparisonSnapshotUpdatedAt = updatedAtValues.length
+    ? updatedAtValues
+        .map((value) => ({ value, time: new Date(value).getTime() }))
+        .filter((item) => Number.isFinite(item.time))
+        .sort((left, right) => right.time - left.time)[0]?.value ?? null
+    : null;
+
+  return {
+    comparisonSnapshotCount,
+    readyComparisonSnapshotCount,
+    indicatorDeltaCount,
+    latestComparisonSnapshotUpdatedAt,
   };
 }
 
