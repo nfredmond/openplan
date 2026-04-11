@@ -958,6 +958,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const dominantActionReportIds = dominantActionCycles
     .map((cycle) => cycle.packetReport?.id ?? null)
     .filter((value): value is string => Boolean(value));
+  const dominantTraceFollowUpCounts = {
+    outpaced: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced").length,
+    unrecorded: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded").length,
+    aligned: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "aligned").length,
+  };
 
   return (
     <section className="module-page">
@@ -1572,6 +1577,49 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     cycleIds={dominantActionCycleIds}
                     reportIds={dominantActionReportIds}
                   />
+                </div>
+              ) : null}
+
+              {dominantCurrentViewActionSelection.key === "traceFollowUp" && dominantCurrentViewActionSelection.count > 0 ? (
+                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Trace follow-up mix
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Focus the current trace lane by separating cycles whose queue trace was overtaken by source changes from cycles that still have no durable trace record.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    {dominantTraceFollowUpCounts.outpaced > 0 ? (
+                      <Link
+                        href={buildRtpRegistryHref({
+                          status: filters.status ?? null,
+                          packet: "current",
+                          recent: recentOnly,
+                          queueAction: selectedQueueActionFilter,
+                          queueTraceState: "outpaced",
+                        })}
+                        className="module-inline-action"
+                      >
+                        Review {dominantTraceFollowUpCounts.outpaced} outpaced trace{dominantTraceFollowUpCounts.outpaced === 1 ? "" : "s"}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    ) : null}
+                    {dominantTraceFollowUpCounts.unrecorded > 0 ? (
+                      <Link
+                        href={buildRtpRegistryHref({
+                          status: filters.status ?? null,
+                          packet: "current",
+                          recent: recentOnly,
+                          queueAction: selectedQueueActionFilter,
+                          queueTraceState: "unrecorded",
+                        })}
+                        className="module-inline-action"
+                      >
+                        Review {dominantTraceFollowUpCounts.unrecorded} trace gap{dominantTraceFollowUpCounts.unrecorded === 1 ? "" : "s"}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
 
