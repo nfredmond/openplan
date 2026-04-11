@@ -71,6 +71,7 @@ const OPERATION_SESSION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-
 const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-show-snoozed";
 const OPERATION_NOTE_STORAGE_KEY = "openplan:planner-agent:operation-notes";
 const RETURNING_SOON_WINDOW_MS = 1000 * 60 * 60 * 6;
+const OPERATION_HISTORY_LIMIT = 6;
 
 type OperationFilter = AssistantLocalConsoleFilter;
 type OperationViewMode = AssistantLocalConsoleViewMode;
@@ -422,6 +423,15 @@ function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
 function formatOperationTimestamp(timestamp: number | undefined): string | null {
   if (!timestamp) return null;
   return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function upsertOperationHistory(
+  current: OperationInvocationState[],
+  nextEntry: OperationInvocationState
+): OperationInvocationState[] {
+  const nextKey = `${nextEntry.linkId}:${nextEntry.startedAt}`;
+  const filtered = current.filter((entry) => `${entry.linkId}:${entry.startedAt}` !== nextKey);
+  return [nextEntry, ...filtered].slice(0, OPERATION_HISTORY_LIMIT);
 }
 
 function QuickLinkGrid({
@@ -1154,6 +1164,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
   const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
   const [operationStatus, setOperationStatus] = useState<OperationInvocationState | null>(null);
+  const [operationHistory, setOperationHistory] = useState<OperationInvocationState[]>([]);
   const [messages, setMessages] = useState<ConversationEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [loadingContext, setLoadingContext] = useState(true);
@@ -1194,6 +1205,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
         setLiveConsoleState(null);
         setOperationStatus(null);
+        setOperationHistory([]);
         setBasePreview(payload.preview);
         setMessages([
           {
@@ -1247,14 +1259,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     setResponding(true);
     setError(null);
     if (operationLink && operationStartedAt) {
-      setOperationStatus({
+      const nextOperationStatus: OperationInvocationState = {
         linkId: operationLink.id,
         label: operationLink.label,
         workflowId: operationLink.workflowId,
         auditEvent: operationLink.auditEvent,
         status: "running",
         startedAt: operationStartedAt,
-      });
+      };
+      setOperationStatus(nextOperationStatus);
+      setOperationHistory((current) => upsertOperationHistory(current, nextOperationStatus));
     }
     setMessages((current) => [
       ...current,
@@ -1305,7 +1319,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         },
       ]);
       if (operationLink && operationStartedAt) {
-        setOperationStatus({
+        const nextOperationStatus: OperationInvocationState = {
           linkId: operationLink.id,
           label: operationLink.label,
           workflowId: operationLink.workflowId,
@@ -1313,12 +1327,14 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           status: "completed",
           startedAt: operationStartedAt,
           finishedAt: Date.now(),
-        });
+        };
+        setOperationStatus(nextOperationStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, nextOperationStatus));
       }
       setDraft("");
     } catch (submitError) {
       if (operationLink && operationStartedAt) {
-        setOperationStatus({
+        const nextOperationStatus: OperationInvocationState = {
           linkId: operationLink.id,
           label: operationLink.label,
           workflowId: operationLink.workflowId,
@@ -1327,7 +1343,9 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           startedAt: operationStartedAt,
           finishedAt: Date.now(),
           error: submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response",
-        });
+        };
+        setOperationStatus(nextOperationStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, nextOperationStatus));
       }
       setError(submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response");
     } finally {
@@ -1459,6 +1477,69 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         Finished · {formatOperationTimestamp(operationStatus.finishedAt)}
                       </StatusBadge>
                     ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {operationHistory.length > 0 ? (
+                <div className="mt-4 rounded-[22px] border border-white/8 bg-black/10 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Recent in-panel actions</p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+                        The latest grounded Planner Agent operations stay visible here for quick traceability.
+                      </p>
+                    </div>
+                    <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                      {operationHistory.length} tracked
+                    </StatusBadge>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    {operationHistory.map((entry) => (
+                      <div key={`${entry.linkId}:${entry.startedAt}`} className="rounded-[18px] border border-white/8 bg-white/[0.03] px-3 py-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-white">{entry.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
+                              {entry.status === "running"
+                                ? "Currently running in panel."
+                                : entry.status === "completed"
+                                  ? "Completed and posted below."
+                                  : entry.error ?? "Failed before a grounded response was posted."}
+                            </p>
+                          </div>
+                          <StatusBadge
+                            tone={entry.status === "failed" ? "danger" : entry.status === "completed" ? "success" : "info"}
+                            className="border-white/10 bg-white/[0.05] text-slate-100"
+                          >
+                            {entry.status === "running" ? "Running" : entry.status === "completed" ? "Completed" : "Failed"}
+                          </StatusBadge>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {entry.workflowId ? (
+                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                              Workflow · {entry.workflowId}
+                            </StatusBadge>
+                          ) : null}
+                          {entry.auditEvent ? (
+                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                              Audit · {entry.auditEvent}
+                            </StatusBadge>
+                          ) : null}
+                          {formatOperationTimestamp(entry.startedAt) ? (
+                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                              Started · {formatOperationTimestamp(entry.startedAt)}
+                            </StatusBadge>
+                          ) : null}
+                          {entry.finishedAt && formatOperationTimestamp(entry.finishedAt) ? (
+                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                              Finished · {formatOperationTimestamp(entry.finishedAt)}
+                            </StatusBadge>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : null}
