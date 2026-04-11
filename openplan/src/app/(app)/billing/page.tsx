@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
+  buildBillingInvoicePriorityQueue,
   filterBillingInvoiceRecordsByLinkage,
   filterBillingInvoiceRecordsByOverdueStatus,
   type BillingInvoiceOverdueFilter,
@@ -329,6 +330,7 @@ export default async function BillingPage({
   const linkageFilteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
   const filteredInvoiceRecords = filterBillingInvoiceRecordsByOverdueStatus(linkageFilteredInvoiceRecords, overdueFilter);
   const linkageScopedInvoiceSummary = summarizeBillingInvoiceRecords(linkageFilteredInvoiceRecords);
+  const invoicePriorityQueue = buildBillingInvoicePriorityQueue(invoiceRecords, { limit: 3 });
   const linkageFilterOptions = [
     {
       value: "all" as const,
@@ -630,6 +632,46 @@ export default async function BillingPage({
                   ? ` ${invoiceLinkageSummary.unlinkedOverdueCount} of those record${invoiceLinkageSummary.unlinkedOverdueCount === 1 ? " is" : "s are"} already overdue, totaling ${formatCurrency(invoiceLinkageSummary.unlinkedOverdueNetAmount)}.`
                   : ""}{" "}
                 That means reimbursement posture remains understated until those records are attached to award-backed funding.
+              </div>
+            ) : null}
+
+            {!invoiceRegisterPending && invoicePriorityQueue.length > 0 ? (
+              <div className="mt-4 border border-border/60 bg-background/70 px-4 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Priority cleanup queue</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Highest reimbursement-risk records first, ranked by unlinked status, overdue posture, and net amount.
+                    </p>
+                  </div>
+                  <StatusBadge tone="warning">Top {invoicePriorityQueue.length}</StatusBadge>
+                </div>
+
+                <ul className="mt-3 space-y-3">
+                  {invoicePriorityQueue.map((entry) => {
+                    const invoice = entry.record;
+                    return (
+                      <li key={invoice.id} className="border border-border/50 bg-background/80 px-3 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
+                          <StatusBadge tone={entry.isLinked ? "neutral" : "warning"}>
+                            {entry.isLinked ? "Award-linked" : "Unlinked"}
+                          </StatusBadge>
+                          {entry.isOverdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
+                          {entry.isOutstanding ? <StatusBadge tone="info">Outstanding</StatusBadge> : null}
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                          <span>
+                            {invoice.project_id ? `Project ${projectNameById.get(invoice.project_id) ?? invoice.project_id}` : "Workspace-level record"}
+                            {invoice.due_date ? ` · Due ${invoice.due_date}` : ""}
+                          </span>
+                          <span className="font-semibold text-foreground">{formatCurrency(entry.netAmount)}</span>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">{entry.reason}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             ) : null}
           </article>

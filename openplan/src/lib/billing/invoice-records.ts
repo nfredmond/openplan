@@ -53,6 +53,16 @@ export type BillingInvoiceLinkageSummary = {
   unlinkedOverdueNetAmount: number;
 };
 
+export type BillingInvoicePriorityQueueEntry<T extends BillingInvoiceLinkageRecordLike> = {
+  record: T;
+  netAmount: number;
+  priorityTier: number;
+  reason: string;
+  isLinked: boolean;
+  isOutstanding: boolean;
+  isOverdue: boolean;
+};
+
 function roundCurrency(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -213,4 +223,91 @@ export function filterBillingInvoiceRecordsByOverdueStatus<T extends BillingInvo
 
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
   return items.filter((record) => isOverdue(typeof record.status === "string" ? record.status : "draft", record.due_date, now));
+}
+
+function priorityTierForRecord(record: BillingInvoiceLinkageRecordLike, now: Date): number {
+  const status = typeof record.status === "string" ? record.status : "draft";
+  const linked = Boolean(record.funding_award_id);
+  const overdue = isOverdue(status, record.due_date, now);
+  const outstanding = isOutstandingStatus(status);
+
+  if (!linked && overdue) return 1;
+  if (!linked && outstanding) return 2;
+  if (!linked) return 3;
+  if (linked && overdue) return 4;
+  if (linked && outstanding) return 5;
+  return 6;
+}
+
+function priorityReasonForTier(tier: number): string {
+  switch (tier) {
+    case 1:
+      return "Unlinked and overdue, reimbursement risk is already late.";
+    case 2:
+      return "Unlinked and still in active payment flow, reimbursement chain is incomplete.";
+    case 3:
+      return "Unlinked invoice still needs award attachment.";
+    case 4:
+      return "Award-linked but already overdue, operator follow-up is needed.";
+    case 5:
+      return "Award-linked and still outstanding in the payment flow.";
+    default:
+      return "Lower cleanup priority right now.";
+  }
+}
+
+function parseDateValue(dateInput: string | null | undefined): number {
+  if (!dateInput) return Number.POSITIVE_INFINITY;
+  const parsed = new Date(dateInput);
+  return Number.isNaN(parsed.getTime()) ? Number.POSITIVE_INFINITY : parsed.getTime();
+}
+
+export function buildBillingInvoicePriorityQueue<T extends BillingInvoiceLinkageRecordLike>(
+  records: T[] | null | undefined,
+  options?: {
+    now?: Date | string;
+    limit?: number;
+  }
+): BillingInvoicePriorityQueueEntry<T>[] {
+  const items = records ?? [];
+  const nowInput = options?.now ?? new Date();
+  const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
+  const limit = options?.limit ?? 3;
+
+  return items
+    .map((record) => {
+      const status = typeof record.status === "string" ? record.status : "draft";
+      const isLinked = Boolean(record.funding_award_id);
+      const isOutstanding = isOutstandingStatus(status);
+      const overdue = isOverdue(status, record.due_date, now);
+      const netAmount = computeNetInvoiceAmount(record.amount, record.retention_amount, record.retention_percent);
+      const priorityTier = priorityTierForRecord(record, now);
+
+      return {
+        record,
+        netAmount,
+        priorityTier,
+        reason: priorityReasonForTier(priorityTier),
+        isLinked,
+        isOutstanding,
+        isOverdue: overdue,
+      };
+    })
+    .sort((left, right) => {
+      if (left.priorityTier !== right.priorityTier) {
+        return left.priorityTier - right.priorityTier;
+      }
+
+      if (left.netAmount !== right.netAmount) {
+        return right.netAmount - left.netAmount;
+      }
+
+      const dueDateDelta = parseDateValue(left.record.due_date) - parseDateValue(right.record.due_date);
+      if (dueDateDelta !== 0) {
+        return dueDateDelta;
+      }
+
+      return 0;
+    })
+    .slice(0, Math.max(0, limit));
 }

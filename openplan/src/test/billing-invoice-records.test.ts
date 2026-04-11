@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildBillingInvoicePriorityQueue,
   computeNetInvoiceAmount,
   computeRetentionAmount,
   filterBillingInvoiceRecordsByLinkage,
@@ -102,5 +103,22 @@ describe("billing invoice record helpers", () => {
         (record) => record.invoice_number
       )
     ).toEqual(["OP-001", "OP-004"]);
+  });
+
+  it("builds a priority cleanup queue with unlinked overdue invoices first", () => {
+    const queue = buildBillingInvoicePriorityQueue(
+      [
+        { invoice_number: "OP-001", funding_award_id: "award-1", status: "submitted", amount: 5000, due_date: "2026-03-02" },
+        { invoice_number: "OP-002", funding_award_id: null, status: "submitted", amount: 3200, due_date: "2026-03-01" },
+        { invoice_number: "OP-003", funding_award_id: null, status: "draft", amount: 9000, due_date: "2026-03-20" },
+        { invoice_number: "OP-004", funding_award_id: null, status: "internal_review", amount: 7800, due_date: "2026-03-05" },
+        { invoice_number: "OP-005", funding_award_id: "award-2", status: "approved_for_payment", amount: 6100, due_date: "2026-03-04" },
+      ],
+      { now: "2026-03-15T12:00:00.000Z", limit: 3 }
+    );
+
+    expect(queue.map((entry) => entry.record.invoice_number)).toEqual(["OP-004", "OP-002", "OP-003"]);
+    expect(queue.map((entry) => entry.priorityTier)).toEqual([1, 1, 3]);
+    expect(queue[0]?.reason).toContain("Unlinked and overdue");
   });
 });
