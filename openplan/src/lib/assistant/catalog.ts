@@ -46,6 +46,13 @@ export type AssistantQuickLink = {
 
 export type AssistantOperationUrgency = "high" | "medium" | "low";
 export type AssistantOperationTone = "danger" | "warning" | "info" | "success" | "neutral";
+export type AssistantOperationGroupKey = "act_now" | "review_soon" | "support_context";
+export type AssistantOperationGroup = {
+  key: AssistantOperationGroupKey;
+  label: string;
+  description: string;
+  items: AssistantQuickLink[];
+};
 
 export type AssistantPreview = {
   kind: AssistantTargetKind;
@@ -288,6 +295,49 @@ export function compareAssistantOperations(a: AssistantQuickLink, b: AssistantQu
   if (priorityDelta !== 0) return priorityDelta;
 
   return a.label.localeCompare(b.label);
+}
+
+function resolveAssistantOperationGroupKey(link: AssistantQuickLink): AssistantOperationGroupKey {
+  const urgency = resolveAssistantOperationUrgency(link);
+  if (urgency === "high") return "act_now";
+  if (urgency === "medium") return "review_soon";
+  return "support_context";
+}
+
+const ASSISTANT_OPERATION_GROUP_META: Record<AssistantOperationGroupKey, { label: string; description: string }> = {
+  act_now: {
+    label: "Act now",
+    description: "Highest-pressure operator moves. Review these first before drifting into supporting work.",
+  },
+  review_soon: {
+    label: "Review soon",
+    description: "Important checks and evidence reads that should happen next, but usually after the hottest queue pressure.",
+  },
+  support_context: {
+    label: "Support context",
+    description: "Lower-pressure navigation and context anchors that help you stay grounded while the main work moves.",
+  },
+};
+
+export function groupAssistantOperations(links: AssistantQuickLink[]): AssistantOperationGroup[] {
+  const buckets: Record<AssistantOperationGroupKey, AssistantQuickLink[]> = {
+    act_now: [],
+    review_soon: [],
+    support_context: [],
+  };
+
+  for (const link of [...links].sort(compareAssistantOperations)) {
+    buckets[resolveAssistantOperationGroupKey(link)].push(link);
+  }
+
+  return (["act_now", "review_soon", "support_context"] as AssistantOperationGroupKey[])
+    .map((key) => ({
+      key,
+      label: ASSISTANT_OPERATION_GROUP_META[key].label,
+      description: ASSISTANT_OPERATION_GROUP_META[key].description,
+      items: buckets[key],
+    }))
+    .filter((group) => group.items.length > 0);
 }
 
 export function resolveAssistantTarget(
