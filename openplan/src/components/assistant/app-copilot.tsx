@@ -40,6 +40,7 @@ const OPERATION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-snoozed-
 const OPERATION_SESSION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-session-snoozed";
 const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-show-snoozed";
 const OPERATION_NOTE_STORAGE_KEY = "openplan:planner-agent:operation-notes";
+const RETURNING_SOON_WINDOW_MS = 1000 * 60 * 60 * 6;
 
 type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
 type OperationViewMode = "full" | "triage";
@@ -172,6 +173,41 @@ function resolveSnoozeReturnDetail(
   return "Returns only after you explicitly reopen it.";
 }
 
+function resolveSnoozeReturnTimestamp(
+  operationKey: string,
+  persistentSnoozeState: OperationPersistentSnoozeState
+): number | null {
+  const record = persistentSnoozeState[operationKey];
+  if (!record?.until) return null;
+  const parsed = Date.parse(record.until);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function isReturningSoon(
+  operationKey: string,
+  persistentSnoozeState: OperationPersistentSnoozeState,
+  nowMs = Date.now()
+): boolean {
+  const record = persistentSnoozeState[operationKey];
+  if (!record || record.mode !== "until_tomorrow") return false;
+  const returnAt = resolveSnoozeReturnTimestamp(operationKey, persistentSnoozeState);
+  if (!returnAt) return false;
+  const remainingMs = returnAt - nowMs;
+  return remainingMs > 0 && remainingMs <= RETURNING_SOON_WINDOW_MS;
+}
+
+function formatRemainingSnoozeTime(returnAtMs: number | null, nowMs = Date.now()): string | null {
+  if (!returnAtMs) return null;
+  const remainingMs = returnAtMs - nowMs;
+  if (remainingMs <= 0) return "Returning now";
+  const totalMinutes = Math.max(1, Math.ceil(remainingMs / (1000 * 60)));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours <= 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
+
 function actionLabel(action: AssistantAction) {
   return action.label;
 }
@@ -256,6 +292,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true";
   });
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const groups = groupAssistantOperations(links).map((group) => {
     const sortedItems = [...group.items].sort((a, b) => {
       const aPinned = pinnedState[getOperationStorageKey(a)] ? 1 : 0;
@@ -284,6 +321,8 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   const reopenedSnoozedCount = links.filter(
     (link) => persistentSnoozeState[getOperationStorageKey(link)]?.mode === "until_reopened"
   ).length;
+  const returningSoonOperations = links.filter((link) => isReturningSoon(getOperationStorageKey(link), persistentSnoozeState, nowMs));
+  const returningSoonCount = returningSoonOperations.length;
   const shapedOperations = links
     .filter(
       (link) =>
@@ -294,6 +333,9 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
       const aPinned = pinnedState[getOperationStorageKey(a)] ? 1 : 0;
       const bPinned = pinnedState[getOperationStorageKey(b)] ? 1 : 0;
       if (aPinned !== bPinned) return bPinned - aPinned;
+      const aReturningSoon = isReturningSoon(getOperationStorageKey(a), persistentSnoozeState, nowMs) ? 1 : 0;
+      const bReturningSoon = isReturningSoon(getOperationStorageKey(b), persistentSnoozeState, nowMs) ? 1 : 0;
+      if (aReturningSoon !== bReturningSoon) return bReturningSoon - aReturningSoon;
       const aSnoozed = resolveSnoozeLabel(getOperationStorageKey(a), sessionSnoozeState, persistentSnoozeState) ? 1 : 0;
       const bSnoozed = resolveSnoozeLabel(getOperationStorageKey(b), sessionSnoozeState, persistentSnoozeState) ? 1 : 0;
       if (aSnoozed !== bSnoozed) return bSnoozed - aSnoozed;
@@ -386,6 +428,16 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY, String(showSnoozed));
   }, [showSnoozed]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000 * 60);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -496,11 +548,21 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
           <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
             Reopen · {reopenedSnoozedCount}
           </span>
+          {returningSoonCount > 0 ? (
+            <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-amber-100">
+              Returning soon · {returningSoonCount}
+            </span>
+          ) : null}
         </div>
 
         {snoozedCount > 0 ? (
           <p className="mt-2 text-xs leading-relaxed text-slate-300/74">
             Snooze timing: {sessionSnoozedCount} this session, {tomorrowSnoozedCount} until tomorrow, {reopenedSnoozedCount} until manually reopened.
+          </p>
+        ) : null}
+        {returningSoonCount > 0 ? (
+          <p className="mt-1 text-xs leading-relaxed text-amber-100/84">
+            {returningSoonCount} tomorrow-snoozed operation{returningSoonCount === 1 ? " is" : "s are"} approaching the return window.
           </p>
         ) : null}
       </div>
@@ -517,6 +579,11 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                   {sessionSnoozedCount} return this session, {tomorrowSnoozedCount} return tomorrow, and {reopenedSnoozedCount} stay hidden until reopened.
                 </p>
               ) : null}
+              {returningSoonCount > 0 ? (
+                <p className="mt-1 text-xs leading-relaxed text-amber-100/84">
+                  {returningSoonCount} snoozed operation{returningSoonCount === 1 ? " is" : "s are"} coming back soon.
+                </p>
+              ) : null}
             </div>
             <StatusBadge tone="info" className="border-white/10 bg-white/[0.05] text-slate-100">
               {shapedOperations.length} tracked
@@ -530,6 +597,9 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               const isPinned = Boolean(pinnedState[operationKey]);
               const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
               const snoozeReturnDetail = resolveSnoozeReturnDetail(operationKey, sessionSnoozeState, persistentSnoozeState);
+              const returningSoon = isReturningSoon(operationKey, persistentSnoozeState, nowMs);
+              const returnAtMs = resolveSnoozeReturnTimestamp(operationKey, persistentSnoozeState);
+              const returnSoonLabel = returningSoon ? formatRemainingSnoozeTime(returnAtMs, nowMs) : null;
               const isSnoozed = Boolean(snoozeLabel);
 
               return (
@@ -549,6 +619,11 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                         {isSnoozed ? (
                           <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
                             {snoozeLabel}
+                          </span>
+                        ) : null}
+                        {returningSoon ? (
+                          <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-amber-100">
+                            Returning soon{returnSoonLabel ? ` · ${returnSoonLabel}` : ""}
                           </span>
                         ) : null}
                       </div>
