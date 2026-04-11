@@ -1490,9 +1490,18 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         The latest grounded Planner Agent operations stay visible here for quick traceability.
                       </p>
                     </div>
-                    <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
-                      {operationHistory.length} tracked
-                    </StatusBadge>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                        {operationHistory.length} tracked
+                      </StatusBadge>
+                      <button
+                        type="button"
+                        onClick={() => setOperationHistory([])}
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
+                      >
+                        Clear all
+                      </button>
+                    </div>
                   </div>
 
                   <div className="mt-3 space-y-2">
@@ -1509,12 +1518,27 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                                   : entry.error ?? "Failed before a grounded response was posted."}
                             </p>
                           </div>
-                          <StatusBadge
-                            tone={entry.status === "failed" ? "danger" : entry.status === "completed" ? "success" : "info"}
-                            className="border-white/10 bg-white/[0.05] text-slate-100"
-                          >
-                            {entry.status === "running" ? "Running" : entry.status === "completed" ? "Completed" : "Failed"}
-                          </StatusBadge>
+                          <div className="flex items-center gap-2">
+                            <StatusBadge
+                              tone={entry.status === "failed" ? "danger" : entry.status === "completed" ? "success" : "info"}
+                              className="border-white/10 bg-white/[0.05] text-slate-100"
+                            >
+                              {entry.status === "running" ? "Running" : entry.status === "completed" ? "Completed" : "Failed"}
+                            </StatusBadge>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOperationHistory((current) =>
+                                  current.filter((candidate) => !(candidate.linkId === entry.linkId && candidate.startedAt === entry.startedAt))
+                                )
+                              }
+                              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] p-1 text-slate-300/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
+                              aria-label={`Dismiss ${entry.label} from recent in-panel actions`}
+                              title="Dismiss from recent actions"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {entry.workflowId ? (
