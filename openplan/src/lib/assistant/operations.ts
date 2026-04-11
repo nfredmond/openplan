@@ -188,20 +188,44 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
 }
 
 function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): AssistantQuickLink[] {
+  const primaryRegistryWorkflow =
+    context.counts.noPacketCount > 0
+      ? {
+          label: "Plan first RTP packets in panel",
+          reason: "Some RTP cycles still have no generated packet, so first-packet planning outranks refresh or release review.",
+          workflowId: "rtp-registry-generate",
+          prompt: "Which RTP cycles still need a first board packet, and where should I start?",
+          promptLabel: "Plan first RTP packets in panel",
+        }
+      : context.counts.refreshRecommendedCount > 0
+        ? {
+            label: "Plan RTP refresh queue in panel",
+            reason: "The registry has stale RTP packets, so refresh planning outranks release review.",
+            workflowId: "rtp-registry-refresh",
+            prompt: "Which RTP packets are stale across the registry, and what should I refresh first?",
+            promptLabel: "Plan RTP refresh queue in panel",
+          }
+        : {
+            label: "Review board-ready RTP queue in panel",
+            reason: "The registry packet queue is materially current enough that board-ready review is now the main operator move.",
+            workflowId: "rtp-registry-release",
+            prompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
+            promptLabel: "Review board-ready RTP queue in panel",
+          };
   return compactQuickLinks([
-    quickLink("rtp-registry-brief-agent", "Generate RTP registry brief in panel", "/rtp", {
+    quickLink("rtp-registry-brief-agent", primaryRegistryWorkflow.label, "/rtp", {
       targetKind: "rtp_registry",
       actionClass: "review_controls",
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded RTP registry brief inside Planner Agent before you drill into a specific cycle.",
+      reason: primaryRegistryWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.rtp_registry.brief_agent",
       auditNote: "This runs a grounded RTP registry brief only, it does not mutate cycle or packet records.",
-      workflowId: "rtp-registry-brief",
-      prompt: "Give me the RTP registry brief and the next operator move.",
-      promptLabel: "Generate RTP registry brief in panel",
+      workflowId: primaryRegistryWorkflow.workflowId,
+      prompt: primaryRegistryWorkflow.prompt,
+      promptLabel: primaryRegistryWorkflow.promptLabel,
     }),
     context.recommendedCycle
       ? quickLink("rtp-registry-cycle", `Open ${context.recommendedCycle.title}`, `/rtp/${context.recommendedCycle.id}`, {
@@ -241,24 +265,48 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
 }
 
 function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] {
+  const primaryCycleWorkflow =
+    !context.packetSummary.recommendedReport || context.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+      ? {
+          label: "Plan first RTP packet in panel",
+          reason: "This cycle still lacks a usable current packet artifact, so first-generation planning outranks refresh or release review.",
+          workflowId: "rtp-packet-generate",
+          prompt: "What does this RTP cycle need before creating its first board packet?",
+          promptLabel: "Plan first RTP packet in panel",
+        }
+      : context.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+        ? {
+            label: "Plan RTP refresh in panel",
+            reason: "This cycle's lead RTP packet is stale against current cycle state, so refresh planning outranks release review.",
+            workflowId: "rtp-packet-refresh",
+            prompt: "What changed in this RTP cycle, and what should I verify before refreshing its board packet?",
+            promptLabel: "Plan RTP refresh in panel",
+          }
+        : {
+            label: "Run RTP release review in panel",
+            reason: "This cycle's lead RTP packet is current enough that board/public release review is now the main operator move.",
+            workflowId: "rtp-packet-release",
+            prompt: "Is this RTP cycle's current board packet ready for release review, and what should I verify first?",
+            promptLabel: "Run RTP release review in panel",
+          };
   return compactQuickLinks([
-    quickLink("rtp-brief-agent", "Generate RTP brief in panel", `/rtp/${context.rtpCycle.id}`, {
+    quickLink("rtp-brief-agent", primaryCycleWorkflow.label, `/rtp/${context.rtpCycle.id}`, {
       targetKind: "rtp_cycle",
       actionClass: "review_controls",
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded RTP cycle brief inside Planner Agent before you jump into chapter, packet, or portfolio detail.",
+      reason: primaryCycleWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.rtp.brief_agent",
       auditNote: "This runs a grounded RTP brief only, it does not change cycle, chapter, or packet records.",
-      workflowId: "rtp-brief",
-      prompt: "Give me the RTP cycle brief and the next operator move.",
-      promptLabel: "Generate RTP brief in panel",
+      workflowId: primaryCycleWorkflow.workflowId,
+      prompt: primaryCycleWorkflow.prompt,
+      promptLabel: primaryCycleWorkflow.promptLabel,
     }),
     context.packetSummary.recommendedReport
       ? quickLink("rtp-recommended-packet", "Open RTP packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
-          targetKind: "report",
+          targetKind: "rtp_packet_report",
           actionClass: "review_packet",
           priority: "primary",
           statusLabel: context.packetSummary.recommendedReport.packetFreshness.label,

@@ -585,6 +585,102 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
 function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP registry brief";
 
+  if (workflowId === "rtp-registry-generate") {
+    return {
+      workflowId,
+      label,
+      title: `First RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
+      summary: context.counts.noPacketCount > 0
+        ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work is the top registry queue posture right now.`
+        : "The registry does not currently show any RTP cycles missing a first packet.",
+      findings: [
+        context.recommendedCycle
+          ? `Leading cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+          : "No RTP cycle is visible yet from the registry snapshot.",
+        `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking first-packet work in the RTP registry.",
+      ],
+      nextSteps: [
+        context.recommendedCycle
+          ? `Open /rtp/${context.recommendedCycle.id} to work the strongest first-packet cycle anchor first.`
+          : "Create the first RTP cycle before expecting first-packet queue behavior.",
+        "Confirm cycle readiness and packet section posture before generating first artifacts.",
+      ],
+      evidence: [
+        `Cycles: ${context.counts.cycles}`,
+        `No-packet cycles: ${context.counts.noPacketCount}`,
+        `Packet reports: ${context.counts.packetReports}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  if (workflowId === "rtp-registry-refresh") {
+    return {
+      workflowId,
+      label,
+      title: `RTP refresh queue: ${context.workspace.name ?? "Current workspace"}`,
+      summary: context.counts.refreshRecommendedCount > 0
+        ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the top registry queue posture right now.`
+        : "The registry does not currently show stale RTP packets that need refresh.",
+      findings: [
+        context.recommendedCycle
+          ? `Leading cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+          : "No RTP cycle is visible yet from the registry snapshot.",
+        `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking RTP refresh work in the registry.",
+      ],
+      nextSteps: [
+        context.recommendedCycle
+          ? `Open /rtp/${context.recommendedCycle.id} to inspect the strongest stale-packet cycle anchor first.`
+          : "Create RTP cycle and packet records before expecting refresh queue behavior.",
+        "Check cycle drift and packet basis before regenerating stale board packets.",
+      ],
+      evidence: [
+        `Cycles: ${context.counts.cycles}`,
+        `Refresh-recommended cycles: ${context.counts.refreshRecommendedCount}`,
+        `Packet reports: ${context.counts.packetReports}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  if (workflowId === "rtp-registry-release") {
+    return {
+      workflowId,
+      label,
+      title: `Board-ready RTP queue: ${context.workspace.name ?? "Current workspace"}`,
+      summary: context.recommendedCycle
+        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for board-ready RTP packet review from the registry.`
+        : "No board-ready RTP packet anchor is visible yet from the registry snapshot.",
+      findings: [
+        `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
+        context.recommendedCycle
+          ? `Recommended cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.status}, ${context.recommendedCycle.packetFreshnessLabel}).`
+          : "No RTP cycle is available yet to anchor release review.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking board-ready review in the RTP registry.",
+      ],
+      nextSteps: [
+        context.recommendedCycle
+          ? `Open /rtp/${context.recommendedCycle.id} to verify the strongest current board-ready cycle anchor first.`
+          : "Create and mature at least one RTP cycle and packet before expecting board-ready review work.",
+        "Verify packet freshness, cycle drift, and release posture before externalizing anything.",
+      ],
+      evidence: [
+        `Cycles: ${context.counts.cycles}`,
+        `Refresh-recommended cycles: ${context.counts.refreshRecommendedCount}`,
+        `No-packet cycles: ${context.counts.noPacketCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
   if (workflowId === "rtp-registry-packets") {
     return {
       workflowId,
@@ -652,6 +748,98 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
 
 function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
+
+  if (workflowId === "rtp-packet-generate") {
+    return {
+      workflowId,
+      label,
+      title: `First packet plan: ${context.rtpCycle.title}`,
+      summary: `${context.rtpCycle.title} still needs a usable current RTP board packet artifact, so first-generation planning is the top cycle-level packet move right now.`,
+      findings: [
+        `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.noPacketCount} missing a generated artifact.`,
+        context.packetSummary.recommendedReport
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          : "No linked packet record is available yet, so the cycle still needs its first packet trail.",
+        context.readiness.ready
+          ? "Cycle readiness is materially in place for first-packet generation."
+          : context.readiness.reason,
+      ],
+      nextSteps: [
+        context.packetSummary.recommendedReport
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to confirm packet sections and first-generation basis.`
+          : "Create or attach the first RTP board packet record before expecting artifact generation.",
+        context.readiness.ready
+          ? "Once packet sections and source basis are confirmed, generate the first board packet artifact."
+          : context.readiness.nextSteps[0] ?? "Tighten the missing cycle setup before generating the first board packet.",
+      ],
+      evidence: [
+        `Chapters: ${context.counts.chapters}`,
+        `Linked projects: ${context.counts.linkedProjects}`,
+        `No-packet count: ${context.packetSummary.noPacketCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  if (workflowId === "rtp-packet-refresh") {
+    return {
+      workflowId,
+      label,
+      title: `Refresh plan: ${context.rtpCycle.title}`,
+      summary: `${context.rtpCycle.title} has a stale RTP packet basis, so refresh planning is the top cycle-level packet move right now.`,
+      findings: [
+        `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.refreshRecommendedCount} needing refresh.`,
+        context.packetSummary.recommendedReport
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          : "No linked packet record is available yet, so refresh is not possible until packet generation exists.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking packet refresh for this cycle.",
+      ],
+      nextSteps: [
+        context.packetSummary.recommendedReport
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to inspect drift before regenerating the packet.`
+          : "Create or attach a packet record before expecting refresh behavior.",
+        "Recheck cycle changes, enabled sections, and packet trace before regenerating the artifact.",
+      ],
+      evidence: [
+        `Chapters: ${context.counts.chapters}`,
+        `Linked projects: ${context.counts.linkedProjects}`,
+        `Refresh count: ${context.packetSummary.refreshRecommendedCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  if (workflowId === "rtp-packet-release") {
+    return {
+      workflowId,
+      label,
+      title: `Release review: ${context.rtpCycle.title}`,
+      summary: `${context.rtpCycle.title} has a materially current RTP packet anchor, so board/public release review is the top cycle-level packet move right now.`,
+      findings: [
+        `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible.`,
+        context.packetSummary.recommendedReport
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          : "No linked packet record is available yet, so release review is premature.",
+        context.readiness.ready
+          ? "Cycle readiness is materially in place for board-ready review."
+          : context.readiness.reason,
+      ],
+      nextSteps: [
+        context.packetSummary.recommendedReport
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to verify release posture on the lead board packet.`
+          : "Create and mature a packet before expecting release review work.",
+        "Verify packet freshness, cycle drift, and packet audit posture before board/public use.",
+      ],
+      evidence: [
+        `Chapters: ${context.counts.chapters}`,
+        `Linked projects: ${context.counts.linkedProjects}`,
+        `Packet reports: ${context.packetSummary.linkedReportCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
 
   if (workflowId === "rtp-packet") {
     return {

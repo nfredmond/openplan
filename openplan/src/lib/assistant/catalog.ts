@@ -165,10 +165,22 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "Give me the RTP registry brief and the next operator move.",
     },
     {
-      id: "rtp-registry-packets",
-      label: "Packet queue",
-      description: "Explain where RTP packet creation or refresh pressure is highest across the registry.",
-      prompt: "Where is the RTP packet queue pressure highest, and what should be acted on next?",
+      id: "rtp-registry-generate",
+      label: "First packet queue",
+      description: "Explain which RTP cycles still need their first board packet and where to start.",
+      prompt: "Which RTP cycles still need a first board packet, and where should I start?",
+    },
+    {
+      id: "rtp-registry-refresh",
+      label: "Refresh queue",
+      description: "Explain where RTP packet refresh pressure is highest across the registry.",
+      prompt: "Which RTP packets are stale across the registry, and what should I refresh first?",
+    },
+    {
+      id: "rtp-registry-release",
+      label: "Board-ready queue",
+      description: "Explain which RTP packets are current enough for release review and which cycle should be checked first.",
+      prompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
     },
   ],
   rtp_cycle: [
@@ -179,10 +191,22 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "Give me the RTP cycle brief and the next operator move.",
     },
     {
-      id: "rtp-packet",
-      label: "Packet posture",
-      description: "Explain RTP board-packet readiness, freshness, and what needs review or regeneration next.",
-      prompt: "What packet or board-binder work does this RTP cycle need next?",
+      id: "rtp-packet-generate",
+      label: "First packet plan",
+      description: "Explain what the cycle still needs before creating its first RTP board packet.",
+      prompt: "What does this RTP cycle need before creating its first board packet?",
+    },
+    {
+      id: "rtp-packet-refresh",
+      label: "Refresh plan",
+      description: "Explain what changed and what should be verified before refreshing the RTP board packet for this cycle.",
+      prompt: "What changed in this RTP cycle, and what should I verify before refreshing its board packet?",
+    },
+    {
+      id: "rtp-packet-release",
+      label: "Release review",
+      description: "Explain whether the current RTP packet is ready for board/public review and what still needs checking.",
+      prompt: "Is this RTP cycle's current board packet ready for release review, and what should I verify first?",
     },
   ],
   plan: [
@@ -555,12 +579,16 @@ export function resolveAssistantWorkflowId(
   }
 
   if (kind === "rtp_cycle") {
-    if (includesAny(normalized, ["packet", "board", "binder", "report", "refresh", "stale"])) return "rtp-packet";
+    if (includesAny(normalized, ["generate", "first packet", "first artifact", "missing packet", "no packet"])) return "rtp-packet-generate";
+    if (includesAny(normalized, ["refresh", "stale", "regenerate", "changed", "drift"])) return "rtp-packet-refresh";
+    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share"])) return "rtp-packet-release";
     return "rtp-brief";
   }
 
   if (kind === "rtp_registry") {
-    if (includesAny(normalized, ["packet", "queue", "refresh", "missing", "stale", "board", "binder"])) return "rtp-registry-packets";
+    if (includesAny(normalized, ["generate", "first packet", "missing packet", "no packet"])) return "rtp-registry-generate";
+    if (includesAny(normalized, ["refresh", "stale", "regenerate", "changed", "drift"])) return "rtp-registry-refresh";
+    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share"])) return "rtp-registry-release";
     return "rtp-registry-brief";
   }
 
