@@ -6,10 +6,12 @@ import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   formatAssistantOperationActionClass,
+  formatAssistantOperationExecutionMode,
   groupAssistantOperations,
   resolveAssistantOperationTone,
   resolveAssistantOperationUrgency,
   resolveAssistantTarget,
+  summarizeAssistantOperationExecution,
   summarizeAssistantOperations,
   type AssistantBoardStateCue,
   type AssistantPreview,
@@ -350,6 +352,12 @@ function quickLinkPriorityBadge(link: AssistantQuickLink) {
   }
 }
 
+function quickLinkExecutionBadge(link: AssistantQuickLink) {
+  return link.executionMode === "future_agent_action"
+    ? { label: "Agent action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" }
+    : { label: "Navigate only", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+}
+
 function operationCardClasses(link: AssistantQuickLink) {
   const tone = resolveAssistantOperationTone(link);
   const urgency = resolveAssistantOperationUrgency(link);
@@ -451,6 +459,7 @@ function QuickLinkGrid({
     };
   });
   const summary = summarizeAssistantOperations(links);
+  const executionSummary = summarizeAssistantOperationExecution(links);
   const pinnedCount = links.filter((link) => pinnedState[getOperationStorageKey(link)]).length;
   const snoozedCount = links.filter((link) => resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)).length;
   const sessionSnoozedCount = links.filter((link) => sessionSnoozeState[getOperationStorageKey(link)]).length;
@@ -632,6 +641,39 @@ function QuickLinkGrid({
           <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Approval required</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Execution posture</p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                {executionSummary.futureAgentAction > 0
+                  ? `${executionSummary.futureAgentAction} tracked agent action${executionSummary.futureAgentAction === 1 ? " is" : "s are"} available.`
+                  : "All current operations are tracked navigation surfaces."}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+                {executionSummary.futureAgentAction > 0
+                  ? `${executionSummary.navigateOnly} navigation surface${executionSummary.navigateOnly === 1 ? " remains" : "s remain"} alongside agent-ready operations, with ${executionSummary.review} review-gated and ${executionSummary.approvalRequired} approval-required item${executionSummary.approvalRequired === 1 ? "" : "s"}.`
+                  : `No record-mutating agent actions are armed yet. ${executionSummary.review} operation${executionSummary.review === 1 ? " is" : "s are"} review-gated and ${executionSummary.safe} are safe navigation-only hops.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+              Navigate only · {executionSummary.navigateOnly}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-violet-300/18 bg-violet-400/10 px-2 py-0.5 text-violet-100">
+              Agent actions · {executionSummary.futureAgentAction}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-sky-300/18 bg-sky-400/10 px-2 py-0.5 text-sky-100">
+              Review gated · {executionSummary.review}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-amber-300/18 bg-amber-400/10 px-2 py-0.5 text-amber-100">
+              Approval required · {executionSummary.approvalRequired}
+            </span>
           </div>
         </div>
 
@@ -935,6 +977,7 @@ function QuickLinkGrid({
                   const operationKey = getOperationStorageKey(link);
                   const badge = quickLinkBadge(link);
                   const priorityBadge = quickLinkPriorityBadge(link);
+                  const executionBadge = quickLinkExecutionBadge(link);
                   const urgency = resolveAssistantOperationUrgency(link);
                   const isPinned = Boolean(pinnedState[operationKey]);
                   const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
@@ -948,13 +991,18 @@ function QuickLinkGrid({
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-50">{link.label}</p>
                           <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
-                            {formatAssistantOperationActionClass(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"} · {urgency}
+                            {formatAssistantOperationActionClass(link)} · {formatAssistantOperationExecutionMode(link)} · {urgency}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             <span
                               className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${priorityBadge.className}`}
                             >
                               {priorityBadge.label}
+                            </span>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${executionBadge.className}`}
+                            >
+                              {executionBadge.label}
                             </span>
                             {isPinned ? (
                               <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-fuchsia-100">
@@ -1039,7 +1087,7 @@ function QuickLinkGrid({
                       <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
                         <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
                           <ArrowUpRight className="h-3.5 w-3.5" />
-                          Open surface · {link.id}
+                          {link.executionMode === "future_agent_action" ? "Tracked action" : "Open surface"} · {link.id}
                         </Link>
                         {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>

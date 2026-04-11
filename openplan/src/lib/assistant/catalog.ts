@@ -62,6 +62,14 @@ export type AssistantOperationSummary = {
   approvalRequired: number;
 };
 
+export type AssistantOperationExecutionSummary = {
+  navigateOnly: number;
+  futureAgentAction: number;
+  safe: number;
+  review: number;
+  approvalRequired: number;
+};
+
 export type AssistantBoardStateCue = {
   label: string;
   title: string;
@@ -249,6 +257,10 @@ export function formatAssistantOperationActionClass(link: AssistantQuickLink): s
   }
 }
 
+export function formatAssistantOperationExecutionMode(link: AssistantQuickLink): string {
+  return link.executionMode === "future_agent_action" ? "Agent action" : "Navigate only";
+}
+
 export function resolveAssistantOperationUrgency(link: AssistantQuickLink): AssistantOperationUrgency {
   if (link.approval === "approval_required") return "high";
   if (link.priority === "primary" && (link.actionClass === "review_controls" || link.actionClass === "review_packet")) {
@@ -373,6 +385,31 @@ export function summarizeAssistantOperations(links: AssistantQuickLink[]): Assis
     actNow,
     reviewSoon,
     supportContext,
+    approvalRequired,
+  };
+}
+
+export function summarizeAssistantOperationExecution(links: AssistantQuickLink[]): AssistantOperationExecutionSummary {
+  let navigateOnly = 0;
+  let futureAgentAction = 0;
+  let safe = 0;
+  let review = 0;
+  let approvalRequired = 0;
+
+  for (const link of links) {
+    if (link.executionMode === "future_agent_action") futureAgentAction += 1;
+    else navigateOnly += 1;
+
+    if (link.approval === "approval_required") approvalRequired += 1;
+    else if (link.approval === "review") review += 1;
+    else safe += 1;
+  }
+
+  return {
+    navigateOnly,
+    futureAgentAction,
+    safe,
+    review,
     approvalRequired,
   };
 }
