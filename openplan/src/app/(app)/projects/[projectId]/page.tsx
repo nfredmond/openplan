@@ -281,6 +281,16 @@ function fmtCurrency(value: number | string | null | undefined): string {
   return safeValue.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
+function parseSortableDate(value: string | null | undefined): number {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
+}
+
+function compareDateValues(left: string | null | undefined, right: string | null | undefined): number {
+  return parseSortableDate(left) - parseSortableDate(right);
+}
+
 function toneForStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
   if (status === "active") return "success";
   if (status === "draft") return "neutral";
@@ -352,6 +362,27 @@ function toneForControlHealth(health: string): "info" | "success" | "warning" | 
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+}
+
+function milestonePriority(milestone: MilestoneRow, now: Date): number {
+  if (milestone.status === "blocked") return 0;
+  if (milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()) return 1;
+  if (milestone.status !== "complete") return 2;
+  return 3;
+}
+
+function submittalPriority(submittal: SubmittalRow, now: Date): number {
+  if (submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()) return 0;
+  if (submittal.status !== "accepted") return 1;
+  return 2;
+}
+
+function invoicePriority(invoice: BillingInvoiceRow, now: Date): number {
+  const dueAt = parseSortableDate(invoice.due_date);
+  if (!["paid", "rejected"].includes(invoice.status) && dueAt < now.getTime()) return 0;
+  if (["internal_review", "submitted", "approved_for_payment"].includes(invoice.status)) return 1;
+  if (invoice.status === "draft") return 2;
+  return 3;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -702,6 +733,22 @@ export default async function ProjectDetailPage({
   }>);
 
   const projectControlsSummary = buildProjectControlsSummary(milestones, submittals, projectInvoices);
+  const now = new Date();
+  const prioritizedMilestones = [...milestones].sort((left, right) => {
+    const priorityDiff = milestonePriority(left, now) - milestonePriority(right, now);
+    if (priorityDiff !== 0) return priorityDiff;
+    return compareDateValues(left.target_date, right.target_date);
+  });
+  const prioritizedSubmittals = [...submittals].sort((left, right) => {
+    const priorityDiff = submittalPriority(left, now) - submittalPriority(right, now);
+    if (priorityDiff !== 0) return priorityDiff;
+    return compareDateValues(left.due_date, right.due_date);
+  });
+  const prioritizedProjectInvoices = [...projectInvoices].sort((left, right) => {
+    const priorityDiff = invoicePriority(left, now) - invoicePriority(right, now);
+    if (priorityDiff !== 0) return priorityDiff;
+    return compareDateValues(left.due_date, right.due_date);
+  });
   const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const fundingStackSummary = buildProjectFundingStackSummary(
     projectFundingProfile,
@@ -1988,7 +2035,7 @@ export default async function ProjectDetailPage({
             <div className="module-empty-state mt-5 text-sm">No milestones recorded yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
-              {milestones.map((milestone) => (
+              {prioritizedMilestones.map((milestone) => (
                 <div key={milestone.id} className="module-record-row">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
@@ -2041,7 +2088,7 @@ export default async function ProjectDetailPage({
             <div className="module-empty-state mt-5 text-sm">No submittals recorded yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
-              {submittals.map((submittal) => (
+              {prioritizedSubmittals.map((submittal) => (
                 <div key={submittal.id} className="module-record-row">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
@@ -2090,7 +2137,7 @@ export default async function ProjectDetailPage({
             <div className="module-empty-state mt-5 text-sm">No invoice records linked to this project yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
-              {projectInvoices.map((invoice) => (
+              {prioritizedProjectInvoices.map((invoice) => (
                 <div key={invoice.id} className="module-record-row">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
