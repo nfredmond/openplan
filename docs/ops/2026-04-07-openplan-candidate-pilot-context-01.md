@@ -15,6 +15,7 @@ This candidate is the strongest first dry run because it:
 - matches OpenPlan's current proof surface,
 - produces a report-centered outcome,
 - stays narrow enough to support honestly.
+- also gives the team a believable place to test one bounded scenario/accessibility/equity insight without pretending the whole planning OS is already complete.
 
 ## Agency-shaped context
 
@@ -69,6 +70,7 @@ This should be treated as:
 - run one bounded scenario comparison or planning alternative review
 - keep it narrow and explainable
 - record what changed and why it matters
+- where feasible, attach one small accessibility or equity-oriented indicator readout with explicit assumptions and caveats
 
 ### Step 5: supervised closeout
 - use the pilot support runbook if friction appears
@@ -99,6 +101,7 @@ At the end of the dry run, capture:
 - onboarding completion note,
 - screenshots or output of the workspace/project/plan/report spine,
 - one report traceability proof point,
+- one assumptions note if a scenario or indicator comparison is used,
 - operator friction log,
 - recommendation: continue, revise, or stop.
 

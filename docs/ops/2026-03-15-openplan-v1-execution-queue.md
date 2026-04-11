@@ -177,6 +177,21 @@ Choose the slice that most strengthens the product spine without destabilizing c
 5. reliability hardening
 6. one original-plan-aligned next foundation slice
 
+## Research-driven next-queue overlay (2026-04-10)
+
+After the original v1 closure tasks above, the queue should now bias toward the following shared-infrastructure sequence:
+
+1. **shared scenario/versioning contracts**
+2. **standards-first data and network package contracts**
+3. **reusable accessibility/equity/environment indicator contracts**
+4. **Transportation Modeling OS integration that writes back into planning/report/control surfaces**
+
+### Anti-rabbit-hole rule
+Do not treat module-local polish as the next highest-leverage work if it does not strengthen:
+- the shared scenario/evidence spine,
+- operator trust,
+- or reusable planning outputs.
+
 ---
 
 ## Success Condition For This Work Block

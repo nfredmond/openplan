@@ -218,6 +218,20 @@ This workflow is the bridge between:
 - “choose a geography and auto-build a model,” and
 - “have an honest, repeatable path to a locally truth-gated screening result.”
 
+## Research-driven alignment update (2026-04-10)
+
+The deep research synthesis expands the long-term role of this workflow.
+
+This county-validation lane should eventually plug into a broader shared platform contract that includes:
+- scenario baselines and branches,
+- standards-aware network/data package metadata,
+- reusable accessibility/equity/environment indicator outputs,
+- and report/RTP/project-linked evidence reuse.
+
+Practical rule:
+- keep this workflow strict and screening-honest,
+- but design its manifests, artifacts, and status vocabulary so it can later operate as a real entry point into Transportation Modeling OS rather than an isolated county-run utility.
+
 That bridge is essential for the eventual web product because automatic execution without honest local validation pathways would not be decision-useful enough.
 
 ## Bottom line

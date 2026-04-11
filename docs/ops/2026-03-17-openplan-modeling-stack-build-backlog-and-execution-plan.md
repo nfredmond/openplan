@@ -17,6 +17,8 @@ Build OpenPlan into a **multi-engine planning platform** that can support:
 3. advanced dynamic operations simulation,
 4. evidence-backed reporting and traceable run artifacts.
 
+As of the 2026-04-10 research synthesis, this backlog should also be understood as part of a broader **Transportation Modeling OS** inside the overall planning platform.
+
 ## Operating principle
 Do **not** attempt to ship a full three-engine system in one wave.
 
@@ -48,6 +50,25 @@ This program is a success if OpenPlan can eventually support three honest run cl
 - **Dynamic operations**
 
 with clear provenance, explicit runtime expectations, and calibration/validation honesty.
+
+It should also produce reusable outputs that can feed:
+- RTP/project prioritization,
+- scenario comparison,
+- grants strategy,
+- and public/report narratives where the evidence is real.
+
+## Research-driven backlog additions (2026-04-10)
+
+The deep research synthesis adds four durable backlog requirements around the engine sequence:
+
+1. **Shared scenario contracts**
+   - baselines, branches, assumptions, and comparison snapshots should not live only inside run-local metadata.
+2. **Standards-first data posture**
+   - network/data package work should stay aligned with reusable, standards-aware ingestion/export contracts where practical.
+3. **Reusable indicator outputs**
+   - accessibility, equity, and environmental summaries should be product artifacts, not only ad hoc postprocessing tables.
+4. **Future land-use/zoning compatibility**
+   - later land-use, zoning, and urban-design scenario inputs should be able to connect to this stack without forcing a full redesign.
 
 ---
 

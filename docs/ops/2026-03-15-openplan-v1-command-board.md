@@ -121,6 +121,28 @@ Do **not** try to finish the entire original vision in one reckless wave. Instea
 3. close ship-critical auth/billing/reliability gaps,
 4. add original-plan foundations in high-leverage slices that compound rather than sprawl.
 
+## Research alignment update (2026-04-10)
+
+The platform thesis has now been sharpened by the deep research synthesis.
+
+OpenPlan should be treated as a **four-system regional planning operating system** built on one shared project/scenario/evidence spine:
+- RTP OS
+- Grants OS
+- Aerial Operations OS
+- Transportation Modeling OS
+
+That changes the command-board interpretation in three useful ways:
+1. the next high-compounding work is not random feature breadth, but shared scenario/data/indicator infrastructure,
+2. modeling should be treated as a distinct product lane that writes back into planning decisions,
+3. accessibility, equity, and environmental outputs should be planned as reusable platform outputs rather than report-only narrative fragments.
+
+### Immediate strategic consequence
+After the current control-room and pilot-proof lanes, the strongest next architecture-aligned work should move toward:
+- scenario/versioning contracts,
+- standards-first data and network package contracts,
+- reusable indicator contracts,
+- and then deeper RTP/grants/modeling integration through those shared objects.
+
 ---
 
 ## Immediate Next Actions
