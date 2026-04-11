@@ -29,6 +29,11 @@ export type AssistantPreviewStat = {
   value: string;
 };
 
+export type AssistantQuickLink = {
+  label: string;
+  href: string;
+};
+
 export type AssistantPreview = {
   kind: AssistantTargetKind;
   title: string;
@@ -40,6 +45,7 @@ export type AssistantPreview = {
     title: string;
     detail: string;
   };
+  quickLinks?: AssistantQuickLink[];
   suggestedActions: AssistantAction[];
 };
 
@@ -52,6 +58,7 @@ export type AssistantResponse = {
   nextSteps: string[];
   evidence: string[];
   caution?: string;
+  quickLinks?: AssistantQuickLink[];
 };
 
 const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {

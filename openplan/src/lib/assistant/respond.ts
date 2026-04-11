@@ -2,6 +2,7 @@ import {
   findAssistantAction,
   getAssistantActions,
   type AssistantPreview,
+  type AssistantQuickLink,
   type AssistantResponse,
 } from "@/lib/assistant/catalog";
 import type {
@@ -38,6 +39,125 @@ function formatDateTime(value: string | null | undefined): string {
 
 function pluralize(count: number, singular: string, plural = `${singular}s`): string {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function buildAnalysisHref(runId: string, baselineRunId?: string | null): string {
+  const params = new URLSearchParams({ runId });
+  if (baselineRunId) params.set("baselineRunId", baselineRunId);
+  return `/explore?${params.toString()}`;
+}
+
+function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>): AssistantQuickLink[] {
+  const seen = new Set<string>();
+  const results: AssistantQuickLink[] = [];
+
+  for (const link of links) {
+    if (!link) continue;
+    const key = `${link.label}::${link.href}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push(link);
+  }
+
+  return results;
+}
+
+function buildWorkspaceQuickLinks(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    context.operationsSummary.nextCommand
+      ? {
+          label: `Open ${context.operationsSummary.nextCommand.title}`,
+          href: context.operationsSummary.nextCommand.href,
+        }
+      : null,
+    context.currentRun
+      ? {
+          label: context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio",
+          href: buildAnalysisHref(context.currentRun.id, context.baselineRun?.id ?? null),
+        }
+      : null,
+    context.recentProject
+      ? {
+          label: `Open ${context.recentProject.name}`,
+          href: `/projects/${context.recentProject.id}`,
+        }
+      : null,
+  ]);
+}
+
+function buildProjectQuickLinks(context: ProjectAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    context.stageGateSummary.blockedGate
+      ? {
+          label: "Open governance controls",
+          href: `/projects/${context.project.id}#project-governance`,
+        }
+      : {
+          label: "Open project controls",
+          href: `/projects/${context.project.id}#project-milestones`,
+        },
+    context.counts.overlayReadyDatasets > 0 || context.counts.recentRuns > 0
+      ? {
+          label: "Open reporting and analysis context",
+          href: `/projects/${context.project.id}#project-reporting`,
+        }
+      : null,
+  ]);
+}
+
+function buildPlanQuickLinks(context: PlanAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    context.operationsSummary.nextCommand
+      ? {
+          label: `Open ${context.operationsSummary.nextCommand.title}`,
+          href: context.operationsSummary.nextCommand.href,
+        }
+      : null,
+    { label: "Open plan record", href: `/plans/${context.plan.id}` },
+    context.project ? { label: `Open ${context.project.name}`, href: `/projects/${context.project.id}` } : null,
+  ]);
+}
+
+function buildProgramQuickLinks(context: ProgramAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    context.packetSummary.recommendedReport
+      ? {
+          label: "Open recommended packet",
+          href: `/reports/${context.packetSummary.recommendedReport.id}`,
+        }
+      : null,
+    context.operationsSummary.nextCommand
+      ? {
+          label: `Open ${context.operationsSummary.nextCommand.title}`,
+          href: context.operationsSummary.nextCommand.href,
+        }
+      : null,
+    { label: "Open program record", href: `/programs/${context.program.id}` },
+  ]);
+}
+
+function buildScenarioQuickLinks(context: ScenarioAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([{ label: "Open scenario set", href: `/scenarios/${context.scenarioSet.id}` }]);
+}
+
+function buildModelQuickLinks(context: ModelAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([{ label: "Open model record", href: `/models/${context.model.id}` }]);
+}
+
+function buildReportQuickLinks(context: ReportAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    { label: "Open report detail", href: `/reports/${context.report.id}` },
+    context.project ? { label: `Open ${context.project.name}`, href: `/projects/${context.project.id}#project-reporting` } : null,
+  ]);
+}
+
+function buildRunQuickLinks(context: RunAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    {
+      label: context.baselineRun ? "Open Analysis Studio compare" : "Open Analysis Studio",
+      href: buildAnalysisHref(context.run.id, context.baselineRun?.id ?? null),
+    },
+  ]);
 }
 
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
@@ -93,6 +213,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
           title: "Workspace command queue is clear",
           detail: context.operationsSummary.detail,
         },
+    quickLinks: buildWorkspaceQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -128,6 +249,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
           title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
           detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
         },
+    quickLinks: buildProjectQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -157,6 +279,7 @@ function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
           detail: context.operationsSummary.nextCommand.detail,
         }
       : undefined,
+    quickLinks: buildPlanQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -192,6 +315,7 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
             detail: context.packetSummary.recommendedReport.packetFreshness.detail,
           }
         : undefined,
+    quickLinks: buildProgramQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -216,6 +340,7 @@ function buildScenarioPreview(context: ScenarioAssistantContext): AssistantPrevi
         ? `${pluralize(context.comparisonBoard.length, "comparison card")} currently have distinct baseline-versus-alternative evidence.`
         : "No comparison card is ready yet because baseline or alternative run attachments are still incomplete.",
     ],
+    quickLinks: buildScenarioQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -238,6 +363,7 @@ function buildModelPreview(context: ModelAssistantContext): AssistantPreview {
         ? "Model-run tables are still pending in this database, so recent execution history is temporarily degraded."
         : `${pluralize(context.recentModelRuns.length, "recent model run")} visible from this record.`,
     ],
+    quickLinks: buildModelQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -262,6 +388,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
         ? `Engagement linkage: ${context.engagementCampaign.title} (${context.engagementCampaign.status}).`
         : "No engagement campaign linkage is attached through report sections.",
     ],
+    quickLinks: buildReportQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -286,6 +413,7 @@ function buildRunPreview(context: RunAssistantContext): AssistantPreview {
         ? `Baseline attached: ${context.baselineRun.title}`
         : "No baseline run is attached right now.",
     ],
+    quickLinks: buildRunQuickLinks(context),
     suggestedActions: getAssistantActions(context.kind),
   };
 }
@@ -347,6 +475,7 @@ function buildWorkspaceResponse(
         question ? `Prompt received: ${question}` : "Prompt used default Analysis Studio brief.",
       ],
       caution: "Analysis outputs are still operator-facing working surfaces and should be human-reviewed before external use.",
+      quickLinks: buildWorkspaceQuickLinks(context),
     };
   }
 
@@ -382,6 +511,7 @@ function buildWorkspaceResponse(
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
       `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
     ],
+    quickLinks: buildWorkspaceQuickLinks(context),
   };
 }
 
@@ -418,6 +548,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         `Updated: ${formatDateTime(context.project.updatedAt)}`,
       ],
       caution: "This blocker summary is only as complete as the recorded risk, issue, and gate-decision data already attached to the project.",
+      quickLinks: buildProjectQuickLinks(context),
     };
   }
 
@@ -447,6 +578,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         `Overlay-ready: ${context.counts.overlayReadyDatasets}`,
         `Recent runs: ${context.counts.recentRuns}`,
       ],
+      quickLinks: buildProjectQuickLinks(context),
     };
   }
 
@@ -473,6 +605,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       `Stage-gate pass count: ${context.stageGateSummary.passCount}`,
       `Recent run count: ${context.counts.recentRuns}`,
     ],
+    quickLinks: buildProjectQuickLinks(context),
   };
 }
 
@@ -503,6 +636,7 @@ function buildPlanResponse(context: PlanAssistantContext, workflowId: string): A
         `Campaigns: ${context.linkageCounts.engagementCampaigns}`,
         `Reports: ${context.linkageCounts.reports}`,
       ],
+      quickLinks: buildPlanQuickLinks(context),
     };
   }
 
@@ -529,6 +663,7 @@ function buildPlanResponse(context: PlanAssistantContext, workflowId: string): A
       `Geography: ${context.plan.geographyLabel ?? "Missing"}`,
       `Horizon year: ${context.plan.horizonYear ?? "Missing"}`,
     ],
+    quickLinks: buildPlanQuickLinks(context),
   };
 }
 
@@ -565,6 +700,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         `Reports: ${context.linkageCounts.reports}`,
         `Campaigns: ${context.linkageCounts.engagementCampaigns}`,
       ],
+      quickLinks: buildProgramQuickLinks(context),
     };
   }
 
@@ -591,6 +727,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       `Sponsor agency: ${context.program.sponsorAgency ?? "Missing"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
     ],
+    quickLinks: buildProgramQuickLinks(context),
   };
 }
 
@@ -753,6 +890,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
         `Artifacts: ${context.artifactCount}`,
       ],
       caution: "A generated packet is not self-certifying; release still requires human verification of claims, citations, and policy-sensitive framing.",
+      quickLinks: buildReportQuickLinks(context),
     };
   }
 
@@ -779,6 +917,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       `Latest artifact kind: ${context.report.latestArtifactKind ?? "None"}`,
       `Run-audit rows: ${context.runAudit.length}`,
     ],
+    quickLinks: buildReportQuickLinks(context),
   };
 }
 
@@ -814,6 +953,7 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
         `Created: ${formatDateTime(context.run.createdAt)}`,
       ],
       caution: "Score movement alone is not enough; map posture, filter stack, and source quality still matter when interpreting deltas.",
+      quickLinks: buildRunQuickLinks(context),
     };
   }
 
@@ -840,6 +980,7 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
       context.run.queryText ? `Query: ${context.run.queryText}` : "No query text stored.",
       `Workspace: ${context.workspace.name ?? "Current workspace"}`,
     ],
+    quickLinks: buildRunQuickLinks(context),
   };
 }
 

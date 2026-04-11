@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Loader2, Send, Sparkles, User, X } from "lucide-react";
+import { ArrowUpRight, Bot, Loader2, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   resolveAssistantTarget,
@@ -287,6 +288,25 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               </li>
                             ))}
                           </ul>
+
+                          {message.preview.quickLinks?.length ? (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {message.preview.quickLinks.map((link) => (
+                                <Button
+                                  key={`${link.label}-${link.href}`}
+                                  asChild
+                                  variant="outline"
+                                  size="xs"
+                                  className="border-emerald-300/20 bg-emerald-400/8 text-emerald-50 hover:border-emerald-300/38 hover:bg-emerald-400/14"
+                                >
+                                  <Link href={link.href}>
+                                    <ArrowUpRight className="h-3.5 w-3.5 text-emerald-300" />
+                                    {link.label}
+                                  </Link>
+                                </Button>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       );
                     }
@@ -333,6 +353,28 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               ))}
                             </div>
                           </section>
+
+                          {message.response.quickLinks?.length ? (
+                            <section>
+                              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Take action</p>
+                              <div className="flex flex-wrap gap-2">
+                                {message.response.quickLinks.map((link) => (
+                                  <Button
+                                    key={`${link.label}-${link.href}`}
+                                    asChild
+                                    variant="outline"
+                                    size="xs"
+                                    className="border-emerald-300/20 bg-emerald-400/8 text-emerald-50 hover:border-emerald-300/38 hover:bg-emerald-400/14"
+                                  >
+                                    <Link href={link.href}>
+                                      <ArrowUpRight className="h-3.5 w-3.5 text-emerald-300" />
+                                      {link.label}
+                                    </Link>
+                                  </Button>
+                                ))}
+                              </div>
+                            </section>
+                          ) : null}
 
                           {message.response.caution ? (
                             <div className="rounded-2xl border border-amber-300/16 bg-amber-400/10 px-3.5 py-3 text-sm text-amber-100/92">
