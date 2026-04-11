@@ -37,6 +37,7 @@ const OPERATION_GROUP_STATE_STORAGE_KEY = "openplan:planner-agent:operation-grou
 const OPERATION_VIEW_MODE_STORAGE_KEY = "openplan:planner-agent:operation-view-mode";
 const OPERATION_PINNED_STORAGE_KEY = "openplan:planner-agent:operation-pinned-state";
 const OPERATION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-snoozed-state";
+const OPERATION_SESSION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-session-snoozed";
 const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-show-snoozed";
 const OPERATION_NOTE_STORAGE_KEY = "openplan:planner-agent:operation-notes";
 
@@ -44,6 +45,12 @@ type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
 type OperationViewMode = "full" | "triage";
 type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
 type OperationPreferenceState = Record<string, boolean>;
+type OperationSessionSnoozeState = Record<string, boolean>;
+type OperationSnoozeRecord = {
+  mode: "until_reopened" | "until_tomorrow";
+  until: string | null;
+};
+type OperationPersistentSnoozeState = Record<string, OperationSnoozeRecord>;
 type OperationNotesState = Record<string, string>;
 
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
@@ -87,6 +94,39 @@ function parseOperationPreferenceState(value: string | null): OperationPreferenc
   }
 }
 
+function parseOperationSessionSnoozeState(value: string | null): OperationSessionSnoozeState {
+  return parseOperationPreferenceState(value);
+}
+
+function parseOperationPersistentSnoozeState(value: string | null): OperationPersistentSnoozeState {
+  if (!value) return {};
+
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    const now = Date.now();
+    const next: OperationPersistentSnoozeState = {};
+
+    for (const [key, raw] of Object.entries(parsed)) {
+      if (!raw || typeof raw !== "object") continue;
+      const candidate = raw as { mode?: unknown; until?: unknown };
+      if (candidate.mode === "until_reopened") {
+        next[key] = { mode: "until_reopened", until: null };
+        continue;
+      }
+      if (candidate.mode === "until_tomorrow" && typeof candidate.until === "string") {
+        const expiresAt = Date.parse(candidate.until);
+        if (!Number.isNaN(expiresAt) && expiresAt > now) {
+          next[key] = { mode: "until_tomorrow", until: candidate.until };
+        }
+      }
+    }
+
+    return next;
+  } catch {
+    return {};
+  }
+}
+
 function parseOperationNotesState(value: string | null): OperationNotesState {
   if (!value) return {};
 
@@ -100,6 +140,24 @@ function parseOperationNotesState(value: string | null): OperationNotesState {
 
 function getOperationStorageKey(link: AssistantQuickLink): string {
   return `${link.id}::${link.href}`;
+}
+
+function buildTomorrowBoundaryIso(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  return tomorrow.toISOString();
+}
+
+function resolveSnoozeLabel(
+  operationKey: string,
+  sessionSnoozeState: OperationSessionSnoozeState,
+  persistentSnoozeState: OperationPersistentSnoozeState
+): string | null {
+  if (sessionSnoozeState[operationKey]) return "This session";
+  const record = persistentSnoozeState[operationKey];
+  if (!record) return null;
+  return record.mode === "until_tomorrow" ? "Until tomorrow" : "Until reopened";
 }
 
 function actionLabel(action: AssistantAction) {
@@ -170,9 +228,13 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return {};
     return parseOperationPreferenceState(window.localStorage.getItem(OPERATION_PINNED_STORAGE_KEY));
   });
-  const [snoozedState, setSnoozedState] = useState<OperationPreferenceState>(() => {
+  const [sessionSnoozeState, setSessionSnoozeState] = useState<OperationSessionSnoozeState>(() => {
     if (typeof window === "undefined") return {};
-    return parseOperationPreferenceState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
+    return parseOperationSessionSnoozeState(window.sessionStorage.getItem(OPERATION_SESSION_SNOOZED_STORAGE_KEY));
+  });
+  const [persistentSnoozeState, setPersistentSnoozeState] = useState<OperationPersistentSnoozeState>(() => {
+    if (typeof window === "undefined") return {};
+    return parseOperationPersistentSnoozeState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
   });
   const [operationNotes, setOperationNotes] = useState<OperationNotesState>(() => {
     if (typeof window === "undefined") return {};
@@ -189,7 +251,10 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
       if (aPinned !== bPinned) return bPinned - aPinned;
       return 0;
     });
-    const visibleItems = sortedItems.filter((link) => showSnoozed || !snoozedState[getOperationStorageKey(link)]);
+    const visibleItems = sortedItems.filter((link) => {
+      if (showSnoozed) return true;
+      return !resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState);
+    });
     return {
       ...group,
       totalItems: sortedItems.length,
@@ -199,15 +264,19 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   });
   const summary = summarizeAssistantOperations(links);
   const pinnedCount = links.filter((link) => pinnedState[getOperationStorageKey(link)]).length;
-  const snoozedCount = links.filter((link) => snoozedState[getOperationStorageKey(link)]).length;
+  const snoozedCount = links.filter((link) => resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)).length;
   const shapedOperations = links
-    .filter((link) => pinnedState[getOperationStorageKey(link)] || snoozedState[getOperationStorageKey(link)])
+    .filter(
+      (link) =>
+        pinnedState[getOperationStorageKey(link)] ||
+        resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)
+    )
     .sort((a, b) => {
       const aPinned = pinnedState[getOperationStorageKey(a)] ? 1 : 0;
       const bPinned = pinnedState[getOperationStorageKey(b)] ? 1 : 0;
       if (aPinned !== bPinned) return bPinned - aPinned;
-      const aSnoozed = snoozedState[getOperationStorageKey(a)] ? 1 : 0;
-      const bSnoozed = snoozedState[getOperationStorageKey(b)] ? 1 : 0;
+      const aSnoozed = resolveSnoozeLabel(getOperationStorageKey(a), sessionSnoozeState, persistentSnoozeState) ? 1 : 0;
+      const bSnoozed = resolveSnoozeLabel(getOperationStorageKey(b), sessionSnoozeState, persistentSnoozeState) ? 1 : 0;
       if (aSnoozed !== bSnoozed) return bSnoozed - aSnoozed;
       return a.label.localeCompare(b.label);
     });
@@ -216,6 +285,48 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   );
   const visibleGroups = viewMode === "triage" ? filteredGroups.filter((group) => group.key === "act_now") : filteredGroups;
   const hasActNowGroup = groups.some((group) => group.key === "act_now");
+
+  function clearOperationSnooze(operationKey: string) {
+    setSessionSnoozeState((current) => {
+      if (!current[operationKey]) return current;
+      const next = { ...current };
+      delete next[operationKey];
+      return next;
+    });
+    setPersistentSnoozeState((current) => {
+      if (!current[operationKey]) return current;
+      const next = { ...current };
+      delete next[operationKey];
+      return next;
+    });
+  }
+
+  function setOperationSnoozeMode(operationKey: string, mode: "session" | "until_tomorrow" | "until_reopened") {
+    if (mode === "session") {
+      setSessionSnoozeState((current) => ({ ...current, [operationKey]: true }));
+      setPersistentSnoozeState((current) => {
+        if (!current[operationKey]) return current;
+        const next = { ...current };
+        delete next[operationKey];
+        return next;
+      });
+      return;
+    }
+
+    setSessionSnoozeState((current) => {
+      if (!current[operationKey]) return current;
+      const next = { ...current };
+      delete next[operationKey];
+      return next;
+    });
+    setPersistentSnoozeState((current) => ({
+      ...current,
+      [operationKey]: {
+        mode,
+        until: mode === "until_tomorrow" ? buildTomorrowBoundaryIso() : null,
+      },
+    }));
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -239,8 +350,13 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(OPERATION_SNOOZED_STORAGE_KEY, JSON.stringify(snoozedState));
-  }, [snoozedState]);
+    window.localStorage.setItem(OPERATION_SNOOZED_STORAGE_KEY, JSON.stringify(persistentSnoozeState));
+  }, [persistentSnoozeState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(OPERATION_SESSION_SNOOZED_STORAGE_KEY, JSON.stringify(sessionSnoozeState));
+  }, [sessionSnoozeState]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -373,7 +489,8 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               const operationKey = getOperationStorageKey(link);
               const note = operationNotes[operationKey] ?? "";
               const isPinned = Boolean(pinnedState[operationKey]);
-              const isSnoozed = Boolean(snoozedState[operationKey]);
+              const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
+              const isSnoozed = Boolean(snoozeLabel);
 
               return (
                 <div key={`shaped-${operationKey}`} className="rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
@@ -391,7 +508,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                         ) : null}
                         {isSnoozed ? (
                           <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
-                            Snoozed
+                            {snoozeLabel}
                           </span>
                         ) : null}
                       </div>
@@ -426,12 +543,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setSnoozedState((current) => ({
-                          ...current,
-                          [operationKey]: !isSnoozed,
-                        }))
-                      }
+                      onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
                         isSnoozed
                           ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
@@ -439,8 +551,26 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                       }`}
                     >
                       {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                      {isSnoozed ? "Resume" : "Snooze"}
+                      {isSnoozed ? "Resume" : "This session"}
                     </button>
+                    {!isSnoozed ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                        >
+                          Tomorrow
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                        >
+                          Reopened
+                        </button>
+                      </>
+                    ) : null}
                   </div>
 
                   <div className="mt-3">
@@ -519,7 +649,8 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                   const priorityBadge = quickLinkPriorityBadge(link);
                   const urgency = resolveAssistantOperationUrgency(link);
                   const isPinned = Boolean(pinnedState[operationKey]);
-                  const isSnoozed = Boolean(snoozedState[operationKey]);
+                  const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
+                  const isSnoozed = Boolean(snoozeLabel);
                   return (
                     <div
                       key={`${group.key}-${link.label}-${link.href}`}
@@ -544,7 +675,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                             ) : null}
                             {isSnoozed ? (
                               <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
-                                Snoozed
+                                {snoozeLabel}
                               </span>
                             ) : null}
                             {link.statusLabel ? (
@@ -581,12 +712,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                             </button>
                             <button
                               type="button"
-                              onClick={() =>
-                                setSnoozedState((current) => ({
-                                  ...current,
-                                  [operationKey]: !isSnoozed,
-                                }))
-                              }
+                              onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
                               className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
                                 isSnoozed
                                   ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
@@ -594,8 +720,26 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                               }`}
                             >
                               {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                              {isSnoozed ? "Resume" : "Snooze"}
+                              {isSnoozed ? "Resume" : "Session"}
                             </button>
+                            {!isSnoozed ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
+                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                >
+                                  Tomorrow
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
+                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                >
+                                  Reopen
+                                </button>
+                              </>
+                            ) : null}
                           </div>
                           <span
                             className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
