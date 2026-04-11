@@ -8,6 +8,10 @@ import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-regis
 import { RtpRegistryPacketBulkRefreshActions } from "@/components/rtp/rtp-registry-packet-bulk-refresh-actions";
 import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
 import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
+import {
+  RtpRegistryNextActionShortcut,
+  type DominantActionKey,
+} from "@/components/rtp/rtp-registry-next-action-shortcut";
 import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { buildProjectFundingStackSummary, projectFundingReimbursementTone } from "@/lib/projects/funding";
@@ -891,9 +895,10 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     { key: "generateFirstArtifact", label: "Generate first packet artifacts", count: currentViewActionCounts.generateFirstArtifact },
     { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
     { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
-  ].sort((left, right) => right.count - left.count)[0];
+  ] satisfies Array<{ key: DominantActionKey; label: string; count: number }>;
+  const dominantCurrentViewActionSelection = dominantCurrentViewAction.sort((left, right) => right.count - left.count)[0];
   const dominantActionCycles = typedCycles.filter((cycle) => {
-    switch (dominantCurrentViewAction.key) {
+    switch (dominantCurrentViewActionSelection.key) {
       case "createPacket":
         return cycle.packetAttention === "missing";
       case "resetAndRegenerate":
@@ -909,7 +914,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     }
   });
   const dominantActionHref =
-    dominantCurrentViewAction.key === "createPacket"
+    dominantCurrentViewActionSelection.key === "createPacket"
       ? buildRtpRegistryHref({
           status: filters.status ?? null,
           packet: "missing",
@@ -917,7 +922,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           queueAction: selectedQueueActionFilter,
           queueTraceState: selectedQueueTraceStateFilter,
         })
-      : dominantCurrentViewAction.key === "resetAndRegenerate"
+      : dominantCurrentViewActionSelection.key === "resetAndRegenerate"
         ? buildRtpRegistryHref({
             status: filters.status ?? null,
             packet: "reset",
@@ -925,7 +930,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             queueAction: selectedQueueActionFilter,
             queueTraceState: selectedQueueTraceStateFilter,
           })
-        : dominantCurrentViewAction.key === "generateFirstArtifact"
+        : dominantCurrentViewActionSelection.key === "generateFirstArtifact"
           ? buildRtpRegistryHref({
               status: filters.status ?? null,
               packet: "generate",
@@ -933,7 +938,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               queueAction: selectedQueueActionFilter,
               queueTraceState: selectedQueueTraceStateFilter,
             })
-          : dominantCurrentViewAction.key === "refreshArtifact"
+          : dominantCurrentViewActionSelection.key === "refreshArtifact"
             ? buildRtpRegistryHref({
                 status: filters.status ?? null,
                 packet: "refresh",
@@ -949,6 +954,10 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 queueTraceState:
                   selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
               });
+  const dominantActionCycleIds = dominantActionCycles.map((cycle) => cycle.id);
+  const dominantActionReportIds = dominantActionCycles
+    .map((cycle) => cycle.packetReport?.id ?? null)
+    .filter((value): value is string => Boolean(value));
 
   return (
     <section className="module-page">
@@ -1531,16 +1540,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     Recommended next queue action
                   </p>
                   <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-                    {dominantCurrentViewAction.count}
+                    {dominantCurrentViewActionSelection.count}
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {dominantCurrentViewAction.count > 0
-                      ? `${dominantCurrentViewAction.label} is the largest actionable lane in the current filtered view.`
+                    {dominantCurrentViewActionSelection.count > 0
+                      ? `${dominantCurrentViewActionSelection.label} is the largest actionable lane in the current filtered view.`
                       : "The current filtered view has no immediate queue actions beyond passive monitoring."}
                   </p>
                 </div>
-                <StatusBadge tone={dominantCurrentViewAction.count > 0 ? "info" : "success"}>
-                  {dominantCurrentViewAction.count > 0 ? dominantCurrentViewAction.label : "Queue clear"}
+                <StatusBadge tone={dominantCurrentViewActionSelection.count > 0 ? "info" : "success"}>
+                  {dominantCurrentViewActionSelection.count > 0 ? dominantCurrentViewActionSelection.label : "Queue clear"}
                 </StatusBadge>
               </div>
 
@@ -1552,16 +1561,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
               </ul>
 
-              {dominantCurrentViewAction.count > 0 ? (
-                <div className="mt-4">
+              {dominantCurrentViewActionSelection.count > 0 ? (
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                   <Link href={dominantActionHref} className="module-inline-action w-fit">
-                    Review {dominantCurrentViewAction.count} cycle{dominantCurrentViewAction.count === 1 ? "" : "s"} in this lane
+                    Review {dominantCurrentViewActionSelection.count} cycle{dominantCurrentViewActionSelection.count === 1 ? "" : "s"} in this lane
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+                  <RtpRegistryNextActionShortcut
+                    actionKey={dominantCurrentViewActionSelection.key}
+                    cycleIds={dominantActionCycleIds}
+                    reportIds={dominantActionReportIds}
+                  />
                 </div>
               ) : null}
 
-              {dominantCurrentViewAction.count > 0 ? (
+              {dominantCurrentViewActionSelection.count > 0 ? (
                 <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Top affected cycles
