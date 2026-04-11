@@ -74,6 +74,25 @@ export type WorkspaceOperationsFundingAwardRow = {
   updatedAt: string | null;
 };
 
+export type WorkspaceOperationsBillingInvoiceRow = {
+  id: string;
+  projectId: string;
+  fundingAwardId: string | null;
+  status: string | null;
+  amount: number | string | null;
+  retentionPercent: number | string | null;
+  retentionAmount: number | string | null;
+  dueDate: string | null;
+};
+
+export type WorkspaceOperationsProjectSubmittalRow = {
+  id: string;
+  projectId: string;
+  submittalType: string | null;
+  status: string | null;
+  updatedAt: string | null;
+};
+
 export type WorkspaceOperationsReportRow = {
   id: string;
   title: string | null;
@@ -130,6 +149,25 @@ export type WorkspaceOperationsFundingAwardSourceRow = {
   funding_opportunity_id: string | null;
   title: string;
   awarded_amount: number | string | null;
+  updated_at: string | null;
+};
+
+export type WorkspaceOperationsBillingInvoiceSourceRow = {
+  id: string;
+  project_id: string;
+  funding_award_id: string | null;
+  status: string | null;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  due_date: string | null;
+};
+
+export type WorkspaceOperationsProjectSubmittalSourceRow = {
+  id: string;
+  project_id: string;
+  submittal_type: string | null;
+  status: string | null;
   updated_at: string | null;
 };
 
@@ -289,6 +327,33 @@ function mapWorkspaceOperationsFundingAwardRows(
   }));
 }
 
+function mapWorkspaceOperationsBillingInvoiceRows(
+  rows: WorkspaceOperationsBillingInvoiceSourceRow[]
+): WorkspaceOperationsBillingInvoiceRow[] {
+  return rows.map((invoice) => ({
+    id: invoice.id,
+    projectId: invoice.project_id,
+    fundingAwardId: invoice.funding_award_id,
+    status: invoice.status,
+    amount: invoice.amount,
+    retentionPercent: invoice.retention_percent,
+    retentionAmount: invoice.retention_amount,
+    dueDate: invoice.due_date,
+  }));
+}
+
+function mapWorkspaceOperationsProjectSubmittalRows(
+  rows: WorkspaceOperationsProjectSubmittalSourceRow[]
+): WorkspaceOperationsProjectSubmittalRow[] {
+  return rows.map((submittal) => ({
+    id: submittal.id,
+    projectId: submittal.project_id,
+    submittalType: submittal.submittal_type,
+    status: submittal.status,
+    updatedAt: submittal.updated_at,
+  }));
+}
+
 export function buildWorkspaceOperationsSummaryFromSourceRows({
   projects,
   plans,
@@ -296,6 +361,8 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   reports,
   fundingOpportunities,
   fundingAwards = [],
+  fundingInvoices = [],
+  projectSubmittals = [],
   projectFundingProfiles = [],
   now,
 }: {
@@ -305,6 +372,8 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   reports: WorkspaceOperationsReportSourceRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunitySourceRow[];
   fundingAwards?: WorkspaceOperationsFundingAwardSourceRow[];
+  fundingInvoices?: WorkspaceOperationsBillingInvoiceSourceRow[];
+  projectSubmittals?: WorkspaceOperationsProjectSubmittalSourceRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }) {
@@ -315,6 +384,8 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     reports: mapWorkspaceOperationsReportRows(reports),
     fundingOpportunities: mapWorkspaceOperationsFundingOpportunityRows(fundingOpportunities),
     fundingAwards: mapWorkspaceOperationsFundingAwardRows(fundingAwards),
+    fundingInvoices: mapWorkspaceOperationsBillingInvoiceRows(fundingInvoices),
+    projectSubmittals: mapWorkspaceOperationsProjectSubmittalRows(projectSubmittals),
     projectFundingProfiles,
     now,
   });
@@ -324,7 +395,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   supabase: WorkspaceOperationsSupabaseLike,
   workspaceId: string
 ): Promise<WorkspaceOperationsSummary> {
-  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, fundingAwardsResult, projectFundingProfilesResult] = await Promise.all([
+  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, fundingAwardsResult, fundingInvoicesResult, projectSubmittalsResult, projectFundingProfilesResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase, updated_at")
@@ -362,6 +433,18 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .order("updated_at", { ascending: false })
       .limit(200),
     supabase
+      .from("billing_invoice_records")
+      .select("id, project_id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+      .eq("workspace_id", workspaceId)
+      .order("due_date", { ascending: true })
+      .limit(200),
+    supabase
+      .from("project_submittals")
+      .select("id, project_id, submittal_type, status, updated_at")
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
       .from("project_funding_profiles")
       .select("project_id, funding_need_amount, local_match_need_amount")
       .eq("workspace_id", workspaceId)
@@ -375,6 +458,8 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     reports: (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[],
     fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as WorkspaceOperationsFundingOpportunitySourceRow[],
     fundingAwards: (fundingAwardsResult.data ?? []) as WorkspaceOperationsFundingAwardSourceRow[],
+    fundingInvoices: (fundingInvoicesResult.data ?? []) as WorkspaceOperationsBillingInvoiceSourceRow[],
+    projectSubmittals: (projectSubmittalsResult.data ?? []) as WorkspaceOperationsProjectSubmittalSourceRow[],
     projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
   });
 }
@@ -386,6 +471,8 @@ export function buildWorkspaceOperationsSummary({
   reports,
   fundingOpportunities,
   fundingAwards = [],
+  fundingInvoices = [],
+  projectSubmittals = [],
   projectFundingProfiles = [],
   now = new Date(),
 }: {
@@ -395,6 +482,8 @@ export function buildWorkspaceOperationsSummary({
   reports: WorkspaceOperationsReportRow[];
   fundingOpportunities: WorkspaceOperationsFundingOpportunityRow[];
   fundingAwards?: WorkspaceOperationsFundingAwardRow[];
+  fundingInvoices?: WorkspaceOperationsBillingInvoiceRow[];
+  projectSubmittals?: WorkspaceOperationsProjectSubmittalRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   now?: Date;
 }): WorkspaceOperationsSummary {
@@ -452,6 +541,26 @@ export function buildWorkspaceOperationsSummary({
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.fundingOpportunityId).filter((value): value is string => Boolean(value))
   );
+  const fundingAwardsByProjectId = new Map<string, WorkspaceOperationsFundingAwardRow[]>();
+  fundingAwards.forEach((award) => {
+    const current = fundingAwardsByProjectId.get(award.projectId) ?? [];
+    current.push(award);
+    fundingAwardsByProjectId.set(award.projectId, current);
+  });
+  const fundingInvoicesByProjectId = new Map<string, WorkspaceOperationsBillingInvoiceRow[]>();
+  fundingInvoices.forEach((invoice) => {
+    const current = fundingInvoicesByProjectId.get(invoice.projectId) ?? [];
+    current.push(invoice);
+    fundingInvoicesByProjectId.set(invoice.projectId, current);
+  });
+  const reimbursementSubmittalsByProjectId = new Map<string, WorkspaceOperationsProjectSubmittalRow[]>();
+  projectSubmittals
+    .filter((submittal) => submittal.submittalType === "reimbursement")
+    .forEach((submittal) => {
+      const current = reimbursementSubmittalsByProjectId.get(submittal.projectId) ?? [];
+      current.push(submittal);
+      reimbursementSubmittalsByProjectId.set(submittal.projectId, current);
+    });
   const projectFundingNeedAnchorProjects = [...fundingOpportunitiesByProjectId.entries()]
     .map(([projectId, opportunities]) => {
       if (fundingProfileProjectIds.has(projectId)) return null;
@@ -485,13 +594,27 @@ export function buildWorkspaceOperationsSummary({
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
       const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const awards = fundingAwardsByProjectId.get(profile.project_id) ?? [];
+      const invoices = (fundingInvoicesByProjectId.get(profile.project_id) ?? []).filter((invoice) =>
+        awards.some((award) => award.id === invoice.fundingAwardId)
+      );
       const summary = buildProjectFundingStackSummary(
         profile,
-        [],
+        awards.map((award) => ({
+          awarded_amount: award.awardedAmount,
+        })),
         opportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
+        })),
+        invoices.map((invoice) => ({
+          funding_award_id: invoice.fundingAwardId,
+          status: invoice.status,
+          amount: invoice.amount,
+          retention_percent: invoice.retentionPercent,
+          retention_amount: invoice.retentionAmount,
+          due_date: invoice.dueDate,
         }))
       );
       if (!summary.hasTargetNeed || opportunities.length === 0 || summary.unfundedAfterLikelyAmount <= 0) {
@@ -509,9 +632,12 @@ export function buildWorkspaceOperationsSummary({
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
       const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const awards = fundingAwardsByProjectId.get(profile.project_id) ?? [];
       const summary = buildProjectFundingStackSummary(
         profile,
-        [],
+        awards.map((award) => ({
+          awarded_amount: award.awardedAmount,
+        })),
         opportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
@@ -533,12 +659,15 @@ export function buildWorkspaceOperationsSummary({
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
       const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const awards = fundingAwardsByProjectId.get(profile.project_id) ?? [];
       const actionableOpportunities = opportunities.filter(
         (opportunity) => !["awarded", "archived"].includes(opportunity.opportunityStatus ?? "")
       );
       const summary = buildProjectFundingStackSummary(
         profile,
-        [],
+        awards.map((award) => ({
+          awarded_amount: award.awardedAmount,
+        })),
         actionableOpportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
@@ -577,9 +706,12 @@ export function buildWorkspaceOperationsSummary({
       const project = projects.find((item) => item.id === profile.project_id);
       if (!project) return null;
       const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const awards = fundingAwardsByProjectId.get(profile.project_id) ?? [];
       const summary = buildProjectFundingStackSummary(
         profile,
-        [],
+        awards.map((award) => ({
+          awarded_amount: award.awardedAmount,
+        })),
         opportunities.map((opportunity) => ({
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
@@ -610,6 +742,51 @@ export function buildWorkspaceOperationsSummary({
       }
       return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
     });
+  const fundingReimbursementProjects = projectFundingProfiles
+    .map((profile) => {
+      const project = projects.find((item) => item.id === profile.project_id);
+      if (!project) return null;
+      const awards = fundingAwardsByProjectId.get(profile.project_id) ?? [];
+      if (awards.length === 0) return null;
+      const opportunities = fundingOpportunitiesByProjectId.get(profile.project_id) ?? [];
+      const invoices = (fundingInvoicesByProjectId.get(profile.project_id) ?? []).filter((invoice) =>
+        awards.some((award) => award.id === invoice.fundingAwardId)
+      );
+      const reimbursementPackets = reimbursementSubmittalsByProjectId.get(profile.project_id) ?? [];
+      const summary = buildProjectFundingStackSummary(
+        profile,
+        awards.map((award) => ({
+          awarded_amount: award.awardedAmount,
+        })),
+        opportunities.map((opportunity) => ({
+          expected_award_amount: opportunity.expectedAwardAmount ?? null,
+          decision_state: opportunity.decisionState ?? null,
+          opportunity_status: opportunity.opportunityStatus ?? null,
+        })),
+        invoices.map((invoice) => ({
+          funding_award_id: invoice.fundingAwardId,
+          status: invoice.status,
+          amount: invoice.amount,
+          retention_percent: invoice.retentionPercent,
+          retention_amount: invoice.retentionAmount,
+          due_date: invoice.dueDate,
+        }))
+      );
+      if (summary.uninvoicedAwardAmount <= 0) return null;
+      return {
+        project,
+        summary,
+        reimbursementPacketCount: reimbursementPackets.length,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => right.summary.uninvoicedAwardAmount - left.summary.uninvoicedAwardAmount);
+  const reimbursementStartProjects = fundingReimbursementProjects.filter(
+    (item) => item.reimbursementPacketCount === 0 && item.summary.reimbursementStatus === "not_started"
+  );
+  const reimbursementAdvanceProjects = fundingReimbursementProjects.filter(
+    (item) => !(item.reimbursementPacketCount === 0 && item.summary.reimbursementStatus === "not_started")
+  );
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -737,6 +914,56 @@ export function buildWorkspaceOperationsSummary({
           label: "Lead awarded",
           value: firstFundingAwardRecordProject
             ? formatCurrency(Number(firstFundingAwardRecordProject.awardedOpportunity.expectedAwardAmount ?? 0))
+            : null,
+        },
+      ],
+    });
+  }
+
+  if (reimbursementStartProjects.length > 0) {
+    const firstReimbursementStartProject = reimbursementStartProjects[0];
+    queueCandidates.push({
+      key: "start-project-reimbursement-packets",
+      title: "Start reimbursement packets",
+      detail: `${reimbursementStartProjects.length} project funding stack${reimbursementStartProjects.length === 1 ? " has" : "s have"} committed awards with uninvoiced dollars but no reimbursement packet started yet.${firstReimbursementStartProject ? ` Reopen ${firstReimbursementStartProject.project.name} first and start the packet against ${formatCurrency(firstReimbursementStartProject.summary.uninvoicedAwardAmount)} still uninvoiced.` : ""}`,
+      href: firstReimbursementStartProject
+        ? `/projects/${firstReimbursementStartProject.project.id}#project-submittals`
+        : "/projects",
+      targetProjectId: firstReimbursementStartProject?.project.id ?? null,
+      targetProjectName: firstReimbursementStartProject?.project.name ?? null,
+      tone: "warning",
+      priority: 6.2,
+      badges: [
+        { label: "Packets needed", value: reimbursementStartProjects.length },
+        {
+          label: "Uninvoiced",
+          value: firstReimbursementStartProject
+            ? formatCurrency(firstReimbursementStartProject.summary.uninvoicedAwardAmount)
+            : null,
+        },
+      ],
+    });
+  }
+
+  if (reimbursementAdvanceProjects.length > 0) {
+    const firstReimbursementAdvanceProject = reimbursementAdvanceProjects[0];
+    queueCandidates.push({
+      key: "advance-project-reimbursement-invoicing",
+      title: "Advance reimbursement invoicing",
+      detail: `${reimbursementAdvanceProjects.length} project funding stack${reimbursementAdvanceProjects.length === 1 ? " has" : "s have"} reimbursement work underway, but committed award dollars are still not fully reflected in invoicing.${firstReimbursementAdvanceProject ? ` Reopen ${firstReimbursementAdvanceProject.project.name} first and move ${formatCurrency(firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount)} through the invoice lane.` : ""}`,
+      href: firstReimbursementAdvanceProject
+        ? `/projects/${firstReimbursementAdvanceProject.project.id}#project-invoices`
+        : "/projects",
+      targetProjectId: firstReimbursementAdvanceProject?.project.id ?? null,
+      targetProjectName: firstReimbursementAdvanceProject?.project.name ?? null,
+      tone: "warning",
+      priority: 6.3,
+      badges: [
+        { label: "Reimbursement active", value: reimbursementAdvanceProjects.length },
+        {
+          label: "Uninvoiced",
+          value: firstReimbursementAdvanceProject
+            ? formatCurrency(firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount)
             : null,
         },
       ],

@@ -195,6 +195,124 @@ describe("workspace operations summary", () => {
     expect(summary.nextCommand?.targetOpportunityId).toBe("opp-gap-1");
   });
 
+  it("surfaces reimbursement packet creation before generic funding-gap cleanup", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-gap",
+          name: "Gap Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
+      fundingOpportunities: [
+        {
+          id: "opp-gap-1",
+          title: "Gap opportunity",
+          opportunity_status: "awarded",
+          decision_state: "pursue",
+          expected_award_amount: 100000,
+          closes_at: null,
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-gap",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      fundingAwards: [
+        {
+          id: "award-1",
+          project_id: "project-gap",
+          funding_opportunity_id: "opp-gap-1",
+          title: "Gap award",
+          awarded_amount: 100000,
+          updated_at: "2026-04-11T17:10:00.000Z",
+        },
+      ],
+      fundingInvoices: [],
+      projectSubmittals: [],
+      projectFundingProfiles: [
+        {
+          project_id: "project-gap",
+          funding_need_amount: 500000,
+          local_match_need_amount: 50000,
+        },
+      ],
+      now: new Date("2026-04-11T12:00:00.000Z"),
+    });
+
+    expect(summary.nextCommand?.key).toBe("start-project-reimbursement-packets");
+    expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
+    expect(summary.nextCommand?.href).toBe("/projects/project-gap#project-submittals");
+  });
+
+  it("surfaces reimbursement invoice follow-through after a packet already exists", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-gap",
+          name: "Gap Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
+      fundingOpportunities: [
+        {
+          id: "opp-gap-1",
+          title: "Gap opportunity",
+          opportunity_status: "awarded",
+          decision_state: "pursue",
+          expected_award_amount: 100000,
+          closes_at: null,
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-gap",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      fundingAwards: [
+        {
+          id: "award-1",
+          project_id: "project-gap",
+          funding_opportunity_id: "opp-gap-1",
+          title: "Gap award",
+          awarded_amount: 100000,
+          updated_at: "2026-04-11T17:10:00.000Z",
+        },
+      ],
+      fundingInvoices: [],
+      projectSubmittals: [
+        {
+          id: "submittal-1",
+          project_id: "project-gap",
+          submittal_type: "reimbursement",
+          status: "draft",
+          updated_at: "2026-04-11T17:20:00.000Z",
+        },
+      ],
+      projectFundingProfiles: [
+        {
+          project_id: "project-gap",
+          funding_need_amount: 500000,
+          local_match_need_amount: 50000,
+        },
+      ],
+      now: new Date("2026-04-11T12:00:00.000Z"),
+    });
+
+    expect(summary.nextCommand?.key).toBe("advance-project-reimbursement-invoicing");
+    expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
+    expect(summary.nextCommand?.href).toBe("/projects/project-gap#project-invoices");
+  });
+
   it("surfaces measurable funding gaps after sourcing exists", () => {
     const summary = buildWorkspaceOperationsSummaryFromSourceRows({
       projects: [
