@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
@@ -16,6 +17,10 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   describeComparisonSnapshotAggregate,
@@ -414,6 +419,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     { data: rtpChapters },
     { data: rtpProjectLinks },
     { data: rtpCampaigns },
+    operationsSummary,
   ] = await Promise.all([
     supabase
       .from("projects")
@@ -470,6 +476,10 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           .eq("workspace_id", report.workspace_id)
           .eq("rtp_cycle_id", report.rtp_cycle_id)
       : Promise.resolve({ data: [] }),
+    loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      report.workspace_id
+    ),
   ]);
 
   const runIds = (reportRunLinks ?? []).map((item) => item.run_id);
@@ -673,6 +683,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           presetStatusLabel: currentPacketPresetAlignment.statusLabel,
           presetDetail: currentPacketPresetAlignment.detail,
         }}
+        operationsSummary={operationsSummary}
       />
     );
   }
@@ -1240,6 +1251,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           />
         </div>
       </header>
+
+      <WorkspaceCommandBoard
+        summary={operationsSummary}
+        label="Workspace command board"
+        title="What should move around this report"
+        description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
+      />
 
       {/* ── Composition + provenance row ─────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">

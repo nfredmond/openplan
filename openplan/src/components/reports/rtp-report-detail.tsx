@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportSectionControls } from "@/components/reports/rtp-report-section-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -13,6 +14,7 @@ import {
   getReportPacketFreshness,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 function compareCountMetric(label: string, generated: number | null, current: number | null) {
   if (generated === null && current === null) {
@@ -71,6 +73,7 @@ export function RtpReportDetail({
   latestHtml,
   generationContext,
   currentContext,
+  operationsSummary,
 }: {
   report: {
     id: string;
@@ -145,6 +148,7 @@ export function RtpReportDetail({
     presetStatusLabel: string | null;
     presetDetail: string | null;
   };
+  operationsSummary: WorkspaceOperationsSummary;
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
   const packetFreshness = getReportPacketFreshness({
@@ -315,6 +319,13 @@ export function RtpReportDetail({
               status: report.status,
               hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
             }}
+          />
+
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move around this RTP packet"
+            description="This RTP packet detail now inherits the shared workspace runtime too, so broader report pressure, funding timing, and setup gaps stay visible while you review cycle drift and packet posture."
           />
 
           <article className="module-section-surface">
