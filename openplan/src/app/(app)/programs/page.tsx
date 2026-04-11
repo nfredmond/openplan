@@ -427,6 +427,9 @@ export default async function ProgramsPage({
 
       return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
     });
+  const packetSummaryByProgramId = new Map(
+    typedPrograms.map((program) => [program.id, program.packetSummary] as const)
+  );
 
   const activeCount = typedPrograms.filter((program) => ["assembling", "submitted", "programmed"].includes(program.status)).length;
   const readyCount = typedPrograms.filter((program) => program.readiness.ready).length;
@@ -434,6 +437,63 @@ export default async function ProgramsPage({
   const packetAttentionProgramCount = typedPrograms.filter(
     (program) => program.packetSummary.attentionCount > 0
   ).length;
+  const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
+    if (!opportunity.program_id) return true;
+    const packetSummary = packetSummaryByProgramId.get(opportunity.program_id);
+    return Boolean(
+      packetSummary &&
+        (packetSummary.attentionCount > 0 || packetSummary.linkedReportCount === 0)
+    );
+  }).length;
+  const opportunityQueueItems = fundingOpportunities
+    .filter((opportunity) => {
+      if (!opportunity.program_id) return true;
+      const packetSummary = packetSummaryByProgramId.get(opportunity.program_id);
+      return Boolean(
+        packetSummary &&
+          (packetSummary.attentionCount > 0 || packetSummary.linkedReportCount === 0)
+      );
+    })
+    .slice(0, 5)
+    .map((opportunity) => {
+      const packetSummary = opportunity.program_id
+        ? packetSummaryByProgramId.get(opportunity.program_id)
+        : null;
+      const recommendedReport = packetSummary?.recommendedReport ?? null;
+
+      return {
+        key: opportunity.id,
+        href: recommendedReport
+          ? getReportNavigationHref(
+              recommendedReport.id,
+              recommendedReport.packetFreshness.label
+            )
+          : opportunity.program_id
+            ? `/programs/${opportunity.program_id}`
+            : "/programs",
+        title: opportunity.title,
+        subtitle: opportunity.program
+          ? `Program ${opportunity.program.title}`
+          : "No linked program",
+        detail: recommendedReport
+          ? recommendedReport.packetFreshness.detail
+          : opportunity.program_id
+            ? "Linked program has no packet outputs yet. Open the program record to create or attach the first packet."
+            : "Link this opportunity to a program so packet readiness and delivery context are visible in one place.",
+        badges: [
+          { label: formatFundingOpportunityStatusLabel(opportunity.opportunity_status) },
+          { label: formatFundingOpportunityDecisionLabel(opportunity.decision_state) },
+          ...(packetSummary
+            ? [
+                { label: "Program reports", value: packetSummary.linkedReportCount },
+                ...(packetSummary.attentionCount > 0
+                  ? [{ label: "Packet attention", value: packetSummary.attentionCount }]
+                  : []),
+              ]
+            : []),
+        ],
+      };
+    });
   const openOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "open").length;
   const upcomingOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "upcoming").length;
   const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
@@ -689,6 +749,11 @@ export default async function ProgramsPage({
               <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
               <p className="module-summary-detail">Expected dollars attached to pursue decisions in the shared catalog.</p>
             </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Packet-risky opportunities</p>
+              <p className="module-summary-value">{opportunityPacketRiskCount}</p>
+              <p className="module-summary-detail">Opportunities whose linked program packet basis is missing, stale, or not linked yet.</p>
+            </div>
           </div>
 
           {fundingOpportunities.length === 0 ? (
@@ -699,7 +764,15 @@ export default async function ProgramsPage({
               />
             </div>
           ) : (
-            <div className="mt-5 module-record-list">
+            <div className="mt-5 space-y-4">
+              <ReportPacketCommandQueue
+                title="Opportunity packet queue"
+                description="Open or upcoming opportunities whose linked program packet basis still needs attention."
+                items={opportunityQueueItems}
+                emptyLabel="No packet-risky opportunities right now."
+              />
+
+              <div className="module-record-list">
               {fundingOpportunities.map((opportunity) => (
                 <div key={opportunity.id} className="module-record-row">
                   <div className="module-record-head">
@@ -739,9 +812,21 @@ export default async function ProgramsPage({
                     <span className="module-record-chip">Closes {formatProgramDateTime(opportunity.closes_at)}</span>
                     <span className="module-record-chip">Decision {formatProgramDateTime(opportunity.decision_due_at)}</span>
                     <span className="module-record-chip">Project {opportunity.project?.name ?? "None"}</span>
+                    {opportunity.program_id && packetSummaryByProgramId.get(opportunity.program_id)?.attentionCount ? (
+                      <span className="module-record-chip">
+                        Packet attention {packetSummaryByProgramId.get(opportunity.program_id)?.attentionCount}
+                      </span>
+                    ) : null}
+                    {opportunity.program_id && packetSummaryByProgramId.get(opportunity.program_id)?.linkedReportCount === 0 ? (
+                      <span className="module-record-chip">No program packet</span>
+                    ) : null}
+                    {!opportunity.program_id ? (
+                      <span className="module-record-chip">Program link needed</span>
+                    ) : null}
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </article>
