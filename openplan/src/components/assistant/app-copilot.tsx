@@ -208,6 +208,61 @@ function formatRemainingSnoozeTime(returnAtMs: number | null, nowMs = Date.now()
   return `${hours}h ${minutes}m`;
 }
 
+function buildBoardStateNarrative(args: {
+  viewMode: OperationViewMode;
+  filter: OperationFilter;
+  shapedCount: number;
+  snoozedCount: number;
+  returningSoonCount: number;
+  hiddenSnoozedCount: number;
+  showSnoozed: boolean;
+}): { title: string; detail: string } {
+  const filterLabel =
+    args.filter === "all"
+      ? "all operation groups"
+      : args.filter === "act_now"
+        ? "act-now pressure"
+        : args.filter === "review_soon"
+          ? "review-soon work"
+          : "support context";
+
+  if (args.viewMode === "triage") {
+    return {
+      title: "Triage mode is shaping the board",
+      detail:
+        args.returningSoonCount > 0
+          ? `The console is narrowed to act-now pressure, with ${args.returningSoonCount} snoozed operation${args.returningSoonCount === 1 ? "" : "s"} returning soon.`
+          : `The console is narrowed to act-now pressure while ${filterLabel} stays available underneath the full board view.`,
+    };
+  }
+
+  if (args.returningSoonCount > 0) {
+    return {
+      title: "Returning pressure is approaching",
+      detail: `${args.returningSoonCount} snoozed operation${args.returningSoonCount === 1 ? " is" : "s are"} nearing its return window while ${args.shapedCount} shaped item${args.shapedCount === 1 ? " remains" : "s remain"} under active operator control.`,
+    };
+  }
+
+  if (args.hiddenSnoozedCount > 0 && !args.showSnoozed) {
+    return {
+      title: "Some pressure is intentionally tucked away",
+      detail: `${args.hiddenSnoozedCount} snoozed operation${args.hiddenSnoozedCount === 1 ? " is" : "s are"} hidden from the active board, while ${filterLabel} stays in view.`,
+    };
+  }
+
+  if (args.shapedCount > 0) {
+    return {
+      title: "The board reflects local operator judgment",
+      detail: `${args.shapedCount} operation${args.shapedCount === 1 ? " is" : "s are"} currently pinned or snoozed, and the board is focused on ${filterLabel}.`,
+    };
+  }
+
+  return {
+    title: "The board is running in clean review mode",
+    detail: `No local pin or snooze state is active right now, and the console is showing ${filterLabel}.`,
+  };
+}
+
 function actionLabel(action: AssistantAction) {
   return action.label;
 }
@@ -341,6 +396,16 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
       if (aSnoozed !== bSnoozed) return bSnoozed - aSnoozed;
       return a.label.localeCompare(b.label);
     });
+  const hiddenSnoozedCount = showSnoozed ? 0 : snoozedCount;
+  const boardNarrative = buildBoardStateNarrative({
+    viewMode,
+    filter,
+    shapedCount: shapedOperations.length,
+    snoozedCount,
+    returningSoonCount,
+    hiddenSnoozedCount,
+    showSnoozed,
+  });
   const filteredGroups = (filter === "all" ? groups : groups.filter((group) => group.key === filter)).filter(
     (group) => group.items.length > 0
   );
@@ -565,6 +630,12 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
             {returningSoonCount} tomorrow-snoozed operation{returningSoonCount === 1 ? " is" : "s are"} approaching the return window.
           </p>
         ) : null}
+
+        <div className="mt-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Board cue</p>
+          <p className="mt-2 text-sm font-semibold text-white">{boardNarrative.title}</p>
+          <p className="mt-1 text-sm leading-relaxed text-slate-300/82">{boardNarrative.detail}</p>
+        </div>
       </div>
       {shapedOperations.length ? (
         <div className="rounded-[22px] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
