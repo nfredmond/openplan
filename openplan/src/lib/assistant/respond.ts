@@ -15,18 +15,9 @@ import type {
   ScenarioAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
+import type { AssistantLocalConsoleState } from "@/lib/assistant/local-console-state";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
-
-export type AssistantLocalConsoleState = {
-  title: string;
-  detail: string;
-  shapedCount: number;
-  snoozedCount: number;
-  returningSoonCount: number;
-  viewMode: "full" | "triage";
-  filter: "all" | "act_now" | "review_soon" | "support_context";
-};
 
 function asNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;

@@ -17,6 +17,11 @@ import {
   type AssistantAction,
   type AssistantOperationGroupKey,
 } from "@/lib/assistant/catalog";
+import type {
+  AssistantLocalConsoleFilter,
+  AssistantLocalConsoleState,
+  AssistantLocalConsoleViewMode,
+} from "@/lib/assistant/local-console-state";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -42,8 +47,8 @@ const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-sho
 const OPERATION_NOTE_STORAGE_KEY = "openplan:planner-agent:operation-notes";
 const RETURNING_SOON_WINDOW_MS = 1000 * 60 * 60 * 6;
 
-type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
-type OperationViewMode = "full" | "triage";
+type OperationFilter = AssistantLocalConsoleFilter;
+type OperationViewMode = AssistantLocalConsoleViewMode;
 type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
 type OperationPreferenceState = Record<string, boolean>;
 type OperationSessionSnoozeState = Record<string, boolean>;
@@ -53,16 +58,6 @@ type OperationSnoozeRecord = {
 };
 type OperationPersistentSnoozeState = Record<string, OperationSnoozeRecord>;
 type OperationNotesState = Record<string, string>;
-type LocalConsoleStateSnapshot = {
-  title: string;
-  detail: string;
-  shapedCount: number;
-  snoozedCount: number;
-  returningSoonCount: number;
-  viewMode: OperationViewMode;
-  filter: OperationFilter;
-};
-
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
   act_now: true,
   review_soon: true,
@@ -275,7 +270,7 @@ function buildBoardStateNarrative(args: {
 function buildLocalConsoleStateSnapshot(
   links: AssistantQuickLink[] | undefined,
   nowMs = Date.now()
-): LocalConsoleStateSnapshot | null {
+): AssistantLocalConsoleState | null {
   if (!links?.length || typeof window === "undefined") return null;
 
   const filterSaved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);

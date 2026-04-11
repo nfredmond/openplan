@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadAssistantContext } from "@/lib/assistant/context";
+import { assistantLocalConsoleStateSchema } from "@/lib/assistant/local-console-state";
 import { buildAssistantResponse } from "@/lib/assistant/respond";
 import { resolveAssistantWorkflowId } from "@/lib/assistant/catalog";
 
@@ -14,18 +15,7 @@ const requestSchema = z.object({
   baselineRunId: z.string().uuid().nullable().optional(),
   workflowId: z.string().min(1).max(80).nullable().optional(),
   question: z.string().trim().max(1200).nullable().optional(),
-  localConsoleState: z
-    .object({
-      title: z.string().trim().max(160),
-      detail: z.string().trim().max(600),
-      shapedCount: z.number().int().min(0).max(500),
-      snoozedCount: z.number().int().min(0).max(500),
-      returningSoonCount: z.number().int().min(0).max(500),
-      viewMode: z.enum(["full", "triage"]),
-      filter: z.enum(["all", "act_now", "review_soon", "support_context"]),
-    })
-    .nullable()
-    .optional(),
+  localConsoleState: assistantLocalConsoleStateSchema.nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
