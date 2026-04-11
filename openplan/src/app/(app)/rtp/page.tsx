@@ -827,6 +827,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
   const outpacedQueueTraceCount = typedCycles.filter((cycle) => cycle.packetQueueTraceState.label === "Outpaced by source").length;
   const outpacedQueueCycles = allCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced");
+  const outpacedQueueMix = {
+    reset: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "reset").length,
+    refresh: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
+    generate: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "generate").length,
+    current: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "current").length,
+  };
   const latestQueueActionAt = typedCycles
     .map((cycle) => cycle.packetQueueTrace.actedAt)
     .filter((value): value is string => Boolean(value))
@@ -1395,6 +1401,18 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
 
               <div className="mt-4 space-y-2">
+                <div className="rounded-2xl border border-amber-500/20 bg-background/90 px-3 py-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Cleanup mix
+                  </p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                    <li>• Reset lane: {outpacedQueueMix.reset}</li>
+                    <li>• Refresh lane: {outpacedQueueMix.refresh}</li>
+                    <li>• First artifact lane: {outpacedQueueMix.generate}</li>
+                    <li>• Current-but-overtaken: {outpacedQueueMix.current}</li>
+                  </ul>
+                </div>
+
                 {outpacedQueueCycles.slice(0, 5).map((cycle) => (
                   <div key={cycle.id} className="rounded-2xl border border-amber-500/20 bg-background/90 px-3 py-3">
                     <div className="flex items-start justify-between gap-3">
@@ -1432,6 +1450,36 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                   Filter to outpaced traces
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+                {outpacedQueueMix.reset > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "reset",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "outpaced",
+                    })}
+                    className="module-inline-action"
+                  >
+                    Review reset lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {outpacedQueueMix.refresh > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "refresh",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "outpaced",
+                    })}
+                    className="module-inline-action"
+                  >
+                    Review refresh lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
               </div>
             </article>
           ) : null}
