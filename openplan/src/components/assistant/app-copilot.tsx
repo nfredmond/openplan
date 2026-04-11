@@ -160,6 +160,18 @@ function resolveSnoozeLabel(
   return record.mode === "until_tomorrow" ? "Until tomorrow" : "Until reopened";
 }
 
+function resolveSnoozeReturnDetail(
+  operationKey: string,
+  sessionSnoozeState: OperationSessionSnoozeState,
+  persistentSnoozeState: OperationPersistentSnoozeState
+): string | null {
+  if (sessionSnoozeState[operationKey]) return "Returns when this browser session closes.";
+  const record = persistentSnoozeState[operationKey];
+  if (!record) return null;
+  if (record.mode === "until_tomorrow") return "Returns at the next day boundary.";
+  return "Returns only after you explicitly reopen it.";
+}
+
 function actionLabel(action: AssistantAction) {
   return action.label;
 }
@@ -265,6 +277,13 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   const summary = summarizeAssistantOperations(links);
   const pinnedCount = links.filter((link) => pinnedState[getOperationStorageKey(link)]).length;
   const snoozedCount = links.filter((link) => resolveSnoozeLabel(getOperationStorageKey(link), sessionSnoozeState, persistentSnoozeState)).length;
+  const sessionSnoozedCount = links.filter((link) => sessionSnoozeState[getOperationStorageKey(link)]).length;
+  const tomorrowSnoozedCount = links.filter(
+    (link) => persistentSnoozeState[getOperationStorageKey(link)]?.mode === "until_tomorrow"
+  ).length;
+  const reopenedSnoozedCount = links.filter(
+    (link) => persistentSnoozeState[getOperationStorageKey(link)]?.mode === "until_reopened"
+  ).length;
   const shapedOperations = links
     .filter(
       (link) =>
@@ -468,7 +487,22 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
           <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
             Snoozed · {snoozedCount}
           </span>
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+            Session · {sessionSnoozedCount}
+          </span>
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+            Tomorrow · {tomorrowSnoozedCount}
+          </span>
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+            Reopen · {reopenedSnoozedCount}
+          </span>
         </div>
+
+        {snoozedCount > 0 ? (
+          <p className="mt-2 text-xs leading-relaxed text-slate-300/74">
+            Snooze timing: {sessionSnoozedCount} this session, {tomorrowSnoozedCount} until tomorrow, {reopenedSnoozedCount} until manually reopened.
+          </p>
+        ) : null}
       </div>
       {shapedOperations.length ? (
         <div className="rounded-[22px] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
@@ -478,6 +512,11 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
                 Local queue-shaping decisions stay visible here so pinned and snoozed items carry operator context, not just hidden state.
               </p>
+              {snoozedCount > 0 ? (
+                <p className="mt-2 text-xs leading-relaxed text-slate-300/74">
+                  {sessionSnoozedCount} return this session, {tomorrowSnoozedCount} return tomorrow, and {reopenedSnoozedCount} stay hidden until reopened.
+                </p>
+              ) : null}
             </div>
             <StatusBadge tone="info" className="border-white/10 bg-white/[0.05] text-slate-100">
               {shapedOperations.length} tracked
@@ -490,6 +529,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               const note = operationNotes[operationKey] ?? "";
               const isPinned = Boolean(pinnedState[operationKey]);
               const snoozeLabel = resolveSnoozeLabel(operationKey, sessionSnoozeState, persistentSnoozeState);
+              const snoozeReturnDetail = resolveSnoozeReturnDetail(operationKey, sessionSnoozeState, persistentSnoozeState);
               const isSnoozed = Boolean(snoozeLabel);
 
               return (
@@ -512,6 +552,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
                           </span>
                         ) : null}
                       </div>
+                      {snoozeReturnDetail ? <p className="mt-2 text-xs leading-relaxed text-slate-300/74">{snoozeReturnDetail}</p> : null}
                     </div>
 
                     <Link
