@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeNetInvoiceAmount,
   computeRetentionAmount,
+  filterBillingInvoiceRecordsByLinkage,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
@@ -62,5 +63,22 @@ describe("billing invoice record helpers", () => {
       linkedPaidNetAmount: 5000,
       unlinkedPaidNetAmount: 0,
     });
+  });
+
+  it("filters invoice records by linkage mode", () => {
+    const records = [
+      { funding_award_id: "award-1", invoice_number: "OP-001" },
+      { funding_award_id: null, invoice_number: "OP-002" },
+      { funding_award_id: "award-2", invoice_number: "OP-003" },
+    ];
+
+    expect(filterBillingInvoiceRecordsByLinkage(records, "all")).toHaveLength(3);
+    expect(filterBillingInvoiceRecordsByLinkage(records, "linked").map((record) => record.invoice_number)).toEqual([
+      "OP-001",
+      "OP-003",
+    ]);
+    expect(filterBillingInvoiceRecordsByLinkage(records, "unlinked").map((record) => record.invoice_number)).toEqual([
+      "OP-002",
+    ]);
   });
 });

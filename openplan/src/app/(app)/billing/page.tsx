@@ -7,7 +7,12 @@ import { InvoiceRecordComposer } from "@/components/billing/invoice-record-compo
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { summarizeBillingInvoiceLinkage, summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import {
+  filterBillingInvoiceRecordsByLinkage,
+  type BillingInvoiceLinkageFilter,
+  summarizeBillingInvoiceLinkage,
+  summarizeBillingInvoiceRecords,
+} from "@/lib/billing/invoice-records";
 import { resolveBillingSupportState } from "@/lib/billing/support";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
 import { createClient } from "@/lib/supabase/server";
@@ -134,6 +139,25 @@ function normalizeJoin<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null;
 }
 
+function normalizeInvoiceLinkageFilter(value: string | string[] | undefined): BillingInvoiceLinkageFilter {
+  return value === "linked" || value === "unlinked" ? value : "all";
+}
+
+function buildBillingHref(params: {
+  workspaceId: string | null;
+  checkoutState: string | null;
+  checkoutPlan: string | null;
+  linkage: BillingInvoiceLinkageFilter;
+}) {
+  const search = new URLSearchParams();
+  if (params.workspaceId) search.set("workspaceId", params.workspaceId);
+  if (params.checkoutState) search.set("checkout", params.checkoutState);
+  if (params.checkoutPlan) search.set("plan", params.checkoutPlan);
+  if (params.linkage !== "all") search.set("linkage", params.linkage);
+  const query = search.toString();
+  return query ? `/billing?${query}` : "/billing";
+}
+
 export default async function BillingPage({
   searchParams,
 }: {
@@ -143,6 +167,7 @@ export default async function BillingPage({
   const checkoutState = typeof resolvedParams.checkout === "string" ? resolvedParams.checkout : null;
   const checkoutPlan = typeof resolvedParams.plan === "string" ? resolvedParams.plan : null;
   const requestedWorkspaceId = typeof resolvedParams.workspaceId === "string" ? resolvedParams.workspaceId : null;
+  const linkageFilter = normalizeInvoiceLinkageFilter(resolvedParams.linkage);
 
   const supabase = await createClient();
   const {
@@ -292,6 +317,7 @@ export default async function BillingPage({
       }));
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
+  const filteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(invoiceRecords, linkageFilter);
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
     id: string;
     name: string;
@@ -542,13 +568,57 @@ export default async function BillingPage({
             <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
           </div>
 
+          {!invoiceRegisterPending ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {([
+                {
+                  value: "all" as const,
+                  label: "All records",
+                  count: invoiceSummary.totalCount,
+                },
+                {
+                  value: "linked" as const,
+                  label: "Award-linked",
+                  count: invoiceLinkageSummary.linkedCount,
+                },
+                {
+                  value: "unlinked" as const,
+                  label: "Unlinked",
+                  count: invoiceLinkageSummary.unlinkedCount,
+                },
+              ] satisfies Array<{ value: BillingInvoiceLinkageFilter; label: string; count: number }>).map((option) => {
+                const active = linkageFilter === option.value;
+                return (
+                  <Link
+                    key={option.value}
+                    href={buildBillingHref({
+                      workspaceId,
+                      checkoutState,
+                      checkoutPlan,
+                      linkage: option.value,
+                    })}
+                    className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                  >
+                    {option.label} · {option.count}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
           {invoiceRegisterPending ? (
             <p className="mt-4 text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
-          ) : invoiceRecords.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">No invoice records recorded yet for this workspace.</p>
+          ) : filteredInvoiceRecords.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              {linkageFilter === "linked"
+                ? "No award-linked invoice records are visible in this workspace yet."
+                : linkageFilter === "unlinked"
+                  ? "No unlinked invoice records are visible in this workspace right now."
+                  : "No invoice records recorded yet for this workspace."}
+            </p>
           ) : (
             <ul className="mt-4 space-y-3">
-              {invoiceRecords.map((invoice) => (
+              {filteredInvoiceRecords.map((invoice) => (
                 <li key={invoice.id} className="border border-border/60 bg-background/70 px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>

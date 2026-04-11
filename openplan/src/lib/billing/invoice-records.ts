@@ -22,6 +22,8 @@ export type BillingInvoiceLinkageRecordLike = BillingInvoiceRecordLike & {
   funding_award_id?: string | null;
 };
 
+export type BillingInvoiceLinkageFilter = "all" | "linked" | "unlinked";
+
 export type BillingInvoiceSummary = {
   totalCount: number;
   draftCount: number;
@@ -167,4 +169,21 @@ export function summarizeBillingInvoiceLinkage(
     linkedPaidNetAmount: linkedSummary.paidNetAmount,
     unlinkedPaidNetAmount: unlinkedSummary.paidNetAmount,
   };
+}
+
+export function filterBillingInvoiceRecordsByLinkage<T extends BillingInvoiceLinkageRecordLike>(
+  records: T[] | null | undefined,
+  filter: BillingInvoiceLinkageFilter
+): T[] {
+  const items = records ?? [];
+
+  if (filter === "linked") {
+    return items.filter((record) => Boolean(record.funding_award_id));
+  }
+
+  if (filter === "unlinked") {
+    return items.filter((record) => !record.funding_award_id);
+  }
+
+  return items;
 }
