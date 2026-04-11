@@ -1034,6 +1034,9 @@ export default async function BillingPage({
 
                     {rowTriageHref ? (
                       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
+                        <Link href={rowTriageHref} className="openplan-inline-label">
+                          Open triage view
+                        </Link>
                         <BillingTriageLinkCopy href={rowTriageHref} />
                         <span className="text-xs text-muted-foreground">
                           Copies a shareable billing triage link for this exact invoice, including project scope, filters, and row anchor.
