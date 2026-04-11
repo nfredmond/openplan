@@ -92,7 +92,7 @@ export default async function PlansPage({
     );
   }
 
-  const [{ data: plansData }, { data: projectsData }, { data: programsData }, { data: fundingOpportunitiesData }, { data: workspaceReportsData }] = await Promise.all([
+  const [{ data: plansData }, { data: projectsData }, { data: programsData }, { data: fundingOpportunitiesData }, { data: workspaceReportsData }, { data: projectFundingProfilesData }] = await Promise.all([
     supabase
       .from("plans")
       .select(
@@ -107,7 +107,9 @@ export default async function PlansPage({
       .order("updated_at", { ascending: false }),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, project_id, updated_at")
+      .select(
+        "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
+      )
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
     supabase
@@ -115,6 +117,10 @@ export default async function PlansPage({
       .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
+    supabase
+      .from("project_funding_profiles")
+      .select("project_id, funding_need_amount, local_match_need_amount")
+      .eq("workspace_id", membership.workspace_id),
   ]);
 
   const plans = (plansData ?? []) as PlanRow[];
@@ -255,11 +261,18 @@ export default async function PlansPage({
       id: string;
       title: string;
       opportunity_status: string | null;
+      decision_state?: string | null;
+      expected_award_amount?: number | string | null;
       closes_at: string | null;
       decision_due_at: string | null;
       program_id: string | null;
       project_id: string | null;
       updated_at: string | null;
+    }>),
+    projectFundingProfiles: ((projectFundingProfilesData ?? []) as Array<{
+      project_id: string;
+      funding_need_amount: number | string | null;
+      local_match_need_amount?: number | string | null;
     }>),
   });
 

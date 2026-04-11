@@ -181,6 +181,7 @@ export default async function ProgramsPage({
     { data: fundingOpportunitiesData },
     { data: workspacePlansData },
     { data: workspaceReportsData },
+    { data: projectFundingProfilesData },
   ] = await Promise.all([
     supabase
       .from("programs")
@@ -205,6 +206,10 @@ export default async function ProgramsPage({
       .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
+    supabase
+      .from("project_funding_profiles")
+      .select("project_id, funding_need_amount, local_match_need_amount")
+      .eq("workspace_id", membership.workspace_id),
   ]);
 
   const programs = (programsData ?? []) as ProgramRow[];
@@ -486,6 +491,11 @@ export default async function ProgramsPage({
       metadata_json: Record<string, unknown> | null;
     }>),
     fundingOpportunities: fundingOpportunities,
+    projectFundingProfiles: ((projectFundingProfilesData ?? []) as Array<{
+      project_id: string;
+      funding_need_amount: number | string | null;
+      local_match_need_amount?: number | string | null;
+    }>),
   });
   const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
     if (!opportunity.program_id) return true;

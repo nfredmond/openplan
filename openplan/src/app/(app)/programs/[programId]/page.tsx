@@ -250,6 +250,7 @@ export default async function ProgramDetailPage({
     explicitProjectsResult,
     workspaceProgramsResult,
     workspaceFundingOpportunitiesResult,
+    workspaceProjectFundingProfilesResult,
   ] = await Promise.all([
       supabase
         .from("plans")
@@ -297,9 +298,15 @@ export default async function ProgramDetailPage({
         .order("updated_at", { ascending: false }),
       supabase
         .from("funding_opportunities")
-        .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, project_id, updated_at")
+        .select(
+          "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
+        )
         .eq("workspace_id", program.workspace_id)
         .order("updated_at", { ascending: false }),
+      supabase
+        .from("project_funding_profiles")
+        .select("project_id, funding_need_amount, local_match_need_amount")
+        .eq("workspace_id", program.workspace_id),
     ]);
 
   const campaignIds = Array.from(
@@ -607,11 +614,18 @@ export default async function ProgramDetailPage({
       id: string;
       title: string;
       opportunity_status: string | null;
+      decision_state?: string | null;
+      expected_award_amount?: number | string | null;
       closes_at: string | null;
       decision_due_at: string | null;
       program_id: string | null;
       project_id: string | null;
       updated_at: string | null;
+    }>),
+    projectFundingProfiles: ((workspaceProjectFundingProfilesResult.data ?? []) as Array<{
+      project_id: string;
+      funding_need_amount: number | string | null;
+      local_match_need_amount?: number | string | null;
     }>),
   });
 
