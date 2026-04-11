@@ -8,11 +8,13 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { ReportCreator } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -140,7 +142,7 @@ export default async function ReportsPage({
     );
   }
 
-  const [{ data: reportsData }, { data: projectsData }, { data: runsData }] =
+  const [{ data: reportsData }, { data: projectsData }, { data: runsData }, operationsSummary] =
     await Promise.all([
       supabase
         .from("reports")
@@ -157,6 +159,10 @@ export default async function ReportsPage({
         .select("id, workspace_id, title, created_at")
         .order("created_at", { ascending: false })
         .limit(30),
+      loadWorkspaceOperationsSummaryForWorkspace(
+        supabase as unknown as WorkspaceOperationsSupabaseLike,
+        membership.workspace_id
+      ),
     ]);
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
@@ -577,11 +583,19 @@ export default async function ReportsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <ReportCreator
-          projects={projectsData ?? []}
-          runs={runsData ?? []}
-          reportGuidanceByProject={reportGuidanceByProject}
-        />
+        <div className="space-y-6">
+          <ReportCreator
+            projects={projectsData ?? []}
+            runs={runsData ?? []}
+            reportGuidanceByProject={reportGuidanceByProject}
+          />
+          <WorkspaceCommandBoard
+            summary={operationsSummary}
+            label="Workspace command board"
+            title="What should move around reports"
+            description="The reports lane now inherits the shared workspace runtime too, so packet refresh pressure, funding timing, and plan/program setup gaps stay visible while operators manage evidence, exports, and governance review."
+          />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
