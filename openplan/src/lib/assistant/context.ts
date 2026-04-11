@@ -12,6 +12,10 @@ import {
 } from "@/lib/scenarios/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
+import {
+  buildWorkspaceOperationsSummary,
+  type WorkspaceOperationsSummary,
+} from "@/lib/operations/workspace-summary";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
 
 export type WorkspaceAssistantContext = {
@@ -37,6 +41,7 @@ export type WorkspaceAssistantContext = {
   }>;
   currentRun: RunAssistantContext["run"] | null;
   baselineRun: RunAssistantContext["baselineRun"];
+  operationsSummary: WorkspaceOperationsSummary;
 };
 
 export type ProjectAssistantContext = {
@@ -364,21 +369,54 @@ async function loadWorkspaceContext(
     return null;
   }
 
-  const [{ data: projectData }, { data: runData }] = await Promise.all([
+  const [projectsResult, runDataResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status, plan_type, delivery_phase, updated_at")
       .eq("workspace_id", workspace.id)
       .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(200),
     supabase
       .from("runs")
       .select("id, title, created_at")
       .eq("workspace_id", workspace.id)
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("plans")
+      .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
+      .eq("workspace_id", workspace.id)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("programs")
+      .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
+      .eq("workspace_id", workspace.id)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("reports")
+      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+      .eq("workspace_id", workspace.id)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("funding_opportunities")
+      .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+      .eq("workspace_id", workspace.id)
+      .order("updated_at", { ascending: false })
+      .limit(200),
   ]);
+
+  const projectData = (projectsResult.data ?? []) as Array<{
+    id: string;
+    name: string;
+    status: string;
+    plan_type: string;
+    delivery_phase: string;
+    updated_at: string;
+  }>;
+  const runData = runDataResult.data ?? [];
 
   const runIds = [target.runId, target.baselineRunId].filter((value): value is string => Boolean(value));
   const { data: runDetails } = runIds.length
@@ -428,23 +466,98 @@ async function loadWorkspaceContext(
   return {
     kind: target.kind === "analysis_studio" ? "analysis_studio" : "workspace",
     workspace,
-    recentProject: projectData
+    recentProject: projectData[0]
       ? {
-          id: projectData.id,
-          name: projectData.name,
-          status: projectData.status,
-          planType: projectData.plan_type,
-          deliveryPhase: projectData.delivery_phase,
-          updatedAt: projectData.updated_at,
+          id: projectData[0].id,
+          name: projectData[0].name,
+          status: projectData[0].status,
+          planType: projectData[0].plan_type,
+          deliveryPhase: projectData[0].delivery_phase,
+          updatedAt: projectData[0].updated_at,
         }
       : null,
-    recentRuns: (runData ?? []).map((run: any) => ({
+    recentRuns: runData.map((run: any) => ({
       id: run.id,
       title: run.title,
       createdAt: run.created_at,
     })),
     currentRun,
     baselineRun,
+    operationsSummary: buildWorkspaceOperationsSummary({
+      projects: projectData.map((project) => ({
+        id: project.id,
+        name: project.name,
+        status: project.status,
+        deliveryPhase: project.delivery_phase,
+        updatedAt: project.updated_at,
+      })),
+      plans: ((plansResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string | null;
+        geography_label: string | null;
+        horizon_year: number | null;
+        project_id: string | null;
+        updated_at: string | null;
+      }>).map((plan) => ({
+        id: plan.id,
+        title: plan.title,
+        status: plan.status,
+        geographyLabel: plan.geography_label,
+        horizonYear: plan.horizon_year,
+        projectId: plan.project_id,
+        updatedAt: plan.updated_at,
+      })),
+      programs: ((programsResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string | null;
+        nomination_due_at: string | null;
+        adoption_target_at: string | null;
+        updated_at: string | null;
+      }>).map((program) => ({
+        id: program.id,
+        title: program.title,
+        status: program.status,
+        nominationDueAt: program.nomination_due_at,
+        adoptionTargetAt: program.adoption_target_at,
+        updatedAt: program.updated_at,
+      })),
+      reports: ((reportsResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        status: string | null;
+        latest_artifact_kind: string | null;
+        generated_at: string | null;
+        updated_at: string | null;
+        metadata_json: Record<string, unknown> | null;
+      }>).map((report) => ({
+        id: report.id,
+        title: report.title,
+        status: report.status,
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+        metadataJson: report.metadata_json,
+      })),
+      fundingOpportunities: ((fundingOpportunitiesResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        opportunity_status: string | null;
+        closes_at: string | null;
+        decision_due_at: string | null;
+        program_id: string | null;
+        updated_at: string | null;
+      }>).map((opportunity) => ({
+        id: opportunity.id,
+        title: opportunity.title,
+        opportunityStatus: opportunity.opportunity_status,
+        closesAt: opportunity.closes_at,
+        decisionDueAt: opportunity.decision_due_at,
+        programId: opportunity.program_id,
+        updatedAt: opportunity.updated_at,
+      })),
+    }),
   };
 }
 

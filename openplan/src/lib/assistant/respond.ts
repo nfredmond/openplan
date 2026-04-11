@@ -46,8 +46,8 @@ function metricLabel(metrics: Record<string, unknown>, key: string): string {
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
   const title = context.kind === "analysis_studio" ? "Analysis Studio copilot" : context.workspace.name ?? "Workspace copilot";
   const summary = context.currentRun
-    ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity and point you at the next operator move.`;
+    ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -58,6 +58,9 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
       : context.recentRuns[0]
         ? `Latest run: ${context.recentRuns[0].title} · ${formatDateTime(context.recentRuns[0].createdAt)}`
         : "No recent analysis runs are visible yet.",
+    context.operationsSummary.nextCommand
+      ? `Command queue: ${context.operationsSummary.nextCommand.title}`
+      : "Command queue is currently clear from the workspace snapshot.",
     context.baselineRun
       ? `Baseline attached: ${context.baselineRun.title}`
       : "No baseline run is currently attached.",
@@ -69,7 +72,11 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
     summary,
     stats: [
       { label: "Workspace", value: context.workspace.name ?? "Current" },
-      { label: "Recent runs", value: `${context.recentRuns.length}` },
+      { label: "Queue", value: `${context.operationsSummary.counts.queueDepth}` },
+      {
+        label: "Packet pressure",
+        value: `${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
+      },
       { label: "Plan", value: context.workspace.plan ?? "Unknown" },
     ],
     facts,
@@ -255,26 +262,33 @@ function buildWorkspaceResponse(
     workflowId,
     label,
     title: `${context.workspace.name ?? "Workspace"} overview`,
-    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.`,
+    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}. The shared command queue is ${context.operationsSummary.posture}.`,
     findings: [
       context.recentProject
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
         : "No current project snapshot is visible from this workspace request.",
-      context.recentRuns.length > 0
-        ? `Recent analysis activity is live: ${context.recentRuns.slice(0, 3).map((run) => run.title).join(" · ")}.`
-        : "No recent analysis runs are visible yet.",
+      context.operationsSummary.nextCommand
+        ? `Next command: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+        : "No immediate command-queue pressure is visible from the workspace snapshot.",
       context.currentRun
         ? `The copilot is also grounded to the current run ${context.currentRun.title}.`
-        : "No current run was passed through the app shell context, so this is a workspace-level brief.",
+        : context.recentRuns.length > 0
+          ? `Recent analysis activity is live: ${context.recentRuns.slice(0, 3).map((run) => run.title).join(" · ")}.`
+          : "No recent analysis runs are visible yet.",
     ],
     nextSteps: [
-      context.currentRun ? "Open the analysis-focus workflow for a run-grounded brief." : "Open Analysis Studio or a project detail page to deepen grounding.",
+      context.operationsSummary.nextCommand
+        ? `Open ${context.operationsSummary.nextCommand.href} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
+        : context.currentRun
+          ? "Open the analysis-focus workflow for a run-grounded brief."
+          : "Open Analysis Studio or a project detail page to deepen grounding.",
       context.recentProject ? `Use ${context.recentProject.name} as the primary operator anchor for the next drill-down.` : "Create or attach a project record before expecting deeper assistant grounding.",
     ],
     evidence: [
       `Plan: ${context.workspace.plan ?? "Unknown"}`,
       `Role: ${context.workspace.role ?? "Unknown"}`,
-      `Recent run count: ${context.recentRuns.length}`,
+      `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
+      `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
     ],
   };
 }

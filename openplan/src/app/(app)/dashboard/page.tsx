@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileText, FolderKanban, Radar, ShieldCheck } from "lucide-react";
 import { RunHistory } from "@/components/runs/RunHistory";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
+import { buildWorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -67,23 +69,146 @@ export default async function DashboardPage() {
   const workspaceId = membership?.workspace_id ?? "";
   const workspaceIdSnippet = workspaceId ? workspaceId.slice(0, 8) : "unavailable";
 
-  const { data: runsData } = workspaceId
-    ? await supabase
-        .from("runs")
-        .select("created_at, metrics, summary_text, report_generated_count")
-        .eq("workspace_id", workspaceId)
-        .order("created_at", { ascending: true })
-        .limit(500)
-    : { data: [] };
+  const [runsResult, projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult] = workspaceId
+    ? await Promise.all([
+        supabase
+          .from("runs")
+          .select("created_at, metrics, summary_text, report_generated_count")
+          .eq("workspace_id", workspaceId)
+          .order("created_at", { ascending: true })
+          .limit(500),
+        supabase
+          .from("projects")
+          .select("id, name, status, delivery_phase, updated_at")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("plans")
+          .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("programs")
+          .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("reports")
+          .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("funding_opportunities")
+          .select("id, title, opportunity_status, closes_at, decision_due_at, program_id, updated_at")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(200),
+      ])
+    : [
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+        { data: [] },
+      ];
+
+  const runsData = runsResult.data ?? [];
 
   const kpis = buildWorkspaceKpis({
     workspaceCreatedAt,
-    runs: (runsData ?? []) as Array<{
+    runs: runsData as Array<{
       created_at: string;
       metrics: Record<string, unknown> | null;
       summary_text: string | null;
       report_generated_count: number | null;
     }>,
+  });
+
+  const operationsSummary = buildWorkspaceOperationsSummary({
+    projects: ((projectsResult.data ?? []) as Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      delivery_phase: string | null;
+      updated_at: string | null;
+    }>).map((project) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      deliveryPhase: project.delivery_phase,
+      updatedAt: project.updated_at,
+    })),
+    plans: ((plansResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      geography_label: string | null;
+      horizon_year: number | null;
+      project_id: string | null;
+      updated_at: string | null;
+    }>).map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      status: plan.status,
+      geographyLabel: plan.geography_label,
+      horizonYear: plan.horizon_year,
+      projectId: plan.project_id,
+      updatedAt: plan.updated_at,
+    })),
+    programs: ((programsResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string | null;
+      nomination_due_at: string | null;
+      adoption_target_at: string | null;
+      updated_at: string | null;
+    }>).map((program) => ({
+      id: program.id,
+      title: program.title,
+      status: program.status,
+      nominationDueAt: program.nomination_due_at,
+      adoptionTargetAt: program.adoption_target_at,
+      updatedAt: program.updated_at,
+    })),
+    reports: ((reportsResult.data ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      latest_artifact_kind: string | null;
+      generated_at: string | null;
+      updated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>).map((report) => ({
+      id: report.id,
+      title: report.title,
+      status: report.status,
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+      metadataJson: report.metadata_json,
+    })),
+    fundingOpportunities: ((fundingOpportunitiesResult.data ?? []) as Array<{
+      id: string;
+      title: string;
+      opportunity_status: string | null;
+      closes_at: string | null;
+      decision_due_at: string | null;
+      program_id: string | null;
+      updated_at: string | null;
+    }>).map((opportunity) => ({
+      id: opportunity.id,
+      title: opportunity.title,
+      opportunityStatus: opportunity.opportunity_status,
+      closesAt: opportunity.closes_at,
+      decisionDueAt: opportunity.decision_due_at,
+      programId: opportunity.program_id,
+      updatedAt: opportunity.updated_at,
+    })),
   });
 
   const actions = [
@@ -245,12 +370,58 @@ export default async function DashboardPage() {
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Current baseline</p>
-              <h2 className="module-section-title">What is already live</h2>
-              <p className="module-section-description">
-                This is the main day-to-day workspace for active planning work.
+              <p className="module-section-label">Operations command board</p>
+              <h2 className="module-section-title">What the workspace should do next</h2>
+              <p className="module-section-description">{operationsSummary.detail}</p>
+            </div>
+            <StatusBadge tone={operationsSummary.posture === "attention" ? "warning" : operationsSummary.posture === "active" ? "info" : "success"}>
+              {operationsSummary.posture === "attention" ? "Attention" : operationsSummary.posture === "active" ? "Active" : "Stable"}
+            </StatusBadge>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="module-subpanel">
+              <p className="module-summary-label">Packet pressure</p>
+              <p className="module-summary-value">
+                {operationsSummary.counts.reportRefreshRecommended + operationsSummary.counts.reportNoPacket}
+              </p>
+              <p className="module-summary-detail">
+                {operationsSummary.counts.reportRefreshRecommended} refresh recommended, {operationsSummary.counts.reportNoPacket} without packets.
               </p>
             </div>
+            <div className="module-subpanel">
+              <p className="module-summary-label">Funding windows</p>
+              <p className="module-summary-value">{operationsSummary.counts.openFundingOpportunities}</p>
+              <p className="module-summary-detail">
+                {operationsSummary.counts.closingSoonFundingOpportunities} closing within 14 days.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {operationsSummary.commandQueue.length > 0 ? (
+              operationsSummary.commandQueue.map((item) => (
+                <Link key={item.key} href={item.href} className="module-subpanel block transition-colors hover:border-primary/35">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                    </div>
+                    <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.badges.map((badge) => (
+                      <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
+                        {badge.label}
+                        {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+                      </StatusBadge>
+                    ))}
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="module-subpanel text-sm text-muted-foreground">No immediate queue pressure is visible from the current workspace snapshot.</div>
+            )}
           </div>
 
           <div className="mt-5 grid gap-3">
