@@ -42,6 +42,10 @@ type RunRow = {
   created_at?: string | null;
 };
 
+export function looksLikePendingScenarioSpineSchema(message: string | undefined): boolean {
+  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+}
+
 type MaybeSingleResult<T> = PromiseLike<{
   data: T | null;
   error: QueryError;
