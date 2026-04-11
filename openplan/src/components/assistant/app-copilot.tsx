@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Bot, Loader2, Send, Sparkles, User, X } from "lucide-react";
+import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Loader2, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   formatAssistantOperationActionClass,
@@ -15,6 +15,7 @@ import {
   type AssistantQuickLink,
   type AssistantResponse,
   type AssistantAction,
+  type AssistantOperationGroupKey,
 } from "@/lib/assistant/catalog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,11 +33,35 @@ type ConversationEntry =
   | { id: string; role: "user"; type: "prompt"; text: string };
 
 const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
+const OPERATION_GROUP_STATE_STORAGE_KEY = "openplan:planner-agent:operation-group-state";
 
 type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
+type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
+
+const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
+  act_now: true,
+  review_soon: true,
+  support_context: false,
+};
 
 function isOperationFilter(value: string | null): value is OperationFilter {
   return value === "all" || value === "act_now" || value === "review_soon" || value === "support_context";
+}
+
+function parseOperationGroupState(value: string | null): OperationGroupState {
+  if (!value) return DEFAULT_OPERATION_GROUP_STATE;
+
+  try {
+    const parsed = JSON.parse(value) as Partial<Record<AssistantOperationGroupKey, unknown>>;
+    return {
+      act_now: typeof parsed.act_now === "boolean" ? parsed.act_now : DEFAULT_OPERATION_GROUP_STATE.act_now,
+      review_soon: typeof parsed.review_soon === "boolean" ? parsed.review_soon : DEFAULT_OPERATION_GROUP_STATE.review_soon,
+      support_context:
+        typeof parsed.support_context === "boolean" ? parsed.support_context : DEFAULT_OPERATION_GROUP_STATE.support_context,
+    };
+  } catch {
+    return DEFAULT_OPERATION_GROUP_STATE;
+  }
 }
 
 function actionLabel(action: AssistantAction) {
@@ -94,6 +119,10 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     const saved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
     return isOperationFilter(saved) ? saved : "all";
   });
+  const [groupState, setGroupState] = useState<OperationGroupState>(() => {
+    if (typeof window === "undefined") return DEFAULT_OPERATION_GROUP_STATE;
+    return parseOperationGroupState(window.localStorage.getItem(OPERATION_GROUP_STATE_STORAGE_KEY));
+  });
   const groups = groupAssistantOperations(links);
   const summary = summarizeAssistantOperations(links);
   const visibleGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
@@ -102,6 +131,11 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(OPERATION_FILTER_STORAGE_KEY, filter);
   }, [filter]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_GROUP_STATE_STORAGE_KEY, JSON.stringify(groupState));
+  }, [groupState]);
 
   return (
     <div className="space-y-4">
@@ -159,68 +193,93 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
           })}
         </div>
       </div>
-      {visibleGroups.map((group) => (
-        <section key={group.key} className="space-y-2">
-          <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{group.label}</p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-300/74">{group.description}</p>
-          </div>
+      {visibleGroups.map((group) => {
+        const expanded = groupState[group.key] ?? DEFAULT_OPERATION_GROUP_STATE[group.key];
+        return (
+          <section key={group.key} className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setGroupState((current) => ({ ...current, [group.key]: !expanded }))}
+              className="flex w-full items-start justify-between gap-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3 text-left transition hover:border-emerald-300/22 hover:bg-emerald-400/8"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {expanded ? <ChevronDown className="h-4 w-4 text-slate-300/82" /> : <ChevronRight className="h-4 w-4 text-slate-300/82" />}
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{group.label}</p>
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
+                    {group.items.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300/74">{group.description}</p>
+                {!expanded ? (
+                  <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                    {group.items.length} operation{group.items.length === 1 ? "" : "s"} hidden
+                  </p>
+                ) : null}
+              </div>
+              <StatusBadge tone={expanded ? "info" : "neutral"} className="border-white/10 bg-white/[0.05] text-slate-100">
+                {expanded ? "Expanded" : "Collapsed"}
+              </StatusBadge>
+            </button>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            {group.items.map((link) => {
-              const badge = quickLinkBadge(link);
-              const priorityBadge = quickLinkPriorityBadge(link);
-              const urgency = resolveAssistantOperationUrgency(link);
-              return (
-                <Link
-                  key={`${group.key}-${link.label}-${link.href}`}
-                  href={link.href}
-                  className={`rounded-[20px] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-50">{link.label}</p>
-                      <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
-                        {formatAssistantOperationActionClass(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"} · {urgency}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${priorityBadge.className}`}
-                        >
-                          {priorityBadge.label}
-                        </span>
-                        {link.statusLabel ? (
-                          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
-                            {link.statusLabel}
-                          </span>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-xs leading-relaxed text-slate-200/88">
-                        {link.reason ?? "Open this surface to continue the grounded operator workflow."}
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
-                        {link.auditNote ?? "Operator review is still expected in the destination surface."}
-                      </p>
-                    </div>
-                    <span
-                      className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+            {expanded ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {group.items.map((link) => {
+                  const badge = quickLinkBadge(link);
+                  const priorityBadge = quickLinkPriorityBadge(link);
+                  const urgency = resolveAssistantOperationUrgency(link);
+                  return (
+                    <Link
+                      key={`${group.key}-${link.label}-${link.href}`}
+                      href={link.href}
+                      className={`rounded-[20px] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
                     >
-                      {badge.label}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
-                    <div className="flex items-center gap-1">
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                      {link.id}
-                    </div>
-                    {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-50">{link.label}</p>
+                          <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                            {formatAssistantOperationActionClass(link)} · {link.executionMode === "navigate" ? "Navigate" : "Agent action"} · {urgency}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${priorityBadge.className}`}
+                            >
+                              {priorityBadge.label}
+                            </span>
+                            {link.statusLabel ? (
+                              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-100">
+                                {link.statusLabel}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-2 text-xs leading-relaxed text-slate-200/88">
+                            {link.reason ?? "Open this surface to continue the grounded operator workflow."}
+                          </p>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
+                            {link.auditNote ?? "Operator review is still expected in the destination surface."}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+                        >
+                          {badge.label}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
+                        <div className="flex items-center gap-1">
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                          {link.id}
+                        </div>
+                        {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </section>
+        );
+      })}
     </div>
   );
 }
