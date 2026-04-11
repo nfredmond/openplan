@@ -64,6 +64,14 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      kind: "update_funding_opportunity_decision";
+      opportunityId: string;
+      decisionState: "monitor" | "pursue" | "skip";
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

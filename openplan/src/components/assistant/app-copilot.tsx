@@ -1564,6 +1564,44 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         }
         return;
       }
+
+      if (executeAction.kind === "update_funding_opportunity_decision") {
+        const updateResponse = await fetch(`/api/funding-opportunities/${executeAction.opportunityId}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            decisionState: executeAction.decisionState,
+          }),
+        });
+
+        if (!updateResponse.ok) {
+          const payload = (await updateResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to update funding opportunity decision");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
     } catch (executeError) {
       const failedStatus: OperationInvocationState = {
         linkId: link.id,

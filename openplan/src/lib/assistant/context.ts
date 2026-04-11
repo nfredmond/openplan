@@ -96,6 +96,14 @@ export type ProjectAssistantContext = {
     pursueCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
+    leadOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
   };
   stageGateSummary: ReturnType<typeof buildProjectStageGateSummary>;
   linkedDatasets: Array<{
@@ -261,6 +269,14 @@ export type ProgramAssistantContext = {
     pursueCount: number;
     fundingNeedAmount: number | null;
     gapAmount: number | null;
+    leadOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
   };
   packetSummary: {
     linkedReportCount: number;
@@ -729,7 +745,7 @@ async function loadProjectContext(
       .maybeSingle(),
     supabase
       .from("funding_opportunities")
-      .select("id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at")
+      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("project_id", project.id),
   ]);
 
@@ -750,13 +766,30 @@ async function loadProjectContext(
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as Array<{
         id: string;
+        title: string;
         opportunity_status: string | null;
         decision_state: string | null;
         expected_award_amount?: number | null;
         closes_at: string | null;
         decision_due_at: string | null;
+        updated_at: string | null;
       }>);
   const fundingStackSummary = buildProjectFundingStackSummary(projectFundingProfile, [], fundingOpportunities);
+  const leadFundingOpportunity = [...fundingOpportunities].sort((left, right) => {
+    const leftDecisionPriority = left.decision_state === "skip" ? 2 : left.decision_state === "pursue" ? 1 : 0;
+    const rightDecisionPriority = right.decision_state === "skip" ? 2 : right.decision_state === "pursue" ? 1 : 0;
+    if (leftDecisionPriority !== rightDecisionPriority) return leftDecisionPriority - rightDecisionPriority;
+    const leftStatusPriority = left.opportunity_status === "open" ? 0 : left.opportunity_status === "upcoming" ? 1 : 2;
+    const rightStatusPriority = right.opportunity_status === "open" ? 0 : right.opportunity_status === "upcoming" ? 1 : 2;
+    if (leftStatusPriority !== rightStatusPriority) return leftStatusPriority - rightStatusPriority;
+    const leftDueAt = left.closes_at ?? left.decision_due_at;
+    const rightDueAt = right.closes_at ?? right.decision_due_at;
+    if (leftDueAt && rightDueAt) {
+      const dueDelta = new Date(leftDueAt).getTime() - new Date(rightDueAt).getTime();
+      if (dueDelta !== 0) return dueDelta;
+    }
+    return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+  })[0] ?? null;
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
   const datasetsResult = linkedDatasetIds.length
@@ -847,6 +880,16 @@ async function loadProjectContext(
       pursueCount: fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
+      leadOpportunity: leadFundingOpportunity
+        ? {
+            id: leadFundingOpportunity.id,
+            title: leadFundingOpportunity.title,
+            status: leadFundingOpportunity.opportunity_status,
+            decisionState: leadFundingOpportunity.decision_state,
+            closesAt: leadFundingOpportunity.closes_at,
+            decisionDueAt: leadFundingOpportunity.decision_due_at,
+          }
+        : null,
     },
     stageGateSummary: buildProjectStageGateSummary(
       ((stageGatesResult.data ?? []) as Array<{
@@ -1243,7 +1286,7 @@ async function loadProgramContext(
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("funding_opportunities")
-      .select("id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at")
+      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
       .eq("program_id", program.id),
     program.project_id
       ? supabase
@@ -1267,11 +1310,13 @@ async function loadProgramContext(
   const engagementCampaignCount = explicitCampaignCount + (campaignsResult.data?.length ?? 0);
   const fundingOpportunities = (fundingOpportunitiesResult.data ?? []) as Array<{
     id: string;
+    title: string;
     opportunity_status: string | null;
     decision_state: string | null;
     expected_award_amount?: number | null;
     closes_at: string | null;
     decision_due_at: string | null;
+    updated_at: string | null;
   }>;
   const projectFundingProfile = projectFundingProfileResult.data as {
     project_id: string;
@@ -1288,6 +1333,21 @@ async function loadProgramContext(
     return days !== null && days <= 14;
   }).length;
   const fundingPursueCount = fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
+  const leadFundingOpportunity = [...fundingOpportunities].sort((left, right) => {
+    const leftDecisionPriority = left.decision_state === "skip" ? 2 : left.decision_state === "pursue" ? 1 : 0;
+    const rightDecisionPriority = right.decision_state === "skip" ? 2 : right.decision_state === "pursue" ? 1 : 0;
+    if (leftDecisionPriority !== rightDecisionPriority) return leftDecisionPriority - rightDecisionPriority;
+    const leftStatusPriority = left.opportunity_status === "open" ? 0 : left.opportunity_status === "upcoming" ? 1 : 2;
+    const rightStatusPriority = right.opportunity_status === "open" ? 0 : right.opportunity_status === "upcoming" ? 1 : 2;
+    if (leftStatusPriority !== rightStatusPriority) return leftStatusPriority - rightStatusPriority;
+    const leftDueAt = left.closes_at ?? left.decision_due_at;
+    const rightDueAt = right.closes_at ?? right.decision_due_at;
+    if (leftDueAt && rightDueAt) {
+      const dueDelta = new Date(leftDueAt).getTime() - new Date(rightDueAt).getTime();
+      if (dueDelta !== 0) return dueDelta;
+    }
+    return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+  })[0] ?? null;
 
   const explicitReportIds = links.filter((link) => link.link_type === "report").map((link) => link.linked_id);
   const explicitReportsResult = explicitReportIds.length
@@ -1394,6 +1454,16 @@ async function loadProgramContext(
       pursueCount: fundingPursueCount,
       fundingNeedAmount: projectFundingProfile?.funding_need_amount ?? null,
       gapAmount: fundingStackSummary.hasTargetNeed ? fundingStackSummary.unfundedAfterLikelyAmount : null,
+      leadOpportunity: leadFundingOpportunity
+        ? {
+            id: leadFundingOpportunity.id,
+            title: leadFundingOpportunity.title,
+            status: leadFundingOpportunity.opportunity_status,
+            decisionState: leadFundingOpportunity.decision_state,
+            closesAt: leadFundingOpportunity.closes_at,
+            decisionDueAt: leadFundingOpportunity.decision_due_at,
+          }
+        : null,
     },
     packetSummary: {
       linkedReportCount: sortedLinkedReports.length,

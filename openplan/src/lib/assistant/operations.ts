@@ -233,6 +233,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
 
 function buildProjectOperations(context: ProjectAssistantContext): AssistantQuickLink[] {
   const projectGapAmount = context.fundingSummary.gapAmount;
+  const leadFundingOpportunity = context.fundingSummary.leadOpportunity;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -277,6 +278,27 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             notes: "Planner Agent created this funding profile anchor. Add funding need and local match next.",
             postActionWorkflowId: "project-funding",
             postActionPrompt: "A project funding profile anchor was created. What should be filled in next before this funding gap can be measured honestly?",
+            postActionPromptLabel: "Review project funding posture",
+          },
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && leadFundingOpportunity
+      ? quickLink("project-advance-funding-opportunity", "Mark lead opportunity pursue", `/projects/${context.project.id}#project-funding-opportunities`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: leadFundingOpportunity.status === "open" ? "Decision needed" : "Queue next grant",
+          reason: `No linked opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next grant decision to advance from the project lane.`,
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.advance_funding_opportunity",
+          auditNote: "Updates the lead funding opportunity decision through the existing audited route so the project has a real pursue posture.",
+          executeAction: {
+            kind: "update_funding_opportunity_decision",
+            opportunityId: leadFundingOpportunity.id,
+            decisionState: "pursue",
+            postActionWorkflowId: "project-funding",
+            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this project funding lane?`,
             postActionPromptLabel: "Review project funding posture",
           },
         })
@@ -649,6 +671,7 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
 
 function buildProgramOperations(context: ProgramAssistantContext): AssistantQuickLink[] {
   const programGapAmount = context.fundingSummary.gapAmount;
+  const leadFundingOpportunity = context.fundingSummary.leadOpportunity;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -695,6 +718,27 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             notes: `Planner Agent created this funding profile anchor from ${context.program.title}. Add funding need and local match next.`,
             postActionWorkflowId: "program-funding",
             postActionPrompt: "A project funding profile anchor was created for this package. What should be filled in next before the funding gap can be measured honestly?",
+            postActionPromptLabel: "Review package funding posture",
+          },
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && leadFundingOpportunity
+      ? quickLink("program-advance-funding-opportunity", "Mark lead opportunity pursue", `/programs/${context.program.id}#program-funding-opportunities`, {
+          targetKind: "program",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: leadFundingOpportunity.status === "open" ? "Decision needed" : "Queue next grant",
+          reason: `No linked package opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next funding decision to advance from this package.`,
+          approval: "approval_required",
+          auditEvent: "assistant.operation.program.advance_funding_opportunity",
+          auditNote: "Updates the lead funding opportunity decision through the existing audited route so this package has a real pursue posture.",
+          executeAction: {
+            kind: "update_funding_opportunity_decision",
+            opportunityId: leadFundingOpportunity.id,
+            decisionState: "pursue",
+            postActionWorkflowId: "program-funding",
+            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this package funding lane?`,
             postActionPromptLabel: "Review package funding posture",
           },
         })

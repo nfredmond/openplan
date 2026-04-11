@@ -148,9 +148,12 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but this project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this project yet.",
+      context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
+        ? `No opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
+        : null,
       `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
       `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.`,
-    ],
+    ].filter(Boolean) as string[],
     operatorCue: context.stageGateSummary.blockedGate
       ? {
           label: "Current runtime cue",
@@ -359,10 +362,13 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but the linked project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this program yet.",
+      context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
+        ? `No package opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
+        : null,
       context.packetSummary.recommendedReport
         ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No linked report packet is available yet for this program.",
-    ],
+    ].filter(Boolean) as string[],
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",
@@ -735,6 +741,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
           : needsFundingSourcing
             ? "No funding opportunities are visible yet even though the project funding need is already recorded."
             : "No open or upcoming funding opportunities are visible on this project yet.",
+        context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
+          ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
+          : "At least one linked opportunity is already marked pursue, or no opportunity record exists yet.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
@@ -1252,6 +1261,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
           : needsFundingSourcing
             ? "No funding opportunities are visible yet even though the linked project funding need is already recorded."
             : "No open or upcoming funding opportunities are visible on this package yet.",
+        context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
+          ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
+          : "At least one linked package opportunity is already marked pursue, or no opportunity record exists yet.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
