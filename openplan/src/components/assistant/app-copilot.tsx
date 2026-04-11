@@ -31,6 +31,14 @@ type ConversationEntry =
   | { id: string; role: "assistant"; type: "response"; response: AssistantResponse }
   | { id: string; role: "user"; type: "prompt"; text: string };
 
+const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
+
+type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
+
+function isOperationFilter(value: string | null): value is OperationFilter {
+  return value === "all" || value === "act_now" || value === "review_soon" || value === "support_context";
+}
+
 function actionLabel(action: AssistantAction) {
   return action.label;
 }
@@ -81,10 +89,19 @@ function operationCardClasses(link: AssistantQuickLink) {
 }
 
 function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
-  const [filter, setFilter] = useState<"all" | "act_now" | "review_soon" | "support_context">("all");
+  const [filter, setFilter] = useState<OperationFilter>(() => {
+    if (typeof window === "undefined") return "all";
+    const saved = window.localStorage.getItem(OPERATION_FILTER_STORAGE_KEY);
+    return isOperationFilter(saved) ? saved : "all";
+  });
   const groups = groupAssistantOperations(links);
   const summary = summarizeAssistantOperations(links);
   const visibleGroups = filter === "all" ? groups : groups.filter((group) => group.key === filter);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_FILTER_STORAGE_KEY, filter);
+  }, [filter]);
 
   return (
     <div className="space-y-4">
@@ -128,7 +145,7 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
               <button
                 key={option.key}
                 type="button"
-                onClick={() => setFilter(option.key as "all" | "act_now" | "review_soon" | "support_context")}
+                onClick={() => setFilter(option.key as OperationFilter)}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
                   active
                     ? "border-emerald-300/35 bg-emerald-400/14 text-white"
