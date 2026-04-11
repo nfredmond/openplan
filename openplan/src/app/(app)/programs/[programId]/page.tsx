@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
+import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -39,7 +40,14 @@ import {
 } from "@/lib/models/catalog";
 import { formatPlanStatusLabel, formatPlanTypeLabel, planStatusTone } from "@/lib/plans/catalog";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
-import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
+import {
+  formatReportStatusLabel,
+  formatReportTypeLabel,
+  getReportNavigationHref,
+  getReportPacketFreshness,
+  getReportPacketPriority,
+  reportStatusTone,
+} from "@/lib/reports/catalog";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -335,6 +343,11 @@ export default async function ProgramDetailPage({
     }>).map((report) => ({
       ...report,
       artifactCount: artifactCountsByReport.get(report.id) ?? 0,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
     })),
     ((explicitReportsResult.data ?? []) as Array<{
       id: string;
@@ -349,8 +362,22 @@ export default async function ProgramDetailPage({
     }>).map((report) => ({
       ...report,
       artifactCount: artifactCountsByReport.get(report.id) ?? 0,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
     }))
-  );
+  ).sort((left, right) => {
+    const freshnessPriority =
+      getReportPacketPriority(left.packetFreshness.label) -
+      getReportPacketPriority(right.packetFreshness.label);
+    if (freshnessPriority !== 0) {
+      return freshnessPriority;
+    }
+
+    return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+  });
 
   const linkedCampaigns = mergeRecords(
     ((projectCampaignsResult.data ?? []) as Array<{
@@ -523,6 +550,24 @@ export default async function ProgramDetailPage({
     engagementCampaignCount: linkedCampaigns.length,
     approvedEngagementItemCount: linkedCampaigns.reduce((sum, item) => sum + item.approvedItemCount, 0),
     pendingEngagementItemCount: linkedCampaigns.reduce((sum, item) => sum + item.pendingItemCount, 0),
+  });
+  const programReportAttentionCount = linkedReports.filter(
+    (report) => report.packetFreshness.label === "Refresh recommended" || report.packetFreshness.label === "No packet"
+  ).length;
+  const programReportQueueItems = linkedReports.slice(0, 4).map((report) => {
+    const badges: Array<{ label: string; value?: string | number | null }> = [
+      { label: report.packetFreshness.label },
+      { label: "Artifacts", value: report.artifactCount },
+    ];
+
+    return {
+      key: report.id,
+      href: getReportNavigationHref(report.id, report.packetFreshness.label),
+      title: report.title ?? "Untitled report",
+      subtitle: `${linkBasisLabel(report.linkBasis)} · ${formatReportTypeLabel(report.report_type)}`,
+      detail: report.packetFreshness.detail,
+      badges,
+    };
   });
 
   return (
@@ -936,14 +981,28 @@ export default async function ProgramDetailPage({
                   <EmptyState title="No packet outputs linked" description="Attach reports or packet records that support the programming narrative." />
                 ) : (
                   <div className="space-y-3">
+                    <ReportPacketCommandQueue
+                      title="Program packet queue"
+                      description="The next report packet actions supporting this programming record."
+                      items={programReportQueueItems}
+                      emptyLabel="No queued packet work is linked to this program right now."
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      {programReportAttentionCount > 0 ? (
+                        <StatusBadge tone="warning">{programReportAttentionCount} need attention</StatusBadge>
+                      ) : (
+                        <StatusBadge tone="success">Packets current</StatusBadge>
+                      )}
+                    </div>
                     {linkedReports.map((report) => (
-                      <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
+                      <Link key={report.id} href={getReportNavigationHref(report.id, report.packetFreshness.label)} className="module-record-row is-interactive group block">
                         <div className="module-record-head">
                           <div className="module-record-main">
                             <div className="module-record-kicker">
                               <StatusBadge tone="neutral">{linkBasisLabel(report.linkBasis)}</StatusBadge>
                               <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
                               <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
+                              <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                             </div>
                             <div className="space-y-1.5">
                               <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">
@@ -957,6 +1016,7 @@ export default async function ProgramDetailPage({
                                 <MetaItem>
                                   {report.generated_at ? `Generated ${formatProgramDateTime(report.generated_at)}` : "Not generated"}
                                 </MetaItem>
+                                <MetaItem>{report.packetFreshness.detail}</MetaItem>
                               </MetaList>
                             </div>
                           </div>
