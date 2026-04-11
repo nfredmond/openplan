@@ -38,11 +38,13 @@ const OPERATION_VIEW_MODE_STORAGE_KEY = "openplan:planner-agent:operation-view-m
 const OPERATION_PINNED_STORAGE_KEY = "openplan:planner-agent:operation-pinned-state";
 const OPERATION_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-snoozed-state";
 const OPERATION_SHOW_SNOOZED_STORAGE_KEY = "openplan:planner-agent:operation-show-snoozed";
+const OPERATION_NOTE_STORAGE_KEY = "openplan:planner-agent:operation-notes";
 
 type OperationFilter = "all" | "act_now" | "review_soon" | "support_context";
 type OperationViewMode = "full" | "triage";
 type OperationGroupState = Record<AssistantOperationGroupKey, boolean>;
 type OperationPreferenceState = Record<string, boolean>;
+type OperationNotesState = Record<string, string>;
 
 const DEFAULT_OPERATION_GROUP_STATE: OperationGroupState = {
   act_now: true,
@@ -80,6 +82,17 @@ function parseOperationPreferenceState(value: string | null): OperationPreferenc
   try {
     const parsed = JSON.parse(value) as Record<string, unknown>;
     return Object.fromEntries(Object.entries(parsed).filter((entry): entry is [string, boolean] => typeof entry[1] === "boolean"));
+  } catch {
+    return {};
+  }
+}
+
+function parseOperationNotesState(value: string | null): OperationNotesState {
+  if (!value) return {};
+
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    return Object.fromEntries(Object.entries(parsed).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
   } catch {
     return {};
   }
@@ -161,6 +174,10 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return {};
     return parseOperationPreferenceState(window.localStorage.getItem(OPERATION_SNOOZED_STORAGE_KEY));
   });
+  const [operationNotes, setOperationNotes] = useState<OperationNotesState>(() => {
+    if (typeof window === "undefined") return {};
+    return parseOperationNotesState(window.localStorage.getItem(OPERATION_NOTE_STORAGE_KEY));
+  });
   const [showSnoozed, setShowSnoozed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(OPERATION_SHOW_SNOOZED_STORAGE_KEY) === "true";
@@ -183,6 +200,17 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
   const summary = summarizeAssistantOperations(links);
   const pinnedCount = links.filter((link) => pinnedState[getOperationStorageKey(link)]).length;
   const snoozedCount = links.filter((link) => snoozedState[getOperationStorageKey(link)]).length;
+  const shapedOperations = links
+    .filter((link) => pinnedState[getOperationStorageKey(link)] || snoozedState[getOperationStorageKey(link)])
+    .sort((a, b) => {
+      const aPinned = pinnedState[getOperationStorageKey(a)] ? 1 : 0;
+      const bPinned = pinnedState[getOperationStorageKey(b)] ? 1 : 0;
+      if (aPinned !== bPinned) return bPinned - aPinned;
+      const aSnoozed = snoozedState[getOperationStorageKey(a)] ? 1 : 0;
+      const bSnoozed = snoozedState[getOperationStorageKey(b)] ? 1 : 0;
+      if (aSnoozed !== bSnoozed) return bSnoozed - aSnoozed;
+      return a.label.localeCompare(b.label);
+    });
   const filteredGroups = (filter === "all" ? groups : groups.filter((group) => group.key === filter)).filter(
     (group) => group.items.length > 0
   );
@@ -213,6 +241,11 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(OPERATION_SNOOZED_STORAGE_KEY, JSON.stringify(snoozedState));
   }, [snoozedState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(OPERATION_NOTE_STORAGE_KEY, JSON.stringify(operationNotes));
+  }, [operationNotes]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -321,6 +354,124 @@ function QuickLinkGrid({ links }: { links: AssistantQuickLink[] }) {
           </span>
         </div>
       </div>
+      {shapedOperations.length ? (
+        <div className="rounded-[22px] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Shaped operations</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+                Local queue-shaping decisions stay visible here so pinned and snoozed items carry operator context, not just hidden state.
+              </p>
+            </div>
+            <StatusBadge tone="info" className="border-white/10 bg-white/[0.05] text-slate-100">
+              {shapedOperations.length} tracked
+            </StatusBadge>
+          </div>
+
+          <div className="mt-3 space-y-3">
+            {shapedOperations.map((link) => {
+              const operationKey = getOperationStorageKey(link);
+              const note = operationNotes[operationKey] ?? "";
+              const isPinned = Boolean(pinnedState[operationKey]);
+              const isSnoozed = Boolean(snoozedState[operationKey]);
+
+              return (
+                <div key={`shaped-${operationKey}`} className="rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-50">{link.label}</p>
+                      <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                        {formatAssistantOperationActionClass(link)} · {resolveAssistantOperationUrgency(link)}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {isPinned ? (
+                          <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-fuchsia-100">
+                            Pinned
+                          </span>
+                        ) : null}
+                        {isSnoozed ? (
+                          <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-sky-100">
+                            Snoozed
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <Link
+                      href={link.href}
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white"
+                    >
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      Open
+                    </Link>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPinnedState((current) => ({
+                          ...current,
+                          [operationKey]: !isPinned,
+                        }))
+                      }
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
+                        isPinned
+                          ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
+                          : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                      }`}
+                    >
+                      <Pin className="h-3 w-3" />
+                      {isPinned ? "Unpin" : "Pin"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSnoozedState((current) => ({
+                          ...current,
+                          [operationKey]: !isSnoozed,
+                        }))
+                      }
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] transition ${
+                        isSnoozed
+                          ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
+                          : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+                      }`}
+                    >
+                      {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                      {isSnoozed ? "Resume" : "Snooze"}
+                    </button>
+                  </div>
+
+                  <div className="mt-3">
+                    <p className="mb-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">Operator note</p>
+                    <Textarea
+                      value={note}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setOperationNotes((current) => {
+                          if (!nextValue.trim()) {
+                            const next = { ...current };
+                            delete next[operationKey];
+                            return next;
+                          }
+                          return {
+                            ...current,
+                            [operationKey]: nextValue,
+                          };
+                        });
+                      }}
+                      placeholder="Why is this pinned or snoozed?"
+                      rows={2}
+                      className="min-h-[70px] border-white/10 bg-white/[0.04] text-sm text-slate-100 placeholder:text-slate-500"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       {!visibleGroups.length ? (
         <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
           No operations match the current board mode and filter.
