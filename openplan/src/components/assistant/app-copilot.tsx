@@ -11,6 +11,7 @@ import {
   resolveAssistantOperationUrgency,
   resolveAssistantTarget,
   summarizeAssistantOperations,
+  type AssistantBoardStateCue,
   type AssistantPreview,
   type AssistantQuickLink,
   type AssistantResponse,
@@ -368,6 +369,25 @@ function operationCardClasses(link: AssistantQuickLink) {
     return "border-emerald-300/20 bg-emerald-400/8 hover:border-emerald-300/34 hover:bg-emerald-400/12";
   }
   return "border-white/10 bg-white/[0.04] hover:border-emerald-300/26 hover:bg-emerald-400/10";
+}
+
+function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
+  return (
+    <div className="rounded-[20px] border border-sky-300/16 bg-sky-400/10 px-4 py-3 shadow-[0_14px_28px_rgba(56,189,248,0.08)]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-sky-100/76">{cue.label}</p>
+      <p className="mt-2 text-sm font-semibold text-white">{cue.title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{cue.detail}</p>
+      {cue.items?.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {cue.items.map((item) => (
+            <StatusBadge key={item} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+              {item}
+            </StatusBadge>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function QuickLinkGrid({
@@ -1236,6 +1256,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{preview.operatorCue.detail}</p>
                 </div>
               ) : null}
+
+              {preview?.boardStateCue ? (
+                <div className="mt-4">
+                  <BoardStateCueCard cue={preview.boardStateCue} />
+                </div>
+              ) : null}
             </div>
 
             <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto]">
@@ -1302,6 +1328,11 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             Planning context
                           </div>
                           <p className="text-sm leading-relaxed text-slate-100">{introPreview.summary}</p>
+                          {introPreview.boardStateCue ? (
+                            <div className="mt-3">
+                              <BoardStateCueCard cue={introPreview.boardStateCue} />
+                            </div>
+                          ) : null}
                           <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
                             {introPreview.facts.map((fact) => (
                               <li key={fact} className="rounded-2xl border border-white/8 bg-black/10 px-3.5 py-2.5">
@@ -1330,6 +1361,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         <p className="mt-2 text-sm leading-relaxed text-slate-300/88">{message.response.summary}</p>
 
                         <div className="mt-4 grid gap-4">
+                          {message.response.boardStateCue ? <BoardStateCueCard cue={message.response.boardStateCue} /> : null}
+
                           <section>
                             <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Findings</p>
                             <ul className="space-y-2 text-sm text-slate-200/88">

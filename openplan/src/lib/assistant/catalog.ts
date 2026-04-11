@@ -62,17 +62,21 @@ export type AssistantOperationSummary = {
   approvalRequired: number;
 };
 
+export type AssistantBoardStateCue = {
+  label: string;
+  title: string;
+  detail: string;
+  items?: string[];
+};
+
 export type AssistantPreview = {
   kind: AssistantTargetKind;
   title: string;
   summary: string;
   stats: AssistantPreviewStat[];
   facts: string[];
-  operatorCue?: {
-    label: string;
-    title: string;
-    detail: string;
-  };
+  operatorCue?: AssistantBoardStateCue;
+  boardStateCue?: AssistantBoardStateCue;
   quickLinks?: AssistantQuickLink[];
   suggestedActions: AssistantAction[];
 };
@@ -86,6 +90,7 @@ export type AssistantResponse = {
   nextSteps: string[];
   evidence: string[];
   caution?: string;
+  boardStateCue?: AssistantBoardStateCue;
   quickLinks?: AssistantQuickLink[];
 };
 

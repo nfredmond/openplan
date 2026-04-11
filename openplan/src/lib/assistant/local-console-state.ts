@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AssistantPreview, AssistantResponse } from "@/lib/assistant/catalog";
+import type { AssistantBoardStateCue, AssistantPreview, AssistantResponse } from "@/lib/assistant/catalog";
 
 export const assistantLocalConsoleFilterSchema = z.enum(["all", "act_now", "review_soon", "support_context"]);
 export const assistantLocalConsoleViewModeSchema = z.enum(["full", "triage"]);
@@ -32,6 +32,21 @@ function describeConsoleFilter(filter: AssistantLocalConsoleFilter): string {
   }
 }
 
+function buildBoardStateCue(localConsoleState: AssistantLocalConsoleState): AssistantBoardStateCue {
+  return {
+    label: "Local board posture",
+    title: localConsoleState.title,
+    detail: localConsoleState.detail,
+    items: [
+      `Mode: ${localConsoleState.viewMode}`,
+      `Filter: ${describeConsoleFilter(localConsoleState.filter)}`,
+      `Shaped ops: ${localConsoleState.shapedCount}`,
+      `Snoozed ops: ${localConsoleState.snoozedCount}`,
+      `Returning soon: ${localConsoleState.returningSoonCount}`,
+    ],
+  };
+}
+
 export function applyLocalConsoleStateToPreview(
   preview: AssistantPreview,
   localConsoleState?: AssistantLocalConsoleState | null
@@ -40,12 +55,7 @@ export function applyLocalConsoleStateToPreview(
 
   return {
     ...preview,
-    summary: `${preview.summary} Local board posture: ${localConsoleState.title}.`,
-    facts: [
-      `Local board cue: ${localConsoleState.detail}`,
-      `Local board is filtered to ${describeConsoleFilter(localConsoleState.filter)} in ${localConsoleState.viewMode} mode, with ${localConsoleState.shapedCount} shaped operation${localConsoleState.shapedCount === 1 ? "" : "s"}.`,
-      ...preview.facts,
-    ],
+    boardStateCue: buildBoardStateCue(localConsoleState),
   };
 }
 
@@ -57,15 +67,6 @@ export function applyLocalConsoleStateToResponse(
 
   return {
     ...response,
-    summary: `${response.summary} Local board posture: ${localConsoleState.title}.`,
-    findings: [`Local board cue: ${localConsoleState.detail}`, ...response.findings],
-    evidence: [
-      ...response.evidence,
-      `Console mode: ${localConsoleState.viewMode}`,
-      `Console filter: ${describeConsoleFilter(localConsoleState.filter)}`,
-      `Local shaped ops: ${localConsoleState.shapedCount}`,
-      `Local snoozed ops: ${localConsoleState.snoozedCount}`,
-      `Returning soon: ${localConsoleState.returningSoonCount}`,
-    ],
+    boardStateCue: buildBoardStateCue(localConsoleState),
   };
 }
