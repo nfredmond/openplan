@@ -5,6 +5,7 @@ import type {
   PlanAssistantContext,
   ProgramAssistantContext,
   ProjectAssistantContext,
+  RtpAssistantContext,
   ReportAssistantContext,
   RunAssistantContext,
   ScenarioAssistantContext,
@@ -181,6 +182,59 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditNote: "Cross-check packet provenance and run basis before externalizing any narrative.",
         })
       : null,
+  ]);
+}
+
+function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    quickLink("rtp-brief-agent", "Generate RTP brief in panel", `/rtp/${context.rtpCycle.id}`, {
+      targetKind: "rtp_cycle",
+      actionClass: "review_controls",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded RTP cycle brief inside Planner Agent before you jump into chapter, packet, or portfolio detail.",
+      approval: "safe",
+      auditEvent: "assistant.operation.rtp.brief_agent",
+      auditNote: "This runs a grounded RTP brief only, it does not change cycle, chapter, or packet records.",
+      workflowId: "rtp-brief",
+      prompt: "Give me the RTP cycle brief and the next operator move.",
+      promptLabel: "Generate RTP brief in panel",
+    }),
+    context.packetSummary.recommendedReport
+      ? quickLink("rtp-recommended-packet", "Open RTP packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
+          targetKind: "report",
+          actionClass: "review_packet",
+          priority: "primary",
+          statusLabel: context.packetSummary.recommendedReport.packetFreshness.label,
+          reason: "This RTP packet is the strongest current board/binder review anchor for the cycle.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp.packet",
+          auditNote: "Verify freshness, source drift, and section posture before release or board use.",
+        })
+      : null,
+    context.operationsSummary.nextCommand
+      ? quickLink("rtp-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+          targetKind: "rtp_cycle",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: "Workspace command",
+          reason: "The shared workspace queue currently has the clearest guidance for what should move around this RTP cycle.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp.next_command",
+          auditNote: "Use the command-board rationale before changing cycle, chapter, or packet posture.",
+        })
+      : null,
+    quickLink("rtp-record", "Open RTP cycle", `/rtp/${context.rtpCycle.id}`, {
+      targetKind: "rtp_cycle",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Cycle anchor",
+      reason: "Use the RTP cycle record for the canonical chapter, portfolio, engagement, and adoption basis.",
+      approval: "safe",
+      auditEvent: "assistant.operation.rtp.record",
+      auditNote: "Navigation only. Cycle edits still happen inside the destination surface.",
+    }),
   ]);
 }
 
@@ -438,6 +492,8 @@ export function buildAssistantOperations(context: AssistantContext): AssistantQu
   switch (context.kind) {
     case "project":
       return buildProjectOperations(context);
+    case "rtp_cycle":
+      return buildRtpOperations(context);
     case "plan":
       return buildPlanOperations(context);
     case "program":

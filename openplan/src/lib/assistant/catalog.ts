@@ -2,6 +2,7 @@ export type AssistantTargetKind =
   | "workspace"
   | "analysis_studio"
   | "project"
+  | "rtp_cycle"
   | "plan"
   | "program"
   | "scenario_set"
@@ -152,6 +153,20 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       label: "Data readiness",
       description: "Show linked dataset coverage and run support around this project.",
       prompt: "How strong is the data and analysis support for this project?",
+    },
+  ],
+  rtp_cycle: [
+    {
+      id: "rtp-brief",
+      label: "RTP brief",
+      description: "Summarize cycle readiness, packet posture, and the next operator move.",
+      prompt: "Give me the RTP cycle brief and the next operator move.",
+    },
+    {
+      id: "rtp-packet",
+      label: "Packet posture",
+      description: "Explain RTP board-packet readiness, freshness, and what needs review or regeneration next.",
+      prompt: "What packet or board-binder work does this RTP cycle need next?",
     },
   ],
   plan: [
@@ -431,6 +446,10 @@ export function resolveAssistantTarget(
     return { kind: "project", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
 
+  if (segments[0] === "rtp" && secondSegment) {
+    return { kind: "rtp_cycle", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
+  }
+
   if (segments[0] === "plans" && secondSegment) {
     return { kind: "plan", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
@@ -487,6 +506,11 @@ export function resolveAssistantWorkflowId(
     if (includesAny(normalized, ["block", "risk", "issue", "hold", "gate"])) return "project-blockers";
     if (includesAny(normalized, ["data", "dataset", "source", "coverage", "overlay"])) return "project-data";
     return "project-brief";
+  }
+
+  if (kind === "rtp_cycle") {
+    if (includesAny(normalized, ["packet", "board", "binder", "report", "refresh", "stale"])) return "rtp-packet";
+    return "rtp-brief";
   }
 
   if (kind === "plan") {

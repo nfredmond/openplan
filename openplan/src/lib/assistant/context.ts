@@ -12,6 +12,11 @@ import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
 } from "@/lib/programs/catalog";
+import {
+  buildRtpCycleReadiness,
+  buildRtpCycleWorkflowSummary,
+  RTP_CHAPTER_TEMPLATES,
+} from "@/lib/rtp/catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
   buildScenarioComparisonBoard,
@@ -133,6 +138,50 @@ export type PlanAssistantContext = {
     engagementCampaigns: number;
     reports: number;
     relatedProjects: number;
+  };
+  operationsSummary: WorkspaceOperationsSummary;
+};
+
+export type RtpAssistantContext = {
+  kind: "rtp_cycle";
+  workspace: {
+    id: string;
+    name: string | null;
+    plan: string | null;
+    role: string | null;
+  };
+  rtpCycle: {
+    id: string;
+    title: string;
+    summary: string | null;
+    status: string;
+    geographyLabel: string | null;
+    horizonStartYear: number | null;
+    horizonEndYear: number | null;
+    adoptionTargetDate: string | null;
+    publicReviewOpenAt: string | null;
+    publicReviewCloseAt: string | null;
+    updatedAt: string;
+  };
+  readiness: ReturnType<typeof buildRtpCycleReadiness>;
+  workflow: ReturnType<typeof buildRtpCycleWorkflowSummary>;
+  counts: {
+    chapters: number;
+    readyForReviewChapters: number;
+    completeChapters: number;
+    linkedProjects: number;
+    engagementCampaigns: number;
+    packetReports: number;
+  };
+  packetSummary: {
+    linkedReportCount: number;
+    noPacketCount: number;
+    refreshRecommendedCount: number;
+    recommendedReport: {
+      id: string;
+      title: string | null;
+      packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+    } | null;
   };
   operationsSummary: WorkspaceOperationsSummary;
 };
@@ -327,6 +376,7 @@ export type RunAssistantContext = {
 export type AssistantContext =
   | WorkspaceAssistantContext
   | ProjectAssistantContext
+  | RtpAssistantContext
   | PlanAssistantContext
   | ProgramAssistantContext
   | ScenarioAssistantContext
@@ -815,6 +865,130 @@ async function loadPlanContext(
       relatedProjects: explicitProjectCount + (project ? 1 : 0),
     },
     operationsSummary,
+  };
+}
+
+async function loadRtpContext(
+  supabase: SupabaseLike,
+  userId: string,
+  rtpCycleId: string
+): Promise<RtpAssistantContext | null> {
+  const { data: cycle } = await supabase
+    .from("rtp_cycles")
+    .select(
+      "id, workspace_id, title, summary, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, updated_at"
+    )
+    .eq("id", rtpCycleId)
+    .maybeSingle();
+
+  if (!cycle) {
+    return null;
+  }
+
+  const workspace = await requireWorkspaceEnvelope(supabase, userId, cycle.workspace_id);
+  if (!workspace) {
+    return null;
+  }
+
+  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult] = await Promise.all([
+    supabase
+      .from("rtp_cycle_chapters")
+      .select("id, status")
+      .eq("rtp_cycle_id", cycle.id),
+    supabase
+      .from("project_rtp_cycle_links")
+      .select("id")
+      .eq("rtp_cycle_id", cycle.id),
+    supabase
+      .from("engagement_campaigns")
+      .select("id")
+      .eq("rtp_cycle_id", cycle.id),
+    supabase
+      .from("reports")
+      .select("id, title, generated_at, latest_artifact_kind, updated_at")
+      .eq("rtp_cycle_id", cycle.id)
+      .eq("report_type", "board_packet")
+      .order("updated_at", { ascending: false }),
+  ]);
+
+  const chapters = looksLikePendingSchema(chaptersResult.error?.message)
+    ? RTP_CHAPTER_TEMPLATES.map((template) => ({ id: `template-${template.chapterKey}`, status: "not_started" }))
+    : ((chaptersResult.data ?? []) as Array<{ id: string; status: string }>);
+  const linkedProjects = looksLikePendingSchema(projectLinksResult.error?.message)
+    ? []
+    : ((projectLinksResult.data ?? []) as Array<{ id: string }>);
+  const campaigns = looksLikePendingSchema(campaignsResult.error?.message)
+    ? []
+    : ((campaignsResult.data ?? []) as Array<{ id: string }>);
+  const packetReports = looksLikePendingSchema(packetReportsResult.error?.message)
+    ? []
+    : ((packetReportsResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        generated_at: string | null;
+        latest_artifact_kind: string | null;
+        updated_at: string;
+      }>);
+
+  const packetSummaries = packetReports.map((report) => ({
+    id: report.id,
+    title: report.title,
+    packetFreshness: getReportPacketFreshness({
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: report.generated_at,
+      updatedAt: report.updated_at,
+    }),
+  }));
+  const recommendedReport =
+    packetSummaries.find((report) => report.packetFreshness.label !== "Packet current") ?? packetSummaries[0] ?? null;
+  const readiness = buildRtpCycleReadiness({
+    geographyLabel: cycle.geography_label,
+    horizonStartYear: cycle.horizon_start_year,
+    horizonEndYear: cycle.horizon_end_year,
+    adoptionTargetDate: cycle.adoption_target_date,
+    publicReviewOpenAt: cycle.public_review_open_at,
+    publicReviewCloseAt: cycle.public_review_close_at,
+  });
+
+  return {
+    kind: "rtp_cycle",
+    workspace,
+    rtpCycle: {
+      id: cycle.id,
+      title: cycle.title,
+      summary: cycle.summary,
+      status: cycle.status,
+      geographyLabel: cycle.geography_label,
+      horizonStartYear: cycle.horizon_start_year,
+      horizonEndYear: cycle.horizon_end_year,
+      adoptionTargetDate: cycle.adoption_target_date,
+      publicReviewOpenAt: cycle.public_review_open_at,
+      publicReviewCloseAt: cycle.public_review_close_at,
+      updatedAt: cycle.updated_at,
+    },
+    readiness,
+    workflow: buildRtpCycleWorkflowSummary({
+      status: cycle.status,
+      readiness,
+    }),
+    counts: {
+      chapters: chapters.length,
+      readyForReviewChapters: chapters.filter((chapter) => chapter.status === "ready_for_review").length,
+      completeChapters: chapters.filter((chapter) => chapter.status === "complete").length,
+      linkedProjects: linkedProjects.length,
+      engagementCampaigns: campaigns.length,
+      packetReports: packetReports.length,
+    },
+    packetSummary: {
+      linkedReportCount: packetReports.length,
+      noPacketCount: packetSummaries.filter((report) => report.packetFreshness.label === "No packet").length,
+      refreshRecommendedCount: packetSummaries.filter((report) => report.packetFreshness.label === "Refresh recommended").length,
+      recommendedReport,
+    },
+    operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      workspace.id
+    ),
   };
 }
 
@@ -1389,6 +1563,8 @@ export async function loadAssistantContext(
   switch (target.kind as AssistantTargetKind) {
     case "project":
       return target.id ? loadProjectContext(supabase, userId, target.id) : null;
+    case "rtp_cycle":
+      return target.id ? loadRtpContext(supabase, userId, target.id) : null;
     case "plan":
       return target.id ? loadPlanContext(supabase, userId, target.id) : null;
     case "program":

@@ -10,6 +10,7 @@ import type {
   PlanAssistantContext,
   ProgramAssistantContext,
   ProjectAssistantContext,
+  RtpAssistantContext,
   ReportAssistantContext,
   RunAssistantContext,
   ScenarioAssistantContext,
@@ -131,6 +132,42 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
           title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
           detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
         },
+    quickLinks: buildAssistantOperations(context),
+    suggestedActions: getAssistantActions(context.kind),
+  };
+}
+
+function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
+  return {
+    kind: context.kind,
+    title: context.rtpCycle.title,
+    summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, packet posture, and the shared workspace command queue around it.`,
+    stats: [
+      { label: "Status", value: context.rtpCycle.status },
+      { label: "Chapters", value: `${context.counts.chapters}` },
+      { label: "Projects", value: `${context.counts.linkedProjects}` },
+      { label: "Packets", value: `${context.counts.packetReports}` },
+    ],
+    facts: [
+      context.rtpCycle.summary || "The RTP cycle does not yet carry a strong summary narrative on the record itself.",
+      `${context.counts.readyForReviewChapters} chapters are ready for review and ${context.counts.completeChapters} are complete.`,
+      context.packetSummary.recommendedReport
+        ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
+        : "No RTP board packet is linked yet.",
+    ],
+    operatorCue: context.operationsSummary.nextCommand
+      ? {
+          label: "Current runtime cue",
+          title: context.operationsSummary.nextCommand.title,
+          detail: context.operationsSummary.nextCommand.detail,
+        }
+      : context.packetSummary.recommendedReport
+        ? {
+            label: "Current runtime cue",
+            title: context.packetSummary.recommendedReport.title ?? "Recommended packet anchor",
+            detail: context.packetSummary.recommendedReport.packetFreshness.detail,
+          }
+        : undefined,
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
@@ -304,6 +341,8 @@ export function buildAssistantPreview(context: AssistantContext): AssistantPrevi
   switch (context.kind) {
     case "project":
       return buildProjectPreview(context);
+    case "rtp_cycle":
+      return buildRtpPreview(context);
     case "plan":
       return buildPlanPreview(context);
     case "program":
@@ -486,6 +525,74 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       `Plan type: ${context.project.planType}`,
       `Stage-gate pass count: ${context.stageGateSummary.passCount}`,
       `Recent run count: ${context.counts.recentRuns}`,
+    ],
+    quickLinks: buildAssistantOperations(context),
+  };
+}
+
+function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
+  const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
+
+  if (workflowId === "rtp-packet") {
+    return {
+      workflowId,
+      label,
+      title: `Packet posture: ${context.rtpCycle.title}`,
+      summary: context.packetSummary.recommendedReport
+        ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is marked ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+        : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
+      findings: [
+        `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? "" : "s"}, ${context.packetSummary.refreshRecommendedCount} needing refresh, ${context.packetSummary.noPacketCount} with no generated artifact.`,
+        context.packetSummary.recommendedReport
+          ? context.packetSummary.recommendedReport.packetFreshness.detail
+          : "No linked packet record is available to refresh or review yet.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking this RTP cycle from the current snapshot.",
+      ],
+      nextSteps: [
+        context.packetSummary.recommendedReport
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current RTP packet posture.`
+          : "Create or attach the first RTP board packet before treating this cycle as packet-ready.",
+        context.readiness.ready
+          ? "Once packet posture is current, keep chapter workflow and project linkage aligned with the current cycle phase."
+          : context.readiness.nextSteps[0] ?? "Tighten the missing cycle setup before building more packet surface area.",
+      ],
+      evidence: [
+        `Chapters: ${context.counts.chapters}`,
+        `Linked projects: ${context.counts.linkedProjects}`,
+        `Engagement campaigns: ${context.counts.engagementCampaigns}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  return {
+    workflowId,
+    label,
+    title: `RTP brief: ${context.rtpCycle.title}`,
+    summary: `${context.rtpCycle.title} is currently ${context.rtpCycle.status}, ${context.readiness.label.toLowerCase()}, and ${context.workflow.label.toLowerCase()}.`,
+    findings: [
+      context.rtpCycle.summary || "The RTP cycle record does not yet carry a strong summary narrative.",
+      `${context.counts.chapters} chapters are in scope, with ${context.counts.readyForReviewChapters} ready for review and ${context.counts.completeChapters} complete.`,
+      context.operationsSummary.nextCommand
+        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
+        : context.packetSummary.recommendedReport
+          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"}.`
+          : "No immediate queue or packet anchor is visible beyond the cycle record itself.",
+    ],
+    nextSteps: [
+      context.readiness.ready
+        ? "Use the current cycle as the anchor for project portfolio, engagement, and packet review work."
+        : `Close the remaining ${context.readiness.totalCheckCount - context.readiness.readyCheckCount} setup gap${context.readiness.totalCheckCount - context.readiness.readyCheckCount === 1 ? "" : "s"} before treating this cycle as fully review-ready.`,
+      context.packetSummary.linkedReportCount > 0
+        ? "Keep RTP packet freshness aligned with chapter and project changes as the cycle moves phases."
+        : "Create the first board packet once the cycle basis is clean enough to support it.",
+    ],
+    evidence: [
+      `Geography: ${context.rtpCycle.geographyLabel ?? "Missing"}`,
+      `Horizon: ${context.rtpCycle.horizonStartYear ?? "?"}–${context.rtpCycle.horizonEndYear ?? "?"}`,
+      `Updated: ${formatDateTime(context.rtpCycle.updatedAt)}`,
     ],
     quickLinks: buildAssistantOperations(context),
   };
@@ -876,6 +983,8 @@ export function buildAssistantResponse(
     switch (context.kind) {
     case "project":
       return buildProjectResponse(context, workflowId);
+    case "rtp_cycle":
+      return buildRtpResponse(context, workflowId);
     case "plan":
       return buildPlanResponse(context, workflowId);
     case "program":
