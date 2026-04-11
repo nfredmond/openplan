@@ -361,6 +361,9 @@ export function buildWorkspaceOperationsSummary({
     const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
     return days !== null && days <= 14;
   });
+  const firstClosingProgram = firstClosingOpportunity?.programId
+    ? programs.find((program) => program.id === firstClosingOpportunity.programId) ?? null
+    : null;
   const firstPlanNeedingSetup = plans.find((plan) => {
     const readiness = buildPlanReadiness({
       hasProject: Boolean(plan.projectId),
@@ -415,8 +418,10 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "funding-windows-closing",
       title: "Advance near-term funding windows",
-      detail: `${closingSoonFundingOpportunities} open funding opportunit${closingSoonFundingOpportunities === 1 ? "y closes" : "ies close"} within 14 days.${firstClosingOpportunity?.title ? ` ${firstClosingOpportunity.title} is the first deadline to reopen.` : ""}`,
-      href: "/programs",
+      detail: `${closingSoonFundingOpportunities} open funding opportunit${closingSoonFundingOpportunities === 1 ? "y closes" : "ies close"} within 14 days.${firstClosingOpportunity?.title ? ` ${firstClosingOpportunity.title} is the first deadline to reopen.` : ""}${firstClosingProgram?.title ? ` Reopen ${firstClosingProgram.title} first.` : ""}`,
+      href: firstClosingOpportunity?.programId
+        ? `/programs/${firstClosingOpportunity.programId}#program-funding-opportunities`
+        : "/programs",
       tone: "warning",
       priority: 2,
       badges: [

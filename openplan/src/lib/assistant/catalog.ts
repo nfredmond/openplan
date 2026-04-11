@@ -261,6 +261,12 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       description: "Explain packet readiness, stale basis, and what should be refreshed or created next.",
       prompt: "What packet or evidence work does this program need next?",
     },
+    {
+      id: "program-funding",
+      label: "Funding posture",
+      description: "Explain which linked funding opportunities need attention and how they affect this package.",
+      prompt: "Which funding opportunities tied to this package need action next, and why?",
+    },
   ],
   scenario_set: [
     {

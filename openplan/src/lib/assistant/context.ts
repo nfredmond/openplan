@@ -245,6 +245,12 @@ export type ProgramAssistantContext = {
     engagementCampaigns: number;
     relatedProjects: number;
   };
+  fundingSummary: {
+    opportunityCount: number;
+    openCount: number;
+    closingSoonCount: number;
+    pursueCount: number;
+  };
   packetSummary: {
     linkedReportCount: number;
     attentionCount: number;
@@ -424,6 +430,13 @@ export type AssistantContext =
 type SupabaseLike = {
   from: (table: string) => any;
 };
+
+function daysUntil(value: string | null | undefined, now = new Date()): number | null {
+  if (!value) return null;
+  const parsed = new Date(value).getTime();
+  if (!Number.isFinite(parsed)) return null;
+  return Math.round((parsed - now.getTime()) / 86400000);
+}
 
 type WorkspaceEnvelope = {
   id: string;
@@ -1155,7 +1168,7 @@ async function loadProgramContext(
   }
 
   const project = Array.isArray(program.projects) ? program.projects[0] ?? null : program.projects ?? null;
-  const [linksResult, plansResult, projectReportsResult, campaignsResult, operationsSummary] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, fundingOpportunitiesResult, operationsSummary] = await Promise.all([
     supabase.from("program_links").select("program_id, link_type, linked_id").eq("program_id", program.id),
     program.project_id
       ? supabase.from("plans").select("id").eq("project_id", program.project_id)
@@ -1169,6 +1182,10 @@ async function loadProgramContext(
     program.project_id
       ? supabase.from("engagement_campaigns").select("id").eq("project_id", program.project_id)
       : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("funding_opportunities")
+      .select("id, opportunity_status, decision_state, closes_at, decision_due_at")
+      .eq("program_id", program.id),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
@@ -1182,6 +1199,22 @@ async function loadProgramContext(
   const explicitProjectCount = links.filter((link) => link.link_type === "project_record").length;
   const planCount = explicitPlanCount + (plansResult.data?.length ?? 0);
   const engagementCampaignCount = explicitCampaignCount + (campaignsResult.data?.length ?? 0);
+  const fundingOpportunities = (fundingOpportunitiesResult.data ?? []) as Array<{
+    id: string;
+    opportunity_status: string | null;
+    decision_state: string | null;
+    closes_at: string | null;
+    decision_due_at: string | null;
+  }>;
+  const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
+    ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
+  ).length;
+  const fundingClosingSoonCount = fundingOpportunities.filter((opportunity) => {
+    if ((opportunity.opportunity_status ?? "") !== "open") return false;
+    const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
+    return days !== null && days <= 14;
+  }).length;
+  const fundingPursueCount = fundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
 
   const explicitReportIds = links.filter((link) => link.link_type === "report").map((link) => link.linked_id);
   const explicitReportsResult = explicitReportIds.length
@@ -1280,6 +1313,12 @@ async function loadProgramContext(
       reports: reportCount,
       engagementCampaigns: engagementCampaignCount,
       relatedProjects: explicitProjectCount + (project ? 1 : 0),
+    },
+    fundingSummary: {
+      opportunityCount: fundingOpportunities.length,
+      openCount: fundingOpenCount,
+      closingSoonCount: fundingClosingSoonCount,
+      pursueCount: fundingPursueCount,
     },
     packetSummary: {
       linkedReportCount: sortedLinkedReports.length,

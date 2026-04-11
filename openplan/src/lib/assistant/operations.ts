@@ -457,6 +457,36 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
 
 function buildProgramOperations(context: ProgramAssistantContext): AssistantQuickLink[] {
   return compactQuickLinks([
+    context.fundingSummary.opportunityCount > 0
+      ? quickLink(
+          "program-funding-agent",
+          context.fundingSummary.closingSoonCount > 0 ? "Check funding deadline posture in panel" : "Check funding posture in panel",
+          `/programs/${context.program.id}#program-funding-opportunities`,
+          {
+            targetKind: "program",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: context.fundingSummary.closingSoonCount > 0 ? "primary" : "secondary",
+            statusLabel:
+              context.fundingSummary.closingSoonCount > 0
+                ? `${context.fundingSummary.closingSoonCount} closing soon`
+                : `${context.fundingSummary.opportunityCount} linked`,
+            reason:
+              context.fundingSummary.closingSoonCount > 0
+                ? "This package has near-term funding windows, so grant timing and pursue decisions should be checked before less urgent package cleanup."
+                : "Funding opportunities are already linked to this package, so grant posture should stay visible alongside packet and readiness work.",
+            approval: "review",
+            auditEvent: "assistant.operation.program.funding_agent",
+            auditNote: "Use the program funding section to verify pursue, monitor, or skip posture before changing linked package strategy.",
+            workflowId: "program-funding",
+            prompt: "Which funding opportunities tied to this package need action next, and why?",
+            promptLabel:
+              context.fundingSummary.closingSoonCount > 0
+                ? "Check funding deadline posture in panel"
+                : "Check funding posture in panel",
+          }
+        )
+      : null,
     quickLink("program-packet-agent", "Check packet posture in panel", `/programs/${context.program.id}`, {
       targetKind: "program",
       actionClass: "review_packet",
@@ -493,6 +523,18 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           approval: "review",
           auditEvent: "assistant.operation.program.next_command",
           auditNote: "Keep program/package actions aligned with the shared workspace queue before changing records.",
+        })
+      : null,
+    context.fundingSummary.opportunityCount > 0
+      ? quickLink("program-funding-record", "Open funding opportunities", `/programs/${context.program.id}#program-funding-opportunities`, {
+          targetKind: "program",
+          actionClass: "review_controls",
+          priority: "secondary",
+          statusLabel: context.fundingSummary.pursueCount > 0 ? `${context.fundingSummary.pursueCount} pursue` : "Funding linked",
+          reason: "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
+          approval: "review",
+          auditEvent: "assistant.operation.program.funding_record",
+          auditNote: "Funding decisions should stay tied to this package before they ripple into broader project or RTP posture.",
         })
       : null,
     quickLink("program-record", "Open program record", `/programs/${context.program.id}`, {

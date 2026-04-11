@@ -820,7 +820,7 @@ export default async function ProgramDetailPage({
             </div>
           </article>
 
-          <article className="module-section-surface">
+          <article id="program-funding-opportunities" className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Funding</p>

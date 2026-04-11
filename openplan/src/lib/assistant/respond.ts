@@ -299,16 +299,19 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
   return {
     kind: context.kind,
     title: context.program.title,
-    summary: `Grounded to this program package's readiness, packet posture, and the shared workspace command queue around it.`,
+    summary: `Grounded to this program package's readiness, packet posture, linked funding windows, and the shared workspace command queue around it.`,
     stats: [
       { label: "Status", value: context.program.status },
       { label: "Readiness", value: context.readiness.label },
-      { label: "Packet attention", value: `${context.packetSummary.attentionCount}` },
+      { label: "Funding", value: `${context.fundingSummary.opportunityCount}` },
       { label: "Queue", value: `${context.operationsSummary.counts.queueDepth}` },
     ],
     facts: [
       context.project ? `Primary project: ${context.project.name}` : "No primary project is attached to this program yet.",
       `${context.linkageCounts.plans} plans, ${context.linkageCounts.engagementCampaigns} campaigns, and ${context.linkageCounts.reports} reports are visible in the current package basis.`,
+      context.fundingSummary.opportunityCount > 0
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.`
+        : "No funding opportunities are linked to this program yet.",
       context.packetSummary.recommendedReport
         ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No linked report packet is available yet for this program.",
@@ -1061,6 +1064,43 @@ function buildPlanResponse(context: PlanAssistantContext, workflowId: string): A
 function buildProgramResponse(context: ProgramAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Program brief";
 
+  if (workflowId === "program-funding") {
+    return {
+      workflowId,
+      label,
+      title: `Funding posture: ${context.program.title}`,
+      summary:
+        context.fundingSummary.opportunityCount > 0
+          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.`
+          : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
+      findings: [
+        context.fundingSummary.opportunityCount > 0
+          ? `${context.fundingSummary.openCount} open or upcoming opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this package.`
+          : "No open or upcoming funding opportunities are visible on this package yet.",
+        context.fundingSummary.closingSoonCount > 0
+          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
+          : "No near-term funding window is currently closing inside the next 14 days.",
+        context.fundingSummary.pursueCount > 0
+          ? `${context.fundingSummary.pursueCount} opportunit${context.fundingSummary.pursueCount === 1 ? "y is" : "ies are"} already marked pursue on this package.`
+          : "No linked opportunity is currently marked pursue on this package.",
+      ],
+      nextSteps: [
+        context.fundingSummary.opportunityCount > 0
+          ? `Open /programs/${context.program.id}#program-funding-opportunities to confirm pursue, monitor, or skip posture on the linked opportunities.`
+          : `Open /programs/${context.program.id}#program-funding-opportunities and log the first funding opportunity tied to this package.`,
+        context.project
+          ? `Keep ${context.project.name} aligned with the package funding posture before shifting RTP or delivery assumptions.`
+          : "Attach or confirm the main project anchor so funding posture can flow into the wider control room cleanly.",
+      ],
+      evidence: [
+        `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
+        `Closing soon: ${context.fundingSummary.closingSoonCount}`,
+        `Pursue decisions: ${context.fundingSummary.pursueCount}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
   if (workflowId === "program-packet") {
     return {
       workflowId,
@@ -1103,14 +1143,19 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
     findings: [
       context.program.summary || "The program record does not yet carry a strong package summary narrative.",
       `${context.linkageCounts.plans} plans, ${context.linkageCounts.engagementCampaigns} engagement campaigns, and ${context.linkageCounts.reports} reports are visible in the package basis.`,
+      context.fundingSummary.opportunityCount > 0
+        ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon.`
+        : "No linked funding opportunities are currently visible on this package.",
       context.packetSummary.attentionCount > 0
         ? `${context.packetSummary.attentionCount} linked packet${context.packetSummary.attentionCount === 1 ? " needs" : "s need"} attention before this package reads as clean.`
         : "No linked packet attention is currently visible on this package.",
     ],
     nextSteps: [
-      context.packetSummary.attentionCount > 0
-        ? "Work the packet posture first so the package basis stays current."
-        : "Use the current package basis to support the next submission or funding move.",
+      context.fundingSummary.closingSoonCount > 0
+        ? "Recheck the near-term funding windows first so grant timing does not slip while packet work continues."
+        : context.packetSummary.attentionCount > 0
+          ? "Work the packet posture first so the package basis stays current."
+          : "Use the current package basis to support the next submission or funding move.",
       context.project ? `Keep ${context.project.name} as the main delivery anchor while this package evolves.` : "Attach a project anchor if this package should flow through broader project controls.",
     ],
     evidence: [
