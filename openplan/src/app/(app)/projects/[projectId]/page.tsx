@@ -291,6 +291,10 @@ function compareDateValues(left: string | null | undefined, right: string | null
   return parseSortableDate(left) - parseSortableDate(right);
 }
 
+function buildProjectControlHref(targetId: string, targetRowId?: string | null): string {
+  return `#${targetRowId ?? targetId}`;
+}
+
 function toneForStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
   if (status === "active") return "success";
   if (status === "draft") return "neutral";
@@ -1838,7 +1842,13 @@ export default async function ProjectDetailPage({
             </div>
             <p className="mt-2 text-sm text-muted-foreground">{projectControlsSummary.recommendedNextAction.detail}</p>
             <div className="mt-3">
-              <Link href={`#${projectControlsSummary.recommendedNextAction.targetId}`} className="module-inline-action w-fit">
+              <Link
+                href={buildProjectControlHref(
+                  projectControlsSummary.recommendedNextAction.targetId,
+                  projectControlsSummary.recommendedNextAction.targetRowId
+                )}
+                className="module-inline-action w-fit"
+              >
                 Open control lane
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -1893,7 +1903,14 @@ export default async function ProjectDetailPage({
             </div>
             <div className="mt-3">
               <Link
-                href={projectControlsSummary.deadlineSummary.nextDeadline ? `#${projectControlsSummary.deadlineSummary.nextDeadline.targetId}` : "#project-milestones"}
+                href={
+                  projectControlsSummary.deadlineSummary.nextDeadline
+                    ? buildProjectControlHref(
+                        projectControlsSummary.deadlineSummary.nextDeadline.targetId,
+                        projectControlsSummary.deadlineSummary.nextDeadline.targetRowId
+                      )
+                    : "#project-milestones"
+                }
                 className="module-inline-action w-fit"
               >
                 Open deadline lane
@@ -1922,7 +1939,7 @@ export default async function ProjectDetailPage({
               {projectControlsSummary.deadlineSummary.items.map((item) => (
                 <Link
                   key={`${item.kind}-${item.title}-${item.deadlineAt}`}
-                  href={`#${item.targetId}`}
+                  href={buildProjectControlHref(item.targetId, item.targetRowId)}
                   className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <div>
@@ -2036,7 +2053,7 @@ export default async function ProjectDetailPage({
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedMilestones.map((milestone) => (
-                <div key={milestone.id} className="module-record-row">
+                <div key={milestone.id} id={`project-milestone-${milestone.id}`} className="module-record-row scroll-mt-24">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
                       <StatusBadge tone={toneForMilestoneStatus(milestone.status)}>{titleize(milestone.status)}</StatusBadge>
@@ -2089,7 +2106,7 @@ export default async function ProjectDetailPage({
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedSubmittals.map((submittal) => (
-                <div key={submittal.id} className="module-record-row">
+                <div key={submittal.id} id={`project-submittal-${submittal.id}`} className="module-record-row scroll-mt-24">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
                       <StatusBadge tone={toneForSubmittalStatus(submittal.status)}>{titleize(submittal.status)}</StatusBadge>
@@ -2138,7 +2155,7 @@ export default async function ProjectDetailPage({
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedProjectInvoices.map((invoice) => (
-                <div key={invoice.id} className="module-record-row">
+                <div key={invoice.id} id={`project-invoice-${invoice.id}`} className="module-record-row scroll-mt-24">
                   <div className="module-record-main">
                     <div className="module-record-kicker">
                       <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>

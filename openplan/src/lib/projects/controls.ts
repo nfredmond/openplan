@@ -6,6 +6,7 @@ import {
 import type { StatusTone } from "@/lib/ui/status";
 
 export type ProjectMilestoneRecordLike = {
+  id?: string | null;
   title: string;
   status?: string | null;
   target_date?: string | null;
@@ -15,6 +16,7 @@ export type ProjectMilestoneRecordLike = {
 };
 
 export type ProjectSubmittalRecordLike = {
+  id?: string | null;
   title: string;
   status?: string | null;
   due_date?: string | null;
@@ -24,6 +26,7 @@ export type ProjectSubmittalRecordLike = {
 };
 
 export type ProjectInvoiceControlRecordLike = BillingInvoiceRecordLike & {
+  id?: string | null;
   invoice_number?: string | null;
   submitted_to?: string | null;
 };
@@ -37,6 +40,7 @@ export type ProjectControlDeadlineItem = {
   tone: StatusTone;
   isOverdue: boolean;
   targetId: string;
+  targetRowId?: string;
 };
 
 const PROJECT_CONTROL_TARGET_IDS = {
@@ -44,6 +48,11 @@ const PROJECT_CONTROL_TARGET_IDS = {
   submittal: "project-submittals",
   invoice: "project-invoices",
 } as const;
+
+function buildProjectControlRowTargetId(kind: keyof typeof PROJECT_CONTROL_TARGET_IDS, recordId: string | null | undefined): string | undefined {
+  if (!recordId) return undefined;
+  return `project-${kind}-${recordId}`;
+}
 
 export type ProjectControlsSummary = {
   milestoneCount: number;
@@ -74,6 +83,7 @@ export type ProjectControlsSummary = {
     detail: string;
     tone: StatusTone;
     targetId: string;
+    targetRowId?: string;
   };
 };
 
@@ -145,6 +155,7 @@ export function buildProjectControlsSummary(
         tone: isPast(item.target_date, now) ? ("danger" as const) : ("info" as const),
         isOverdue: isPast(item.target_date, now),
         targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+        targetRowId: buildProjectControlRowTargetId("milestone", item.id),
       })),
     ...pendingSubmittals
       .filter((item): item is ProjectSubmittalRecordLike & { due_date: string } => Boolean(item.due_date))
@@ -157,6 +168,7 @@ export function buildProjectControlsSummary(
         tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
         isOverdue: isPast(item.due_date, now),
         targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
+        targetRowId: buildProjectControlRowTargetId("submittal", item.id),
       })),
     ...activeInvoices
       .filter((item): item is ProjectInvoiceControlRecordLike & { due_date: string } => Boolean(item.due_date))
@@ -169,6 +181,7 @@ export function buildProjectControlsSummary(
         tone: isPast(item.due_date, now) ? ("danger" as const) : ("warning" as const),
         isOverdue: isPast(item.due_date, now),
         targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
+        targetRowId: buildProjectControlRowTargetId("invoice", item.id),
       })),
   ]);
   const deadlineSummary = {
@@ -227,6 +240,7 @@ export function buildProjectControlsSummary(
                   detail: `${nextSubmittal.title} is the next visible packet in the queue. Keep the review cadence explicit before it turns into a hidden hold.`,
                   tone: "info" as const,
                   targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
+                  targetRowId: buildProjectControlRowTargetId("submittal", nextSubmittal.id),
                 }
               : nextMilestone
                 ? {
@@ -234,6 +248,7 @@ export function buildProjectControlsSummary(
                     detail: `${nextMilestone.title} is the next project checkpoint. Confirm scope, owner, and evidence needed to hit the target date.`,
                     tone: "info" as const,
                     targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+                    targetRowId: buildProjectControlRowTargetId("milestone", nextMilestone.id),
                   }
                 : invoiceSummary.draftCount > 0
                   ? {
