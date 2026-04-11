@@ -15,6 +15,7 @@ import {
   reportStatusTone,
 } from "@/lib/reports/catalog";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
+import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildScenarioComparisonSummary,
@@ -51,6 +52,27 @@ type ScenarioEntryRow = {
   created_at: string;
   updated_at: string;
 };
+
+type ScenarioComparisonSnapshotRow = {
+  id: string;
+  baseline_entry_id: string;
+  candidate_entry_id: string;
+  label: string;
+  summary: string | null;
+  status: string;
+  updated_at: string;
+};
+
+type ScenarioComparisonIndicatorDeltaRow = {
+  id: string;
+  comparison_snapshot_id: string;
+};
+
+function formatStamp(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
 
 export default async function ScenarioSetDetailPage({
   params,
@@ -130,6 +152,29 @@ export default async function ScenarioSetDetailPage({
     baselineRunId: baselineEntry?.attached_run_id ?? null,
     candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
   });
+  const comparisonSnapshotsResult = await supabase
+    .from("scenario_comparison_snapshots")
+    .select("id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at")
+    .eq("scenario_set_id", scenarioSet.id)
+    .order("updated_at", { ascending: false });
+  const comparisonSnapshotsSchemaPending = looksLikePendingScenarioSpineSchema(
+    comparisonSnapshotsResult.error?.message
+  );
+  const comparisonSnapshots = comparisonSnapshotsSchemaPending
+    ? []
+    : ((comparisonSnapshotsResult.data ?? []) as ScenarioComparisonSnapshotRow[]);
+  const comparisonSnapshotIds = comparisonSnapshots.map((snapshot) => snapshot.id);
+  const comparisonIndicatorDeltasResult = comparisonSnapshotIds.length
+    ? await supabase
+        .from("scenario_comparison_indicator_deltas")
+        .select("id, comparison_snapshot_id")
+        .in("comparison_snapshot_id", comparisonSnapshotIds)
+    : { data: [], error: null };
+  const comparisonIndicatorDeltas = looksLikePendingScenarioSpineSchema(
+    comparisonIndicatorDeltasResult.error?.message
+  )
+    ? []
+    : ((comparisonIndicatorDeltasResult.data ?? []) as ScenarioComparisonIndicatorDeltaRow[]);
   const { data: reportsData } = await supabase
     .from("reports")
     .select("id, title, status, report_type, generated_at, updated_at, latest_artifact_kind")
@@ -185,6 +230,20 @@ export default async function ScenarioSetDetailPage({
       const rightStamp = right.generated_at ?? right.updated_at ?? "";
       return rightStamp.localeCompare(leftStamp);
     });
+  const entryById = new Map(entries.map((entry) => [entry.id, entry]));
+  const comparisonIndicatorDeltaCountBySnapshotId = new Map<string, number>();
+  for (const delta of comparisonIndicatorDeltas) {
+    comparisonIndicatorDeltaCountBySnapshotId.set(
+      delta.comparison_snapshot_id,
+      (comparisonIndicatorDeltaCountBySnapshotId.get(delta.comparison_snapshot_id) ?? 0) + 1
+    );
+  }
+  const recentComparisonSnapshots = comparisonSnapshots.map((snapshot) => ({
+    ...snapshot,
+    baselineEntry: entryById.get(snapshot.baseline_entry_id) ?? null,
+    candidateEntry: entryById.get(snapshot.candidate_entry_id) ?? null,
+    indicatorDeltaCount: comparisonIndicatorDeltaCountBySnapshotId.get(snapshot.id) ?? 0,
+  }));
   const comparisonReadyReportCount = linkedReportsWithFreshness.filter((report) => report.comparisonReady).length;
   const runLinkedOnlyReportCount = linkedReportsWithFreshness.length - comparisonReadyReportCount;
   const refreshRecommendedReportCount = linkedReportsWithFreshness.filter(
@@ -229,7 +288,7 @@ export default async function ScenarioSetDetailPage({
             </p>
           </div>
 
-          <div className="module-summary-grid cols-3">
+          <div className="module-summary-grid cols-4">
             <div className="module-summary-card">
               <p className="module-summary-label">Project</p>
               <p className="module-summary-value text-lg">{project?.name ?? "Unknown"}</p>
@@ -247,6 +306,17 @@ export default async function ScenarioSetDetailPage({
               </p>
               <p className="module-summary-detail">
                 Ready alternatives have distinct runs attached on both the baseline and alternative entries.
+              </p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Saved comparisons</p>
+              <p className="module-summary-value text-lg">
+                {comparisonSnapshotsSchemaPending ? "Pending" : recentComparisonSnapshots.length}
+              </p>
+              <p className="module-summary-detail">
+                {comparisonSnapshotsSchemaPending
+                  ? "Apply the latest scenario spine migration to persist comparison artifacts."
+                  : "Persistent comparison snapshots can now carry narrative, caveats, and indicator deltas."}
               </p>
             </div>
           </div>
@@ -403,6 +473,69 @@ export default async function ScenarioSetDetailPage({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-heading">
+              <p className="module-section-label">Persistent comparisons</p>
+              <h2 className="module-section-title">Saved comparison snapshots</h2>
+              <p className="module-section-description">
+                Comparison artifacts now persist as first-class scenario records, so narrative, caveats, and indicator deltas can be reused downstream instead of reassembled each time.
+              </p>
+            </div>
+
+            {comparisonSnapshotsSchemaPending ? (
+              <div className="module-empty-state mt-5 text-sm">
+                Comparison snapshot storage is waiting on the latest scenario spine migration.
+              </div>
+            ) : recentComparisonSnapshots.length === 0 ? (
+              <div className="module-empty-state mt-5 text-sm">
+                No saved comparison snapshots yet. The next useful step is to persist one ready alternative so reports and operator surfaces can reuse the same comparison artifact.
+              </div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {recentComparisonSnapshots.slice(0, 5).map((snapshot) => (
+                  <div key={snapshot.id} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={snapshot.status === "ready" ? "success" : snapshot.status === "archived" ? "warning" : "neutral"}>
+                            {titleizeScenarioValue(snapshot.status)}
+                          </StatusBadge>
+                          <StatusBadge tone={snapshot.indicatorDeltaCount > 0 ? "info" : "neutral"}>
+                            {snapshot.indicatorDeltaCount} indicator delta{snapshot.indicatorDeltaCount === 1 ? "" : "s"}
+                          </StatusBadge>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title text-[1.05rem]">{snapshot.label}</h3>
+                            {snapshot.candidateEntry ? (
+                              <Link
+                                href={buildScenarioStudioHref({
+                                  runId: snapshot.candidateEntry.attached_run_id,
+                                  baselineRunId: snapshot.baselineEntry?.attached_run_id ?? null,
+                                  scenarioSetId: scenarioSet.id,
+                                  entryId: snapshot.candidateEntry.id,
+                                })}
+                                className="text-sm font-medium text-muted-foreground transition hover:text-primary"
+                              >
+                                Open in Studio
+                              </Link>
+                            ) : null}
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
+                            {snapshot.summary || "No summary yet. Add a durable narrative so downstream reports can reuse this comparison cleanly."}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {snapshot.candidateEntry?.label ?? "Unknown alternative"} vs {snapshot.baselineEntry?.label ?? "Unknown baseline"} · Updated {formatStamp(snapshot.updated_at)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
