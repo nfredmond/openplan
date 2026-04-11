@@ -897,6 +897,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
   ] satisfies Array<{ key: DominantActionKey; label: string; count: number }>;
   const orderedCurrentViewActions = [...dominantCurrentViewAction].sort((left, right) => right.count - left.count);
+  const rankedCurrentViewActions = orderedCurrentViewActions.filter((action) => action.count > 0);
   const dominantCurrentViewActionSelection = orderedCurrentViewActions[0];
   const runnerUpCurrentViewActionSelection = orderedCurrentViewActions.find(
     (action) => action.key !== dominantCurrentViewActionSelection.key && action.count > 0
@@ -1612,13 +1613,33 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 </StatusBadge>
               </div>
 
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>• Create missing packets: {currentViewActionCounts.createPacket}</li>
-                <li>• Reset + regenerate: {currentViewActionCounts.resetAndRegenerate}</li>
-                <li>• Generate first artifacts: {currentViewActionCounts.generateFirstArtifact}</li>
-                <li>• Refresh stale artifacts: {currentViewActionCounts.refreshArtifact}</li>
-                <li>• Trace follow-up: {currentViewActionCounts.traceFollowUp}</li>
-              </ul>
+              <div className="mt-4 space-y-2">
+                {rankedCurrentViewActions.length > 0 ? (
+                  rankedCurrentViewActions.map((action, index) => (
+                    <div
+                      key={action.key}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{action.label}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {index === 0 ? "Primary queue lane" : index === 1 ? "Next queue lane" : `Priority ${index + 1}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge tone={index === 0 ? "info" : "neutral"}>
+                          {index === 0 ? "Now" : index === 1 ? "Next" : `#${index + 1}`}
+                        </StatusBadge>
+                        <span className="text-sm font-semibold tracking-tight text-foreground">{action.count}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+                    No queue buckets are currently actionable in this filtered view.
+                  </div>
+                )}
+              </div>
 
               {dominantCurrentViewActionSelection.count > 0 ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
