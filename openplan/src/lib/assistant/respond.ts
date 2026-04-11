@@ -384,12 +384,31 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
     generatedAt: context.report.generatedAt,
     updatedAt: context.report.updatedAt,
   });
+  const packetPosture = resolveRtpPacketWorkPostureFromFreshnessLabel(packetFreshness.label);
+  const rtpPacketPreviewPosture =
+    packetPosture === "generate"
+      ? {
+          summary: `Grounded to this RTP-linked packet's first-generation setup, cycle anchor, artifact history, and provenance metadata before board-ready review begins.`,
+          cueTitle: "First packet work comes first",
+          cueDetail: "This RTP-linked packet still needs its first usable artifact, so first-generation setup outranks refresh and release review right now.",
+        }
+      : packetPosture === "refresh"
+        ? {
+            summary: `Grounded to this RTP-linked packet's stale refresh posture, cycle anchor, artifact history, and provenance metadata before release review.`,
+            cueTitle: "Refresh work comes first",
+            cueDetail: packetFreshness.detail,
+          }
+        : {
+            summary: `Grounded to this RTP-linked packet's board-ready review posture, cycle anchor, artifact history, and provenance metadata.`,
+            cueTitle: "Release review comes first",
+            cueDetail: packetFreshness.detail,
+          };
 
   return {
     kind: context.kind,
     title: context.report.title,
     summary: context.rtpCycle
-      ? `Grounded to this RTP-linked packet's composition, cycle anchor, artifact history, and provenance metadata.`
+      ? rtpPacketPreviewPosture.summary
       : `Grounded to this report packet's composition, linked runs, artifact history, and provenance metadata.`,
     stats: [
       { label: "Status", value: context.report.status },
@@ -399,6 +418,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
     ],
     facts: [
       context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+      context.rtpCycle ? `Lead packet posture: ${packetFreshness.label}. ${packetFreshness.detail}` : null,
       context.project ? `Project anchor: ${context.project.name}` : "No project anchor is visible on this report snapshot.",
       context.latestArtifact
         ? `Latest artifact: ${context.latestArtifact.artifactKind} generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
@@ -407,6 +427,13 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
         ? `Engagement linkage: ${context.engagementCampaign.title} (${context.engagementCampaign.status}).`
         : "No engagement campaign linkage is attached through report sections.",
     ].filter(Boolean) as string[],
+    operatorCue: context.rtpCycle
+      ? {
+          label: "Current runtime cue",
+          title: rtpPacketPreviewPosture.cueTitle,
+          detail: rtpPacketPreviewPosture.cueDetail,
+        }
+      : undefined,
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
