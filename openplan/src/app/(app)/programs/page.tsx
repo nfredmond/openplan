@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
+import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -26,6 +27,11 @@ import {
   fundingOpportunityStatusTone,
   programStatusTone,
 } from "@/lib/programs/catalog";
+import {
+  getReportNavigationHref,
+  getReportPacketFreshness,
+  getReportPacketPriority,
+} from "@/lib/reports/catalog";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -78,6 +84,17 @@ type ProgramLinkRow = {
   program_id: string;
   link_type: string;
   linked_id: string;
+};
+
+type ProgramReportRow = {
+  id: string;
+  project_id: string | null;
+  title: string | null;
+  report_type: string | null;
+  status: string | null;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+  updated_at: string | null;
 };
 
 type FundingOpportunityRow = {
@@ -200,13 +217,18 @@ export default async function ProgramsPage({
   const programIds = programs.map((program) => program.id);
   const projectIds = [...new Set(programs.map((program) => program.project_id).filter((value): value is string => Boolean(value)))];
 
-  const [linksResult, plansResult, reportsResult, campaignsResult] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult] = await Promise.all([
     programIds.length
       ? supabase.from("program_links").select("program_id, link_type, linked_id").in("program_id", programIds)
       : Promise.resolve({ data: [], error: null }),
     projectIds.length ? supabase.from("plans").select("id, project_id").in("project_id", projectIds) : Promise.resolve({ data: [], error: null }),
     projectIds.length
-      ? supabase.from("reports").select("id, project_id, status").in("project_id", projectIds)
+      ? supabase
+          .from("reports")
+          .select(
+            "id, project_id, title, report_type, status, generated_at, latest_artifact_kind, updated_at"
+          )
+          .in("project_id", projectIds)
       : Promise.resolve({ data: [], error: null }),
     projectIds.length
       ? supabase.from("engagement_campaigns").select("id, project_id").in("project_id", projectIds)
@@ -220,20 +242,73 @@ export default async function ProgramsPage({
     linksByProgram.set(link.program_id, current);
   }
 
+  const explicitReportIds = Array.from(
+    new Set(
+      ((linksResult.data ?? []) as ProgramLinkRow[])
+        .filter((link) => link.link_type === "report")
+        .map((link) => link.linked_id)
+    )
+  );
+
+  const explicitReportsResult = explicitReportIds.length
+    ? await supabase
+        .from("reports")
+        .select(
+          "id, project_id, title, report_type, status, generated_at, latest_artifact_kind, updated_at"
+        )
+        .in("id", explicitReportIds)
+    : { data: [], error: null };
+
   const planCountsByProject = new Map<string, number>();
   for (const row of plansResult.data ?? []) {
     if (!row.project_id) continue;
     planCountsByProject.set(row.project_id, (planCountsByProject.get(row.project_id) ?? 0) + 1);
   }
 
+  const reportsByProject = new Map<
+    string,
+    Array<
+      ProgramReportRow & {
+        packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+      }
+    >
+  >();
+  const explicitReportById = new Map<
+    string,
+    ProgramReportRow & {
+      packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+    }
+  >();
   const reportCountsByProject = new Map<string, number>();
   const generatedReportCountsByProject = new Map<string, number>();
-  for (const row of reportsResult.data ?? []) {
+  for (const row of (projectReportsResult.data ?? []) as ProgramReportRow[]) {
     if (!row.project_id) continue;
+    const hydratedRow = {
+      ...row,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: row.latest_artifact_kind,
+        generatedAt: row.generated_at,
+        updatedAt: row.updated_at,
+      }),
+    };
+    const current = reportsByProject.get(row.project_id) ?? [];
+    current.push(hydratedRow);
+    reportsByProject.set(row.project_id, current);
     reportCountsByProject.set(row.project_id, (reportCountsByProject.get(row.project_id) ?? 0) + 1);
     if (row.status === "generated") {
       generatedReportCountsByProject.set(row.project_id, (generatedReportCountsByProject.get(row.project_id) ?? 0) + 1);
     }
+  }
+
+  for (const row of (explicitReportsResult.data ?? []) as ProgramReportRow[]) {
+    explicitReportById.set(row.id, {
+      ...row,
+      packetFreshness: getReportPacketFreshness({
+        latestArtifactKind: row.latest_artifact_kind,
+        generatedAt: row.generated_at,
+        updatedAt: row.updated_at,
+      }),
+    });
   }
 
   const campaignCountsByProject = new Map<string, number>();
@@ -256,6 +331,37 @@ export default async function ProgramsPage({
         explicitCampaignCount + (program.project_id ? campaignCountsByProject.get(program.project_id) ?? 0 : 0);
       const generatedReportCount =
         explicitReportCount + (program.project_id ? generatedReportCountsByProject.get(program.project_id) ?? 0 : 0);
+      const linkedReports = new Map<
+        string,
+        ProgramReportRow & {
+          packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+        }
+      >();
+      for (const report of program.project_id ? reportsByProject.get(program.project_id) ?? [] : []) {
+        linkedReports.set(report.id, report);
+      }
+      for (const link of links.filter((item) => item.link_type === "report")) {
+        const explicitReport = explicitReportById.get(link.linked_id);
+        if (explicitReport) {
+          linkedReports.set(explicitReport.id, explicitReport);
+        }
+      }
+      const sortedLinkedReports = [...linkedReports.values()].sort((left, right) => {
+        const freshnessPriority =
+          getReportPacketPriority(left.packetFreshness.label) -
+          getReportPacketPriority(right.packetFreshness.label);
+        if (freshnessPriority !== 0) {
+          return freshnessPriority;
+        }
+
+        return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+      });
+      const packetAttentionCount = sortedLinkedReports.filter(
+        (report) =>
+          report.packetFreshness.label === "Refresh recommended" ||
+          report.packetFreshness.label === "No packet"
+      ).length;
+      const recommendedReport = sortedLinkedReports[0] ?? null;
       const readiness = buildProgramReadiness({
         cycleName: program.cycle_name,
         hasProject: Boolean(program.project_id || explicitProjectCount > 0),
@@ -279,6 +385,17 @@ export default async function ProgramsPage({
           engagementCampaigns: engagementCampaignCount,
           relatedProjects: explicitProjectCount + (program.project_id ? 1 : 0),
         },
+        packetSummary: {
+          linkedReportCount: sortedLinkedReports.length,
+          attentionCount: packetAttentionCount,
+          noPacketCount: sortedLinkedReports.filter(
+            (report) => report.packetFreshness.label === "No packet"
+          ).length,
+          refreshRecommendedCount: sortedLinkedReports.filter(
+            (report) => report.packetFreshness.label === "Refresh recommended"
+          ).length,
+          recommendedReport,
+        },
         workflow: buildProgramWorkflowSummary({
           programStatus: program.status,
           readiness,
@@ -295,9 +412,28 @@ export default async function ProgramsPage({
     .filter((program) => (filters.programType ? program.program_type === filters.programType : true))
     .filter((program) => (filters.status ? program.status === filters.status : true));
 
+  const packetQueuePrograms = typedPrograms
+    .filter(
+      (program) =>
+        program.packetSummary.attentionCount > 0 ||
+        program.packetSummary.linkedReportCount === 0
+    )
+    .sort((left, right) => {
+      const leftPriority = left.packetSummary.attentionCount > 0 ? 0 : 1;
+      const rightPriority = right.packetSummary.attentionCount > 0 ? 0 : 1;
+      if (leftPriority !== rightPriority) {
+        return leftPriority - rightPriority;
+      }
+
+      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+    });
+
   const activeCount = typedPrograms.filter((program) => ["assembling", "submitted", "programmed"].includes(program.status)).length;
   const readyCount = typedPrograms.filter((program) => program.readiness.ready).length;
   const rtipStipCount = typedPrograms.filter((program) => ["rtip", "stip"].includes(program.program_type)).length;
+  const packetAttentionProgramCount = typedPrograms.filter(
+    (program) => program.packetSummary.attentionCount > 0
+  ).length;
   const openOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "open").length;
   const upcomingOpportunityCount = fundingOpportunities.filter((opportunity) => opportunity.opportunity_status === "upcoming").length;
   const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
@@ -337,6 +473,11 @@ export default async function ProgramsPage({
               <p className="module-summary-label">Ready to submit</p>
               <p className="module-summary-value">{readyCount}</p>
               <p className="module-summary-detail">Programs with the key information in place for review or submission.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Packet attention</p>
+              <p className="module-summary-value">{packetAttentionProgramCount}</p>
+              <p className="module-summary-detail">Programs whose linked report packets need first generation or refresh.</p>
             </div>
           </div>
         </article>
@@ -388,7 +529,40 @@ export default async function ProgramsPage({
               />
             </div>
           ) : (
-            <div className="mt-5 module-record-list">
+            <div className="mt-5 space-y-4">
+              <ReportPacketCommandQueue
+                title="Program packet queue"
+                description="The highest-priority packet actions across programming cycles, ordered before the full registry below."
+                items={packetQueuePrograms.slice(0, 5).map((program) => ({
+                  key: program.id,
+                  href: program.packetSummary.recommendedReport
+                    ? getReportNavigationHref(
+                        program.packetSummary.recommendedReport.id,
+                        program.packetSummary.recommendedReport.packetFreshness.label
+                      )
+                    : `/programs/${program.id}`,
+                  title: program.title,
+                  subtitle: program.packetSummary.recommendedReport
+                    ? program.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+                      ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                      : program.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+                        ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                        : `First action: review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                    : `First action: create the first packet for ${program.title}`,
+                  detail: program.packetSummary.recommendedReport
+                    ? program.packetSummary.recommendedReport.packetFreshness.detail
+                    : "No packet outputs are linked yet. Open the program record to attach or create the first report packet.",
+                  badges: [
+                    { label: "Reports", value: program.packetSummary.linkedReportCount },
+                    ...(program.packetSummary.attentionCount > 0
+                      ? [{ label: "Attention", value: program.packetSummary.attentionCount }]
+                      : []),
+                  ],
+                }))}
+                emptyLabel="No program packet work is queued right now."
+              />
+
+              <div className="module-record-list">
               {typedPrograms.map((program) => (
                 <Link
                   key={program.id}
@@ -433,9 +607,39 @@ export default async function ProgramsPage({
                     <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
                     <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
                     <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
+                    {program.packetSummary.attentionCount > 0 ? (
+                      <span className="module-record-chip">Packet attention {program.packetSummary.attentionCount}</span>
+                    ) : null}
+                    {program.packetSummary.refreshRecommendedCount > 0 ? (
+                      <span className="module-record-chip">Refresh {program.packetSummary.refreshRecommendedCount}</span>
+                    ) : null}
+                    {program.packetSummary.noPacketCount > 0 ? (
+                      <span className="module-record-chip">No packet {program.packetSummary.noPacketCount}</span>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-3 border-t border-border/70 pt-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Packet command
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {program.packetSummary.recommendedReport
+                        ? program.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+                          ? `Refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                          : program.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+                            ? `Generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                            : `Review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                        : "Create the first packet trail"}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {program.packetSummary.recommendedReport
+                        ? program.packetSummary.recommendedReport.packetFreshness.detail
+                        : "No linked report packets yet. Open the program to attach or create the first packet record."}
+                    </p>
                   </div>
                 </Link>
               ))}
+              </div>
             </div>
           )}
         </article>
