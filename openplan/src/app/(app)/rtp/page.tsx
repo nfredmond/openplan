@@ -1538,6 +1538,26 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           </div>
                           <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
                         </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
+                            Open cycle
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                          {cycle.packetReport ? (
+                            <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
+                              Open packet
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          ) : null}
+                          {cycle.packetAttention !== "current" ? (
+                            <RtpRegistryPacketRowAction
+                              cycleId={cycle.id}
+                              reportId={cycle.packetReport?.id ?? null}
+                              packetAttention={cycle.packetAttention}
+                              needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
+                            />
+                          ) : null}
+                        </div>
                       </div>
                     ))}
                   </div>
