@@ -70,6 +70,67 @@ function toneForSupportingDocs(status: string): "info" | "success" | "warning" |
   return "neutral";
 }
 
+function isInvoiceOverdue(status: string, dueDate: string | null | undefined): boolean {
+  if (!dueDate || status === "paid" || status === "rejected") {
+    return false;
+  }
+
+  const parsed = new Date(dueDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  return parsed.getTime() < Date.now();
+}
+
+function invoiceNeedsRelink(status: string, fundingAwardId: string | null | undefined): boolean {
+  return !fundingAwardId && status !== "paid" && status !== "rejected";
+}
+
+function billingRowRiskState(invoice: InvoiceRegisterRow): {
+  tone: "warning" | "danger" | "info" | null;
+  title: string | null;
+  detail: string | null;
+  rowClassName: string;
+} {
+  const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
+  const needsRelink = invoiceNeedsRelink(invoice.status, invoice.funding_award_id);
+
+  if (needsRelink && overdue) {
+    return {
+      tone: "danger",
+      title: "Needs relink, already overdue",
+      detail: "This invoice is still outside the funding-award reimbursement chain and is already late.",
+      rowClassName: "border-amber-300/80 bg-amber-50/40 dark:border-amber-700/60 dark:bg-amber-950/15",
+    };
+  }
+
+  if (needsRelink) {
+    return {
+      tone: "warning",
+      title: "Needs award relink",
+      detail: "This invoice is still unlinked to a funding award, so reimbursement posture is understated until it is attached.",
+      rowClassName: "border-amber-200/80 bg-amber-50/20 dark:border-amber-800/60 dark:bg-amber-950/10",
+    };
+  }
+
+  if (overdue) {
+    return {
+      tone: "info",
+      title: "Linked, but overdue",
+      detail: "This invoice is already late even though it is attached to the reimbursement chain.",
+      rowClassName: "border-sky-200/80 bg-sky-50/20 dark:border-sky-800/60 dark:bg-sky-950/10",
+    };
+  }
+
+  return {
+    tone: null,
+    title: null,
+    detail: null,
+    rowClassName: "border-border/60 bg-background/70",
+  };
+}
+
 function formatWorkspaceIdSnippet(workspaceId: string): string {
   return workspaceId.slice(0, 8);
 }
@@ -95,6 +156,16 @@ function noticeClass(tone: "info" | "success" | "warning") {
     info: "border-sky-300/80 bg-sky-50/80 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100",
     success: "border-emerald-300/80 bg-emerald-50/80 text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100",
     warning: "border-amber-300/80 bg-amber-50/80 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100",
+  } as const;
+
+  return `border-l-2 px-4 py-3 text-sm ${toneMap[tone]}`;
+}
+
+function billingRowNoticeClass(tone: "info" | "warning" | "danger") {
+  const toneMap = {
+    info: "border-sky-300/80 bg-sky-50/80 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100",
+    warning: "border-amber-300/80 bg-amber-50/80 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100",
+    danger: "border-rose-300/80 bg-rose-50/80 text-rose-950 dark:border-rose-700/60 dark:bg-rose-950/25 dark:text-rose-100",
   } as const;
 
   return `border-l-2 px-4 py-3 text-sm ${toneMap[tone]}`;
@@ -843,57 +914,73 @@ export default async function BillingPage({
             </p>
           ) : (
             <ul className="mt-4 space-y-3">
-              {filteredInvoiceRecords.map((invoice) => (
-                <li id={`invoice-record-${invoice.id}`} key={invoice.id} className="scroll-mt-24 border border-border/60 bg-background/70 px-4 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
-                    <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
-                    <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
-                    {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
-                    <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
-                      {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
-                    </p>
-                  </div>
-                  <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {invoice.project_id ? `Project ${projectNameById.get(invoice.project_id) ?? invoice.project_id}` : "Workspace-level record"}
-                        {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
-                      </p>
-                    </div>
-                    <div className="text-left md:text-right">
-                      <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Gross {formatCurrency(Number(invoice.amount ?? 0))}
-                        {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${formatCurrency(Number(invoice.retention_amount ?? 0))}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/50 pt-3 text-xs text-muted-foreground">
-                    {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
-                    {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
-                    {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
-                    {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
-                  </div>
+              {filteredInvoiceRecords.map((invoice) => {
+                const riskState = billingRowRiskState(invoice);
 
-                  <InvoiceFundingAwardLinker
-                    invoiceId={invoice.id}
-                    workspaceId={workspaceId}
-                    projectId={invoice.project_id}
-                    currentFundingAwardId={invoice.funding_award_id}
-                    fundingAwards={workspaceFundingAwards.map((award) => ({
-                      id: award.id,
-                      title: award.title,
-                      projectId: award.project_id,
-                    }))}
-                    canWrite={canWriteInvoices}
-                  />
-                </li>
-              ))}
+                return (
+                  <li id={`invoice-record-${invoice.id}`} key={invoice.id} className={`scroll-mt-24 border px-4 py-4 ${riskState.rowClassName}`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleCase(invoice.status)}</StatusBadge>
+                      <StatusBadge tone="info">{titleCase(invoice.billing_basis)}</StatusBadge>
+                      <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
+                      {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
+                      {!invoice.fundingAward && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
+                        <StatusBadge tone={riskState.tone === "danger" ? "danger" : "warning"}>Needs relink</StatusBadge>
+                      ) : null}
+                      {riskState.title ? <StatusBadge tone={riskState.tone ?? "neutral"}>{riskState.title}</StatusBadge> : null}
+                      <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
+                        {invoice.created_at ? new Date(invoice.created_at).toLocaleString() : "N/A"}
+                      </p>
+                    </div>
+                    <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{invoice.invoice_number}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {invoice.project_id ? `Project ${projectNameById.get(invoice.project_id) ?? invoice.project_id}` : "Workspace-level record"}
+                          {invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}
+                        </p>
+                      </div>
+                      <div className="text-left md:text-right">
+                        <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Gross {formatCurrency(Number(invoice.amount ?? 0))}
+                          {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${formatCurrency(Number(invoice.retention_amount ?? 0))}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {riskState.title && riskState.detail ? (
+                      <div className={`mt-3 ${billingRowNoticeClass(riskState.tone ?? "info")}`}>
+                        <p className="font-semibold tracking-tight">{riskState.title}</p>
+                        <p className="mt-1">{riskState.detail}</p>
+                      </div>
+                    ) : null}
+
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/50 pt-3 text-xs text-muted-foreground">
+                      {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
+                      {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
+                      {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
+                      {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
+                    </div>
+
+                    <InvoiceFundingAwardLinker
+                      invoiceId={invoice.id}
+                      workspaceId={workspaceId}
+                      projectId={invoice.project_id}
+                      currentFundingAwardId={invoice.funding_award_id}
+                      fundingAwards={workspaceFundingAwards.map((award) => ({
+                        id: award.id,
+                        title: award.title,
+                        projectId: award.project_id,
+                      }))}
+                      canWrite={canWriteInvoices}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           )}
         </article>
