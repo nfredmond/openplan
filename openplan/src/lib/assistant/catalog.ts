@@ -2,6 +2,7 @@ export type AssistantTargetKind =
   | "workspace"
   | "analysis_studio"
   | "project"
+  | "rtp_registry"
   | "rtp_cycle"
   | "plan"
   | "program"
@@ -153,6 +154,20 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       label: "Data readiness",
       description: "Show linked dataset coverage and run support around this project.",
       prompt: "How strong is the data and analysis support for this project?",
+    },
+  ],
+  rtp_registry: [
+    {
+      id: "rtp-registry-brief",
+      label: "RTP registry brief",
+      description: "Summarize the RTP cycle registry, packet pressure, and the next operator move.",
+      prompt: "Give me the RTP registry brief and the next operator move.",
+    },
+    {
+      id: "rtp-registry-packets",
+      label: "Packet queue",
+      description: "Explain where RTP packet creation or refresh pressure is highest across the registry.",
+      prompt: "Where is the RTP packet queue pressure highest, and what should be acted on next?",
     },
   ],
   rtp_cycle: [
@@ -450,6 +465,10 @@ export function resolveAssistantTarget(
     return { kind: "rtp_cycle", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
 
+  if (segments[0] === "rtp") {
+    return { kind: "rtp_registry", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
   if (segments[0] === "plans" && secondSegment) {
     return { kind: "plan", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
   }
@@ -511,6 +530,11 @@ export function resolveAssistantWorkflowId(
   if (kind === "rtp_cycle") {
     if (includesAny(normalized, ["packet", "board", "binder", "report", "refresh", "stale"])) return "rtp-packet";
     return "rtp-brief";
+  }
+
+  if (kind === "rtp_registry") {
+    if (includesAny(normalized, ["packet", "queue", "refresh", "missing", "stale", "board", "binder"])) return "rtp-registry-packets";
+    return "rtp-registry-brief";
   }
 
   if (kind === "plan") {

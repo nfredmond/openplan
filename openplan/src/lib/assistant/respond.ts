@@ -10,6 +10,7 @@ import type {
   PlanAssistantContext,
   ProgramAssistantContext,
   ProjectAssistantContext,
+  RtpRegistryAssistantContext,
   RtpAssistantContext,
   ReportAssistantContext,
   RunAssistantContext,
@@ -132,6 +133,44 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
           title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
           detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
         },
+    quickLinks: buildAssistantOperations(context),
+    suggestedActions: getAssistantActions(context.kind),
+  };
+}
+
+function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
+  return {
+    kind: context.kind,
+    title: `${context.workspace.name ?? "Workspace"} RTP registry`,
+    summary: `Grounded to the RTP cycle registry, packet pressure across cycles, and the shared workspace command queue around the regional planning lane.`,
+    stats: [
+      { label: "Cycles", value: `${context.counts.cycles}` },
+      { label: "Public review", value: `${context.counts.publicReviewCycles}` },
+      { label: "Packet refresh", value: `${context.counts.refreshRecommendedCount}` },
+      { label: "No packet", value: `${context.counts.noPacketCount}` },
+    ],
+    facts: [
+      `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, and ${context.counts.archivedCycles} archived cycles are currently visible.`,
+      context.recommendedCycle
+        ? `Recommended cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+        : "No RTP cycle is visible yet from this registry snapshot.",
+      context.operationsSummary.nextCommand
+        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
+        : "No broader workspace command is currently outranking the RTP registry surface.",
+    ],
+    operatorCue: context.operationsSummary.nextCommand
+      ? {
+          label: "Current runtime cue",
+          title: context.operationsSummary.nextCommand.title,
+          detail: context.operationsSummary.nextCommand.detail,
+        }
+      : context.recommendedCycle
+        ? {
+            label: "Current runtime cue",
+            title: context.recommendedCycle.title,
+            detail: `${context.recommendedCycle.packetFreshnessLabel} is the strongest current RTP packet signal in the registry.`,
+          }
+        : undefined,
     quickLinks: buildAssistantOperations(context),
     suggestedActions: getAssistantActions(context.kind),
   };
@@ -341,6 +380,8 @@ export function buildAssistantPreview(context: AssistantContext): AssistantPrevi
   switch (context.kind) {
     case "project":
       return buildProjectPreview(context);
+    case "rtp_registry":
+      return buildRtpRegistryPreview(context);
     case "rtp_cycle":
       return buildRtpPreview(context);
     case "plan":
@@ -525,6 +566,74 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       `Plan type: ${context.project.planType}`,
       `Stage-gate pass count: ${context.stageGateSummary.passCount}`,
       `Recent run count: ${context.counts.recentRuns}`,
+    ],
+    quickLinks: buildAssistantOperations(context),
+  };
+}
+
+function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflowId: string): AssistantResponse {
+  const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP registry brief";
+
+  if (workflowId === "rtp-registry-packets") {
+    return {
+      workflowId,
+      label,
+      title: `RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
+      summary: context.recommendedCycle
+        ? `${context.recommendedCycle.title} is currently the strongest RTP queue anchor, and the registry shows ${context.counts.refreshRecommendedCount} cycle packet${context.counts.refreshRecommendedCount === 1 ? "" : "s"} needing refresh plus ${context.counts.noPacketCount} cycle${context.counts.noPacketCount === 1 ? "" : "s"} still missing a generated packet.`
+        : "No RTP packet queue posture is visible yet because there are no cycles in the registry snapshot.",
+      findings: [
+        `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
+        context.recommendedCycle
+          ? `${context.recommendedCycle.title} currently reads as ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()}.`
+          : "No RTP cycle is available yet to act as a packet anchor.",
+        context.operationsSummary.nextCommand
+          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          : "No broader workspace queue pressure is currently outranking the RTP registry from the current snapshot.",
+      ],
+      nextSteps: [
+        context.recommendedCycle
+          ? `Open /rtp/${context.recommendedCycle.id} to work the strongest current RTP packet or cycle signal first.`
+          : "Create the first RTP cycle before expecting packet queue behavior.",
+        context.counts.noPacketCount > 0
+          ? "Create first packets for missing cycles before spending too long on already-current packet polish."
+          : "Refresh the stale packets first, then verify that the registry queue and packet trace stay aligned.",
+      ],
+      evidence: [
+        `Cycles: ${context.counts.cycles}`,
+        `Packet reports: ${context.counts.packetReports}`,
+        `Workspace queue depth: ${context.operationsSummary.counts.queueDepth}`,
+      ],
+      quickLinks: buildAssistantOperations(context),
+    };
+  }
+
+  return {
+    workflowId,
+    label,
+    title: `RTP registry brief: ${context.workspace.name ?? "Current workspace"}`,
+    summary: `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}, with packet posture split between ${context.counts.refreshRecommendedCount} needing refresh and ${context.counts.noPacketCount} still missing a generated packet.`,
+    findings: [
+      `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, ${context.counts.archivedCycles} archived.`,
+      context.recommendedCycle
+        ? `Recommended next cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.status}, ${context.recommendedCycle.packetFreshnessLabel}).`
+        : "No RTP cycle is visible yet from the registry snapshot.",
+      context.operationsSummary.nextCommand
+        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
+        : "No broader workspace command currently outranks the RTP registry lane.",
+    ],
+    nextSteps: [
+      context.recommendedCycle
+        ? `Use ${context.recommendedCycle.title} as the next RTP operator anchor instead of treating the registry as a passive list.`
+        : "Create the first RTP cycle so the registry can become a real operating surface.",
+      context.counts.refreshRecommendedCount > 0 || context.counts.noPacketCount > 0
+        ? "Work packet pressure alongside cycle status so the registry stays honest about board/binder readiness."
+        : "Keep chapter, packet, and queue trace posture aligned as cycles advance between draft, public review, and adopted states.",
+    ],
+    evidence: [
+      `Workspace plan: ${context.workspace.plan ?? "Unknown"}`,
+      `Workspace role: ${context.workspace.role ?? "Unknown"}`,
+      `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
     ],
     quickLinks: buildAssistantOperations(context),
   };
@@ -983,6 +1092,8 @@ export function buildAssistantResponse(
     switch (context.kind) {
     case "project":
       return buildProjectResponse(context, workflowId);
+    case "rtp_registry":
+      return buildRtpRegistryResponse(context, workflowId);
     case "rtp_cycle":
       return buildRtpResponse(context, workflowId);
     case "plan":

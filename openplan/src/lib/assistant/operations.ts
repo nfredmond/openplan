@@ -5,6 +5,7 @@ import type {
   PlanAssistantContext,
   ProgramAssistantContext,
   ProjectAssistantContext,
+  RtpRegistryAssistantContext,
   RtpAssistantContext,
   ReportAssistantContext,
   RunAssistantContext,
@@ -182,6 +183,59 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditNote: "Cross-check packet provenance and run basis before externalizing any narrative.",
         })
       : null,
+  ]);
+}
+
+function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): AssistantQuickLink[] {
+  return compactQuickLinks([
+    quickLink("rtp-registry-brief-agent", "Generate RTP registry brief in panel", "/rtp", {
+      targetKind: "rtp_registry",
+      actionClass: "review_controls",
+      executionMode: "future_agent_action",
+      priority: "primary",
+      statusLabel: "In-panel action",
+      reason: "Runs the grounded RTP registry brief inside Planner Agent before you drill into a specific cycle.",
+      approval: "safe",
+      auditEvent: "assistant.operation.rtp_registry.brief_agent",
+      auditNote: "This runs a grounded RTP registry brief only, it does not mutate cycle or packet records.",
+      workflowId: "rtp-registry-brief",
+      prompt: "Give me the RTP registry brief and the next operator move.",
+      promptLabel: "Generate RTP registry brief in panel",
+    }),
+    context.recommendedCycle
+      ? quickLink("rtp-registry-cycle", `Open ${context.recommendedCycle.title}`, `/rtp/${context.recommendedCycle.id}`, {
+          targetKind: "rtp_cycle",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: context.recommendedCycle.packetFreshnessLabel,
+          reason: "This cycle currently carries the strongest registry-level RTP packet or workflow signal.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp_registry.cycle",
+          auditNote: "Use the cycle record to verify chapter, engagement, and packet posture before acting.",
+        })
+      : null,
+    context.operationsSummary.nextCommand
+      ? quickLink("rtp-registry-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+          targetKind: "rtp_registry",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: "Workspace command",
+          reason: "The shared workspace queue currently has the clearest guidance for what should move around the RTP registry lane.",
+          approval: "review",
+          auditEvent: "assistant.operation.rtp_registry.next_command",
+          auditNote: "Use the command-board rationale before changing cycle, report, or packet posture.",
+        })
+      : null,
+    quickLink("rtp-registry-surface", "Open RTP registry", "/rtp", {
+      targetKind: "rtp_registry",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Registry open",
+      reason: "Use the RTP registry when you need the canonical queue and cycle list rather than a single-cycle drill-down.",
+      approval: "safe",
+      auditEvent: "assistant.operation.rtp_registry.surface",
+      auditNote: "Navigation only. Registry actions still happen inside the destination screen.",
+    }),
   ]);
 }
 
@@ -492,6 +546,8 @@ export function buildAssistantOperations(context: AssistantContext): AssistantQu
   switch (context.kind) {
     case "project":
       return buildProjectOperations(context);
+    case "rtp_registry":
+      return buildRtpRegistryOperations(context);
     case "rtp_cycle":
       return buildRtpOperations(context);
     case "plan":

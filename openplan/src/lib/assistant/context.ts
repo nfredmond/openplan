@@ -108,6 +108,34 @@ export type ProjectAssistantContext = {
   }>;
 };
 
+export type RtpRegistryAssistantContext = {
+  kind: "rtp_registry";
+  workspace: {
+    id: string;
+    name: string | null;
+    plan: string | null;
+    role: string | null;
+  };
+  counts: {
+    cycles: number;
+    draftCycles: number;
+    publicReviewCycles: number;
+    adoptedCycles: number;
+    archivedCycles: number;
+    packetReports: number;
+    noPacketCount: number;
+    refreshRecommendedCount: number;
+  };
+  recommendedCycle: {
+    id: string;
+    title: string;
+    status: string;
+    packetFreshnessLabel: string;
+    updatedAt: string;
+  } | null;
+  operationsSummary: WorkspaceOperationsSummary;
+};
+
 export type PlanAssistantContext = {
   kind: "plan";
   workspace: {
@@ -376,6 +404,7 @@ export type RunAssistantContext = {
 export type AssistantContext =
   | WorkspaceAssistantContext
   | ProjectAssistantContext
+  | RtpRegistryAssistantContext
   | RtpAssistantContext
   | PlanAssistantContext
   | ProgramAssistantContext
@@ -760,6 +789,105 @@ async function loadProjectContext(
       createdAt: run.created_at,
       summaryText: run.summary_text,
     })),
+  };
+}
+
+async function loadRtpRegistryContext(
+  supabase: SupabaseLike,
+  userId: string,
+  target: AssistantTarget
+): Promise<RtpRegistryAssistantContext | null> {
+  const workspace = await requireWorkspaceEnvelope(supabase, userId, target.workspaceId);
+  if (!workspace?.id) {
+    return null;
+  }
+
+  const { data: cyclesData } = await supabase
+    .from("rtp_cycles")
+    .select("id, title, status, updated_at")
+    .eq("workspace_id", workspace.id)
+    .order("updated_at", { ascending: false })
+    .limit(200);
+
+  const cycles = (cyclesData ?? []) as Array<{
+    id: string;
+    title: string;
+    status: string;
+    updated_at: string;
+  }>;
+  const cycleIds = cycles.map((cycle) => cycle.id);
+
+  const { data: packetReportData } = cycleIds.length
+    ? await supabase
+        .from("reports")
+        .select("id, rtp_cycle_id, title, generated_at, latest_artifact_kind, updated_at")
+        .in("rtp_cycle_id", cycleIds)
+        .eq("report_type", "board_packet")
+        .order("updated_at", { ascending: false })
+    : { data: [] };
+
+  const packetReports = (packetReportData ?? []) as Array<{
+    id: string;
+    rtp_cycle_id: string | null;
+    title: string | null;
+    generated_at: string | null;
+    latest_artifact_kind: string | null;
+    updated_at: string;
+  }>;
+  const firstPacketByCycleId = new Map<string, { freshness: ReturnType<typeof getReportPacketFreshness> }>();
+
+  for (const report of packetReports) {
+    if (!report.rtp_cycle_id || firstPacketByCycleId.has(report.rtp_cycle_id)) {
+      continue;
+    }
+    firstPacketByCycleId.set(report.rtp_cycle_id, {
+      freshness: getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: report.generated_at,
+        updatedAt: report.updated_at,
+      }),
+    });
+  }
+
+  const recommendedCycle =
+    cycles
+      .map((cycle) => ({
+        ...cycle,
+        packetFreshnessLabel: firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet",
+      }))
+      .sort((left, right) => {
+        const leftPriority = left.packetFreshnessLabel === "Refresh recommended" ? 0 : left.packetFreshnessLabel === "No packet" ? 1 : 2;
+        const rightPriority = right.packetFreshnessLabel === "Refresh recommended" ? 0 : right.packetFreshnessLabel === "No packet" ? 1 : 2;
+        if (leftPriority !== rightPriority) return leftPriority - rightPriority;
+        return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+      })[0] ?? null;
+
+  return {
+    kind: "rtp_registry",
+    workspace,
+    counts: {
+      cycles: cycles.length,
+      draftCycles: cycles.filter((cycle) => cycle.status === "draft").length,
+      publicReviewCycles: cycles.filter((cycle) => cycle.status === "public_review").length,
+      adoptedCycles: cycles.filter((cycle) => cycle.status === "adopted").length,
+      archivedCycles: cycles.filter((cycle) => cycle.status === "archived").length,
+      packetReports: packetReports.length,
+      noPacketCount: cycles.filter((cycle) => (firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet") === "No packet").length,
+      refreshRecommendedCount: cycles.filter((cycle) => firstPacketByCycleId.get(cycle.id)?.freshness.label === "Refresh recommended").length,
+    },
+    recommendedCycle: recommendedCycle
+      ? {
+          id: recommendedCycle.id,
+          title: recommendedCycle.title,
+          status: recommendedCycle.status,
+          packetFreshnessLabel: recommendedCycle.packetFreshnessLabel,
+          updatedAt: recommendedCycle.updated_at,
+        }
+      : null,
+    operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      workspace.id
+    ),
   };
 }
 
@@ -1563,6 +1691,8 @@ export async function loadAssistantContext(
   switch (target.kind as AssistantTargetKind) {
     case "project":
       return target.id ? loadProjectContext(supabase, userId, target.id) : null;
+    case "rtp_registry":
+      return loadRtpRegistryContext(supabase, userId, target);
     case "rtp_cycle":
       return target.id ? loadRtpContext(supabase, userId, target.id) : null;
     case "plan":
