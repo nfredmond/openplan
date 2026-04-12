@@ -25,6 +25,8 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       projectFundingSourcingProjects: 0,
       projectFundingDecisionProjects: 0,
       projectFundingAwardRecordProjects: 0,
+      projectFundingReimbursementStartProjects: 0,
+      projectFundingReimbursementActiveProjects: 0,
       projectFundingGapProjects: 0,
       queueDepth: 1,
     },
@@ -342,6 +344,8 @@ describe("assistant funding operations", () => {
           projectFundingSourcingProjects: 0,
           projectFundingDecisionProjects: 0,
           projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 1,
+          projectFundingReimbursementActiveProjects: 0,
           projectFundingGapProjects: 1,
         },
         nextCommand: {
@@ -391,6 +395,8 @@ describe("assistant funding operations", () => {
           projectFundingSourcingProjects: 0,
           projectFundingDecisionProjects: 0,
           projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 1,
+          projectFundingReimbursementActiveProjects: 0,
           projectFundingGapProjects: 1,
         },
         nextCommand: {
@@ -435,6 +441,8 @@ describe("assistant funding operations", () => {
           projectFundingSourcingProjects: 0,
           projectFundingDecisionProjects: 0,
           projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 1,
           projectFundingGapProjects: 1,
         },
         nextCommand: {

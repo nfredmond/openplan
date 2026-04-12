@@ -245,6 +245,8 @@ describe("workspace operations summary", () => {
       now: new Date("2026-04-11T12:00:00.000Z"),
     });
 
+    expect(summary.counts.projectFundingReimbursementStartProjects).toBe(1);
+    expect(summary.counts.projectFundingReimbursementActiveProjects).toBe(0);
     expect(summary.nextCommand?.key).toBe("start-project-reimbursement-packets");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
     expect(summary.nextCommand?.href).toBe("/projects/project-gap#project-submittals");
@@ -308,6 +310,8 @@ describe("workspace operations summary", () => {
       now: new Date("2026-04-11T12:00:00.000Z"),
     });
 
+    expect(summary.counts.projectFundingReimbursementStartProjects).toBe(0);
+    expect(summary.counts.projectFundingReimbursementActiveProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("advance-project-reimbursement-invoicing");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
     expect(summary.nextCommand?.href).toBe("/projects/project-gap#project-invoices");

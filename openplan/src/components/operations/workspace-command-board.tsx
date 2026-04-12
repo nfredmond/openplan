@@ -38,10 +38,8 @@ export function WorkspaceCommandBoard({
   description?: string;
   children?: ReactNode;
 }) {
-  const reimbursementStartCommand = summary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
-  const reimbursementAdvanceCommand = summary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
-  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
-  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
+  const reimbursementStartCount = summary.counts.projectFundingReimbursementStartProjects;
+  const reimbursementAdvanceCount = summary.counts.projectFundingReimbursementActiveProjects;
 
   return (
     <article className="module-section-surface">

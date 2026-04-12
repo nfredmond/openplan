@@ -71,11 +71,9 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
   const fundingAwardRecordCount = context.operationsSummary.counts.projectFundingAwardRecordProjects;
+  const reimbursementStartCount = context.operationsSummary.counts.projectFundingReimbursementStartProjects;
+  const reimbursementAdvanceCount = context.operationsSummary.counts.projectFundingReimbursementActiveProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
-  const reimbursementStartCommand = context.operationsSummary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
-  const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
-  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
-  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
     : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
@@ -613,11 +611,11 @@ function buildWorkspaceResponse(
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
   const fundingAwardRecordCount = context.operationsSummary.counts.projectFundingAwardRecordProjects;
+  const reimbursementStartCount = context.operationsSummary.counts.projectFundingReimbursementStartProjects;
+  const reimbursementAdvanceCount = context.operationsSummary.counts.projectFundingReimbursementActiveProjects;
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
   const reimbursementStartCommand = context.operationsSummary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
   const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
-  const reimbursementStartCount = typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
-  const reimbursementAdvanceCount = typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
 
   if (workflowId === "analysis-focus" && context.currentRun) {
     return {

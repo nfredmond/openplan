@@ -154,6 +154,8 @@ function buildProgramContext(): ProgramAssistantContext {
         projectFundingSourcingProjects: 0,
         projectFundingDecisionProjects: 0,
         projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
         projectFundingGapProjects: 1,
         queueDepth: 1,
       },

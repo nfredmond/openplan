@@ -108,10 +108,8 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
     (item) => item.key === "advance-project-reimbursement-invoicing"
   );
   const fundingGapCommand = context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps");
-  const reimbursementStartCount =
-    typeof reimbursementStartCommand?.badges[0]?.value === "number" ? reimbursementStartCommand.badges[0].value : 0;
-  const reimbursementAdvanceCount =
-    typeof reimbursementAdvanceCommand?.badges[0]?.value === "number" ? reimbursementAdvanceCommand.badges[0].value : 0;
+  const reimbursementStartCount = context.operationsSummary.counts.projectFundingReimbursementStartProjects;
+  const reimbursementAdvanceCount = context.operationsSummary.counts.projectFundingReimbursementActiveProjects;
 
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {

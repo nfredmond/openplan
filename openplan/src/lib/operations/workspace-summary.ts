@@ -225,6 +225,8 @@ export type WorkspaceOperationsSummary = {
     projectFundingSourcingProjects: number;
     projectFundingDecisionProjects: number;
     projectFundingAwardRecordProjects: number;
+    projectFundingReimbursementStartProjects: number;
+    projectFundingReimbursementActiveProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
   };
@@ -1115,6 +1117,8 @@ export function buildWorkspaceOperationsSummary({
       projectFundingSourcingProjects: fundingSourcingProjects.length,
       projectFundingDecisionProjects: fundingDecisionProjects.length,
       projectFundingAwardRecordProjects: fundingAwardRecordProjects.length,
+      projectFundingReimbursementStartProjects: reimbursementStartProjects.length,
+      projectFundingReimbursementActiveProjects: reimbursementAdvanceProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: commandQueue.length,
     },
