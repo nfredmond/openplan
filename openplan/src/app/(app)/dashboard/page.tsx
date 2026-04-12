@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FileText, FolderKanban, Radar, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -138,6 +138,12 @@ export default async function DashboardPage() {
       title: "Open Projects Module",
       description: "Move into the project control rooms for deliverables, risks, decisions, issues, and meetings.",
       icon: FolderKanban,
+    },
+    {
+      href: "/grants",
+      title: "Open Grants Surface",
+      description: "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
+      icon: Landmark,
     },
     {
       href: "/reports",
