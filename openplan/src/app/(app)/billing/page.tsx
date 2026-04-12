@@ -505,6 +505,12 @@ export default async function BillingPage({
     requestedFocusedInvoiceId && registerScopedInvoiceRecords.some((invoice) => invoice.id === requestedFocusedInvoiceId)
       ? requestedFocusedInvoiceId
       : null;
+  const focusedInvoiceRecord = activeFocusedInvoiceId
+    ? registerScopedInvoiceRecords.find((invoice) => invoice.id === activeFocusedInvoiceId) ?? null
+    : null;
+  const focusedInvoiceExactMatchFundingAward = focusedInvoiceRecord
+    ? resolveExactInvoiceAwardMatch(focusedInvoiceRecord, registerScopedInvoiceRecords, workspaceFundingAwards)
+    : null;
   const focusedTriageHref = activeFocusedInvoiceId
     ? buildBillingInvoiceTriageHref({
         workspaceId,
@@ -933,6 +939,11 @@ export default async function BillingPage({
             <div className="mt-3 flex flex-wrap items-center gap-2 border border-sky-300/70 bg-sky-50/70 px-3 py-3 text-sm text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100">
               <StatusBadge tone="info">Focused row</StatusBadge>
               <span>The register is highlighting the invoice you opened from billing triage.</span>
+              {focusedInvoiceExactMatchFundingAward ? (
+                <span>
+                  The only safe funding-award match is ready below and will be preselected as <strong>{focusedInvoiceExactMatchFundingAward.title}</strong>.
+                </span>
+              ) : null}
               {focusedTriageHref ? <BillingTriageLinkCopy href={focusedTriageHref} /> : null}
               <Link
                 href={buildBillingHref({
@@ -1135,6 +1146,7 @@ export default async function BillingPage({
                       projectId={invoice.project_id}
                       currentFundingAwardId={invoice.funding_award_id}
                       exactMatchFundingAwardId={exactMatchFundingAward?.id ?? null}
+                      autoSelectExactMatch={isFocusedRow}
                       fundingAwards={workspaceFundingAwards.map((award) => ({
                         id: award.id,
                         title: award.title,

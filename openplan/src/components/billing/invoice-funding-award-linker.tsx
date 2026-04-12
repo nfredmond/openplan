@@ -17,6 +17,7 @@ type InvoiceFundingAwardLinkerProps = {
   projectId: string | null;
   currentFundingAwardId?: string | null;
   exactMatchFundingAwardId?: string | null;
+  autoSelectExactMatch?: boolean;
   fundingAwards: FundingAwardOption[];
   canWrite: boolean;
 };
@@ -27,6 +28,7 @@ export function InvoiceFundingAwardLinker({
   projectId,
   currentFundingAwardId = null,
   exactMatchFundingAwardId = null,
+  autoSelectExactMatch = false,
   fundingAwards,
   canWrite,
 }: InvoiceFundingAwardLinkerProps) {
@@ -54,6 +56,15 @@ export function InvoiceFundingAwardLinker({
   const exactMatchAward = exactMatchFundingAwardId
     ? visibleFundingAwards.find((award) => award.id === exactMatchFundingAwardId) ?? null
     : null;
+  const exactMatchSelected = Boolean(exactMatchAward && selectedFundingAwardId === exactMatchAward.id);
+
+  useEffect(() => {
+    if (!autoSelectExactMatch || currentFundingAwardId || !exactMatchAward || selectedFundingAwardId) {
+      return;
+    }
+
+    setSelectedFundingAwardId(exactMatchAward.id);
+  }, [autoSelectExactMatch, currentFundingAwardId, exactMatchAward, selectedFundingAwardId]);
 
   async function handleSave() {
     if (!canWrite || !hasChanges) return;
@@ -126,7 +137,9 @@ export function InvoiceFundingAwardLinker({
                   Saving link…
                 </span>
               ) : (
-                "Save funding link"
+                exactMatchSelected && !currentFundingAwardId
+                  ? "Save exact funding link"
+                  : "Save funding link"
               )}
             </Button>
 
@@ -145,7 +158,9 @@ export function InvoiceFundingAwardLinker({
 
           {exactMatchAward && !currentFundingAwardId ? (
             <p className="text-xs text-emerald-700 dark:text-emerald-300">
-              Exact match ready: this invoice is the only active unlinked record on its project, and {exactMatchAward.title} is the only available funding award.
+              {autoSelectExactMatch && exactMatchSelected
+                ? `Exact match preloaded: ${exactMatchAward.title} is already selected because this focused invoice is the only active unlinked record on its project.`
+                : `Exact match ready: this invoice is the only active unlinked record on its project, and ${exactMatchAward.title} is the only available funding award.`}
             </p>
           ) : null}
 
