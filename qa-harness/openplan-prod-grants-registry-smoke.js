@@ -170,7 +170,16 @@ async function main() {
     if (!ids.projectId) {
       throw new Error(`Project seed returned no project id: ${JSON.stringify(createProjectResult.data)}`);
     }
-    notes.push(`Seeded linked project ${projectName} inside the smoke workspace.`);
+
+    const fundingProfileResult = await appFetch(`/api/projects/${ids.projectId}/funding-profile`, {
+      fundingNeedAmount: 480000,
+      localMatchNeedAmount: 120000,
+      notes: 'Production smoke seeded a funding profile so grants reimbursement commands surface from the shared workspace runtime.',
+    }, 'PATCH');
+    if (fundingProfileResult.status !== 200) {
+      throw new Error(`Project funding profile patch failed: ${fundingProfileResult.status} ${JSON.stringify(fundingProfileResult.data)}`);
+    }
+    notes.push(`Seeded linked project ${projectName} inside the smoke workspace and anchored its funding profile for downstream reimbursement commands.`);
 
     const programResult = await appFetch('/api/programs', {
       projectId: ids.projectId,

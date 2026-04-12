@@ -236,6 +236,7 @@ export type WorkspaceOperationsSummary = {
   };
   nextCommand: WorkspaceCommandQueueItem | null;
   commandQueue: WorkspaceCommandQueueItem[];
+  fullCommandQueue: WorkspaceCommandQueueItem[];
 };
 
 function daysUntil(value: string | null | undefined, now: Date) {
@@ -1161,7 +1162,8 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
-  const commandQueue = queueCandidates.sort((left, right) => left.priority - right.priority).slice(0, 5);
+  const fullCommandQueue = queueCandidates.sort((left, right) => left.priority - right.priority);
+  const commandQueue = fullCommandQueue.slice(0, 5);
 
   const nextCommand = commandQueue[0] ?? null;
   const posture = nextCommand
@@ -1203,9 +1205,10 @@ export function buildWorkspaceOperationsSummary({
       projectFundingReimbursementStartProjects: reimbursementStartProjects.length,
       projectFundingReimbursementActiveProjects: reimbursementAdvanceProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
-      queueDepth: commandQueue.length,
+      queueDepth: fullCommandQueue.length,
     },
     nextCommand,
     commandQueue,
+    fullCommandQueue,
   };
 }

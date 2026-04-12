@@ -677,7 +677,7 @@ export default async function GrantsPage({
   );
   const leadAwardConversionOpportunity =
     awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;
-  const grantsQueue = operationsSummary.commandQueue
+  const grantsQueue = operationsSummary.fullCommandQueue
     .filter((item) => GRANTS_QUEUE_KEYS.has(item.key))
     .map((item) => ({
       ...item,

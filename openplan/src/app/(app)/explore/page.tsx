@@ -213,6 +213,15 @@ type AnalysisContextResponse = {
       priority: number;
       badges: Array<{ label: string; value?: string | number | null }>;
     }>;
+    fullCommandQueue: Array<{
+      key: string;
+      title: string;
+      detail: string;
+      href: string;
+      tone: "info" | "success" | "warning" | "danger" | "neutral";
+      priority: number;
+      badges: Array<{ label: string; value?: string | number | null }>;
+    }>;
   };
 };
 
