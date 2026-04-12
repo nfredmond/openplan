@@ -300,14 +300,23 @@ async function main() {
     if (unlinkedInvoiceResult.status !== 201) {
       throw new Error(`Unlinked invoice creation failed: ${unlinkedInvoiceResult.status} ${JSON.stringify(unlinkedInvoiceResult.data)}`);
     }
+    ids.unlinkedInvoiceId = unlinkedInvoiceResult.data.invoice?.id ?? null;
+    if (!ids.unlinkedInvoiceId) {
+      throw new Error(`Unlinked invoice creation returned no invoice id: ${JSON.stringify(unlinkedInvoiceResult.data)}`);
+    }
 
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
     const refreshedQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
     await refreshedQueueSection.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
-    await refreshedQueueSection.getByText(/Exact relink ready/i).first().waitFor({ timeout: 30000 });
-    await refreshedQueueSection.getByRole('button', { name: /Save exact funding link/i }).first().click();
-    await refreshedQueueSection.getByText(/Funding link saved\./i).first().waitFor({ timeout: 30000 });
+    const exactRelinkRow = refreshedQueueSection.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: unlinkedInvoiceNumber, exact: false }) }).first();
+    await exactRelinkRow.getByText(/Exact relink ready/i).waitFor({ timeout: 30000 });
+    await exactRelinkRow.getByRole('button', { name: /Save exact funding link/i }).click();
+    await page.waitForTimeout(2000);
+    if (!page.url().includes(`relinkedInvoiceId=${ids.unlinkedInvoiceId}`)) {
+      throw new Error(`Exact relink did not update the grants URL as expected: ${page.url()}`);
+    }
+    await exactRelinkRow.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
     notes.push('Repaired an exact award relink directly from the shared grants queue without leaving `/grants`.');
 
     await screenshot('prod-grants-registry-03-reimbursement-creation');
