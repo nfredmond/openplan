@@ -274,6 +274,23 @@ function getReimbursementPriority(status: ReturnType<typeof buildProjectFundingS
   }
 }
 
+function getReimbursementActionLabel(status: ReturnType<typeof buildProjectFundingStackSummary>["reimbursementStatus"]) {
+  switch (status) {
+    case "not_started":
+      return "Start reimbursement packet";
+    case "drafting":
+      return "Advance draft reimbursement";
+    case "in_review":
+      return "Review in-flight reimbursement";
+    case "partially_paid":
+      return "Close remaining reimbursement";
+    case "paid":
+      return "Review paid billing record";
+    default:
+      return "Open billing register";
+  }
+}
+
 export default async function GrantsPage({
   searchParams,
 }: {
@@ -829,7 +846,11 @@ export default async function GrantsPage({
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-                        <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                        <Link href={`/projects/${item.project.id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                          {getReimbursementActionLabel(item.summary.reimbursementStatus)}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                        <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
                           Open project funding lane
                           <ArrowRight className="h-4 w-4" />
                         </Link>

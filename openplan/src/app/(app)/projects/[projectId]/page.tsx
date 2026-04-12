@@ -1797,7 +1797,7 @@ export default async function ProjectDetailPage({
                                   : "No invoice records are linked to this award yet."}
                               </p>
                             </div>
-                            <Link href="#project-billing-register" className="module-inline-action w-fit">
+                            <Link href="#project-invoices" className="module-inline-action w-fit">
                               Review billing register
                             </Link>
                           </div>
