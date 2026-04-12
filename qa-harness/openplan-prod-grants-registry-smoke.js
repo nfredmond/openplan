@@ -273,6 +273,21 @@ async function main() {
     await screenshot('prod-grants-registry-01-registry');
     await screenshot('prod-grants-registry-02-award-conversion');
 
+    const reimbursementLink = awardStackSection.getByRole('link', { name: /Start reimbursement packet/i }).first();
+    await reimbursementLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/projects/${ids.projectId}#project-invoices$`, 'i'), { timeout: 30000 }),
+      reimbursementLink.click(),
+    ]);
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('heading', { name: /Project-linked billing register/i }).waitFor({ timeout: 30000 });
+    notes.push('The grants reimbursement action landed directly on the project billing register anchor.');
+
+    await screenshot('prod-grants-registry-03-project-billing-register');
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+
     const programFundingLink = page.getByRole('link', { name: /Open program funding lane/i }).first();
     await programFundingLink.waitFor({ timeout: 30000 });
     await Promise.all([
@@ -283,7 +298,7 @@ async function main() {
     await page.getByRole('heading', { name: /Linked funding opportunities/i }).waitFor({ timeout: 30000 });
     notes.push('The grants registry linked back into the canonical program funding lane.');
 
-    await screenshot('prod-grants-registry-03-program-detail');
+    await screenshot('prod-grants-registry-04-program-detail');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-grants-registry-smoke.md`);
     const lines = [

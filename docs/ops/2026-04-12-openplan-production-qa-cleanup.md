@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-12
 
-- Started: 2026-04-12T07:50:36.516Z
+- Started: 2026-04-12T08:01:32.840Z
 - Mode: apply
 - Env path: /home/narford/.openclaw/workspace/openplan/openplan/.env.local
 - Created-after filter: 2026-04-12
@@ -23,7 +23,7 @@
 - workspaces: planned=2
 
 ## Auth plan
-- openplan-prod-grants-smoke-2026-04-12t07-49-52-726z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t08-00-48-179z@natfordplanning.com
 
 ## Delete results
 - programs: status=200 ok=true planned=1 deleted=1
@@ -33,7 +33,7 @@
 - workspaces: status=200 ok=true planned=2 deleted=2
 
 ## Auth deletes
-- openplan-prod-grants-smoke-2026-04-12t07-49-52-726z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t08-00-48-179z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0
