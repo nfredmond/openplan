@@ -109,7 +109,7 @@ async function main() {
   }
 
   try {
-    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.goto(`${productionBaseUrl}/sign-in?redirect=%2Fgrants`, { waitUntil: 'networkidle' });
     await page.getByLabel('Work email').fill(email);
     await page.getByLabel('Password').fill(password);
     await Promise.all([
@@ -155,25 +155,25 @@ async function main() {
     await page.getByText(/No funding opportunities yet/i).waitFor({ timeout: 30000 });
     notes.push('Grants registry rendered its empty state before the first opportunity was created.');
 
-    await page.getByLabel('Opportunity title').fill(opportunityTitle);
-    await page.getByLabel('Funding program optional').selectOption(ids.programId);
-    await page.getByLabel('Status').selectOption('open');
-    await page.getByLabel('Agency optional').fill('Caltrans');
-    await page.getByLabel('Owner optional').fill('Grant lead');
-    await page.getByLabel('Cadence optional').fill('Annual cycle');
-    await page.getByLabel('Likely award amount optional').fill('500000');
-    await page.getByLabel('Closes optional').fill(toDateTimeLocal(closeIso));
-    await page.getByLabel('Decision due optional').fill(toDateTimeLocal(decisionIso));
-    await page.getByLabel('Summary optional').fill('Smoke-tested funding opportunity created from the shared Grants OS surface.');
+    await page.locator('#funding-opportunity-title').fill(opportunityTitle);
+    await page.locator('#funding-opportunity-program').selectOption(ids.programId);
+    await page.locator('#funding-opportunity-status').selectOption('open');
+    await page.locator('#funding-opportunity-agency').fill('Caltrans');
+    await page.locator('#funding-opportunity-owner').fill('Grant lead');
+    await page.locator('#funding-opportunity-cadence').fill('Annual cycle');
+    await page.locator('#funding-opportunity-expected-award').fill('500000');
+    await page.locator('#funding-opportunity-closes').fill(toDateTimeLocal(closeIso));
+    await page.locator('#funding-opportunity-decision').fill(toDateTimeLocal(decisionIso));
+    await page.locator('#funding-opportunity-summary').fill('Smoke-tested funding opportunity created from the shared Grants OS surface.');
     await page.getByRole('button', { name: /save funding opportunity/i }).click();
 
     await page.getByText(/Funding opportunity saved\./i).waitFor({ timeout: 30000 });
-    await page.getByText(opportunityTitle, { exact: false }).waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: opportunityTitle, exact: false }).waitFor({ timeout: 30000 });
     await page.getByText(/Advance near-term funding windows/i).waitFor({ timeout: 30000 });
     notes.push('Created the first funding opportunity from the shared grants surface and confirmed the workspace grants queue surfaced the near-term deadline command.');
 
-    await page.getByLabel(/Decision state/i).first().selectOption('pursue');
-    await page.getByLabel(/Decision rationale/i).first().fill('Smoke proof moved this grant into a real pursue posture from the shared registry.');
+    await page.locator('select[id^="funding-decision-"]').first().selectOption('pursue');
+    await page.getByPlaceholder('Record why the team chose pursue, monitor, or skip.').first().fill('Smoke proof moved this grant into a real pursue posture from the shared registry.');
     await page.getByRole('button', { name: /save decision/i }).first().click();
     await page.getByText(/Funding decision saved\./i).waitFor({ timeout: 30000 });
     notes.push('Updated the opportunity decision to pursue directly from the grants registry row controls.');
