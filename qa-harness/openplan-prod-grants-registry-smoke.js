@@ -46,6 +46,7 @@ async function main() {
   const opportunityTitle = `2027 ATP countywide active transportation call ${stamp.slice(11, 19)}`;
   const linkedAwardOpportunityTitle = `2027 ATP linked award conversion ${stamp.slice(11, 19)}`;
   const awardTitle = `ATP award conversion smoke ${stamp.slice(11, 19)}`;
+  const unlinkedInvoiceNumber = `ATP-RELINK-${stamp.slice(11, 19).replace(/-/g, '')}`;
   const closeIso = isoDaysFromNow(7);
   const decisionIso = isoDaysFromNow(5);
   const artifacts = [];
@@ -288,9 +289,35 @@ async function main() {
     await awardStackSection.getByText(/Reimbursement in flight/i).waitFor({ timeout: 30000 });
     notes.push('Advanced the reimbursement queue item in place from draft to internal review directly from `/grants`.');
 
+    const unlinkedInvoiceResult = await appFetch('/api/billing/invoices', {
+      workspaceId: ids.workspaceId,
+      projectId: ids.projectId,
+      invoiceNumber: unlinkedInvoiceNumber,
+      amount: 120000,
+      dueDate: closeIso,
+      notes: 'Production smoke seeded a single unlinked reimbursement invoice so the exact award relink action could be proven from the shared grants queue.',
+    });
+    if (unlinkedInvoiceResult.status !== 201) {
+      throw new Error(`Unlinked invoice creation failed: ${unlinkedInvoiceResult.status} ${JSON.stringify(unlinkedInvoiceResult.data)}`);
+    }
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+    const refreshedQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
+    await refreshedQueueSection.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
+    await refreshedQueueSection.getByText(/Exact relink ready/i).first().waitFor({ timeout: 30000 });
+    await refreshedQueueSection.getByRole('button', { name: /Save exact funding link/i }).first().click();
+    await refreshedQueueSection.getByText(/Funding link saved\./i).first().waitFor({ timeout: 30000 });
+    notes.push('Repaired an exact award relink directly from the shared grants queue without leaving `/grants`.');
+
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
-    const reimbursementLink = awardStackSection.getByRole('link', { name: /Review in-flight reimbursement/i }).first();
+    const reimbursementLink = page
+      .locator('article')
+      .filter({ has: page.getByRole('heading', { name: /Workspace award stack and reimbursement posture/i }) })
+      .first()
+      .getByRole('link', { name: /Review in-flight reimbursement/i })
+      .first();
     await reimbursementLink.waitFor({ timeout: 30000 });
     await Promise.all([
       page.waitForURL(new RegExp(`/projects/${ids.projectId}#project-invoices$`, 'i'), { timeout: 30000 }),
@@ -337,7 +364,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, land on the exact project billing register, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, repair an exact award relink from the shared queue, land on the exact project billing register, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

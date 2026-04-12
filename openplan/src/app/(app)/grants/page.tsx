@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, Landmark, ShieldCheck, Sparkles } from "lucide-react";
+import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { InvoiceStatusAdvanceButton } from "@/components/billing/invoice-status-advance-button";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
@@ -247,6 +248,32 @@ function isInvoiceOverdue(status: string, dueDate: string | null | undefined): b
   }
 
   return parsed.getTime() < Date.now();
+}
+
+function invoiceNeedsRelink(status: string, fundingAwardId: string | null | undefined) {
+  return !fundingAwardId && status !== "paid" && status !== "rejected";
+}
+
+function resolveExactInvoiceAwardMatch(
+  invoice: BillingInvoiceRow,
+  invoices: BillingInvoiceRow[],
+  fundingAwards: Array<{ id: string; project_id: string | null; title: string }>
+) {
+  if (!invoice.project_id || !invoiceNeedsRelink(invoice.status, invoice.funding_award_id)) {
+    return null;
+  }
+
+  const projectUnlinkedInvoices = invoices.filter(
+    (candidate) =>
+      candidate.project_id === invoice.project_id && invoiceNeedsRelink(candidate.status, candidate.funding_award_id)
+  );
+  const projectFundingAwards = fundingAwards.filter((award) => award.project_id === invoice.project_id);
+
+  if (projectUnlinkedInvoices.length !== 1 || projectFundingAwards.length !== 1) {
+    return null;
+  }
+
+  return projectFundingAwards[0] ?? null;
 }
 
 function formatInvoiceQueueReason(reason: string) {
@@ -522,10 +549,42 @@ export default async function GrantsPage({
   const leadReimbursementStack =
     fundingProjectStacks.find((item) => item.summary.reimbursementStatus === "not_started" && item.awards.length > 0) ?? null;
   const fundingAwardById = new Map(fundingAwards.map((award) => [award.id, award]));
+  const fundingAwardOptions = fundingAwards.map((award) => ({
+    id: award.id,
+    title: award.title,
+    projectId: award.project?.id ?? award.project_id ?? null,
+  }));
+  const fundingAwardProjectRows = fundingAwards.map((award) => ({
+    id: award.id,
+    project_id: award.project?.id ?? award.project_id ?? null,
+    title: award.title,
+  }));
   const projectNameById = new Map(projectOptions.map((project) => [project.id, project.name]));
-  const reimbursementPriorityQueue = buildBillingInvoicePriorityQueue(awardLinkedInvoices, { limit: 5 }).filter(
-    (entry) => entry.record.status !== "paid" && entry.record.status !== "rejected"
-  );
+  const reimbursementPriorityQueue = buildBillingInvoicePriorityQueue(fundingInvoices, {
+    limit: 5,
+    classifyRecord: (record, records) => {
+      const exactMatchFundingAward = resolveExactInvoiceAwardMatch(record, records, fundingAwardProjectRows);
+      if (!exactMatchFundingAward) {
+        return null;
+      }
+
+      const overdue = isInvoiceOverdue(record.status, record.due_date);
+      const isOutstanding = ["internal_review", "submitted", "approved_for_payment"].includes(record.status);
+
+      return {
+        priorityTier: overdue ? 0.5 : isOutstanding ? 1.5 : 2.5,
+        reason: overdue
+          ? `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this overdue invoice is the only active unlinked reimbursement record.`
+          : isOutstanding
+            ? `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this invoice is the only active unlinked reimbursement record still in payment flow.`
+            : `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this invoice is the only active unlinked reimbursement record.`,
+        isExactRelink: true,
+      };
+    },
+  }).filter((entry) => entry.record.status !== "paid" && entry.record.status !== "rejected");
+  const exactRelinkReadyCount = fundingInvoices.filter((invoice) =>
+    Boolean(resolveExactInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows))
+  ).length;
   const overdueLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => isInvoiceOverdue(invoice.status, invoice.due_date)).length;
   const draftLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => invoice.status === "draft").length;
   const inFlightLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) =>
@@ -675,7 +734,7 @@ export default async function GrantsPage({
               </StatusBadge>
             </div>
 
-            <div className="module-summary-grid cols-4 mt-5">
+            <div className="module-summary-grid cols-5 mt-5">
               <div className="module-summary-card">
                 <p className="module-summary-label">Award-linked records</p>
                 <p className="module-summary-value">{awardLinkedInvoices.length}</p>
@@ -696,6 +755,11 @@ export default async function GrantsPage({
                 <p className="module-summary-value">{inFlightLinkedInvoiceCount}</p>
                 <p className="module-summary-detail">Internal review, submitted, or approved for payment.</p>
               </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Exact relink ready</p>
+                <p className="module-summary-value">{exactRelinkReadyCount}</p>
+                <p className="module-summary-detail">Unlinked invoice records with a single exact funding-award match.</p>
+              </div>
             </div>
 
             {reimbursementPriorityQueue.length === 0 ? (
@@ -712,6 +776,7 @@ export default async function GrantsPage({
                   const award = invoice.funding_award_id ? fundingAwardById.get(invoice.funding_award_id) ?? null : null;
                   const projectName = invoice.project_id ? projectNameById.get(invoice.project_id) ?? null : null;
                   const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
+                  const exactMatchFundingAward = resolveExactInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
 
                   return (
                     <div key={`reimbursement-queue-${invoice.id}`} className="module-record-row">
@@ -719,6 +784,7 @@ export default async function GrantsPage({
                         <div className="module-record-kicker">
                           <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
                           {overdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
+                          {entry.isExactRelink ? <StatusBadge tone="success">Exact relink ready</StatusBadge> : null}
                           {award ? <StatusBadge tone="info">{award.title}</StatusBadge> : null}
                         </div>
 
@@ -732,18 +798,33 @@ export default async function GrantsPage({
 
                         <div className="module-record-meta">
                           <span className="module-record-chip">Project {projectName ?? "Not linked"}</span>
-                          <span className="module-record-chip">Award {award?.title ?? "Not linked"}</span>
+                          <span className="module-record-chip">Award {award?.title ?? exactMatchFundingAward?.title ?? "Not linked"}</span>
                           <span className="module-record-chip">Due {formatDateTime(invoice.due_date)}</span>
                           <span className="module-record-chip">Net {formatCurrency(invoice.net_amount ?? invoice.amount)}</span>
                         </div>
 
                         <div className="mt-4 flex flex-wrap items-start gap-3 text-sm font-semibold">
-                          <InvoiceStatusAdvanceButton
-                            invoiceId={invoice.id}
-                            workspaceId={membership.workspace_id}
-                            currentStatus={invoice.status}
-                            canWrite={canWriteInvoices}
-                          />
+                          {invoice.project_id && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
+                            <div className="min-w-[280px] flex-1">
+                              <InvoiceFundingAwardLinker
+                                invoiceId={invoice.id}
+                                workspaceId={membership.workspace_id}
+                                projectId={invoice.project_id}
+                                currentFundingAwardId={invoice.funding_award_id}
+                                exactMatchFundingAwardId={exactMatchFundingAward?.id ?? null}
+                                autoSelectExactMatch
+                                fundingAwards={fundingAwardOptions}
+                                canWrite={canWriteInvoices}
+                              />
+                            </div>
+                          ) : (
+                            <InvoiceStatusAdvanceButton
+                              invoiceId={invoice.id}
+                              workspaceId={membership.workspace_id}
+                              currentStatus={invoice.status}
+                              canWrite={canWriteInvoices}
+                            />
+                          )}
                           {invoice.project_id ? (
                             <>
                               <Link href={`/projects/${invoice.project_id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
