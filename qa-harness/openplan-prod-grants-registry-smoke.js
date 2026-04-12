@@ -278,7 +278,10 @@ async function main() {
     await reimbursementComposer.getByRole('button', { name: /save invoice record/i }).click();
     await reimbursementComposer.getByText(/Invoice record saved\./i).waitFor({ timeout: 30000 });
     await awardStackSection.getByText(/Invoice drafting started/i).waitFor({ timeout: 30000 });
-    notes.push('Created the first award-linked reimbursement invoice directly from `/grants` and advanced the stack into drafting posture.');
+    const reimbursementQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
+    await reimbursementQueueSection.waitFor({ timeout: 30000 });
+    await reimbursementQueueSection.getByRole('link', { name: /Open reimbursement register/i }).first().waitFor({ timeout: 30000 });
+    notes.push('Created the first award-linked reimbursement invoice directly from `/grants`, advanced the stack into drafting posture, and surfaced it in the workspace reimbursement queue.');
 
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
