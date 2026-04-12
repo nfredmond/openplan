@@ -78,6 +78,9 @@ describe("WorkspaceCommandBoard", () => {
   it("surfaces funding-backed RTP packet review in shared packet work copy", () => {
     render(<WorkspaceCommandBoard summary={summary} />);
 
+    expect(
+      screen.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i)
+    ).toBeInTheDocument();
     expect(screen.getByText(/1 current for release review, 1 funding-backed\./i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Run release review on current packets/i })).toHaveAttribute(
       "href",

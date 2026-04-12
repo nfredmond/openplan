@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-04-12T23:46:06.515Z",
+  "startedAt": "2026-04-12T23:51:46.134Z",
   "mode": "apply",
   "createdAfter": "2026-04-12",
   "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
@@ -109,15 +109,15 @@
   ],
   "authPlan": [
     {
-      "userId": "56ba7b3d-9f5f-441e-b9e1-03bf8e4e05c8",
-      "email": "openplan-prod-rtp-release-smoke-2026-04-12t23-45-24-830z@natfordplanning.com",
-      "created_at": "2026-04-12T23:45:25.229728Z"
+      "userId": "d9914db7-abf4-4080-9914-1acfd6e464af",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t23-50-59-050z@natfordplanning.com",
+      "created_at": "2026-04-12T23:50:59.442569Z"
     }
   ],
   "authDeletes": [
     {
-      "userId": "56ba7b3d-9f5f-441e-b9e1-03bf8e4e05c8",
-      "email": "openplan-prod-rtp-release-smoke-2026-04-12t23-45-24-830z@natfordplanning.com",
+      "userId": "d9914db7-abf4-4080-9914-1acfd6e464af",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t23-50-59-050z@natfordplanning.com",
       "ok": true,
       "status": 200,
       "error": null
@@ -138,22 +138,22 @@
     "userCount": 1,
     "workspaces": [
       {
-        "id": "d68d3fd0-8ab5-456f-ab73-dab0b279b86f",
-        "name": "openplan-prod-rtp-release-smoke-2026-04-12t23-45-24-830z",
-        "slug": "openplan-prod-rtp-release-smoke-2026-04-12t23-45-24-830z-56ba7b3d",
+        "id": "b021fd75-1f24-47a0-a75a-c262239801fa",
+        "name": "openplan-prod-rtp-release-smoke-2026-04-12t23-50-59-050z",
+        "slug": "openplan-prod-rtp-release-smoke-2026-04-12t23-50-59-050z-d9914db7",
         "plan": "free",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T23:45:25.229369+00:00"
+        "created_at": "2026-04-12T23:50:59.442208+00:00"
       },
       {
-        "id": "25028390-a31a-4f19-b8e8-6b3dee82261c",
-        "name": "OpenPlan Prod RTP Release Smoke 23-45-24",
-        "slug": "openplan-prod-rtp-release-smoke-23-45-24",
+        "id": "4dc1241b-b2af-424f-89a8-24b91feb8357",
+        "name": "OpenPlan Prod RTP Release Smoke 23-50-59",
+        "slug": "openplan-prod-rtp-release-smoke-23-50-59",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T23:45:31.969456+00:00"
+        "created_at": "2026-04-12T23:51:07.078606+00:00"
       }
     ]
   }

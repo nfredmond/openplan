@@ -26,6 +26,10 @@ function postureLabel(posture: WorkspaceOperationsSummary["posture"]) {
   }
 }
 
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function WorkspaceCommandBoard({
   summary,
   label = "Operations command board",
@@ -43,6 +47,11 @@ export function WorkspaceCommandBoard({
   const reimbursementAdvanceCount = summary.counts.projectFundingReimbursementActiveProjects;
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
   const rtpFundingReviewCount = summary.counts.rtpFundingReviewPackets;
+  const baseDescription = description ?? summary.detail;
+  const effectiveDescription =
+    rtpFundingReviewCount > 0
+      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"} funding-backed release review even though packet freshness already reads current.`
+      : baseDescription;
 
   return (
     <article className="module-section-surface">
@@ -50,7 +59,7 @@ export function WorkspaceCommandBoard({
         <div className="module-section-heading">
           <p className="module-section-label">{label}</p>
           <h2 className="module-section-title">{title}</h2>
-          <p className="module-section-description">{description ?? summary.detail}</p>
+          <p className="module-section-description">{effectiveDescription}</p>
         </div>
         <StatusBadge tone={postureTone(summary.posture)}>{postureLabel(summary.posture)}</StatusBadge>
       </div>

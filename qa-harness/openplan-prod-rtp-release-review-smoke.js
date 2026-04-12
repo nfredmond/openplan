@@ -278,8 +278,9 @@ async function main() {
     if (dashboardReviewHref !== `/reports/${ids.reportId}#packet-release-review`) {
       throw new Error(`Dashboard RTP funding review action did not target the expected packet release-review path. Received ${dashboardReviewHref}`);
     }
+    await page.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i).first().waitFor({ timeout: 30000 });
     await page.getByText(/1 current for release review, 1 funding-backed\./i).first().waitFor({ timeout: 30000 });
-    notes.push('Dashboard quick actions and shared command board both surfaced the RTP funding-backed release-review lane.');
+    notes.push('Dashboard quick actions and shared command board copy both surfaced the RTP funding-backed release-review lane.');
     await screenshot('prod-rtp-release-review-dashboard');
 
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
