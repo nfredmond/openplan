@@ -67,3 +67,7 @@ export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): s
 
   return item.href;
 }
+
+export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): string {
+  return isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href;
+}

@@ -16,6 +16,8 @@ import {
   resolveRtpPacketWorkPostureFromCounts,
   resolveRtpPacketWorkPostureFromFreshnessLabel,
 } from "@/lib/assistant/rtp-packet-posture";
+import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function formatCurrency(value: number | null | undefined): string {
@@ -131,7 +133,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       promptLabel: "Generate workspace brief",
     }),
     context.operationsSummary.nextCommand
-      ? quickLink("workspace-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("workspace-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "workspace",
           actionClass: "review_controls",
           priority: "primary",
@@ -146,7 +148,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-create-funding-profile",
           "Create lead funding anchor now",
-          fundingAnchorCommand.href,
+          resolveWorkspaceCommandHref(fundingAnchorCommand),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -172,7 +174,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-create-funding-opportunity",
           "Create lead funding opportunity now",
-          fundingSourcingCommand.href,
+          resolveWorkspaceCommandHref(fundingSourcingCommand),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -198,7 +200,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-advance-funding-opportunity",
           "Mark lead opportunity pursue now",
-          fundingDecisionCommand.href,
+          resolveWorkspaceCommandHref(fundingDecisionCommand),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -251,7 +253,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-create-reimbursement-record",
           "Create lead reimbursement record now",
-          reimbursementStartCommand.href,
+          resolveWorkspaceCommandHref(reimbursementStartCommand),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -281,7 +283,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-open-reimbursement-lane",
           "Open lead reimbursement lane",
-          reimbursementAdvanceCommand.href,
+          resolveWorkspaceCommandHref(reimbursementAdvanceCommand),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -298,7 +300,15 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-open-billing-reimbursement-triage",
           "Open billing reimbursement triage",
-          `/billing?workspaceId=${context.workspace.id}&projectId=${reimbursementAdvanceCommand.targetProjectId}&linkage=linked`,
+          reimbursementAdvanceCommand.targetInvoiceId
+            ? buildBillingInvoiceTriageHref({
+                workspaceId: context.workspace.id,
+                invoiceId: reimbursementAdvanceCommand.targetInvoiceId,
+                linkage: "linked",
+                overdue: "all",
+                projectId: reimbursementAdvanceCommand.targetProjectId,
+              })
+            : `/billing?workspaceId=${context.workspace.id}&projectId=${reimbursementAdvanceCommand.targetProjectId}&linkage=linked`,
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -336,7 +346,23 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
                     : reimbursementAdvanceCommand
                       ? "Review reimbursement follow-through in panel"
             : "Review funding gaps in panel",
-          fundingAnchorCommand?.href ?? fundingSourcingCommand?.href ?? fundingDecisionCommand?.href ?? fundingAwardRecordCommand?.href ?? invoiceRelinkCommand?.href ?? reimbursementStartCommand?.href ?? reimbursementAdvanceCommand?.href ?? fundingGapCommand?.href ?? "/projects",
+          (fundingAnchorCommand
+            ? resolveWorkspaceCommandHref(fundingAnchorCommand)
+            : fundingSourcingCommand
+              ? resolveWorkspaceCommandHref(fundingSourcingCommand)
+              : fundingDecisionCommand
+                ? resolveWorkspaceCommandHref(fundingDecisionCommand)
+                : fundingAwardRecordCommand
+                  ? resolveWorkspaceCommandHref(fundingAwardRecordCommand)
+                  : invoiceRelinkCommand
+                    ? resolveWorkspaceCommandHref(invoiceRelinkCommand)
+                    : reimbursementStartCommand
+                      ? resolveWorkspaceCommandHref(reimbursementStartCommand)
+                      : reimbursementAdvanceCommand
+                        ? resolveWorkspaceCommandHref(reimbursementAdvanceCommand)
+                        : fundingGapCommand
+                          ? resolveWorkspaceCommandHref(fundingGapCommand)
+                          : "/projects"),
           {
           targetKind: "workspace",
           actionClass: "review_controls",
@@ -824,7 +850,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
         })
       : null,
     context.operationsSummary.nextCommand
-      ? quickLink("rtp-registry-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("rtp-registry-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "rtp_registry",
           actionClass: "review_controls",
           priority: "primary",
@@ -929,7 +955,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
         })
       : null,
     context.operationsSummary.nextCommand
-      ? quickLink("rtp-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("rtp-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "rtp_cycle",
           actionClass: "review_controls",
           priority: "primary",
@@ -970,7 +996,7 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
       promptLabel: "Check plan gaps in panel",
     }),
     context.operationsSummary.nextCommand
-      ? quickLink("plan-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("plan-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "plan",
           actionClass: "review_controls",
           priority: "primary",
@@ -1254,7 +1280,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
         })
       : null,
     context.operationsSummary.nextCommand
-      ? quickLink("program-next-command", `Open ${context.operationsSummary.nextCommand.title}`, context.operationsSummary.nextCommand.href, {
+      ? quickLink("program-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "program",
           actionClass: "review_controls",
           priority: "primary",

@@ -23,6 +23,7 @@ import {
 import { resolveBillingSupportState } from "@/lib/billing/support";
 import { buildBillingHref, buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
+import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -716,7 +717,7 @@ export default async function BillingPage({
               <p className="font-semibold text-foreground">Current workspace reimbursement priority</p>
               <p className="mt-1 text-muted-foreground">{operationsSummary.nextCommand.detail}</p>
             </div>
-            <Link href={operationsSummary.nextCommand.href} className="text-sm font-semibold text-foreground transition hover:text-primary">
+            <Link href={resolveWorkspaceCommandHref(operationsSummary.nextCommand)} className="text-sm font-semibold text-foreground transition hover:text-primary">
               Open lead project lane
             </Link>
           </div>

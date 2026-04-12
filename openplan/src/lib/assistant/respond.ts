@@ -24,6 +24,7 @@ import {
   resolveRtpPacketWorkPostureFromFreshnessLabel,
 } from "@/lib/assistant/rtp-packet-posture";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
+import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function asNumber(value: unknown): number | null {
@@ -722,21 +723,21 @@ function buildWorkspaceResponse(
       ],
       nextSteps: [
         missingFundingAnchorCount > 0
-          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs")?.href ?? "/projects"} and add a funding-need anchor before trying to quantify the gap.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and add a funding-need anchor before trying to quantify the gap.`
           : fundingSourcingCount > 0
-          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "source-project-funding-opportunities")?.href ?? "/projects"} and source candidate programs before treating the project as a quantified funding gap.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "source-project-funding-opportunities") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and source candidate programs before treating the project as a quantified funding gap.`
           : fundingDecisionCount > 0
-          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions")?.href ?? "/projects"} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
           : fundingAwardRecordCount > 0
-          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "record-awarded-funding")?.href ?? "/projects"} and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "record-awarded-funding") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
           : invoiceRelinkCount > 0
-          ? `Open ${invoiceRelinkCommand?.href ?? "/projects"} and attach the exact unlinked invoice to its funding award before advancing reimbursement closeout.`
+          ? `Open ${invoiceRelinkCommand ? resolveWorkspaceCommandHref(invoiceRelinkCommand) : "/projects"} and attach the exact unlinked invoice to its funding award before advancing reimbursement closeout.`
           : reimbursementStartCount > 0
-          ? `Open ${reimbursementStartCommand?.href ?? "/projects"} and start the first reimbursement packet before routine funding-gap cleanup.`
+          ? `Open ${reimbursementStartCommand ? resolveWorkspaceCommandHref(reimbursementStartCommand) : "/projects"} and start the first reimbursement packet before routine funding-gap cleanup.`
           : reimbursementAdvanceCount > 0
-          ? `Open ${reimbursementAdvanceCommand?.href ?? "/projects"} and move the existing reimbursement work into the invoice lane before closeout posture drifts.`
+          ? `Open ${reimbursementAdvanceCommand ? resolveWorkspaceCommandHref(reimbursementAdvanceCommand) : "/projects"} and move the existing reimbursement work into the invoice lane before closeout posture drifts.`
           : gapProjectCount > 0
-          ? `Open ${context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps")?.href ?? "/projects"} and reopen the thinnest-funded project first.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and reopen the thinnest-funded project first.`
           : "Keep funding need amounts, pursue decisions, and awarded funding records current so future gap posture stays trustworthy.",
         "Use the project funding sections, not generic notes, as the canonical place to close uncovered scope-versus-funding gaps.",
       ],
@@ -793,7 +794,7 @@ function buildWorkspaceResponse(
     ],
     nextSteps: [
       context.operationsSummary.nextCommand
-        ? `Open ${context.operationsSummary.nextCommand.href} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
+        ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
         : context.currentRun
           ? "Open the analysis-focus workflow for a run-grounded brief."
           : "Open Analysis Studio or a project detail page to deepen grounding.",
