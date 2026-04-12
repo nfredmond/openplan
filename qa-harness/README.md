@@ -8,6 +8,7 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
 - `openplan-prod-managed-run-smoke.js` — proves managed model-run launch and downstream scenario attachment continuity on production.
 - `openplan-prod-report-traceability-smoke.js` — proves report detail backlink continuity against live engagement artifacts.
+- `openplan-prod-rtp-release-review-smoke.js` — proves the RTP packet create/generate/release-review loop on a live production alias and captures registry plus report-detail evidence.
 - `openplan-prod-scenario-comparison-smoke.js` — proves live scenario comparison rendering from production-created QA data.
 - `openplan-prod-county-scaffold-smoke.js` — proves county scaffold seed/readback/download/import/save/invalidation behavior on production.
 - `openplan-prod-layout-overlap-audit.js` — audits authenticated production surfaces for overlap/overflow at the configured viewport and writes screenshot-backed findings.
@@ -20,6 +21,7 @@ From `openplan/qa-harness`:
 npm install
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
+npm run prod-rtp-release-review-smoke
 npm run prod-scenario-comparison-smoke
 
 # cleanup now defaults to plan-only / dry-run
@@ -34,6 +36,7 @@ npm run prod-qa-cleanup:apply
 - Reads OpenPlan env from `OPENPLAN_ENV_PATH`, `openplan/.env.local`, or repo-root `.env.local` (first match wins).
 - Defaults active proofs to the canonical production alias `https://openplan-natford.vercel.app`. Override with `OPENPLAN_BASE_URL` only when intentionally targeting another lane.
 - If Vercel Authentication is enabled, set `VERCEL_AUTOMATION_BYPASS_SECRET` (or one of the accepted bypass env aliases in `harness-env.js`) so Playwright contexts can reach the protected deployment.
+- When the canonical alias is still protected and no bypass secret is available in the harness env, use `OPENPLAN_BASE_URL=https://openplan-zeta.vercel.app` deliberately for a fallback production proof run, and record that alias choice explicitly in the generated smoke memo.
 - Uses Playwright in headless mode.
 - Intended for controlled operator use, not CI.
 - Most smoke scripts create real production QA users/workspaces/records. Run cleanup after proof so production residue does not accumulate.
