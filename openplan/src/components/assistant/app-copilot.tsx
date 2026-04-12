@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   formatAssistantOperationActionClass,
   formatAssistantOperationExecutionMode,
@@ -1173,6 +1173,7 @@ function QuickLinkGrid({
 
 export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
@@ -1249,12 +1250,35 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     };
   }, [targetKey, target.kind, target.id, target.runId, target.baselineRunId, target.workspaceId, workspaceId]);
 
+  async function refreshAssistantPreview() {
+    router.refresh();
+
+    const params = new URLSearchParams();
+    params.set("kind", target.kind);
+    if (target.id) params.set("id", target.id);
+    if (target.runId) params.set("runId", target.runId);
+    if (target.baselineRunId) params.set("baselineRunId", target.baselineRunId);
+    if (target.workspaceId ?? workspaceId) params.set("workspaceId", target.workspaceId ?? workspaceId ?? "");
+
+    const response = await fetch(`/api/assistant/context?${params.toString()}`);
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Failed to refresh Planner Agent context");
+    }
+
+    const payload = (await response.json()) as { preview: AssistantPreview };
+    setLiveConsoleState(null);
+    setBasePreview(payload.preview);
+    return payload.preview;
+  }
+
   async function submitPrompt(options?: {
     workflowId?: string;
     question?: string;
     promptLabel?: string;
     operationLink?: AssistantQuickLink;
     suppressOperationTracking?: boolean;
+    localConsoleStateOverride?: AssistantLocalConsoleState | null;
   }) {
     const question = (options?.question ?? draft).trim();
     if (!question && !options?.workflowId) {
@@ -1266,7 +1290,9 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       .find((entry): entry is Extract<ConversationEntry, { type: "response" }> => entry.type === "response" && Boolean(entry.response.quickLinks?.length))
       ?.response.quickLinks;
     const localConsoleState =
-      liveConsoleState ?? buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
+      options?.localConsoleStateOverride !== undefined
+        ? options.localConsoleStateOverride
+        : liveConsoleState ?? buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
 
     const promptLabel = options?.promptLabel ?? question;
     const operationLink = options?.operationLink;
@@ -1413,12 +1439,15 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
         setResponding(false);
 
+        const refreshedPreview = await refreshAssistantPreview();
+
         if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
           await submitPrompt({
             workflowId: executeAction.postActionWorkflowId,
             question: executeAction.postActionPrompt,
             promptLabel: executeAction.postActionPromptLabel ?? link.label,
             suppressOperationTracking: true,
+            localConsoleStateOverride: buildLocalConsoleStateSnapshot(refreshedPreview.quickLinks),
           });
         }
         return;
@@ -1474,12 +1503,15 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
         setResponding(false);
 
+        const refreshedPreview = await refreshAssistantPreview();
+
         if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
           await submitPrompt({
             workflowId: executeAction.postActionWorkflowId,
             question: executeAction.postActionPrompt,
             promptLabel: executeAction.postActionPromptLabel ?? link.label,
             suppressOperationTracking: true,
+            localConsoleStateOverride: buildLocalConsoleStateSnapshot(refreshedPreview.quickLinks),
           });
         }
         return;

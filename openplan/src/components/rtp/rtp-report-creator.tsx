@@ -28,14 +28,14 @@ export function RtpReportCreator({
       : "default";
   const buttonLabel =
     presetStage === "draft"
-      ? "Create draft packet record"
+      ? "Create and generate draft packet"
       : presetStage === "public_review"
-        ? "Create public review packet record"
+        ? "Create and generate public review packet"
         : presetStage === "adopted"
-          ? "Create adoption packet record"
+          ? "Create and generate adoption packet"
           : presetStage === "archived"
-            ? "Create archive packet record"
-            : "Create board packet record";
+            ? "Create and generate archive packet"
+            : "Create and generate board packet";
 
   async function handleCreate() {
     setError(null);
@@ -59,10 +59,26 @@ export function RtpReportCreator({
         throw new Error(payload.error || "Failed to create RTP board packet record");
       }
 
+      const generateResponse = await fetch(`/api/reports/${payload.reportId}/generate`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ format: "html" }),
+      });
+
+      const generatePayload = (await generateResponse.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+
+      if (!generateResponse.ok) {
+        throw new Error(generatePayload?.error || "Failed to generate the first RTP packet artifact");
+      }
+
       router.push(`/reports/${payload.reportId}`);
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create RTP board packet record");
+      setError(submitError instanceof Error ? submitError.message : "Failed to create and generate the RTP board packet");
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +90,7 @@ export function RtpReportCreator({
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
         {buttonLabel}
       </Button>
-      <p className="text-xs text-muted-foreground">{describeRtpPacketPresetStage(presetStage)} will be applied automatically based on the current RTP cycle phase.</p>
+      <p className="text-xs text-muted-foreground">{describeRtpPacketPresetStage(presetStage)} will be applied automatically based on the current RTP cycle phase, then the first packet artifact will be generated immediately.</p>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
