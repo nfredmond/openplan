@@ -1,21 +1,21 @@
 # OpenPlan Production Grants Registry Smoke — 2026-04-12
 
 - Base URL: https://openplan-natford.vercel.app
-- QA user email: openplan-prod-grants-smoke-2026-04-12T09-17-54-608Z@natfordplanning.com
+- QA user email: openplan-prod-grants-smoke-2026-04-12T09-48-07-850Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: bae6c044-3b19-44fe-9f42-6f6f5a207112
-- Bootstrapped workspace id: 6978b188-8ae7-4736-889f-38bc2a9a4b63
-- Project id: 1f67bf28-2cb3-4ea3-84c9-3dd01fcf3416
-- Program id: 61bea941-b3cb-448c-87f0-4e18d14c9186
-- Opportunity id: 66111d8f-c725-464a-8245-75bdf1b8f25f
+- Workspace id: 0398c57e-4c46-4c89-82bb-f7460a90ce65
+- Bootstrapped workspace id: d7aaff4f-b17f-4309-a4b8-f0c22ae2944f
+- Project id: ad32a8f3-7675-4259-a573-c2f350f9d082
+- Program id: a849dd2e-5e53-4f00-8b61-9f6d3a2b8b75
+- Opportunity id: 8c8e527e-5755-49ed-94e5-4d4e5513a6b2
 
 ## Pass/Fail Notes
-- PASS: Created QA auth user openplan-prod-grants-smoke-2026-04-12T09-17-54-608Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-prod-grants-smoke-2026-04-12T09-48-07-850Z@natfordplanning.com.
 - PASS: Signed into production successfully.
-- PASS: Bootstrapped workspace OpenPlan Prod Grants Smoke 09-17-54.
-- PASS: Current workspace resolved to bae6c044-3b19-44fe-9f42-6f6f5a207112 instead of the freshly bootstrapped workspace 6978b188-8ae7-4736-889f-38bc2a9a4b63; smoke data was aligned to the active workspace selection.
-- PASS: Seeded linked project Grass Valley Safe Routes Smoke 09-17-54 inside the smoke workspace.
-- PASS: Created production program ATP Grants Smoke 09-17-54.
+- PASS: Bootstrapped workspace OpenPlan Prod Grants Smoke 09-48-07.
+- PASS: Current workspace resolved to 0398c57e-4c46-4c89-82bb-f7460a90ce65 instead of the freshly bootstrapped workspace d7aaff4f-b17f-4309-a4b8-f0c22ae2944f; smoke data was aligned to the active workspace selection.
+- PASS: Seeded linked project Grass Valley Safe Routes Smoke 09-48-07 inside the smoke workspace and anchored its funding profile for downstream reimbursement commands.
+- PASS: Created production program ATP Grants Smoke 09-48-07.
 - PASS: Grants registry rendered its empty state before the first opportunity was created.
 - PASS: Created the first funding opportunity and confirmed the rendered grants surface picked it up with near-term queue pressure.
 - PASS: Updated the opportunity decision to pursue directly from the grants registry row controls.
@@ -24,6 +24,7 @@
 - PASS: The workspace award stack surfaced the linked project with reimbursement posture immediately after the award was recorded.
 - PASS: Created the first award-linked reimbursement invoice directly from `/grants`, advanced the stack into drafting posture, and surfaced it in the workspace reimbursement queue with a direct billing triage handoff.
 - PASS: Advanced the reimbursement queue item in place from draft to internal review directly from `/grants`.
+- PASS: The grants workspace command queue now routes reimbursement follow-through commands to the exact billing triage row when one active invoice is actionable.
 - PASS: The workspace award stack now routes directly to the exact billing triage row when there is a single active reimbursement record.
 - PASS: Repaired an exact award relink directly from the shared grants queue without leaving `/grants`, and the queue now confirms the saved relink state inline.
 - PASS: The grants reimbursement queue now lands on the exact billing triage row instead of a generic project billing anchor.
@@ -37,4 +38,4 @@
 - 2026-04-12-prod-grants-registry-05-program-detail.png
 
 ## Verdict
-- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, route the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.
+- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, route both the workspace grants queue and the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.
