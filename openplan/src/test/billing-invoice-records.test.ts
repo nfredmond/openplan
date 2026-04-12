@@ -121,4 +121,33 @@ describe("billing invoice record helpers", () => {
     expect(queue.map((entry) => entry.priorityTier)).toEqual([1, 1, 3]);
     expect(queue[0]?.reason).toContain("Unlinked and overdue");
   });
+
+  it("allows exact relink candidates to override default queue posture", () => {
+    const queue = buildBillingInvoicePriorityQueue(
+      [
+        { invoice_number: "OP-001", funding_award_id: null, status: "submitted", amount: 3200, due_date: "2026-03-01", project_id: "project-1" },
+        { invoice_number: "OP-002", funding_award_id: null, status: "internal_review", amount: 7800, due_date: "2026-03-05", project_id: "project-2" },
+      ],
+      {
+        now: "2026-03-15T12:00:00.000Z",
+        limit: 2,
+        classifyRecord: (record) =>
+          record.invoice_number === "OP-001"
+            ? {
+                priorityTier: 0.5,
+                reason: "Exact award relink is ready now.",
+                isExactRelink: true,
+              }
+            : null,
+      }
+    );
+
+    expect(queue.map((entry) => entry.record.invoice_number)).toEqual(["OP-001", "OP-002"]);
+    expect(queue[0]).toMatchObject({
+      priorityTier: 0.5,
+      reason: "Exact award relink is ready now.",
+      isExactRelink: true,
+    });
+    expect(queue[1]?.isExactRelink).toBe(false);
+  });
 });

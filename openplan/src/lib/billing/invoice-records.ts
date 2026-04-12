@@ -61,6 +61,13 @@ export type BillingInvoicePriorityQueueEntry<T extends BillingInvoiceLinkageReco
   isLinked: boolean;
   isOutstanding: boolean;
   isOverdue: boolean;
+  isExactRelink: boolean;
+};
+
+export type BillingInvoicePriorityQueueClassifierResult = {
+  priorityTier?: number;
+  reason?: string;
+  isExactRelink?: boolean;
 };
 
 function roundCurrency(value: number): number {
@@ -267,6 +274,7 @@ export function buildBillingInvoicePriorityQueue<T extends BillingInvoiceLinkage
   options?: {
     now?: Date | string;
     limit?: number;
+    classifyRecord?: (record: T, records: T[]) => BillingInvoicePriorityQueueClassifierResult | null | undefined;
   }
 ): BillingInvoicePriorityQueueEntry<T>[] {
   const items = records ?? [];
@@ -281,16 +289,19 @@ export function buildBillingInvoicePriorityQueue<T extends BillingInvoiceLinkage
       const isOutstanding = isOutstandingStatus(status);
       const overdue = isOverdue(status, record.due_date, now);
       const netAmount = computeNetInvoiceAmount(record.amount, record.retention_amount, record.retention_percent);
-      const priorityTier = priorityTierForRecord(record, now);
+      const basePriorityTier = priorityTierForRecord(record, now);
+      const classified = options?.classifyRecord?.(record, items) ?? null;
+      const priorityTier = classified?.priorityTier ?? basePriorityTier;
 
       return {
         record,
         netAmount,
         priorityTier,
-        reason: priorityReasonForTier(priorityTier),
+        reason: classified?.reason ?? priorityReasonForTier(priorityTier),
         isLinked,
         isOutstanding,
         isOverdue: overdue,
+        isExactRelink: classified?.isExactRelink ?? false,
       };
     })
     .sort((left, right) => {

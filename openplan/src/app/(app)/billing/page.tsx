@@ -475,7 +475,32 @@ export default async function BillingPage({
   const linkageFilteredInvoiceRecords = filterBillingInvoiceRecordsByLinkage(registerScopedInvoiceRecords, linkageFilter);
   const filteredInvoiceRecords = filterBillingInvoiceRecordsByOverdueStatus(linkageFilteredInvoiceRecords, overdueFilter);
   const linkageScopedInvoiceSummary = summarizeBillingInvoiceRecords(linkageFilteredInvoiceRecords);
-  const invoicePriorityQueue = buildBillingInvoicePriorityQueue(registerScopedInvoiceRecords, { limit: 3 });
+  const invoicePriorityQueue = buildBillingInvoicePriorityQueue(registerScopedInvoiceRecords, {
+    limit: 3,
+    classifyRecord: (record, records) => {
+      const exactMatchFundingAward = resolveExactInvoiceAwardMatch(record, records, workspaceFundingAwards);
+      if (!exactMatchFundingAward) {
+        return null;
+      }
+
+      const overdue = isInvoiceOverdue(record.status, record.due_date);
+      const status = typeof record.status === "string" ? record.status : "draft";
+      const isOutstanding = ["internal_review", "submitted", "approved_for_payment"].includes(status);
+
+      return {
+        priorityTier: overdue ? 0.5 : isOutstanding ? 1.5 : 2.5,
+        reason: overdue
+          ? `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this overdue invoice is the only active unlinked reimbursement record.`
+          : isOutstanding
+            ? `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this invoice is the only active unlinked reimbursement record still in payment flow.`
+            : `Exact award relink is ready now: ${exactMatchFundingAward.title} is the only eligible award on this project, and this invoice is the only active unlinked reimbursement record.`,
+        isExactRelink: true,
+      };
+    },
+  });
+  const exactRelinkCandidateCount = registerScopedInvoiceRecords.filter((invoice) =>
+    Boolean(resolveExactInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards))
+  ).length;
   const activeFocusedInvoiceId =
     requestedFocusedInvoiceId && registerScopedInvoiceRecords.some((invoice) => invoice.id === requestedFocusedInvoiceId)
       ? requestedFocusedInvoiceId
@@ -814,6 +839,11 @@ export default async function BillingPage({
                     <p className="mt-1 text-sm text-muted-foreground">
                       Highest reimbursement-risk records first, ranked by unlinked status, overdue posture, and net amount.
                     </p>
+                    {exactRelinkCandidateCount > 0 ? (
+                      <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
+                        {exactRelinkCandidateCount} invoice record{exactRelinkCandidateCount === 1 ? " has" : "s have"} an exact award relink ready from this lane.
+                      </p>
+                    ) : null}
                     {activeProjectFilterName ? (
                       <p className="mt-1 text-xs text-muted-foreground">Currently narrowed to project scope: {activeProjectFilterName}.</p>
                     ) : null}
@@ -840,6 +870,7 @@ export default async function BillingPage({
                           <StatusBadge tone={entry.isLinked ? "neutral" : "warning"}>
                             {entry.isLinked ? "Award-linked" : "Unlinked"}
                           </StatusBadge>
+                          {entry.isExactRelink ? <StatusBadge tone="success">Exact relink ready</StatusBadge> : null}
                           {entry.isOverdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
                           {entry.isOutstanding ? <StatusBadge tone="info">Outstanding</StatusBadge> : null}
                         </div>
