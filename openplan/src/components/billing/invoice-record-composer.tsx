@@ -28,13 +28,30 @@ type InvoiceRecordComposerProps = {
   projects: ProjectOption[];
   fundingAwards?: FundingAwardOption[];
   canWrite: boolean;
+  defaultProjectId?: string | null;
+  defaultFundingAwardId?: string | null;
+  defaultInvoiceNumber?: string;
+  defaultAmount?: string;
+  titleLabel?: string;
+  description?: string;
 };
 
-export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [], canWrite }: InvoiceRecordComposerProps) {
+export function InvoiceRecordComposer({
+  workspaceId,
+  projects,
+  fundingAwards = [],
+  canWrite,
+  defaultProjectId,
+  defaultFundingAwardId,
+  defaultInvoiceNumber,
+  defaultAmount,
+  titleLabel = "Log a consulting invoice record",
+  description = "Capture consulting invoice records with retention, backup posture, and workspace or project linkage.",
+}: InvoiceRecordComposerProps) {
   const router = useRouter();
-  const [projectId, setProjectId] = useState("");
-  const [fundingAwardId, setFundingAwardId] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [projectId, setProjectId] = useState(defaultProjectId ?? "");
+  const [fundingAwardId, setFundingAwardId] = useState(defaultFundingAwardId ?? "");
+  const [invoiceNumber, setInvoiceNumber] = useState(defaultInvoiceNumber ?? "");
   const [consultantName, setConsultantName] = useState("Nat Ford");
   const [billingBasis, setBillingBasis] = useState("time_and_materials");
   const [status, setStatus] = useState("draft");
@@ -42,13 +59,14 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
   const [periodEnd, setPeriodEnd] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(defaultAmount ?? "");
   const [retentionPercent, setRetentionPercent] = useState("0");
   const [supportingDocsStatus, setSupportingDocsStatus] = useState("pending");
   const [submittedTo, setSubmittedTo] = useState("");
   const [caltransPosture, setCaltransPosture] = useState("deferred_exact_forms");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const amountValue = Number.parseFloat(amount || "0") || 0;
@@ -76,6 +94,7 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setMessage(null);
     setIsSaving(true);
 
     try {
@@ -110,9 +129,9 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
         throw new Error(payload.details || payload.error || "Failed to save invoice record");
       }
 
-      setProjectId("");
-      setFundingAwardId("");
-      setInvoiceNumber("");
+      setProjectId(defaultProjectId ?? "");
+      setFundingAwardId(defaultFundingAwardId ?? "");
+      setInvoiceNumber(defaultInvoiceNumber ?? "");
       setConsultantName("Nat Ford");
       setBillingBasis("time_and_materials");
       setStatus("draft");
@@ -120,12 +139,13 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
       setPeriodEnd("");
       setInvoiceDate("");
       setDueDate("");
-      setAmount("");
+      setAmount(defaultAmount ?? "");
       setRetentionPercent("0");
       setSupportingDocsStatus("pending");
       setSubmittedTo("");
       setCaltransPosture("deferred_exact_forms");
       setNotes("");
+      setMessage("Invoice record saved.");
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to save invoice record");
@@ -163,13 +183,11 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
             </span>
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice entry</p>
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">Log a consulting invoice record</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">{titleLabel}</h2>
             </div>
           </div>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            Capture consulting invoice records with retention, backup posture, and workspace or project linkage.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">{description}</p>
 
           <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
             <div className="grid gap-4 md:grid-cols-3">
@@ -325,6 +343,12 @@ export function InvoiceRecordComposer({ workspaceId, projects, fundingAwards = [
                 placeholder="Capture supporting-doc gaps, reviewer comments, reimbursement caveats, or why exact LAPM exhibit/form numbers remain deferred."
               />
             </div>
+
+            {message ? (
+              <p className="border-l-2 border-emerald-400 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
+                {message}
+              </p>
+            ) : null}
 
             {error ? (
               <p className="border-l-2 border-red-400 bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200">

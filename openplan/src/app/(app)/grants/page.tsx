@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, Landmark, ShieldCheck, Sparkles } from "lucide-react";
+import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
@@ -8,6 +9,7 @@ import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-c
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -316,6 +318,7 @@ export default async function GrantsPage({
 
   const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
   const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const canWriteInvoices = canAccessWorkspaceAction("billing.invoices.write", membership?.role);
 
   if (!membership || !workspace) {
     return (
@@ -484,6 +487,8 @@ export default async function GrantsPage({
   const reimbursementPaidCount = fundingProjectStacks.filter(
     (item) => item.summary.reimbursementStatus === "paid"
   ).length;
+  const leadReimbursementStack =
+    fundingProjectStacks.find((item) => item.summary.reimbursementStatus === "not_started" && item.awards.length > 0) ?? null;
 
   const filteredOpportunities = opportunities.filter((opportunity) => {
     if (selectedStatus !== "all" && opportunity.opportunity_status !== selectedStatus) {
@@ -810,7 +815,33 @@ export default async function GrantsPage({
                 />
               </div>
             ) : (
-              <div className="mt-5 module-record-list">
+              <>
+                {leadReimbursementStack ? (
+                  <div className="mt-5">
+                    <InvoiceRecordComposer
+                      workspaceId={membership.workspace_id}
+                      projects={[leadReimbursementStack.project]}
+                      fundingAwards={leadReimbursementStack.awards.map((award) => ({
+                        id: award.id,
+                        title: award.title,
+                        projectId: leadReimbursementStack.project.id,
+                      }))}
+                      canWrite={canWriteInvoices}
+                      defaultProjectId={leadReimbursementStack.project.id}
+                      defaultFundingAwardId={leadReimbursementStack.nextObligationAward?.id ?? leadReimbursementStack.awards[0]?.id ?? null}
+                      defaultInvoiceNumber={`${leadReimbursementStack.project.name.replace(/\s+/g, " ").trim().slice(0, 32)} reimbursement`}
+                      defaultAmount={
+                        leadReimbursementStack.summary.uninvoicedAwardAmount > 0
+                          ? String(leadReimbursementStack.summary.uninvoicedAwardAmount)
+                          : undefined
+                      }
+                      titleLabel="Start the lead reimbursement record now"
+                      description="Seed the first award-linked invoice directly from /grants so reimbursement work starts in the shared workspace lane before deeper billing follow-through moves into project detail."
+                    />
+                  </div>
+                ) : null}
+
+                <div className="mt-5 module-record-list">
                 {fundingProjectStacks.map((item) => (
                   <div key={`award-stack-${item.project.id}`} className="module-record-row">
                     <div className="module-record-main">
@@ -858,7 +889,8 @@ export default async function GrantsPage({
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+              </>
             )}
           </article>
         </div>
