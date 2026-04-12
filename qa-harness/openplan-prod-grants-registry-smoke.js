@@ -265,6 +265,11 @@ async function main() {
     await page.getByText(/Award records current/i).waitFor({ timeout: 30000 });
     notes.push('Created the lead funding award directly from `/grants` and cleared the award-conversion pressure for the smoke workspace.');
 
+    const awardStackSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace award stack and reimbursement posture/i }) }).first();
+    await awardStackSection.getByText(projectName, { exact: false }).waitFor({ timeout: 30000 });
+    await awardStackSection.getByText(/No reimbursement requests yet/i).waitFor({ timeout: 30000 });
+    notes.push('The workspace award stack surfaced the linked project with reimbursement posture immediately after the award was recorded.');
+
     await screenshot('prod-grants-registry-01-registry');
     await screenshot('prod-grants-registry-02-award-conversion');
 
@@ -300,7 +305,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, surface the workspace award-stack reimbursement posture, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
