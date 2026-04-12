@@ -266,14 +266,23 @@ async function main() {
     notes.push('Created the lead funding award directly from `/grants` and cleared the award-conversion pressure for the smoke workspace.');
 
     const awardStackSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace award stack and reimbursement posture/i }) }).first();
-    await awardStackSection.getByText(projectName, { exact: false }).waitFor({ timeout: 30000 });
+    await awardStackSection.getByRole('heading', { name: projectName, exact: false }).waitFor({ timeout: 30000 });
     await awardStackSection.getByText(/No reimbursement requests yet/i).waitFor({ timeout: 30000 });
     notes.push('The workspace award stack surfaced the linked project with reimbursement posture immediately after the award was recorded.');
 
     await screenshot('prod-grants-registry-01-registry');
     await screenshot('prod-grants-registry-02-award-conversion');
 
-    const reimbursementLink = awardStackSection.getByRole('link', { name: /Start reimbursement packet/i }).first();
+    const reimbursementComposer = page.locator('article').filter({ has: page.getByRole('heading', { name: /Start the lead reimbursement record now/i }) }).first();
+    await reimbursementComposer.waitFor({ timeout: 30000 });
+    await reimbursementComposer.getByRole('button', { name: /save invoice record/i }).click();
+    await reimbursementComposer.getByText(/Invoice record saved\./i).waitFor({ timeout: 30000 });
+    await awardStackSection.getByText(/Invoice drafting started/i).waitFor({ timeout: 30000 });
+    notes.push('Created the first award-linked reimbursement invoice directly from `/grants` and advanced the stack into drafting posture.');
+
+    await screenshot('prod-grants-registry-03-reimbursement-creation');
+
+    const reimbursementLink = awardStackSection.getByRole('link', { name: /Advance draft reimbursement/i }).first();
     await reimbursementLink.waitFor({ timeout: 30000 });
     await Promise.all([
       page.waitForURL(new RegExp(`/projects/${ids.projectId}#project-invoices$`, 'i'), { timeout: 30000 }),
@@ -281,9 +290,9 @@ async function main() {
     ]);
     await page.waitForLoadState('networkidle');
     await page.getByRole('heading', { name: /Project-linked billing register/i }).waitFor({ timeout: 30000 });
-    notes.push('The grants reimbursement action landed directly on the project billing register anchor.');
+    notes.push('The grants reimbursement action landed directly on the project billing register anchor after direct invoice creation.');
 
-    await screenshot('prod-grants-registry-03-project-billing-register');
+    await screenshot('prod-grants-registry-04-project-billing-register');
 
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
@@ -298,7 +307,7 @@ async function main() {
     await page.getByRole('heading', { name: /Linked funding opportunities/i }).waitFor({ timeout: 30000 });
     notes.push('The grants registry linked back into the canonical program funding lane.');
 
-    await screenshot('prod-grants-registry-04-program-detail');
+    await screenshot('prod-grants-registry-05-program-detail');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-grants-registry-smoke.md`);
     const lines = [
@@ -320,7 +329,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, surface the workspace award-stack reimbursement posture, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, land on the exact project billing register, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
