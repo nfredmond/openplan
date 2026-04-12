@@ -36,6 +36,7 @@ npm run prod-qa-cleanup:apply
 - Reads OpenPlan env from `OPENPLAN_ENV_PATH`, `openplan/.env.local`, or repo-root `.env.local` (first match wins).
 - Defaults active proofs to the canonical production alias `https://openplan-natford.vercel.app`. Override with `OPENPLAN_BASE_URL` only when intentionally targeting another lane.
 - If Vercel Authentication is enabled, set `VERCEL_AUTOMATION_BYPASS_SECRET` (or one of the accepted bypass env aliases in `harness-env.js`) so Playwright contexts can reach the protected deployment.
+- OpenPlan also auto-loads `secrets/openplan_vercel_protection_bypass.env` from the workspace root when present, so canonical proof runs can use the secure local bypass path without copying the secret into app env files.
 - When the canonical alias is still protected and no bypass secret is available in the harness env, use `OPENPLAN_BASE_URL=https://openplan-zeta.vercel.app` deliberately for a fallback production proof run, and record that alias choice explicitly in the generated smoke memo.
 - Uses Playwright in headless mode.
 - Intended for controlled operator use, not CI.

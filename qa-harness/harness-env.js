@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
+const workspaceRoot = path.resolve(repoRoot, '..');
 const appRoot = path.join(repoRoot, 'openplan');
 
 function stripOuterQuotes(value) {
@@ -62,11 +63,32 @@ function getOpenplanBaseUrl() {
   return process.env.OPENPLAN_BASE_URL || 'https://openplan-natford.vercel.app';
 }
 
-function getVercelProtectionBypassHeaders() {
-  const secret =
+function readFirstSecretValue(filePath, key) {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const env = readEnv(filePath);
+  const value = env[key];
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function resolveVercelProtectionBypassSecret() {
+  const explicit =
     process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
     process.env.VERCEL_PROTECTION_BYPASS_SECRET ||
     process.env.OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET;
+
+  if (explicit) {
+    return explicit;
+  }
+
+  const secretFile = path.join(workspaceRoot, 'secrets', 'openplan_vercel_protection_bypass.env');
+  return readFirstSecretValue(secretFile, 'OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET');
+}
+
+function getVercelProtectionBypassHeaders() {
+  const secret = resolveVercelProtectionBypassSecret();
 
   if (!secret) {
     return {};
@@ -103,5 +125,7 @@ module.exports = {
   readEnv,
   repoRoot,
   resolveEnvPath,
+  resolveVercelProtectionBypassSecret,
   stripOuterQuotes,
+  workspaceRoot,
 };
