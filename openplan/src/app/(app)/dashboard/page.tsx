@@ -110,6 +110,23 @@ export default async function DashboardPage() {
   });
 
   const actions = [
+    ...(operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ||
+    operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
+      ? [
+          {
+            href: operationsSummary.nextCommand.href,
+            title:
+              operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
+                ? "Start reimbursement packet"
+                : "Advance reimbursement invoicing",
+            description:
+              operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
+                ? "Jump straight into the lead project submittals lane and start the first reimbursement packet."
+                : "Jump straight into the lead project invoice lane and advance reimbursement follow-through already in motion.",
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
     {
       href: "/explore",
       title: "Open Analysis Studio",
@@ -240,7 +257,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {actions.map((action) => {
               const Icon = action.icon;
               return (
