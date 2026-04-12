@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-04-12T10:04:50.728Z",
+  "startedAt": "2026-04-12T10:12:39.802Z",
   "mode": "apply",
   "createdAfter": "2026-04-12",
   "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
@@ -81,15 +81,15 @@
   ],
   "authPlan": [
     {
-      "userId": "2f0e948f-bc0e-40f4-a199-ade7a77cbe0d",
-      "email": "openplan-prod-grants-smoke-2026-04-12t10-03-37-753z@natfordplanning.com",
-      "created_at": "2026-04-12T10:03:38.111741Z"
+      "userId": "0f58885d-4a74-4c22-af09-b648acc15498",
+      "email": "openplan-prod-grants-smoke-2026-04-12t10-11-30-719z@natfordplanning.com",
+      "created_at": "2026-04-12T10:11:31.047295Z"
     }
   ],
   "authDeletes": [
     {
-      "userId": "2f0e948f-bc0e-40f4-a199-ade7a77cbe0d",
-      "email": "openplan-prod-grants-smoke-2026-04-12t10-03-37-753z@natfordplanning.com",
+      "userId": "0f58885d-4a74-4c22-af09-b648acc15498",
+      "email": "openplan-prod-grants-smoke-2026-04-12t10-11-30-719z@natfordplanning.com",
       "ok": true,
       "status": 200,
       "error": null
@@ -110,22 +110,22 @@
     "userCount": 1,
     "workspaces": [
       {
-        "id": "117d79d8-61fd-4196-b4cb-a908a67cc021",
-        "name": "openplan-prod-grants-smoke-2026-04-12t10-03-37-753z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t10-03-37-753z-2f0e948f",
+        "id": "4763c6c1-b98f-4bd6-aacb-4de41b7b4c54",
+        "name": "openplan-prod-grants-smoke-2026-04-12t10-11-30-719z",
+        "slug": "openplan-prod-grants-smoke-2026-04-12t10-11-30-719z-0f58885d",
         "plan": "free",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T10:03:38.111431+00:00"
+        "created_at": "2026-04-12T10:11:31.046984+00:00"
       },
       {
-        "id": "dcd42fbc-3e10-498a-ad81-4747826db562",
-        "name": "OpenPlan Prod Grants Smoke 10-03-37",
-        "slug": "openplan-prod-grants-smoke-10-03-37",
+        "id": "62c1373b-019d-44b7-9e30-5125001bb22b",
+        "name": "OpenPlan Prod Grants Smoke 10-11-30",
+        "slug": "openplan-prod-grants-smoke-10-11-30",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T10:03:44.266483+00:00"
+        "created_at": "2026-04-12T10:11:37.589279+00:00"
       }
     ]
   }
