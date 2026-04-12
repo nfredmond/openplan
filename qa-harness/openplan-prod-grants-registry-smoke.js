@@ -42,13 +42,17 @@ async function main() {
   const password = `OpenPlan!${Date.now()}ProdGrants`;
   const workspaceName = `OpenPlan Prod Grants Smoke ${stamp.slice(11, 19)}`;
   const projectName = `Grass Valley Safe Routes Smoke ${stamp.slice(11, 19)}`;
+  const anchorProjectName = `Nevada City Funding Need Smoke ${stamp.slice(11, 19)}`;
   const programTitle = `ATP Grants Smoke ${stamp.slice(11, 19)}`;
   const opportunityTitle = `2027 ATP countywide active transportation call ${stamp.slice(11, 19)}`;
+  const anchorOpportunityTitle = `2028 rural mobility anchor call ${stamp.slice(11, 19)}`;
   const linkedAwardOpportunityTitle = `2027 ATP linked award conversion ${stamp.slice(11, 19)}`;
   const awardTitle = `ATP award conversion smoke ${stamp.slice(11, 19)}`;
   const unlinkedInvoiceNumber = `ATP-RELINK-${stamp.slice(11, 19).replace(/-/g, '')}`;
   const closeIso = isoDaysFromNow(7);
   const decisionIso = isoDaysFromNow(5);
+  const anchorCloseIso = isoDaysFromNow(45);
+  const anchorDecisionIso = isoDaysFromNow(30);
   const artifacts = [];
   const notes = [];
   const ids = {};
@@ -171,6 +175,35 @@ async function main() {
       throw new Error(`Project seed returned no project id: ${JSON.stringify(createProjectResult.data)}`);
     }
 
+    const createAnchorProjectResult = await jsonFetch(`${supabaseUrl}/rest/v1/projects?select=id,name`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({
+        workspace_id: ids.workspaceId,
+        name: anchorProjectName,
+        summary: 'Production smoke project used to verify grants funding-need anchor focus from the shared queue.',
+        status: 'active',
+        plan_type: 'corridor_plan',
+        delivery_phase: 'scoping',
+        created_by: ids.userId,
+      }),
+    });
+    if (!createAnchorProjectResult.ok) {
+      throw new Error(`Anchor project seed failed: ${createAnchorProjectResult.status} ${JSON.stringify(createAnchorProjectResult.data)}`);
+    }
+    const createdAnchorProject = Array.isArray(createAnchorProjectResult.data)
+      ? createAnchorProjectResult.data[0]
+      : createAnchorProjectResult.data;
+    ids.anchorProjectId = createdAnchorProject?.id ?? null;
+    if (!ids.anchorProjectId) {
+      throw new Error(`Anchor project seed returned no project id: ${JSON.stringify(createAnchorProjectResult.data)}`);
+    }
+
     const fundingProfileResult = await appFetch(`/api/projects/${ids.projectId}/funding-profile`, {
       fundingNeedAmount: 480000,
       localMatchNeedAmount: 120000,
@@ -207,6 +240,41 @@ async function main() {
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
     await page.getByText(/No funding opportunities yet/i).waitFor({ timeout: 30000 });
     notes.push('Grants registry rendered its empty state before the first opportunity was created.');
+
+    const anchorOpportunityResult = await appFetch('/api/funding-opportunities', {
+      programId: ids.programId,
+      projectId: ids.anchorProjectId,
+      title: anchorOpportunityTitle,
+      status: 'open',
+      agencyName: 'Caltrans',
+      ownerLabel: 'Grant lead',
+      cadenceLabel: 'Annual cycle',
+      expectedAwardAmount: 900000,
+      closesAt: anchorCloseIso,
+      decisionDueAt: anchorDecisionIso,
+      summary: 'Smoke-tested anchor opportunity created to verify focused funding-need editing from the shared grants queue.',
+    });
+    if (anchorOpportunityResult.status !== 201) {
+      throw new Error(`Anchor funding opportunity creation failed: ${anchorOpportunityResult.status} ${JSON.stringify(anchorOpportunityResult.data)}`);
+    }
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+    const grantsCommandQueueSectionBeforeAnchor = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const fundingNeedFocusLink = grantsCommandQueueSectionBeforeAnchor.locator(`a[href*="focusProjectId=${ids.anchorProjectId}"][href*="grants-funding-need-editor"]`).first();
+    await fundingNeedFocusLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusProjectId=${ids.anchorProjectId}`, 'i'), { timeout: 30000 }),
+      fundingNeedFocusLink.click(),
+    ]);
+    const focusedFundingNeedEditor = page.locator('#grants-funding-need-editor');
+    await focusedFundingNeedEditor.getByText(/Focused from workspace queue/i).waitFor({ timeout: 30000 });
+    await focusedFundingNeedEditor.locator('#project-funding-need-amount').fill('1250000');
+    await focusedFundingNeedEditor.locator('#project-local-match-need-amount').fill('200000');
+    await focusedFundingNeedEditor.locator('#project-funding-profile-notes').fill('Smoke proof anchored this funding need directly from the shared grants queue.');
+    await focusedFundingNeedEditor.getByRole('button', { name: /save funding profile/i }).click();
+    await page.getByText(/Funding profile saved\./i).waitFor({ timeout: 30000 });
+    notes.push('The grants workspace command queue now retargets missing funding-need anchors to an exact inline editor on `/grants`.');
 
     const grantsCommandQueueSectionBeforeSourcing = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
     const sourcingFocusLink = grantsCommandQueueSectionBeforeSourcing.locator(`a[href*="focusProjectId=${ids.projectId}"]`).first();

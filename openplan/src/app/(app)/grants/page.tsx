@@ -8,6 +8,7 @@ import { InvoiceStatusAdvanceButton } from "@/components/billing/invoice-status-
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
+import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -171,6 +172,7 @@ type ProjectFundingProfileRow = {
   project_id: string;
   funding_need_amount: number | string | null;
   local_match_need_amount: number | string | null;
+  notes?: string | null;
 };
 
 type StatusFilter = "all" | FundingOpportunityStatus;
@@ -367,6 +369,15 @@ function resolveProjectExactBillingTriageTarget(invoices: BillingInvoiceRow[]) {
   return actionableInvoices[0] ?? null;
 }
 
+function buildFocusedGrantsFundingNeedHref(projectId: string | null | undefined) {
+  if (!projectId) {
+    return "/grants#grants-funding-need-editor";
+  }
+
+  const params = new URLSearchParams({ focusProjectId: projectId });
+  return `/grants?${params.toString()}#grants-funding-need-editor`;
+}
+
 function buildFocusedGrantsOpportunityCreationHref(projectId: string | null | undefined) {
   if (!projectId) {
     return "/grants#grants-opportunity-creator";
@@ -439,6 +450,10 @@ function resolveGrantsQueueHref(
         projectId: item.targetProjectId,
       });
     }
+  }
+
+  if (item.key === "anchor-project-funding-needs") {
+    return buildFocusedGrantsFundingNeedHref(item.targetProjectId);
   }
 
   if (item.key === "source-project-funding-opportunities") {
@@ -541,7 +556,7 @@ export default async function GrantsPage({
       .order("due_date", { ascending: true }),
     supabase
       .from("project_funding_profiles")
-      .select("project_id, funding_need_amount, local_match_need_amount")
+      .select("project_id, funding_need_amount, local_match_need_amount, notes")
       .eq("workspace_id", membership.workspace_id),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
@@ -658,6 +673,26 @@ export default async function GrantsPage({
   const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoices);
   const uninvoicedCommittedAmount = Math.max(committedAwardAmount - linkedInvoiceSummary.totalNetAmount, 0);
   const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
+  const fundingNeedAnchorProjects = projectOptions
+    .map((project) => {
+      const fundingProfile = projectFundingProfileByProjectId.get(project.id) ?? null;
+      const fundingNeedAmount = Number(fundingProfile?.funding_need_amount ?? 0);
+      const projectOpportunities = opportunitiesByProjectId.get(project.id) ?? [];
+      if (projectOpportunities.length === 0) {
+        return null;
+      }
+      if (Number.isFinite(fundingNeedAmount) && fundingNeedAmount > 0) {
+        return null;
+      }
+      return {
+        project,
+        opportunityCount: projectOpportunities.length,
+        localMatchNeedAmount: Number(fundingProfile?.local_match_need_amount ?? 0),
+        notes: fundingProfile?.notes ?? null,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => right.opportunityCount - left.opportunityCount);
   const fundingSourcingProjects = projectOptions
     .map((project) => {
       const fundingProfile = projectFundingProfileByProjectId.get(project.id) ?? null;
@@ -694,6 +729,12 @@ export default async function GrantsPage({
         )
       : null) ?? null;
   const reimbursementComposerStack = focusedReimbursementStack ?? leadReimbursementStack;
+  const leadFundingNeedProject = fundingNeedAnchorProjects[0] ?? null;
+  const focusedFundingNeedProject =
+    (activeFocusedProjectId
+      ? fundingNeedAnchorProjects.find((item) => item.project.id === activeFocusedProjectId)
+      : null) ?? null;
+  const fundingNeedEditorProject = focusedFundingNeedProject ?? leadFundingNeedProject;
   const focusedFundingSourcingProject =
     (activeFocusedProjectId
       ? fundingSourcingProjects.find((item) => item.project.id === activeFocusedProjectId)
@@ -876,6 +917,46 @@ export default async function GrantsPage({
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-6">
+          {fundingNeedEditorProject ? (
+            <div
+              id="grants-funding-need-editor"
+              className={activeFocusedProjectId === fundingNeedEditorProject.project.id ? "scroll-mt-24 rounded-[1.7rem] ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : "scroll-mt-24"}
+            >
+              <article className="module-section-surface">
+                <div className="module-section-header">
+                  <div className="module-section-heading">
+                    <p className="module-section-label">Funding need anchor</p>
+                    <h2 className="module-section-title">{`Anchor funding need for ${fundingNeedEditorProject.project.name}`}</h2>
+                    <p className="module-section-description">
+                      Record the target funding need and local match so grant sourcing, gap review, and award coverage can run against honest project math.
+                    </p>
+                  </div>
+                  <StatusBadge tone="warning">{fundingNeedAnchorProjects.length} missing anchor{fundingNeedAnchorProjects.length === 1 ? "" : "s"}</StatusBadge>
+                </div>
+                <ProjectFundingProfileEditor
+                  projectId={fundingNeedEditorProject.project.id}
+                  initialFundingNeedAmount={null}
+                  initialLocalMatchNeedAmount={fundingNeedEditorProject.localMatchNeedAmount}
+                  initialNotes={fundingNeedEditorProject.notes}
+                />
+                {activeFocusedProjectId === fundingNeedEditorProject.project.id ? (
+                  <div className="mt-3 rounded-2xl border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
+                    <p className="font-semibold">Focused from workspace queue</p>
+                    <p className="mt-1">
+                      {fundingNeedEditorProject.project.name} already has linked opportunities but still needs a recorded funding-need anchor before gap and award posture can be trusted.
+                    </p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+                      {fundingNeedEditorProject.opportunityCount} linked opportunit{fundingNeedEditorProject.opportunityCount === 1 ? "y" : "ies"}
+                      {fundingNeedEditorProject.localMatchNeedAmount > 0
+                        ? ` · Local match ${formatCurrency(fundingNeedEditorProject.localMatchNeedAmount)}`
+                        : ""}
+                    </p>
+                  </div>
+                ) : null}
+              </article>
+            </div>
+          ) : null}
+
           <div
             id="grants-opportunity-creator"
             className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24 rounded-[1.7rem] ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : "scroll-mt-24"}
