@@ -9,6 +9,7 @@
     "prod-engagement-report-handoff-smoke": "node openplan-prod-engagement-report-handoff-smoke.js",
     "prod-managed-run-smoke": "node openplan-prod-managed-run-smoke.js",
     "prod-report-traceability-smoke": "node openplan-prod-report-traceability-smoke.js",
+    "prod-report-funding-smoke": "node openplan-prod-report-funding-smoke.js",
     "prod-grants-registry-smoke": "node openplan-prod-grants-registry-smoke.js",
     "prod-rtp-release-review-smoke": "node openplan-prod-rtp-release-review-smoke.js",
     "prod-scenario-comparison-smoke": "node openplan-prod-scenario-comparison-smoke.js",

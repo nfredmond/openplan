@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-12
 
-- Started: 2026-04-12T20:45:38.383Z
+- Started: 2026-04-12T22:21:08.394Z
 - Mode: apply
 - Env path: /home/narford/.openclaw/workspace/openplan/openplan/.env.local
 - Created-after filter: 2026-04-12
@@ -8,32 +8,40 @@
 
 ## Scope
 - Targeted QA/debug/proof/trace/canary production records created on or after 2026-04-12.
-- Targeted workspaces: 2
+- Targeted workspaces: 6
 - Targeted county runs: 0
-- Targeted auth users: 1
+- Targeted auth users: 3
 
 ## Stripe checkout sessions
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete plan
-- programs: planned=1
-- billing_events: planned=2
-- projects: planned=2
-- workspace_members: planned=2
-- workspaces: planned=2
+- report_artifacts: planned=2
+- report_sections: planned=14
+- billing_events: planned=6
+- reports: planned=2
+- projects: planned=3
+- workspace_members: planned=6
+- workspaces: planned=6
 
 ## Auth plan
-- openplan-prod-grants-smoke-2026-04-12t20-44-00-510z@natfordplanning.com
+- openplan-report-funding-qa-2026-04-12t22-20-35-033z@natfordplanning.com
+- openplan-report-funding-qa-2026-04-12t22-18-16-398z@natfordplanning.com
+- openplan-report-funding-qa-2026-04-12t21-57-10-051z@natfordplanning.com
 
 ## Delete results
-- programs: status=200 ok=true planned=1 deleted=1
-- billing_events: status=200 ok=true planned=2 deleted=0
-- projects: status=200 ok=true planned=2 deleted=2
-- workspace_members: status=200 ok=true planned=2 deleted=2
-- workspaces: status=200 ok=true planned=2 deleted=2
+- report_artifacts: status=200 ok=true planned=2 deleted=2
+- report_sections: status=200 ok=true planned=14 deleted=14
+- billing_events: status=200 ok=true planned=6 deleted=0
+- reports: status=200 ok=true planned=2 deleted=2
+- projects: status=200 ok=true planned=3 deleted=3
+- workspace_members: status=200 ok=true planned=6 deleted=6
+- workspaces: status=200 ok=true planned=6 deleted=6
 
 ## Auth deletes
-- openplan-prod-grants-smoke-2026-04-12t20-44-00-510z@natfordplanning.com: status=200 ok=true
+- openplan-report-funding-qa-2026-04-12t22-20-35-033z@natfordplanning.com: status=200 ok=true
+- openplan-report-funding-qa-2026-04-12t22-18-16-398z@natfordplanning.com: status=200 ok=true
+- openplan-report-funding-qa-2026-04-12t21-57-10-051z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0

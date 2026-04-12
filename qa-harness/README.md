@@ -8,6 +8,7 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
 - `openplan-prod-managed-run-smoke.js` — proves managed model-run launch and downstream scenario attachment continuity on production.
 - `openplan-prod-report-traceability-smoke.js` — proves report detail backlink continuity against live engagement artifacts.
+- `openplan-prod-report-funding-smoke.js` — proves Grants → Reports funding posture capture, report-registry digest visibility, grants-lane navigation, and post-generation funding drift on production.
 - `openplan-prod-grants-registry-smoke.js` — proves the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, update decision posture, and link back into the canonical program funding lane on production.
 - `openplan-prod-rtp-release-review-smoke.js` — proves the RTP packet create/generate/release-review loop on a live production alias and captures registry plus report-detail evidence.
 - `openplan-prod-scenario-comparison-smoke.js` — proves live scenario comparison rendering from production-created QA data.
@@ -22,6 +23,7 @@ From `openplan/qa-harness`:
 npm install
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
+npm run prod-report-funding-smoke
 npm run prod-grants-registry-smoke
 npm run prod-rtp-release-review-smoke
 npm run prod-scenario-comparison-smoke
