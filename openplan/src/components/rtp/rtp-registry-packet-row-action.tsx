@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
+import { ArrowRight, FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getReportNavigationHref } from "@/lib/reports/catalog";
 
 type PacketAttention = "missing" | "generate" | "reset" | "refresh" | "current";
 
@@ -24,7 +26,18 @@ export function RtpRegistryPacketRowAction({
   const [error, setError] = useState<string | null>(null);
 
   if (packetAttention === "current") {
-    return null;
+    if (!reportId) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-2">
+        <Link href={getReportNavigationHref(reportId, "Packet current")} className="module-inline-action w-fit">
+          Review current packet
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
   }
 
   async function generateReport(targetReportId: string) {

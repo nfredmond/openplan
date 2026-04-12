@@ -70,7 +70,7 @@ export function getReportPacketActionLabel(freshnessLabel: string) {
     case "No packet":
       return "Next action: open this report and generate the first packet.";
     default:
-      return "Next action: review the packet or create a new revision if scope changed.";
+      return "Next action: open this report and run release review on the current packet.";
   }
 }
 
@@ -92,7 +92,7 @@ export function getReportNavigationHref(reportId: string, freshnessLabel: string
     case "No packet":
       return `/reports/${reportId}#report-controls`;
     default:
-      return `/reports/${reportId}#evidence-chain-summary`;
+      return `/reports/${reportId}#packet-release-review`;
   }
 }
 

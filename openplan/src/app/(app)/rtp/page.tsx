@@ -1743,14 +1743,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                               <ArrowRight className="h-4 w-4" />
                             </Link>
                           ) : null}
-                          {cycle.packetAttention !== "current" ? (
-                            <RtpRegistryPacketRowAction
-                              cycleId={cycle.id}
-                              reportId={cycle.packetReport?.id ?? null}
-                              packetAttention={cycle.packetAttention}
-                              needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
-                            />
-                          ) : null}
+                          <RtpRegistryPacketRowAction
+                            cycleId={cycle.id}
+                            reportId={cycle.packetReport?.id ?? null}
+                            packetAttention={cycle.packetAttention}
+                            needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
+                          />
                         </div>
                       </div>
                     ))}

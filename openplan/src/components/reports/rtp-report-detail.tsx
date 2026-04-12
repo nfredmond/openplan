@@ -328,7 +328,7 @@ export function RtpReportDetail({
             description="This RTP packet detail now inherits the shared workspace runtime too, so broader report pressure, funding timing, and setup gaps stay visible while you review cycle drift and packet posture."
           />
 
-          <article className="module-section-surface">
+          <article id="packet-release-review" className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Packet posture</p>

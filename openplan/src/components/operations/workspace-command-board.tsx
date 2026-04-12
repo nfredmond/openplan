@@ -55,10 +55,12 @@ export function WorkspaceCommandBoard({
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
         <div className="module-subpanel">
-          <p className="module-summary-label">Packet pressure</p>
-          <p className="module-summary-value">{summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket}</p>
+          <p className="module-summary-label">Packet work</p>
+          <p className="module-summary-value">
+            {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
+          </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets.
+            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} current for release review.
           </p>
         </div>
         <div className="module-subpanel">

@@ -181,6 +181,7 @@ type AnalysisContextResponse = {
       reports: number;
       reportRefreshRecommended: number;
       reportNoPacket: number;
+      reportPacketCurrent: number;
       comparisonBackedReports: number;
       fundingOpportunities: number;
       openFundingOpportunities: number;

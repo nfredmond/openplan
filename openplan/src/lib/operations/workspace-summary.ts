@@ -220,6 +220,7 @@ export type WorkspaceOperationsSummary = {
     reports: number;
     reportRefreshRecommended: number;
     reportNoPacket: number;
+    reportPacketCurrent: number;
     comparisonBackedReports: number;
     fundingOpportunities: number;
     openFundingOpportunities: number;
@@ -525,6 +526,7 @@ export function buildWorkspaceOperationsSummary({
   const activePrograms = programs.filter((program) => !["adopted", "archived"].includes(program.status ?? "")).length;
   const reportRefreshRecommended = reportRows.filter((report) => report.freshness.label === "Refresh recommended").length;
   const reportNoPacket = reportRows.filter((report) => report.freshness.label === "No packet").length;
+  const reportPacketCurrent = reportRows.filter((report) => report.freshness.label === "Packet current").length;
   const comparisonBackedReports = reportRows.filter(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   ).length;
@@ -829,6 +831,7 @@ export function buildWorkspaceOperationsSummary({
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
+  const firstCurrentReport = reportRows.find((report) => report.freshness.label === "Packet current");
   const firstComparisonBackedReport = reportRows.find(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   );
@@ -888,6 +891,23 @@ export function buildWorkspaceOperationsSummary({
       priority: 1,
       badges: [
         { label: "Missing", value: reportNoPacket },
+        { label: "Reports", value: reports.length },
+      ],
+    });
+  }
+
+  if (reportPacketCurrent > 0) {
+    queueCandidates.push({
+      key: "review-current-report-packets",
+      title: "Run release review on current packets",
+      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
+      href: firstCurrentReport
+        ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
+        : "/reports?freshness=current",
+      tone: "info",
+      priority: 2.5,
+      badges: [
+        { label: "Current", value: reportPacketCurrent },
         { label: "Reports", value: reports.length },
       ],
     });
@@ -1171,6 +1191,7 @@ export function buildWorkspaceOperationsSummary({
       reports: reports.length,
       reportRefreshRecommended,
       reportNoPacket,
+      reportPacketCurrent,
       comparisonBackedReports,
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,

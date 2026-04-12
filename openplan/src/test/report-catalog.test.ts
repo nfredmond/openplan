@@ -45,7 +45,7 @@ describe("getReportPacketFreshness", () => {
   it("returns action labels for each freshness state", () => {
     expect(getReportPacketActionLabel("Refresh recommended")).toMatch(/regenerate the packet/i);
     expect(getReportPacketActionLabel("No packet")).toMatch(/generate the first packet/i);
-    expect(getReportPacketActionLabel("Packet current")).toMatch(/review the packet/i);
+    expect(getReportPacketActionLabel("Packet current")).toMatch(/release review/i);
   });
 
   it("prioritizes stale and missing packets ahead of current ones", () => {
@@ -83,7 +83,7 @@ describe("getReportPacketFreshness", () => {
       "/reports/report-1#report-controls"
     );
     expect(getReportNavigationHref("report-1", "Packet current")).toBe(
-      "/reports/report-1#evidence-chain-summary"
+      "/reports/report-1#packet-release-review"
     );
   });
 
