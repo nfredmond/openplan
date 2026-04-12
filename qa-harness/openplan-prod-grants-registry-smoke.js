@@ -257,6 +257,10 @@ async function main() {
     if (anchorOpportunityResult.status !== 201) {
       throw new Error(`Anchor funding opportunity creation failed: ${anchorOpportunityResult.status} ${JSON.stringify(anchorOpportunityResult.data)}`);
     }
+    ids.anchorOpportunityId = anchorOpportunityResult.data.opportunityId ?? null;
+    if (!ids.anchorOpportunityId) {
+      throw new Error(`Anchor funding opportunity returned no opportunity id: ${JSON.stringify(anchorOpportunityResult.data)}`);
+    }
 
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
@@ -275,6 +279,33 @@ async function main() {
     await focusedFundingNeedEditor.getByRole('button', { name: /save funding profile/i }).click();
     await page.getByText(/Funding profile saved\./i).waitFor({ timeout: 30000 });
     notes.push('The grants workspace command queue now retargets missing funding-need anchors to an exact inline editor on `/grants`.');
+
+    const anchorDecisionResult = await appFetch(`/api/funding-opportunities/${ids.anchorOpportunityId}`, {
+      decisionState: 'pursue',
+      expectedAwardAmount: 900000,
+      decisionRationale: 'Production smoke advanced the anchor opportunity into pursue posture so the remaining funding gap becomes explicit on the shared grants queue.',
+    }, 'PATCH');
+    if (anchorDecisionResult.status !== 200) {
+      throw new Error(`Anchor funding opportunity pursue update failed: ${anchorDecisionResult.status} ${JSON.stringify(anchorDecisionResult.data)}`);
+    }
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+    const grantsCommandQueueSectionBeforeGap = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const gapFocusLink = grantsCommandQueueSectionBeforeGap.locator(`a[href*="focusProjectId=${ids.anchorProjectId}"][href*="grants-gap-resolution-lane"]`).first();
+    await gapFocusLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusProjectId=${ids.anchorProjectId}`, 'i'), { timeout: 30000 }),
+      gapFocusLink.click(),
+    ]);
+    const focusedGapResolutionLane = page.locator('#grants-gap-resolution-lane');
+    await focusedGapResolutionLane.getByText(/Focused from workspace queue/i).waitFor({ timeout: 30000 });
+    await focusedGapResolutionLane.getByText(/Remaining gap/i).waitFor({ timeout: 30000 });
+    const gapProjectValue = await focusedGapResolutionLane.locator('#funding-opportunity-project').inputValue();
+    if (gapProjectValue !== ids.anchorProjectId) {
+      throw new Error(`Focused grants gap-resolution creator did not preselect the expected project. Expected ${ids.anchorProjectId}, received ${gapProjectValue || 'empty'}.`);
+    }
+    notes.push('The grants workspace command queue now retargets active funding-gap commands to a project-focused sourcing lane on `/grants`.');
 
     const grantsCommandQueueSectionBeforeSourcing = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
     const sourcingFocusLink = grantsCommandQueueSectionBeforeSourcing.locator(`a[href*="focusProjectId=${ids.projectId}"]`).first();

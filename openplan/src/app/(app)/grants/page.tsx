@@ -378,6 +378,15 @@ function buildFocusedGrantsFundingNeedHref(projectId: string | null | undefined)
   return `/grants?${params.toString()}#grants-funding-need-editor`;
 }
 
+function buildFocusedGrantsGapResolutionHref(projectId: string | null | undefined) {
+  if (!projectId) {
+    return "/grants#grants-gap-resolution-lane";
+  }
+
+  const params = new URLSearchParams({ focusProjectId: projectId });
+  return `/grants?${params.toString()}#grants-gap-resolution-lane`;
+}
+
 function buildFocusedGrantsOpportunityCreationHref(projectId: string | null | undefined) {
   if (!projectId) {
     return "/grants#grants-opportunity-creator";
@@ -454,6 +463,10 @@ function resolveGrantsQueueHref(
 
   if (item.key === "anchor-project-funding-needs") {
     return buildFocusedGrantsFundingNeedHref(item.targetProjectId);
+  }
+
+  if (item.key === "close-project-funding-gaps") {
+    return buildFocusedGrantsGapResolutionHref(item.targetProjectId);
   }
 
   if (item.key === "source-project-funding-opportunities") {
@@ -711,6 +724,15 @@ export default async function GrantsPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .sort((left, right) => right.fundingNeedAmount - left.fundingNeedAmount);
+  const fundingGapProjects = fundingProjectStacks
+    .map((item) => {
+      if (!item.summary.hasTargetNeed || item.summary.unfundedAfterLikelyAmount <= 0 || (opportunitiesByProjectId.get(item.project.id) ?? []).length === 0) {
+        return null;
+      }
+      return item;
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => right.summary.unfundedAfterLikelyAmount - left.summary.unfundedAfterLikelyAmount);
   const reimbursementNotStartedCount = fundingProjectStacks.filter(
     (item) => item.summary.reimbursementStatus === "not_started"
   ).length;
@@ -739,7 +761,16 @@ export default async function GrantsPage({
     (activeFocusedProjectId
       ? fundingSourcingProjects.find((item) => item.project.id === activeFocusedProjectId)
       : null) ?? null;
-  const fundingOpportunityCreatorProject = focusedFundingSourcingProject?.project ?? null;
+  const focusedFundingGapProject =
+    (activeFocusedProjectId
+      ? fundingGapProjects.find((item) => item.project.id === activeFocusedProjectId)
+      : null) ?? null;
+  const fundingOpportunityCreatorProject = focusedFundingSourcingProject?.project ?? focusedFundingGapProject?.project ?? null;
+  const fundingOpportunityCreatorMode = focusedFundingSourcingProject
+    ? "sourcing"
+    : focusedFundingGapProject
+      ? "gap"
+      : "default";
   const fundingAwardById = new Map(fundingAwards.map((award) => [award.id, award]));
   const fundingAwardOptions = fundingAwards.map((award) => ({
     id: award.id,
@@ -958,36 +989,61 @@ export default async function GrantsPage({
           ) : null}
 
           <div
-            id="grants-opportunity-creator"
-            className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24 rounded-[1.7rem] ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : "scroll-mt-24"}
+            id="grants-gap-resolution-lane"
+            className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24" : "scroll-mt-24"}
           >
-            <FundingOpportunityCreator
-              programs={programOptions}
-              projects={projectOptions}
-              defaultProjectId={fundingOpportunityCreatorProject?.id ?? null}
-              title={fundingOpportunityCreatorProject ? `Source a funding opportunity for ${fundingOpportunityCreatorProject.name}` : "Log a funding opportunity"}
-              description={
-                fundingOpportunityCreatorProject
-                  ? `Focused from the workspace queue so you can source candidate grants for ${fundingOpportunityCreatorProject.name} without leaving the shared grants lane.`
-                  : "Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same workspace truth."
-              }
-            />
-            {activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? (
-              <div className="mt-3 rounded-2xl border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
-                <p className="font-semibold">Focused from workspace queue</p>
-                <p className="mt-1">
-                  {fundingOpportunityCreatorProject.name} still needs sourced opportunities. Start with the highest-fit grant record here so pursue, award, and reimbursement work can stay on the shared grants spine.
-                </p>
-                {focusedFundingSourcingProject ? (
-                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
-                    Funding need {formatCurrency(focusedFundingSourcingProject.fundingNeedAmount)}
-                    {focusedFundingSourcingProject.localMatchNeedAmount > 0
-                      ? ` · Local match ${formatCurrency(focusedFundingSourcingProject.localMatchNeedAmount)}`
-                      : ""}
+            <div
+              id="grants-opportunity-creator"
+              className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "rounded-[1.7rem] ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : ""}
+            >
+              <FundingOpportunityCreator
+                programs={programOptions}
+                projects={projectOptions}
+                defaultProjectId={fundingOpportunityCreatorProject?.id ?? null}
+                title={
+                  fundingOpportunityCreatorMode === "gap" && fundingOpportunityCreatorProject
+                    ? `Close funding gap for ${fundingOpportunityCreatorProject.name}`
+                    : fundingOpportunityCreatorProject
+                      ? `Source a funding opportunity for ${fundingOpportunityCreatorProject.name}`
+                      : "Log a funding opportunity"
+                }
+                description={
+                  fundingOpportunityCreatorMode === "gap" && fundingOpportunityCreatorProject
+                    ? `Focused from the workspace queue so you can source additional grant coverage for ${fundingOpportunityCreatorProject.name} without leaving the shared grants lane.`
+                    : fundingOpportunityCreatorProject
+                      ? `Focused from the workspace queue so you can source candidate grants for ${fundingOpportunityCreatorProject.name} without leaving the shared grants lane.`
+                      : "Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same workspace truth."
+                }
+              />
+              {activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? (
+                <div className="mt-3 rounded-2xl border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
+                  <p className="font-semibold">Focused from workspace queue</p>
+                  <p className="mt-1">
+                    {fundingOpportunityCreatorMode === "gap" && focusedFundingGapProject
+                      ? `${fundingOpportunityCreatorProject.name} still carries an uncovered funding gap after current pursued dollars. Source another realistic grant here so the gap can shrink on the shared grants spine.`
+                      : `${fundingOpportunityCreatorProject.name} still needs sourced opportunities. Start with the highest-fit grant record here so pursue, award, and reimbursement work can stay on the shared grants spine.`}
                   </p>
-                ) : null}
-              </div>
-            ) : null}
+                  {fundingOpportunityCreatorMode === "gap" && focusedFundingGapProject ? (
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+                      Remaining gap {formatCurrency(focusedFundingGapProject.summary.unfundedAfterLikelyAmount)}
+                      {focusedFundingGapProject.summary.likelyFundingAmount > 0
+                        ? ` · Pursued ${formatCurrency(focusedFundingGapProject.summary.likelyFundingAmount)}`
+                        : ""}
+                      {focusedFundingGapProject.summary.fundingNeedAmount > 0
+                        ? ` · Need ${formatCurrency(focusedFundingGapProject.summary.fundingNeedAmount)}`
+                        : ""}
+                    </p>
+                  ) : focusedFundingSourcingProject ? (
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+                      Funding need {formatCurrency(focusedFundingSourcingProject.fundingNeedAmount)}
+                      {focusedFundingSourcingProject.localMatchNeedAmount > 0
+                        ? ` · Local match ${formatCurrency(focusedFundingSourcingProject.localMatchNeedAmount)}`
+                        : ""}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <article id="grants-reimbursement-triage" className="module-section-surface">
