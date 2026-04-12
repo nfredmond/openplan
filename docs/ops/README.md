@@ -24,6 +24,7 @@
 | [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
 | [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) | **Canonical execution roadmap** — integrated feature matrix, current maturity, acceptance criteria, and 4–8 week build order |
 | [integration master plan](2026-04-11-openplan-integration-master-plan.md) | **Canonical integration baseline** — architecture decision, cross-system dependencies, phased roadmap, acceptance criteria, and not-now list |
+| [ruthless execution board](2026-04-11-openplan-ruthless-execution-board.md) | **Active build board** — owners, top tickets, phase gates, dependencies, and not-now enforcement |
 | [v1-internal-ship-gate.md](2026-03-16-openplan-v1-internal-ship-gate.md) | Internal ship gate checklist |
 | [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) | **Canonical** Elena approval (2026-03-17) |
 
@@ -37,6 +38,7 @@
 - [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) — app-wide operations copilot and agent-runtime north star for the next build wave
 - [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) — canonical integrated roadmap covering platform core, RTP, grants, aerial, modeling, runtime, dependencies, and sequencing
 - [integration master plan](2026-04-11-openplan-integration-master-plan.md) — canonical integration baseline covering architecture choice, shared-core rules, phased integration order, dependencies, acceptance criteria, and the explicit not-now list
+- [ruthless execution board](2026-04-11-openplan-ruthless-execution-board.md) — active build board with owners, immediate tickets, phase gates, critical dependencies, and not-now enforcement
 - [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) — canonical principal approval
 - [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
 - [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
