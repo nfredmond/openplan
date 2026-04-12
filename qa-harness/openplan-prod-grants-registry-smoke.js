@@ -41,8 +41,11 @@ async function main() {
   const email = `openplan-prod-grants-smoke-${stamp}@natfordplanning.com`;
   const password = `OpenPlan!${Date.now()}ProdGrants`;
   const workspaceName = `OpenPlan Prod Grants Smoke ${stamp.slice(11, 19)}`;
+  const projectName = `Grass Valley Safe Routes Smoke ${stamp.slice(11, 19)}`;
   const programTitle = `ATP Grants Smoke ${stamp.slice(11, 19)}`;
   const opportunityTitle = `2027 ATP countywide active transportation call ${stamp.slice(11, 19)}`;
+  const linkedAwardOpportunityTitle = `2027 ATP linked award conversion ${stamp.slice(11, 19)}`;
+  const awardTitle = `ATP award conversion smoke ${stamp.slice(11, 19)}`;
   const closeIso = isoDaysFromNow(7);
   const decisionIso = isoDaysFromNow(5);
   const artifacts = [];
@@ -126,10 +129,50 @@ async function main() {
     if (!bootstrapResult.ok) {
       throw new Error(`Workspace bootstrap failed: ${bootstrapResult.status} ${JSON.stringify(bootstrapResult.data)}`);
     }
-    ids.workspaceId = bootstrapResult.data.workspaceId;
+    ids.bootstrapWorkspaceId = bootstrapResult.data.workspaceId;
     notes.push(`Bootstrapped workspace ${workspaceName}.`);
 
+    const currentWorkspaceResult = await appFetch('/api/workspaces/current', null, 'GET');
+    if (!currentWorkspaceResult.ok) {
+      throw new Error(`Current workspace lookup failed: ${currentWorkspaceResult.status} ${JSON.stringify(currentWorkspaceResult.data)}`);
+    }
+    ids.workspaceId = currentWorkspaceResult.data.workspaceId;
+    if (ids.workspaceId !== ids.bootstrapWorkspaceId) {
+      notes.push(`Current workspace resolved to ${ids.workspaceId} instead of the freshly bootstrapped workspace ${ids.bootstrapWorkspaceId}; smoke data was aligned to the active workspace selection.`);
+    }
+
+    const createProjectResult = await jsonFetch(`${supabaseUrl}/rest/v1/projects?select=id,name`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({
+        workspace_id: ids.workspaceId,
+        name: projectName,
+        summary: 'Production smoke project used to verify award conversion from the shared grants surface.',
+        status: 'active',
+        plan_type: 'corridor_plan',
+        delivery_phase: 'scoping',
+        created_by: ids.userId,
+      }),
+    });
+    if (!createProjectResult.ok) {
+      throw new Error(`Project seed failed: ${createProjectResult.status} ${JSON.stringify(createProjectResult.data)}`);
+    }
+    const createdProject = Array.isArray(createProjectResult.data)
+      ? createProjectResult.data[0]
+      : createProjectResult.data;
+    ids.projectId = createdProject?.id ?? null;
+    if (!ids.projectId) {
+      throw new Error(`Project seed returned no project id: ${JSON.stringify(createProjectResult.data)}`);
+    }
+    notes.push(`Seeded linked project ${projectName} inside the smoke workspace.`);
+
     const programResult = await appFetch('/api/programs', {
+      projectId: ids.projectId,
       title: programTitle,
       programType: 'rtip',
       cycleName: 'ATP Cycle 8',
@@ -155,22 +198,27 @@ async function main() {
     await page.getByText(/No funding opportunities yet/i).waitFor({ timeout: 30000 });
     notes.push('Grants registry rendered its empty state before the first opportunity was created.');
 
-    await page.locator('#funding-opportunity-title').fill(opportunityTitle);
-    await page.locator('#funding-opportunity-program').selectOption(ids.programId);
-    await page.locator('#funding-opportunity-status').selectOption('open');
-    await page.locator('#funding-opportunity-agency').fill('Caltrans');
-    await page.locator('#funding-opportunity-owner').fill('Grant lead');
-    await page.locator('#funding-opportunity-cadence').fill('Annual cycle');
-    await page.locator('#funding-opportunity-expected-award').fill('500000');
-    await page.locator('#funding-opportunity-closes').fill(toDateTimeLocal(closeIso));
-    await page.locator('#funding-opportunity-decision').fill(toDateTimeLocal(decisionIso));
-    await page.locator('#funding-opportunity-summary').fill('Smoke-tested funding opportunity created from the shared Grants OS surface.');
-    await page.getByRole('button', { name: /save funding opportunity/i }).click();
+    const firstOpportunityResult = await appFetch('/api/funding-opportunities', {
+      programId: ids.programId,
+      title: opportunityTitle,
+      status: 'open',
+      agencyName: 'Caltrans',
+      ownerLabel: 'Grant lead',
+      cadenceLabel: 'Annual cycle',
+      expectedAwardAmount: 500000,
+      closesAt: closeIso,
+      decisionDueAt: decisionIso,
+      summary: 'Smoke-tested funding opportunity created to verify the shared Grants OS surface.',
+    });
+    if (firstOpportunityResult.status !== 201) {
+      throw new Error(`Primary funding opportunity creation failed: ${firstOpportunityResult.status} ${JSON.stringify(firstOpportunityResult.data)}`);
+    }
 
-    await page.getByText(/Funding opportunity saved\./i).waitFor({ timeout: 30000 });
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
     await page.getByRole('heading', { name: opportunityTitle, exact: false }).waitFor({ timeout: 30000 });
     await page.getByText(/Advance near-term funding windows/i).waitFor({ timeout: 30000 });
-    notes.push('Created the first funding opportunity from the shared grants surface and confirmed the workspace grants queue surfaced the near-term deadline command.');
+    notes.push('Created the first funding opportunity and confirmed the rendered grants surface picked it up with near-term queue pressure.');
 
     await page.locator('select[id^="funding-decision-"]').first().selectOption('pursue');
     await page.getByPlaceholder('Record why the team chose pursue, monitor, or skip.').first().fill('Smoke proof moved this grant into a real pursue posture from the shared registry.');
@@ -178,7 +226,47 @@ async function main() {
     await page.getByText(/Funding decision saved\./i).waitFor({ timeout: 30000 });
     notes.push('Updated the opportunity decision to pursue directly from the grants registry row controls.');
 
+    const linkedAwardOpportunityResult = await appFetch('/api/funding-opportunities', {
+      programId: ids.programId,
+      projectId: ids.projectId,
+      title: linkedAwardOpportunityTitle,
+      status: 'awarded',
+      decisionState: 'pursue',
+      agencyName: 'Caltrans',
+      ownerLabel: 'Grant lead',
+      cadenceLabel: 'Annual cycle',
+      expectedAwardAmount: 500000,
+      closesAt: closeIso,
+      decisionDueAt: decisionIso,
+      decisionRationale: 'Production smoke seeded a linked awarded opportunity so the award-conversion lane could take over from `/grants`.',
+      summary: 'Linked awarded opportunity used to verify direct award conversion from the shared grants workspace.',
+    });
+    if (linkedAwardOpportunityResult.status !== 201) {
+      throw new Error(`Linked awarded opportunity creation failed: ${linkedAwardOpportunityResult.status} ${JSON.stringify(linkedAwardOpportunityResult.data)}`);
+    }
+    ids.opportunityId = linkedAwardOpportunityResult.data.opportunityId;
+    notes.push('Created a linked awarded opportunity so the shared award-conversion lane could take over.');
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+    await page.getByText(/Awarded opportunities still missing committed award records/i).waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: /Create the lead award record now/i }).waitFor({ timeout: 30000 });
+
+    const leadAwardCard = page.locator('article').filter({ has: page.getByRole('heading', { name: /Create the lead award record now/i }) }).first();
+    await leadAwardCard.getByPlaceholder('Cycle 8 ATP award').fill(awardTitle);
+    await leadAwardCard.getByPlaceholder('1750000').fill('500000');
+    await leadAwardCard.getByPlaceholder('250000').fill('50000');
+    await leadAwardCard.locator('input[type="datetime-local"]').first().fill(toDateTimeLocal(closeIso));
+    await leadAwardCard
+      .getByPlaceholder('Award terms, obligation risks, reimbursement posture, or scope notes.')
+      .fill('Production smoke converted the awarded opportunity into a committed funding award from the shared grants lane.');
+    await leadAwardCard.getByRole('button', { name: /save award/i }).click();
+    await leadAwardCard.getByText(/Funding award saved\./i).waitFor({ timeout: 30000 });
+    await page.getByText(/Award records current/i).waitFor({ timeout: 30000 });
+    notes.push('Created the lead funding award directly from `/grants` and cleared the award-conversion pressure for the smoke workspace.');
+
     await screenshot('prod-grants-registry-01-registry');
+    await screenshot('prod-grants-registry-02-award-conversion');
 
     const programFundingLink = page.getByRole('link', { name: /Open program funding lane/i }).first();
     await programFundingLink.waitFor({ timeout: 30000 });
@@ -190,7 +278,7 @@ async function main() {
     await page.getByRole('heading', { name: /Linked funding opportunities/i }).waitFor({ timeout: 30000 });
     notes.push('The grants registry linked back into the canonical program funding lane.');
 
-    await screenshot('prod-grants-registry-02-program-detail');
+    await screenshot('prod-grants-registry-03-program-detail');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-grants-registry-smoke.md`);
     const lines = [
@@ -200,7 +288,10 @@ async function main() {
       `- QA user email: ${email}`,
       `- QA user id: ${ids.userId ?? 'unknown'}`,
       `- Workspace id: ${ids.workspaceId ?? 'unknown'}`,
+      `- Bootstrapped workspace id: ${ids.bootstrapWorkspaceId ?? 'unknown'}`,
+      `- Project id: ${ids.projectId ?? 'unknown'}`,
       `- Program id: ${ids.programId ?? 'unknown'}`,
+      `- Opportunity id: ${ids.opportunityId ?? 'unknown'}`,
       '',
       '## Pass/Fail Notes',
       ...notes.map((note) => `- PASS: ${note}`),
@@ -209,7 +300,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the new `/grants` workspace surface can create a funding opportunity, surface the shared grants queue, update pursue posture, and link back into the canonical funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-12
 
-- Started: 2026-04-12T07:06:24.055Z
+- Started: 2026-04-12T07:37:31.079Z
 - Mode: apply
 - Env path: /home/narford/.openclaw/workspace/openplan/openplan/.env.local
 - Created-after filter: 2026-04-12
@@ -8,44 +8,42 @@
 
 ## Scope
 - Targeted QA/debug/proof/trace/canary production records created on or after 2026-04-12.
-- Targeted workspaces: 15
+- Targeted workspaces: 12
 - Targeted county runs: 0
-- Targeted auth users: 8
+- Targeted auth users: 6
 
 ## Stripe checkout sessions
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete plan
-- programs: planned=7
-- billing_events: planned=15
-- workspace_members: planned=15
-- workspaces: planned=15
+- programs: planned=6
+- billing_events: planned=12
+- projects: planned=6
+- workspace_members: planned=12
+- workspaces: planned=12
 
 ## Auth plan
-- openplan-prod-grants-smoke-2026-04-12t07-05-49-248z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t07-04-48-154z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t07-04-17-509z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t07-03-09-814z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t06-55-50-648z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t06-54-52-038z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t06-53-24-167z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t06-49-01-777z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-36-58-206z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-35-38-523z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-34-00-428z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-33-16-227z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-31-12-945z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t07-29-34-856z@natfordplanning.com
 
 ## Delete results
-- programs: status=200 ok=true planned=7 deleted=7
-- billing_events: status=200 ok=true planned=15 deleted=0
-- workspace_members: status=200 ok=true planned=15 deleted=15
-- workspaces: status=200 ok=true planned=15 deleted=15
+- programs: status=200 ok=true planned=6 deleted=6
+- billing_events: status=200 ok=true planned=12 deleted=0
+- projects: status=200 ok=true planned=6 deleted=6
+- workspace_members: status=200 ok=true planned=12 deleted=12
+- workspaces: status=200 ok=true planned=12 deleted=12
 
 ## Auth deletes
-- openplan-prod-grants-smoke-2026-04-12t07-05-49-248z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t07-04-48-154z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t07-04-17-509z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t07-03-09-814z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t06-55-50-648z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t06-54-52-038z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t06-53-24-167z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t06-49-01-777z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-36-58-206z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-35-38-523z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-34-00-428z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-33-16-227z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-31-12-945z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t07-29-34-856z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0
