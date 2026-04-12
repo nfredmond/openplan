@@ -246,11 +246,91 @@ function matchesPacketAttentionFilter(filter: PacketAttentionFilter, packetAtten
   return filter === packetAttention;
 }
 
+function formatUsdWholeAmount(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildPacketFundingReview(input: {
+  linkedProjectCount: number;
+  fundedProjectCount: number;
+  likelyCoveredProjectCount: number;
+  unfundedProjectCount: number;
+  reimbursementInFlightCount: number;
+  outstandingReimbursementAmount: number;
+  uninvoicedAwardAmount: number;
+}) {
+  if (input.linkedProjectCount === 0) {
+    return {
+      label: "No linked projects",
+      tone: "neutral" as const,
+      detail: "This RTP cycle does not yet have linked projects, so funding-backed release review is not active here.",
+      needsAttention: false,
+    };
+  }
+
+  if (input.unfundedProjectCount > 0) {
+    return {
+      label: "Funding gap review",
+      tone: "warning" as const,
+      detail: `${input.unfundedProjectCount} linked project${input.unfundedProjectCount === 1 ? " still carries" : "s still carry"} an uncovered funding gap. Release review should acknowledge that packet readiness and funding readiness are diverging.`,
+      needsAttention: true,
+    };
+  }
+
+  if (input.uninvoicedAwardAmount > 0) {
+    return {
+      label: "Award follow-through pending",
+      tone: "info" as const,
+      detail: `${formatUsdWholeAmount(input.uninvoicedAwardAmount)} in awarded funding has not been invoiced yet, so packet release review should flag reimbursement follow-through before the cycle looks financially settled.`,
+      needsAttention: true,
+    };
+  }
+
+  if (input.outstandingReimbursementAmount > 0 || input.reimbursementInFlightCount > 0) {
+    return {
+      label: "Reimbursement in flight",
+      tone: "info" as const,
+      detail: `${formatUsdWholeAmount(input.outstandingReimbursementAmount)} remains outstanding across ${input.reimbursementInFlightCount} linked project${input.reimbursementInFlightCount === 1 ? " reimbursement request" : " reimbursement requests"} in flight.`,
+      needsAttention: true,
+    };
+  }
+
+  if (input.likelyCoveredProjectCount > 0) {
+    return {
+      label: "Pipeline-backed review",
+      tone: "info" as const,
+      detail: `${input.likelyCoveredProjectCount} linked project${input.likelyCoveredProjectCount === 1 ? " looks" : "s look"} likely coverable through pursued funding, but the packet still depends on pipeline conversion rather than secured money.`,
+      needsAttention: true,
+    };
+  }
+
+  if (input.fundedProjectCount > 0) {
+    return {
+      label: "Funding posture aligned",
+      tone: "success" as const,
+      detail: "Linked projects are fully funded or reimbursed with no visible funding follow-through pressure blocking packet release review.",
+      needsAttention: false,
+    };
+  }
+
+  return {
+    label: "Funding posture not anchored",
+    tone: "neutral" as const,
+    detail: "Linked projects exist, but no durable funding posture is anchored yet, so release review remains packet-heavy instead of truly integrated.",
+    needsAttention: false,
+  };
+}
+
 function buildPacketOperatorStatus(input: {
   packetReport: RtpPacketReportRow | null;
   packetFreshness: { label: string };
   packetPresetPosture: { label: string };
   packetQueueTraceState: { state: QueueTraceStateFilter; label: string };
+  packetFundingReview: { label: string; tone: "neutral" | "info" | "success" | "warning" | "danger"; detail: string; needsAttention: boolean };
 }) {
   if (!input.packetReport) {
     return {
@@ -297,6 +377,14 @@ function buildPacketOperatorStatus(input: {
       label: "Trace gap",
       tone: "neutral" as const,
       detail: "Packet state is visible, but this cycle still lacks durable queue-action trace coverage.",
+    };
+  }
+
+  if (input.packetFundingReview.needsAttention) {
+    return {
+      label: "Release review with funding follow-up",
+      tone: input.packetFundingReview.tone === "warning" ? ("warning" as const) : ("info" as const),
+      detail: `Packet record and latest artifact are aligned with current cycle state, but ${input.packetFundingReview.detail.charAt(0).toLowerCase()}${input.packetFundingReview.detail.slice(1)}`,
     };
   }
 
@@ -726,6 +814,27 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             : packetFreshness.label === "Refresh recommended"
             ? ("refresh" as const)
             : ("current" as const);
+      const packetFundingReview = buildPacketFundingReview({
+        linkedProjectCount: cycleLinks.length,
+        fundedProjectCount: cycleFundingSummaries.filter((summary) => summary.status === "funded").length,
+        likelyCoveredProjectCount: cycleFundingSummaries.filter(
+          (summary) => summary.status !== "funded" && summary.pipelineStatus === "likely_covered"
+        ).length,
+        unfundedProjectCount: cycleFundingSummaries.filter(
+          (summary) => summary.pipelineStatus === "unfunded" || summary.pipelineStatus === "partially_covered"
+        ).length,
+        reimbursementInFlightCount: cycleFundingSummaries.filter(
+          (summary) => summary.reimbursementStatus === "in_review"
+        ).length,
+        outstandingReimbursementAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.outstandingReimbursementAmount,
+          0
+        ),
+        uninvoicedAwardAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.uninvoicedAwardAmount,
+          0
+        ),
+      });
 
       return {
         ...cycle,
@@ -763,7 +872,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetFreshness,
           packetPresetPosture,
           packetQueueTraceState,
+          packetFundingReview,
         }),
+        packetFundingReview,
         packetQueueTrace,
         packetQueueTraceState,
         packetActivityTrace: buildPacketActivityTrace({
@@ -973,6 +1084,17 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const dominantActionReportIds = dominantActionCycles
     .map((cycle) => cycle.packetReport?.id ?? null)
     .filter((value): value is string => Boolean(value));
+  const currentFundingReviewCount = typedCycles.filter(
+    (cycle) => cycle.packetAttention === "current" && cycle.packetFundingReview.needsAttention
+  ).length;
+  const currentFundingGapReviewCount = typedCycles.filter(
+    (cycle) => cycle.packetAttention === "current" && cycle.packetFundingReview.label === "Funding gap review"
+  ).length;
+  const currentReimbursementFollowThroughCount = typedCycles.filter(
+    (cycle) =>
+      cycle.packetAttention === "current" &&
+      (cycle.uninvoicedAwardAmount > 0 || cycle.outstandingReimbursementAmount > 0 || cycle.reimbursementInFlightCount > 0)
+  ).length;
   const dominantTraceFollowUpCounts = {
     outpaced: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced").length,
     unrecorded: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded").length,
@@ -1219,7 +1341,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-8">
               <div className="module-metric-card">
                 <p className="module-metric-label">Needs reset</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
@@ -1244,6 +1366,18 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 <p className="module-metric-label">Packet current</p>
                 <p className="module-metric-value text-sm">{packetAttentionCounts.current}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Packet is current with the cycle, whether preset-aligned or intentionally customized.</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Funding review</p>
+                <p className="module-metric-value text-sm">{currentFundingReviewCount}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Current packets whose linked-project funding posture still needs release-review attention.
+                </p>
+                {currentFundingReviewCount > 0 ? (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    {currentFundingGapReviewCount} gap{currentFundingGapReviewCount === 1 ? "" : "s"}, {currentReimbursementFollowThroughCount} reimbursement follow-through cue{currentReimbursementFollowThroughCount === 1 ? "" : "s"}.
+                  </p>
+                ) : null}
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Trace outpaced</p>
@@ -1428,7 +1562,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                       <div className="module-metric-card">
                         <p className="module-metric-label">Linked packet</p>
                         <p className="module-metric-value text-sm">{cycle.packetReport?.title ?? "Not created"}</p>
@@ -1458,6 +1592,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           <StatusBadge tone={cycle.packetActivityTrace.tone}>{cycle.packetActivityTrace.label}</StatusBadge>
                         </div>
                         <p className="mt-2 text-xs text-muted-foreground">{cycle.packetActivityTrace.detail}</p>
+                      </div>
+                      <div className="module-metric-card">
+                        <p className="module-metric-label">Funding review</p>
+                        <div className="mt-1">
+                          <StatusBadge tone={cycle.packetFundingReview.tone}>{cycle.packetFundingReview.label}</StatusBadge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetFundingReview.detail}</p>
                       </div>
                     </div>
 
@@ -1741,6 +1882,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             <div className="mt-2 flex flex-wrap gap-2">
                               <StatusBadge tone={cycle.packetFreshness.tone}>{cycle.packetFreshness.label}</StatusBadge>
                               <StatusBadge tone={cycle.packetQueueTraceState.tone}>{cycle.packetQueueTraceState.label}</StatusBadge>
+                              <StatusBadge tone={cycle.packetFundingReview.tone}>{cycle.packetFundingReview.label}</StatusBadge>
                             </div>
                           </div>
                           <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
