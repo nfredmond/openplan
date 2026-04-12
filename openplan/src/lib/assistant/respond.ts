@@ -637,6 +637,7 @@ function buildWorkspaceResponse(
   question?: string | null
 ): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Workspace overview";
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -768,7 +769,7 @@ function buildWorkspaceResponse(
     workflowId,
     label,
     title: `${context.workspace.name ?? "Workspace"} overview`,
-    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}. The shared command queue is ${context.operationsSummary.posture}.`,
+    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"} funding-backed release review even though packet freshness already reads current.` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
     findings: [
       context.recentProject
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
@@ -776,7 +777,9 @@ function buildWorkspaceResponse(
       context.operationsSummary.nextCommand
         ? `Next command: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
         : "No immediate command-queue pressure is visible from the workspace snapshot.",
-      missingFundingAnchorCount > 0
+      rtpFundingReviewCount > 0
+        ? `${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review.`
+        : missingFundingAnchorCount > 0
         ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist.`
         : fundingSourcingCount > 0
         ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} need recorded but still no linked opportunities.`
@@ -812,6 +815,7 @@ function buildWorkspaceResponse(
       `Role: ${context.workspace.role ?? "Unknown"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
       `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
+      `RTP funding review packets: ${rtpFundingReviewCount}`,
       `Missing anchors: ${missingFundingAnchorCount}`,
       `Needs sourcing: ${fundingSourcingCount}`,
       `Needs decisions: ${fundingDecisionCount}`,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildAssistantPreview, buildAssistantResponse } from "@/lib/assistant/respond";
-import type { ProjectAssistantContext, RunAssistantContext } from "@/lib/assistant/context";
+import type { ProjectAssistantContext, RunAssistantContext, WorkspaceAssistantContext } from "@/lib/assistant/context";
 
 describe("assistant response builders", () => {
   it("builds project blocker responses from project control context", () => {
@@ -30,6 +30,23 @@ describe("assistant response builders", () => {
         linkedDatasets: 2,
         overlayReadyDatasets: 1,
         recentRuns: 2,
+      },
+      fundingSummary: {
+        opportunityCount: 0,
+        openCount: 0,
+        closingSoonCount: 0,
+        pursueCount: 0,
+        awardCount: 0,
+        awardRecordCount: 0,
+        fundingNeedAmount: null,
+        gapAmount: null,
+        requestedReimbursementAmount: null,
+        uninvoicedAwardAmount: null,
+        reimbursementStatus: null,
+        reimbursementPacketCount: 0,
+        exactInvoiceAwardRelink: null,
+        leadOpportunity: null,
+        leadAwardOpportunity: null,
       },
       stageGateSummary: {
         gates: [],
@@ -114,5 +131,104 @@ describe("assistant response builders", () => {
     expect(response.summary).toContain("+13");
     expect(response.findings.join(" ")).toContain("Current run confidence");
     expect(response.evidence.join(" ")).toContain("Baseline run");
+  });
+
+  it("builds workspace responses that keep RTP funding-backed release review visible", () => {
+    const context: WorkspaceAssistantContext = {
+      kind: "workspace",
+      workspace: {
+        id: "11111111-1111-4111-8111-111111111111",
+        name: "Nevada County Vision Zero",
+        plan: "pilot",
+        role: "owner",
+      },
+      recentProject: {
+        id: "22222222-2222-4222-8222-222222222222",
+        name: "SR-49 Safety Program",
+        status: "active",
+        planType: "regional_transportation_plan",
+        deliveryPhase: "review",
+        updatedAt: "2026-04-12T18:00:00.000Z",
+      },
+      recentRuns: [],
+      currentRun: null,
+      baselineRun: null,
+      operationsSummary: {
+        posture: "attention",
+        headline: "Run release review on current packets",
+        detail: "A current RTP packet still carries linked-project funding follow-up.",
+        counts: {
+          projects: 1,
+          activeProjects: 1,
+          plans: 0,
+          plansNeedingSetup: 0,
+          programs: 0,
+          activePrograms: 0,
+          reports: 1,
+          reportRefreshRecommended: 0,
+          reportNoPacket: 0,
+          reportPacketCurrent: 1,
+          rtpFundingReviewPackets: 1,
+          comparisonBackedReports: 0,
+          fundingOpportunities: 1,
+          openFundingOpportunities: 1,
+          closingSoonFundingOpportunities: 0,
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 0,
+          projectFundingGapProjects: 0,
+          queueDepth: 1,
+        },
+        nextCommand: {
+          key: "review-current-report-packets",
+          title: "Run release review on current packets",
+          detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+          href: "/reports/report-rtp-1#packet-release-review",
+          tone: "warning",
+          priority: 2.5,
+          badges: [
+            { label: "Current", value: 1 },
+            { label: "Funding review", value: 1 },
+          ],
+        },
+        commandQueue: [
+          {
+            key: "review-current-report-packets",
+            title: "Run release review on current packets",
+            detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+            href: "/reports/report-rtp-1#packet-release-review",
+            tone: "warning",
+            priority: 2.5,
+            badges: [
+              { label: "Current", value: 1 },
+              { label: "Funding review", value: 1 },
+            ],
+          },
+        ],
+        fullCommandQueue: [
+          {
+            key: "review-current-report-packets",
+            title: "Run release review on current packets",
+            detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+            href: "/reports/report-rtp-1#packet-release-review",
+            tone: "warning",
+            priority: 2.5,
+            badges: [
+              { label: "Current", value: 1 },
+              { label: "Funding review", value: 1 },
+            ],
+          },
+        ],
+      },
+    };
+
+    const response = buildAssistantResponse(context, "workspace-overview");
+
+    expect(response.summary).toContain("funding-backed release review");
+    expect(response.findings.join(" ")).toContain("current RTP packet still needs funding-backed release review");
+    expect(response.nextSteps.join(" ")).toContain("/reports/report-rtp-1#packet-release-review");
   });
 });
