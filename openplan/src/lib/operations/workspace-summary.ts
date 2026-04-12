@@ -932,6 +932,7 @@ export function buildWorkspaceOperationsSummary({
           ? `/projects/${firstClosingOpportunity.projectId}#project-funding-opportunities`
           : "/programs",
       targetProjectId: firstClosingOpportunity?.projectId ?? null,
+      targetOpportunityId: firstClosingOpportunity?.id ?? null,
       tone: "warning",
       priority: 2,
       badges: [
