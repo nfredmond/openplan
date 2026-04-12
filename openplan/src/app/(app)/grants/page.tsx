@@ -87,6 +87,16 @@ type ProgramOption = {
   title: string;
 };
 
+type FundingAwardRow = {
+  id: string;
+  funding_opportunity_id: string | null;
+  project_id: string | null;
+  program_id: string | null;
+  title: string;
+  awarded_amount: number | string | null;
+  updated_at: string;
+};
+
 type StatusFilter = "all" | FundingOpportunityStatus;
 type DecisionFilter = "all" | FundingOpportunityDecision;
 
@@ -222,7 +232,7 @@ export default async function GrantsPage({
     );
   }
 
-  const [{ data: opportunitiesData }, { data: projectsData }, { data: programsData }, operationsSummary] =
+  const [{ data: opportunitiesData }, { data: projectsData }, { data: programsData }, { data: fundingAwardsData }, operationsSummary] =
     await Promise.all([
       supabase
         .from("funding_opportunities")
@@ -239,6 +249,11 @@ export default async function GrantsPage({
       supabase
         .from("programs")
         .select("id, title")
+        .eq("workspace_id", membership.workspace_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("funding_awards")
+        .select("id, funding_opportunity_id, project_id, program_id, title, awarded_amount, updated_at")
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       loadWorkspaceOperationsSummaryForWorkspace(
@@ -259,6 +274,11 @@ export default async function GrantsPage({
       return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
     });
 
+  const fundingAwards = (fundingAwardsData ?? []) as FundingAwardRow[];
+  const fundingAwardOpportunityIds = new Set(
+    fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
+  );
+
   const filteredOpportunities = opportunities.filter((opportunity) => {
     if (selectedStatus !== "all" && opportunity.opportunity_status !== selectedStatus) {
       return false;
@@ -278,6 +298,10 @@ export default async function GrantsPage({
   const awardedCount = opportunities.filter((opportunity) => opportunity.opportunity_status === "awarded").length;
   const distinctProjectCount = new Set(opportunities.map((opportunity) => opportunity.project?.id).filter(Boolean)).size;
   const distinctProgramCount = new Set(opportunities.map((opportunity) => opportunity.program?.id).filter(Boolean)).size;
+  const awardedOpportunitiesMissingRecords = opportunities.filter(
+    (opportunity) =>
+      opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+  );
   const grantsQueue = operationsSummary.commandQueue.filter((item) => GRANTS_QUEUE_KEYS.has(item.key));
   const leadGrantsCommand = grantsQueue[0] ?? null;
 
@@ -334,6 +358,7 @@ export default async function GrantsPage({
             <span className="module-inline-item"><strong>{skipCount}</strong> skip</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingDecisionProjects}</strong> decision gap projects</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingAwardRecordProjects}</strong> award records missing</span>
+            <span className="module-inline-item"><strong>{fundingAwards.length}</strong> award records recorded</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingReimbursementStartProjects + operationsSummary.counts.projectFundingReimbursementActiveProjects}</strong> reimbursement follow-through</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingGapProjects}</strong> funding gap projects</span>
           </div>
@@ -420,6 +445,82 @@ export default async function GrantsPage({
               ) : (
                 <div className="module-subpanel text-sm text-muted-foreground">
                   No immediate grants-specific queue pressure is visible from the current workspace snapshot.
+                </div>
+              )}
+            </div>
+          </article>
+
+          <article id="grants-award-conversion-lane" className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Award conversion</p>
+                <h2 className="module-section-title">Awarded opportunities still missing committed award records</h2>
+                <p className="module-section-description">
+                  This is the downstream grants seam that closes the gap between an opportunity marked awarded and the actual award record needed for reimbursement and invoice truth.
+                </p>
+              </div>
+              <StatusBadge tone={awardedOpportunitiesMissingRecords.length > 0 ? "warning" : "success"}>
+                {awardedOpportunitiesMissingRecords.length > 0 ? `${awardedOpportunitiesMissingRecords.length} missing` : "Award records current"}
+              </StatusBadge>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {awardedOpportunitiesMissingRecords.length > 0 ? (
+                awardedOpportunitiesMissingRecords.map((opportunity) => {
+                  const projectHref = opportunity.project ? `/projects/${opportunity.project.id}#project-funding-opportunities` : null;
+                  const programHref = opportunity.program ? `/programs/${opportunity.program.id}#program-funding-opportunities` : null;
+
+                  return (
+                    <div key={`award-gap-${opportunity.id}`} className="module-subpanel">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex flex-wrap gap-2">
+                            <StatusBadge tone="warning">Award record missing</StatusBadge>
+                            {opportunity.project ? <StatusBadge tone="info">{opportunity.project.name}</StatusBadge> : null}
+                            {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}
+                          </div>
+                          <h3 className="mt-3 text-base font-semibold text-foreground">{opportunity.title}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {opportunity.summary || "This opportunity is marked awarded, but the committed award record has not been logged yet."}
+                          </p>
+                        </div>
+                        <div className="text-right text-sm">
+                          <p className="font-semibold text-foreground">{formatCurrency(opportunity.expected_award_amount)}</p>
+                          <p className="text-muted-foreground">Likely award</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted-foreground">
+                        <span className="module-inline-item">Updated {formatDateTime(opportunity.updated_at)}</span>
+                        <span className="module-inline-item">Decision {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}</span>
+                        <span className="module-inline-item">Agency {opportunity.agency_name ?? "Not set"}</span>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+                        {projectHref ? (
+                          <Link href={projectHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                            Open project award lane
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        ) : null}
+                        {programHref ? (
+                          <Link href={programHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                            Open program funding lane
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        ) : null}
+                        {!projectHref ? (
+                          <span className="text-muted-foreground">
+                            Link this opportunity to a project before recording the committed award.
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="module-subpanel text-sm text-muted-foreground">
+                  No awarded opportunities are currently missing committed award records in this workspace.
                 </div>
               )}
             </div>
