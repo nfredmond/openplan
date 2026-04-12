@@ -13,6 +13,7 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/explore',
   '/data-hub',
   '/reports',
+  '/grants',
   '/engagement',
   '/billing',
   '/admin',

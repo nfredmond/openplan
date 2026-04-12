@@ -38,6 +38,21 @@ describe('proxy auth/session guard', () => {
     expect(response.headers.get('location')).toContain('redirect=%2Fprojects%3Ftab%3Dactive')
   })
 
+  it('redirects unauthenticated grants requests to sign-in with the grants target preserved', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: null,
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/grants?status=open')
+    const response = await proxy(request)
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toContain('/sign-in')
+    expect(response.headers.get('location')).toContain('redirect=%2Fgrants%3Fstatus%3Dopen')
+  })
+
   it('allows public routes through for unauthenticated visitors', async () => {
     updateSessionMock.mockResolvedValueOnce({
       response: NextResponse.next(),
