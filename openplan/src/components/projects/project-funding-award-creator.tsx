@@ -21,13 +21,23 @@ function toIsoDateTime(value: string): string | undefined {
 export function ProjectFundingAwardCreator({
   projectId,
   opportunityOptions,
+  defaultOpportunityId,
+  defaultProgramId,
+  defaultTitle,
+  titleLabel = "Add awarded funding",
+  description,
 }: {
   projectId: string;
   opportunityOptions: Array<{ id: string; title: string }>;
+  defaultOpportunityId?: string | null;
+  defaultProgramId?: string | null;
+  defaultTitle?: string;
+  titleLabel?: string;
+  description?: string;
 }) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [opportunityId, setOpportunityId] = useState("");
+  const [title, setTitle] = useState(defaultTitle ?? "");
+  const [opportunityId, setOpportunityId] = useState(defaultOpportunityId ?? "");
   const [awardedAmount, setAwardedAmount] = useState("");
   const [matchAmount, setMatchAmount] = useState("");
   const [matchPosture, setMatchPosture] = useState<(typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"]>("partial");
@@ -52,6 +62,7 @@ export function ProjectFundingAwardCreator({
         body: JSON.stringify({
           projectId,
           opportunityId: opportunityId || undefined,
+          programId: defaultProgramId || undefined,
           title,
           awardedAmount: awardedAmount ? Number(awardedAmount) : 0,
           matchAmount: matchAmount ? Number(matchAmount) : 0,
@@ -68,8 +79,8 @@ export function ProjectFundingAwardCreator({
         throw new Error(payload.error || "Failed to create funding award");
       }
 
-      setTitle("");
-      setOpportunityId("");
+      setTitle(defaultTitle ?? "");
+      setOpportunityId(defaultOpportunityId ?? "");
       setAwardedAmount("");
       setMatchAmount("");
       setMatchPosture("partial");
@@ -94,7 +105,8 @@ export function ProjectFundingAwardCreator({
         </span>
         <div>
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Award record</p>
-          <h3 className="text-sm font-semibold text-foreground">Add awarded funding</h3>
+          <h3 className="text-sm font-semibold text-foreground">{titleLabel}</h3>
+          {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
         </div>
       </div>
 

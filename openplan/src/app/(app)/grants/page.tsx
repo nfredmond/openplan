@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, Landmark, ShieldCheck, Sparkles } from "lucide-react";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
+import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -302,6 +303,8 @@ export default async function GrantsPage({
     (opportunity) =>
       opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
   );
+  const leadAwardConversionOpportunity =
+    awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;
   const grantsQueue = operationsSummary.commandQueue.filter((item) => GRANTS_QUEUE_KEYS.has(item.key));
   const leadGrantsCommand = grantsQueue[0] ?? null;
 
@@ -463,6 +466,20 @@ export default async function GrantsPage({
                 {awardedOpportunitiesMissingRecords.length > 0 ? `${awardedOpportunitiesMissingRecords.length} missing` : "Award records current"}
               </StatusBadge>
             </div>
+
+            {leadAwardConversionOpportunity ? (
+              <div className="mt-5">
+                <ProjectFundingAwardCreator
+                  projectId={leadAwardConversionOpportunity.project?.id ?? ""}
+                  opportunityOptions={[{ id: leadAwardConversionOpportunity.id, title: leadAwardConversionOpportunity.title }]}
+                  defaultOpportunityId={leadAwardConversionOpportunity.id}
+                  defaultProgramId={leadAwardConversionOpportunity.program?.id ?? null}
+                  defaultTitle={`${leadAwardConversionOpportunity.title} award`}
+                  titleLabel="Create the lead award record now"
+                  description={`Convert ${leadAwardConversionOpportunity.title} into a committed award record here so reimbursement and invoice truth can start from the shared grants lane.`}
+                />
+              </div>
+            ) : null}
 
             <div className="mt-5 grid gap-3">
               {awardedOpportunitiesMissingRecords.length > 0 ? (
