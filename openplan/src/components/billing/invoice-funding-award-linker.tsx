@@ -15,6 +15,7 @@ type InvoiceFundingAwardLinkerProps = {
   invoiceId: string;
   workspaceId: string;
   projectId: string | null;
+  isFocusedRow?: boolean;
   currentFundingAwardId?: string | null;
   exactMatchFundingAwardId?: string | null;
   autoSelectExactMatch?: boolean;
@@ -26,6 +27,7 @@ export function InvoiceFundingAwardLinker({
   invoiceId,
   workspaceId,
   projectId,
+  isFocusedRow = false,
   currentFundingAwardId = null,
   exactMatchFundingAwardId = null,
   autoSelectExactMatch = false,
@@ -36,6 +38,8 @@ export function InvoiceFundingAwardLinker({
   const [selectedFundingAwardId, setSelectedFundingAwardId] = useState(currentFundingAwardId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedFundingAwardId, setLastSavedFundingAwardId] = useState<string | null>(null);
+  const [lastSavedFundingAwardTitle, setLastSavedFundingAwardTitle] = useState<string | null>(null);
 
   const visibleFundingAwards = useMemo(
     () => fundingAwards.filter((award) => !projectId || !award.projectId || award.projectId === projectId),
@@ -52,11 +56,21 @@ export function InvoiceFundingAwardLinker({
     }
   }, [selectedFundingAwardId, visibleFundingAwards]);
 
+  useEffect(() => {
+    if ((selectedFundingAwardId || null) !== (lastSavedFundingAwardId || null)) {
+      setLastSavedFundingAwardId(null);
+      setLastSavedFundingAwardTitle(null);
+    }
+  }, [lastSavedFundingAwardId, selectedFundingAwardId]);
+
   const hasChanges = (selectedFundingAwardId || null) !== (currentFundingAwardId || null);
   const exactMatchAward = exactMatchFundingAwardId
     ? visibleFundingAwards.find((award) => award.id === exactMatchFundingAwardId) ?? null
     : null;
   const exactMatchSelected = Boolean(exactMatchAward && selectedFundingAwardId === exactMatchAward.id);
+  const savedFundingAwardConfirmed = Boolean(
+    lastSavedFundingAwardId && currentFundingAwardId && lastSavedFundingAwardId === currentFundingAwardId
+  );
 
   useEffect(() => {
     if (!autoSelectExactMatch || currentFundingAwardId || !exactMatchAward || selectedFundingAwardId) {
@@ -89,6 +103,9 @@ export function InvoiceFundingAwardLinker({
         throw new Error(payload.error || "Failed to update invoice funding award link");
       }
 
+      const savedAward = visibleFundingAwards.find((award) => award.id === (selectedFundingAwardId || null)) ?? null;
+      setLastSavedFundingAwardId(selectedFundingAwardId || null);
+      setLastSavedFundingAwardTitle(savedAward?.title ?? null);
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to update invoice funding award link");
@@ -161,6 +178,14 @@ export function InvoiceFundingAwardLinker({
               {autoSelectExactMatch && exactMatchSelected
                 ? `Exact match preloaded: ${exactMatchAward.title} is already selected because this focused invoice is the only active unlinked record on its project.`
                 : `Exact match ready: this invoice is the only active unlinked record on its project, and ${exactMatchAward.title} is the only available funding award.`}
+            </p>
+          ) : null}
+
+          {savedFundingAwardConfirmed && lastSavedFundingAwardTitle ? (
+            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+              {isFocusedRow
+                ? `Focused invoice relink saved. This record is now attached to ${lastSavedFundingAwardTitle}.`
+                : `Funding link saved. This invoice is now attached to ${lastSavedFundingAwardTitle}.`}
             </p>
           ) : null}
 

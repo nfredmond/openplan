@@ -1144,6 +1144,7 @@ export default async function BillingPage({
                       invoiceId={invoice.id}
                       workspaceId={workspaceId}
                       projectId={invoice.project_id}
+                      isFocusedRow={isFocusedRow}
                       currentFundingAwardId={invoice.funding_award_id}
                       exactMatchFundingAwardId={exactMatchFundingAward?.id ?? null}
                       autoSelectExactMatch={isFocusedRow}
