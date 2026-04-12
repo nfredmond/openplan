@@ -8,10 +8,16 @@ const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
 });
 
-const patchBillingInvoiceSchema = z.object({
-  workspaceId: z.string().uuid(),
-  fundingAwardId: z.union([z.string().uuid(), z.null()]),
-});
+const patchBillingInvoiceSchema = z
+  .object({
+    workspaceId: z.string().uuid(),
+    fundingAwardId: z.union([z.string().uuid(), z.null()]).optional(),
+    status: z.enum(["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"]).optional(),
+  })
+  .refine((value) => value.fundingAwardId !== undefined || value.status !== undefined, {
+    message: "At least one invoice patch field is required",
+    path: ["fundingAwardId"],
+  });
 
 type RouteContext = {
   params: Promise<{ invoiceId: string }>;
@@ -87,7 +93,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     let effectiveProjectId = invoice.project_id ?? null;
-    let effectiveFundingAwardId: string | null = parsed.data.fundingAwardId;
+    let effectiveFundingAwardId: string | null =
+      parsed.data.fundingAwardId === undefined ? invoice.funding_award_id ?? null : parsed.data.fundingAwardId;
 
     if (parsed.data.fundingAwardId) {
       const { data: fundingAward, error: fundingAwardError } = await supabase
@@ -118,6 +125,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .update({
         project_id: effectiveProjectId,
         funding_award_id: effectiveFundingAwardId,
+        status: parsed.data.status ?? undefined,
       })
       .eq("id", invoice.id)
       .select(

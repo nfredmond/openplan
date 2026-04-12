@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, Landmark, ShieldCheck, Sparkles } from "lucide-react";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
+import { InvoiceStatusAdvanceButton } from "@/components/billing/invoice-status-advance-button";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
@@ -736,18 +737,26 @@ export default async function GrantsPage({
                           <span className="module-record-chip">Net {formatCurrency(invoice.net_amount ?? invoice.amount)}</span>
                         </div>
 
-                        {invoice.project_id ? (
-                          <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-                            <Link href={`/projects/${invoice.project_id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                              Open reimbursement register
-                              <ArrowRight className="h-4 w-4" />
-                            </Link>
-                            <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
-                              Open funding lane
-                              <ArrowRight className="h-4 w-4" />
-                            </Link>
-                          </div>
-                        ) : null}
+                        <div className="mt-4 flex flex-wrap items-start gap-3 text-sm font-semibold">
+                          <InvoiceStatusAdvanceButton
+                            invoiceId={invoice.id}
+                            workspaceId={membership.workspace_id}
+                            currentStatus={invoice.status}
+                            canWrite={canWriteInvoices}
+                          />
+                          {invoice.project_id ? (
+                            <>
+                              <Link href={`/projects/${invoice.project_id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                                Open reimbursement register
+                                <ArrowRight className="h-4 w-4" />
+                              </Link>
+                              <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
+                                Open funding lane
+                                <ArrowRight className="h-4 w-4" />
+                              </Link>
+                            </>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   );
