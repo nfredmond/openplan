@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
@@ -453,6 +454,9 @@ export default async function DataHubPage() {
             <div className="module-operator-item">Workspace plan: {titleize(workspace?.plan ?? "pilot")}</div>
             <div className="module-operator-item">Datasets stay scoped to the current workspace.</div>
             <div className="module-operator-item">Projects can link directly to the data they rely on.</div>
+          </div>
+          <div className="mt-4">
+            <WorkspaceRuntimeCue summary={operationsSummary} />
           </div>
         </article>
       </header>

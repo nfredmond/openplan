@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
@@ -619,6 +620,9 @@ export default async function ProgramsPage({
             <div className="module-operator-item">Primary project links inherit relevant plans, reports, and engagement records.</div>
             <div className="module-operator-item">Additional program links preserve cross-project and cross-record package context.</div>
             <div className="module-operator-item">Missing schedule or packet basis shows up as an explicit gap, never a hidden score.</div>
+          </div>
+          <div className="mt-4">
+            <WorkspaceRuntimeCue summary={operationsSummary} />
           </div>
         </article>
       </header>

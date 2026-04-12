@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { ReportCreator } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -568,17 +569,10 @@ export default async function ReportsPage({
               <p className="module-summary-detail text-amber-50/72">Governance blockers that should be resolved before shipment.</p>
             </div>
           </div>
+          <div className="mt-5">
+            <WorkspaceRuntimeCue summary={operationsSummary} className="border-white/10 bg-white/[0.06] text-amber-50/82" />
+          </div>
           <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
-            {operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ? (
-              <li className="rounded-2xl border border-amber-200/20 bg-amber-200/10 px-4 py-3">
-                Shared runtime cue: start the lead reimbursement packet in {operationsSummary.nextCommand.targetProjectName ?? "the linked project"} before packet delivery work outruns the funding trail.
-              </li>
-            ) : null}
-            {operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing" ? (
-              <li className="rounded-2xl border border-amber-200/20 bg-amber-200/10 px-4 py-3">
-                Shared runtime cue: reimbursement work is already underway in {operationsSummary.nextCommand.targetProjectName ?? "the linked project"}, and the invoice follow-through lane now outranks more report polish.
-              </li>
-            ) : null}
             <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
               Keep report packets connected to the work that produced them.
             </li>

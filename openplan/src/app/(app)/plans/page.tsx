@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanCreator } from "@/components/plans/plan-creator";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -327,6 +328,9 @@ export default async function PlansPage({
             <div className="module-operator-item">Plans can link to one primary project and other related projects.</div>
             <div className="module-operator-item">Scenario, engagement, and report links stay visible from the plan record.</div>
             <div className="module-operator-item">Review status shows what is complete and what still needs attention.</div>
+          </div>
+          <div className="mt-4">
+            <WorkspaceRuntimeCue summary={operationsSummary} />
           </div>
         </article>
       </header>
