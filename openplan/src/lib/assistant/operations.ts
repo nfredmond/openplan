@@ -263,6 +263,23 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           }
         )
       : null,
+    reimbursementAdvanceCommand?.targetProjectId && context.workspace.id
+      ? quickLink(
+          "workspace-open-billing-reimbursement-triage",
+          "Open billing reimbursement triage",
+          `/billing?workspaceId=${context.workspace.id}&projectId=${reimbursementAdvanceCommand.targetProjectId}&linkage=linked`,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            priority: "secondary",
+            statusLabel: `${reimbursementAdvanceCount} reimbursement active`,
+            reason: "The invoice register is the truthful place to reconcile award-linked reimbursement follow-through once packet work already exists, so the assistant should offer a direct triage jump there too.",
+            approval: "review",
+            auditEvent: "assistant.operation.workspace.open_billing_reimbursement_triage",
+            auditNote: "Navigation only. Opens the billing register narrowed to the lead project and award-linked invoice posture.",
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 ||
     context.operationsSummary.counts.projectFundingSourcingProjects > 0 ||
     context.operationsSummary.counts.projectFundingDecisionProjects > 0 ||
