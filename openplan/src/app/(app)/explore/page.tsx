@@ -182,6 +182,7 @@ type AnalysisContextResponse = {
       reportRefreshRecommended: number;
       reportNoPacket: number;
       reportPacketCurrent: number;
+      rtpFundingReviewPackets: number;
       comparisonBackedReports: number;
       fundingOpportunities: number;
       openFundingOpportunities: number;

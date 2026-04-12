@@ -68,6 +68,7 @@ function metricLabel(metrics: Record<string, unknown>, key: string): string {
 
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
   const title = context.kind === "analysis_studio" ? "Analysis Studio copilot" : context.workspace.name ?? "Workspace copilot";
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -79,7 +80,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -90,7 +91,9 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
       : context.recentRuns[0]
         ? `Latest run: ${context.recentRuns[0].title} · ${formatDateTime(context.recentRuns[0].createdAt)}`
         : "No recent analysis runs are visible yet.",
-    context.operationsSummary.nextCommand
+    rtpFundingReviewCount > 0
+      ? `RTP funding review: ${rtpFundingReviewCount} current packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review.`
+      : context.operationsSummary.nextCommand
       ? `Command queue: ${context.operationsSummary.nextCommand.title}`
       : "Command queue is currently clear from the workspace snapshot.",
     context.baselineRun
@@ -110,8 +113,8 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         value: `${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
       },
       {
-        label: missingFundingAnchorCount > 0 ? "Missing anchors" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : invoiceRelinkCount > 0 ? "Invoice relinks" : reimbursementStartCount > 0 ? "Need packets" : reimbursementAdvanceCount > 0 ? "Reimbursement" : "Gap projects",
-        value: `${missingFundingAnchorCount > 0 ? missingFundingAnchorCount : fundingSourcingCount > 0 ? fundingSourcingCount : fundingDecisionCount > 0 ? fundingDecisionCount : fundingAwardRecordCount > 0 ? fundingAwardRecordCount : invoiceRelinkCount > 0 ? invoiceRelinkCount : reimbursementStartCount > 0 ? reimbursementStartCount : reimbursementAdvanceCount > 0 ? reimbursementAdvanceCount : gapProjectCount}`,
+        label: rtpFundingReviewCount > 0 ? "RTP funding review" : missingFundingAnchorCount > 0 ? "Missing anchors" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : invoiceRelinkCount > 0 ? "Invoice relinks" : reimbursementStartCount > 0 ? "Need packets" : reimbursementAdvanceCount > 0 ? "Reimbursement" : "Gap projects",
+        value: `${rtpFundingReviewCount > 0 ? rtpFundingReviewCount : missingFundingAnchorCount > 0 ? missingFundingAnchorCount : fundingSourcingCount > 0 ? fundingSourcingCount : fundingDecisionCount > 0 ? fundingDecisionCount : fundingAwardRecordCount > 0 ? fundingAwardRecordCount : invoiceRelinkCount > 0 ? invoiceRelinkCount : reimbursementStartCount > 0 ? reimbursementStartCount : reimbursementAdvanceCount > 0 ? reimbursementAdvanceCount : gapProjectCount}`,
       },
     ],
     facts,
@@ -230,6 +233,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
 }
 
 function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
   const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -270,10 +274,13 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
       context.recommendedCycle
         ? `Recommended cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
         : "No RTP cycle is visible yet from this registry snapshot.",
+      rtpFundingReviewCount > 0
+        ? `${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though packet freshness already reads current.`
+        : null,
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
         : registryPosture.detail,
-    ],
+    ].filter(Boolean) as string[],
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",

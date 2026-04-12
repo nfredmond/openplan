@@ -92,6 +92,37 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
   return results;
 }
 
+function describeWorkspaceNextCommandLink(context: {
+  operationsSummary: {
+    nextCommand: { key: string; title: string } | null;
+    counts: { rtpFundingReviewPackets: number };
+  };
+}) {
+  const nextCommand = context.operationsSummary.nextCommand;
+  if (!nextCommand) {
+    return null;
+  }
+
+  if (nextCommand.key === "review-current-report-packets" && context.operationsSummary.counts.rtpFundingReviewPackets > 0) {
+    const count = context.operationsSummary.counts.rtpFundingReviewPackets;
+    return {
+      label: "Open RTP funding release review",
+      statusLabel: `${count} funding-backed packet${count === 1 ? "" : "s"}`,
+      reason:
+        "Current RTP packets are aligned enough for release review, but linked-project funding posture still needs verification before those packets are treated as fully settled.",
+      auditNote:
+        "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet posture.",
+    };
+  }
+
+  return {
+    label: `Open ${nextCommand.title}`,
+    statusLabel: "Workspace command",
+    reason: "The shared workspace queue currently has the clearest guidance for what should move around this surface.",
+    auditNote: "Use the command-board rationale before changing records or regenerating artifacts.",
+  };
+}
+
 function buildWorkspaceOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
   const fundingAnchorCommand = context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs");
   const fundingSourcingCommand = context.operationsSummary.commandQueue.find(
@@ -116,6 +147,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
   const reimbursementStartCount = context.operationsSummary.counts.projectFundingReimbursementStartProjects;
   const reimbursementAdvanceCount = context.operationsSummary.counts.projectFundingReimbursementActiveProjects;
+  const nextCommandLink = describeWorkspaceNextCommandLink(context);
 
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
@@ -132,16 +164,16 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       prompt: "Give me the key workspace brief and the next operator move.",
       promptLabel: "Generate workspace brief",
     }),
-    context.operationsSummary.nextCommand
-      ? quickLink("workspace-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
+    context.operationsSummary.nextCommand && nextCommandLink
+      ? quickLink("workspace-next-command", nextCommandLink.label, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "workspace",
           actionClass: "review_controls",
           priority: "primary",
-          statusLabel: "Queue pressure live",
-          reason: "The shared command board currently outranks other visible work in this workspace.",
+          statusLabel: nextCommandLink.statusLabel,
+          reason: nextCommandLink.reason,
           approval: "review",
           auditEvent: "assistant.operation.workspace.next_command",
-          auditNote: "Review the command-board rationale before changing records or regenerating artifacts.",
+          auditNote: nextCommandLink.auditNote,
         })
       : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 && fundingAnchorCommand?.targetProjectId
@@ -771,6 +803,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
 }
 
 function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): AssistantQuickLink[] {
+  const nextCommandLink = describeWorkspaceNextCommandLink(context);
   const registryPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -849,16 +882,24 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           auditNote: "Use the cycle record to verify chapter, engagement, and packet posture before acting.",
         })
       : null,
-    context.operationsSummary.nextCommand
-      ? quickLink("rtp-registry-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
+    context.operationsSummary.nextCommand && nextCommandLink
+      ? quickLink("rtp-registry-next-command", nextCommandLink.label, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "rtp_registry",
           actionClass: "review_controls",
           priority: "primary",
-          statusLabel: "Workspace command",
-          reason: "The shared workspace queue currently has the clearest guidance for what should move around the RTP registry lane.",
+          statusLabel: nextCommandLink.statusLabel,
+          reason:
+            context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
+            context.operationsSummary.counts.rtpFundingReviewPackets > 0
+              ? nextCommandLink.reason
+              : "The shared workspace queue currently has the clearest guidance for what should move around the RTP registry lane.",
           approval: "review",
           auditEvent: "assistant.operation.rtp_registry.next_command",
-          auditNote: "Use the command-board rationale before changing cycle, report, or packet posture.",
+          auditNote:
+            context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
+            context.operationsSummary.counts.rtpFundingReviewPackets > 0
+              ? nextCommandLink.auditNote
+              : "Use the command-board rationale before changing cycle, report, or packet posture.",
         })
       : null,
     quickLink("rtp-registry-surface", "Open RTP registry", "/rtp", {
@@ -875,6 +916,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
 }
 
 function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] {
+  const nextCommandLink = describeWorkspaceNextCommandLink(context);
   const cyclePosture = resolveRtpPacketWorkPostureFromCounts({
     linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
@@ -954,16 +996,24 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           auditNote: "Verify freshness, source drift, and section posture before release or board use.",
         })
       : null,
-    context.operationsSummary.nextCommand
-      ? quickLink("rtp-next-command", `Open ${context.operationsSummary.nextCommand.title}`, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
+    context.operationsSummary.nextCommand && nextCommandLink
+      ? quickLink("rtp-next-command", nextCommandLink.label, resolveWorkspaceCommandHref(context.operationsSummary.nextCommand), {
           targetKind: "rtp_cycle",
           actionClass: "review_controls",
           priority: "primary",
-          statusLabel: "Workspace command",
-          reason: "The shared workspace queue currently has the clearest guidance for what should move around this RTP cycle.",
+          statusLabel: nextCommandLink.statusLabel,
+          reason:
+            context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
+            context.operationsSummary.counts.rtpFundingReviewPackets > 0
+              ? nextCommandLink.reason
+              : "The shared workspace queue currently has the clearest guidance for what should move around this RTP cycle.",
           approval: "review",
           auditEvent: "assistant.operation.rtp.next_command",
-          auditNote: "Use the command-board rationale before changing cycle, chapter, or packet posture.",
+          auditNote:
+            context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
+            context.operationsSummary.counts.rtpFundingReviewPackets > 0
+              ? nextCommandLink.auditNote
+              : "Use the command-board rationale before changing cycle, chapter, or packet posture.",
         })
       : null,
     quickLink("rtp-record", "Open RTP cycle", `/rtp/${context.rtpCycle.id}`, {

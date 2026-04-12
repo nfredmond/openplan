@@ -18,6 +18,7 @@ type WorkspaceOperationsPostEqChain = {
 
 type WorkspaceOperationsSelectChain = {
   eq: (column: string, value: string) => WorkspaceOperationsPostEqChain;
+  in: (column: string, values: string[]) => WorkspaceOperationsPostEqChain;
 };
 
 export type WorkspaceOperationsSupabaseLike = {
@@ -221,6 +222,7 @@ export type WorkspaceOperationsSummary = {
     reportRefreshRecommended: number;
     reportNoPacket: number;
     reportPacketCurrent: number;
+    rtpFundingReviewPackets: number;
     comparisonBackedReports: number;
     fundingOpportunities: number;
     openFundingOpportunities: number;
@@ -253,6 +255,101 @@ function formatCurrency(value: number | null | undefined): string {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function asNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function parseStoredRtpFundingReview(metadata: Record<string, unknown> | null | undefined) {
+  const sourceContext = asRecord(metadata?.sourceContext);
+  const snapshot = asRecord(sourceContext?.rtpFundingSnapshot);
+  if (!snapshot) {
+    return null;
+  }
+
+  const gapProjectCount = asNumber(snapshot.gapProjectCount) ?? 0;
+  const likelyCoveredProjectCount = asNumber(snapshot.likelyCoveredProjectCount) ?? 0;
+  const outstandingReimbursementAmount = asNumber(snapshot.outstandingReimbursementAmount) ?? 0;
+  const uninvoicedAwardAmount = asNumber(snapshot.uninvoicedAwardAmount) ?? 0;
+  const linkedProjectCount = asNumber(snapshot.linkedProjectCount) ?? 0;
+
+  if (gapProjectCount > 0) {
+    return {
+      label: "Funding gap review",
+      detail: `${gapProjectCount} linked RTP project${gapProjectCount === 1 ? " still carried" : "s still carried"} an uncovered funding gap when this packet was generated.`,
+      needsAttention: true,
+    };
+  }
+
+  if (uninvoicedAwardAmount > 0) {
+    return {
+      label: "Award follow-through pending",
+      detail: `${formatCurrency(uninvoicedAwardAmount)} of awarded funding was still uninvoiced across the linked RTP project stack at generation time.`,
+      needsAttention: true,
+    };
+  }
+
+  if (outstandingReimbursementAmount > 0) {
+    return {
+      label: "Reimbursement in flight",
+      detail: `${formatCurrency(outstandingReimbursementAmount)} was still outstanding in reimbursement requests when this packet was generated.`,
+      needsAttention: true,
+    };
+  }
+
+  if (likelyCoveredProjectCount > 0) {
+    return {
+      label: "Pipeline-backed review",
+      detail: `${likelyCoveredProjectCount} linked RTP project${likelyCoveredProjectCount === 1 ? " depended" : "s depended"} on pursued funding pipeline rather than fully committed dollars at generation time.`,
+      needsAttention: true,
+    };
+  }
+
+  return {
+    label: linkedProjectCount > 0 ? "Funding posture aligned" : "No linked projects",
+    detail:
+      linkedProjectCount > 0
+        ? "Stored RTP funding posture did not show a visible gap or reimbursement follow-through issue at generation time."
+        : "No linked RTP projects were present in the stored funding posture.",
+    needsAttention: false,
+  };
+}
+
+function resolveReportSourceUpdatedAt(report: WorkspaceOperationsReportRow): string | null {
+  const sourceContext = asRecord(report.metadataJson?.sourceContext);
+
+  const rtpCycleUpdatedAt = typeof sourceContext?.rtpCycleUpdatedAt === "string" ? sourceContext.rtpCycleUpdatedAt : null;
+  if (rtpCycleUpdatedAt) {
+    return rtpCycleUpdatedAt;
+  }
+
+  const projectUpdatedAt = typeof sourceContext?.projectUpdatedAt === "string" ? sourceContext.projectUpdatedAt : null;
+  if (projectUpdatedAt) {
+    return projectUpdatedAt;
+  }
+
+  const projectFundingSnapshot = asRecord(sourceContext?.projectFundingSnapshot);
+  const latestFundingSourceUpdatedAt =
+    typeof projectFundingSnapshot?.latestSourceUpdatedAt === "string"
+      ? projectFundingSnapshot.latestSourceUpdatedAt
+      : null;
+  if (latestFundingSourceUpdatedAt) {
+    return latestFundingSourceUpdatedAt;
+  }
+
+  return report.updatedAt;
 }
 
 function resolveExactWorkspaceBillingInvoiceId(invoices: WorkspaceOperationsBillingInvoiceRow[]): string | null {
@@ -470,11 +567,39 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
   ]);
 
+  const reportSourceRows = (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[];
+  const reportIds = reportSourceRows.map((report) => report.id).filter((id): id is string => Boolean(id));
+  let latestArtifactMetadataByReportId = new Map<string, Record<string, unknown> | null>();
+
+  if (reportIds.length > 0) {
+    const { data: reportArtifactsData } = await supabase
+      .from("report_artifacts")
+      .select("report_id, generated_at, metadata_json")
+      .in("report_id", reportIds)
+      .order("generated_at", { ascending: false })
+      .limit(Math.max(reportIds.length * 4, reportIds.length));
+
+    for (const artifact of ((reportArtifactsData ?? []) as Array<{
+      report_id: string;
+      generated_at: string | null;
+      metadata_json: Record<string, unknown> | null;
+    }>)) {
+      if (!latestArtifactMetadataByReportId.has(artifact.report_id)) {
+        latestArtifactMetadataByReportId.set(artifact.report_id, artifact.metadata_json ?? null);
+      }
+    }
+  }
+
+  const mergedReportSourceRows = reportSourceRows.map((report) => ({
+    ...report,
+    metadata_json: latestArtifactMetadataByReportId.get(report.id) ?? report.metadata_json,
+  }));
+
   return buildWorkspaceOperationsSummaryFromSourceRows({
     projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
     plans: (plansResult.data ?? []) as WorkspaceOperationsPlanSourceRow[],
     programs: (programsResult.data ?? []) as WorkspaceOperationsProgramSourceRow[],
-    reports: (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[],
+    reports: mergedReportSourceRows,
     fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as WorkspaceOperationsFundingOpportunitySourceRow[],
     fundingAwards: (fundingAwardsResult.data ?? []) as WorkspaceOperationsFundingAwardSourceRow[],
     fundingInvoices: (fundingInvoicesResult.data ?? []) as WorkspaceOperationsBillingInvoiceSourceRow[],
@@ -510,16 +635,18 @@ export function buildWorkspaceOperationsSummary({
     const freshness = getReportPacketFreshness({
       latestArtifactKind: report.latestArtifactKind,
       generatedAt: report.generatedAt,
-      updatedAt: report.updatedAt,
+      updatedAt: resolveReportSourceUpdatedAt(report),
     });
     const comparisonAggregate = parseStoredComparisonSnapshotAggregate(report.metadataJson);
     const comparisonDigest = describeComparisonSnapshotAggregate(comparisonAggregate);
+    const storedRtpFundingReview = parseStoredRtpFundingReview(report.metadataJson);
 
     return {
       ...report,
       freshness,
       comparisonAggregate,
       comparisonDigest,
+      storedRtpFundingReview,
     };
   });
 
@@ -540,6 +667,9 @@ export function buildWorkspaceOperationsSummary({
   const reportRefreshRecommended = reportRows.filter((report) => report.freshness.label === "Refresh recommended").length;
   const reportNoPacket = reportRows.filter((report) => report.freshness.label === "No packet").length;
   const reportPacketCurrent = reportRows.filter((report) => report.freshness.label === "Packet current").length;
+  const rtpFundingReviewPackets = reportRows.filter(
+    (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+  ).length;
   const comparisonBackedReports = reportRows.filter(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   ).length;
@@ -853,6 +983,9 @@ export function buildWorkspaceOperationsSummary({
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
   const firstCurrentReport = reportRows.find((report) => report.freshness.label === "Packet current");
+  const firstCurrentRtpFundingReviewReport = reportRows.find(
+    (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+  );
   const firstComparisonBackedReport = reportRows.find(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   );
@@ -921,14 +1054,15 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "review-current-report-packets",
       title: "Run release review on current packets",
-      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
+      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
       href: firstCurrentReport
         ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
         : "/reports?freshness=current",
-      tone: "info",
+      tone: rtpFundingReviewPackets > 0 ? "warning" : "info",
       priority: 2.5,
       badges: [
         { label: "Current", value: reportPacketCurrent },
+        ...(rtpFundingReviewPackets > 0 ? [{ label: "Funding review", value: rtpFundingReviewPackets }] : []),
         { label: "Reports", value: reports.length },
       ],
     });
@@ -1230,6 +1364,7 @@ export function buildWorkspaceOperationsSummary({
       reportRefreshRecommended,
       reportNoPacket,
       reportPacketCurrent,
+      rtpFundingReviewPackets,
       comparisonBackedReports,
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,

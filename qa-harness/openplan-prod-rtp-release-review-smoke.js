@@ -206,8 +206,8 @@ async function main() {
       ownerLabel: 'Grant lead',
       cadenceLabel: 'Annual cycle',
       expectedAwardAmount: 250000,
-      closesAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      decisionDueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      closesAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      decisionDueAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
       summary: 'Production RTP funding smoke opportunity.',
     });
     if (opportunityResult.status !== 201) {
@@ -270,6 +270,29 @@ async function main() {
     }
     notes.push('Generated the first RTP packet artifact on production through the existing report generation route.');
 
+    await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
+    const runtimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    const runtimeCueCount = await runtimeCueLink.count();
+    if (runtimeCueCount < 1) {
+      const operatorCard = page.locator('article').filter({ has: page.getByRole('heading', { name: /Report packets and exports/i }) }).first();
+      const commandBoard = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move around reports/i }) }).first();
+      const [operatorCardText, commandBoardText] = await Promise.all([
+        operatorCard.textContent().catch(() => null),
+        commandBoard.textContent().catch(() => null),
+      ]);
+      throw new Error(
+        `Reports runtime cue was not visible. Operator card: ${operatorCardText ?? 'n/a'} | Command board: ${commandBoardText ?? 'n/a'}`
+      );
+    }
+    const runtimeCueHref = await runtimeCueLink.getAttribute('href');
+    if (runtimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Reports runtime cue did not target the expected RTP funding release review. Received ${runtimeCueHref}`);
+    }
+    await page.getByText(/Shared runtime cue:/i).first().waitFor({ timeout: 30000 });
+    notes.push('Shared runtime reports cue pointed back to the RTP funding release-review packet before opening detail.');
+    await screenshot('prod-rtp-release-review-02-reports-runtime-cue');
+
     await page.goto(`${productionBaseUrl}/rtp`, { waitUntil: 'networkidle' });
     await page.getByText(cycleTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     const cycleRow = page.locator('article').filter({ has: page.getByRole('link', { name: new RegExp(cycleTitle, 'i') }) }).first();
@@ -292,7 +315,7 @@ async function main() {
     await page.getByText(/Generation-time funding posture/i).waitFor({ timeout: 30000 });
     await page.getByText(/Current funding posture/i).waitFor({ timeout: 30000 });
     notes.push('Production registry current-packet link landed on the packet release-review anchor in report detail.');
-    await screenshot('prod-rtp-release-review-02-report-detail');
+    await screenshot('prod-rtp-release-review-03-report-detail');
 
     const invoicePatchResult = await appFetch(`/api/billing/invoices/${ids.invoiceId}`, {
       workspaceId: ids.workspaceId,
@@ -311,7 +334,7 @@ async function main() {
       throw new Error(`RTP release review did not surface funding posture drift. Drift text: ${driftText}`);
     }
     notes.push('Production RTP release review surfaced funding posture alongside chapter/workflow drift after reimbursement changed post-generation.');
-    await screenshot('prod-rtp-release-review-03-funding-drift');
+    await screenshot('prod-rtp-release-review-04-funding-drift');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-rtp-release-review-smoke.md`);
     const lines = [

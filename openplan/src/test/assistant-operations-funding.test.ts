@@ -18,6 +18,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       reportRefreshRecommended: 0,
       reportNoPacket: 0,
       reportPacketCurrent: 0,
+      rtpFundingReviewPackets: 0,
       comparisonBackedReports: 0,
       fundingOpportunities: 1,
       openFundingOpportunities: 1,
@@ -104,6 +105,53 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
 }
 
 describe("assistant funding operations", () => {
+  it("specializes the workspace next-command link for RTP funding-backed release review", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Run release review on current packets",
+        detail: "A current RTP packet still carries linked-project funding follow-up.",
+        counts: {
+          reports: 1,
+          reportPacketCurrent: 1,
+          rtpFundingReviewPackets: 1,
+          projectFundingNeedAnchorProjects: 0,
+        },
+        nextCommand: {
+          key: "review-current-report-packets",
+          title: "Run release review on current packets",
+          detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+          href: "/reports/report-rtp-1#packet-release-review",
+          tone: "warning",
+          priority: 2.5,
+          badges: [
+            { label: "Current", value: 1 },
+            { label: "Funding review", value: 1 },
+          ],
+        },
+        commandQueue: [
+          {
+            key: "review-current-report-packets",
+            title: "Run release review on current packets",
+            detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+            href: "/reports/report-rtp-1#packet-release-review",
+            tone: "warning",
+            priority: 2.5,
+            badges: [
+              { label: "Current", value: 1 },
+              { label: "Funding review", value: 1 },
+            ],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open RTP funding release review");
+    expect(action?.statusLabel).toBe("1 funding-backed packet");
+    expect(action?.href).toBe("/reports/report-rtp-1#packet-release-review");
+  });
+
   it("exposes a workspace-level execute action for the lead missing funding anchor", () => {
     const links = buildAssistantOperations(buildWorkspaceContext());
     const action = links.find((link) => link.id === "workspace-create-funding-profile");
