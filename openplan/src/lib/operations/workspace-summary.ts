@@ -780,7 +780,14 @@ export function buildWorkspaceOperationsSummary({
           due_date: invoice.dueDate,
         }))
       );
-      if (summary.uninvoicedAwardAmount <= 0) return null;
+      const hasReimbursementFollowThrough =
+        summary.reimbursementStatus !== "paid" &&
+        (summary.uninvoicedAwardAmount > 0 ||
+          summary.requestedReimbursementAmount > 0 ||
+          summary.outstandingReimbursementAmount > 0 ||
+          summary.draftReimbursementAmount > 0 ||
+          summary.paidReimbursementAmount > 0);
+      if (!hasReimbursementFollowThrough) return null;
       return {
         project,
         summary,
@@ -1035,7 +1042,13 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "advance-project-reimbursement-invoicing",
       title: "Advance reimbursement invoicing",
-      detail: `${reimbursementAdvanceProjects.length} project funding stack${reimbursementAdvanceProjects.length === 1 ? " has" : "s have"} reimbursement work underway, but committed award dollars are still not fully reflected in invoicing.${firstReimbursementAdvanceProject ? ` Reopen ${firstReimbursementAdvanceProject.project.name} first and move ${formatCurrency(firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount)} through the invoice lane.` : ""}`,
+      detail: `${reimbursementAdvanceProjects.length} project funding stack${reimbursementAdvanceProjects.length === 1 ? " has" : "s have"} reimbursement work underway and still needs follow-through.${firstReimbursementAdvanceProject ? ` Reopen ${firstReimbursementAdvanceProject.project.name} first and move ${formatCurrency(
+        Math.max(
+          firstReimbursementAdvanceProject.summary.outstandingReimbursementAmount,
+          firstReimbursementAdvanceProject.summary.draftReimbursementAmount,
+          firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount
+        )
+      )} through billing triage.` : ""}`,
       href: firstReimbursementAdvanceProject
         ? `/projects/${firstReimbursementAdvanceProject.project.id}#project-invoices`
         : "/projects",
@@ -1046,9 +1059,15 @@ export function buildWorkspaceOperationsSummary({
       badges: [
         { label: "Reimbursement active", value: reimbursementAdvanceProjects.length },
         {
-          label: "Uninvoiced",
+          label: "Follow-through",
           value: firstReimbursementAdvanceProject
-            ? formatCurrency(firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount)
+            ? formatCurrency(
+                Math.max(
+                  firstReimbursementAdvanceProject.summary.outstandingReimbursementAmount,
+                  firstReimbursementAdvanceProject.summary.draftReimbursementAmount,
+                  firstReimbursementAdvanceProject.summary.uninvoicedAwardAmount
+                )
+              )
             : null,
         },
       ],

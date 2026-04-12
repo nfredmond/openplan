@@ -299,8 +299,11 @@ async function main() {
     notes.push('Advanced the reimbursement queue item in place from draft to internal review directly from `/grants`.');
 
     const grantsCommandQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
-    const grantsQueueTriageLink = grantsCommandQueueSection.getByRole('link', { name: /Advance reimbursement invoicing/i }).first();
-    await grantsQueueTriageLink.waitFor({ timeout: 30000 });
+    const grantsQueueTriageLink = grantsCommandQueueSection.locator('a[href*="/billing?"][href*="focusInvoiceId="]').first();
+    if (!(await grantsQueueTriageLink.isVisible().catch(() => false))) {
+      const queueText = await grantsCommandQueueSection.innerText().catch(() => '(queue text unavailable)');
+      throw new Error(`No exact billing triage link was visible in the grants workspace queue after reimbursement advanced. Queue text:\n${queueText}`);
+    }
     await Promise.all([
       page.waitForURL(/\/billing\?.*focusInvoiceId=/i, { timeout: 30000 }),
       grantsQueueTriageLink.click(),
