@@ -724,12 +724,27 @@ export default async function GrantsPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .sort((left, right) => right.fundingNeedAmount - left.fundingNeedAmount);
-  const fundingGapProjects = fundingProjectStacks
-    .map((item) => {
-      if (!item.summary.hasTargetNeed || item.summary.unfundedAfterLikelyAmount <= 0 || (opportunitiesByProjectId.get(item.project.id) ?? []).length === 0) {
+  const fundingGapProjects = projectOptions
+    .map((project) => {
+      const awards = fundingAwardsByProjectId.get(project.id) ?? [];
+      const opportunities = opportunitiesByProjectId.get(project.id) ?? [];
+      const linkedInvoices = awardLinkedInvoicesByProjectId.get(project.id) ?? [];
+      const summary = buildProjectFundingStackSummary(
+        projectFundingProfileByProjectId.get(project.id),
+        awards,
+        opportunities,
+        linkedInvoices
+      );
+      if (!summary.hasTargetNeed || summary.unfundedAfterLikelyAmount <= 0 || opportunities.length === 0) {
         return null;
       }
-      return item;
+      return {
+        project,
+        awards,
+        opportunities,
+        linkedInvoices,
+        summary,
+      };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .sort((left, right) => right.summary.unfundedAfterLikelyAmount - left.summary.unfundedAfterLikelyAmount);
