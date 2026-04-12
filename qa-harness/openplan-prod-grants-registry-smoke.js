@@ -350,7 +350,23 @@ async function main() {
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
     const refreshedQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
     await refreshedQueueSection.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
-    const exactRelinkRow = refreshedQueueSection.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: unlinkedInvoiceNumber, exact: false }) }).first();
+
+    const refreshedGrantsCommandQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const relinkQueueTriageLink = refreshedGrantsCommandQueueSection.locator(`a[href*="focusInvoiceId=${ids.unlinkedInvoiceId}"]`).first();
+    await relinkQueueTriageLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/billing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
+      relinkQueueTriageLink.click(),
+    ]);
+    await page.waitForLoadState('networkidle');
+    await page.getByText(/Focused from triage/i).waitFor({ timeout: 30000 });
+    notes.push('The grants workspace command queue also surfaces the exact billing triage row for an invoice that needs award relink.');
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+    const refreshedQueueSectionAfterQueueHandoff = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
+    await refreshedQueueSectionAfterQueueHandoff.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
+    const exactRelinkRow = refreshedQueueSectionAfterQueueHandoff.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: unlinkedInvoiceNumber, exact: false }) }).first();
     await exactRelinkRow.getByText(/Exact relink ready/i).waitFor({ timeout: 30000 });
     const useExactMatchButton = exactRelinkRow.getByRole('button', { name: /Use exact match/i });
     if (await useExactMatchButton.isVisible().catch(() => false)) {
@@ -415,7 +431,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, route both the workspace grants queue and the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, route both the workspace grants queue and the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, surface the exact billing triage row from the workspace command queue when an invoice needs award relink, repair that exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

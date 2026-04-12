@@ -365,15 +365,16 @@ function resolveGrantsQueueHref(
     targetInvoiceId?: string | null;
   },
   workspaceId: string,
-  exactBillingTriageInvoiceByProjectId: Map<string, BillingInvoiceRow>
+  exactBillingTriageInvoiceByProjectId: Map<string, BillingInvoiceRow>,
+  invoiceById: Map<string, BillingInvoiceRow>
 ) {
   if (item.key === "relink-project-invoice-awards" && item.targetProjectId && item.targetInvoiceId) {
-    const targetInvoice = exactBillingTriageInvoiceByProjectId.get(item.targetProjectId) ?? null;
+    const targetInvoice = invoiceById.get(item.targetInvoiceId) ?? null;
     if (targetInvoice) {
       return buildBillingInvoiceTriageHref({
         workspaceId,
         invoiceId: targetInvoice.id,
-        linkage: targetInvoice.funding_award_id ? "linked" : "unlinked",
+        linkage: "unlinked",
         overdue: isInvoiceOverdue(targetInvoice.status, targetInvoice.due_date) ? "overdue" : "all",
         projectId: item.targetProjectId,
       });
@@ -593,6 +594,7 @@ export default async function GrantsPage({
       })
       .filter((entry): entry is [string, BillingInvoiceRow] => Boolean(entry))
   );
+  const invoiceById = new Map(fundingInvoices.map((invoice) => [invoice.id, invoice]));
   const committedAwardAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
   const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
   const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
@@ -681,7 +683,7 @@ export default async function GrantsPage({
     .filter((item) => GRANTS_QUEUE_KEYS.has(item.key))
     .map((item) => ({
       ...item,
-      href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId),
+      href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId, invoiceById),
     }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
 
