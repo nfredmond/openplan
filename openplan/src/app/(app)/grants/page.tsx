@@ -20,6 +20,11 @@ import {
   type FundingOpportunityDecision,
   type FundingOpportunityStatus,
 } from "@/lib/programs/catalog";
+import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import {
+  buildProjectFundingStackSummary,
+  projectFundingReimbursementTone,
+} from "@/lib/projects/funding";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -95,7 +100,62 @@ type FundingAwardRow = {
   program_id: string | null;
   title: string;
   awarded_amount: number | string | null;
+  match_amount: number | string | null;
+  obligation_due_at: string | null;
+  spending_status: string | null;
+  risk_flag: string | null;
+  notes: string | null;
   updated_at: string;
+  created_at: string;
+  funding_opportunities:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
+  programs:
+    | {
+        id: string;
+        title: string;
+      }
+    | Array<{
+        id: string;
+        title: string;
+      }>
+    | null;
+  projects:
+    | {
+        id: string;
+        name: string;
+      }
+    | Array<{
+        id: string;
+        name: string;
+      }>
+    | null;
+};
+
+type BillingInvoiceRow = {
+  id: string;
+  project_id: string | null;
+  funding_award_id: string | null;
+  invoice_number: string | null;
+  status: string;
+  due_date: string | null;
+  amount: number | string | null;
+  retention_percent: number | string | null;
+  retention_amount: number | string | null;
+  net_amount: number | string | null;
+};
+
+type ProjectFundingProfileRow = {
+  project_id: string;
+  funding_need_amount: number | string | null;
+  local_match_need_amount: number | string | null;
 };
 
 type StatusFilter = "all" | FundingOpportunityStatus;
@@ -197,6 +257,23 @@ function getOpportunityPriority(opportunity: {
   return 6;
 }
 
+function getReimbursementPriority(status: ReturnType<typeof buildProjectFundingStackSummary>["reimbursementStatus"]) {
+  switch (status) {
+    case "not_started":
+      return 0;
+    case "drafting":
+      return 1;
+    case "in_review":
+      return 2;
+    case "partially_paid":
+      return 3;
+    case "paid":
+      return 4;
+    default:
+      return 5;
+  }
+}
+
 export default async function GrantsPage({
   searchParams,
 }: {
@@ -233,35 +310,56 @@ export default async function GrantsPage({
     );
   }
 
-  const [{ data: opportunitiesData }, { data: projectsData }, { data: programsData }, { data: fundingAwardsData }, operationsSummary] =
-    await Promise.all([
-      supabase
-        .from("funding_opportunities")
-        .select(
-          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
-        )
-        .eq("workspace_id", membership.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("projects")
-        .select("id, name")
-        .eq("workspace_id", membership.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("programs")
-        .select("id, title")
-        .eq("workspace_id", membership.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("funding_awards")
-        .select("id, funding_opportunity_id, project_id, program_id, title, awarded_amount, updated_at")
-        .eq("workspace_id", membership.workspace_id)
-        .order("updated_at", { ascending: false }),
-      loadWorkspaceOperationsSummaryForWorkspace(
-        supabase as unknown as WorkspaceOperationsSupabaseLike,
-        membership.workspace_id
-      ),
-    ]);
+  const [
+    { data: opportunitiesData },
+    { data: projectsData },
+    { data: programsData },
+    { data: fundingAwardsData },
+    { data: fundingInvoicesData },
+    { data: projectFundingProfilesData },
+    operationsSummary,
+  ] = await Promise.all([
+    supabase
+      .from("funding_opportunities")
+      .select(
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
+      )
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("projects")
+      .select("id, name")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("programs")
+      .select("id, title")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("funding_awards")
+      .select(
+        "id, funding_opportunity_id, project_id, program_id, title, awarded_amount, match_amount, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), projects(id, name)"
+      )
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("billing_invoice_records")
+      .select("id, project_id, funding_award_id, invoice_number, status, due_date, amount, retention_percent, retention_amount, net_amount")
+      .eq("workspace_id", membership.workspace_id)
+      .order("due_date", { ascending: true }),
+    supabase
+      .from("project_funding_profiles")
+      .select("project_id, funding_need_amount, local_match_need_amount")
+      .eq("workspace_id", membership.workspace_id),
+    loadWorkspaceOperationsSummaryForWorkspace(
+      supabase as unknown as WorkspaceOperationsSupabaseLike,
+      membership.workspace_id
+    ),
+  ]);
+
+  const projectOptions = (projectsData ?? []) as ProjectOption[];
+  const programOptions = (programsData ?? []) as ProgramOption[];
 
   const opportunities = ((opportunitiesData ?? []) as FundingOpportunityRow[])
     .map((opportunity) => ({
@@ -275,10 +373,100 @@ export default async function GrantsPage({
       return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
     });
 
-  const fundingAwards = (fundingAwardsData ?? []) as FundingAwardRow[];
+  const fundingAwards = ((fundingAwardsData ?? []) as FundingAwardRow[]).map((award) => ({
+    ...award,
+    opportunity: normalizeJoinedRecord(award.funding_opportunities),
+    program: normalizeJoinedRecord(award.programs),
+    project: normalizeJoinedRecord(award.projects),
+  }));
+  const fundingInvoices = (fundingInvoicesData ?? []) as BillingInvoiceRow[];
+  const projectFundingProfiles = (projectFundingProfilesData ?? []) as ProjectFundingProfileRow[];
+
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
+  const projectFundingProfileByProjectId = new Map(projectFundingProfiles.map((profile) => [profile.project_id, profile]));
+  const opportunitiesByProjectId = new Map<string, typeof opportunities>();
+  const fundingAwardsByProjectId = new Map<string, typeof fundingAwards>();
+  const awardLinkedInvoicesByProjectId = new Map<string, BillingInvoiceRow[]>();
+
+  for (const opportunity of opportunities) {
+    if (!opportunity.project?.id) continue;
+    const current = opportunitiesByProjectId.get(opportunity.project.id) ?? [];
+    current.push(opportunity);
+    opportunitiesByProjectId.set(opportunity.project.id, current);
+  }
+
+  for (const award of fundingAwards) {
+    const projectId = award.project?.id ?? award.project_id;
+    if (!projectId) continue;
+    const current = fundingAwardsByProjectId.get(projectId) ?? [];
+    current.push(award);
+    fundingAwardsByProjectId.set(projectId, current);
+  }
+
+  for (const invoice of fundingInvoices) {
+    if (!invoice.project_id || !invoice.funding_award_id) continue;
+    const current = awardLinkedInvoicesByProjectId.get(invoice.project_id) ?? [];
+    current.push(invoice);
+    awardLinkedInvoicesByProjectId.set(invoice.project_id, current);
+  }
+
+  const fundingProjectStacks = projectOptions
+    .map((project) => {
+      const awards = fundingAwardsByProjectId.get(project.id) ?? [];
+      if (awards.length === 0) return null;
+
+      const summary = buildProjectFundingStackSummary(
+        projectFundingProfileByProjectId.get(project.id),
+        awards,
+        opportunitiesByProjectId.get(project.id) ?? [],
+        awardLinkedInvoicesByProjectId.get(project.id) ?? []
+      );
+      const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoicesByProjectId.get(project.id) ?? []);
+      const nextObligationAward = awards.find((award) => award.obligation_due_at === summary.nextObligationAt) ?? null;
+      const latestAwardUpdatedAt = awards.reduce<string | null>((latest, award) => {
+        if (!latest) return award.updated_at;
+        return new Date(award.updated_at).getTime() > new Date(latest).getTime() ? award.updated_at : latest;
+      }, null);
+
+      return {
+        project,
+        awards,
+        summary,
+        linkedInvoiceSummary,
+        nextObligationAward,
+        latestAwardUpdatedAt,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => {
+      const reimbursementDifference =
+        getReimbursementPriority(left.summary.reimbursementStatus) -
+        getReimbursementPriority(right.summary.reimbursementStatus);
+      if (reimbursementDifference !== 0) return reimbursementDifference;
+      if (left.summary.awardRiskCount !== right.summary.awardRiskCount) {
+        return right.summary.awardRiskCount - left.summary.awardRiskCount;
+      }
+      return new Date(right.latestAwardUpdatedAt ?? 0).getTime() - new Date(left.latestAwardUpdatedAt ?? 0).getTime();
+    });
+
+  const committedAwardAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
+  const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
+  const linkedInvoiceSummary = summarizeBillingInvoiceRecords(
+    fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id))
+  );
+  const uninvoicedCommittedAmount = Math.max(committedAwardAmount - linkedInvoiceSummary.totalNetAmount, 0);
+  const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
+  const reimbursementNotStartedCount = fundingProjectStacks.filter(
+    (item) => item.summary.reimbursementStatus === "not_started"
+  ).length;
+  const reimbursementActiveCount = fundingProjectStacks.filter((item) =>
+    ["drafting", "in_review", "partially_paid"].includes(item.summary.reimbursementStatus)
+  ).length;
+  const reimbursementPaidCount = fundingProjectStacks.filter(
+    (item) => item.summary.reimbursementStatus === "paid"
+  ).length;
 
   const filteredOpportunities = opportunities.filter((opportunity) => {
     if (selectedStatus !== "all" && opportunity.opportunity_status !== selectedStatus) {
@@ -300,8 +488,7 @@ export default async function GrantsPage({
   const distinctProjectCount = new Set(opportunities.map((opportunity) => opportunity.project?.id).filter(Boolean)).size;
   const distinctProgramCount = new Set(opportunities.map((opportunity) => opportunity.program?.id).filter(Boolean)).size;
   const awardedOpportunitiesMissingRecords = opportunities.filter(
-    (opportunity) =>
-      opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+    (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
   );
   const leadAwardConversionOpportunity =
     awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;
@@ -404,8 +591,8 @@ export default async function GrantsPage({
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-6">
           <FundingOpportunityCreator
-            programs={(programsData ?? []) as ProgramOption[]}
-            projects={(projectsData ?? []) as ProjectOption[]}
+            programs={programOptions}
+            projects={projectOptions}
             title="Log a funding opportunity"
             description="Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same workspace truth."
           />
@@ -541,6 +728,117 @@ export default async function GrantsPage({
                 </div>
               )}
             </div>
+          </article>
+
+          <article id="grants-awards-reimbursement" className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Committed awards</p>
+                <h2 className="module-section-title">Workspace award stack and reimbursement posture</h2>
+                <p className="module-section-description">
+                  Reuse the same funding-stack truth from project detail, but surface it here as one workspace lane so operators can see where award dollars are still uninvoiced, in flight, or fully reimbursed.
+                </p>
+              </div>
+              <StatusBadge tone={fundingProjectStacks.length > 0 ? "info" : "neutral"}>
+                {fundingProjectStacks.length > 0 ? `${fundingProjectStacks.length} project stacks` : "No award stacks yet"}
+              </StatusBadge>
+            </div>
+
+            <div className="module-summary-grid cols-6 mt-5">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Award records</p>
+                <p className="module-summary-value">{fundingAwards.length}</p>
+                <p className="module-summary-detail">Committed awards recorded in the current workspace.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Committed dollars</p>
+                <p className="module-summary-value text-base leading-tight">{formatCurrency(committedAwardAmount)}</p>
+                <p className="module-summary-detail">Awarded funding already committed to projects.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Match tracked</p>
+                <p className="module-summary-value text-base leading-tight">{formatCurrency(trackedMatchAmount)}</p>
+                <p className="module-summary-detail">Local or partner match attached to committed awards.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Requested</p>
+                <p className="module-summary-value text-base leading-tight">{formatCurrency(linkedInvoiceSummary.totalNetAmount)}</p>
+                <p className="module-summary-detail">Award-linked invoice dollars already in reimbursement flow.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Uninvoiced</p>
+                <p className="module-summary-value text-base leading-tight">{formatCurrency(uninvoicedCommittedAmount)}</p>
+                <p className="module-summary-detail">Committed award dollars not yet reflected in invoice records.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Award risk</p>
+                <p className="module-summary-value">{awardWatchCount}</p>
+                <p className="module-summary-detail">Award records currently flagged watch or critical.</p>
+              </div>
+            </div>
+
+            <div className="module-inline-list">
+              <span className="module-inline-item"><strong>{reimbursementNotStartedCount}</strong> not started</span>
+              <span className="module-inline-item"><strong>{reimbursementActiveCount}</strong> active reimbursement</span>
+              <span className="module-inline-item"><strong>{reimbursementPaidCount}</strong> fully reimbursed</span>
+              <span className="module-inline-item"><strong>{formatCurrency(linkedInvoiceSummary.paidNetAmount)}</strong> paid</span>
+              <span className="module-inline-item"><strong>{formatCurrency(linkedInvoiceSummary.outstandingNetAmount)}</strong> outstanding</span>
+            </div>
+
+            {fundingProjectStacks.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState
+                  title="No committed award stacks yet"
+                  description="Once award records exist, this workspace lane will show which project stacks still need reimbursement starts, invoice follow-through, or obligation attention."
+                />
+              </div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {fundingProjectStacks.map((item) => (
+                  <div key={`award-stack-${item.project.id}`} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={projectFundingReimbursementTone(item.summary.reimbursementStatus)}>
+                          {item.summary.reimbursementLabel}
+                        </StatusBadge>
+                        <StatusBadge tone="info">{item.awards.length} award{item.awards.length === 1 ? "" : "s"}</StatusBadge>
+                        {item.summary.awardRiskCount > 0 ? (
+                          <StatusBadge tone="warning">{item.summary.awardRiskCount} at risk</StatusBadge>
+                        ) : null}
+                        {item.summary.nextObligationAt && isDecisionSoon(item.summary.nextObligationAt) ? (
+                          <StatusBadge tone="warning">Obligation soon</StatusBadge>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{item.project.name}</h3>
+                          <p className="module-record-stamp">Updated {formatDateTime(item.latestAwardUpdatedAt)}</p>
+                        </div>
+                        <p className="module-record-summary">{item.summary.reimbursementReason}</p>
+                      </div>
+
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">Committed {formatCurrency(item.summary.committedFundingAmount)}</span>
+                        <span className="module-record-chip">Match {formatCurrency(item.summary.committedMatchAmount)}</span>
+                        <span className="module-record-chip">Requested {formatCurrency(item.summary.requestedReimbursementAmount)}</span>
+                        <span className="module-record-chip">Paid {formatCurrency(item.summary.paidReimbursementAmount)}</span>
+                        <span className="module-record-chip">Outstanding {formatCurrency(item.summary.outstandingReimbursementAmount)}</span>
+                        <span className="module-record-chip">Uninvoiced {formatCurrency(item.summary.uninvoicedAwardAmount)}</span>
+                        <span className="module-record-chip">Next obligation {item.nextObligationAward ? `${item.nextObligationAward.title} · ${formatDateTime(item.summary.nextObligationAt)}` : "Not set"}</span>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+                        <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                          Open project funding lane
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </article>
         </div>
 
