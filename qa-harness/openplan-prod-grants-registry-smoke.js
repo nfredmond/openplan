@@ -281,8 +281,8 @@ async function main() {
     await awardStackSection.getByText(/Invoice drafting started/i).waitFor({ timeout: 30000 });
     const reimbursementQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace reimbursement follow-through queue/i }) }).first();
     await reimbursementQueueSection.waitFor({ timeout: 30000 });
-    await reimbursementQueueSection.getByRole('link', { name: /Open reimbursement register/i }).first().waitFor({ timeout: 30000 });
-    notes.push('Created the first award-linked reimbursement invoice directly from `/grants`, advanced the stack into drafting posture, and surfaced it in the workspace reimbursement queue.');
+    await reimbursementQueueSection.getByRole('link', { name: /Open billing triage/i }).first().waitFor({ timeout: 30000 });
+    notes.push('Created the first award-linked reimbursement invoice directly from `/grants`, advanced the stack into drafting posture, and surfaced it in the workspace reimbursement queue with a direct billing triage handoff.');
 
     await reimbursementQueueSection.getByRole('button', { name: /Move to internal review/i }).first().click();
     await reimbursementQueueSection.getByText(/Invoice moved to internal review\./i).first().waitFor({ timeout: 30000 });
