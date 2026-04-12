@@ -67,11 +67,37 @@ describe("getReportPacketFreshness", () => {
         stageGatePassCount: 1,
         stageGateHoldCount: 1,
         stageGateBlockedGateLabel: "G02 · Agreements, Procurement, and Civil Rights Setup",
-      })
+      } as Parameters<typeof describeEvidenceChainSummary>[0])
     ).toMatchObject({
       headline: "2 linked runs · 1 scenario set · 6 project records",
       detail: "Active engagement · 4/9 handoff-ready · Hold present governance",
       blockedGateDetail: "Blocked gate: G02 · Agreements, Procurement, and Civil Rights Setup",
+    });
+  });
+
+  it("includes scenario spine posture when counts are present", () => {
+    expect(
+      describeEvidenceChainSummary({
+        linkedRunCount: 2,
+        scenarioSetLinkCount: 1,
+        scenarioAssumptionSetCount: 3,
+        scenarioDataPackageCount: 2,
+        scenarioIndicatorSnapshotCount: 5,
+        scenarioSharedSpinePendingCount: 0,
+        projectRecordGroupCount: 4,
+        totalProjectRecordCount: 6,
+        engagementLabel: "Active",
+        engagementItemCount: 9,
+        engagementReadyForHandoffCount: 4,
+        stageGateLabel: "Hold present",
+        stageGatePassCount: 1,
+        stageGateHoldCount: 1,
+        stageGateBlockedGateLabel: null,
+      })
+    ).toMatchObject({
+      headline: "2 linked runs · 1 scenario set · 6 project records",
+      detail: "3 assumptions · 2 packages · 5 indicators · Active engagement · 4/9 handoff-ready · Hold present governance",
+      blockedGateDetail: null,
     });
   });
 

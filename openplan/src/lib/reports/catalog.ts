@@ -667,15 +667,29 @@ export function describeEvidenceChainSummary(
   }
 
   const scenarioLabel = `${summary.scenarioSetLinkCount} scenario set${summary.scenarioSetLinkCount === 1 ? "" : "s"}`;
-  const scenarioSpineLabel = summary.scenarioSharedSpinePendingCount > 0
+  const hasScenarioSpinePendingCount = typeof summary.scenarioSharedSpinePendingCount === "number";
+  const hasScenarioSpineCounts =
+    typeof summary.scenarioAssumptionSetCount === "number" &&
+    typeof summary.scenarioDataPackageCount === "number" &&
+    typeof summary.scenarioIndicatorSnapshotCount === "number";
+  const scenarioSpineLabel = hasScenarioSpinePendingCount && summary.scenarioSharedSpinePendingCount > 0
     ? `${summary.scenarioSharedSpinePendingCount} spine pending`
-    : `${summary.scenarioAssumptionSetCount} assumptions · ${summary.scenarioDataPackageCount} packages · ${summary.scenarioIndicatorSnapshotCount} indicators`;
+    : hasScenarioSpineCounts
+      ? `${summary.scenarioAssumptionSetCount} assumptions · ${summary.scenarioDataPackageCount} packages · ${summary.scenarioIndicatorSnapshotCount} indicators`
+      : null;
   const projectRecordLabel = `${summary.totalProjectRecordCount} project record${summary.totalProjectRecordCount === 1 ? "" : "s"}`;
   const linkedRunLabel = `${summary.linkedRunCount} linked run${summary.linkedRunCount === 1 ? "" : "s"}`;
 
   return {
     headline: `${linkedRunLabel} · ${scenarioLabel} · ${projectRecordLabel}`,
-    detail: `${scenarioSpineLabel} · ${summary.engagementLabel} engagement · ${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready · ${summary.stageGateLabel} governance`,
+    detail: [
+      scenarioSpineLabel,
+      `${summary.engagementLabel} engagement`,
+      `${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready`,
+      `${summary.stageGateLabel} governance`,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join(" · "),
     blockedGateDetail: summary.stageGateBlockedGateLabel
       ? `Blocked gate: ${summary.stageGateBlockedGateLabel}`
       : null,
