@@ -42,6 +42,7 @@ export function WorkspaceCommandBoard({
   const reimbursementStartCount = summary.counts.projectFundingReimbursementStartProjects;
   const reimbursementAdvanceCount = summary.counts.projectFundingReimbursementActiveProjects;
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
+  const rtpFundingReviewCount = summary.counts.rtpFundingReviewPackets;
 
   return (
     <article className="module-section-surface">
@@ -61,7 +62,7 @@ export function WorkspaceCommandBoard({
             {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
           </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} current for release review.
+            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} current for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} funding-backed.` : "."}
           </p>
         </div>
         <div className="module-subpanel">

@@ -270,6 +270,18 @@ async function main() {
     }
     notes.push('Generated the first RTP packet artifact on production through the existing report generation route.');
 
+    await page.goto(`${productionBaseUrl}/dashboard`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /Move into the right module lane/i }).waitFor({ timeout: 30000 });
+    const dashboardReviewLink = page.getByRole('link', { name: /Open RTP funding release review/i }).first();
+    await dashboardReviewLink.waitFor({ timeout: 30000 });
+    const dashboardReviewHref = await dashboardReviewLink.getAttribute('href');
+    if (dashboardReviewHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Dashboard RTP funding review action did not target the expected packet release-review path. Received ${dashboardReviewHref}`);
+    }
+    await page.getByText(/1 current for release review, 1 funding-backed\./i).first().waitFor({ timeout: 30000 });
+    notes.push('Dashboard quick actions and shared command board both surfaced the RTP funding-backed release-review lane.');
+    await screenshot('prod-rtp-release-review-dashboard');
+
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
     const runtimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();

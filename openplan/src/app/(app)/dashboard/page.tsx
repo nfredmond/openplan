@@ -111,8 +111,22 @@ export default async function DashboardPage() {
   });
 
   const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsQueueItem(item)) ?? null;
+  const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
 
   const actions = [
+    ...(operationsSummary.nextCommand?.key === "review-current-report-packets"
+      ? [
+          {
+            href: operationsSummary.nextCommand.href,
+            title: "Open RTP funding release review",
+            description:
+              rtpFundingReviewCount > 0
+                ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
+                : "Jump straight into the current RTP packet release-review lane.",
+            icon: FileText,
+          },
+        ]
+      : []),
     ...(operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ||
     operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
       ? [
@@ -241,11 +255,19 @@ export default async function DashboardPage() {
           </div>
           <p className="module-operator-copy">
             Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
+            {rtpFundingReviewCount > 0
+              ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
+              : ""}
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
               Review active projects, recent updates, and items that need follow-up.
             </div>
+            {rtpFundingReviewCount > 0 ? (
+              <div className="module-operator-item">
+                Current RTP packet work is not just freshness, {rtpFundingReviewCount} packet{rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.
+              </div>
+            ) : null}
             <div className="module-operator-item">
               Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
             </div>
