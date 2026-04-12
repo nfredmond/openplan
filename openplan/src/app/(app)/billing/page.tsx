@@ -255,6 +255,10 @@ function normalizeFocusedInvoiceId(value: string | string[] | undefined): string
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
+function normalizeRelinkedInvoiceId(value: string | string[] | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 function buildBillingHref(params: {
   workspaceId: string | null;
   checkoutState: string | null;
@@ -263,6 +267,7 @@ function buildBillingHref(params: {
   overdue: BillingInvoiceOverdueFilter;
   projectId?: string | null;
   focusedInvoiceId?: string | null;
+  relinkedInvoiceId?: string | null;
 }) {
   const search = new URLSearchParams();
   if (params.workspaceId) search.set("workspaceId", params.workspaceId);
@@ -272,6 +277,7 @@ function buildBillingHref(params: {
   if (params.overdue !== "all") search.set("overdue", params.overdue);
   if (params.projectId) search.set("projectId", params.projectId);
   if (params.focusedInvoiceId) search.set("focusInvoiceId", params.focusedInvoiceId);
+  if (params.relinkedInvoiceId) search.set("relinkedInvoiceId", params.relinkedInvoiceId);
   const query = search.toString();
   return query ? `/billing?${query}` : "/billing";
 }
@@ -309,6 +315,7 @@ export default async function BillingPage({
   const overdueFilter = normalizeInvoiceOverdueFilter(resolvedParams.overdue);
   const requestedProjectFilterId = normalizeProjectFilterId(resolvedParams.projectId);
   const requestedFocusedInvoiceId = normalizeFocusedInvoiceId(resolvedParams.focusInvoiceId);
+  const requestedRelinkedInvoiceId = normalizeRelinkedInvoiceId(resolvedParams.relinkedInvoiceId);
 
   const supabase = await createClient();
   const {
@@ -505,12 +512,25 @@ export default async function BillingPage({
     requestedFocusedInvoiceId && registerScopedInvoiceRecords.some((invoice) => invoice.id === requestedFocusedInvoiceId)
       ? requestedFocusedInvoiceId
       : null;
+  const activeRelinkedInvoiceId =
+    requestedRelinkedInvoiceId &&
+    registerScopedInvoiceRecords.some(
+      (invoice) => invoice.id === requestedRelinkedInvoiceId && Boolean(invoice.funding_award_id || normalizeJoin(invoice.funding_awards)?.id)
+    )
+      ? requestedRelinkedInvoiceId
+      : null;
   const focusedInvoiceRecord = activeFocusedInvoiceId
     ? registerScopedInvoiceRecords.find((invoice) => invoice.id === activeFocusedInvoiceId) ?? null
     : null;
   const focusedInvoiceExactMatchFundingAward = focusedInvoiceRecord
     ? resolveExactInvoiceAwardMatch(focusedInvoiceRecord, registerScopedInvoiceRecords, workspaceFundingAwards)
     : null;
+  const focusedInvoiceRelinkSaved = Boolean(
+    activeRelinkedInvoiceId &&
+      activeFocusedInvoiceId &&
+      activeRelinkedInvoiceId === activeFocusedInvoiceId &&
+      focusedInvoiceRecord?.fundingAward
+  );
   const focusedTriageHref = activeFocusedInvoiceId
     ? buildBillingInvoiceTriageHref({
         workspaceId,
@@ -927,6 +947,7 @@ export default async function BillingPage({
                   overdue: overdueFilter,
                   projectId: null,
                   focusedInvoiceId: activeFocusedInvoiceId,
+                  relinkedInvoiceId: activeRelinkedInvoiceId,
                 })}
                 className="openplan-inline-label"
               >
@@ -944,6 +965,11 @@ export default async function BillingPage({
                   The only safe funding-award match is ready below and will be preselected as <strong>{focusedInvoiceExactMatchFundingAward.title}</strong>.
                 </span>
               ) : null}
+              {focusedInvoiceRelinkSaved ? (
+                <span>
+                  Relink saved. This focused invoice now sits inside the reimbursement chain through <strong>{focusedInvoiceRecord?.fundingAward?.title}</strong>.
+                </span>
+              ) : null}
               {focusedTriageHref ? <BillingTriageLinkCopy href={focusedTriageHref} /> : null}
               <Link
                 href={buildBillingHref({
@@ -954,6 +980,7 @@ export default async function BillingPage({
                   overdue: overdueFilter,
                   projectId: activeProjectFilterId,
                   focusedInvoiceId: null,
+                  relinkedInvoiceId: null,
                 })}
                 className="openplan-inline-label"
               >
@@ -977,6 +1004,7 @@ export default async function BillingPage({
                       overdue: overdueFilter,
                       projectId: activeProjectFilterId,
                       focusedInvoiceId: activeFocusedInvoiceId,
+                      relinkedInvoiceId: activeRelinkedInvoiceId,
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
@@ -1003,6 +1031,7 @@ export default async function BillingPage({
                       overdue: option.value,
                       projectId: activeProjectFilterId,
                       focusedInvoiceId: activeFocusedInvoiceId,
+                      relinkedInvoiceId: activeRelinkedInvoiceId,
                     })}
                     className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                   >
@@ -1051,6 +1080,7 @@ export default async function BillingPage({
               {filteredInvoiceRecords.map((invoice) => {
                 const riskState = billingRowRiskState(invoice);
                 const isFocusedRow = activeFocusedInvoiceId === invoice.id;
+                const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
                 const exactMatchFundingAward = resolveExactInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards);
                 const rowTriageHref = riskState.title
                   ? buildBillingInvoiceTriageHref({
@@ -1076,6 +1106,7 @@ export default async function BillingPage({
                       <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
                       {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
                       {isFocusedRow ? <StatusBadge tone="info">Focused from triage</StatusBadge> : null}
+                      {isJustRelinkedRow ? <StatusBadge tone="success">Relink just saved</StatusBadge> : null}
                       {exactMatchFundingAward ? <StatusBadge tone="success">Exact match ready</StatusBadge> : null}
                       {!invoice.fundingAward && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
                         <StatusBadge tone={riskState.tone === "danger" ? "danger" : "warning"}>Needs relink</StatusBadge>
@@ -1115,6 +1146,13 @@ export default async function BillingPage({
                         <p className="mt-1">
                           This invoice is the only active unlinked reimbursement record on its project, and {exactMatchFundingAward.title} is the only available funding award for that same project.
                         </p>
+                      </div>
+                    ) : null}
+
+                    {isJustRelinkedRow && invoice.fundingAward ? (
+                      <div className="mt-3 border-l-2 border-emerald-300/80 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                        <p className="font-semibold tracking-tight">Relink saved in this register view</p>
+                        <p className="mt-1">This invoice now contributes to reimbursement posture through {invoice.fundingAward.title}.</p>
                       </div>
                     ) : null}
 
