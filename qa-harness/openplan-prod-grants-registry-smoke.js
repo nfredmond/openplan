@@ -589,6 +589,15 @@ async function main() {
     }
     notes.push('The billing workspace-priority link now returns operators to the grants reimbursement triage lane instead of a broad project invoice page.');
 
+    const runtimeCueLink = page.getByRole('link', { name: /Open reimbursement triage|Open reimbursement start/i }).first();
+    const runtimeCueHref = await runtimeCueLink.getAttribute('href');
+    const runtimeCueReturnsToGrants =
+      Boolean(runtimeCueHref) && runtimeCueHref.startsWith('/grants') && runtimeCueHref.includes('grants-reimbursement');
+    if (!runtimeCueReturnsToGrants) {
+      throw new Error(`Workspace runtime cue did not expose a grants reimbursement handoff. Received ${runtimeCueHref || 'empty'}.`);
+    }
+    notes.push('The shared runtime cue now exposes a direct reimbursement CTA into the grants handoff lane.');
+
     await screenshot('prod-grants-registry-04-project-billing-register');
 
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });

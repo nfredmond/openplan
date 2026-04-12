@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-04-12T20:35:39.706Z",
+  "startedAt": "2026-04-12T20:45:38.383Z",
   "mode": "apply",
   "createdAfter": "2026-04-12",
   "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
@@ -9,43 +9,43 @@
     {
       "table": "programs",
       "column": "id",
-      "plannedCount": 5
+      "plannedCount": 1
     },
     {
       "table": "billing_events",
       "column": "workspace_id",
-      "plannedCount": 10
+      "plannedCount": 2
     },
     {
       "table": "projects",
       "column": "id",
-      "plannedCount": 10
+      "plannedCount": 2
     },
     {
       "table": "workspace_members",
       "column": "workspace_id",
-      "plannedCount": 10
+      "plannedCount": 2
     },
     {
       "table": "workspaces",
       "column": "id",
-      "plannedCount": 10
+      "plannedCount": 2
     }
   ],
   "deleteResults": [
     {
       "table": "programs",
       "column": "id",
-      "countPlanned": 5,
+      "countPlanned": 1,
       "ok": true,
       "status": 200,
-      "deletedCount": 5,
+      "deletedCount": 1,
       "error": null
     },
     {
       "table": "billing_events",
       "column": "workspace_id",
-      "countPlanned": 10,
+      "countPlanned": 2,
       "ok": true,
       "status": 200,
       "deletedCount": 0,
@@ -54,90 +54,42 @@
     {
       "table": "projects",
       "column": "id",
-      "countPlanned": 10,
+      "countPlanned": 2,
       "ok": true,
       "status": 200,
-      "deletedCount": 10,
+      "deletedCount": 2,
       "error": null
     },
     {
       "table": "workspace_members",
       "column": "workspace_id",
-      "countPlanned": 10,
+      "countPlanned": 2,
       "ok": true,
       "status": 200,
-      "deletedCount": 10,
+      "deletedCount": 2,
       "error": null
     },
     {
       "table": "workspaces",
       "column": "id",
-      "countPlanned": 10,
+      "countPlanned": 2,
       "ok": true,
       "status": 200,
-      "deletedCount": 10,
+      "deletedCount": 2,
       "error": null
     }
   ],
   "authPlan": [
     {
-      "userId": "03f959ab-3cd1-436e-a72e-dc4882648f2d",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-34-15-252z@natfordplanning.com",
-      "created_at": "2026-04-12T20:34:15.503851Z"
-    },
-    {
-      "userId": "1232e8b0-dcf8-497d-8b11-26f6cffdd52b",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-32-40-542z@natfordplanning.com",
-      "created_at": "2026-04-12T20:32:40.818653Z"
-    },
-    {
-      "userId": "fc193e7e-0e92-4963-b0ec-71c7cec06bf2",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-30-49-872z@natfordplanning.com",
-      "created_at": "2026-04-12T20:30:50.27082Z"
-    },
-    {
-      "userId": "1d2044ed-dc86-460d-a4bb-e5d47d3765e2",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-27-59-255z@natfordplanning.com",
-      "created_at": "2026-04-12T20:27:59.693885Z"
-    },
-    {
-      "userId": "21226cd1-6800-440c-ae20-d20baeeb9905",
-      "email": "openplan-prod-grants-smoke-2026-04-12t11-27-49-615z@natfordplanning.com",
-      "created_at": "2026-04-12T11:27:49.952733Z"
+      "userId": "302a4794-4a8f-4308-b37c-494d68589a5d",
+      "email": "openplan-prod-grants-smoke-2026-04-12t20-44-00-510z@natfordplanning.com",
+      "created_at": "2026-04-12T20:44:00.8947Z"
     }
   ],
   "authDeletes": [
     {
-      "userId": "03f959ab-3cd1-436e-a72e-dc4882648f2d",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-34-15-252z@natfordplanning.com",
-      "ok": true,
-      "status": 200,
-      "error": null
-    },
-    {
-      "userId": "1232e8b0-dcf8-497d-8b11-26f6cffdd52b",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-32-40-542z@natfordplanning.com",
-      "ok": true,
-      "status": 200,
-      "error": null
-    },
-    {
-      "userId": "fc193e7e-0e92-4963-b0ec-71c7cec06bf2",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-30-49-872z@natfordplanning.com",
-      "ok": true,
-      "status": 200,
-      "error": null
-    },
-    {
-      "userId": "1d2044ed-dc86-460d-a4bb-e5d47d3765e2",
-      "email": "openplan-prod-grants-smoke-2026-04-12t20-27-59-255z@natfordplanning.com",
-      "ok": true,
-      "status": 200,
-      "error": null
-    },
-    {
-      "userId": "21226cd1-6800-440c-ae20-d20baeeb9905",
-      "email": "openplan-prod-grants-smoke-2026-04-12t11-27-49-615z@natfordplanning.com",
+      "userId": "302a4794-4a8f-4308-b37c-494d68589a5d",
+      "email": "openplan-prod-grants-smoke-2026-04-12t20-44-00-510z@natfordplanning.com",
       "ok": true,
       "status": 200,
       "error": null
@@ -150,102 +102,30 @@
     "remainingUsers": []
   },
   "targets": {
-    "workspaceCount": 10,
-    "projectCount": 10,
+    "workspaceCount": 2,
+    "projectCount": 2,
     "reportCount": 0,
     "campaignCount": 0,
     "countyRunCount": 0,
-    "userCount": 5,
+    "userCount": 1,
     "workspaces": [
       {
-        "id": "c3949d0a-17a4-4dfb-a432-2f5fea522aee",
-        "name": "openplan-prod-grants-smoke-2026-04-12t11-27-49-615z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t11-27-49-615z-21226cd1",
+        "id": "9aa35ca5-d936-46f5-8fee-dadca9d5dd2e",
+        "name": "openplan-prod-grants-smoke-2026-04-12t20-44-00-510z",
+        "slug": "openplan-prod-grants-smoke-2026-04-12t20-44-00-510z-302a4794",
         "plan": "free",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T11:27:49.952408+00:00"
+        "created_at": "2026-04-12T20:44:00.894326+00:00"
       },
       {
-        "id": "0aefdc58-1b7d-4938-852b-6274f26b8e40",
-        "name": "OpenPlan Prod Grants Smoke 11-27-49",
-        "slug": "openplan-prod-grants-smoke-11-27-49",
+        "id": "6c77e577-62ff-44ee-ae3b-199ce2f05b8b",
+        "name": "OpenPlan Prod Grants Smoke 20-44-00",
+        "slug": "openplan-prod-grants-smoke-20-44-00",
         "plan": "pilot",
         "subscription_plan": null,
         "subscription_status": "pilot",
-        "created_at": "2026-04-12T11:27:53.53963+00:00"
-      },
-      {
-        "id": "01e76790-b3c2-42f3-b3a5-9a26c3327c6d",
-        "name": "openplan-prod-grants-smoke-2026-04-12t20-27-59-255z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t20-27-59-255z-1d2044ed",
-        "plan": "free",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:27:59.69355+00:00"
-      },
-      {
-        "id": "be5c7e64-f65c-4163-a622-3f8b8e8c7746",
-        "name": "OpenPlan Prod Grants Smoke 20-27-59",
-        "slug": "openplan-prod-grants-smoke-20-27-59",
-        "plan": "pilot",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:28:06.105255+00:00"
-      },
-      {
-        "id": "4a8b52ed-de9c-400f-9d39-cb7947fc541e",
-        "name": "openplan-prod-grants-smoke-2026-04-12t20-30-49-872z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t20-30-49-872z-fc193e7e",
-        "plan": "free",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:30:50.270494+00:00"
-      },
-      {
-        "id": "f01fa3ee-e27a-4dfa-acf8-70231ed4aac4",
-        "name": "OpenPlan Prod Grants Smoke 20-30-49",
-        "slug": "openplan-prod-grants-smoke-20-30-49",
-        "plan": "pilot",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:30:54.04517+00:00"
-      },
-      {
-        "id": "307d66d5-145c-44ae-824e-3c34e91170ba",
-        "name": "openplan-prod-grants-smoke-2026-04-12t20-32-40-542z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t20-32-40-542z-1232e8b0",
-        "plan": "free",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:32:40.818304+00:00"
-      },
-      {
-        "id": "21377150-b714-4605-a04a-dc3df2dda1ae",
-        "name": "OpenPlan Prod Grants Smoke 20-32-40",
-        "slug": "openplan-prod-grants-smoke-20-32-40",
-        "plan": "pilot",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:32:44.469026+00:00"
-      },
-      {
-        "id": "ba8d8a35-94ae-4d21-92a1-b1b9d9ac155c",
-        "name": "openplan-prod-grants-smoke-2026-04-12t20-34-15-252z",
-        "slug": "openplan-prod-grants-smoke-2026-04-12t20-34-15-252z-03f959ab",
-        "plan": "free",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:34:15.503539+00:00"
-      },
-      {
-        "id": "bce9578e-666b-4d6f-b0fe-e65e3cfd9ab8",
-        "name": "OpenPlan Prod Grants Smoke 20-34-15",
-        "slug": "openplan-prod-grants-smoke-20-34-15",
-        "plan": "pilot",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-12T20:34:18.890784+00:00"
+        "created_at": "2026-04-12T20:44:07.859032+00:00"
       }
     ]
   }
