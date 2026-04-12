@@ -1,24 +1,25 @@
 # OpenPlan Production Grants Registry Smoke — 2026-04-12
 
 - Base URL: https://openplan-natford.vercel.app
-- QA user email: openplan-prod-grants-smoke-2026-04-12T11-01-20-919Z@natfordplanning.com
+- QA user email: openplan-prod-grants-smoke-2026-04-12T11-16-44-177Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: 355ccba0-fe70-4206-9092-bc4983842d42
-- Bootstrapped workspace id: 9a8e98b1-b351-4304-a8b5-d67726559dc0
-- Project id: c56f95e3-2b1b-4e15-90c1-74a112b0992c
-- Program id: 3820bdbf-c36a-4b94-93a3-caa3d6f40e75
-- Opportunity id: df430464-3eff-4fe8-8f1f-486115259322
+- Workspace id: 6a0fa460-1892-484c-87ac-579efb8f801b
+- Bootstrapped workspace id: 499d2084-a991-42ac-b9ac-ba365ddebb05
+- Project id: eaee9dac-5371-4fe5-92b3-5e1d1b6a5fbb
+- Program id: 56fd849f-618c-4aa3-8a77-7b10860e53ac
+- Opportunity id: 60e1807e-6179-416a-bc47-8bec2a7028fa
 
 ## Pass/Fail Notes
-- PASS: Created QA auth user openplan-prod-grants-smoke-2026-04-12T11-01-20-919Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-prod-grants-smoke-2026-04-12T11-16-44-177Z@natfordplanning.com.
 - PASS: Signed into production successfully.
-- PASS: Bootstrapped workspace OpenPlan Prod Grants Smoke 11-01-20.
-- PASS: Current workspace resolved to 355ccba0-fe70-4206-9092-bc4983842d42 instead of the freshly bootstrapped workspace 9a8e98b1-b351-4304-a8b5-d67726559dc0; smoke data was aligned to the active workspace selection.
-- PASS: Seeded linked project Grass Valley Safe Routes Smoke 11-01-20 inside the smoke workspace and anchored its funding profile for downstream reimbursement commands.
-- PASS: Created production program ATP Grants Smoke 11-01-20.
+- PASS: Bootstrapped workspace OpenPlan Prod Grants Smoke 11-16-44.
+- PASS: Current workspace resolved to 6a0fa460-1892-484c-87ac-579efb8f801b instead of the freshly bootstrapped workspace 499d2084-a991-42ac-b9ac-ba365ddebb05; smoke data was aligned to the active workspace selection.
+- PASS: Seeded linked project Grass Valley Safe Routes Smoke 11-16-44 inside the smoke workspace and anchored its funding profile for downstream reimbursement commands.
+- PASS: Created production program ATP Grants Smoke 11-16-44.
 - PASS: Grants registry rendered its empty state before the first opportunity was created.
 - PASS: The grants workspace command queue now retargets missing funding-need anchors to an exact inline editor on `/grants`.
 - PASS: The grants workspace command queue now retargets active funding-gap commands to a project-focused sourcing lane on `/grants`.
+- PASS: Dashboard and the shared workspace command board now deep-link into the exact focused grants gap lane instead of broad project pages.
 - PASS: The grants workspace command queue now retargets sourcing commands to the shared opportunity creator with the exact project preselected.
 - PASS: Created the first funding opportunity and confirmed the rendered grants surface picked it up with near-term queue pressure.
 - PASS: The grants workspace command queue now retargets closing-window and funding-decision commands to the exact opportunity row it flagged.

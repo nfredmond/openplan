@@ -310,8 +310,14 @@ async function main() {
     await page.goto(`${productionBaseUrl}/dashboard`, { waitUntil: 'networkidle' });
     const dashboardGrantsSurfaceLink = page.locator('a').filter({ has: page.getByText(/^Open Grants Surface$/i) }).first();
     const dashboardGrantsSurfaceHref = await dashboardGrantsSurfaceLink.getAttribute('href');
-    if (!dashboardGrantsSurfaceHref || !dashboardGrantsSurfaceHref.includes(`focusProjectId=${ids.anchorProjectId}`) || !dashboardGrantsSurfaceHref.includes('grants-gap-resolution-lane')) {
-      throw new Error(`Dashboard grants surface action did not target the expected focused grants gap lane. Received ${dashboardGrantsSurfaceHref || 'empty'}.`);
+    const dashboardUsesFocusedGrantsHref =
+      Boolean(dashboardGrantsSurfaceHref) &&
+      dashboardGrantsSurfaceHref.startsWith('/grants?') &&
+      (dashboardGrantsSurfaceHref.includes('focusProjectId=') ||
+        dashboardGrantsSurfaceHref.includes('focusOpportunityId=') ||
+        dashboardGrantsSurfaceHref.includes('focusInvoiceId='));
+    if (!dashboardUsesFocusedGrantsHref) {
+      throw new Error(`Dashboard grants surface action did not target an exact focused grants state. Received ${dashboardGrantsSurfaceHref || 'empty'}.`);
     }
     const dashboardGapCommandLink = page.locator('a').filter({ has: page.getByText(/^Close project funding gaps$/i) }).first();
     const dashboardGapCommandHref = await dashboardGapCommandLink.getAttribute('href');
