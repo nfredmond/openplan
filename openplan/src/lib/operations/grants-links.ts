@@ -1,0 +1,69 @@
+import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
+
+const GRANTS_QUEUE_KEYS = new Set([
+  "funding-windows-closing",
+  "anchor-project-funding-needs",
+  "source-project-funding-opportunities",
+  "advance-project-funding-decisions",
+  "record-awarded-funding",
+  "start-project-reimbursement-packets",
+  "relink-project-invoice-awards",
+  "advance-project-reimbursement-invoicing",
+  "close-project-funding-gaps",
+]);
+
+function buildFocusedProjectHref(projectId: string | null | undefined, anchor: string) {
+  if (!projectId) return `/grants${anchor}`;
+  const params = new URLSearchParams({ focusProjectId: projectId });
+  return `/grants?${params.toString()}${anchor}`;
+}
+
+function buildFocusedOpportunityHref(opportunityId: string | null | undefined) {
+  if (!opportunityId) return "/grants";
+  const params = new URLSearchParams({ focusOpportunityId: opportunityId });
+  return `/grants?${params.toString()}#funding-opportunity-${opportunityId}`;
+}
+
+function buildFocusedInvoiceHref(invoiceId: string | null | undefined) {
+  if (!invoiceId) return "/grants#grants-reimbursement-triage";
+  const params = new URLSearchParams({ focusInvoiceId: invoiceId });
+  return `/grants?${params.toString()}#grants-reimbursement-triage`;
+}
+
+export function isGrantsQueueItem(item: Pick<WorkspaceCommandQueueItem, "key"> | null | undefined) {
+  return Boolean(item && GRANTS_QUEUE_KEYS.has(item.key));
+}
+
+export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): string {
+  if (item.key === "anchor-project-funding-needs") {
+    return buildFocusedProjectHref(item.targetProjectId, "#grants-funding-need-editor");
+  }
+
+  if (item.key === "close-project-funding-gaps") {
+    return buildFocusedProjectHref(item.targetProjectId, "#grants-gap-resolution-lane");
+  }
+
+  if (item.key === "source-project-funding-opportunities") {
+    return buildFocusedProjectHref(item.targetProjectId, "#grants-opportunity-creator");
+  }
+
+  if (item.key === "funding-windows-closing" || item.key === "advance-project-funding-decisions") {
+    return buildFocusedOpportunityHref(item.targetOpportunityId);
+  }
+
+  if (item.key === "record-awarded-funding") {
+    if (!item.targetOpportunityId) return "/grants#grants-award-conversion-lane";
+    const params = new URLSearchParams({ focusOpportunityId: item.targetOpportunityId });
+    return `/grants?${params.toString()}#grants-award-conversion-composer`;
+  }
+
+  if (item.key === "start-project-reimbursement-packets") {
+    return buildFocusedProjectHref(item.targetProjectId, "#grants-reimbursement-composer");
+  }
+
+  if (item.key === "relink-project-invoice-awards" || item.key === "advance-project-reimbursement-invoicing") {
+    return buildFocusedInvoiceHref(item.targetInvoiceId);
+  }
+
+  return item.href;
+}

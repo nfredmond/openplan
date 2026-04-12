@@ -4,6 +4,7 @@ import { ArrowRight, FileText, FolderKanban, Landmark, Radar, ShieldCheck } from
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { isGrantsQueueItem, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
   buildWorkspaceOperationsSummaryFromSourceRows,
@@ -109,20 +110,24 @@ export default async function DashboardPage() {
     }>,
   });
 
+  const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsQueueItem(item)) ?? null;
+
   const actions = [
     ...(operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ||
     operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
       ? [
           {
-            href: operationsSummary.nextCommand.href,
+            href: isGrantsQueueItem(operationsSummary.nextCommand)
+              ? resolveSharedGrantsQueueHref(operationsSummary.nextCommand)
+              : operationsSummary.nextCommand.href,
             title:
               operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
                 ? "Start reimbursement packet"
                 : "Advance reimbursement invoicing",
             description:
               operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
-                ? "Jump straight into the lead project submittals lane and start the first reimbursement packet."
-                : "Jump straight into the lead project invoice lane and advance reimbursement follow-through already in motion.",
+                ? "Jump straight into the lead grants reimbursement lane and start the first reimbursement packet."
+                : "Jump straight into the lead grants reimbursement lane and advance follow-through already in motion.",
             icon: ShieldCheck,
           },
         ]
@@ -140,9 +145,11 @@ export default async function DashboardPage() {
       icon: FolderKanban,
     },
     {
-      href: "/grants",
+      href: leadGrantsCommand ? resolveSharedGrantsQueueHref(leadGrantsCommand) : "/grants",
       title: "Open Grants Surface",
-      description: "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
+      description: leadGrantsCommand
+        ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
+        : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
       icon: Landmark,
     },
     {

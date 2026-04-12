@@ -255,6 +255,18 @@ function formatCurrency(value: number | null | undefined): string {
   }).format(value);
 }
 
+function resolveExactWorkspaceBillingInvoiceId(invoices: WorkspaceOperationsBillingInvoiceRow[]): string | null {
+  const actionableInvoices = invoices.filter(
+    (invoice) => Boolean(invoice.fundingAwardId) && invoice.status !== "paid" && invoice.status !== "rejected"
+  );
+
+  if (actionableInvoices.length !== 1) {
+    return null;
+  }
+
+  return actionableInvoices[0]?.id ?? null;
+}
+
 function mapWorkspaceOperationsProjectRows(
   rows: WorkspaceOperationsProjectSourceRow[]
 ): WorkspaceOperationsProjectRow[] {
@@ -792,6 +804,7 @@ export function buildWorkspaceOperationsSummary({
         project,
         summary,
         reimbursementPacketCount: reimbursementPackets.length,
+        invoices,
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
@@ -1055,6 +1068,9 @@ export function buildWorkspaceOperationsSummary({
         : "/projects",
       targetProjectId: firstReimbursementAdvanceProject?.project.id ?? null,
       targetProjectName: firstReimbursementAdvanceProject?.project.name ?? null,
+      targetInvoiceId: firstReimbursementAdvanceProject
+        ? resolveExactWorkspaceBillingInvoiceId(firstReimbursementAdvanceProject.invoices)
+        : null,
       tone: "warning",
       priority: 6.3,
       badges: [

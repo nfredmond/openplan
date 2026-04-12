@@ -307,6 +307,22 @@ async function main() {
     }
     notes.push('The grants workspace command queue now retargets active funding-gap commands to a project-focused sourcing lane on `/grants`.');
 
+    await page.goto(`${productionBaseUrl}/dashboard`, { waitUntil: 'networkidle' });
+    const dashboardGrantsSurfaceLink = page.locator('a').filter({ has: page.getByText(/^Open Grants Surface$/i) }).first();
+    const dashboardGrantsSurfaceHref = await dashboardGrantsSurfaceLink.getAttribute('href');
+    if (!dashboardGrantsSurfaceHref || !dashboardGrantsSurfaceHref.includes(`focusProjectId=${ids.anchorProjectId}`) || !dashboardGrantsSurfaceHref.includes('grants-gap-resolution-lane')) {
+      throw new Error(`Dashboard grants surface action did not target the expected focused grants gap lane. Received ${dashboardGrantsSurfaceHref || 'empty'}.`);
+    }
+    const dashboardGapCommandLink = page.locator('a').filter({ has: page.getByText(/^Close project funding gaps$/i) }).first();
+    const dashboardGapCommandHref = await dashboardGapCommandLink.getAttribute('href');
+    if (!dashboardGapCommandHref || !dashboardGapCommandHref.includes(`focusProjectId=${ids.anchorProjectId}`) || !dashboardGapCommandHref.includes('grants-gap-resolution-lane')) {
+      throw new Error(`Workspace command board did not target the expected focused grants gap lane. Received ${dashboardGapCommandHref || 'empty'}.`);
+    }
+    notes.push('Dashboard and the shared workspace command board now deep-link into the exact focused grants gap lane instead of broad project pages.');
+
+    await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
+
     const grantsCommandQueueSectionBeforeSourcing = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
     const sourcingFocusLink = grantsCommandQueueSectionBeforeSourcing.locator(`a[href*="focusProjectId=${ids.projectId}"]`).first();
     await sourcingFocusLink.waitFor({ timeout: 30000 });
