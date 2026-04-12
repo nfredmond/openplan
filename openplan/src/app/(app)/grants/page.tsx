@@ -344,6 +344,18 @@ function getReimbursementActionLabel(status: ReturnType<typeof buildProjectFundi
   }
 }
 
+function resolveProjectExactBillingTriageTarget(invoices: BillingInvoiceRow[]) {
+  const actionableInvoices = invoices.filter(
+    (invoice) => Boolean(invoice.funding_award_id) && invoice.status !== "paid" && invoice.status !== "rejected"
+  );
+
+  if (actionableInvoices.length !== 1) {
+    return null;
+  }
+
+  return actionableInvoices[0] ?? null;
+}
+
 export default async function GrantsPage({
   searchParams,
 }: {
@@ -507,6 +519,7 @@ export default async function GrantsPage({
         project,
         awards,
         summary,
+        linkedInvoices: awardLinkedInvoicesByProjectId.get(project.id) ?? [],
         linkedInvoiceSummary,
         nextObligationAward,
         latestAwardUpdatedAt,
@@ -1084,7 +1097,19 @@ export default async function GrantsPage({
                 ) : null}
 
                 <div className="mt-5 module-record-list">
-                {fundingProjectStacks.map((item) => (
+                {fundingProjectStacks.map((item) => {
+                  const exactBillingTriageInvoice = resolveProjectExactBillingTriageTarget(item.linkedInvoices);
+                  const exactBillingTriageHref = exactBillingTriageInvoice
+                    ? buildBillingInvoiceTriageHref({
+                        workspaceId: membership.workspace_id,
+                        invoiceId: exactBillingTriageInvoice.id,
+                        linkage: "linked",
+                        overdue: isInvoiceOverdue(exactBillingTriageInvoice.status, exactBillingTriageInvoice.due_date) ? "overdue" : "all",
+                        projectId: item.project.id,
+                      })
+                    : null;
+
+                  return (
                   <div key={`award-stack-${item.project.id}`} className="module-record-row">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
@@ -1119,10 +1144,16 @@ export default async function GrantsPage({
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-                        <Link href={`/projects/${item.project.id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                          {getReimbursementActionLabel(item.summary.reimbursementStatus)}
+                        <Link
+                          href={exactBillingTriageHref ?? `/projects/${item.project.id}#project-invoices`}
+                          className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                        >
+                          {exactBillingTriageHref
+                            ? `${getReimbursementActionLabel(item.summary.reimbursementStatus)} in billing triage`
+                            : getReimbursementActionLabel(item.summary.reimbursementStatus)}
                           <ArrowRight className="h-4 w-4" />
                         </Link>
+                        {exactBillingTriageHref ? <BillingTriageLinkCopy href={exactBillingTriageHref} /> : null}
                         <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
                           Open project funding lane
                           <ArrowRight className="h-4 w-4" />
@@ -1130,7 +1161,7 @@ export default async function GrantsPage({
                       </div>
                     </div>
                   </div>
-                ))}
+                );})}
                 </div>
               </>
             )}
