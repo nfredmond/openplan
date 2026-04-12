@@ -327,20 +327,15 @@ async function main() {
 
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
-    const reimbursementLink = page
-      .locator('article')
-      .filter({ has: page.getByRole('heading', { name: /Workspace award stack and reimbursement posture/i }) })
-      .first()
-      .getByRole('link', { name: /Review in-flight reimbursement/i })
-      .first();
-    await reimbursementLink.waitFor({ timeout: 30000 });
+    const triageLink = relinkedRow.getByRole('link', { name: /Open billing triage/i }).first();
+    await triageLink.waitFor({ timeout: 30000 });
     await Promise.all([
-      page.waitForURL(new RegExp(`/projects/${ids.projectId}#project-invoices$`, 'i'), { timeout: 30000 }),
-      reimbursementLink.click(),
+      page.waitForURL(new RegExp(`/billing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
+      triageLink.click(),
     ]);
     await page.waitForLoadState('networkidle');
-    await page.getByRole('heading', { name: /Project-linked billing register/i }).waitFor({ timeout: 30000 });
-    notes.push('The grants reimbursement action landed directly on the project billing register anchor after direct invoice creation.');
+    await page.getByText(/Focused from triage/i).waitFor({ timeout: 30000 });
+    notes.push('The grants reimbursement queue now lands on the exact billing triage row instead of a generic project billing anchor.');
 
     await screenshot('prod-grants-registry-04-project-billing-register');
 
@@ -379,7 +374,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact project billing register, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

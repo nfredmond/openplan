@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, Landmark, ShieldCheck, Sparkles } from "lucide-react";
+import { BillingTriageLinkCopy } from "@/components/billing/billing-triage-link-copy";
 import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
 import { InvoiceStatusAdvanceButton } from "@/components/billing/invoice-status-advance-button";
@@ -30,6 +31,7 @@ import {
   resolveExactBillingInvoiceAwardMatch,
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
+import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -770,6 +772,14 @@ export default async function GrantsPage({
                   const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
                   const isFocusedRow = activeFocusedInvoiceId === invoice.id;
                   const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
+                  const triageHref = buildBillingInvoiceTriageHref({
+                    workspaceId: membership.workspace_id,
+                    invoiceId: invoice.id,
+                    linkage: invoice.funding_award_id ? "linked" : "unlinked",
+                    overdue: overdue ? "overdue" : "all",
+                    projectId: invoice.project_id,
+                    relinkedInvoiceId: isJustRelinkedRow ? invoice.id : null,
+                  });
 
                   return (
                     <div
@@ -831,17 +841,16 @@ export default async function GrantsPage({
                               canWrite={canWriteInvoices}
                             />
                           )}
+                          <Link href={triageHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                            Open billing triage
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                          <BillingTriageLinkCopy href={triageHref} />
                           {invoice.project_id ? (
-                            <>
-                              <Link href={`/projects/${invoice.project_id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                                Open reimbursement register
-                                <ArrowRight className="h-4 w-4" />
-                              </Link>
-                              <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
-                                Open funding lane
-                                <ArrowRight className="h-4 w-4" />
-                              </Link>
-                            </>
+                            <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
+                              Open funding lane
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
                           ) : null}
                         </div>
                       </div>
