@@ -34,6 +34,10 @@ async function main() {
   const password = `OpenPlan!${Date.now()}ProdRtpRelease`;
   const workspaceName = `OpenPlan Prod RTP Release Smoke ${stamp.slice(11, 19)}`;
   const cycleTitle = `Production RTP Release Smoke ${stamp.slice(0, 10)}`;
+  const projectName = `RTP Funding Smoke Project ${stamp.slice(11, 19)}`;
+  const opportunityTitle = `RTP linked funding opportunity ${stamp.slice(11, 19)}`;
+  const awardTitle = `RTP linked funding award ${stamp.slice(11, 19)}`;
+  const invoiceNumber = `RTP-FUND-${stamp.slice(11, 19).replace(/-/g, '')}`;
   const artifacts = [];
   const notes = [];
   const ids = {};
@@ -76,11 +80,11 @@ async function main() {
     return fileName;
   }
 
-  async function appFetch(route, payload) {
+  async function appFetch(route, payload, method = payload ? 'POST' : 'GET') {
     return await page.evaluate(
-      async ({ route, payload }) => {
+      async ({ route, payload, method }) => {
         const response = await fetch(route, {
-          method: payload ? 'POST' : 'GET',
+          method,
           headers: payload ? { 'Content-Type': 'application/json' } : undefined,
           body: payload ? JSON.stringify(payload) : undefined,
         });
@@ -93,7 +97,7 @@ async function main() {
         }
         return { ok: response.ok, status: response.status, data };
       },
-      { route, payload }
+      { route, payload, method }
     );
   }
 
@@ -115,8 +119,17 @@ async function main() {
     if (!bootstrapResult.ok) {
       throw new Error(`Workspace bootstrap failed: ${bootstrapResult.status} ${JSON.stringify(bootstrapResult.data)}`);
     }
-    ids.workspaceId = bootstrapResult.data.workspaceId;
+    ids.bootstrapWorkspaceId = bootstrapResult.data.workspaceId;
     notes.push(`Bootstrapped workspace ${workspaceName}.`);
+
+    const currentWorkspaceResult = await appFetch('/api/workspaces/current', null, 'GET');
+    if (!currentWorkspaceResult.ok) {
+      throw new Error(`Current workspace lookup failed: ${currentWorkspaceResult.status} ${JSON.stringify(currentWorkspaceResult.data)}`);
+    }
+    ids.workspaceId = currentWorkspaceResult.data.workspaceId;
+    if (ids.workspaceId !== ids.bootstrapWorkspaceId) {
+      notes.push(`Current workspace resolved to ${ids.workspaceId} instead of the freshly bootstrapped workspace ${ids.bootstrapWorkspaceId}; RTP smoke data was aligned to the active workspace selection.`);
+    }
 
     const cycleResult = await appFetch('/api/rtp-cycles', {
       title: cycleTitle,
@@ -134,6 +147,112 @@ async function main() {
     }
     ids.rtpCycleId = cycleResult.data.rtpCycleId;
     notes.push(`Created production RTP cycle ${cycleTitle}.`);
+
+    const createProjectResult = await jsonFetch(`${supabaseUrl}/rest/v1/projects?select=id,name`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({
+        workspace_id: ids.workspaceId,
+        name: projectName,
+        summary: 'Production RTP funding smoke project used to verify portfolio funding posture in release review.',
+        status: 'active',
+        plan_type: 'corridor_plan',
+        delivery_phase: 'scoping',
+        created_by: ids.userId,
+      }),
+    });
+    if (!createProjectResult.ok) {
+      throw new Error(`RTP smoke project seed failed: ${createProjectResult.status} ${JSON.stringify(createProjectResult.data)}`);
+    }
+    const createdProject = Array.isArray(createProjectResult.data)
+      ? createProjectResult.data[0]
+      : createProjectResult.data;
+    ids.projectId = createdProject?.id ?? null;
+    if (!ids.projectId) {
+      throw new Error(`RTP smoke project seed returned no project id: ${JSON.stringify(createProjectResult.data)}`);
+    }
+    notes.push(`Seeded linked RTP project ${projectName} in the active workspace.`);
+
+    const linkResult = await appFetch(`/api/projects/${ids.projectId}/rtp-links`, {
+      rtpCycleId: ids.rtpCycleId,
+      portfolioRole: 'constrained',
+      priorityRationale: 'Production smoke link for RTP funding posture proof.',
+    });
+    if (linkResult.status !== 200) {
+      throw new Error(`RTP project link failed: ${linkResult.status} ${JSON.stringify(linkResult.data)}`);
+    }
+    notes.push('Linked the smoke project into the RTP cycle portfolio.');
+
+    const fundingProfileResult = await appFetch(`/api/projects/${ids.projectId}/funding-profile`, {
+      fundingNeedAmount: 900000,
+      localMatchNeedAmount: 120000,
+      notes: 'Production RTP funding smoke profile for release-review proof.',
+    }, 'PATCH');
+    if (fundingProfileResult.status !== 200) {
+      throw new Error(`RTP funding profile patch failed: ${fundingProfileResult.status} ${JSON.stringify(fundingProfileResult.data)}`);
+    }
+
+    const opportunityResult = await appFetch('/api/funding-opportunities', {
+      projectId: ids.projectId,
+      title: opportunityTitle,
+      status: 'open',
+      decisionState: 'pursue',
+      agencyName: 'Caltrans',
+      ownerLabel: 'Grant lead',
+      cadenceLabel: 'Annual cycle',
+      expectedAwardAmount: 250000,
+      closesAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      decisionDueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      summary: 'Production RTP funding smoke opportunity.',
+    });
+    if (opportunityResult.status !== 201) {
+      throw new Error(`RTP funding opportunity creation failed: ${opportunityResult.status} ${JSON.stringify(opportunityResult.data)}`);
+    }
+    ids.opportunityId = opportunityResult.data.opportunityId ?? null;
+
+    const awardResult = await appFetch('/api/funding-awards', {
+      projectId: ids.projectId,
+      opportunityId: ids.opportunityId,
+      title: awardTitle,
+      awardedAmount: 600000,
+      matchAmount: 120000,
+      matchPosture: 'secured',
+      obligationDueAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+      spendingStatus: 'active',
+      riskFlag: 'watch',
+      notes: 'Production RTP funding smoke award.',
+    });
+    if (awardResult.status !== 201) {
+      throw new Error(`RTP funding award creation failed: ${awardResult.status} ${JSON.stringify(awardResult.data)}`);
+    }
+    ids.awardId = awardResult.data.awardId ?? null;
+
+    const invoiceResult = await appFetch('/api/billing/invoices', {
+      workspaceId: ids.workspaceId,
+      projectId: ids.projectId,
+      fundingAwardId: ids.awardId,
+      invoiceNumber,
+      consultantName: 'Nat Ford Planning',
+      billingBasis: 'time_and_materials',
+      status: 'submitted',
+      invoiceDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      amount: 140000,
+      supportingDocsStatus: 'complete',
+      submittedTo: 'Caltrans Local Assistance',
+      caltransPosture: 'local_agency_consulting',
+      notes: 'Production RTP funding smoke reimbursement packet.',
+    });
+    if (invoiceResult.status !== 201) {
+      throw new Error(`RTP funding invoice creation failed: ${invoiceResult.status} ${JSON.stringify(invoiceResult.data)}`);
+    }
+    ids.invoiceId = invoiceResult.data.invoice?.id ?? null;
+    notes.push('Seeded funding profile, opportunity, award, and reimbursement packet for the linked RTP project.');
 
     const reportResult = await appFetch('/api/reports', {
       rtpCycleId: ids.rtpCycleId,
@@ -166,8 +285,29 @@ async function main() {
     await page.waitForLoadState('networkidle');
     await page.getByRole('heading', { name: /Freshness against RTP source/i }).waitFor({ timeout: 30000 });
     await page.getByText(/Packet posture/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/Generation-time funding posture/i).waitFor({ timeout: 30000 });
+    await page.getByText(/Current funding posture/i).waitFor({ timeout: 30000 });
     notes.push('Production registry current-packet link landed on the packet release-review anchor in report detail.');
     await screenshot('prod-rtp-release-review-02-report-detail');
+
+    const invoicePatchResult = await appFetch(`/api/billing/invoices/${ids.invoiceId}`, {
+      workspaceId: ids.workspaceId,
+      status: 'paid',
+    }, 'PATCH');
+    if (invoicePatchResult.status !== 200) {
+      throw new Error(`RTP funding invoice patch failed: ${invoicePatchResult.status} ${JSON.stringify(invoicePatchResult.data)}`);
+    }
+
+    await page.goto(`${productionBaseUrl}/reports/${ids.reportId}#drift-since-generation`, { waitUntil: 'networkidle' });
+    await page.getByText(/Source drift/i).first().waitFor({ timeout: 30000 });
+    const driftPanel = page.locator('article').filter({ has: page.getByRole('heading', { name: /What changed since this packet was generated/i }) }).first();
+    await driftPanel.waitFor({ timeout: 30000 });
+    const driftText = await driftPanel.textContent();
+    if (!driftText || !driftText.includes('Funding posture')) {
+      throw new Error(`RTP release review did not surface funding posture drift. Drift text: ${driftText}`);
+    }
+    notes.push('Production RTP release review surfaced funding posture alongside chapter/workflow drift after reimbursement changed post-generation.');
+    await screenshot('prod-rtp-release-review-03-funding-drift');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-rtp-release-review-smoke.md`);
     const lines = [
@@ -178,6 +318,10 @@ async function main() {
       `- QA user id: ${ids.userId ?? 'unknown'}`,
       `- Workspace id: ${ids.workspaceId ?? 'unknown'}`,
       `- RTP cycle id: ${ids.rtpCycleId ?? 'unknown'}`,
+      `- Project id: ${ids.projectId ?? 'unknown'}`,
+      `- Opportunity id: ${ids.opportunityId ?? 'unknown'}`,
+      `- Award id: ${ids.awardId ?? 'unknown'}`,
+      `- Invoice id: ${ids.invoiceId ?? 'unknown'}`,
       `- Report id: ${ids.reportId ?? 'unknown'}`,
       '',
       '## Pass/Fail Notes',
@@ -187,7 +331,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the RTP registry surfaces the release-review lane and current-packet review navigation onto the report release-review anchor.',
+      '- PASS: Production rendered smoke confirms the RTP registry surfaces the release-review lane, shows RTP funding posture inside release review, and updates drift when linked-project reimbursement posture changes after generation.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
