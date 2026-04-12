@@ -17,6 +17,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       reports: 0,
       reportRefreshRecommended: 0,
       reportNoPacket: 0,
+      reportPacketCurrent: 0,
       comparisonBackedReports: 0,
       fundingOpportunities: 1,
       openFundingOpportunities: 1,
@@ -42,6 +43,19 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       badges: [{ label: "Missing anchors", value: 1 }],
     },
     commandQueue: [
+      {
+        key: "anchor-project-funding-needs",
+        title: "Anchor project funding needs",
+        detail: "Reopen Anchor Project first so the gap can be measured honestly.",
+        href: "/projects/project-anchor#project-funding-opportunities",
+        targetProjectId: "project-anchor",
+        targetProjectName: "Anchor Project",
+        tone: "warning",
+        priority: 3,
+        badges: [{ label: "Missing anchors", value: 1 }],
+      },
+    ],
+    fullCommandQueue: [
       {
         key: "anchor-project-funding-needs",
         title: "Anchor project funding needs",
@@ -84,6 +98,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       },
       nextCommand: overrides?.nextCommand ?? operationsSummary.nextCommand,
       commandQueue: overrides?.commandQueue ?? operationsSummary.commandQueue,
+      fullCommandQueue: overrides?.fullCommandQueue ?? overrides?.commandQueue ?? operationsSummary.fullCommandQueue,
     },
   };
 }
@@ -94,6 +109,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-create-funding-profile");
 
     expect(action).toBeDefined();
+    expect(action?.href).toBe("/grants?focusProjectId=project-anchor#grants-funding-need-editor");
     expect(action?.executeAction?.kind).toBe("create_project_funding_profile");
     if (action?.executeAction?.kind === "create_project_funding_profile") {
       expect(action.executeAction.projectId).toBe("project-anchor");
@@ -185,6 +201,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-create-funding-opportunity");
 
     expect(action).toBeDefined();
+    expect(action?.href).toBe("/grants?focusProjectId=project-gap#grants-opportunity-creator");
     expect(action?.executeAction?.kind).toBe("create_funding_opportunity");
     if (action?.executeAction?.kind === "create_funding_opportunity") {
       expect(action.executeAction.projectId).toBe("project-gap");
@@ -281,6 +298,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-advance-funding-opportunity");
 
     expect(action).toBeDefined();
+    expect(action?.href).toBe("/grants?focusOpportunityId=opp-gap-1#funding-opportunity-opp-gap-1");
     expect(action?.executeAction?.kind).toBe("update_funding_opportunity_decision");
     if (action?.executeAction?.kind === "update_funding_opportunity_decision") {
       expect(action.executeAction.opportunityId).toBe("opp-gap-1");
@@ -428,6 +446,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-funding-agent");
 
     expect(action?.label).toBe("Review reimbursement packet starts in panel");
+    expect(action?.href).toBe("/grants?focusProjectId=project-gap#grants-reimbursement-composer");
     expect(action?.statusLabel).toBe("1 need packet");
   });
 
@@ -474,6 +493,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-funding-agent");
 
     expect(action?.label).toBe("Review reimbursement follow-through in panel");
+    expect(action?.href).toBe("/grants#grants-reimbursement-triage");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
 
@@ -521,7 +541,7 @@ describe("assistant funding operations", () => {
 
     expect(action).toBeDefined();
     expect(action?.label).toBe("Open lead reimbursement lane");
-    expect(action?.href).toBe("/projects/project-gap#project-invoices");
+    expect(action?.href).toBe("/grants#grants-reimbursement-triage");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
 
@@ -631,6 +651,7 @@ describe("assistant funding operations", () => {
     }
 
     expect(fundingAgent?.label).toBe("Review invoice award relinks in panel");
+    expect(fundingAgent?.href).toBe("/grants?focusInvoiceId=invoice-1#grants-reimbursement-triage");
     expect(fundingAgent?.statusLabel).toBe("1 relink ready");
   });
 });
