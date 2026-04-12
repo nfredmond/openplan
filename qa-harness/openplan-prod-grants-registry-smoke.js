@@ -208,6 +208,18 @@ async function main() {
     await page.getByText(/No funding opportunities yet/i).waitFor({ timeout: 30000 });
     notes.push('Grants registry rendered its empty state before the first opportunity was created.');
 
+    const grantsCommandQueueSectionBeforeSourcing = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const sourcingFocusLink = grantsCommandQueueSectionBeforeSourcing.locator(`a[href*="focusProjectId=${ids.projectId}"]`).first();
+    await sourcingFocusLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusProjectId=${ids.projectId}`, 'i'), { timeout: 30000 }),
+      sourcingFocusLink.click(),
+    ]);
+    const focusedOpportunityCreator = page.locator('#grants-opportunity-creator');
+    await focusedOpportunityCreator.getByText(/Focused from workspace queue/i).waitFor({ timeout: 30000 });
+    await expect(focusedOpportunityCreator.locator('#funding-opportunity-project')).toHaveValue(ids.projectId);
+    notes.push('The grants workspace command queue now retargets sourcing commands to the shared opportunity creator with the exact project preselected.');
+
     const firstOpportunityResult = await appFetch('/api/funding-opportunities', {
       programId: ids.programId,
       title: opportunityTitle,

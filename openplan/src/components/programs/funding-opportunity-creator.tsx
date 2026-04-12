@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarPlus2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,14 @@ export function FundingOpportunityCreator({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setProgramId(defaultProgramId ?? "");
+  }, [defaultProgramId]);
+
+  useEffect(() => {
+    setProjectId(defaultProjectId ?? "");
+  }, [defaultProjectId]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
