@@ -40,6 +40,7 @@ export function WorkspaceCommandBoard({
 }) {
   const reimbursementStartCount = summary.counts.projectFundingReimbursementStartProjects;
   const reimbursementAdvanceCount = summary.counts.projectFundingReimbursementActiveProjects;
+  const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
 
   return (
     <article className="module-section-surface">
@@ -52,7 +53,7 @@ export function WorkspaceCommandBoard({
         <StatusBadge tone={postureTone(summary.posture)}>{postureLabel(summary.posture)}</StatusBadge>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+      <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
         <div className="module-subpanel">
           <p className="module-summary-label">Packet pressure</p>
           <p className="module-summary-value">{summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket}</p>
@@ -82,15 +83,18 @@ export function WorkspaceCommandBoard({
             {summary.counts.projectFundingAwardRecordProjects > 0
               ? `, ${summary.counts.projectFundingAwardRecordProjects} awarded opportunities missing award records`
               : ""}
-            {reimbursementStartCount > 0
-              ? `, ${reimbursementStartCount} needing reimbursement packets`
-              : ""}
-            {reimbursementAdvanceCount > 0
-              ? `, ${reimbursementAdvanceCount} with reimbursement follow-through active`
-              : ""}
             {summary.counts.projectFundingGapProjects > 0
               ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
               : "."}
+          </p>
+        </div>
+        <div className="module-subpanel">
+          <p className="module-summary-label">Reimbursement follow-through</p>
+          <p className="module-summary-value">{reimbursementPressure}</p>
+          <p className="module-summary-detail">
+            {reimbursementPressure === 0
+              ? "No reimbursement packet or invoice follow-through pressure is visible in this workspace snapshot."
+              : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
           </p>
         </div>
       </div>
