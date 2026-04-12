@@ -247,11 +247,11 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
             summary: `Grounded to the RTP cycle registry, with stale packet refresh currently outranking first-generation and release review work across the visible cycles.`,
           }
         : {
-            title: "Board-ready queue is live",
+            title: "Release-review queue is live",
             detail: context.recommendedCycle
-              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for board-ready review from the registry.`
-              : "The visible RTP packet queue is materially current enough that board-ready review is now the main registry posture.",
-            summary: `Grounded to the RTP cycle registry, with board-ready review currently outranking packet generation and refresh work across the visible cycles.`,
+              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for release review from the registry.`
+              : "The visible RTP packet queue is materially current enough that release review is now the main registry posture.",
+            summary: `Grounded to the RTP cycle registry, with release review currently outranking packet generation and refresh work across the visible cycles.`,
           };
 
   return {
@@ -314,7 +314,7 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
         : {
             title: "Release review comes first",
             detail: recommendedPacketDetail,
-            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and board-ready packet review posture.`,
+            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and release-review packet posture.`,
           };
 
   return {
@@ -519,7 +519,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
   const rtpPacketPreviewPosture =
     packetPosture === "generate"
       ? {
-          summary: `Grounded to this RTP-linked packet's first-generation setup, cycle anchor, artifact history, and provenance metadata before board-ready review begins.`,
+          summary: `Grounded to this RTP-linked packet's first-generation setup, cycle anchor, artifact history, and provenance metadata before release review begins.`,
           cueTitle: "First packet work comes first",
           cueDetail: "This RTP-linked packet still needs its first usable artifact, so first-generation setup outranks refresh and release review right now.",
         }
@@ -530,7 +530,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
             cueDetail: packetFreshness.detail,
           }
         : {
-            summary: `Grounded to this RTP-linked packet's board-ready review posture, cycle anchor, artifact history, and provenance metadata.`,
+            summary: `Grounded to this RTP-linked packet's release-review posture, cycle anchor, artifact history, and provenance metadata.`,
             cueTitle: "Release review comes first",
             cueDetail: packetFreshness.detail,
           };
@@ -1083,10 +1083,10 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
     return {
       workflowId,
       label,
-      title: `Board-ready RTP queue: ${context.workspace.name ?? "Current workspace"}`,
+      title: `Release-review RTP queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: context.recommendedCycle
-        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for board-ready RTP packet review from the registry.`
-        : "No board-ready RTP packet anchor is visible yet from the registry snapshot.",
+        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for RTP packet release review from the registry.`
+        : "No release-review RTP packet anchor is visible yet from the registry snapshot.",
       findings: [
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
         context.recommendedCycle
@@ -1094,12 +1094,12 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
           : "No RTP cycle is available yet to anchor release review.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
-          : "No broader workspace queue pressure is currently outranking board-ready review in the RTP registry.",
+          : "No broader workspace queue pressure is currently outranking release review in the RTP registry.",
       ],
       nextSteps: [
         context.recommendedCycle
-          ? `Open /rtp/${context.recommendedCycle.id} to verify the strongest current board-ready cycle anchor first.`
-          : "Create and mature at least one RTP cycle and packet before expecting board-ready review work.",
+          ? `Open /rtp/${context.recommendedCycle.id} to verify the strongest current release-review cycle anchor first.`
+          : "Create and mature at least one RTP cycle and packet before expecting release-review work.",
         "Verify packet freshness, cycle drift, and release posture before externalizing anything.",
       ],
       evidence: [
@@ -1253,14 +1253,14 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       workflowId,
       label,
       title: `Release review: ${context.rtpCycle.title}`,
-      summary: `${context.rtpCycle.title} has a materially current RTP packet anchor, so board/public release review is the top cycle-level packet move right now.`,
+      summary: `${context.rtpCycle.title} has a materially current RTP packet anchor, so release review is the top cycle-level packet move right now.`,
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible.`,
         context.packetSummary.recommendedReport
           ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
           : "No linked packet record is available yet, so release review is premature.",
         context.readiness.ready
-          ? "Cycle readiness is materially in place for board-ready review."
+          ? "Cycle readiness is materially in place for release review."
           : context.readiness.reason,
       ],
       nextSteps: [
@@ -1285,9 +1285,9 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       title: `Packet posture: ${context.rtpCycle.title}`,
       summary: context.packetSummary.recommendedReport
         ? cyclePacketWorkPosture === "generate"
-          ? `${context.rtpCycle.title} currently needs first-packet work before board-ready review, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
+          ? `${context.rtpCycle.title} currently needs first-packet work before release review, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
           : cyclePacketWorkPosture === "refresh"
-            ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before board-ready review.`
+            ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before release review.`
             : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release review.`
         : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
       findings: [
@@ -1789,7 +1789,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       nextSteps: [
         context.latestArtifact ? "Review the latest artifact rather than the draft record alone before sharing anything." : "Generate an artifact first so there is a stable packet to review.",
         context.rtpCycle && packetPosture === "refresh"
-          ? "Regenerate this RTP packet from current cycle state before treating it as board-ready."
+          ? "Regenerate this RTP packet from current cycle state before treating it as ready for release review."
           : null,
         holdCount > 0
           ? "Clear or explicitly acknowledge the held run-audit items before external release."

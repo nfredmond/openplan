@@ -261,9 +261,9 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     },
     {
       id: "rtp-registry-release",
-      label: "Board-ready queue",
+      label: "Release-review queue",
       description: "Explain which RTP packets are current enough for release review and which cycle should be checked first.",
-      prompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
+      prompt: "Which RTP packet is most ready for release review right now, and what should I verify before release?",
     },
   ],
   rtp_cycle: [
@@ -365,7 +365,7 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       id: "report-release",
       label: "Release check",
       description: "Call out what still needs review before sharing the packet.",
-      prompt: "Is this report ready to share, and what still needs verification?",
+      prompt: "Is this report ready for release review, and what still needs verification?",
     },
   ],
   rtp_packet_report: [
@@ -391,7 +391,7 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       id: "rtp-packet-release",
       label: "RTP release check",
       description: "Call out what still needs review before this RTP board packet is ready for board or public use.",
-      prompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+      prompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
     },
   ],
   run: [
@@ -683,14 +683,14 @@ export function resolveAssistantWorkflowId(
   if (kind === "rtp_cycle") {
     if (includesAny(normalized, ["generate", "first packet", "first artifact", "missing packet", "no packet"])) return "rtp-packet-generate";
     if (includesAny(normalized, ["refresh", "stale", "regenerate", "changed", "drift"])) return "rtp-packet-refresh";
-    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share"])) return "rtp-packet-release";
+    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share", "release review"])) return "rtp-packet-release";
     return "rtp-brief";
   }
 
   if (kind === "rtp_registry") {
     if (includesAny(normalized, ["generate", "first packet", "missing packet", "no packet"])) return "rtp-registry-generate";
     if (includesAny(normalized, ["refresh", "stale", "regenerate", "changed", "drift"])) return "rtp-registry-refresh";
-    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share"])) return "rtp-registry-release";
+    if (includesAny(normalized, ["release", "board-ready", "board ready", "public", "verify", "share", "release review"])) return "rtp-registry-release";
     return "rtp-registry-brief";
   }
 

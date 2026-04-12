@@ -767,14 +767,14 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             promptLabel: "Plan RTP refresh queue in panel",
           }
         : {
-            label: "Review board-ready RTP queue in panel",
-            reason: "The registry packet queue is materially current enough that board-ready review is now the main operator move.",
+            label: "Review RTP release-review queue in panel",
+            reason: "The registry packet queue is materially current enough that release review is now the main operator move.",
             workflowId: "rtp-registry-release",
-            prompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
-            promptLabel: "Review board-ready RTP queue in panel",
+            prompt: "Which RTP packet is most ready for release review right now, and what should I verify before release?",
+            promptLabel: "Review RTP release-review queue in panel",
           };
   return compactQuickLinks([
-    context.recommendedCycle?.packetFreshnessLabel === "No packet"
+    context.recommendedCycle?.packetFreshnessLabel === "No packet" && context.recommendedCycle.packetReportCount === 0
       ? quickLink("rtp-registry-create-first-packet", `Create first packet for ${context.recommendedCycle.title}`, `/rtp/${context.recommendedCycle.id}`, {
           targetKind: "rtp_registry",
           actionClass: "review_packet",
@@ -792,7 +792,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             rtpCycleId: context.recommendedCycle.id,
             generateAfterCreate: true,
             postActionWorkflowId: "rtp-registry-release",
-            postActionPrompt: "Which RTP packet is most board-ready right now, and what should I verify before release?",
+            postActionPrompt: "Which RTP packet is most ready for release review right now, and what should I verify before release?",
             postActionPromptLabel: "Review updated RTP registry",
           },
         })
@@ -873,7 +873,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           }
         : {
             label: "Run RTP release review in panel",
-            reason: "This cycle's lead RTP packet is current enough that board/public release review is now the main operator move.",
+            reason: "This cycle's lead RTP packet is current enough that release review is now the main operator move.",
             workflowId: "rtp-packet-release",
             prompt: "Is this RTP cycle's current board packet ready for release review, and what should I verify first?",
             promptLabel: "Run RTP release review in panel",
@@ -897,7 +897,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             rtpCycleId: context.rtpCycle.id,
             generateAfterCreate: true,
             postActionWorkflowId: "rtp-packet-release",
-            postActionPrompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+            postActionPrompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
             postActionPromptLabel: "Review generated RTP packet",
           },
         })
@@ -1392,16 +1392,16 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
             }
           : {
               label: "Run RTP release check in panel",
-              reason: "The RTP packet is current enough that board/public release review is now the main operator move.",
+              reason: "The RTP packet is current enough that release review is now the main operator move.",
               workflowId: "rtp-packet-release",
-              prompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+              prompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
               promptLabel: "Run RTP release check in panel",
             }
       : {
           label: "Run release check in panel",
           reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
           workflowId: "report-release",
-          prompt: "Is this report ready to share, and what still needs verification?",
+          prompt: "Is this report ready for release review, and what still needs verification?",
           promptLabel: "Run release check in panel",
         };
   return compactQuickLinks([
@@ -1431,7 +1431,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
               kind: "generate_report_artifact",
               reportId: context.report.id,
               postActionWorkflowId: "rtp-packet-release",
-              postActionPrompt: "Is this RTP board packet ready to share, and what still needs verification before release?",
+              postActionPrompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
               postActionPromptLabel:
                 packetPosture === "generate" ? "Review generated RTP packet" : "Review refreshed RTP packet",
             },
