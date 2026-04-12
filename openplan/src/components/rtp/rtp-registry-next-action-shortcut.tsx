@@ -10,6 +10,7 @@ export type DominantActionKey =
   | "resetAndRegenerate"
   | "generateFirstArtifact"
   | "refreshArtifact"
+  | "releaseReview"
   | "traceFollowUp";
 
 export function RtpRegistryNextActionShortcut({
@@ -26,7 +27,7 @@ export function RtpRegistryNextActionShortcut({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (actionKey === "traceFollowUp") {
+  if (actionKey === "traceFollowUp" || actionKey === "releaseReview") {
     return null;
   }
 

@@ -301,9 +301,9 @@ function buildPacketOperatorStatus(input: {
   }
 
   return {
-    label: "Queue clear",
+    label: "Release review ready",
     tone: "success" as const,
-    detail: "Packet record and latest artifact are aligned with current cycle state.",
+    detail: "Packet record and latest artifact are aligned with current cycle state and ready for release review.",
   };
 }
 
@@ -347,7 +347,7 @@ function buildPacketActivityTrace(input: {
   return {
     label: "Artifact current",
     tone: "success" as const,
-    detail: `Latest ${input.packetReport.latest_artifact_kind ?? "packet"} artifact was generated ${formatRtpDateTime(input.packetReport.generated_at)} and remains current.`,
+    detail: `Latest ${input.packetReport.latest_artifact_kind ?? "packet"} artifact was generated ${formatRtpDateTime(input.packetReport.generated_at)}, remains current, and is ready for release review.`,
   };
 }
 
@@ -885,6 +885,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     resetAndRegenerate: typedCycles.filter((cycle) => cycle.packetAttention === "reset").length,
     generateFirstArtifact: typedCycles.filter((cycle) => cycle.packetAttention === "generate").length,
     refreshArtifact: typedCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
+    releaseReview: typedCycles.filter(
+      (cycle) => cycle.packetAttention === "current" && cycle.packetQueueTraceState.state === "aligned"
+    ).length,
     traceFollowUp: typedCycles.filter(
       (cycle) => cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned"
     ).length,
@@ -894,6 +897,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     { key: "resetAndRegenerate", label: "Reset and regenerate packets", count: currentViewActionCounts.resetAndRegenerate },
     { key: "generateFirstArtifact", label: "Generate first packet artifacts", count: currentViewActionCounts.generateFirstArtifact },
     { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
+    { key: "releaseReview", label: "Run release review on current packets", count: currentViewActionCounts.releaseReview },
     { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
   ] satisfies Array<{ key: DominantActionKey; label: string; count: number }>;
   const orderedCurrentViewActions = [...dominantCurrentViewAction].sort((left, right) => right.count - left.count);
@@ -931,6 +935,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       queueAction: selectedQueueActionFilter,
       queueTraceState: selectedQueueTraceStateFilter,
     }),
+    releaseReview: buildRtpRegistryHref({
+      status: filters.status ?? null,
+      packet: "current",
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: "aligned",
+    }),
     traceFollowUp: buildRtpRegistryHref({
       status: filters.status ?? null,
       packet: "current",
@@ -949,6 +960,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         return cycle.packetAttention === "generate";
       case "refreshArtifact":
         return cycle.packetAttention === "refresh";
+      case "releaseReview":
+        return cycle.packetAttention === "current" && cycle.packetQueueTraceState.state === "aligned";
       case "traceFollowUp":
         return cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned";
       default:
@@ -1814,6 +1827,21 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     className="module-inline-action"
                   >
                     Open refresh lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                {currentViewActionCounts.releaseReview > 0 ? (
+                  <Link
+                    href={buildRtpRegistryHref({
+                      status: filters.status ?? null,
+                      packet: "current",
+                      recent: recentOnly,
+                      queueAction: selectedQueueActionFilter,
+                      queueTraceState: "aligned",
+                    })}
+                    className="module-inline-action"
+                  >
+                    Open release-review lane
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 ) : null}
