@@ -82,6 +82,28 @@ export type ProjectFundingSnapshot = {
   paidReimbursementCoverageRatio: number | null;
 };
 
+export type PortfolioFundingSnapshot = {
+  capturedAt: string | null;
+  latestSourceUpdatedAt: string | null;
+  linkedProjectCount: number;
+  trackedProjectCount: number;
+  fundedProjectCount: number;
+  likelyCoveredProjectCount: number;
+  gapProjectCount: number;
+  committedFundingAmount: number;
+  likelyFundingAmount: number;
+  totalPotentialFundingAmount: number;
+  unfundedAfterLikelyAmount: number;
+  paidReimbursementAmount: number;
+  outstandingReimbursementAmount: number;
+  uninvoicedAwardAmount: number;
+  awardRiskCount: number;
+  label: string;
+  reason: string;
+  reimbursementLabel: string;
+  reimbursementReason: string;
+};
+
 function toNumber(value: number | string | null | undefined): number {
   const parsed = typeof value === "number" ? value : Number.parseFloat(String(value ?? "0"));
   return Number.isFinite(parsed) ? parsed : 0;
@@ -340,6 +362,130 @@ export function buildProjectFundingSnapshot(input: {
     pipelineCoverageRatio: summary.pipelineCoverageRatio,
     reimbursementCoverageRatio: summary.reimbursementCoverageRatio,
     paidReimbursementCoverageRatio: summary.paidReimbursementCoverageRatio,
+  };
+}
+
+export function buildPortfolioFundingSnapshot(input: {
+  projects: Array<{
+    projectUpdatedAt?: string | null;
+    profile: ProjectFundingProfileLike | null | undefined;
+    awards: FundingAwardLike[];
+    opportunities?: FundingOpportunityLike[];
+    invoices?: FundingInvoiceLike[];
+  }>;
+  capturedAt?: string | null;
+}): PortfolioFundingSnapshot {
+  const projectSnapshots = input.projects.map((project) =>
+    buildProjectFundingSnapshot({
+      profile: project.profile,
+      awards: project.awards,
+      opportunities: project.opportunities ?? [],
+      invoices: project.invoices ?? [],
+      capturedAt: input.capturedAt ?? null,
+      projectUpdatedAt: project.projectUpdatedAt ?? null,
+    })
+  );
+
+  const linkedProjectCount = projectSnapshots.length;
+  const trackedProjectCount = projectSnapshots.filter(
+    (snapshot) =>
+      snapshot.hasTargetNeed ||
+      snapshot.awardCount > 0 ||
+      snapshot.opportunityCount > 0 ||
+      snapshot.reimbursementPacketCount > 0
+  ).length;
+  const fundedProjectCount = projectSnapshots.filter((snapshot) => snapshot.status === "funded").length;
+  const likelyCoveredProjectCount = projectSnapshots.filter(
+    (snapshot) => snapshot.status !== "funded" && snapshot.pipelineStatus === "likely_covered"
+  ).length;
+  const gapProjectCount = projectSnapshots.filter(
+    (snapshot) => snapshot.pipelineStatus === "unfunded" || snapshot.pipelineStatus === "partially_covered"
+  ).length;
+  const committedFundingAmount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.committedFundingAmount, 0);
+  const likelyFundingAmount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.likelyFundingAmount, 0);
+  const totalPotentialFundingAmount = projectSnapshots.reduce(
+    (sum, snapshot) => sum + snapshot.totalPotentialFundingAmount,
+    0
+  );
+  const unfundedAfterLikelyAmount = projectSnapshots.reduce(
+    (sum, snapshot) => sum + snapshot.unfundedAfterLikelyAmount,
+    0
+  );
+  const paidReimbursementAmount = projectSnapshots.reduce(
+    (sum, snapshot) => sum + snapshot.paidReimbursementAmount,
+    0
+  );
+  const outstandingReimbursementAmount = projectSnapshots.reduce(
+    (sum, snapshot) => sum + snapshot.outstandingReimbursementAmount,
+    0
+  );
+  const uninvoicedAwardAmount = projectSnapshots.reduce(
+    (sum, snapshot) => sum + snapshot.uninvoicedAwardAmount,
+    0
+  );
+  const awardRiskCount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.awardRiskCount, 0);
+  const latestSourceUpdatedAt = maxTimestamp(
+    projectSnapshots.map((snapshot) => snapshot.latestSourceUpdatedAt)
+  );
+
+  let label = "No linked project funding";
+  let reason = "No linked projects are attached to this RTP packet yet, so no portfolio funding posture can be reviewed.";
+
+  if (linkedProjectCount > 0) {
+    if (gapProjectCount === 0 && likelyCoveredProjectCount === 0 && fundedProjectCount === linkedProjectCount) {
+      label = "All linked projects funded";
+      reason = `${fundedProjectCount} of ${linkedProjectCount} linked projects are fully funded on committed dollars.`;
+    } else if (gapProjectCount === 0) {
+      label = "Cycle funding covered through pipeline";
+      reason = `${fundedProjectCount} linked projects are fully funded and ${likelyCoveredProjectCount} more look covered through pursued funding.`;
+    } else if (fundedProjectCount === 0 && likelyCoveredProjectCount === 0) {
+      label = "Funding gaps across linked projects";
+      reason = `${gapProjectCount} of ${linkedProjectCount} linked projects still show unresolved funding gaps.`;
+    } else {
+      label = "Mixed funding posture across linked projects";
+      reason = `${fundedProjectCount} funded, ${likelyCoveredProjectCount} likely covered, and ${gapProjectCount} still carrying a gap.`;
+    }
+  }
+
+  let reimbursementLabel = "No reimbursement tracking yet";
+  let reimbursementReason = "No reimbursement posture is available for this linked project portfolio yet.";
+
+  if (linkedProjectCount > 0) {
+    if (outstandingReimbursementAmount > 0) {
+      reimbursementLabel = "Reimbursement in flight";
+      reimbursementReason = `Linked projects still have reimbursement packets outstanding against committed awards.`;
+    } else if (uninvoicedAwardAmount > 0) {
+      reimbursementLabel = "Awards awaiting reimbursement start";
+      reimbursementReason = `Committed awards exist, but some reimbursement packets have not been started yet.`;
+    } else if (paidReimbursementAmount > 0) {
+      reimbursementLabel = "Reimbursement paid";
+      reimbursementReason = `Linked reimbursement packets have been paid against the current award stack.`;
+    } else {
+      reimbursementLabel = "No reimbursement packets yet";
+      reimbursementReason = `No linked reimbursement packets are recorded for the current RTP project portfolio.`;
+    }
+  }
+
+  return {
+    capturedAt: input.capturedAt ?? null,
+    latestSourceUpdatedAt,
+    linkedProjectCount,
+    trackedProjectCount,
+    fundedProjectCount,
+    likelyCoveredProjectCount,
+    gapProjectCount,
+    committedFundingAmount,
+    likelyFundingAmount,
+    totalPotentialFundingAmount,
+    unfundedAfterLikelyAmount,
+    paidReimbursementAmount,
+    outstandingReimbursementAmount,
+    uninvoicedAwardAmount,
+    awardRiskCount,
+    label,
+    reason,
+    reimbursementLabel,
+    reimbursementReason,
   };
 }
 

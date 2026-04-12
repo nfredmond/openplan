@@ -5,6 +5,7 @@ import { ReportDetailControls } from "@/components/reports/report-detail-control
 import { RtpReportSectionControls } from "@/components/reports/rtp-report-section-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { formatRtpCycleStatusLabel, rtpCycleStatusTone } from "@/lib/rtp/catalog";
 import {
   describeReportSectionKey,
@@ -61,6 +62,14 @@ function driftStatusLabel(status: "unchanged" | "updated" | "count_changed") {
   if (status === "updated") return "Updated";
   if (status === "count_changed") return "Count changed";
   return "Unchanged";
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function RtpReportDetail({
@@ -130,6 +139,7 @@ export function RtpReportDetail({
     presetLabel: string | null;
     presetStatusLabel: string | null;
     presetDetail: string | null;
+    fundingSnapshot: PortfolioFundingSnapshot | null;
   };
   currentContext: {
     enabledSectionKeys: string[];
@@ -147,6 +157,7 @@ export function RtpReportDetail({
     presetLabel: string | null;
     presetStatusLabel: string | null;
     presetDetail: string | null;
+    fundingSnapshot: PortfolioFundingSnapshot | null;
   };
   operationsSummary: WorkspaceOperationsSummary;
 }) {
@@ -228,6 +239,36 @@ export function RtpReportDetail({
             generationContext.presetLabel === currentContext.presetLabel
               ? generationContext.presetDetail ?? currentContext.presetDetail ?? "Preset alignment unchanged."
               : `Generated as ${generationContext.presetStatusLabel ?? "unknown"}; current source is ${currentContext.presetStatusLabel ?? "unknown"}.`,
+        }
+      : null,
+    generationContext.fundingSnapshot || currentContext.fundingSnapshot
+      ? {
+          label: "Funding posture",
+          status:
+            generationContext.fundingSnapshot?.linkedProjectCount === currentContext.fundingSnapshot?.linkedProjectCount &&
+            generationContext.fundingSnapshot?.fundedProjectCount === currentContext.fundingSnapshot?.fundedProjectCount &&
+            generationContext.fundingSnapshot?.likelyCoveredProjectCount === currentContext.fundingSnapshot?.likelyCoveredProjectCount &&
+            generationContext.fundingSnapshot?.gapProjectCount === currentContext.fundingSnapshot?.gapProjectCount &&
+            generationContext.fundingSnapshot?.label === currentContext.fundingSnapshot?.label &&
+            generationContext.fundingSnapshot?.reimbursementLabel === currentContext.fundingSnapshot?.reimbursementLabel &&
+            generationContext.fundingSnapshot?.unfundedAfterLikelyAmount === currentContext.fundingSnapshot?.unfundedAfterLikelyAmount &&
+            generationContext.fundingSnapshot?.outstandingReimbursementAmount === currentContext.fundingSnapshot?.outstandingReimbursementAmount
+              ? ("unchanged" as const)
+              : generationContext.fundingSnapshot?.linkedProjectCount !== currentContext.fundingSnapshot?.linkedProjectCount ||
+                  generationContext.fundingSnapshot?.fundedProjectCount !== currentContext.fundingSnapshot?.fundedProjectCount ||
+                  generationContext.fundingSnapshot?.likelyCoveredProjectCount !== currentContext.fundingSnapshot?.likelyCoveredProjectCount ||
+                  generationContext.fundingSnapshot?.gapProjectCount !== currentContext.fundingSnapshot?.gapProjectCount
+                ? ("count_changed" as const)
+                : ("updated" as const),
+          detail:
+            generationContext.fundingSnapshot && currentContext.fundingSnapshot
+              ? generationContext.fundingSnapshot.label === currentContext.fundingSnapshot.label &&
+                generationContext.fundingSnapshot.reimbursementLabel === currentContext.fundingSnapshot.reimbursementLabel &&
+                generationContext.fundingSnapshot.gapProjectCount === currentContext.fundingSnapshot.gapProjectCount &&
+                generationContext.fundingSnapshot.outstandingReimbursementAmount === currentContext.fundingSnapshot.outstandingReimbursementAmount
+                ? `Still ${currentContext.fundingSnapshot.label}. ${currentContext.fundingSnapshot.reimbursementLabel}.`
+                : `Generated as ${generationContext.fundingSnapshot.label} with ${generationContext.fundingSnapshot.gapProjectCount} gap project${generationContext.fundingSnapshot.gapProjectCount === 1 ? "" : "s"}; current source is ${currentContext.fundingSnapshot.label} with ${currentContext.fundingSnapshot.gapProjectCount} gap project${currentContext.fundingSnapshot.gapProjectCount === 1 ? "" : "s"}. Reimbursement shifted from ${generationContext.fundingSnapshot.reimbursementLabel} to ${currentContext.fundingSnapshot.reimbursementLabel}.`
+              : "Funding posture was not captured on both sides of the RTP packet comparison yet.",
         }
       : null,
   ].filter(
@@ -381,6 +422,22 @@ export function RtpReportDetail({
                   </div>
                 </div>
               ) : null}
+              {generationContext.fundingSnapshot || currentContext.fundingSnapshot ? (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time funding posture</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.fundingSnapshot?.label ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reason ?? "No RTP funding posture was captured on this artifact."}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current funding posture</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.fundingSnapshot?.label ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reason ?? "No current RTP funding posture is available."}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </article>
 
@@ -449,6 +506,18 @@ export function RtpReportDetail({
               <div className="module-metric-card">
                 <p className="module-metric-label">Engagement targets</p>
                 <p className="module-metric-value text-sm">{generationContext.engagementCampaignCount ?? 0}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Funding posture</p>
+                <p className="module-metric-value text-sm">{generationContext.fundingSnapshot?.label ?? "Not captured"}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Funding gap after likely</p>
+                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.unfundedAfterLikelyAmount ?? 0)}</p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Outstanding reimbursement</p>
+                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.outstandingReimbursementAmount ?? 0)}</p>
               </div>
             </div>
             <div className="mt-4 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">

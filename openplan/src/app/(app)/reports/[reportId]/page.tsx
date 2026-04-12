@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
+import { buildPortfolioFundingSnapshot, type PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -315,6 +316,36 @@ function asStageGateSnapshot(
   };
 }
 
+function asPortfolioFundingSnapshot(value: unknown): PortfolioFundingSnapshot | null {
+  const record = asRecord(value);
+  if (!record) {
+    return null;
+  }
+
+  return {
+    capturedAt: asNullableString(record.capturedAt),
+    latestSourceUpdatedAt: asNullableString(record.latestSourceUpdatedAt),
+    linkedProjectCount: asNullableNumber(record.linkedProjectCount) ?? 0,
+    trackedProjectCount: asNullableNumber(record.trackedProjectCount) ?? 0,
+    fundedProjectCount: asNullableNumber(record.fundedProjectCount) ?? 0,
+    likelyCoveredProjectCount: asNullableNumber(record.likelyCoveredProjectCount) ?? 0,
+    gapProjectCount: asNullableNumber(record.gapProjectCount) ?? 0,
+    committedFundingAmount: asNullableNumber(record.committedFundingAmount) ?? 0,
+    likelyFundingAmount: asNullableNumber(record.likelyFundingAmount) ?? 0,
+    totalPotentialFundingAmount: asNullableNumber(record.totalPotentialFundingAmount) ?? 0,
+    unfundedAfterLikelyAmount: asNullableNumber(record.unfundedAfterLikelyAmount) ?? 0,
+    paidReimbursementAmount: asNullableNumber(record.paidReimbursementAmount) ?? 0,
+    outstandingReimbursementAmount: asNullableNumber(record.outstandingReimbursementAmount) ?? 0,
+    uninvoicedAwardAmount: asNullableNumber(record.uninvoicedAwardAmount) ?? 0,
+    awardRiskCount: asNullableNumber(record.awardRiskCount) ?? 0,
+    label: asNullableString(record.label) ?? "Unknown funding posture",
+    reason: asNullableString(record.reason) ?? "No RTP funding posture was captured on this packet artifact.",
+    reimbursementLabel: asNullableString(record.reimbursementLabel) ?? "Unknown reimbursement posture",
+    reimbursementReason:
+      asNullableString(record.reimbursementReason) ?? "No RTP reimbursement posture was captured on this packet artifact.",
+  };
+}
+
 function parseTimestamp(value: string | null | undefined): number | null {
   if (!value) return null;
   const parsed = Date.parse(value);
@@ -478,7 +509,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     report.rtp_cycle_id
       ? supabase
           .from("project_rtp_cycle_links")
-          .select("id")
+          .select("id, project_id")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
       : Promise.resolve({ data: [] }),
     report.rtp_cycle_id
@@ -520,6 +551,37 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         ])
       : [
           { data: null, error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+        ];
+
+  const rtpLinkedProjectIds = report.rtp_cycle_id
+    ? ((rtpProjectLinks ?? []) as Array<{ project_id: string | null }>).map((link) => link.project_id).filter((value): value is string => Boolean(value))
+    : [];
+
+  const [rtpFundingProfilesResult, rtpFundingAwardsResult, rtpFundingOpportunitiesResult, rtpBillingInvoicesResult] =
+    report.rtp_cycle_id && rtpLinkedProjectIds.length > 0
+      ? await Promise.all([
+          supabase
+            .from("project_funding_profiles")
+            .select("project_id, funding_need_amount, local_match_need_amount, updated_at")
+            .in("project_id", rtpLinkedProjectIds),
+          supabase
+            .from("funding_awards")
+            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .in("project_id", rtpLinkedProjectIds),
+          supabase
+            .from("funding_opportunities")
+            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .in("project_id", rtpLinkedProjectIds),
+          supabase
+            .from("billing_invoice_records")
+            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .in("project_id", rtpLinkedProjectIds),
+        ])
+      : [
+          { data: [], error: null },
           { data: [], error: null },
           { data: [], error: null },
           { data: [], error: null },
@@ -679,6 +741,37 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     const currentRtpWorkflow = currentRtpReadiness
       ? buildRtpCycleWorkflowSummary({ status: rtpCycle?.status, readiness: currentRtpReadiness })
       : null;
+    const storedRtpFundingSnapshot = asPortfolioFundingSnapshot(sourceContext?.rtpFundingSnapshot);
+    const rtpFundingProfileByProjectId = new Map(
+      ((rtpFundingProfilesResult.data ?? []) as Array<{ project_id: string; funding_need_amount: number | null; local_match_need_amount: number | null; updated_at: string | null }>).map((profile) => [profile.project_id, profile])
+    );
+    const rtpFundingAwardsByProjectId = new Map<string, Array<{ awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>>();
+    const rtpFundingOpportunitiesByProjectId = new Map<string, Array<{ expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>>();
+    const rtpFundingInvoicesByProjectId = new Map<string, Array<{ status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>>();
+    for (const award of (rtpFundingAwardsResult.data ?? []) as Array<{ project_id: string; awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>) {
+      const current = rtpFundingAwardsByProjectId.get(award.project_id) ?? [];
+      current.push(award);
+      rtpFundingAwardsByProjectId.set(award.project_id, current);
+    }
+    for (const opportunity of (rtpFundingOpportunitiesResult.data ?? []) as Array<{ project_id: string; expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>) {
+      const current = rtpFundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
+      current.push(opportunity);
+      rtpFundingOpportunitiesByProjectId.set(opportunity.project_id, current);
+    }
+    for (const invoice of (rtpBillingInvoicesResult.data ?? []) as Array<{ project_id: string; status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>) {
+      const current = rtpFundingInvoicesByProjectId.get(invoice.project_id) ?? [];
+      current.push(invoice);
+      rtpFundingInvoicesByProjectId.set(invoice.project_id, current);
+    }
+    const currentRtpFundingSnapshot = buildPortfolioFundingSnapshot({
+      projects: rtpLinkedProjectIds.map((projectId) => ({
+        profile: rtpFundingProfileByProjectId.get(projectId) ?? null,
+        awards: rtpFundingAwardsByProjectId.get(projectId) ?? [],
+        opportunities: rtpFundingOpportunitiesByProjectId.get(projectId) ?? [],
+        invoices: rtpFundingInvoicesByProjectId.get(projectId) ?? [],
+      })),
+      capturedAt: latestArtifact?.generated_at ?? null,
+    });
     const rtpComparisonDigest = describeComparisonSnapshotAggregate(
       parseStoredComparisonSnapshotAggregate(latestArtifact?.metadata_json ?? null)
     );
@@ -721,6 +814,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           presetLabel: asNullableString(presetAlignmentRecord?.presetLabel),
           presetStatusLabel: asNullableString(presetAlignmentRecord?.statusLabel),
           presetDetail: asNullableString(presetAlignmentRecord?.detail),
+          fundingSnapshot: storedRtpFundingSnapshot,
         }}
         currentContext={{
           enabledSectionKeys: (sections ?? [])
@@ -740,6 +834,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           presetLabel: currentPacketPresetAlignment.presetLabel,
           presetStatusLabel: currentPacketPresetAlignment.statusLabel,
           presetDetail: currentPacketPresetAlignment.detail,
+          fundingSnapshot: currentRtpFundingSnapshot,
         }}
         operationsSummary={operationsSummary}
       />

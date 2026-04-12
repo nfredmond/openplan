@@ -7,6 +7,7 @@ import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
+import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
 import {
   buildProjectStageGateSnapshot,
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .order("sort_order", { ascending: true }),
         supabase
           .from("project_rtp_cycle_links")
-          .select("id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary)")
+          .select("id, project_id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary)")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
           .order("created_at", { ascending: false }),
         supabase
@@ -225,6 +226,65 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapters = chaptersResult.data ?? [];
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
+      const linkedProjectIds = linkedProjects
+        .map((link) => link.project?.id ?? null)
+        .filter((value): value is string => Boolean(value));
+      const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] =
+        linkedProjectIds.length > 0
+          ? await Promise.all([
+              supabase
+                .from("project_funding_profiles")
+                .select("project_id, funding_need_amount, local_match_need_amount, updated_at")
+                .in("project_id", linkedProjectIds),
+              supabase
+                .from("funding_awards")
+                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+                .in("project_id", linkedProjectIds),
+              supabase
+                .from("funding_opportunities")
+                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+                .in("project_id", linkedProjectIds),
+              supabase
+                .from("billing_invoice_records")
+                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+                .in("project_id", linkedProjectIds),
+            ])
+          : [
+              { data: [], error: null },
+              { data: [], error: null },
+              { data: [], error: null },
+              { data: [], error: null },
+            ];
+      const fundingProfileByProjectId = new Map(
+        ((fundingProfilesResult.data ?? []) as Array<{ project_id: string; funding_need_amount: number | null; local_match_need_amount: number | null; updated_at: string | null }>).map((profile) => [profile.project_id, profile])
+      );
+      const fundingAwardsByProjectId = new Map<string, Array<{ awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>>();
+      const fundingOpportunitiesByProjectId = new Map<string, Array<{ expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>>();
+      const fundingInvoicesByProjectId = new Map<string, Array<{ status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>>();
+      for (const award of (fundingAwardsResult.data ?? []) as Array<{ project_id: string; awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>) {
+        const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
+        current.push(award);
+        fundingAwardsByProjectId.set(award.project_id, current);
+      }
+      for (const opportunity of (fundingOpportunitiesResult.data ?? []) as Array<{ project_id: string; expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>) {
+        const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
+        current.push(opportunity);
+        fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
+      }
+      for (const invoice of (billingInvoicesResult.data ?? []) as Array<{ project_id: string; status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>) {
+        const current = fundingInvoicesByProjectId.get(invoice.project_id) ?? [];
+        current.push(invoice);
+        fundingInvoicesByProjectId.set(invoice.project_id, current);
+      }
+      const portfolioFundingSnapshot = buildPortfolioFundingSnapshot({
+        projects: linkedProjectIds.map((projectId) => ({
+          profile: fundingProfileByProjectId.get(projectId) ?? null,
+          awards: fundingAwardsByProjectId.get(projectId) ?? [],
+          opportunities: fundingOpportunitiesByProjectId.get(projectId) ?? [],
+          invoices: fundingInvoicesByProjectId.get(projectId) ?? [],
+        })),
+        capturedAt: report.generated_at ?? new Date().toISOString(),
+      });
       const enabledSectionKeys = sections.filter((section) => section.enabled).map((section) => section.section_key);
       const packetPresetAlignment = getRtpPacketPresetAlignment({
         cycleStatus: cycle.status,
@@ -274,6 +334,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           chapterReadyForReviewCount,
           linkedProjectCount: linkedProjects.length,
           engagementCampaignCount: campaigns.length,
+          rtpFundingSnapshot: portfolioFundingSnapshot,
           readiness,
           workflow,
           enabledSectionCount: sections.filter((section) => section.enabled).length,
