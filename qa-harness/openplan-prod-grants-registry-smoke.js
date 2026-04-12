@@ -283,9 +283,14 @@ async function main() {
     await reimbursementQueueSection.getByRole('link', { name: /Open reimbursement register/i }).first().waitFor({ timeout: 30000 });
     notes.push('Created the first award-linked reimbursement invoice directly from `/grants`, advanced the stack into drafting posture, and surfaced it in the workspace reimbursement queue.');
 
+    await reimbursementQueueSection.getByRole('button', { name: /Move to internal review/i }).first().click();
+    await reimbursementQueueSection.getByText(/Invoice moved to internal review\./i).first().waitFor({ timeout: 30000 });
+    await awardStackSection.getByText(/Reimbursement in flight/i).waitFor({ timeout: 30000 });
+    notes.push('Advanced the reimbursement queue item in place from draft to internal review directly from `/grants`.');
+
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
-    const reimbursementLink = awardStackSection.getByRole('link', { name: /Advance draft reimbursement/i }).first();
+    const reimbursementLink = awardStackSection.getByRole('link', { name: /Review in-flight reimbursement/i }).first();
     await reimbursementLink.waitFor({ timeout: 30000 });
     await Promise.all([
       page.waitForURL(new RegExp(`/projects/${ids.projectId}#project-invoices$`, 'i'), { timeout: 30000 }),
@@ -332,7 +337,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, land on the exact project billing register, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, land on the exact project billing register, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
