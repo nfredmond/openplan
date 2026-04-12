@@ -3,6 +3,7 @@ import { summarizeBillingInvoiceRecords, type BillingInvoiceRecordLike } from "@
 export type ProjectFundingProfileLike = {
   funding_need_amount?: number | string | null;
   local_match_need_amount?: number | string | null;
+  updated_at?: string | null;
 };
 
 export type FundingAwardLike = {
@@ -10,15 +11,23 @@ export type FundingAwardLike = {
   match_amount?: number | string | null;
   risk_flag?: string | null;
   obligation_due_at?: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
 };
 
 export type FundingOpportunityLike = {
   expected_award_amount?: number | string | null;
   decision_state?: string | null;
   opportunity_status?: string | null;
+  closes_at?: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
 };
 
-export type FundingInvoiceLike = BillingInvoiceRecordLike;
+export type FundingInvoiceLike = BillingInvoiceRecordLike & {
+  created_at?: string | null;
+  invoice_date?: string | null;
+};
 
 export type ProjectFundingStackStatus = "funded" | "partially_funded" | "unfunded" | "unknown";
 export type ProjectFundingPipelineStatus = "funded" | "likely_covered" | "partially_covered" | "unfunded" | "unknown";
@@ -30,9 +39,72 @@ export type ProjectFundingReimbursementStatus =
   | "partially_paid"
   | "paid";
 
+export type ProjectFundingSnapshot = {
+  capturedAt: string | null;
+  projectUpdatedAt: string | null;
+  latestSourceUpdatedAt: string | null;
+  fundingNeedAmount: number;
+  localMatchNeedAmount: number;
+  committedFundingAmount: number;
+  committedMatchAmount: number;
+  likelyFundingAmount: number;
+  totalPotentialFundingAmount: number;
+  remainingFundingGap: number;
+  remainingMatchGap: number;
+  unfundedAfterLikelyAmount: number;
+  requestedReimbursementAmount: number;
+  paidReimbursementAmount: number;
+  outstandingReimbursementAmount: number;
+  draftReimbursementAmount: number;
+  uninvoicedAwardAmount: number;
+  nextObligationAt: string | null;
+  awardRiskCount: number;
+  awardCount: number;
+  opportunityCount: number;
+  openOpportunityCount: number;
+  pursuedOpportunityCount: number;
+  awardedOpportunityCount: number;
+  closingSoonOpportunityCount: number;
+  reimbursementPacketCount: number;
+  status: ProjectFundingStackStatus;
+  label: string;
+  reason: string;
+  pipelineStatus: ProjectFundingPipelineStatus;
+  pipelineLabel: string;
+  pipelineReason: string;
+  reimbursementStatus: ProjectFundingReimbursementStatus;
+  reimbursementLabel: string;
+  reimbursementReason: string;
+  hasTargetNeed: boolean;
+  coverageRatio: number | null;
+  pipelineCoverageRatio: number | null;
+  reimbursementCoverageRatio: number | null;
+  paidReimbursementCoverageRatio: number | null;
+};
+
 function toNumber(value: number | string | null | undefined): number {
   const parsed = typeof value === "number" ? value : Number.parseFloat(String(value ?? "0"));
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function isClosingSoon(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return false;
+  const diffMs = parsed.getTime() - Date.now();
+  return diffMs >= 0 && diffMs <= 14 * 24 * 60 * 60 * 1000;
+}
+
+function maxTimestamp(values: Array<string | null | undefined>): string | null {
+  const timestamps = values
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...timestamps)).toISOString();
 }
 
 export function buildProjectFundingStackSummary(
@@ -187,6 +259,87 @@ export function buildProjectFundingStackSummary(
       committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
     paidReimbursementCoverageRatio:
       committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
+  };
+}
+
+export function buildProjectFundingSnapshot(input: {
+  profile: ProjectFundingProfileLike | null | undefined;
+  awards: FundingAwardLike[];
+  opportunities?: FundingOpportunityLike[];
+  invoices?: FundingInvoiceLike[];
+  capturedAt?: string | null;
+  projectUpdatedAt?: string | null;
+}): ProjectFundingSnapshot {
+  const opportunities = input.opportunities ?? [];
+  const invoices = input.invoices ?? [];
+  const summary = buildProjectFundingStackSummary(
+    input.profile,
+    input.awards,
+    opportunities,
+    invoices
+  );
+
+  const openOpportunityCount = opportunities.filter(
+    (opportunity) => opportunity.opportunity_status === "open"
+  ).length;
+  const pursuedOpportunityCount = opportunities.filter(
+    (opportunity) => opportunity.decision_state === "pursue"
+  ).length;
+  const awardedOpportunityCount = opportunities.filter(
+    (opportunity) => opportunity.opportunity_status === "awarded"
+  ).length;
+  const closingSoonOpportunityCount = opportunities.filter((opportunity) =>
+    isClosingSoon(opportunity.closes_at)
+  ).length;
+  const reimbursementPacketCount = invoices.length;
+
+  return {
+    capturedAt: input.capturedAt ?? null,
+    projectUpdatedAt: input.projectUpdatedAt ?? null,
+    latestSourceUpdatedAt: maxTimestamp([
+      input.projectUpdatedAt ?? null,
+      input.profile?.updated_at ?? null,
+      ...input.awards.map((award) => award.updated_at ?? award.created_at ?? null),
+      ...opportunities.map((opportunity) => opportunity.updated_at ?? opportunity.created_at ?? null),
+      ...invoices.map((invoice) => invoice.invoice_date ?? invoice.created_at ?? invoice.due_date ?? null),
+    ]),
+    fundingNeedAmount: summary.fundingNeedAmount,
+    localMatchNeedAmount: summary.localMatchNeedAmount,
+    committedFundingAmount: summary.committedFundingAmount,
+    committedMatchAmount: summary.committedMatchAmount,
+    likelyFundingAmount: summary.likelyFundingAmount,
+    totalPotentialFundingAmount: summary.totalPotentialFundingAmount,
+    remainingFundingGap: summary.remainingFundingGap,
+    remainingMatchGap: summary.remainingMatchGap,
+    unfundedAfterLikelyAmount: summary.unfundedAfterLikelyAmount,
+    requestedReimbursementAmount: summary.requestedReimbursementAmount,
+    paidReimbursementAmount: summary.paidReimbursementAmount,
+    outstandingReimbursementAmount: summary.outstandingReimbursementAmount,
+    draftReimbursementAmount: summary.draftReimbursementAmount,
+    uninvoicedAwardAmount: summary.uninvoicedAwardAmount,
+    nextObligationAt: summary.nextObligationAt,
+    awardRiskCount: summary.awardRiskCount,
+    awardCount: input.awards.length,
+    opportunityCount: opportunities.length,
+    openOpportunityCount,
+    pursuedOpportunityCount,
+    awardedOpportunityCount,
+    closingSoonOpportunityCount,
+    reimbursementPacketCount,
+    status: summary.status,
+    label: summary.label,
+    reason: summary.reason,
+    pipelineStatus: summary.pipelineStatus,
+    pipelineLabel: summary.pipelineLabel,
+    pipelineReason: summary.pipelineReason,
+    reimbursementStatus: summary.reimbursementStatus,
+    reimbursementLabel: summary.reimbursementLabel,
+    reimbursementReason: summary.reimbursementReason,
+    hasTargetNeed: summary.hasTargetNeed,
+    coverageRatio: summary.coverageRatio,
+    pipelineCoverageRatio: summary.pipelineCoverageRatio,
+    reimbursementCoverageRatio: summary.reimbursementCoverageRatio,
+    paidReimbursementCoverageRatio: summary.paidReimbursementCoverageRatio,
   };
 }
 

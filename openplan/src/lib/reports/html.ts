@@ -10,6 +10,7 @@ import {
   buildEvidenceChainSummary,
   type EvidenceChainSummary,
 } from "@/lib/reports/evidence-chain";
+import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 
 type ProjectRecord = {
@@ -79,6 +80,7 @@ export type ReportGenerationData = {
   meetings: ProjectItem[];
   engagement: ReportEngagementSummary | null;
   scenarioSetLinks: ReportScenarioSetLink[];
+  projectFundingSnapshot: ProjectFundingSnapshot | null;
   projectRecordsSnapshot: {
     deliverables: ProjectRecordSnapshotEntry;
     risks: ProjectRecordSnapshotEntry;
@@ -96,6 +98,15 @@ function esc(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  const numeric = typeof value === "number" ? value : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number.isFinite(numeric) ? numeric : 0);
 }
 
 function listMarkup(items: ProjectItem[], emptyMessage: string): string {
@@ -211,6 +222,20 @@ function engagementHandoffMarkup(data: ReportGenerationData): string {
         ? `<p>Current live campaign counts: ${currentCounts.moderationQueue.readyForHandoffCount} ready for handoff • ${currentCounts.totalItems} total items.</p>`
         : ""
     }
+  </div>`;
+}
+
+function fundingSnapshotMarkup(snapshot: ProjectFundingSnapshot | null): string {
+  if (!snapshot) {
+    return "";
+  }
+
+  return `<div class="warning-box" style="margin-top: 18px;">
+    <strong>Funding posture at generation</strong>
+    <p>${esc(snapshot.label)} • ${esc(snapshot.pipelineLabel)} • ${esc(snapshot.reimbursementLabel)}</p>
+    <p>${snapshot.awardCount} award${snapshot.awardCount === 1 ? "" : "s"} • ${snapshot.pursuedOpportunityCount} pursued opportunit${snapshot.pursuedOpportunityCount === 1 ? "y" : "ies"} • ${esc(formatCurrency(snapshot.committedFundingAmount))} committed${snapshot.fundingNeedAmount > 0 ? ` • ${esc(formatCurrency(snapshot.fundingNeedAmount))} need` : ""}</p>
+    <p>${snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
+    ${snapshot.latestSourceUpdatedAt ? `<p>Funding source records current through ${esc(formatDateTime(snapshot.latestSourceUpdatedAt))}.</p>` : ""}
   </div>`;
 }
 
@@ -464,6 +489,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <div>
         <h3>${esc(data.project.name)}</h3>
         <p>${esc(data.project.summary || "No project summary recorded yet.")}</p>
+        ${fundingSnapshotMarkup(data.projectFundingSnapshot)}
       </div>
       <dl class="facts">
         <div><dt>Report type</dt><dd>${esc(formatReportTypeLabel(data.report.report_type))}</dd></div>
@@ -483,6 +509,12 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <div><span class="metric-label">Delivery phase</span><strong>${esc(titleize(data.project.delivery_phase))}</strong></div>
       <div><span class="metric-label">Linked runs</span><strong>${data.runs.length}</strong></div>
     </div>
+    ${data.projectFundingSnapshot ? `<div class="metrics-grid" style="margin-top: 14px;">
+      <div><span class="metric-label">Funding posture</span><strong>${esc(data.projectFundingSnapshot.label)}</strong></div>
+      <div><span class="metric-label">Committed awards</span><strong>${esc(formatCurrency(data.projectFundingSnapshot.committedFundingAmount))}</strong></div>
+      <div><span class="metric-label">Pipeline posture</span><strong>${esc(data.projectFundingSnapshot.pipelineLabel)}</strong></div>
+      <div><span class="metric-label">Reimbursement</span><strong>${esc(data.projectFundingSnapshot.reimbursementLabel)}</strong></div>
+    </div>` : ""}
     <p>${esc(data.report.summary || data.project.summary || "No executive summary has been authored yet. This packet reflects current structured records and linked run evidence only.")}</p>
     ${engagementHandoffMarkup(data)}`;
   }

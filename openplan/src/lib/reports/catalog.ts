@@ -1,4 +1,5 @@
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
+import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 
 export const REPORT_TYPE_OPTIONS = [
   { value: "project_status", label: "Project Status Packet" },
@@ -61,6 +62,14 @@ export type ReportComparisonSnapshotAggregate = {
 export type ReportComparisonSnapshotDigest = {
   headline: string;
   detail: string;
+};
+
+export type ReportFundingSnapshot = ProjectFundingSnapshot;
+
+export type ReportFundingDigest = {
+  headline: string;
+  detail: string;
+  timingDetail: string | null;
 };
 
 export function getReportPacketActionLabel(freshnessLabel: string) {
@@ -542,6 +551,57 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
   return metadata ? asRecord(metadata.sourceContext) : null;
 }
 
+function formatCurrency(value: number | null | undefined): string {
+  const numeric = typeof value === "number" ? value : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number.isFinite(numeric) ? numeric : 0);
+}
+
+function normalizeFundingStatus(
+  value: string | null | undefined
+): ReportFundingSnapshot["status"] {
+  switch (value) {
+    case "funded":
+    case "partially_funded":
+    case "unfunded":
+      return value;
+    default:
+      return "unknown";
+  }
+}
+
+function normalizeFundingPipelineStatus(
+  value: string | null | undefined
+): ReportFundingSnapshot["pipelineStatus"] {
+  switch (value) {
+    case "funded":
+    case "likely_covered":
+    case "partially_covered":
+    case "unfunded":
+      return value;
+    default:
+      return "unknown";
+  }
+}
+
+function normalizeFundingReimbursementStatus(
+  value: string | null | undefined
+): ReportFundingSnapshot["reimbursementStatus"] {
+  switch (value) {
+    case "not_started":
+    case "drafting":
+    case "in_review":
+    case "partially_paid":
+    case "paid":
+      return value;
+    default:
+      return "unknown";
+  }
+}
+
 export function parseStoredEvidenceChainSummary(
   metadata: Record<string, unknown> | null | undefined
 ): EvidenceChainSummary | null {
@@ -659,6 +719,63 @@ export function parseStoredComparisonSnapshotAggregate(
   };
 }
 
+export function parseStoredFundingSnapshot(
+  metadata: Record<string, unknown> | null | undefined
+): ReportFundingSnapshot | null {
+  const sourceContext = asSourceContext(metadata);
+  const summary = asRecord(sourceContext?.projectFundingSnapshot);
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    capturedAt: asNullableString(summary.capturedAt),
+    projectUpdatedAt: asNullableString(summary.projectUpdatedAt),
+    latestSourceUpdatedAt: asNullableString(summary.latestSourceUpdatedAt),
+    fundingNeedAmount: asNullableNumber(summary.fundingNeedAmount) ?? 0,
+    localMatchNeedAmount: asNullableNumber(summary.localMatchNeedAmount) ?? 0,
+    committedFundingAmount: asNullableNumber(summary.committedFundingAmount) ?? 0,
+    committedMatchAmount: asNullableNumber(summary.committedMatchAmount) ?? 0,
+    likelyFundingAmount: asNullableNumber(summary.likelyFundingAmount) ?? 0,
+    totalPotentialFundingAmount: asNullableNumber(summary.totalPotentialFundingAmount) ?? 0,
+    remainingFundingGap: asNullableNumber(summary.remainingFundingGap) ?? 0,
+    remainingMatchGap: asNullableNumber(summary.remainingMatchGap) ?? 0,
+    unfundedAfterLikelyAmount: asNullableNumber(summary.unfundedAfterLikelyAmount) ?? 0,
+    requestedReimbursementAmount: asNullableNumber(summary.requestedReimbursementAmount) ?? 0,
+    paidReimbursementAmount: asNullableNumber(summary.paidReimbursementAmount) ?? 0,
+    outstandingReimbursementAmount: asNullableNumber(summary.outstandingReimbursementAmount) ?? 0,
+    draftReimbursementAmount: asNullableNumber(summary.draftReimbursementAmount) ?? 0,
+    uninvoicedAwardAmount: asNullableNumber(summary.uninvoicedAwardAmount) ?? 0,
+    nextObligationAt: asNullableString(summary.nextObligationAt),
+    awardRiskCount: asNullableNumber(summary.awardRiskCount) ?? 0,
+    awardCount: asNullableNumber(summary.awardCount) ?? 0,
+    opportunityCount: asNullableNumber(summary.opportunityCount) ?? 0,
+    openOpportunityCount: asNullableNumber(summary.openOpportunityCount) ?? 0,
+    pursuedOpportunityCount: asNullableNumber(summary.pursuedOpportunityCount) ?? 0,
+    awardedOpportunityCount: asNullableNumber(summary.awardedOpportunityCount) ?? 0,
+    closingSoonOpportunityCount: asNullableNumber(summary.closingSoonOpportunityCount) ?? 0,
+    reimbursementPacketCount: asNullableNumber(summary.reimbursementPacketCount) ?? 0,
+    status: normalizeFundingStatus(asNullableString(summary.status)),
+    label: asNullableString(summary.label) ?? "Funding posture unknown",
+    reason: asNullableString(summary.reason) ?? "Funding posture was not captured.",
+    pipelineStatus: normalizeFundingPipelineStatus(asNullableString(summary.pipelineStatus)),
+    pipelineLabel: asNullableString(summary.pipelineLabel) ?? "Funding pipeline unknown",
+    pipelineReason: asNullableString(summary.pipelineReason) ?? "Funding pipeline was not captured.",
+    reimbursementStatus: normalizeFundingReimbursementStatus(
+      asNullableString(summary.reimbursementStatus)
+    ),
+    reimbursementLabel:
+      asNullableString(summary.reimbursementLabel) ?? "Reimbursement posture unknown",
+    reimbursementReason:
+      asNullableString(summary.reimbursementReason) ?? "Reimbursement posture was not captured.",
+    hasTargetNeed: Boolean(summary.hasTargetNeed),
+    coverageRatio: asNullableNumber(summary.coverageRatio),
+    pipelineCoverageRatio: asNullableNumber(summary.pipelineCoverageRatio),
+    reimbursementCoverageRatio: asNullableNumber(summary.reimbursementCoverageRatio),
+    paidReimbursementCoverageRatio: asNullableNumber(summary.paidReimbursementCoverageRatio),
+  };
+}
+
 export function describeEvidenceChainSummary(
   summary: EvidenceChainSummary | null | undefined
 ): ReportEvidenceChainDigest | null {
@@ -713,6 +830,53 @@ export function describeComparisonSnapshotAggregate(
   return {
     headline: `${comparisonLabel} · ${readyLabel}`,
     detail: `${deltaLabel} · ${updatedLabel}`,
+  };
+}
+
+export function describeFundingSnapshot(
+  summary: ReportFundingSnapshot | null | undefined
+): ReportFundingDigest | null {
+  if (!summary) {
+    return null;
+  }
+
+  const headlineParts = [
+    summary.awardCount > 0 ? `${summary.awardCount} award${summary.awardCount === 1 ? "" : "s"}` : null,
+    summary.committedFundingAmount > 0 ? `${formatCurrency(summary.committedFundingAmount)} committed` : null,
+    summary.unfundedAfterLikelyAmount > 0
+      ? `${formatCurrency(summary.unfundedAfterLikelyAmount)} uncovered`
+      : summary.remainingFundingGap > 0
+        ? `${formatCurrency(summary.remainingFundingGap)} current gap`
+        : summary.hasTargetNeed
+          ? "Gap covered in current pipeline"
+          : null,
+  ].filter((value): value is string => Boolean(value));
+
+  const detailParts = [
+    summary.label,
+    summary.pipelineLabel,
+    summary.reimbursementLabel,
+    summary.pursuedOpportunityCount > 0
+      ? `${summary.pursuedOpportunityCount} pursued opportunit${summary.pursuedOpportunityCount === 1 ? "y" : "ies"}`
+      : null,
+    summary.closingSoonOpportunityCount > 0
+      ? `${summary.closingSoonOpportunityCount} closing soon`
+      : null,
+    summary.awardRiskCount > 0
+      ? `${summary.awardRiskCount} award risk flag${summary.awardRiskCount === 1 ? "" : "s"}`
+      : null,
+  ].filter((value): value is string => Boolean(value));
+
+  const timingDetail = summary.latestSourceUpdatedAt
+    ? `Funding snapshot reflects source records through ${formatDateTime(summary.latestSourceUpdatedAt)}.`
+    : null;
+
+  return {
+    headline:
+      headlineParts.join(" · ") ||
+      `${summary.opportunityCount} funding opportunit${summary.opportunityCount === 1 ? "y" : "ies"} logged`,
+    detail: detailParts.join(" · ") || summary.reason,
+    timingDetail,
   };
 }
 

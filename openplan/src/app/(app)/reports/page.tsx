@@ -23,6 +23,7 @@ import {
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
 import {
+  describeFundingSnapshot,
   describeEvidenceChainSummary,
   formatDateTime,
   formatReportStatusLabel,
@@ -37,6 +38,7 @@ import {
   normalizeReportPostureFilter,
   parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
+  parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
   type ReportFreshnessFilter,
@@ -194,6 +196,9 @@ export default async function ReportsPage({
       const comparisonSnapshotAggregate = parseStoredComparisonSnapshotAggregate(
         latestArtifact?.metadata_json ?? null
       );
+      const fundingSnapshot = parseStoredFundingSnapshot(
+        latestArtifact?.metadata_json ?? null
+      );
 
       return {
         ...report,
@@ -212,7 +217,9 @@ export default async function ReportsPage({
         evidenceChainSummary,
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
+        fundingSnapshot,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
+        fundingDigest: describeFundingSnapshot(fundingSnapshot),
       };
     })
     .sort((left, right) => {
@@ -267,6 +274,12 @@ export default async function ReportsPage({
   }).length;
   const comparisonSnapshotVisibleCount = reports.filter(
     (report) => (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+  ).length;
+  const fundingSnapshotVisibleCount = reports.filter(
+    (report) => Boolean(report.fundingDigest)
+  ).length;
+  const fundingGapVisibleCount = reports.filter(
+    (report) => (report.fundingSnapshot?.unfundedAfterLikelyAmount ?? 0) > 0
   ).length;
   const readyComparisonSnapshotCount = reports.reduce(
     (sum, report) => sum + (report.comparisonSnapshotAggregate?.readyComparisonSnapshotCount ?? 0),
@@ -532,7 +545,9 @@ export default async function ReportsPage({
             <span className="module-inline-item"><strong>{scenarioBasisCount}</strong> scenario-backed</span>
             <span className="module-inline-item"><strong>{scenarioSpineVisibleCount}</strong> scenario spine visible</span>
             <span className="module-inline-item"><strong>{comparisonSnapshotVisibleCount}</strong> comparison-backed</span>
+            <span className="module-inline-item"><strong>{fundingSnapshotVisibleCount}</strong> funding-backed</span>
             <span className="module-inline-item"><strong>{readyComparisonSnapshotCount}</strong> ready saved comparisons</span>
+            {fundingGapVisibleCount > 0 ? <span className="module-inline-item"><strong>{fundingGapVisibleCount}</strong> funding gap{fundingGapVisibleCount === 1 ? "" : "s"} surfaced</span> : null}
             <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
             {scenarioSpinePendingCount > 0 ? <span className="module-inline-item"><strong>{scenarioSpinePendingCount}</strong> spine pending</span> : null}
           </div>
@@ -780,6 +795,18 @@ export default async function ReportsPage({
                         </span>
                       </>
                     ) : null}
+                    {report.fundingSnapshot ? (
+                      <>
+                        <span className="module-record-chip">
+                          {report.fundingSnapshot.label}
+                        </span>
+                        {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
+                          <span className="module-record-chip">
+                            Uncovered {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(report.fundingSnapshot.unfundedAfterLikelyAmount)}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : null}
                     {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
                   </div>
 
@@ -809,6 +836,18 @@ export default async function ReportsPage({
                         <p className="mt-2">No evidence summary attached to the latest artifact yet.</p>
                       </div>
                     )}
+                    <div className="module-note text-sm">
+                      <p className="font-medium text-foreground">Funding posture</p>
+                      {report.fundingDigest ? (
+                        <>
+                          <p className="mt-2 font-medium text-foreground/90">{report.fundingDigest.headline}</p>
+                          <p className="mt-1">{report.fundingDigest.detail}</p>
+                          {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
+                        </>
+                      ) : (
+                        <p className="mt-2">No funding snapshot is attached to the latest artifact yet.</p>
+                      )}
+                    </div>
                   </div>
                 </Link>
               ))}

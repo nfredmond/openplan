@@ -23,6 +23,7 @@ export function ReportDetailControls({
   report,
   driftSummary,
   evidenceSummary,
+  fundingSummary,
 }: {
   report: {
     id: string;
@@ -40,6 +41,11 @@ export function ReportDetailControls({
     headline: string;
     detail: string;
     blockedGateDetail?: string | null;
+  } | null;
+  fundingSummary?: {
+    headline: string;
+    detail: string;
+    timingDetail?: string | null;
   } | null;
 }) {
   const router = useRouter();
@@ -217,6 +223,23 @@ export function ReportDetailControls({
             {evidenceSummary.blockedGateDetail ? (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                 {evidenceSummary.blockedGateDetail}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {fundingSummary ? (
+          <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Funding posture
+            </p>
+            <p className="mt-1 font-semibold">{fundingSummary.headline}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {fundingSummary.detail}
+            </p>
+            {fundingSummary.timingDetail ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {fundingSummary.timingDetail}
               </p>
             ) : null}
           </div>

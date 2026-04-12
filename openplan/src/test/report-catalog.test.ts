@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeFundingSnapshot,
   describeEvidenceChainSummary,
   getReportNavigationHref,
   getReportPacketActionLabel,
@@ -9,6 +10,7 @@ import {
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
   normalizeReportPostureFilter,
+  parseStoredFundingSnapshot,
 } from "@/lib/reports/catalog";
 
 describe("getReportPacketFreshness", () => {
@@ -160,5 +162,66 @@ describe("getReportPacketFreshness", () => {
         hasBlockedGovernance: false,
       })
     ).toBe(true);
+  });
+
+  it("parses and formats stored funding posture snapshots", () => {
+    const snapshot = parseStoredFundingSnapshot({
+      sourceContext: {
+        projectFundingSnapshot: {
+          capturedAt: "2026-04-12T20:00:00.000Z",
+          latestSourceUpdatedAt: "2026-04-12T19:30:00.000Z",
+          projectUpdatedAt: "2026-04-12T19:15:00.000Z",
+          fundingNeedAmount: 1000000,
+          localMatchNeedAmount: 100000,
+          committedFundingAmount: 650000,
+          committedMatchAmount: 50000,
+          likelyFundingAmount: 300000,
+          totalPotentialFundingAmount: 950000,
+          remainingFundingGap: 350000,
+          remainingMatchGap: 50000,
+          unfundedAfterLikelyAmount: 50000,
+          requestedReimbursementAmount: 150000,
+          paidReimbursementAmount: 50000,
+          outstandingReimbursementAmount: 100000,
+          draftReimbursementAmount: 0,
+          uninvoicedAwardAmount: 500000,
+          nextObligationAt: "2026-05-01T00:00:00.000Z",
+          awardRiskCount: 1,
+          awardCount: 2,
+          opportunityCount: 3,
+          openOpportunityCount: 2,
+          pursuedOpportunityCount: 2,
+          awardedOpportunityCount: 1,
+          closingSoonOpportunityCount: 1,
+          reimbursementPacketCount: 1,
+          status: "partially_funded",
+          label: "Partially funded",
+          reason: "Committed awards cover part of the need.",
+          pipelineStatus: "partially_covered",
+          pipelineLabel: "Gap remains",
+          pipelineReason: "Likely dollars still leave a gap.",
+          reimbursementStatus: "in_review",
+          reimbursementLabel: "Reimbursement in flight",
+          reimbursementReason: "Linked invoices are under review.",
+          hasTargetNeed: true,
+          coverageRatio: 0.65,
+          pipelineCoverageRatio: 0.95,
+          reimbursementCoverageRatio: 0.23,
+          paidReimbursementCoverageRatio: 0.08,
+        },
+      },
+    });
+
+    expect(snapshot).toMatchObject({
+      awardCount: 2,
+      committedFundingAmount: 650000,
+      unfundedAfterLikelyAmount: 50000,
+      reimbursementLabel: "Reimbursement in flight",
+    });
+
+    expect(describeFundingSnapshot(snapshot)).toMatchObject({
+      headline: "2 awards · $650,000 committed · $50,000 uncovered",
+      detail: "Partially funded · Gap remains · Reimbursement in flight · 2 pursued opportunities · 1 closing soon · 1 award risk flag",
+    });
   });
 });

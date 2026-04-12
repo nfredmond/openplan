@@ -19,6 +19,7 @@ import {
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
+import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
@@ -381,6 +382,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       issuesResult,
       decisionsResult,
       meetingsResult,
+      fundingProfileResult,
+      fundingAwardsResult,
+      fundingOpportunitiesResult,
+      billingInvoicesResult,
     ] = await Promise.all([
       supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
       supabase
@@ -434,6 +439,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false })
         .limit(8),
+      supabase
+        .from("project_funding_profiles")
+        .select("id, funding_need_amount, local_match_need_amount, updated_at")
+        .eq("project_id", report.project_id)
+        .maybeSingle(),
+      supabase
+        .from("funding_awards")
+        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+        .eq("project_id", report.project_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("funding_opportunities")
+        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+        .eq("project_id", report.project_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("billing_invoice_records")
+        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+        .eq("project_id", report.project_id)
+        .order("created_at", { ascending: false }),
     ]);
 
     const loadErrors = [
@@ -447,6 +472,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       issuesResult.error,
       decisionsResult.error,
       meetingsResult.error,
+      fundingProfileResult.error,
+      fundingAwardsResult.error,
+      fundingOpportunitiesResult.error,
+      billingInvoicesResult.error,
     ].filter(Boolean);
 
     if (loadErrors.length > 0 || !projectResult.data) {
@@ -566,6 +595,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       decisions: decisionsResult.data ?? [],
       meetings: meetingsResult.data ?? [],
     });
+    const projectFundingSnapshot = buildProjectFundingSnapshot({
+      profile: fundingProfileResult.data,
+      awards: fundingAwardsResult.data ?? [],
+      opportunities: fundingOpportunitiesResult.data ?? [],
+      invoices: billingInvoicesResult.data ?? [],
+      capturedAt: new Date().toISOString(),
+      projectUpdatedAt: projectResult.data.updated_at,
+    });
     const stageGateSnapshot = buildProjectStageGateSnapshot(
       buildProjectStageGateSummary(
         (stageGateDecisionsResult.data ?? []) as Array<{
@@ -660,6 +697,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       })),
       engagement,
       scenarioSetLinks,
+      projectFundingSnapshot,
       projectRecordsSnapshot,
       stageGateSnapshot,
     });
@@ -687,6 +725,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         meetingCount: meetingsResult.data?.length ?? 0,
         stageGateSnapshot,
         projectRecordsSnapshot,
+        projectFundingSnapshot,
         evidenceChainSummary,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,

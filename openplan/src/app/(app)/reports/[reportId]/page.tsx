@@ -16,6 +16,7 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -24,6 +25,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import {
   describeComparisonSnapshotAggregate,
+  describeFundingSnapshot,
   getRtpPacketPresetAlignment,
   describeEvidenceChainSummary,
   formatDateTime,
@@ -31,6 +33,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   formatReportTypeLabel,
   parseStoredEvidenceChainSummary,
+  parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
   titleize,
@@ -336,6 +339,15 @@ function formatCompactDateTime(value: string | null | undefined): string {
   return value ? formatDateTime(value) : "Unavailable";
 }
 
+function formatCurrency(value: number | null | undefined): string {
+  const numeric = typeof value === "number" ? value : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number.isFinite(numeric) ? numeric : 0);
+}
+
 function asEngagementCampaignSnapshot(
   value: unknown
 ): EngagementCampaignSnapshot | null {
@@ -482,6 +494,37 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     ),
   ]);
 
+  const [fundingProfileResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] =
+    report.project_id
+      ? await Promise.all([
+          supabase
+            .from("project_funding_profiles")
+            .select("id, funding_need_amount, local_match_need_amount, notes, updated_at")
+            .eq("project_id", report.project_id)
+            .maybeSingle(),
+          supabase
+            .from("funding_awards")
+            .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .eq("project_id", report.project_id)
+            .order("updated_at", { ascending: false }),
+          supabase
+            .from("funding_opportunities")
+            .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .eq("project_id", report.project_id)
+            .order("updated_at", { ascending: false }),
+          supabase
+            .from("billing_invoice_records")
+            .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .eq("project_id", report.project_id)
+            .order("created_at", { ascending: false }),
+        ])
+      : [
+          { data: null, error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+        ];
+
   const runIds = (reportRunLinks ?? []).map((item) => item.run_id);
   const runsResult = runIds.length
     ? await supabase
@@ -520,6 +563,19 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const storedScenarioSpineSummary = parseStoredScenarioSpineSummary(
     latestArtifact?.metadata_json ?? null
   );
+  const storedFundingSnapshot = parseStoredFundingSnapshot(
+    latestArtifact?.metadata_json ?? null
+  );
+  const liveFundingSnapshot = project
+    ? buildProjectFundingSnapshot({
+        profile: fundingProfileResult.data,
+        awards: fundingAwardsResult.data ?? [],
+        opportunities: fundingOpportunitiesResult.data ?? [],
+        invoices: billingInvoicesResult.data ?? [],
+        capturedAt: latestArtifact?.generated_at ?? null,
+        projectUpdatedAt: project.updated_at,
+      })
+    : null;
   const engagementCampaign =
     (engagementCampaignResult.data as EngagementCampaignLinkRow | null) ?? null;
   const engagementPublicHref =
@@ -547,6 +603,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   );
   const stageGateSnapshot = asStageGateSnapshot(sourceContext?.stageGateSnapshot);
   const scenarioSetLinks = asScenarioSetLinks(sourceContext?.scenarioSetLinks);
+  const fundingSnapshot = storedFundingSnapshot ?? liveFundingSnapshot;
+  const fundingSummaryDigest = describeFundingSnapshot(fundingSnapshot);
   const projectRecordsSnapshotSource = asRecord(sourceContext?.projectRecordsSnapshot);
   const projectRecordsSnapshot = [
     {
@@ -1115,6 +1173,102 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
 
+  if (storedFundingSnapshot && liveFundingSnapshot) {
+    const fundingCountChanges: string[] = [];
+    const fundingValueChanges: string[] = [];
+    const fundingLabelChanges: string[] = [];
+
+    if (storedFundingSnapshot.awardCount !== liveFundingSnapshot.awardCount) {
+      fundingCountChanges.push(
+        `Awards: ${storedFundingSnapshot.awardCount} -> ${liveFundingSnapshot.awardCount}.`
+      );
+    }
+    if (
+      storedFundingSnapshot.pursuedOpportunityCount !==
+      liveFundingSnapshot.pursuedOpportunityCount
+    ) {
+      fundingCountChanges.push(
+        `Pursued opportunities: ${storedFundingSnapshot.pursuedOpportunityCount} -> ${liveFundingSnapshot.pursuedOpportunityCount}.`
+      );
+    }
+    if (
+      storedFundingSnapshot.reimbursementPacketCount !==
+      liveFundingSnapshot.reimbursementPacketCount
+    ) {
+      fundingCountChanges.push(
+        `Reimbursement packets: ${storedFundingSnapshot.reimbursementPacketCount} -> ${liveFundingSnapshot.reimbursementPacketCount}.`
+      );
+    }
+
+    if (
+      storedFundingSnapshot.committedFundingAmount !==
+      liveFundingSnapshot.committedFundingAmount
+    ) {
+      fundingValueChanges.push(
+        `Committed awards: ${formatCurrency(storedFundingSnapshot.committedFundingAmount)} -> ${formatCurrency(liveFundingSnapshot.committedFundingAmount)}.`
+      );
+    }
+    if (
+      storedFundingSnapshot.unfundedAfterLikelyAmount !==
+      liveFundingSnapshot.unfundedAfterLikelyAmount
+    ) {
+      fundingValueChanges.push(
+        `Uncovered after likely dollars: ${formatCurrency(storedFundingSnapshot.unfundedAfterLikelyAmount)} -> ${formatCurrency(liveFundingSnapshot.unfundedAfterLikelyAmount)}.`
+      );
+    }
+    if (
+      storedFundingSnapshot.uninvoicedAwardAmount !==
+      liveFundingSnapshot.uninvoicedAwardAmount
+    ) {
+      fundingValueChanges.push(
+        `Uninvoiced awards: ${formatCurrency(storedFundingSnapshot.uninvoicedAwardAmount)} -> ${formatCurrency(liveFundingSnapshot.uninvoicedAwardAmount)}.`
+      );
+    }
+
+    if (storedFundingSnapshot.label !== liveFundingSnapshot.label) {
+      fundingLabelChanges.push(
+        `Funding posture: ${storedFundingSnapshot.label} -> ${liveFundingSnapshot.label}.`
+      );
+    }
+    if (storedFundingSnapshot.pipelineLabel !== liveFundingSnapshot.pipelineLabel) {
+      fundingLabelChanges.push(
+        `Pipeline posture: ${storedFundingSnapshot.pipelineLabel} -> ${liveFundingSnapshot.pipelineLabel}.`
+      );
+    }
+    if (
+      storedFundingSnapshot.reimbursementLabel !==
+      liveFundingSnapshot.reimbursementLabel
+    ) {
+      fundingLabelChanges.push(
+        `Reimbursement posture: ${storedFundingSnapshot.reimbursementLabel} -> ${liveFundingSnapshot.reimbursementLabel}.`
+      );
+    }
+
+    const fundingTimingChanged =
+      storedFundingSnapshot.latestSourceUpdatedAt !== liveFundingSnapshot.latestSourceUpdatedAt;
+
+    driftItems.push({
+      key: "funding-posture",
+      label: "Funding posture",
+      status:
+        fundingCountChanges.length > 0
+          ? "count changed"
+          : fundingValueChanges.length > 0 || fundingLabelChanges.length > 0 || fundingTimingChanged
+            ? "updated"
+            : "unchanged",
+      detail:
+        [
+          ...fundingCountChanges,
+          ...fundingValueChanges,
+          ...fundingLabelChanges,
+          fundingTimingChanged
+            ? `Funding source timing: ${formatCompactDateTime(storedFundingSnapshot.latestSourceUpdatedAt)} -> ${formatCompactDateTime(liveFundingSnapshot.latestSourceUpdatedAt)}.`
+            : null,
+        ].filter((value): value is string => Boolean(value)).join(" ") ||
+        "Funding counts, posture labels, and reimbursement state still match the latest artifact snapshot.",
+    });
+  }
+
   if (stageGateSnapshot && currentStageGateSummary) {
     const snapshotBlockedGateId = stageGateSnapshot.blockedGate?.gateId ?? null;
     const currentBlockedGateId = currentStageGateSummary.blockedGate?.gateId ?? null;
@@ -1222,6 +1376,21 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   : "Not yet"}
               </p>
             </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Funding posture</p>
+              <p className="module-summary-value text-base">
+                {fundingSnapshot?.label ?? "Not captured"}
+              </p>
+              <p className="module-summary-detail">
+                {fundingSnapshot
+                  ? fundingSnapshot.unfundedAfterLikelyAmount > 0
+                    ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
+                    : fundingSnapshot.uninvoicedAwardAmount > 0
+                      ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
+                      : fundingSnapshot.reimbursementLabel
+                  : "Generate a packet to snapshot funding posture into report evidence."}
+              </p>
+            </div>
           </div>
 
           {/* Timestamps */}
@@ -1248,6 +1417,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               labels: driftedItems.map((item) => item.label),
             }}
             evidenceSummary={evidenceSummaryDigest}
+            fundingSummary={fundingSummaryDigest}
           />
         </div>
       </header>
@@ -1987,6 +2157,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   <Link href={`/projects/${project.id}`} className="inline-flex items-center gap-2 transition hover:text-primary">
                     <FileOutput className="h-4 w-4" />
                     Open project
+                  </Link>
+                </MetaItem>
+              ) : null}
+              {project ? (
+                <MetaItem>
+                  <Link href={`/grants?focusProjectId=${project.id}#grants-awards-reimbursement`} className="inline-flex items-center gap-2 transition hover:text-primary">
+                    <Link2 className="h-4 w-4" />
+                    Open grants lane for this project
                   </Link>
                 </MetaItem>
               ) : null}
