@@ -46,6 +46,7 @@ import {
 type GrantsPageSearchParams = Promise<{
   status?: string;
   decision?: string;
+  focusProjectId?: string;
   focusInvoiceId?: string;
   relinkedInvoiceId?: string;
 }>;
@@ -203,6 +204,10 @@ function normalizeDecisionFilter(value: string | undefined): DecisionFilter {
   return DECISION_FILTERS.includes(value as DecisionFilter) ? (value as DecisionFilter) : "all";
 }
 
+function normalizeFocusedProjectId(value: string | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 function normalizeFocusedInvoiceId(value: string | undefined): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
@@ -357,6 +362,15 @@ function resolveProjectExactBillingTriageTarget(invoices: BillingInvoiceRow[]) {
   return actionableInvoices[0] ?? null;
 }
 
+function buildFocusedGrantsReimbursementHref(projectId: string | null | undefined) {
+  if (!projectId) {
+    return "/grants#grants-awards-reimbursement";
+  }
+
+  const params = new URLSearchParams({ focusProjectId: projectId });
+  return `/grants?${params.toString()}#grants-reimbursement-composer`;
+}
+
 function resolveGrantsQueueHref(
   item: {
     key: string;
@@ -395,7 +409,7 @@ function resolveGrantsQueueHref(
   }
 
   if (item.key === "start-project-reimbursement-packets") {
-    return "/grants#grants-awards-reimbursement";
+    return buildFocusedGrantsReimbursementHref(item.targetProjectId);
   }
 
   if (item.key === "record-awarded-funding") {
@@ -413,6 +427,7 @@ export default async function GrantsPage({
   const filters = await searchParams;
   const selectedStatus = normalizeStatusFilter(filters.status);
   const selectedDecision = normalizeDecisionFilter(filters.decision);
+  const activeFocusedProjectId = normalizeFocusedProjectId(filters.focusProjectId);
   const activeFocusedInvoiceId = normalizeFocusedInvoiceId(filters.focusInvoiceId);
   const activeRelinkedInvoiceId = normalizeRelinkedInvoiceId(filters.relinkedInvoiceId);
   const supabase = await createClient();
@@ -612,6 +627,13 @@ export default async function GrantsPage({
   ).length;
   const leadReimbursementStack =
     fundingProjectStacks.find((item) => item.summary.reimbursementStatus === "not_started" && item.awards.length > 0) ?? null;
+  const focusedReimbursementStack =
+    (activeFocusedProjectId
+      ? fundingProjectStacks.find(
+          (item) => item.project.id === activeFocusedProjectId && item.summary.reimbursementStatus === "not_started" && item.awards.length > 0
+        )
+      : null) ?? null;
+  const reimbursementComposerStack = focusedReimbursementStack ?? leadReimbursementStack;
   const fundingAwardById = new Map(fundingAwards.map((award) => [award.id, award]));
   const fundingAwardOptions = fundingAwards.map((award) => ({
     id: award.id,
@@ -1134,23 +1156,36 @@ export default async function GrantsPage({
               </div>
             ) : (
               <>
-                {leadReimbursementStack ? (
-                  <div className="mt-5">
+                {reimbursementComposerStack ? (
+                  <div
+                    id="grants-reimbursement-composer"
+                    className={`mt-5 scroll-mt-24 rounded-3xl ${
+                      activeFocusedProjectId === reimbursementComposerStack.project.id
+                        ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
+                        : ""
+                    }`}
+                  >
+                    {activeFocusedProjectId === reimbursementComposerStack.project.id ? (
+                      <div className="mb-3 rounded-2xl border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
+                        <p className="font-semibold tracking-tight">Focused from workspace queue</p>
+                        <p className="mt-1">This reimbursement composer is pre-targeted to {reimbursementComposerStack.project.name} so the grants command board can start the exact packet it flagged next.</p>
+                      </div>
+                    ) : null}
                     <InvoiceRecordComposer
                       workspaceId={membership.workspace_id}
-                      projects={[leadReimbursementStack.project]}
-                      fundingAwards={leadReimbursementStack.awards.map((award) => ({
+                      projects={[reimbursementComposerStack.project]}
+                      fundingAwards={reimbursementComposerStack.awards.map((award) => ({
                         id: award.id,
                         title: award.title,
-                        projectId: leadReimbursementStack.project.id,
+                        projectId: reimbursementComposerStack.project.id,
                       }))}
                       canWrite={canWriteInvoices}
-                      defaultProjectId={leadReimbursementStack.project.id}
-                      defaultFundingAwardId={leadReimbursementStack.nextObligationAward?.id ?? leadReimbursementStack.awards[0]?.id ?? null}
-                      defaultInvoiceNumber={`${leadReimbursementStack.project.name.replace(/\s+/g, " ").trim().slice(0, 32)} reimbursement`}
+                      defaultProjectId={reimbursementComposerStack.project.id}
+                      defaultFundingAwardId={reimbursementComposerStack.nextObligationAward?.id ?? reimbursementComposerStack.awards[0]?.id ?? null}
+                      defaultInvoiceNumber={`${reimbursementComposerStack.project.name.replace(/\s+/g, " ").trim().slice(0, 32)} reimbursement`}
                       defaultAmount={
-                        leadReimbursementStack.summary.uninvoicedAwardAmount > 0
-                          ? String(leadReimbursementStack.summary.uninvoicedAwardAmount)
+                        reimbursementComposerStack.summary.uninvoicedAwardAmount > 0
+                          ? String(reimbursementComposerStack.summary.uninvoicedAwardAmount)
                           : undefined
                       }
                       titleLabel="Start the lead reimbursement record now"
@@ -1173,12 +1208,21 @@ export default async function GrantsPage({
                     : null;
 
                   return (
-                  <div key={`award-stack-${item.project.id}`} className="module-record-row">
+                  <div
+                    key={`award-stack-${item.project.id}`}
+                    id={`award-stack-${item.project.id}`}
+                    className={`module-record-row scroll-mt-24 ${
+                      activeFocusedProjectId === item.project.id
+                        ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
+                        : ""
+                    }`}
+                  >
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={projectFundingReimbursementTone(item.summary.reimbursementStatus)}>
                           {item.summary.reimbursementLabel}
                         </StatusBadge>
+                        {activeFocusedProjectId === item.project.id ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                         <StatusBadge tone="info">{item.awards.length} award{item.awards.length === 1 ? "" : "s"}</StatusBadge>
                         {item.summary.awardRiskCount > 0 ? (
                           <StatusBadge tone="warning">{item.summary.awardRiskCount} at risk</StatusBadge>

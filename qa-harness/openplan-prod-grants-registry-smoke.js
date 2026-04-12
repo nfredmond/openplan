@@ -283,7 +283,18 @@ async function main() {
     await screenshot('prod-grants-registry-01-registry');
     await screenshot('prod-grants-registry-02-award-conversion');
 
-    const reimbursementComposer = page.locator('article').filter({ has: page.getByRole('heading', { name: /Start the lead reimbursement record now/i }) }).first();
+    const grantsCommandQueueSectionBeforeStart = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const startReimbursementLink = grantsCommandQueueSectionBeforeStart.locator(`a[href*="focusProjectId=${ids.projectId}"]`).first();
+    await startReimbursementLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusProjectId=${ids.projectId}`, 'i'), { timeout: 30000 }),
+      startReimbursementLink.click(),
+    ]);
+    const focusedComposerNotice = page.getByText(/Focused from workspace queue/i).first();
+    await focusedComposerNotice.waitFor({ timeout: 30000 });
+    notes.push('The grants workspace command queue now retargets the inline reimbursement composer to the exact project it flagged for packet start.');
+
+    const reimbursementComposer = page.locator('#grants-reimbursement-composer').first();
     await reimbursementComposer.waitFor({ timeout: 30000 });
     await reimbursementComposer.getByRole('button', { name: /save invoice record/i }).click();
     await reimbursementComposer.getByText(/Invoice record saved\./i).waitFor({ timeout: 30000 });
