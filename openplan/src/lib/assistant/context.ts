@@ -102,6 +102,10 @@ export type ProjectAssistantContext = {
     uninvoicedAwardAmount: number | null;
     reimbursementStatus: string | null;
     reimbursementPacketCount: number;
+    exactInvoiceAwardRelink: {
+      invoiceId: string;
+      fundingAwardId: string;
+    } | null;
     leadOpportunity: {
       id: string;
       title: string;
@@ -289,6 +293,10 @@ export type ProgramAssistantContext = {
     uninvoicedAwardAmount: number | null;
     reimbursementStatus: string | null;
     reimbursementPacketCount: number;
+    exactInvoiceAwardRelink: {
+      invoiceId: string;
+      fundingAwardId: string;
+    } | null;
     leadOpportunity: {
       id: string;
       title: string;
@@ -491,6 +499,24 @@ function daysUntil(value: string | null | undefined, now = new Date()): number |
   const parsed = new Date(value).getTime();
   if (!Number.isFinite(parsed)) return null;
   return Math.round((parsed - now.getTime()) / 86400000);
+}
+
+function resolveExactInvoiceAwardRelink(
+  fundingAwards: Array<{ id: string }>,
+  fundingInvoices: Array<{ id: string; funding_award_id: string | null; status: string | null }>
+): { invoiceId: string; fundingAwardId: string } | null {
+  const unlinkedInvoices = fundingInvoices.filter(
+    (invoice) => !invoice.funding_award_id && !["paid", "rejected"].includes(invoice.status ?? "draft")
+  );
+
+  if (fundingAwards.length !== 1 || unlinkedInvoices.length !== 1) {
+    return null;
+  }
+
+  return {
+    invoiceId: unlinkedInvoices[0].id,
+    fundingAwardId: fundingAwards[0].id,
+  };
 }
 
 type WorkspaceEnvelope = {
@@ -784,7 +810,7 @@ async function loadProjectContext(
       .eq("project_id", project.id),
     supabase
       .from("billing_invoice_records")
-      .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
       .eq("project_id", project.id),
     supabase.from("project_submittals").select("id").eq("project_id", project.id).eq("submittal_type", "reimbursement"),
   ]);
@@ -827,6 +853,7 @@ async function loadProjectContext(
   const fundingInvoices = looksLikePendingSchema(fundingInvoicesResult.error?.message)
     ? []
     : ((fundingInvoicesResult.data ?? []) as Array<{
+        id: string;
         funding_award_id: string | null;
         status: string | null;
         amount: number | null;
@@ -834,6 +861,7 @@ async function loadProjectContext(
         retention_amount: number | null;
         due_date: string | null;
       }>);
+  const exactInvoiceAwardRelink = resolveExactInvoiceAwardRelink(fundingAwards, fundingInvoices);
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
@@ -960,6 +988,7 @@ async function loadProjectContext(
       uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
       reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
       reimbursementPacketCount: reimbursementSubmittalsResult.data?.length ?? 0,
+      exactInvoiceAwardRelink,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,
@@ -1385,7 +1414,7 @@ async function loadProgramContext(
     program.project_id
       ? supabase
           .from("billing_invoice_records")
-          .select("funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+          .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
           .eq("project_id", program.project_id)
       : Promise.resolve({ data: [], error: null }),
     program.project_id
@@ -1435,13 +1464,15 @@ async function loadProgramContext(
     obligation_due_at: string | null;
   }>;
   const fundingInvoices = ((fundingInvoicesResult.data ?? []) as Array<{
+    id: string;
     funding_award_id: string | null;
     status: string | null;
     amount: number | null;
     retention_percent: number | null;
     retention_amount: number | null;
     due_date: string | null;
-  }>).filter((invoice) => fundingAwards.some((award) => award.id === invoice.funding_award_id));
+  }>);
+  const exactInvoiceAwardRelink = resolveExactInvoiceAwardRelink(fundingAwards, fundingInvoices);
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
@@ -1593,6 +1624,7 @@ async function loadProgramContext(
       uninvoicedAwardAmount: fundingAwards.length > 0 ? fundingStackSummary.uninvoicedAwardAmount : null,
       reimbursementStatus: fundingAwards.length > 0 ? fundingStackSummary.reimbursementStatus : null,
       reimbursementPacketCount: reimbursementSubmittalsResult.data?.length ?? 0,
+      exactInvoiceAwardRelink,
       leadOpportunity: leadFundingOpportunity
         ? {
             id: leadFundingOpportunity.id,

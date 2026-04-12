@@ -43,6 +43,7 @@ function buildProjectContext(): ProjectAssistantContext {
       uninvoicedAwardAmount: null,
       reimbursementStatus: null,
       reimbursementPacketCount: 0,
+      exactInvoiceAwardRelink: null,
       leadOpportunity: {
         id: "opp-1",
         title: "ATP Cycle 8",
@@ -115,6 +116,7 @@ function buildProgramContext(): ProgramAssistantContext {
       uninvoicedAwardAmount: null,
       reimbursementStatus: null,
       reimbursementPacketCount: 0,
+      exactInvoiceAwardRelink: null,
       leadOpportunity: {
         id: "opp-2",
         title: "RAISE 2026",
@@ -299,6 +301,54 @@ describe("project and program funding operations", () => {
       expect(action.executeAction.projectId).toBe("project-1");
       expect(action.executeAction.recordType).toBe("submittal");
       expect(action.executeAction.submittalType).toBe("reimbursement");
+    }
+  });
+
+  it("adds a project exact invoice-award relink action when the match is unambiguous", () => {
+    const context = buildProjectContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 180000;
+    context.fundingSummary.exactInvoiceAwardRelink = {
+      invoiceId: "invoice-1",
+      fundingAwardId: "award-1",
+    };
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "project-link-invoice-award");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Link exact invoice to award");
+    expect(action?.executeAction?.kind).toBe("link_billing_invoice_funding_award");
+    expect(links.find((link) => link.id === "project-create-reimbursement-record")).toBeUndefined();
+    if (action?.executeAction?.kind === "link_billing_invoice_funding_award") {
+      expect(action.executeAction.workspaceId).toBe("workspace-1");
+      expect(action.executeAction.invoiceId).toBe("invoice-1");
+      expect(action.executeAction.fundingAwardId).toBe("award-1");
+    }
+  });
+
+  it("adds a program exact invoice-award relink action when the linked-project match is unambiguous", () => {
+    const context = buildProgramContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.awardCount = 1;
+    context.fundingSummary.uninvoicedAwardAmount = 225000;
+    context.fundingSummary.exactInvoiceAwardRelink = {
+      invoiceId: "invoice-2",
+      fundingAwardId: "award-2",
+    };
+
+    const links = buildAssistantOperations(context);
+    const action = links.find((link) => link.id === "program-link-invoice-award");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Link exact invoice to award");
+    expect(action?.executeAction?.kind).toBe("link_billing_invoice_funding_award");
+    expect(links.find((link) => link.id === "program-create-reimbursement-record")).toBeUndefined();
+    if (action?.executeAction?.kind === "link_billing_invoice_funding_award") {
+      expect(action.executeAction.workspaceId).toBe("workspace-1");
+      expect(action.executeAction.invoiceId).toBe("invoice-2");
+      expect(action.executeAction.fundingAwardId).toBe("award-2");
     }
   });
 });

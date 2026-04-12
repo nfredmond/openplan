@@ -455,6 +455,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+  const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -536,7 +537,29 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           auditNote: "Use the project funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
-    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0
+    awardRecordCount === 0 && awardCount > 0 && exactInvoiceAwardRelink
+      ? quickLink("project-link-invoice-award", "Link exact invoice to award", `/projects/${context.project.id}#project-invoices`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Execute action",
+          reason: "This project has one exact unlinked invoice and one exact funding-award record, so Planner Agent can repair that reimbursement linkage without guessing any billing values.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.link_invoice_award",
+          auditNote: "Updates one existing invoice record to reference one exact funding-award record through the audited billing patch route.",
+          executeAction: {
+            kind: "link_billing_invoice_funding_award",
+            workspaceId: context.workspace.id,
+            invoiceId: exactInvoiceAwardRelink.invoiceId,
+            fundingAwardId: exactInvoiceAwardRelink.fundingAwardId,
+            postActionWorkflowId: "project-funding",
+            postActionPrompt: "An exact project invoice-to-award relink was completed. What reimbursement or funding step should move next on this project?",
+            postActionPromptLabel: "Review project reimbursement posture",
+          },
+        })
+      : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0 && !exactInvoiceAwardRelink
       ? quickLink("project-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
           targetKind: "project",
           actionClass: "review_controls",
@@ -583,6 +606,8 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             ? "Check funding deadline posture in panel"
             : awardRecordCount > 0
               ? "Check awarded funding record posture in panel"
+              : exactInvoiceAwardRelink
+                ? "Check invoice award relink in panel"
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                 ? "Check reimbursement posture in panel"
                 : "Check funding posture in panel",
@@ -594,6 +619,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           priority:
             context.fundingSummary.closingSoonCount > 0 ||
             awardRecordCount > 0 ||
+            Boolean(exactInvoiceAwardRelink) ||
             (uninvoicedAwardAmount ?? 0) > 0 ||
             (projectGapAmount ?? 0) > 0
               ? "primary"
@@ -603,6 +629,8 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
               ? `${context.fundingSummary.closingSoonCount} closing soon`
               : awardRecordCount > 0
                 ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
+                : exactInvoiceAwardRelink
+                  ? "1 exact relink"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
                   : (projectGapAmount ?? 0) > 0
@@ -613,6 +641,8 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
               ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
               : awardRecordCount > 0
                 ? "This project already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden."
+                : exactInvoiceAwardRelink
+                  ? "This project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through."
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? "Committed awards are recorded, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
                   : (projectGapAmount ?? 0) > 0
@@ -628,6 +658,8 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
               ? "Check funding deadline posture in panel"
               : awardRecordCount > 0
                 ? "Check awarded funding record posture in panel"
+                : exactInvoiceAwardRelink
+                  ? "Check invoice award relink in panel"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? "Check reimbursement posture in panel"
                   : "Check funding posture in panel",
@@ -982,6 +1014,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+  const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -1065,7 +1098,29 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           auditNote: "Use the package funding section to convert awarded opportunities into committed award records before leaning on the remaining gap math.",
         })
       : null,
-    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0 && context.project
+    awardRecordCount === 0 && awardCount > 0 && exactInvoiceAwardRelink && context.project
+      ? quickLink("program-link-invoice-award", "Link exact invoice to award", `/projects/${context.project.id}#project-invoices`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Execute action",
+          reason: "This package's linked project has one exact unlinked invoice and one exact funding-award record, so Planner Agent can repair that reimbursement linkage without guessing any billing values.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.program.link_invoice_award",
+          auditNote: "Updates one existing invoice record on the linked project to reference one exact funding-award record through the audited billing patch route.",
+          executeAction: {
+            kind: "link_billing_invoice_funding_award",
+            workspaceId: context.workspace.id,
+            invoiceId: exactInvoiceAwardRelink.invoiceId,
+            fundingAwardId: exactInvoiceAwardRelink.fundingAwardId,
+            postActionWorkflowId: "program-funding",
+            postActionPrompt: "An exact package invoice-to-award relink was completed on the linked project. What reimbursement or funding step should move next?",
+            postActionPromptLabel: "Review package reimbursement posture",
+          },
+        })
+      : null,
+    awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && reimbursementPacketCount === 0 && context.project && !exactInvoiceAwardRelink
       ? quickLink("program-create-reimbursement-record", "Create reimbursement record", `/projects/${context.project.id}#project-submittals`, {
           targetKind: "project",
           actionClass: "review_controls",
@@ -1107,11 +1162,13 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
       : null,
     context.fundingSummary.opportunityCount > 0
       ? quickLink(
-          "program-funding-agent",
+        "program-funding-agent",
           context.fundingSummary.closingSoonCount > 0
             ? "Check funding deadline posture in panel"
             : awardRecordCount > 0
               ? "Check awarded funding record posture in panel"
+              : exactInvoiceAwardRelink
+                ? "Check invoice award relink in panel"
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                 ? "Check reimbursement posture in panel"
                 : "Check funding posture in panel",
@@ -1123,6 +1180,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           priority:
             context.fundingSummary.closingSoonCount > 0 ||
             awardRecordCount > 0 ||
+            Boolean(exactInvoiceAwardRelink) ||
             (uninvoicedAwardAmount ?? 0) > 0 ||
             (programGapAmount ?? 0) > 0
               ? "primary"
@@ -1132,6 +1190,8 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
               ? `${context.fundingSummary.closingSoonCount} closing soon`
               : awardRecordCount > 0
                 ? `${awardRecordCount} award record${awardRecordCount === 1 ? "" : "s"}`
+                : exactInvoiceAwardRelink
+                  ? "1 exact relink"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`
                   : (programGapAmount ?? 0) > 0
@@ -1142,6 +1202,8 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
               ? "This package has near-term funding windows, so grant timing and pursue decisions should be checked before less urgent package cleanup."
               : awardRecordCount > 0
                 ? "This package already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden."
+                : exactInvoiceAwardRelink
+                  ? "This package's linked project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through."
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? "Committed awards are recorded for this package's linked project, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
                   : (programGapAmount ?? 0) > 0
@@ -1157,6 +1219,8 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
               ? "Check funding deadline posture in panel"
               : awardRecordCount > 0
                 ? "Check awarded funding record posture in panel"
+                : exactInvoiceAwardRelink
+                  ? "Check invoice award relink in panel"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? "Check reimbursement posture in panel"
                   : "Check funding posture in panel",

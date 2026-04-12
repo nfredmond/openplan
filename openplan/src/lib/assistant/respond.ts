@@ -140,6 +140,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+  const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
 
   return {
     kind: context.kind,
@@ -163,6 +164,9 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
         : null,
       awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
         ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+        : null,
+      exactInvoiceAwardRelink
+        ? "One exact invoice-to-award relink is ready on this project, so reimbursement bookkeeping can be repaired without guessing any billing values."
         : null,
       awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
         ? `${awardCount} committed award${awardCount === 1 ? " is" : "s are"} logged, with ${formatCurrency(uninvoicedAwardAmount ?? 0)} not yet invoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already started.` : ""}`
@@ -188,6 +192,12 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
               detail: "An opportunity is already marked awarded, but the committed funding record has not been logged yet.",
             }
+          : exactInvoiceAwardRelink
+            ? {
+                label: "Current runtime cue",
+                title: "Link exact invoice to award",
+                detail: "One unlinked invoice and one funding-award record are an exact match on this project, so reimbursement linkage can be repaired directly.",
+              }
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? {
                 label: "Current runtime cue",
@@ -377,6 +387,7 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+  const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
 
   return {
     kind: context.kind,
@@ -401,6 +412,9 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
         : null,
       awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
         ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+        : null,
+      exactInvoiceAwardRelink
+        ? "One exact invoice-to-award relink is ready on the linked project, so reimbursement bookkeeping can be repaired without guessing any billing values."
         : null,
       awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
         ? `${awardCount} committed award${awardCount === 1 ? " is" : "s are"} logged against the linked project, with ${formatCurrency(uninvoicedAwardAmount ?? 0)} not yet invoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already started.` : ""}`
@@ -427,6 +441,12 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
               detail: "An opportunity is already marked awarded on this package, but the committed funding record has not been logged yet.",
             }
+          : exactInvoiceAwardRelink
+            ? {
+                label: "Current runtime cue",
+                title: "Link exact invoice to award",
+                detail: "The linked project has one unlinked invoice and one funding-award record as an exact match, so reimbursement linkage can be repaired directly.",
+              }
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? {
                 label: "Current runtime cue",
@@ -841,13 +861,14 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     const awardCount = context.fundingSummary.awardCount;
     const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
     const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+    const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
     return {
       workflowId,
       label,
       title: `Funding posture for ${context.project.name}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.project.name} already has a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no linked funding opportunities yet. The next honest move is sourcing candidate programs, not pretending the gap has already been worked.`
             : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
@@ -863,6 +884,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
           ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
           : "No awarded opportunity is currently waiting on a project award record.",
+        exactInvoiceAwardRelink
+          ? "One exact invoice-to-award relink is ready on this project."
+          : "No exact invoice-to-award relink is currently safe enough to auto-execute from this project surface.",
         awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
           ? `Committed award dollars are logged, but ${formatCurrency(uninvoicedAwardAmount ?? 0)} is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already on the project.` : ""}`
           : "No committed award reimbursement gap is visible from the linked invoice records.",
@@ -879,6 +903,8 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       nextSteps: [
         awardRecordCount > 0
           ? `Open /projects/${context.project.id}#project-funding-opportunities to convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          : exactInvoiceAwardRelink
+            ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? reimbursementPacketCount > 0
               ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before closeout posture drifts.`
@@ -890,6 +916,8 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
                 : `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record for this project.`,
         awardRecordCount > 0
           ? "Record the committed award first so the remaining uncovered gap reflects real booked dollars instead of only likely dollars."
+          : exactInvoiceAwardRelink
+            ? "Repair the exact invoice-to-award linkage first so reimbursement bookkeeping becomes trustworthy before generic follow-through work."
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? reimbursementPacketCount > 0
               ? "Advance the existing reimbursement packet through the invoice lane so reimbursement posture catches up to the committed award stack before routine cleanup."
@@ -907,6 +935,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
         `Award records needed: ${awardRecordCount}`,
+        `Exact invoice relink ready: ${exactInvoiceAwardRelink ? "Yes" : "No"}`,
         `Reimbursement packets: ${reimbursementPacketCount}`,
         `Uninvoiced awards: ${awardCount > 0 ? formatCurrency(uninvoicedAwardAmount ?? 0) : "None"}`,
         `Gap after likely dollars: ${gapAmount !== null ? formatCurrency(gapAmount) : "Unknown"}`,
@@ -1386,13 +1415,14 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
 
   if (workflowId === "program-funding") {
+    const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
     return {
       workflowId,
       label,
       title: `Funding posture: ${context.program.title}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open on the linked project.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready on the linked project now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open on the linked project.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.program.title} already sits on a linked project funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no funding opportunities are linked yet. The next honest move is sourcing candidate programs before talking about gap closure.`
             : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
@@ -1408,6 +1438,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
           ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
           : "No awarded opportunity is currently waiting on a package award record.",
+        exactInvoiceAwardRelink
+          ? "One exact invoice-to-award relink is ready on the linked project."
+          : "No exact invoice-to-award relink is currently safe enough to auto-execute from this package surface.",
         awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
           ? `Committed award dollars are logged for the linked project, but ${formatCurrency(uninvoicedAwardAmount ?? 0)} is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open there.` : ""}`
           : "No committed award reimbursement gap is visible from the linked invoice records.",
@@ -1424,6 +1457,8 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       nextSteps: [
         awardRecordCount > 0
           ? `Open /programs/${context.program.id}#program-funding-opportunities and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          : exactInvoiceAwardRelink && context.project
+            ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
             ? reimbursementPacketCount > 0
               ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before closeout posture drifts.`
@@ -1435,6 +1470,8 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
               : `Open /programs/${context.program.id}#program-funding-opportunities and log the first funding opportunity tied to this package.`,
         awardRecordCount > 0 && context.project
           ? `Keep ${context.project.name} aligned with this package while you reconcile the awarded dollars into a committed funding record.`
+          : exactInvoiceAwardRelink && context.project
+            ? `Keep ${context.project.name} aligned with this package while you repair the exact invoice-to-award linkage already visible on the linked project.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
             ? reimbursementPacketCount > 0
               ? `Keep ${context.project.name} aligned with this package while you move the existing reimbursement packet through the invoice lane against the committed award stack.`
@@ -1452,6 +1489,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
         `Award records needed: ${awardRecordCount}`,
+        `Exact invoice relink ready: ${exactInvoiceAwardRelink ? "Yes" : "No"}`,
         `Reimbursement packets: ${reimbursementPacketCount}`,
         `Uninvoiced awards: ${awardCount > 0 ? formatCurrency(uninvoicedAwardAmount ?? 0) : "None"}`,
         `Gap after likely dollars: ${gapAmount !== null ? formatCurrency(gapAmount) : "Unknown"}`,
