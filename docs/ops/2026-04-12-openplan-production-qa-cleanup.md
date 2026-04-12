@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-12
 
-- Started: 2026-04-12T09:11:10.447Z
+- Started: 2026-04-12T09:18:51.133Z
 - Mode: apply
 - Env path: /home/narford/.openclaw/workspace/openplan/openplan/.env.local
 - Created-after filter: 2026-04-12
@@ -8,34 +8,32 @@
 
 ## Scope
 - Targeted QA/debug/proof/trace/canary production records created on or after 2026-04-12.
-- Targeted workspaces: 4
+- Targeted workspaces: 2
 - Targeted county runs: 0
-- Targeted auth users: 2
+- Targeted auth users: 1
 
 ## Stripe checkout sessions
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete plan
-- programs: planned=2
-- billing_events: planned=4
-- projects: planned=2
-- workspace_members: planned=4
-- workspaces: planned=4
+- programs: planned=1
+- billing_events: planned=2
+- projects: planned=1
+- workspace_members: planned=2
+- workspaces: planned=2
 
 ## Auth plan
-- openplan-prod-grants-smoke-2026-04-12t09-10-22-358z@natfordplanning.com
-- openplan-prod-grants-smoke-2026-04-12t09-09-01-007z@natfordplanning.com
+- openplan-prod-grants-smoke-2026-04-12t09-17-54-608z@natfordplanning.com
 
 ## Delete results
-- programs: status=200 ok=true planned=2 deleted=2
-- billing_events: status=200 ok=true planned=4 deleted=0
-- projects: status=200 ok=true planned=2 deleted=2
-- workspace_members: status=200 ok=true planned=4 deleted=4
-- workspaces: status=200 ok=true planned=4 deleted=4
+- programs: status=200 ok=true planned=1 deleted=1
+- billing_events: status=200 ok=true planned=2 deleted=0
+- projects: status=200 ok=true planned=1 deleted=1
+- workspace_members: status=200 ok=true planned=2 deleted=2
+- workspaces: status=200 ok=true planned=2 deleted=2
 
 ## Auth deletes
-- openplan-prod-grants-smoke-2026-04-12t09-10-22-358z@natfordplanning.com: status=200 ok=true
-- openplan-prod-grants-smoke-2026-04-12t09-09-01-007z@natfordplanning.com: status=200 ok=true
+- openplan-prod-grants-smoke-2026-04-12t09-17-54-608z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0
