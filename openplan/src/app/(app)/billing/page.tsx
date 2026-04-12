@@ -13,6 +13,8 @@ import {
   buildBillingInvoicePriorityQueue,
   filterBillingInvoiceRecordsByLinkage,
   filterBillingInvoiceRecordsByOverdueStatus,
+  invoiceNeedsAwardRelink,
+  resolveExactBillingInvoiceAwardMatch,
   type BillingInvoiceOverdueFilter,
   type BillingInvoiceLinkageFilter,
   summarizeBillingInvoiceLinkage,
@@ -86,33 +88,6 @@ function isInvoiceOverdue(status: string, dueDate: string | null | undefined): b
   return parsed.getTime() < Date.now();
 }
 
-function invoiceNeedsRelink(status: string, fundingAwardId: string | null | undefined): boolean {
-  return !fundingAwardId && status !== "paid" && status !== "rejected";
-}
-
-function resolveExactInvoiceAwardMatch(
-  invoice: InvoiceRegisterRow,
-  invoices: InvoiceRegisterRow[],
-  fundingAwards: FundingAwardListRow[]
-): FundingAwardListRow | null {
-  if (!invoice.project_id || !invoiceNeedsRelink(invoice.status, invoice.funding_award_id)) {
-    return null;
-  }
-
-  const projectUnlinkedInvoices = invoices.filter(
-    (candidate) =>
-      candidate.project_id === invoice.project_id &&
-      invoiceNeedsRelink(candidate.status, candidate.funding_award_id)
-  );
-  const projectFundingAwards = fundingAwards.filter((award) => award.project_id === invoice.project_id);
-
-  if (projectUnlinkedInvoices.length !== 1 || projectFundingAwards.length !== 1) {
-    return null;
-  }
-
-  return projectFundingAwards[0] ?? null;
-}
-
 function billingRowRiskState(invoice: InvoiceRegisterRow): {
   tone: "warning" | "danger" | "info" | null;
   title: string | null;
@@ -120,7 +95,7 @@ function billingRowRiskState(invoice: InvoiceRegisterRow): {
   rowClassName: string;
 } {
   const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
-  const needsRelink = invoiceNeedsRelink(invoice.status, invoice.funding_award_id);
+  const needsRelink = invoiceNeedsAwardRelink(invoice.status, invoice.funding_award_id);
 
   if (needsRelink && overdue) {
     return {
@@ -485,7 +460,7 @@ export default async function BillingPage({
   const invoicePriorityQueue = buildBillingInvoicePriorityQueue(registerScopedInvoiceRecords, {
     limit: 3,
     classifyRecord: (record, records) => {
-      const exactMatchFundingAward = resolveExactInvoiceAwardMatch(record, records, workspaceFundingAwards);
+      const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(record, records, workspaceFundingAwards);
       if (!exactMatchFundingAward) {
         return null;
       }
@@ -506,7 +481,7 @@ export default async function BillingPage({
     },
   });
   const exactRelinkCandidateCount = registerScopedInvoiceRecords.filter((invoice) =>
-    Boolean(resolveExactInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards))
+    Boolean(resolveExactBillingInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards))
   ).length;
   const activeFocusedInvoiceId =
     requestedFocusedInvoiceId && registerScopedInvoiceRecords.some((invoice) => invoice.id === requestedFocusedInvoiceId)
@@ -523,7 +498,7 @@ export default async function BillingPage({
     ? registerScopedInvoiceRecords.find((invoice) => invoice.id === activeFocusedInvoiceId) ?? null
     : null;
   const focusedInvoiceExactMatchFundingAward = focusedInvoiceRecord
-    ? resolveExactInvoiceAwardMatch(focusedInvoiceRecord, registerScopedInvoiceRecords, workspaceFundingAwards)
+    ? resolveExactBillingInvoiceAwardMatch(focusedInvoiceRecord, registerScopedInvoiceRecords, workspaceFundingAwards)
     : null;
   const focusedInvoiceRelinkSaved = Boolean(
     activeRelinkedInvoiceId &&
@@ -1081,7 +1056,7 @@ export default async function BillingPage({
                 const riskState = billingRowRiskState(invoice);
                 const isFocusedRow = activeFocusedInvoiceId === invoice.id;
                 const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
-                const exactMatchFundingAward = resolveExactInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards);
+                const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards);
                 const rowTriageHref = riskState.title
                   ? buildBillingInvoiceTriageHref({
                       workspaceId,
@@ -1108,7 +1083,7 @@ export default async function BillingPage({
                       {isFocusedRow ? <StatusBadge tone="info">Focused from triage</StatusBadge> : null}
                       {isJustRelinkedRow ? <StatusBadge tone="success">Relink just saved</StatusBadge> : null}
                       {exactMatchFundingAward ? <StatusBadge tone="success">Exact match ready</StatusBadge> : null}
-                      {!invoice.fundingAward && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
+                      {!invoice.fundingAward && invoiceNeedsAwardRelink(invoice.status, invoice.funding_award_id) ? (
                         <StatusBadge tone={riskState.tone === "danger" ? "danger" : "warning"}>Needs relink</StatusBadge>
                       ) : null}
                       {riskState.title ? <StatusBadge tone={riskState.tone ?? "neutral"}>{riskState.title}</StatusBadge> : null}

@@ -24,7 +24,12 @@ import {
   type FundingOpportunityDecision,
   type FundingOpportunityStatus,
 } from "@/lib/programs/catalog";
-import { buildBillingInvoicePriorityQueue, summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import {
+  buildBillingInvoicePriorityQueue,
+  invoiceNeedsAwardRelink,
+  resolveExactBillingInvoiceAwardMatch,
+  summarizeBillingInvoiceRecords,
+} from "@/lib/billing/invoice-records";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -248,32 +253,6 @@ function isInvoiceOverdue(status: string, dueDate: string | null | undefined): b
   }
 
   return parsed.getTime() < Date.now();
-}
-
-function invoiceNeedsRelink(status: string, fundingAwardId: string | null | undefined) {
-  return !fundingAwardId && status !== "paid" && status !== "rejected";
-}
-
-function resolveExactInvoiceAwardMatch(
-  invoice: BillingInvoiceRow,
-  invoices: BillingInvoiceRow[],
-  fundingAwards: Array<{ id: string; project_id: string | null; title: string }>
-) {
-  if (!invoice.project_id || !invoiceNeedsRelink(invoice.status, invoice.funding_award_id)) {
-    return null;
-  }
-
-  const projectUnlinkedInvoices = invoices.filter(
-    (candidate) =>
-      candidate.project_id === invoice.project_id && invoiceNeedsRelink(candidate.status, candidate.funding_award_id)
-  );
-  const projectFundingAwards = fundingAwards.filter((award) => award.project_id === invoice.project_id);
-
-  if (projectUnlinkedInvoices.length !== 1 || projectFundingAwards.length !== 1) {
-    return null;
-  }
-
-  return projectFundingAwards[0] ?? null;
 }
 
 function formatInvoiceQueueReason(reason: string) {
@@ -563,7 +542,7 @@ export default async function GrantsPage({
   const reimbursementPriorityQueue = buildBillingInvoicePriorityQueue(fundingInvoices, {
     limit: 5,
     classifyRecord: (record, records) => {
-      const exactMatchFundingAward = resolveExactInvoiceAwardMatch(record, records, fundingAwardProjectRows);
+      const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(record, records, fundingAwardProjectRows);
       if (!exactMatchFundingAward) {
         return null;
       }
@@ -583,7 +562,7 @@ export default async function GrantsPage({
     },
   }).filter((entry) => entry.record.status !== "paid" && entry.record.status !== "rejected");
   const exactRelinkReadyCount = fundingInvoices.filter((invoice) =>
-    Boolean(resolveExactInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows))
+    Boolean(resolveExactBillingInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows))
   ).length;
   const overdueLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => isInvoiceOverdue(invoice.status, invoice.due_date)).length;
   const draftLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => invoice.status === "draft").length;
@@ -776,7 +755,7 @@ export default async function GrantsPage({
                   const award = invoice.funding_award_id ? fundingAwardById.get(invoice.funding_award_id) ?? null : null;
                   const projectName = invoice.project_id ? projectNameById.get(invoice.project_id) ?? null : null;
                   const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
-                  const exactMatchFundingAward = resolveExactInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
+                  const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
 
                   return (
                     <div key={`reimbursement-queue-${invoice.id}`} className="module-record-row">
@@ -804,7 +783,7 @@ export default async function GrantsPage({
                         </div>
 
                         <div className="mt-4 flex flex-wrap items-start gap-3 text-sm font-semibold">
-                          {invoice.project_id && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
+                          {invoice.project_id && invoiceNeedsAwardRelink(invoice.status, invoice.funding_award_id) ? (
                             <div className="min-w-[280px] flex-1">
                               <InvoiceFundingAwardLinker
                                 invoiceId={invoice.id}

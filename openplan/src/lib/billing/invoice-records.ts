@@ -111,6 +111,32 @@ function isOutstandingStatus(status: string): boolean {
   return ["internal_review", "submitted", "approved_for_payment"].includes(status);
 }
 
+export function invoiceNeedsAwardRelink(status: string, fundingAwardId: string | null | undefined) {
+  return !fundingAwardId && status !== "paid" && status !== "rejected";
+}
+
+export function resolveExactBillingInvoiceAwardMatch<
+  TInvoice extends BillingInvoiceLinkageRecordLike & { project_id?: string | null },
+  TAward extends { id: string; project_id?: string | null }
+>(invoice: TInvoice, invoices: TInvoice[], fundingAwards: TAward[]): TAward | null {
+  if (!invoice.project_id || !invoiceNeedsAwardRelink(typeof invoice.status === "string" ? invoice.status : "draft", invoice.funding_award_id)) {
+    return null;
+  }
+
+  const projectUnlinkedInvoices = invoices.filter(
+    (candidate) =>
+      candidate.project_id === invoice.project_id &&
+      invoiceNeedsAwardRelink(typeof candidate.status === "string" ? candidate.status : "draft", candidate.funding_award_id)
+  );
+  const projectFundingAwards = fundingAwards.filter((award) => award.project_id === invoice.project_id);
+
+  if (projectUnlinkedInvoices.length !== 1 || projectFundingAwards.length !== 1) {
+    return null;
+  }
+
+  return projectFundingAwards[0] ?? null;
+}
+
 function isOverdue(status: string, dueDate: string | null | undefined, now: Date): boolean {
   if (!dueDate || status === "paid" || status === "rejected") {
     return false;
