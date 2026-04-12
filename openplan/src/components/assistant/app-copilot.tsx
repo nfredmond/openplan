@@ -1603,6 +1603,45 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         return;
       }
 
+      if (executeAction.kind === "link_billing_invoice_funding_award") {
+        const updateResponse = await fetch(`/api/billing/invoices/${executeAction.invoiceId}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            workspaceId: executeAction.workspaceId,
+            fundingAwardId: executeAction.fundingAwardId,
+          }),
+        });
+
+        if (!updateResponse.ok) {
+          const payload = (await updateResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Failed to link billing invoice to funding award");
+        }
+
+        const completedStatus: OperationInvocationState = {
+          linkId: link.id,
+          label: link.label,
+          workflowId: link.workflowId,
+          auditEvent: link.auditEvent,
+          status: "completed",
+          startedAt: operationStartedAt,
+          finishedAt: Date.now(),
+        };
+        setOperationStatus(completedStatus);
+        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+        setResponding(false);
+
+        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
+          await submitPrompt({
+            workflowId: executeAction.postActionWorkflowId,
+            question: executeAction.postActionPrompt,
+            promptLabel: executeAction.postActionPromptLabel ?? link.label,
+            suppressOperationTracking: true,
+          });
+        }
+        return;
+      }
+
       if (executeAction.kind === "create_project_record") {
         const createResponse = await fetch(`/api/projects/${executeAction.projectId}/records`, {
           method: "POST",

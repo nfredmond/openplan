@@ -1,3 +1,4 @@
+import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
@@ -189,6 +190,8 @@ export type WorkspaceCommandQueueItem = {
   targetProjectId?: string | null;
   targetProjectName?: string | null;
   targetOpportunityId?: string | null;
+  targetInvoiceId?: string | null;
+  targetFundingAwardId?: string | null;
   tone: StatusTone;
   priority: number;
   badges: Array<{
@@ -789,6 +792,40 @@ export function buildWorkspaceOperationsSummary({
   const reimbursementAdvanceProjects = fundingReimbursementProjects.filter(
     (item) => !(item.reimbursementPacketCount === 0 && item.summary.reimbursementStatus === "not_started")
   );
+  const invoiceAwardRelinkProjects = projects
+    .map((project) => {
+      const awards = fundingAwardsByProjectId.get(project.id) ?? [];
+      const unlinkedInvoices = (fundingInvoicesByProjectId.get(project.id) ?? []).filter(
+        (invoice) => !invoice.fundingAwardId && !["paid", "rejected"].includes(invoice.status ?? "draft")
+      );
+      if (awards.length !== 1 || unlinkedInvoices.length !== 1) {
+        return null;
+      }
+      return {
+        project,
+        award: awards[0],
+        invoice: unlinkedInvoices[0],
+        overdue:
+          Boolean(unlinkedInvoices[0].dueDate) &&
+          !Number.isNaN(new Date(unlinkedInvoices[0].dueDate ?? "").getTime()) &&
+          new Date(unlinkedInvoices[0].dueDate ?? "").getTime() < now.getTime(),
+        netAmount: computeNetInvoiceAmount(
+          unlinkedInvoices[0].amount,
+          unlinkedInvoices[0].retentionAmount,
+          unlinkedInvoices[0].retentionPercent
+        ),
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((left, right) => {
+      if (Number(right.overdue) !== Number(left.overdue)) {
+        return Number(right.overdue) - Number(left.overdue);
+      }
+      if (right.netAmount !== left.netAmount) {
+        return right.netAmount - left.netAmount;
+      }
+      return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
+    });
 
   const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
   const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
@@ -942,6 +979,31 @@ export function buildWorkspaceOperationsSummary({
           value: firstReimbursementStartProject
             ? formatCurrency(firstReimbursementStartProject.summary.uninvoicedAwardAmount)
             : null,
+        },
+      ],
+    });
+  }
+
+  if (invoiceAwardRelinkProjects.length > 0) {
+    const firstInvoiceAwardRelinkProject = invoiceAwardRelinkProjects[0];
+    queueCandidates.push({
+      key: "relink-project-invoice-awards",
+      title: "Relink invoice reimbursement records",
+      detail: `${invoiceAwardRelinkProjects.length} project reimbursement lane${invoiceAwardRelinkProjects.length === 1 ? " has" : "s have"} an exact invoice-to-award relink available right now.${firstInvoiceAwardRelinkProject ? ` Reopen ${firstInvoiceAwardRelinkProject.project.name} first and attach ${firstInvoiceAwardRelinkProject.invoice.id} to ${firstInvoiceAwardRelinkProject.award.title}.` : ""}`,
+      href: firstInvoiceAwardRelinkProject
+        ? `/projects/${firstInvoiceAwardRelinkProject.project.id}#project-invoices`
+        : "/projects",
+      targetProjectId: firstInvoiceAwardRelinkProject?.project.id ?? null,
+      targetProjectName: firstInvoiceAwardRelinkProject?.project.name ?? null,
+      targetInvoiceId: firstInvoiceAwardRelinkProject?.invoice.id ?? null,
+      targetFundingAwardId: firstInvoiceAwardRelinkProject?.award.id ?? null,
+      tone: "warning",
+      priority: 6.25,
+      badges: [
+        { label: "Exact relinks", value: invoiceAwardRelinkProjects.length },
+        {
+          label: "Lead invoice",
+          value: firstInvoiceAwardRelinkProject ? formatCurrency(firstInvoiceAwardRelinkProject.netAmount) : null,
         },
       ],
     });

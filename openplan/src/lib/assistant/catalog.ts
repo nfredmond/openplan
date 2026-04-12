@@ -84,6 +84,15 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      kind: "link_billing_invoice_funding_award";
+      workspaceId: string;
+      invoiceId: string;
+      fundingAwardId: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

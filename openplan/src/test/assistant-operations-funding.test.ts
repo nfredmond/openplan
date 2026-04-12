@@ -572,4 +572,65 @@ describe("assistant funding operations", () => {
     expect(action?.href).toBe("/billing?workspaceId=workspace-1&projectId=project-gap&linkage=linked");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
+
+  it("exposes an exact invoice-to-award relink action when the workspace queue has a safe match", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Relink invoice reimbursement records",
+        detail: "A project has an exact invoice-to-award relink ready.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 1,
+          projectFundingGapProjects: 0,
+        },
+        nextCommand: {
+          key: "relink-project-invoice-awards",
+          title: "Relink invoice reimbursement records",
+          detail: "Reopen Gap Project first and attach the exact unlinked invoice to its funding award.",
+          href: "/projects/project-gap#project-invoices",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          targetInvoiceId: "invoice-1",
+          targetFundingAwardId: "award-1",
+          tone: "warning",
+          priority: 6.25,
+          badges: [{ label: "Exact relinks", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "relink-project-invoice-awards",
+            title: "Relink invoice reimbursement records",
+            detail: "Reopen Gap Project first and attach the exact unlinked invoice to its funding award.",
+            href: "/projects/project-gap#project-invoices",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            targetInvoiceId: "invoice-1",
+            targetFundingAwardId: "award-1",
+            tone: "warning",
+            priority: 6.25,
+            badges: [{ label: "Exact relinks", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-link-invoice-award");
+    const fundingAgent = links.find((link) => link.id === "workspace-funding-agent");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Link lead invoice to award now");
+    expect(action?.href).toBe("/billing?workspaceId=workspace-1&projectId=project-gap&linkage=unlinked&focusInvoiceId=invoice-1");
+    expect(action?.executeAction?.kind).toBe("link_billing_invoice_funding_award");
+    if (action?.executeAction?.kind === "link_billing_invoice_funding_award") {
+      expect(action.executeAction.workspaceId).toBe("workspace-1");
+      expect(action.executeAction.invoiceId).toBe("invoice-1");
+      expect(action.executeAction.fundingAwardId).toBe("award-1");
+    }
+
+    expect(fundingAgent?.label).toBe("Review invoice award relinks in panel");
+    expect(fundingAgent?.statusLabel).toBe("1 relink ready");
+  });
 });
