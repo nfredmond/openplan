@@ -5,6 +5,7 @@ import { BillingCheckoutLauncher } from "@/components/billing/billing-checkout-l
 import { BillingTriageLinkCopy } from "@/components/billing/billing-triage-link-copy";
 import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/billing/invoice-records";
 import { resolveBillingSupportState } from "@/lib/billing/support";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
+import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -547,6 +549,10 @@ export default async function BillingPage({
       createdAt: event.created_at,
     })),
   });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    workspaceId
+  );
 
   return (
     <section className="space-y-6">
@@ -694,6 +700,20 @@ export default async function BillingPage({
             </p>
           </div>
         </div>
+
+        <WorkspaceRuntimeCue summary={operationsSummary} />
+        {operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ||
+        operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing" ? (
+          <div className={`${insetClass()} flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm`}>
+            <div>
+              <p className="font-semibold text-foreground">Current workspace reimbursement priority</p>
+              <p className="mt-1 text-muted-foreground">{operationsSummary.nextCommand.detail}</p>
+            </div>
+            <Link href={operationsSummary.nextCommand.href} className="text-sm font-semibold text-foreground transition hover:text-primary">
+              Open lead project lane
+            </Link>
+          </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <InvoiceRecordComposer
