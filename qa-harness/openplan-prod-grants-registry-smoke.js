@@ -217,7 +217,10 @@ async function main() {
     ]);
     const focusedOpportunityCreator = page.locator('#grants-opportunity-creator');
     await focusedOpportunityCreator.getByText(/Focused from workspace queue/i).waitFor({ timeout: 30000 });
-    await expect(focusedOpportunityCreator.locator('#funding-opportunity-project')).toHaveValue(ids.projectId);
+    const focusedProjectValue = await focusedOpportunityCreator.locator('#funding-opportunity-project').inputValue();
+    if (focusedProjectValue !== ids.projectId) {
+      throw new Error(`Focused grants opportunity creator did not preselect the expected project. Expected ${ids.projectId}, received ${focusedProjectValue || 'empty'}.`);
+    }
     notes.push('The grants workspace command queue now retargets sourcing commands to the shared opportunity creator with the exact project preselected.');
 
     const firstOpportunityResult = await appFetch('/api/funding-opportunities', {
