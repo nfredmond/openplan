@@ -311,7 +311,11 @@ async function main() {
     await refreshedQueueSection.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
     const exactRelinkRow = refreshedQueueSection.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: unlinkedInvoiceNumber, exact: false }) }).first();
     await exactRelinkRow.getByText(/Exact relink ready/i).waitFor({ timeout: 30000 });
-    await exactRelinkRow.getByRole('button', { name: /Save exact funding link/i }).click();
+    const useExactMatchButton = exactRelinkRow.getByRole('button', { name: /Use exact match/i });
+    if (await useExactMatchButton.isVisible().catch(() => false)) {
+      await useExactMatchButton.click();
+    }
+    await exactRelinkRow.getByRole('button', { name: /Save exact funding link|Save funding link/i }).click();
     await page.waitForTimeout(2000);
     if (!page.url().includes(`relinkedInvoiceId=${ids.unlinkedInvoiceId}`)) {
       throw new Error(`Exact relink did not update the grants URL as expected: ${page.url()}`);
