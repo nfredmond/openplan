@@ -188,11 +188,9 @@ export function InvoiceFundingAwardLinker({
             </p>
           ) : null}
 
-          {savedFundingAwardConfirmed && lastSavedFundingAwardTitle ? (
+          {savedFundingAwardConfirmed && lastSavedFundingAwardTitle && !isFocusedRow ? (
             <p className="text-xs text-emerald-700 dark:text-emerald-300">
-              {isFocusedRow
-                ? `Focused invoice relink saved. This record is now attached to ${lastSavedFundingAwardTitle}.`
-                : `Funding link saved. This invoice is now attached to ${lastSavedFundingAwardTitle}.`}
+              {`Funding link saved. This invoice is now attached to ${lastSavedFundingAwardTitle}.`}
             </p>
           ) : null}
 
