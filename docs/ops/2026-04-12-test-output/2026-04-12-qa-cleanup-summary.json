@@ -1,0 +1,287 @@
+{
+  "startedAt": "2026-04-12T06:16:29.537Z",
+  "mode": "apply",
+  "createdAfter": "2026-04-12",
+  "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
+  "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run|county-scaffold|layout-audit/i",
+  "stripeSessionResults": [],
+  "deletePlan": [
+    {
+      "table": "report_artifacts",
+      "column": "id",
+      "plannedCount": 3
+    },
+    {
+      "table": "report_sections",
+      "column": "id",
+      "plannedCount": 18
+    },
+    {
+      "table": "billing_events",
+      "column": "workspace_id",
+      "plannedCount": 11
+    },
+    {
+      "table": "reports",
+      "column": "id",
+      "plannedCount": 3
+    },
+    {
+      "table": "workspace_members",
+      "column": "workspace_id",
+      "plannedCount": 11
+    },
+    {
+      "table": "workspaces",
+      "column": "id",
+      "plannedCount": 11
+    }
+  ],
+  "deleteResults": [
+    {
+      "table": "report_artifacts",
+      "column": "id",
+      "countPlanned": 3,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 3,
+      "error": null
+    },
+    {
+      "table": "report_sections",
+      "column": "id",
+      "countPlanned": 18,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 18,
+      "error": null
+    },
+    {
+      "table": "billing_events",
+      "column": "workspace_id",
+      "countPlanned": 11,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 0,
+      "error": null
+    },
+    {
+      "table": "reports",
+      "column": "id",
+      "countPlanned": 3,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 3,
+      "error": null
+    },
+    {
+      "table": "workspace_members",
+      "column": "workspace_id",
+      "countPlanned": 11,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 11,
+      "error": null
+    },
+    {
+      "table": "workspaces",
+      "column": "id",
+      "countPlanned": 11,
+      "ok": true,
+      "status": 200,
+      "deletedCount": 11,
+      "error": null
+    }
+  ],
+  "authPlan": [
+    {
+      "userId": "6d2b5b51-2d1b-4933-b4cf-54835aaf8e97",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t06-11-33-321z@natfordplanning.com",
+      "created_at": "2026-04-12T06:11:33.753085Z"
+    },
+    {
+      "userId": "edfa7464-86ac-4830-b22d-c258c871dc96",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t06-10-12-660z@natfordplanning.com",
+      "created_at": "2026-04-12T06:10:13.102294Z"
+    },
+    {
+      "userId": "cc3b7404-1281-4ce5-a701-d52ffa33d496",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-06-38-691z@natfordplanning.com",
+      "created_at": "2026-04-12T06:06:39.120643Z"
+    },
+    {
+      "userId": "bd532b05-c1fc-411b-9987-77a53368fadc",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-06-10-538z@natfordplanning.com",
+      "created_at": "2026-04-12T06:06:11.059535Z"
+    },
+    {
+      "userId": "24e8b1ae-fd4f-4c26-9225-f07318c57b27",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-02-36-719z@natfordplanning.com",
+      "created_at": "2026-04-12T06:02:37.088069Z"
+    },
+    {
+      "userId": "4f251d4c-6c99-4d40-b3aa-bd4c666e402b",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-01-08-933z@natfordplanning.com",
+      "created_at": "2026-04-12T06:01:09.480955Z"
+    }
+  ],
+  "authDeletes": [
+    {
+      "userId": "6d2b5b51-2d1b-4933-b4cf-54835aaf8e97",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t06-11-33-321z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "edfa7464-86ac-4830-b22d-c258c871dc96",
+      "email": "openplan-prod-rtp-release-smoke-2026-04-12t06-10-12-660z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "cc3b7404-1281-4ce5-a701-d52ffa33d496",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-06-38-691z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "bd532b05-c1fc-411b-9987-77a53368fadc",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-06-10-538z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "24e8b1ae-fd4f-4c26-9225-f07318c57b27",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-02-36-719z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    },
+    {
+      "userId": "4f251d4c-6c99-4d40-b3aa-bd4c666e402b",
+      "email": "openplan-local-rtp-release-smoke-2026-04-12t06-01-08-933z@natfordplanning.com",
+      "ok": true,
+      "status": 200,
+      "error": null
+    }
+  ],
+  "verification": {
+    "remainingWorkspaceCount": 0,
+    "remainingUserCount": 0,
+    "remainingWorkspaces": [],
+    "remainingUsers": []
+  },
+  "targets": {
+    "workspaceCount": 11,
+    "projectCount": 0,
+    "reportCount": 3,
+    "campaignCount": 0,
+    "countyRunCount": 0,
+    "userCount": 6,
+    "workspaces": [
+      {
+        "id": "837ec04d-7f77-498c-a45e-85d93cc2c7e6",
+        "name": "openplan-local-rtp-release-smoke-2026-04-12t06-01-08-933z",
+        "slug": "openplan-local-rtp-release-smoke-2026-04-12t06-01-08-933z-4f251d4c",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:01:09.478703+00:00"
+      },
+      {
+        "id": "89ca6bd7-cace-491f-866f-66168d60974c",
+        "name": "OpenPlan RTP Release Smoke 06-01-08",
+        "slug": "openplan-rtp-release-smoke-06-01-08",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:01:13.954756+00:00"
+      },
+      {
+        "id": "a254b81f-54eb-4f2c-96ea-a4caca7ab195",
+        "name": "openplan-local-rtp-release-smoke-2026-04-12t06-02-36-719z",
+        "slug": "openplan-local-rtp-release-smoke-2026-04-12t06-02-36-719z-24e8b1ae",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:02:37.087738+00:00"
+      },
+      {
+        "id": "b9dfc8e4-b7cc-465a-9512-ef936d5c4493",
+        "name": "OpenPlan RTP Release Smoke 06-02-36",
+        "slug": "openplan-rtp-release-smoke-06-02-36",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:02:41.108424+00:00"
+      },
+      {
+        "id": "7b397ece-e411-4915-bb2f-27ead1e40fd2",
+        "name": "openplan-local-rtp-release-smoke-2026-04-12t06-06-10-538z",
+        "slug": "openplan-local-rtp-release-smoke-2026-04-12t06-06-10-538z-bd532b05",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:06:11.059187+00:00"
+      },
+      {
+        "id": "4ac9d785-a6a3-4823-a917-2f4981c0a9e2",
+        "name": "OpenPlan RTP Release Smoke 06-06-10",
+        "slug": "openplan-rtp-release-smoke-06-06-10",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:06:14.054122+00:00"
+      },
+      {
+        "id": "0a31fc9f-f74e-46da-98ee-a6ff4fe40ccc",
+        "name": "openplan-local-rtp-release-smoke-2026-04-12t06-06-38-691z",
+        "slug": "openplan-local-rtp-release-smoke-2026-04-12t06-06-38-691z-cc3b7404",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:06:39.120322+00:00"
+      },
+      {
+        "id": "29d5ce9a-a5e6-466d-a68b-8c519bb9eb78",
+        "name": "OpenPlan RTP Release Smoke 06-06-38",
+        "slug": "openplan-rtp-release-smoke-06-06-38",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:06:41.929456+00:00"
+      },
+      {
+        "id": "bf2d74a8-5efd-4e87-9bed-2806d52c661c",
+        "name": "openplan-prod-rtp-release-smoke-2026-04-12t06-10-12-660z",
+        "slug": "openplan-prod-rtp-release-smoke-2026-04-12t06-10-12-660z-edfa7464",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:10:13.101974+00:00"
+      },
+      {
+        "id": "e87bfda4-8b2d-4fde-a2e1-d857f78eec4a",
+        "name": "openplan-prod-rtp-release-smoke-2026-04-12t06-11-33-321z",
+        "slug": "openplan-prod-rtp-release-smoke-2026-04-12t06-11-33-321z-6d2b5b51",
+        "plan": "free",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:11:33.752755+00:00"
+      },
+      {
+        "id": "b17e1ad1-8e0e-453a-86d8-81e40374d5ec",
+        "name": "OpenPlan Prod RTP Release Smoke 06-11-33",
+        "slug": "openplan-prod-rtp-release-smoke-06-11-33",
+        "plan": "pilot",
+        "subscription_plan": null,
+        "subscription_status": "pilot",
+        "created_at": "2026-04-12T06:11:42.616861+00:00"
+      }
+    ]
+  }
+}
