@@ -246,6 +246,23 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           }
         )
       : null,
+    reimbursementAdvanceCommand?.targetProjectId
+      ? quickLink(
+          "workspace-open-reimbursement-lane",
+          "Open lead reimbursement lane",
+          reimbursementAdvanceCommand.href,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${reimbursementAdvanceCount} reimbursement active`,
+            reason: "The workspace queue already knows the lead project where reimbursement work exists but the invoice lane still trails the committed award stack, so this jump should be one click from the shared board.",
+            approval: "review",
+            auditEvent: "assistant.operation.workspace.open_reimbursement_lane",
+            auditNote: "Navigation only. Use the linked project invoice lane to advance reimbursement follow-through.",
+          }
+        )
+      : null,
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 ||
     context.operationsSummary.counts.projectFundingSourcingProjects > 0 ||
     context.operationsSummary.counts.projectFundingDecisionProjects > 0 ||

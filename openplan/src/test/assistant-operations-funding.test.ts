@@ -476,4 +476,52 @@ describe("assistant funding operations", () => {
     expect(action?.label).toBe("Review reimbursement follow-through in panel");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
+
+  it("adds a direct workspace reimbursement-lane shortcut when follow-through is active", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance reimbursement invoicing",
+        detail: "A project already has reimbursement work started but invoicing still trails the award stack.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 1,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "advance-project-reimbursement-invoicing",
+          title: "Advance reimbursement invoicing",
+          detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+          href: "/projects/project-gap#project-invoices",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 6.3,
+          badges: [{ label: "Reimbursement active", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-reimbursement-invoicing",
+            title: "Advance reimbursement invoicing",
+            detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+            href: "/projects/project-gap#project-invoices",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 6.3,
+            badges: [{ label: "Reimbursement active", value: 1 }],
+          },
+        ],
+      })
+    );
+    const action = links.find((link) => link.id === "workspace-open-reimbursement-lane");
+
+    expect(action).toBeDefined();
+    expect(action?.label).toBe("Open lead reimbursement lane");
+    expect(action?.href).toBe("/projects/project-gap#project-invoices");
+    expect(action?.statusLabel).toBe("1 reimbursement active");
+  });
 });
