@@ -376,6 +376,15 @@ function buildFocusedGrantsReimbursementHref(projectId: string | null | undefine
   return `/grants?${params.toString()}#grants-reimbursement-composer`;
 }
 
+function buildFocusedGrantsOpportunityHref(opportunityId: string | null | undefined) {
+  if (!opportunityId) {
+    return "/grants";
+  }
+
+  const params = new URLSearchParams({ focusOpportunityId: opportunityId });
+  return `/grants?${params.toString()}#funding-opportunity-${opportunityId}`;
+}
+
 function buildFocusedGrantsAwardConversionHref(opportunityId: string | null | undefined) {
   if (!opportunityId) {
     return "/grants#grants-award-conversion-lane";
@@ -421,6 +430,10 @@ function resolveGrantsQueueHref(
         projectId: item.targetProjectId,
       });
     }
+  }
+
+  if (item.key === "funding-windows-closing" || item.key === "advance-project-funding-decisions") {
+    return buildFocusedGrantsOpportunityHref(item.targetOpportunityId);
   }
 
   if (item.key === "start-project-reimbursement-packets") {
@@ -1404,7 +1417,15 @@ export default async function GrantsPage({
                 const decisionSoon = isDecisionSoon(opportunity.decision_due_at);
 
                 return (
-                  <div key={opportunity.id} className="module-record-row">
+                  <div
+                    key={opportunity.id}
+                    id={`funding-opportunity-${opportunity.id}`}
+                    className={`module-record-row scroll-mt-24 ${
+                      activeFocusedOpportunityId === opportunity.id && opportunity.opportunity_status !== "awarded"
+                        ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
+                        : ""
+                    }`}
+                  >
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
@@ -1413,6 +1434,7 @@ export default async function GrantsPage({
                         <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
                           {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
                         </StatusBadge>
+                        {activeFocusedOpportunityId === opportunity.id && opportunity.opportunity_status !== "awarded" ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                         {closesSoon ? <StatusBadge tone="warning">Closing soon</StatusBadge> : null}
                         {decisionSoon ? <StatusBadge tone="warning">Decision due soon</StatusBadge> : null}
                         {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}

@@ -223,6 +223,10 @@ async function main() {
     if (firstOpportunityResult.status !== 201) {
       throw new Error(`Primary funding opportunity creation failed: ${firstOpportunityResult.status} ${JSON.stringify(firstOpportunityResult.data)}`);
     }
+    ids.primaryOpportunityId = firstOpportunityResult.data.opportunityId ?? null;
+    if (!ids.primaryOpportunityId) {
+      throw new Error(`Primary funding opportunity returned no opportunity id: ${JSON.stringify(firstOpportunityResult.data)}`);
+    }
 
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
@@ -230,9 +234,20 @@ async function main() {
     await page.getByText(/Advance near-term funding windows/i).waitFor({ timeout: 30000 });
     notes.push('Created the first funding opportunity and confirmed the rendered grants surface picked it up with near-term queue pressure.');
 
-    await page.locator('select[id^="funding-decision-"]').first().selectOption('pursue');
-    await page.getByPlaceholder('Record why the team chose pursue, monitor, or skip.').first().fill('Smoke proof moved this grant into a real pursue posture from the shared registry.');
-    await page.getByRole('button', { name: /save decision/i }).first().click();
+    const grantsCommandQueueSectionBeforeDecision = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const opportunityFocusLink = grantsCommandQueueSectionBeforeDecision.locator(`a[href*="focusOpportunityId=${ids.primaryOpportunityId}"]`).first();
+    await opportunityFocusLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusOpportunityId=${ids.primaryOpportunityId}`, 'i'), { timeout: 30000 }),
+      opportunityFocusLink.click(),
+    ]);
+    const focusedOpportunityRow = page.locator(`#funding-opportunity-${ids.primaryOpportunityId}`);
+    await focusedOpportunityRow.getByText(/Focused from workspace queue/i).waitFor({ timeout: 30000 });
+    notes.push('The grants workspace command queue now retargets closing-window and funding-decision commands to the exact opportunity row it flagged.');
+
+    await focusedOpportunityRow.locator('select[id^="funding-decision-"]').first().selectOption('pursue');
+    await focusedOpportunityRow.getByPlaceholder('Record why the team chose pursue, monitor, or skip.').first().fill('Smoke proof moved this grant into a real pursue posture from the shared registry.');
+    await focusedOpportunityRow.getByRole('button', { name: /save decision/i }).first().click();
     await page.getByText(/Funding decision saved\./i).waitFor({ timeout: 30000 });
     notes.push('Updated the opportunity decision to pursue directly from the grants registry row controls.');
 
