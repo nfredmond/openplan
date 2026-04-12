@@ -316,8 +316,10 @@ async function main() {
     if (!page.url().includes(`relinkedInvoiceId=${ids.unlinkedInvoiceId}`)) {
       throw new Error(`Exact relink did not update the grants URL as expected: ${page.url()}`);
     }
-    await exactRelinkRow.getByText(unlinkedInvoiceNumber, { exact: false }).waitFor({ timeout: 30000 });
-    notes.push('Repaired an exact award relink directly from the shared grants queue without leaving `/grants`.');
+    const relinkedRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: unlinkedInvoiceNumber, exact: false }) }).first();
+    await relinkedRow.getByText(/Relink just saved/i).waitFor({ timeout: 30000 });
+    await relinkedRow.getByText(/Relink saved in this grants queue/i).waitFor({ timeout: 30000 });
+    notes.push('Repaired an exact award relink directly from the shared grants queue without leaving `/grants`, and the queue now confirms the saved relink state inline.');
 
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
@@ -373,7 +375,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, repair an exact award relink from the shared queue, land on the exact project billing register, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, advance that reimbursement queue item in place, repair an exact award relink from the shared queue with inline confirmation, land on the exact project billing register, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

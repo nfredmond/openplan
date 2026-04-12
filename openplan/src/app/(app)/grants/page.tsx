@@ -44,6 +44,8 @@ import {
 type GrantsPageSearchParams = Promise<{
   status?: string;
   decision?: string;
+  focusInvoiceId?: string;
+  relinkedInvoiceId?: string;
 }>;
 
 type FundingOpportunityRow = {
@@ -198,6 +200,14 @@ function normalizeDecisionFilter(value: string | undefined): DecisionFilter {
   return DECISION_FILTERS.includes(value as DecisionFilter) ? (value as DecisionFilter) : "all";
 }
 
+function normalizeFocusedInvoiceId(value: string | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function normalizeRelinkedInvoiceId(value: string | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 function buildGrantsFilterHref(filters: { status: StatusFilter; decision: DecisionFilter }) {
   const params = new URLSearchParams();
   if (filters.status !== "all") {
@@ -340,6 +350,8 @@ export default async function GrantsPage({
   const filters = await searchParams;
   const selectedStatus = normalizeStatusFilter(filters.status);
   const selectedDecision = normalizeDecisionFilter(filters.decision);
+  const activeFocusedInvoiceId = normalizeFocusedInvoiceId(filters.focusInvoiceId);
+  const activeRelinkedInvoiceId = normalizeRelinkedInvoiceId(filters.relinkedInvoiceId);
   const supabase = await createClient();
   const {
     data: { user },
@@ -756,15 +768,23 @@ export default async function GrantsPage({
                   const projectName = invoice.project_id ? projectNameById.get(invoice.project_id) ?? null : null;
                   const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
                   const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
+                  const isFocusedRow = activeFocusedInvoiceId === invoice.id;
+                  const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
 
                   return (
-                    <div key={`reimbursement-queue-${invoice.id}`} className="module-record-row">
+                    <div
+                      id={`invoice-record-${invoice.id}`}
+                      key={`reimbursement-queue-${invoice.id}`}
+                      className={`module-record-row scroll-mt-24 ${isFocusedRow ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : ""}`}
+                    >
                       <div className="module-record-main">
                         <div className="module-record-kicker">
                           <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
                           {overdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
                           {entry.isExactRelink ? <StatusBadge tone="success">Exact relink ready</StatusBadge> : null}
                           {award ? <StatusBadge tone="info">{award.title}</StatusBadge> : null}
+                          {isFocusedRow ? <StatusBadge tone="info">Focused from triage</StatusBadge> : null}
+                          {isJustRelinkedRow ? <StatusBadge tone="success">Relink just saved</StatusBadge> : null}
                         </div>
 
                         <div className="space-y-1.5">
@@ -774,6 +794,13 @@ export default async function GrantsPage({
                           </div>
                           <p className="module-record-summary">{formatInvoiceQueueReason(entry.reason)}</p>
                         </div>
+
+                        {isJustRelinkedRow && award ? (
+                          <div className="mt-3 border-l-2 border-emerald-300/80 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                            <p className="font-semibold tracking-tight">Relink saved in this grants queue</p>
+                            <p className="mt-1">This reimbursement record now contributes to workspace award posture through {award.title}.</p>
+                          </div>
+                        ) : null}
 
                         <div className="module-record-meta">
                           <span className="module-record-chip">Project {projectName ?? "Not linked"}</span>
@@ -791,7 +818,7 @@ export default async function GrantsPage({
                                 projectId={invoice.project_id}
                                 currentFundingAwardId={invoice.funding_award_id}
                                 exactMatchFundingAwardId={exactMatchFundingAward?.id ?? null}
-                                autoSelectExactMatch
+                                autoSelectExactMatch={isFocusedRow}
                                 fundingAwards={fundingAwardOptions}
                                 canWrite={canWriteInvoices}
                               />
