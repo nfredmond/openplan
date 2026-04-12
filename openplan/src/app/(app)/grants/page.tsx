@@ -183,6 +183,7 @@ const GRANTS_QUEUE_KEYS = new Set([
   "advance-project-funding-decisions",
   "record-awarded-funding",
   "start-project-reimbursement-packets",
+  "relink-project-invoice-awards",
   "advance-project-reimbursement-invoicing",
   "close-project-funding-gaps",
 ]);
@@ -354,6 +355,53 @@ function resolveProjectExactBillingTriageTarget(invoices: BillingInvoiceRow[]) {
   }
 
   return actionableInvoices[0] ?? null;
+}
+
+function resolveGrantsQueueHref(
+  item: {
+    key: string;
+    href: string;
+    targetProjectId?: string | null;
+    targetInvoiceId?: string | null;
+  },
+  workspaceId: string,
+  exactBillingTriageInvoiceByProjectId: Map<string, BillingInvoiceRow>
+) {
+  if (item.key === "relink-project-invoice-awards" && item.targetProjectId && item.targetInvoiceId) {
+    const targetInvoice = exactBillingTriageInvoiceByProjectId.get(item.targetProjectId) ?? null;
+    if (targetInvoice) {
+      return buildBillingInvoiceTriageHref({
+        workspaceId,
+        invoiceId: targetInvoice.id,
+        linkage: targetInvoice.funding_award_id ? "linked" : "unlinked",
+        overdue: isInvoiceOverdue(targetInvoice.status, targetInvoice.due_date) ? "overdue" : "all",
+        projectId: item.targetProjectId,
+      });
+    }
+  }
+
+  if (item.key === "advance-project-reimbursement-invoicing" && item.targetProjectId) {
+    const targetInvoice = exactBillingTriageInvoiceByProjectId.get(item.targetProjectId) ?? null;
+    if (targetInvoice) {
+      return buildBillingInvoiceTriageHref({
+        workspaceId,
+        invoiceId: targetInvoice.id,
+        linkage: "linked",
+        overdue: isInvoiceOverdue(targetInvoice.status, targetInvoice.due_date) ? "overdue" : "all",
+        projectId: item.targetProjectId,
+      });
+    }
+  }
+
+  if (item.key === "start-project-reimbursement-packets") {
+    return "/grants#grants-awards-reimbursement";
+  }
+
+  if (item.key === "record-awarded-funding") {
+    return "/grants#grants-award-conversion-lane";
+  }
+
+  return item.href;
 }
 
 export default async function GrantsPage({
@@ -537,6 +585,14 @@ export default async function GrantsPage({
       return new Date(right.latestAwardUpdatedAt ?? 0).getTime() - new Date(left.latestAwardUpdatedAt ?? 0).getTime();
     });
 
+  const exactBillingTriageInvoiceByProjectId = new Map(
+    fundingProjectStacks
+      .map((item) => {
+        const invoice = resolveProjectExactBillingTriageTarget(item.linkedInvoices);
+        return invoice ? [item.project.id, invoice] : null;
+      })
+      .filter((entry): entry is [string, BillingInvoiceRow] => Boolean(entry))
+  );
   const committedAwardAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
   const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
   const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
@@ -621,7 +677,12 @@ export default async function GrantsPage({
   );
   const leadAwardConversionOpportunity =
     awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;
-  const grantsQueue = operationsSummary.commandQueue.filter((item) => GRANTS_QUEUE_KEYS.has(item.key));
+  const grantsQueue = operationsSummary.commandQueue
+    .filter((item) => GRANTS_QUEUE_KEYS.has(item.key))
+    .map((item) => ({
+      ...item,
+      href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId),
+    }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
 
   return (
