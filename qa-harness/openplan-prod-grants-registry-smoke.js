@@ -557,6 +557,17 @@ async function main() {
 
     await screenshot('prod-grants-registry-03-reimbursement-creation');
 
+    for (const opportunityId of [ids.primaryOpportunityId, ids.anchorOpportunityId]) {
+      const reopenWindowResult = await appFetch(
+        `/api/funding-opportunities/${opportunityId}`,
+        { closesAt: isoDaysFromNow(45) },
+        'PATCH'
+      );
+      if (!reopenWindowResult.ok) {
+        throw new Error(`Failed to move funding opportunity ${opportunityId} out of closing-window pressure before billing priority proof: ${JSON.stringify(reopenWindowResult.data)}`);
+      }
+    }
+
     const triageLink = relinkedRow.getByRole('link', { name: /Open billing triage/i }).first();
     await triageLink.waitFor({ timeout: 30000 });
     await Promise.all([
@@ -566,6 +577,17 @@ async function main() {
     await page.waitForLoadState('networkidle');
     await page.getByText(/Focused from triage/i).waitFor({ timeout: 30000 });
     notes.push('The grants reimbursement queue now lands on the exact billing triage row instead of a generic project billing anchor.');
+
+    const billingPriorityLink = page.getByRole('link', { name: /Open lead project lane/i }).first();
+    const billingPriorityHref = await billingPriorityLink.getAttribute('href');
+    const billingReturnsToGrantsTriage =
+      Boolean(billingPriorityHref) &&
+      billingPriorityHref.startsWith('/grants') &&
+      billingPriorityHref.includes('grants-reimbursement-triage');
+    if (!billingReturnsToGrantsTriage) {
+      throw new Error(`Billing reimbursement priority link did not return to the grants reimbursement triage lane. Received ${billingPriorityHref || 'empty'}.`);
+    }
+    notes.push('The billing workspace-priority link now returns operators to the grants reimbursement triage lane instead of a broad project invoice page.');
 
     await screenshot('prod-grants-registry-04-project-billing-register');
 
