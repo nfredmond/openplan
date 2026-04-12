@@ -47,6 +47,7 @@ type GrantsPageSearchParams = Promise<{
   status?: string;
   decision?: string;
   focusProjectId?: string;
+  focusOpportunityId?: string;
   focusInvoiceId?: string;
   relinkedInvoiceId?: string;
 }>;
@@ -205,6 +206,10 @@ function normalizeDecisionFilter(value: string | undefined): DecisionFilter {
 }
 
 function normalizeFocusedProjectId(value: string | undefined): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function normalizeFocusedOpportunityId(value: string | undefined): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
@@ -371,11 +376,21 @@ function buildFocusedGrantsReimbursementHref(projectId: string | null | undefine
   return `/grants?${params.toString()}#grants-reimbursement-composer`;
 }
 
+function buildFocusedGrantsAwardConversionHref(opportunityId: string | null | undefined) {
+  if (!opportunityId) {
+    return "/grants#grants-award-conversion-lane";
+  }
+
+  const params = new URLSearchParams({ focusOpportunityId: opportunityId });
+  return `/grants?${params.toString()}#grants-award-conversion-composer`;
+}
+
 function resolveGrantsQueueHref(
   item: {
     key: string;
     href: string;
     targetProjectId?: string | null;
+    targetOpportunityId?: string | null;
     targetInvoiceId?: string | null;
   },
   workspaceId: string,
@@ -413,7 +428,7 @@ function resolveGrantsQueueHref(
   }
 
   if (item.key === "record-awarded-funding") {
-    return "/grants#grants-award-conversion-lane";
+    return buildFocusedGrantsAwardConversionHref(item.targetOpportunityId);
   }
 
   return item.href;
@@ -428,6 +443,7 @@ export default async function GrantsPage({
   const selectedStatus = normalizeStatusFilter(filters.status);
   const selectedDecision = normalizeDecisionFilter(filters.decision);
   const activeFocusedProjectId = normalizeFocusedProjectId(filters.focusProjectId);
+  const activeFocusedOpportunityId = normalizeFocusedOpportunityId(filters.focusOpportunityId);
   const activeFocusedInvoiceId = normalizeFocusedInvoiceId(filters.focusInvoiceId);
   const activeRelinkedInvoiceId = normalizeRelinkedInvoiceId(filters.relinkedInvoiceId);
   const supabase = await createClient();
@@ -701,6 +717,13 @@ export default async function GrantsPage({
   );
   const leadAwardConversionOpportunity =
     awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;
+  const focusedAwardConversionOpportunity =
+    (activeFocusedOpportunityId
+      ? awardedOpportunitiesMissingRecords.find(
+          (opportunity) => opportunity.id === activeFocusedOpportunityId && Boolean(opportunity.project?.id)
+        )
+      : null) ?? null;
+  const awardConversionOpportunity = focusedAwardConversionOpportunity ?? leadAwardConversionOpportunity;
   const grantsQueue = operationsSummary.fullCommandQueue
     .filter((item) => GRANTS_QUEUE_KEYS.has(item.key))
     .map((item) => ({
@@ -1016,16 +1039,29 @@ export default async function GrantsPage({
               </StatusBadge>
             </div>
 
-            {leadAwardConversionOpportunity ? (
-              <div className="mt-5">
+            {awardConversionOpportunity ? (
+              <div
+                id="grants-award-conversion-composer"
+                className={`mt-5 scroll-mt-24 rounded-3xl ${
+                  activeFocusedOpportunityId === awardConversionOpportunity.id
+                    ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
+                    : ""
+                }`}
+              >
+                {activeFocusedOpportunityId === awardConversionOpportunity.id ? (
+                  <div className="mb-3 rounded-2xl border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
+                    <p className="font-semibold tracking-tight">Focused from workspace queue</p>
+                    <p className="mt-1">This award conversion creator is pre-targeted to {awardConversionOpportunity.title} so the grants command board can record the exact committed award it flagged next.</p>
+                  </div>
+                ) : null}
                 <ProjectFundingAwardCreator
-                  projectId={leadAwardConversionOpportunity.project?.id ?? ""}
-                  opportunityOptions={[{ id: leadAwardConversionOpportunity.id, title: leadAwardConversionOpportunity.title }]}
-                  defaultOpportunityId={leadAwardConversionOpportunity.id}
-                  defaultProgramId={leadAwardConversionOpportunity.program?.id ?? null}
-                  defaultTitle={`${leadAwardConversionOpportunity.title} award`}
+                  projectId={awardConversionOpportunity.project?.id ?? ""}
+                  opportunityOptions={[{ id: awardConversionOpportunity.id, title: awardConversionOpportunity.title }]}
+                  defaultOpportunityId={awardConversionOpportunity.id}
+                  defaultProgramId={awardConversionOpportunity.program?.id ?? null}
+                  defaultTitle={`${awardConversionOpportunity.title} award`}
                   titleLabel="Create the lead award record now"
-                  description={`Convert ${leadAwardConversionOpportunity.title} into a committed award record here so reimbursement and invoice truth can start from the shared grants lane.`}
+                  description={`Convert ${awardConversionOpportunity.title} into a committed award record here so reimbursement and invoice truth can start from the shared grants lane.`}
                 />
               </div>
             ) : null}
@@ -1037,11 +1073,20 @@ export default async function GrantsPage({
                   const programHref = opportunity.program ? `/programs/${opportunity.program.id}#program-funding-opportunities` : null;
 
                   return (
-                    <div key={`award-gap-${opportunity.id}`} className="module-subpanel">
+                    <div
+                      key={`award-gap-${opportunity.id}`}
+                      id={`award-opportunity-${opportunity.id}`}
+                      className={`module-subpanel scroll-mt-24 ${
+                        activeFocusedOpportunityId === opportunity.id
+                          ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
+                          : ""
+                      }`}
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap gap-2">
                             <StatusBadge tone="warning">Award record missing</StatusBadge>
+                            {activeFocusedOpportunityId === opportunity.id ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                             {opportunity.project ? <StatusBadge tone="info">{opportunity.project.name}</StatusBadge> : null}
                             {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}
                           </div>

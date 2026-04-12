@@ -262,7 +262,18 @@ async function main() {
     await page.getByText(/Awarded opportunities still missing committed award records/i).waitFor({ timeout: 30000 });
     await page.getByRole('heading', { name: /Create the lead award record now/i }).waitFor({ timeout: 30000 });
 
-    const leadAwardCard = page.locator('article').filter({ has: page.getByRole('heading', { name: /Create the lead award record now/i }) }).first();
+    const grantsCommandQueueSectionBeforeAward = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
+    const recordAwardLink = grantsCommandQueueSectionBeforeAward.locator(`a[href*="focusOpportunityId=${ids.opportunityId}"]`).first();
+    await recordAwardLink.waitFor({ timeout: 30000 });
+    await Promise.all([
+      page.waitForURL(new RegExp(`/grants\?.*focusOpportunityId=${ids.opportunityId}`, 'i'), { timeout: 30000 }),
+      recordAwardLink.click(),
+    ]);
+    const focusedAwardNotice = page.getByText(/Focused from workspace queue/i).first();
+    await focusedAwardNotice.waitFor({ timeout: 30000 });
+    notes.push('The grants workspace command queue now retargets the inline award conversion creator to the exact opportunity it flagged for committed-award recording.');
+
+    const leadAwardCard = page.locator('#grants-award-conversion-composer').first();
     await leadAwardCard.getByPlaceholder('Cycle 8 ATP award').fill(awardTitle);
     await leadAwardCard.getByPlaceholder('1750000').fill('500000');
     await leadAwardCard.getByPlaceholder('250000').fill('50000');
@@ -442,7 +453,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
       '## Verdict',
-      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, promote an opportunity into awarded status, create the committed funding award from the award-conversion lane, start the first reimbursement invoice directly from the shared grants surface, route both the workspace grants queue and the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, surface the exact billing triage row from the workspace command queue when an invoice needs award relink, repair that exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.',
+      '- PASS: Production rendered smoke confirms the shared `/grants` workspace surface can create a funding opportunity, surface grants queue pressure, retarget the inline award conversion creator to the exact opportunity flagged by the workspace command queue, create the committed funding award from that focused award-conversion lane, retarget the inline reimbursement composer to the exact project flagged for packet start, start the first reimbursement invoice directly from the shared grants surface, route both the workspace grants queue and the award-stack CTA to the exact billing triage row when there is one active invoice, advance that reimbursement queue item in place, surface the exact billing triage row from the workspace command queue when an invoice needs award relink, repair that exact award relink from the shared queue with inline confirmation, land on the exact billing triage row, and still link back into the canonical program funding lane.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
