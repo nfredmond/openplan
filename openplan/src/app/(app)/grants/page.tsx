@@ -22,7 +22,7 @@ import {
   type FundingOpportunityDecision,
   type FundingOpportunityStatus,
 } from "@/lib/programs/catalog";
-import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { buildBillingInvoicePriorityQueue, summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -218,6 +218,38 @@ function formatCurrency(value: number | string | null | undefined) {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(Number.isFinite(numeric) ? numeric : 0);
+}
+
+function titleize(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  return value
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function toneForInvoiceStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "paid") return "success";
+  if (status === "submitted" || status === "approved_for_payment") return "info";
+  if (status === "internal_review") return "warning";
+  if (status === "rejected") return "danger";
+  return "neutral";
+}
+
+function isInvoiceOverdue(status: string, dueDate: string | null | undefined): boolean {
+  if (!dueDate || status === "paid" || status === "rejected") {
+    return false;
+  }
+
+  const parsed = new Date(dueDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  return parsed.getTime() < Date.now();
+}
+
+function formatInvoiceQueueReason(reason: string) {
+  return reason.replace(/^Exact award relink is ready now:\s*/i, "");
 }
 
 function formatDateTime(value: string | null | undefined) {
@@ -473,9 +505,8 @@ export default async function GrantsPage({
 
   const committedAwardAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
   const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
-  const linkedInvoiceSummary = summarizeBillingInvoiceRecords(
-    fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id))
-  );
+  const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
+  const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoices);
   const uninvoicedCommittedAmount = Math.max(committedAwardAmount - linkedInvoiceSummary.totalNetAmount, 0);
   const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
   const reimbursementNotStartedCount = fundingProjectStacks.filter(
@@ -489,6 +520,16 @@ export default async function GrantsPage({
   ).length;
   const leadReimbursementStack =
     fundingProjectStacks.find((item) => item.summary.reimbursementStatus === "not_started" && item.awards.length > 0) ?? null;
+  const fundingAwardById = new Map(fundingAwards.map((award) => [award.id, award]));
+  const projectNameById = new Map(projectOptions.map((project) => [project.id, project.name]));
+  const reimbursementPriorityQueue = buildBillingInvoicePriorityQueue(awardLinkedInvoices, { limit: 5 }).filter(
+    (entry) => entry.record.status !== "paid" && entry.record.status !== "rejected"
+  );
+  const overdueLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => isInvoiceOverdue(invoice.status, invoice.due_date)).length;
+  const draftLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) => invoice.status === "draft").length;
+  const inFlightLinkedInvoiceCount = awardLinkedInvoices.filter((invoice) =>
+    ["internal_review", "submitted", "approved_for_payment"].includes(invoice.status)
+  ).length;
 
   const filteredOpportunities = opportunities.filter((opportunity) => {
     if (selectedStatus !== "all" && opportunity.opportunity_status !== selectedStatus) {
@@ -618,6 +659,102 @@ export default async function GrantsPage({
             title="Log a funding opportunity"
             description="Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same workspace truth."
           />
+
+          <article id="grants-reimbursement-triage" className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Reimbursement triage</p>
+                <h2 className="module-section-title">Workspace reimbursement follow-through queue</h2>
+                <p className="module-section-description">
+                  Keep award-linked invoices moving. This queue surfaces overdue reimbursement risk, in-flight payment posture, and draft packets that still need operator follow-through.
+                </p>
+              </div>
+              <StatusBadge tone={reimbursementPriorityQueue.length > 0 ? "warning" : "success"}>
+                {reimbursementPriorityQueue.length > 0 ? `${reimbursementPriorityQueue.length} active follow-ups` : "Queue clear"}
+              </StatusBadge>
+            </div>
+
+            <div className="module-summary-grid cols-4 mt-5">
+              <div className="module-summary-card">
+                <p className="module-summary-label">Award-linked records</p>
+                <p className="module-summary-value">{awardLinkedInvoices.length}</p>
+                <p className="module-summary-detail">Invoice records already tied to committed awards.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Overdue</p>
+                <p className="module-summary-value">{overdueLinkedInvoiceCount}</p>
+                <p className="module-summary-detail">Linked reimbursement records already past due.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">Drafting</p>
+                <p className="module-summary-value">{draftLinkedInvoiceCount}</p>
+                <p className="module-summary-detail">Started, but not yet in review or payment flow.</p>
+              </div>
+              <div className="module-summary-card">
+                <p className="module-summary-label">In flight</p>
+                <p className="module-summary-value">{inFlightLinkedInvoiceCount}</p>
+                <p className="module-summary-detail">Internal review, submitted, or approved for payment.</p>
+              </div>
+            </div>
+
+            {reimbursementPriorityQueue.length === 0 ? (
+              <div className="mt-5">
+                <EmptyState
+                  title="No reimbursement triage items right now"
+                  description="Once award-linked invoice records exist and need follow-through, this queue will surface the most urgent reimbursement work across the workspace."
+                />
+              </div>
+            ) : (
+              <div className="mt-5 module-record-list">
+                {reimbursementPriorityQueue.map((entry) => {
+                  const invoice = entry.record;
+                  const award = invoice.funding_award_id ? fundingAwardById.get(invoice.funding_award_id) ?? null : null;
+                  const projectName = invoice.project_id ? projectNameById.get(invoice.project_id) ?? null : null;
+                  const overdue = isInvoiceOverdue(invoice.status, invoice.due_date);
+
+                  return (
+                    <div key={`reimbursement-queue-${invoice.id}`} className="module-record-row">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
+                          {overdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
+                          {award ? <StatusBadge tone="info">{award.title}</StatusBadge> : null}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title">{invoice.invoice_number ?? "Draft reimbursement record"}</h3>
+                            <p className="module-record-stamp">{formatCurrency(invoice.net_amount ?? invoice.amount)}</p>
+                          </div>
+                          <p className="module-record-summary">{formatInvoiceQueueReason(entry.reason)}</p>
+                        </div>
+
+                        <div className="module-record-meta">
+                          <span className="module-record-chip">Project {projectName ?? "Not linked"}</span>
+                          <span className="module-record-chip">Award {award?.title ?? "Not linked"}</span>
+                          <span className="module-record-chip">Due {formatDateTime(invoice.due_date)}</span>
+                          <span className="module-record-chip">Net {formatCurrency(invoice.net_amount ?? invoice.amount)}</span>
+                        </div>
+
+                        {invoice.project_id ? (
+                          <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+                            <Link href={`/projects/${invoice.project_id}#project-invoices`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                              Open reimbursement register
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
+                              Open funding lane
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </article>
 
           <article className="module-section-surface">
             <div className="module-section-header">
