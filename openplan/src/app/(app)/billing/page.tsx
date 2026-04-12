@@ -90,6 +90,29 @@ function invoiceNeedsRelink(status: string, fundingAwardId: string | null | unde
   return !fundingAwardId && status !== "paid" && status !== "rejected";
 }
 
+function resolveExactInvoiceAwardMatch(
+  invoice: InvoiceRegisterRow,
+  invoices: InvoiceRegisterRow[],
+  fundingAwards: FundingAwardListRow[]
+): FundingAwardListRow | null {
+  if (!invoice.project_id || !invoiceNeedsRelink(invoice.status, invoice.funding_award_id)) {
+    return null;
+  }
+
+  const projectUnlinkedInvoices = invoices.filter(
+    (candidate) =>
+      candidate.project_id === invoice.project_id &&
+      invoiceNeedsRelink(candidate.status, candidate.funding_award_id)
+  );
+  const projectFundingAwards = fundingAwards.filter((award) => award.project_id === invoice.project_id);
+
+  if (projectUnlinkedInvoices.length !== 1 || projectFundingAwards.length !== 1) {
+    return null;
+  }
+
+  return projectFundingAwards[0] ?? null;
+}
+
 function billingRowRiskState(invoice: InvoiceRegisterRow): {
   tone: "warning" | "danger" | "info" | null;
   title: string | null;
@@ -986,6 +1009,7 @@ export default async function BillingPage({
               {filteredInvoiceRecords.map((invoice) => {
                 const riskState = billingRowRiskState(invoice);
                 const isFocusedRow = activeFocusedInvoiceId === invoice.id;
+                const exactMatchFundingAward = resolveExactInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards);
                 const rowTriageHref = riskState.title
                   ? buildBillingInvoiceTriageHref({
                       workspaceId,
@@ -1010,6 +1034,7 @@ export default async function BillingPage({
                       <StatusBadge tone={toneForSupportingDocs(invoice.supporting_docs_status)}>{titleCase(invoice.supporting_docs_status)}</StatusBadge>
                       {invoice.fundingAward ? <StatusBadge tone="neutral">Award {invoice.fundingAward.title}</StatusBadge> : null}
                       {isFocusedRow ? <StatusBadge tone="info">Focused from triage</StatusBadge> : null}
+                      {exactMatchFundingAward ? <StatusBadge tone="success">Exact match ready</StatusBadge> : null}
                       {!invoice.fundingAward && invoiceNeedsRelink(invoice.status, invoice.funding_award_id) ? (
                         <StatusBadge tone={riskState.tone === "danger" ? "danger" : "warning"}>Needs relink</StatusBadge>
                       ) : null}
@@ -1042,6 +1067,15 @@ export default async function BillingPage({
                       </div>
                     ) : null}
 
+                    {exactMatchFundingAward ? (
+                      <div className="mt-3 border-l-2 border-emerald-300/80 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                        <p className="font-semibold tracking-tight">Exact award relink is ready</p>
+                        <p className="mt-1">
+                          This invoice is the only active unlinked reimbursement record on its project, and {exactMatchFundingAward.title} is the only available funding award for that same project.
+                        </p>
+                      </div>
+                    ) : null}
+
                     <p className="mt-3 text-xs text-muted-foreground">
                       {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
                     </p>
@@ -1069,6 +1103,7 @@ export default async function BillingPage({
                       workspaceId={workspaceId}
                       projectId={invoice.project_id}
                       currentFundingAwardId={invoice.funding_award_id}
+                      exactMatchFundingAwardId={exactMatchFundingAward?.id ?? null}
                       fundingAwards={workspaceFundingAwards.map((award) => ({
                         id: award.id,
                         title: award.title,

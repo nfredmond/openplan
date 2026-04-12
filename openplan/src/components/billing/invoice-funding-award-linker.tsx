@@ -16,6 +16,7 @@ type InvoiceFundingAwardLinkerProps = {
   workspaceId: string;
   projectId: string | null;
   currentFundingAwardId?: string | null;
+  exactMatchFundingAwardId?: string | null;
   fundingAwards: FundingAwardOption[];
   canWrite: boolean;
 };
@@ -25,6 +26,7 @@ export function InvoiceFundingAwardLinker({
   workspaceId,
   projectId,
   currentFundingAwardId = null,
+  exactMatchFundingAwardId = null,
   fundingAwards,
   canWrite,
 }: InvoiceFundingAwardLinkerProps) {
@@ -49,6 +51,9 @@ export function InvoiceFundingAwardLinker({
   }, [selectedFundingAwardId, visibleFundingAwards]);
 
   const hasChanges = (selectedFundingAwardId || null) !== (currentFundingAwardId || null);
+  const exactMatchAward = exactMatchFundingAwardId
+    ? visibleFundingAwards.find((award) => award.id === exactMatchFundingAwardId) ?? null
+    : null;
 
   async function handleSave() {
     if (!canWrite || !hasChanges) return;
@@ -124,7 +129,25 @@ export function InvoiceFundingAwardLinker({
                 "Save funding link"
               )}
             </Button>
+
+            {exactMatchAward && !currentFundingAwardId ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedFundingAwardId(exactMatchAward.id)}
+                disabled={isSaving}
+              >
+                Use exact match
+              </Button>
+            ) : null}
           </div>
+
+          {exactMatchAward && !currentFundingAwardId ? (
+            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+              Exact match ready: this invoice is the only active unlinked record on its project, and {exactMatchAward.title} is the only available funding award.
+            </p>
+          ) : null}
 
           {visibleFundingAwards.length === 0 ? (
             <p className="text-xs text-muted-foreground">No funding awards are available for this invoice’s project yet.</p>
