@@ -162,9 +162,10 @@ export function RtpReportDetail({
   operationsSummary: WorkspaceOperationsSummary;
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
+  const latestArtifactGeneratedAt = artifacts[0]?.generated_at ?? report.generated_at;
   const packetFreshness = getReportPacketFreshness({
     latestArtifactKind: report.latest_artifact_kind,
-    generatedAt: report.generated_at,
+    generatedAt: latestArtifactGeneratedAt,
     updatedAt: cycle?.updated_at ?? report.updated_at,
   });
   const driftItems = [
@@ -381,7 +382,7 @@ export function RtpReportDetail({
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
                 {cycle ? <StatusBadge tone="neutral">Cycle updated {formatDateTime(cycle.updated_at)}</StatusBadge> : null}
-                {report.generated_at ? <StatusBadge tone="neutral">Packet generated {formatDateTime(report.generated_at)}</StatusBadge> : null}
+                {latestArtifactGeneratedAt ? <StatusBadge tone="neutral">Packet generated {formatDateTime(latestArtifactGeneratedAt)}</StatusBadge> : null}
                 {comparisonDigest ? <StatusBadge tone="info">Comparison-backed</StatusBadge> : null}
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{packetFreshness.detail}</p>
