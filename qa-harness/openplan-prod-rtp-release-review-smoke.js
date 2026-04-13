@@ -337,6 +337,8 @@ async function main() {
     await page.getByText(/Packet posture/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Generation-time funding posture/i).waitFor({ timeout: 30000 });
     await page.getByText(/Current funding posture/i).waitFor({ timeout: 30000 });
+    await page.getByText(/What should move around this RTP packet|What should move around this report/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i).first().waitFor({ timeout: 30000 });
     notes.push('Production registry current-packet link landed on the packet release-review anchor in report detail.');
     await screenshot('prod-rtp-release-review-03-report-detail');
 
