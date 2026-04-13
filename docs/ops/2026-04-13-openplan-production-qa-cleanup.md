@@ -1,6 +1,6 @@
 # OpenPlan Production QA Cleanup — 2026-04-13
 
-- Started: 2026-04-13T04:42:30.628Z
+- Started: 2026-04-13T05:03:23.774Z
 - Mode: apply
 - Env path: /home/narford/.openclaw/workspace/openplan/openplan/.env.local
 - Created-after filter: 2026-04-12
@@ -8,48 +8,44 @@
 
 ## Scope
 - Targeted QA/debug/proof/trace/canary production records created on or after 2026-04-12.
-- Targeted workspaces: 10
+- Targeted workspaces: 6
 - Targeted county runs: 0
-- Targeted auth users: 5
+- Targeted auth users: 3
 
 ## Stripe checkout sessions
 - No Stripe checkout sessions found for targeted workspaces.
 
 ## Delete plan
-- report_artifacts: planned=8
-- report_sections: planned=52
-- plans: planned=4
-- programs: planned=4
-- billing_events: planned=10
-- reports: planned=8
-- projects: planned=4
-- workspace_members: planned=10
-- workspaces: planned=10
+- report_artifacts: planned=6
+- report_sections: planned=39
+- plans: planned=3
+- programs: planned=3
+- billing_events: planned=6
+- reports: planned=6
+- projects: planned=3
+- workspace_members: planned=6
+- workspaces: planned=6
 
 ## Auth plan
-- openplan-prod-rtp-release-smoke-2026-04-13t04-41-17-091z@natfordplanning.com
-- openplan-prod-rtp-release-smoke-2026-04-13t04-39-15-597z@natfordplanning.com
-- openplan-prod-rtp-release-smoke-2026-04-13t04-38-53-854z@natfordplanning.com
-- openplan-prod-rtp-release-smoke-2026-04-13t04-37-06-925z@natfordplanning.com
-- openplan-prod-rtp-release-smoke-2026-04-13t04-35-23-160z@natfordplanning.com
+- openplan-prod-rtp-release-smoke-2026-04-13t05-02-09-658z@natfordplanning.com
+- openplan-prod-rtp-release-smoke-2026-04-13t05-00-08-127z@natfordplanning.com
+- openplan-prod-rtp-release-smoke-2026-04-13t04-55-36-610z@natfordplanning.com
 
 ## Delete results
-- report_artifacts: status=200 ok=true planned=8 deleted=8
-- report_sections: status=200 ok=true planned=52 deleted=52
-- plans: status=200 ok=true planned=4 deleted=4
-- programs: status=200 ok=true planned=4 deleted=4
-- billing_events: status=200 ok=true planned=10 deleted=0
-- reports: status=200 ok=true planned=8 deleted=8
-- projects: status=200 ok=true planned=4 deleted=4
-- workspace_members: status=200 ok=true planned=10 deleted=10
-- workspaces: status=200 ok=true planned=10 deleted=10
+- report_artifacts: status=200 ok=true planned=6 deleted=6
+- report_sections: status=200 ok=true planned=39 deleted=39
+- plans: status=200 ok=true planned=3 deleted=3
+- programs: status=200 ok=true planned=3 deleted=3
+- billing_events: status=200 ok=true planned=6 deleted=0
+- reports: status=200 ok=true planned=6 deleted=6
+- projects: status=200 ok=true planned=3 deleted=3
+- workspace_members: status=200 ok=true planned=6 deleted=6
+- workspaces: status=200 ok=true planned=6 deleted=6
 
 ## Auth deletes
-- openplan-prod-rtp-release-smoke-2026-04-13t04-41-17-091z@natfordplanning.com: status=200 ok=true
-- openplan-prod-rtp-release-smoke-2026-04-13t04-39-15-597z@natfordplanning.com: status=200 ok=true
-- openplan-prod-rtp-release-smoke-2026-04-13t04-38-53-854z@natfordplanning.com: status=200 ok=true
-- openplan-prod-rtp-release-smoke-2026-04-13t04-37-06-925z@natfordplanning.com: status=200 ok=true
-- openplan-prod-rtp-release-smoke-2026-04-13t04-35-23-160z@natfordplanning.com: status=200 ok=true
+- openplan-prod-rtp-release-smoke-2026-04-13t05-02-09-658z@natfordplanning.com: status=200 ok=true
+- openplan-prod-rtp-release-smoke-2026-04-13t05-00-08-127z@natfordplanning.com: status=200 ok=true
+- openplan-prod-rtp-release-smoke-2026-04-13t04-55-36-610z@natfordplanning.com: status=200 ok=true
 
 ## Verification
 - Remaining matching workspaces: 0

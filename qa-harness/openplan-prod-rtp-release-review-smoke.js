@@ -537,6 +537,27 @@ async function main() {
     notes.push('Projects registry preferred latest packet artifact timing over the stale report-row generated_at and kept the seeded artifact-backed report in refresh posture instead of degrading it to no-packet.');
     await screenshot('prod-rtp-release-review-projects-registry');
 
+    await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { level: 1, name: /^Reports$/i }).waitFor({ timeout: 30000 });
+    const artifactRefreshRow = page
+      .locator('a.module-record-row')
+      .filter({ has: page.getByText(new RegExp(artifactRefreshReportTitle, 'i')) })
+      .first();
+    await artifactRefreshRow.waitFor({ timeout: 30000 });
+    const artifactRefreshRowText = await artifactRefreshRow.textContent();
+    if (!artifactRefreshRowText || !artifactRefreshRowText.includes('Next action: open this report and regenerate the packet.')) {
+      throw new Error(`Reports registry did not keep the artifact-backed stale-row report in regenerate posture. Row text: ${artifactRefreshRowText}`);
+    }
+    if (artifactRefreshRowText.includes('Next action: open this report and generate the first packet.')) {
+      throw new Error('Reports registry fell back to "generate the first packet" even though the seeded report already had a generated artifact.');
+    }
+    const artifactRefreshHref = await artifactRefreshRow.getAttribute('href');
+    if (artifactRefreshHref !== `/reports/${ids.projectRegistryReportId}#drift-since-generation`) {
+      throw new Error(`Reports registry artifact-backed row did not target the expected drift anchor. Received ${artifactRefreshHref}`);
+    }
+    notes.push('Reports registry also preferred latest packet artifact timing over the stale report-row generated_at, keeping the seeded report in regenerate posture and routing to the drift anchor.');
+    await screenshot('prod-rtp-release-review-reports-registry-artifact');
+
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-rtp-release-review-smoke.md`);
     const lines = [
       `# OpenPlan Production RTP Release-Review Smoke — ${datePart}`,
