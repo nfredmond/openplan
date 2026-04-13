@@ -28,7 +28,7 @@ import {
   buildScenarioLinkedReports,
 } from "@/lib/scenarios/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
-import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
+import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, loadCurrentWorkspaceMembership, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSummary,
@@ -167,6 +167,7 @@ export type RtpRegistryAssistantContext = {
     title: string;
     status: string;
     packetFreshnessLabel: string;
+    packetReportCount: number;
     updatedAt: string;
   } | null;
   operationsSummary: WorkspaceOperationsSummary;
@@ -536,18 +537,12 @@ async function requireWorkspaceEnvelope(
   workspaceId?: string | null
 ): Promise<WorkspaceEnvelope | null> {
   if (!workspaceId) {
-    const { data: memberships } = await supabase
-      .from("workspace_members")
-      .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-      .eq("user_id", userId)
-      .limit(1);
+    const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, userId);
 
-    const membership = memberships?.[0];
     if (!membership) {
       return null;
     }
 
-    const workspace = unwrapWorkspaceRecord(membership.workspaces);
     return {
       id: membership.workspace_id,
       name: workspace?.name ?? null,
@@ -1077,16 +1072,20 @@ async function loadRtpRegistryContext(
     updated_at: string;
   }>;
   const firstPacketByCycleId = new Map<string, { freshness: ReturnType<typeof getReportPacketFreshness> }>();
+  const packetReportCountByCycleId = new Map<string, number>();
+  const cycleUpdatedAtById = new Map(cycles.map((cycle) => [cycle.id, cycle.updated_at]));
 
   for (const report of packetReports) {
-    if (!report.rtp_cycle_id || firstPacketByCycleId.has(report.rtp_cycle_id)) {
+    if (!report.rtp_cycle_id) {
       continue;
     }
+    packetReportCountByCycleId.set(report.rtp_cycle_id, (packetReportCountByCycleId.get(report.rtp_cycle_id) ?? 0) + 1);
+    if (firstPacketByCycleId.has(report.rtp_cycle_id)) continue;
     firstPacketByCycleId.set(report.rtp_cycle_id, {
       freshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
         generatedAt: report.generated_at,
-        updatedAt: report.updated_at,
+        updatedAt: cycleUpdatedAtById.get(report.rtp_cycle_id) ?? report.updated_at,
       }),
     });
   }
@@ -1096,6 +1095,7 @@ async function loadRtpRegistryContext(
       .map((cycle) => ({
         ...cycle,
         packetFreshnessLabel: firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet",
+        packetReportCount: packetReportCountByCycleId.get(cycle.id) ?? 0,
       }))
       .sort((left, right) => {
         const leftPriority = left.packetFreshnessLabel === "No packet" ? 0 : left.packetFreshnessLabel === "Refresh recommended" ? 1 : 2;
@@ -1123,6 +1123,7 @@ async function loadRtpRegistryContext(
           title: recommendedCycle.title,
           status: recommendedCycle.status,
           packetFreshnessLabel: recommendedCycle.packetFreshnessLabel,
+          packetReportCount: recommendedCycle.packetReportCount,
           updatedAt: recommendedCycle.updated_at,
         }
       : null,
@@ -1308,7 +1309,7 @@ async function loadRtpContext(
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
         generatedAt: report.generated_at,
-        updatedAt: report.updated_at,
+        updatedAt: cycle.updated_at,
       }),
     }))
     .sort((left, right) => {
@@ -2098,6 +2099,7 @@ export async function loadAssistantContext(
     case "model":
       return target.id ? loadModelContext(supabase, userId, target.id) : null;
     case "report":
+    case "rtp_packet_report":
       return target.id ? loadReportContext(supabase, userId, target.id) : null;
     case "run":
       return target.id ? loadRunContext(supabase, userId, target.id, target.baselineRunId) : null;

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
   FUNDING_OPPORTUNITY_STATUS_OPTIONS,
@@ -151,19 +152,21 @@ async function resolveWorkspaceContext(
     return { workspaceId: null, program, project, error: null, allowed: false, mismatch: true };
   }
 
-  const membershipQuery = supabase
-    .from("workspace_members")
-    .select("workspace_id, role")
-    .eq("user_id", userId)
-    .limit(1);
+  const { data: scopedMembership, error: scopedMembershipError } = workspaceId
+    ? await supabase
+        .from("workspace_members")
+        .select("workspace_id, role")
+        .eq("user_id", userId)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle()
+    : { data: null, error: null };
 
-  const { data: membership, error: membershipError } = workspaceId
-    ? await membershipQuery.eq("workspace_id", workspaceId).maybeSingle()
-    : await membershipQuery.maybeSingle();
-
-  if (membershipError) {
-    return { workspaceId: null, program, project, error: membershipError, allowed: false };
+  if (scopedMembershipError) {
+    return { workspaceId: null, program, project, error: scopedMembershipError, allowed: false };
   }
+
+  const currentMembershipResult = !workspaceId ? await loadCurrentWorkspaceMembership(supabase, userId) : null;
+  const membership = workspaceId ? scopedMembership : currentMembershipResult?.membership ?? null;
 
   if (!membership) {
     return { workspaceId: null, program, project, error: null, allowed: false };

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -152,16 +153,7 @@ async function resolveWorkspaceContext(
     };
   }
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("workspace_members")
-    .select("workspace_id, role")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (membershipError) {
-    return { workspaceId: null, project: null, error: membershipError, allowed: false };
-  }
+  const { membership } = await loadCurrentWorkspaceMembership(supabase, userId);
 
   if (!membership) {
     return { workspaceId: null, project: null, error: null, allowed: false };
