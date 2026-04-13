@@ -37,6 +37,7 @@ async function main() {
   const projectName = `RTP Funding Smoke Project ${stamp.slice(11, 19)}`;
   const planTitle = `RTP Funding Smoke Plan ${stamp.slice(11, 19)}`;
   const programTitle = `RTP Funding Smoke Program ${stamp.slice(11, 19)}`;
+  const artifactRefreshReportTitle = `Artifact-backed refresh smoke ${stamp.slice(11, 19)}`;
   const opportunityTitle = `RTP linked funding opportunity ${stamp.slice(11, 19)}`;
   const awardTitle = `RTP linked funding award ${stamp.slice(11, 19)}`;
   const invoiceNumber = `RTP-FUND-${stamp.slice(11, 19).replace(/-/g, '')}`;
@@ -481,6 +482,60 @@ async function main() {
     }
     notes.push('Production RTP release review surfaced funding posture alongside chapter/workflow drift after reimbursement changed post-generation.');
     await screenshot('prod-rtp-release-review-04-funding-drift');
+
+    const projectRegistryReportResult = await appFetch('/api/reports', {
+      projectId: ids.projectId,
+      reportType: 'project_status',
+      title: artifactRefreshReportTitle,
+    });
+    if (projectRegistryReportResult.status !== 201) {
+      throw new Error(
+        `Project registry artifact-refresh report creation failed: ${projectRegistryReportResult.status} ${JSON.stringify(projectRegistryReportResult.data)}`
+      );
+    }
+    ids.projectRegistryReportId = projectRegistryReportResult.data.reportId ?? null;
+
+    const projectRegistryGenerateResult = await appFetch(`/api/reports/${ids.projectRegistryReportId}/generate`, {
+      format: 'html',
+    });
+    if (!projectRegistryGenerateResult.ok) {
+      throw new Error(
+        `Project registry artifact-refresh packet generation failed: ${projectRegistryGenerateResult.status} ${JSON.stringify(projectRegistryGenerateResult.data)}`
+      );
+    }
+
+    const projectRegistryReportPatchResult = await jsonFetch(
+      `${supabaseUrl}/rest/v1/reports?id=eq.${ids.projectRegistryReportId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          generated_at: null,
+        }),
+      }
+    );
+    if (!projectRegistryReportPatchResult.ok) {
+      throw new Error(
+        `Project registry artifact-refresh report patch failed: ${projectRegistryReportPatchResult.status} ${JSON.stringify(projectRegistryReportPatchResult.data)}`
+      );
+    }
+    notes.push('Created a second project report with a real packet artifact but a null report-row generated_at so the Projects registry must prefer latest artifact timing to keep packet posture honest.');
+
+    await page.goto(`${productionBaseUrl}/projects`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { level: 1, name: /^Projects$/i }).waitFor({ timeout: 30000 });
+    await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
+    await page.getByText(new RegExp(artifactRefreshReportTitle, 'i')).first().waitFor({ timeout: 30000 });
+    await page.getByText(/Next action: open this report and regenerate the packet\./i).first().waitFor({ timeout: 30000 });
+    if (await page.getByText(/Next action: open this report and generate the first packet\./i).count()) {
+      throw new Error('Projects registry fell back to "generate the first packet" even though the seeded report already had a generated artifact.');
+    }
+    notes.push('Projects registry preferred latest packet artifact timing over the stale report-row generated_at and kept the seeded artifact-backed report in refresh posture instead of degrading it to no-packet.');
+    await screenshot('prod-rtp-release-review-projects-registry');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-rtp-release-review-smoke.md`);
     const lines = [

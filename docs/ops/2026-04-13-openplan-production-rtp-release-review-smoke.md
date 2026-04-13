@@ -1,25 +1,25 @@
 # OpenPlan Production RTP Release-Review Smoke — 2026-04-13
 
 - Base URL: https://openplan-natford.vercel.app
-- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T01-51-22-542Z@natfordplanning.com
+- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T04-41-17-091Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: 734b2de6-ec21-44cf-9bb9-f34ec8a87fe0
-- RTP cycle id: 5f456d65-b4e6-4d72-a36a-c8a6d4b88838
-- Project id: c91b377b-8284-47ab-806a-acd9b2a919c1
-- Plan id: b83e0e50-625c-4d0b-aa27-cb7bf6d7e8fa
-- Program id: 2a69a43f-bc23-4763-a7e5-90a93e2c8850
-- Opportunity id: d5030494-8a1a-49a7-8289-ce3aa22ef1a8
-- Award id: 0775d0fe-87bd-41a9-9bb7-44c62008b934
-- Invoice id: ec8faa20-d254-46e1-9544-9f43fb2c4d8d
-- Report id: 16630b7e-7f76-4db0-b203-e84549e87364
+- Workspace id: de922979-06d1-4ad4-9151-f455312d4f54
+- RTP cycle id: 5a8e50e1-8f2b-4730-9726-4000de2dc9fe
+- Project id: 195fcdf0-8e97-4b21-bdae-2dd7730626cd
+- Plan id: b7ec5eea-1b88-43c0-9325-0e882e31dc6f
+- Program id: fb887935-d3a8-4711-91bd-5ecab4a75f88
+- Opportunity id: c16e6dac-99f4-410e-a1ca-045642484d78
+- Award id: 704755e5-545d-43b2-a081-3c97de81498f
+- Invoice id: ad28dd8b-35b3-440d-97cc-d4f56008e46a
+- Report id: a3b73ef4-bf0d-4b1d-8a8c-c148cb97df6c
 
 ## Pass/Fail Notes
-- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T01-51-22-542Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T04-41-17-091Z@natfordplanning.com.
 - PASS: Signed into production successfully.
-- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 01-51-22.
+- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 04-41-17.
 - PASS: Current workspace resolved to the freshly bootstrapped workspace, so production proof stayed on the intended operator path.
 - PASS: Created production RTP cycle Production RTP Release Smoke 2026-04-13.
-- PASS: Seeded linked RTP project RTP Funding Smoke Project 01-51-22 in the active workspace.
+- PASS: Seeded linked RTP project RTP Funding Smoke Project 04-41-17 in the active workspace.
 - PASS: Linked the smoke project into the RTP cycle portfolio.
 - PASS: Seeded funding profile, opportunity, award, and reimbursement packet for the linked RTP project.
 - PASS: Created RTP board-packet record from the production API.
@@ -36,6 +36,8 @@
 - PASS: Production RTP registry rendered the release-review lane CTA, the row-level current-packet action, and funding-backed release-review cues before opening the packet detail.
 - PASS: Production registry current-packet link landed on the packet release-review anchor in report detail.
 - PASS: Production RTP release review surfaced funding posture alongside chapter/workflow drift after reimbursement changed post-generation.
+- PASS: Created a second project report with a real packet artifact but a null report-row generated_at so the Projects registry must prefer latest artifact timing to keep packet posture honest.
+- PASS: Projects registry preferred latest packet artifact timing over the stale report-row generated_at and kept the seeded artifact-backed report in refresh posture instead of degrading it to no-packet.
 
 ## Artifacts
 - 2026-04-13-prod-rtp-release-review-dashboard.png
@@ -49,6 +51,7 @@
 - 2026-04-13-prod-rtp-release-review-01-registry.png
 - 2026-04-13-prod-rtp-release-review-03-report-detail.png
 - 2026-04-13-prod-rtp-release-review-04-funding-drift.png
+- 2026-04-13-prod-rtp-release-review-projects-registry.png
 
 ## Verdict
 - PASS: Production rendered smoke confirms the RTP registry surfaces the release-review lane, shows RTP funding posture inside release review, and updates drift when linked-project reimbursement posture changes after generation.
