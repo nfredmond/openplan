@@ -97,27 +97,32 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [{ data: cycle, error: cycleError }, { data: membership, error: membershipError }] = await Promise.all([
-      supabase
-        .from("rtp_cycles")
-        .select("id, workspace_id")
-        .eq("id", parsedParams.data.rtpCycleId)
-        .maybeSingle(),
-      supabase.from("workspace_members").select("workspace_id, role").eq("user_id", user.id).limit(1).maybeSingle(),
-    ]);
+    const { data: cycle, error: cycleError } = await supabase
+      .from("rtp_cycles")
+      .select("id, workspace_id")
+      .eq("id", parsedParams.data.rtpCycleId)
+      .maybeSingle();
 
     if (cycleError) {
       audit.error("cycle_lookup_failed", { message: cycleError.message, code: cycleError.code ?? null });
       return NextResponse.json({ error: "Failed to load RTP cycle" }, { status: 500 });
     }
+    if (!cycle) {
+      return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id, role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", cycle.workspace_id)
+      .maybeSingle();
+
     if (membershipError) {
       audit.error("membership_lookup_failed", { message: membershipError.message, code: membershipError.code ?? null });
       return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
     }
-    if (!cycle) {
-      return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
-    }
-    if (!membership || membership.workspace_id !== cycle.workspace_id || !canAccessWorkspaceAction("plans.write", membership.role)) {
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

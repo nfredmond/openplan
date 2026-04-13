@@ -54,28 +54,33 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [{ data: chapter, error: chapterError }, { data: membership, error: membershipError }] = await Promise.all([
-      supabase
-        .from("rtp_cycle_chapters")
-        .select("id, workspace_id, rtp_cycle_id")
-        .eq("id", parsedParams.data.chapterId)
-        .eq("rtp_cycle_id", parsedParams.data.rtpCycleId)
-        .maybeSingle(),
-      supabase.from("workspace_members").select("workspace_id, role").eq("user_id", user.id).limit(1).maybeSingle(),
-    ]);
+    const { data: chapter, error: chapterError } = await supabase
+      .from("rtp_cycle_chapters")
+      .select("id, workspace_id, rtp_cycle_id")
+      .eq("id", parsedParams.data.chapterId)
+      .eq("rtp_cycle_id", parsedParams.data.rtpCycleId)
+      .maybeSingle();
 
     if (chapterError) {
       audit.error("chapter_lookup_failed", { message: chapterError.message, code: chapterError.code ?? null });
       return NextResponse.json({ error: "Failed to load RTP chapter" }, { status: 500 });
     }
+    if (!chapter) {
+      return NextResponse.json({ error: "RTP chapter not found" }, { status: 404 });
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id, role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", chapter.workspace_id)
+      .maybeSingle();
+
     if (membershipError) {
       audit.error("membership_lookup_failed", { message: membershipError.message, code: membershipError.code ?? null });
       return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
     }
-    if (!chapter) {
-      return NextResponse.json({ error: "RTP chapter not found" }, { status: 404 });
-    }
-    if (!membership || membership.workspace_id !== chapter.workspace_id || !canAccessWorkspaceAction("plans.write", membership.role)) {
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

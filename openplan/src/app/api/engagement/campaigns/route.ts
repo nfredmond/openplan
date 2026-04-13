@@ -6,6 +6,7 @@ import { loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 const listCampaignsSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -232,16 +233,34 @@ export async function POST(request: NextRequest) {
     }
 
     if (!workspaceId) {
+      try {
+        const currentMembership = await loadCurrentWorkspaceMembership(supabase, user.id);
+        const membership = currentMembership.membership;
+
+        if (!membership || !canAccessWorkspaceAction("engagement.write", membership.role)) {
+          return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+        }
+
+        workspaceId = membership.workspace_id;
+      } catch (error) {
+        audit.error("workspace_membership_lookup_failed", {
+          userId: user.id,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
+      }
+    } else {
       const { data: membership, error: membershipError } = await supabase
         .from("workspace_members")
         .select("workspace_id, role")
         .eq("user_id", user.id)
-        .limit(1)
+        .eq("workspace_id", workspaceId)
         .maybeSingle();
 
       if (membershipError) {
         audit.error("workspace_membership_lookup_failed", {
           userId: user.id,
+          workspaceId,
           message: membershipError.message,
           code: membershipError.code ?? null,
         });
@@ -251,8 +270,6 @@ export async function POST(request: NextRequest) {
       if (!membership || !canAccessWorkspaceAction("engagement.write", membership.role)) {
         return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
       }
-
-      workspaceId = membership.workspace_id;
     }
 
     const { data: campaign, error: insertError } = await supabase
