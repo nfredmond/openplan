@@ -130,8 +130,11 @@ async function main() {
     }
     ids.workspaceId = currentWorkspaceResult.data.workspaceId;
     if (ids.workspaceId !== ids.bootstrapWorkspaceId) {
-      notes.push(`Current workspace resolved to ${ids.workspaceId} instead of the freshly bootstrapped workspace ${ids.bootstrapWorkspaceId}; RTP smoke data was aligned to the active workspace selection.`);
+      throw new Error(
+        `Current workspace resolved to ${ids.workspaceId} instead of the freshly bootstrapped workspace ${ids.bootstrapWorkspaceId}.`
+      );
     }
+    notes.push('Current workspace resolved to the freshly bootstrapped workspace, so production proof stayed on the intended operator path.');
 
     const cycleResult = await appFetch('/api/rtp-cycles', {
       title: cycleTitle,

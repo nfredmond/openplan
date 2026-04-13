@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
-type MembershipRow = {
-  workspace_id: string;
-  role: string;
-  workspaces: { name: string | null } | Array<{ name: string | null }> | null;
-};
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 export async function GET() {
   const supabase = await createClient();
@@ -17,31 +12,25 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: memberships, error } = await supabase
-    .from("workspace_members")
-    .select("workspace_id, role, workspaces(name)")
-    .eq("user_id", user.id)
-    .limit(1);
-
-  if (error) {
+  let currentWorkspace;
+  try {
+    currentWorkspace = await loadCurrentWorkspaceMembership(supabase, user.id);
+  } catch (error) {
     return NextResponse.json(
       {
         error: "Failed to fetch workspace membership",
-        details: error.message,
+        details: error instanceof Error ? error.message : "Unknown workspace membership failure",
       },
       { status: 500 }
     );
   }
 
-  const membership = memberships?.[0] as MembershipRow | undefined;
+  const membership = currentWorkspace.membership;
+  const workspace = currentWorkspace.workspace;
 
   if (!membership) {
     return NextResponse.json({ error: "No workspace membership found" }, { status: 404 });
   }
-
-  const workspace = Array.isArray(membership.workspaces)
-    ? membership.workspaces[0] ?? null
-    : membership.workspaces;
 
   return NextResponse.json(
     {

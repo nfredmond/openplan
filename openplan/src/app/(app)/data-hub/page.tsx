@@ -19,21 +19,7 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
-
-type MembershipRow = {
-  workspace_id: string;
-  role: string;
-  workspaces:
-    | {
-        name: string | null;
-        plan: string | null;
-      }
-    | Array<{
-        name: string | null;
-        plan: string | null;
-      }>
-    | null;
-};
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ConnectorRow = {
   id: string;
@@ -165,16 +151,7 @@ export default async function DataHubPage() {
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
-    .from("workspace_members")
-    .select("workspace_id, role, workspaces(name, plan)")
-    .eq("user_id", user.id)
-    .limit(1);
-
-  const membership = memberships?.[0] as MembershipRow | undefined;
-  const workspace = Array.isArray(membership?.workspaces)
-    ? membership?.workspaces[0] ?? null
-    : membership?.workspaces ?? null;
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
   if (!membership) {
     return (

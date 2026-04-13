@@ -114,17 +114,21 @@ describe("workspace membership helpers", () => {
   });
 
   it("loads and unwraps the current workspace membership from Supabase", async () => {
-    const limitMock = vi.fn().mockResolvedValue({
+    const eqMock = vi.fn().mockResolvedValue({
       data: [
         {
-          workspace_id: "workspace-1",
+          workspace_id: "workspace-older",
           role: "admin",
-          workspaces: [{ name: "Foothills MPO", plan: "starter" }],
+          workspaces: [{ name: "Foothills MPO", plan: "starter", created_at: "2026-03-01T12:00:00.000Z" }],
+        },
+        {
+          workspace_id: "workspace-1",
+          role: "owner",
+          workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
         },
       ],
       error: null,
     });
-    const eqMock = vi.fn(() => ({ limit: limitMock }));
     const selectMock = vi.fn(() => ({ eq: eqMock }));
     const fromMock = vi.fn(() => ({ select: selectMock }));
 
@@ -138,14 +142,13 @@ describe("workspace membership helpers", () => {
     expect(fromMock).toHaveBeenCalledWith("workspace_members");
     expect(selectMock).toHaveBeenCalledWith(CURRENT_WORKSPACE_MEMBERSHIP_SELECT);
     expect(eqMock).toHaveBeenCalledWith("user_id", "user-1");
-    expect(limitMock).toHaveBeenCalledWith(1);
     expect(result).toEqual({
       membership: {
         workspace_id: "workspace-1",
-        role: "admin",
-        workspaces: [{ name: "Foothills MPO", plan: "starter" }],
+        role: "owner",
+        workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
       },
-      workspace: { name: "Foothills MPO", plan: "starter" },
+      workspace: { name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" },
     });
   });
 });

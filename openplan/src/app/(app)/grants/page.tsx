@@ -39,9 +39,7 @@ import {
 } from "@/lib/projects/funding";
 import { createClient } from "@/lib/supabase/server";
 import {
-  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
-  type WorkspaceMembershipRow,
-  unwrapWorkspaceRecord,
+  loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
 
 type GrantsPageSearchParams = Promise<{
@@ -509,14 +507,7 @@ export default async function GrantsPage({
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
-    .from("workspace_members")
-    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-    .eq("user_id", user.id)
-    .limit(1);
-
-  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
   const canWriteInvoices = canAccessWorkspaceAction("billing.invoices.write", membership?.role);
 
   if (!membership || !workspace) {

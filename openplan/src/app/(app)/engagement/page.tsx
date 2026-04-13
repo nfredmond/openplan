@@ -8,11 +8,7 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
-import {
-  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
-  type WorkspaceMembershipRow,
-  unwrapWorkspaceRecord,
-} from "@/lib/workspaces/current";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 
 type EngagementPageSearchParams = Promise<{
@@ -78,14 +74,7 @@ export default async function EngagementPage({
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
-    .from("workspace_members")
-    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-    .eq("user_id", user.id)
-    .limit(1);
-
-  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
   if (!membership || !workspace) {
     return (

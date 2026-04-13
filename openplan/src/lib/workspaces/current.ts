@@ -136,15 +136,15 @@ export async function loadCurrentWorkspaceMembership(
   const { data, error } = await supabase
     .from("workspace_members")
     .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-    .eq("user_id", userId)
-    .limit(1);
+    .eq("user_id", userId);
 
   if (error) {
     throw new Error(error.message ?? "Failed to load workspace membership");
   }
 
-  const membership = data?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const selection = resolveWorkspaceMembershipSelection(data as WorkspaceMembershipRow[] | null | undefined);
+  const membership = selection.membership;
+  const workspace = selection.workspace;
 
   return {
     membership,

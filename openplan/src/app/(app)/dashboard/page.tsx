@@ -13,9 +13,7 @@ import {
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
-  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
-  type WorkspaceMembershipRow,
-  unwrapWorkspaceRecord,
+  loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
 
 function fmtPct(value: number | null): string {
@@ -46,14 +44,7 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
-    .from("workspace_members")
-    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-    .eq("user_id", user.id)
-    .limit(1);
-
-  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
   if (!membership || !workspace) {
     return (

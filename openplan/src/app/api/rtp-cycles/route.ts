@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -153,17 +154,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: membership, error: membershipError } = await supabase
-      .from("workspace_members")
-      .select("workspace_id, role")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (membershipError) {
-      audit.error("membership_lookup_failed", { error: membershipError.message });
+    let membershipResult;
+    try {
+      membershipResult = await loadCurrentWorkspaceMembership(supabase, user.id);
+    } catch (error) {
+      audit.error("membership_lookup_failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
     }
+
+    const membership = membershipResult.membership;
 
     if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });

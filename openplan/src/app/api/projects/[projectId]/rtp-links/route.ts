@@ -47,22 +47,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: membership, error: membershipError } = await supabase
-      .from("workspace_members")
-      .select("workspace_id, role")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (membershipError) {
-      audit.error("membership_lookup_failed", { error: membershipError.message });
-      return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
-    }
-
-    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const { data: project, error: projectError } = await supabase
       .from("projects")
       .select("id, workspace_id, name")
@@ -73,7 +57,19 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    if (project.workspace_id !== membership.workspace_id) {
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id, role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", project.workspace_id)
+      .maybeSingle();
+
+    if (membershipError) {
+      audit.error("membership_lookup_failed", { error: membershipError.message, workspaceId: project.workspace_id });
+      return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
+    }
+
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -152,22 +148,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: membership, error: membershipError } = await supabase
-      .from("workspace_members")
-      .select("workspace_id, role")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (membershipError) {
-      audit.error("membership_lookup_failed", { error: membershipError.message });
-      return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
-    }
-
-    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const { data: link, error: linkError } = await supabase
       .from("project_rtp_cycle_links")
       .select("id, project_id, workspace_id")
@@ -184,7 +164,19 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "RTP link not found" }, { status: 404 });
     }
 
-    if (link.workspace_id !== membership.workspace_id) {
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id, role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", link.workspace_id)
+      .maybeSingle();
+
+    if (membershipError) {
+      audit.error("membership_lookup_failed", { error: membershipError.message, workspaceId: link.workspace_id });
+      return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
+    }
+
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

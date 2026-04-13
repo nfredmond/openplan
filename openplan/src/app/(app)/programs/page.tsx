@@ -14,11 +14,7 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
-import {
-  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
-  type WorkspaceMembershipRow,
-  unwrapWorkspaceRecord,
-} from "@/lib/workspaces/current";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   formatFundingOpportunityDecisionLabel,
   buildProgramReadiness,
@@ -160,14 +156,7 @@ export default async function ProgramsPage({
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
-    .from("workspace_members")
-    .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-    .eq("user_id", user.id)
-    .limit(1);
-
-  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
 
   if (!membership || !workspace) {
     return (
