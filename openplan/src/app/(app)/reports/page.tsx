@@ -206,7 +206,7 @@ export default async function ReportsPage({
           : report.rtp_cycles ?? null,
         packetFreshness: getReportPacketFreshness({
           latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: report.generated_at,
+          generatedAt: latestArtifact?.generated_at ?? report.generated_at,
           updatedAt:
             (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
         }),
