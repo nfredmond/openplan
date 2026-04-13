@@ -33,7 +33,7 @@ import {
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
 import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
-import { isGrantsCommand } from "@/lib/operations/grants-links";
+import { isGrantsCommand, isGrantsReimbursementCommand } from "@/lib/operations/grants-links";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -848,6 +848,7 @@ export default async function GrantsPage({
       href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId, invoiceById),
     }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
+  const leadReimbursementCommand = grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null;
 
   return (
     <section className="module-page">
@@ -1055,6 +1056,24 @@ export default async function GrantsPage({
                 {reimbursementPriorityQueue.length > 0 ? `${reimbursementPriorityQueue.length} active follow-ups` : "Queue clear"}
               </StatusBadge>
             </div>
+
+            {leadReimbursementCommand ? (
+              <div className="mt-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold tracking-tight">Lead reimbursement command from workspace queue</p>
+                      <StatusBadge tone={leadReimbursementCommand.tone}>{leadReimbursementCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+                    </div>
+                    <p className="mt-1">{leadReimbursementCommand.detail}</p>
+                  </div>
+                  <Link href={leadReimbursementCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                    Open reimbursement follow-through
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : null}
 
             <div className="module-summary-grid cols-5 mt-5">
               <div className="module-summary-card">
