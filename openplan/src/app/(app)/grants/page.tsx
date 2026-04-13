@@ -33,7 +33,7 @@ import {
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
 import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
-import { isGrantsCommand, isGrantsReimbursementCommand } from "@/lib/operations/grants-links";
+import { isGrantsAwardCommand, isGrantsCommand, isGrantsReimbursementCommand } from "@/lib/operations/grants-links";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -849,6 +849,7 @@ export default async function GrantsPage({
     }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
   const leadReimbursementCommand = grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null;
+  const leadAwardCommand = grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null;
 
   return (
     <section className="module-page">
@@ -1253,6 +1254,23 @@ export default async function GrantsPage({
           </article>
 
           <article id="grants-award-conversion-lane" className="module-section-surface">
+            {leadAwardCommand ? (
+              <div className="mb-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold tracking-tight">Lead award conversion command from workspace queue</p>
+                      <StatusBadge tone={leadAwardCommand.tone}>{leadAwardCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+                    </div>
+                    <p className="mt-1">{leadAwardCommand.detail}</p>
+                  </div>
+                  <Link href={leadAwardCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                    Open award conversion
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : null}
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Award conversion</p>

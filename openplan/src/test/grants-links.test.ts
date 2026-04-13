@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isGrantsAwardCommand,
   isGrantsCommand,
   isGrantsReimbursementCommand,
   resolveWorkspaceCommandHref,
@@ -51,6 +52,37 @@ describe("grants-links", () => {
         })
       )
     ).toBe(false);
+  });
+
+  it("identifies award-conversion grants commands", () => {
+    expect(
+      isGrantsAwardCommand(
+        buildCommand({
+          key: "record-awarded-funding",
+          targetOpportunityId: "opportunity-award-1",
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      isGrantsAwardCommand(
+        buildCommand({
+          key: "advance-project-reimbursement-invoicing",
+          targetInvoiceId: "invoice-1",
+        })
+      )
+    ).toBe(false);
+  });
+
+  it("routes award-conversion commands into the grants award conversion composer", () => {
+    expect(
+      resolveWorkspaceCommandHref(
+        buildCommand({
+          key: "record-awarded-funding",
+          targetOpportunityId: "opportunity-award-1",
+        })
+      )
+    ).toBe("/grants?focusOpportunityId=opportunity-award-1#grants-award-conversion-composer");
   });
 
   it("routes reimbursement-start commands into the grants reimbursement composer", () => {
