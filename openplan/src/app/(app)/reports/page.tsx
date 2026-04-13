@@ -32,6 +32,7 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  getReportPacketWorkStatus,
   matchesReportFreshnessFilter,
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
@@ -309,7 +310,9 @@ export default async function ReportsPage({
     )
     .slice(0, 5)
     .map((report) => {
+      const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
       const badges: Array<{ label: string; value?: string | number | null }> = [];
+      badges.push({ label: packetWorkStatus.label });
       if (report.packetFreshness.label !== "Packet current") {
         badges.push({ label: report.packetFreshness.label });
       }
@@ -331,19 +334,19 @@ export default async function ReportsPage({
         href: getReportNavigationHref(report.id, report.packetFreshness.label),
         title: report.title,
         subtitle:
-          report.packetFreshness.label === "Refresh recommended"
-            ? `First action: refresh ${report.title}`
-            : report.packetFreshness.label === "No packet"
-              ? `First action: generate ${report.title}`
-              : report.storedRtpFundingReview?.needsAttention
-                ? `First action: run funding-backed release review on ${report.title}`
-              : report.evidenceChainDigest?.blockedGateDetail
-                ? `First action: review governance hold in ${report.title}`
-                : `First action: review comparison-backed packet ${report.title}`,
+          report.storedRtpFundingReview?.needsAttention
+            ? `First action: run funding-backed release review on ${report.title}`
+            : report.evidenceChainDigest?.blockedGateDetail
+              ? `First action: review governance hold in ${report.title}`
+              : packetWorkStatus.key === "generate-first"
+                ? `First action: generate the first packet for ${report.title}`
+                : packetWorkStatus.key === "refresh"
+                  ? `First action: refresh ${report.title}`
+                  : `First action: run release review on ${report.title}`,
         detail:
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
-          report.packetFreshness.detail,
+          packetWorkStatus.detail,
         badges,
       };
     });
@@ -736,7 +739,10 @@ export default async function ReportsPage({
             </div>
           ) : (
             <div className="mt-5 module-record-list">
-              {filteredReports.map((report) => (
+              {filteredReports.map((report) => {
+                const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
+
+                return (
                 <Link
                   key={report.id}
                   href={getReportNavigationHref(report.id, report.packetFreshness.label)}
@@ -751,6 +757,7 @@ export default async function ReportsPage({
                         <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
                         {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
                         <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
+                        <StatusBadge tone={packetWorkStatus.tone}>{packetWorkStatus.label}</StatusBadge>
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -769,6 +776,7 @@ export default async function ReportsPage({
                     <span className="module-record-chip">
                       {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
                     </span>
+                    <span className="module-record-chip">Next step {packetWorkStatus.label}</span>
                     <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
                     {report.evidenceChainSummary && report.evidenceChainSummary.scenarioSetLinkCount > 0 ? (
                       <span className="module-record-chip">
@@ -831,7 +839,9 @@ export default async function ReportsPage({
                   <div className="module-record-detail-grid cols-2 mt-4">
                     <div className="module-note text-sm">
                       <p className="font-medium text-foreground">Packet posture</p>
-                      <p className="mt-2">{report.packetFreshness.detail}</p>
+                      <p className="mt-2 font-medium text-foreground/90">{packetWorkStatus.label}</p>
+                      <p className="mt-1">{packetWorkStatus.detail}</p>
+                      <p className="mt-1">{report.packetFreshness.detail}</p>
                     </div>
                     {report.evidenceChainDigest ? (
                       <div className="module-note text-sm">
@@ -868,7 +878,8 @@ export default async function ReportsPage({
                     </div>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </article>

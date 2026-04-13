@@ -6,6 +6,7 @@ import {
   getReportPacketActionLabel,
   getReportPacketFreshness,
   getReportPacketPriority,
+  getReportPacketWorkStatus,
   matchesReportFreshnessFilter,
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
@@ -48,6 +49,24 @@ describe("getReportPacketFreshness", () => {
     expect(getReportPacketActionLabel("Refresh recommended")).toMatch(/regenerate the packet/i);
     expect(getReportPacketActionLabel("No packet")).toMatch(/generate the first packet/i);
     expect(getReportPacketActionLabel("Packet current")).toMatch(/release review/i);
+  });
+
+  it("derives a normalized packet work status from freshness", () => {
+    expect(getReportPacketWorkStatus("No packet")).toMatchObject({
+      key: "generate-first",
+      label: "Generate first packet",
+      tone: "warning",
+    });
+    expect(getReportPacketWorkStatus("Refresh recommended")).toMatchObject({
+      key: "refresh",
+      label: "Refresh packet",
+      tone: "warning",
+    });
+    expect(getReportPacketWorkStatus("Packet current")).toMatchObject({
+      key: "release-review",
+      label: "Release review ready",
+      tone: "success",
+    });
   });
 
   it("prioritizes stale and missing packets ahead of current ones", () => {

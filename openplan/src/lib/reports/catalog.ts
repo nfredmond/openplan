@@ -28,6 +28,13 @@ export type ReportPacketFreshness = {
   detail: string;
 };
 
+export type ReportPacketWorkStatus = {
+  key: "generate-first" | "refresh" | "release-review";
+  label: string;
+  tone: ReportStatusTone;
+  detail: string;
+};
+
 export type ReportFreshnessFilter = "all" | "refresh" | "missing" | "current";
 export type ReportPostureFilter =
   | "all"
@@ -72,11 +79,42 @@ export type ReportFundingDigest = {
   timingDetail: string | null;
 };
 
-export function getReportPacketActionLabel(freshnessLabel: string) {
+export function getReportPacketWorkStatus(
+  freshnessLabel: string
+): ReportPacketWorkStatus {
   switch (freshnessLabel) {
-    case "Refresh recommended":
-      return "Next action: open this report and regenerate the packet.";
     case "No packet":
+      return {
+        key: "generate-first",
+        label: "Generate first packet",
+        tone: "warning",
+        detail:
+          "No current packet artifact exists yet, so first-packet generation should happen before release review starts.",
+      };
+    case "Refresh recommended":
+      return {
+        key: "refresh",
+        label: "Refresh packet",
+        tone: "warning",
+        detail:
+          "The latest packet artifact is behind the current source state, so refresh it before release review continues.",
+      };
+    default:
+      return {
+        key: "release-review",
+        label: "Release review ready",
+        tone: "success",
+        detail:
+          "The latest packet artifact is aligned with the current source state and ready for release review.",
+      };
+  }
+}
+
+export function getReportPacketActionLabel(freshnessLabel: string) {
+  switch (getReportPacketWorkStatus(freshnessLabel).key) {
+    case "refresh":
+      return "Next action: open this report and regenerate the packet.";
+    case "generate-first":
       return "Next action: open this report and generate the first packet.";
     default:
       return "Next action: open this report and run release review on the current packet.";
@@ -84,10 +122,10 @@ export function getReportPacketActionLabel(freshnessLabel: string) {
 }
 
 export function getReportPacketPriority(freshnessLabel: string) {
-  switch (freshnessLabel) {
-    case "Refresh recommended":
+  switch (getReportPacketWorkStatus(freshnessLabel).key) {
+    case "refresh":
       return 0;
-    case "No packet":
+    case "generate-first":
       return 1;
     default:
       return 2;
@@ -95,10 +133,10 @@ export function getReportPacketPriority(freshnessLabel: string) {
 }
 
 export function getReportNavigationHref(reportId: string, freshnessLabel: string) {
-  switch (freshnessLabel) {
-    case "Refresh recommended":
+  switch (getReportPacketWorkStatus(freshnessLabel).key) {
+    case "refresh":
       return `/reports/${reportId}#drift-since-generation`;
-    case "No packet":
+    case "generate-first":
       return `/reports/${reportId}#report-controls`;
     default:
       return `/reports/${reportId}#packet-release-review`;

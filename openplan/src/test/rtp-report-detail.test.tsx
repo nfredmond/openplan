@@ -110,6 +110,7 @@ describe("RtpReportDetail", () => {
     );
 
     expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Release review ready").length).toBeGreaterThan(0);
     expect(screen.queryByText("No packet")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
   });

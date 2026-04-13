@@ -19,6 +19,7 @@ import {
   formatReportStatusLabel,
   getReportNavigationHref,
   getReportPacketFreshness,
+  getReportPacketWorkStatus,
   getRtpPacketPresetAlignment,
 } from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
@@ -347,18 +348,20 @@ function buildPacketOperatorStatus(input: {
   }
 
   if (input.packetFreshness.label === "Refresh recommended") {
+    const workStatus = getReportPacketWorkStatus(input.packetFreshness.label);
     return {
-      label: "Ready to regenerate",
-      tone: "info" as const,
-      detail: "The packet layout is usable, but the artifact should be regenerated from current source state.",
+      label: workStatus.label,
+      tone: workStatus.tone,
+      detail: workStatus.detail,
     };
   }
 
   if (input.packetFreshness.label === "No packet") {
+    const workStatus = getReportPacketWorkStatus(input.packetFreshness.label);
     return {
-      label: "Record ready",
-      tone: "info" as const,
-      detail: "A packet record exists, but it still needs its first generated artifact.",
+      label: workStatus.label,
+      tone: workStatus.tone,
+      detail: workStatus.detail,
     };
   }
 
@@ -380,16 +383,17 @@ function buildPacketOperatorStatus(input: {
 
   if (input.packetFundingReview.needsAttention) {
     return {
-      label: "Release review with funding follow-up",
+      label: "Funding-backed release review",
       tone: input.packetFundingReview.tone === "warning" ? ("warning" as const) : ("info" as const),
       detail: `Packet record and latest artifact are aligned with current cycle state, but ${input.packetFundingReview.detail.charAt(0).toLowerCase()}${input.packetFundingReview.detail.slice(1)}`,
     };
   }
 
+  const workStatus = getReportPacketWorkStatus(input.packetFreshness.label);
   return {
-    label: "Release review ready",
-    tone: "success" as const,
-    detail: "Packet record and latest artifact are aligned with current cycle state and ready for release review.",
+    label: workStatus.label,
+    tone: workStatus.tone,
+    detail: workStatus.detail,
   };
 }
 
