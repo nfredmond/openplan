@@ -422,6 +422,151 @@ function createRtpCycleSupabaseStub() {
   };
 }
 
+function createProgramSupabaseStub() {
+  const workspaceMembershipMaybeSingle = async () => ({
+    data: {
+      workspace_id: "workspace-1",
+      role: "owner",
+      workspaces: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        plan: "starter",
+      },
+    },
+  });
+
+  const programMaybeSingle = async () => ({
+    data: {
+      id: "program-1",
+      workspace_id: "workspace-1",
+      project_id: "project-1",
+      title: "Downtown Delivery Package",
+      program_type: "funding_program",
+      status: "draft",
+      cycle_name: "FY 2027",
+      sponsor_agency: "Nevada County",
+      summary: "Program package for near-term delivery",
+      nomination_due_at: null,
+      adoption_target_at: null,
+      projects: {
+        id: "project-1",
+        name: "Downtown Mobility Plan",
+      },
+      updated_at: "2026-03-28T17:40:00.000Z",
+    },
+  });
+
+  const emptyEq = async () => ({ data: [], error: null });
+  const emptyMaybeSingle = async () => ({ data: null, error: null });
+  const projectReportsEq = async () => ({
+    data: [
+      {
+        id: "report-1",
+        title: "Downtown Delivery Packet",
+        status: "generated",
+        generated_at: null,
+        latest_artifact_kind: "html",
+        updated_at: "2026-03-28T17:45:00.000Z",
+      },
+    ],
+    error: null,
+  });
+  const reimbursementEq = async () => ({ data: [], error: null });
+  const artifactsIn = async () => ({
+    data: [{ report_id: "report-1", generated_at: "2026-03-28T18:00:00.000Z" }],
+    error: null,
+  });
+
+  return {
+    from(table: string) {
+      if (table === "workspace_members") {
+        return {
+          select() {
+            return {
+              eq() {
+                return {
+                  eq() {
+                    return { maybeSingle: workspaceMembershipMaybeSingle };
+                  },
+                };
+              },
+            };
+          },
+        };
+      }
+
+      if (table === "programs") {
+        return {
+          select() {
+            return {
+              eq() {
+                return { maybeSingle: programMaybeSingle };
+              },
+            };
+          },
+        };
+      }
+
+      if (table === "program_links" || table === "plans" || table === "engagement_campaigns" || table === "funding_opportunities" || table === "funding_awards" || table === "billing_invoice_records") {
+        return {
+          select() {
+            return {
+              eq: emptyEq,
+            };
+          },
+        };
+      }
+
+      if (table === "project_submittals") {
+        return {
+          select() {
+            return {
+              eq() {
+                return { eq: reimbursementEq };
+              },
+            };
+          },
+        };
+      }
+
+      if (table === "project_funding_profiles") {
+        return {
+          select() {
+            return {
+              eq() {
+                return { maybeSingle: emptyMaybeSingle };
+              },
+            };
+          },
+        };
+      }
+
+      if (table === "reports") {
+        return {
+          select() {
+            return {
+              eq: projectReportsEq,
+              in: emptyEq,
+            };
+          },
+        };
+      }
+
+      if (table === "report_artifacts") {
+        return {
+          select() {
+            return {
+              in: artifactsIn,
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected table: ${table}`);
+    },
+  };
+}
+
 describe("loadAssistantContext", () => {
   it("prefers the latest artifact timestamp for report assistant preview posture", async () => {
     const context = await loadAssistantContext(createSupabaseStub(), "user-1", {
@@ -496,6 +641,33 @@ describe("loadAssistantContext", () => {
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(
       expect.arrayContaining([expect.stringMatching(/Recommended packet anchor: 2027 RTP Packet \(Packet current\)/i)])
+    );
+  });
+
+  it("prefers latest artifact timing in program packet posture", async () => {
+    const context = await loadAssistantContext(createProgramSupabaseStub(), "user-1", {
+      kind: "program",
+      id: "program-1",
+      workspaceId: "workspace-1",
+      runId: null,
+      baselineRunId: null,
+    });
+
+    expect(context).not.toBeNull();
+    expect(context?.kind).toBe("program");
+
+    if (!context || context.kind !== "program") {
+      throw new Error("Expected program context");
+    }
+
+    expect(context.packetSummary.noPacketCount).toBe(0);
+    expect(context.packetSummary.recommendedReport?.packetFreshness.label).toBe("Packet current");
+
+    const preview = buildAssistantPreview(context);
+    expect(preview.facts).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/Recommended packet anchor: Downtown Delivery Packet \(Packet current\)/i),
+      ])
     );
   });
 });
