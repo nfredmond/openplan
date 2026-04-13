@@ -43,6 +43,16 @@ const reportsSelectMock = vi.fn(() => ({ eq: reportsEqProjectMock }));
 const reportRunsInMock = vi.fn();
 const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
 
+const reportArtifactsInMock = vi.fn();
+const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+
+const comparisonSnapshotsOrderMock = vi.fn();
+const comparisonSnapshotsEqMock = vi.fn(() => ({ order: comparisonSnapshotsOrderMock }));
+const comparisonSnapshotsSelectMock = vi.fn(() => ({ eq: comparisonSnapshotsEqMock }));
+
+const comparisonIndicatorDeltasInMock = vi.fn();
+const comparisonIndicatorDeltasSelectMock = vi.fn(() => ({ in: comparisonIndicatorDeltasInMock }));
+
 const buildScenarioComparisonBoardMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
@@ -66,6 +76,15 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_runs") {
     return { select: reportRunsSelectMock };
+  }
+  if (table === "report_artifacts") {
+    return { select: reportArtifactsSelectMock };
+  }
+  if (table === "scenario_comparison_snapshots") {
+    return { select: comparisonSnapshotsSelectMock };
+  }
+  if (table === "scenario_comparison_indicator_deltas") {
+    return { select: comparisonIndicatorDeltasSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -254,6 +273,17 @@ describe("ScenarioSetDetailPage", () => {
       error: null,
     });
 
+    reportArtifactsInMock.mockResolvedValue({
+      data: [
+        { report_id: "report-1", generated_at: "2026-03-28T20:00:00.000Z" },
+        { report_id: "report-2", generated_at: "2026-03-28T19:00:00.000Z" },
+      ],
+      error: null,
+    });
+
+    comparisonSnapshotsOrderMock.mockResolvedValue({ data: [], error: null });
+    comparisonIndicatorDeltasInMock.mockResolvedValue({ data: [], error: null });
+
     buildScenarioComparisonBoardMock.mockReturnValue([]);
 
     createClientMock.mockResolvedValue({
@@ -274,9 +304,50 @@ describe("ScenarioSetDetailPage", () => {
     expect(screen.queryByText(/No generated packet is attached to this report yet\./i)).not.toBeInTheDocument();
   });
 
+  it("keeps scenario-linked packet guidance current when the latest artifact is fresher than the report row", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-1",
+          title: "Protected Bike Packet",
+          status: "generated",
+          report_type: "analysis_summary",
+          generated_at: null,
+          updated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+      ],
+      error: null,
+    });
+    reportRunsInMock.mockResolvedValueOnce({
+      data: [
+        { report_id: "report-1", run_id: "run-baseline" },
+        { report_id: "report-1", run_id: "run-alt-1" },
+      ],
+      error: null,
+    });
+    reportArtifactsInMock.mockResolvedValueOnce({
+      data: [
+        { report_id: "report-1", generated_at: "2026-03-28T20:30:00.000Z" },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Refresh recommended/i)).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/run release review on the current packet/i).length
+    ).toBeGreaterThan(0);
+  });
+
   it("shows an empty linked-report state when no scenario reports are matched", async () => {
     reportsOrderMock.mockResolvedValueOnce({ data: [], error: null });
     reportRunsInMock.mockResolvedValueOnce({ data: [], error: null });
+    reportArtifactsInMock.mockResolvedValueOnce({ data: [], error: null });
+    comparisonSnapshotsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    comparisonIndicatorDeltasInMock.mockResolvedValueOnce({ data: [], error: null });
 
     await renderPage();
 

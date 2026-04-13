@@ -181,9 +181,13 @@ export default async function ScenarioSetDetailPage({
     .eq("project_id", scenarioSet.project_id)
     .order("updated_at", { ascending: false });
   const reportIds = (reportsData ?? []).map((report) => report.id);
-  const { data: reportRunsData } = reportIds.length
-    ? await supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds)
-    : { data: [] };
+  const [reportRunsResult, reportArtifactsResult] = reportIds.length
+    ? await Promise.all([
+        supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds),
+        supabase.from("report_artifacts").select("report_id, generated_at").in("report_id", reportIds),
+      ])
+    : [{ data: [] }, { data: [] }];
+  const reportRunsData = reportRunsResult.data;
   const comparisonBoard = buildScenarioComparisonBoard({
     scenarioSetId: scenarioSet.id,
     baselineEntry,
@@ -209,12 +213,22 @@ export default async function ScenarioSetDetailPage({
     })),
     baselineEntryId: baselineEntry?.id ?? null,
   });
+  const latestArtifactByReportId = new Map<string, { generated_at: string | null }>();
+  for (const row of (reportArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>) {
+    const current = latestArtifactByReportId.get(row.report_id);
+    const rowTime = row.generated_at ? new Date(row.generated_at).getTime() : Number.NEGATIVE_INFINITY;
+    const currentTime = current?.generated_at ? new Date(current.generated_at).getTime() : Number.NEGATIVE_INFINITY;
+    if (!current || rowTime > currentTime) {
+      latestArtifactByReportId.set(row.report_id, { generated_at: row.generated_at });
+    }
+  }
+
   const linkedReportsWithFreshness = reportLinkage.linkedReports
     .map((report) => ({
       ...report,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
     }))
@@ -226,8 +240,8 @@ export default async function ScenarioSetDetailPage({
         return freshnessPriority;
       }
 
-      const leftStamp = left.generated_at ?? left.updated_at ?? "";
-      const rightStamp = right.generated_at ?? right.updated_at ?? "";
+      const leftStamp = latestArtifactByReportId.get(left.id)?.generated_at ?? left.generated_at ?? left.updated_at ?? "";
+      const rightStamp = latestArtifactByReportId.get(right.id)?.generated_at ?? right.generated_at ?? right.updated_at ?? "";
       return rightStamp.localeCompare(leftStamp);
     });
   const entryById = new Map(entries.map((entry) => [entry.id, entry]));
@@ -685,7 +699,11 @@ export default async function ScenarioSetDetailPage({
                   </div>
                   <MetaList>
                     <MetaItem>{report.matchedRunIds.length} matching runs</MetaItem>
-                    <MetaItem>{report.generated_at ? `Generated ${report.generated_at}` : "Draft packet"}</MetaItem>
+                    <MetaItem>
+                      {latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at
+                        ? `Generated ${latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at}`
+                        : "Draft packet"}
+                    </MetaItem>
                   </MetaList>
                 </Link>
               ))}
