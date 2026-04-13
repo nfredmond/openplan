@@ -6,10 +6,8 @@ import { AppSidebarLink } from "@/components/nav/app-sidebar-link";
 import { AppCopilot } from "@/components/assistant/app-copilot";
 import { createClient } from "@/lib/supabase/server";
 import {
-  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  loadCurrentWorkspaceMembership,
   resolveWorkspaceShellState,
-  unwrapWorkspaceRecord,
-  type WorkspaceMembershipRow,
 } from "@/lib/workspaces/current";
 
 const navGroups = [
@@ -50,16 +48,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: memberships } = user
-    ? await supabase
-        .from("workspace_members")
-        .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
-        .eq("user_id", user.id)
-        .limit(1)
-    : { data: [] };
-
-  const membership = memberships?.[0] as WorkspaceMembershipRow | undefined;
-  const workspace = unwrapWorkspaceRecord(membership?.workspaces);
+  const { membership, workspace } = user
+    ? await loadCurrentWorkspaceMembership(supabase, user.id)
+    : { membership: undefined, workspace: null };
 
   const shellState = resolveWorkspaceShellState({
     membership,
