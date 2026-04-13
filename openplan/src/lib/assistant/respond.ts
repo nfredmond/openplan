@@ -25,6 +25,7 @@ import {
 } from "@/lib/assistant/rtp-packet-posture";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
+import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function asNumber(value: unknown): number | null {
@@ -61,6 +62,14 @@ function pluralize(count: number, singular: string, plural = `${singular}s`): st
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function formatRtpFundingBackedReleaseReviewPressure(count: number): string {
+  return `${count} current RTP packet${count === 1 ? "" : "s"} still ${count === 1 ? "carries" : "carry"} funding-backed release-review pressure that must be resolved before packet posture can be treated as settled.`;
+}
+
+function hasRtpFundingBackedReleaseReviewPressure(context: { operationsSummary: WorkspaceOperationsSummary }): boolean {
+  return context.operationsSummary.counts.rtpFundingReviewPackets > 0;
+}
+
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
   const value = asNumber(metrics[key]);
   return value === null ? "N/A" : `${value}`;
@@ -69,6 +78,7 @@ function metricLabel(metrics: Record<string, unknown>, key: string): string {
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
   const title = context.kind === "analysis_studio" ? "Analysis Studio copilot" : context.workspace.name ?? "Workspace copilot";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -80,7 +90,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -92,7 +102,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         ? `Latest run: ${context.recentRuns[0].title} · ${formatDateTime(context.recentRuns[0].createdAt)}`
         : "No recent analysis runs are visible yet.",
     rtpFundingReviewCount > 0
-      ? `RTP funding review: ${rtpFundingReviewCount} current packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review.`
+      ? `RTP funding review: ${rtpFundingReviewPressure}`
       : context.operationsSummary.nextCommand
       ? `Command queue: ${context.operationsSummary.nextCommand.title}`
       : "Command queue is currently clear from the workspace snapshot.",
@@ -122,7 +132,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
       ? {
           label: "Current runtime cue",
           title: context.operationsSummary.nextCommand.title,
-          detail: context.operationsSummary.nextCommand.detail,
+          detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
           label: "Current runtime cue",
@@ -234,6 +244,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
 
 function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -242,21 +253,23 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
     registryPacketPosture === "generate"
       ? {
           title: "First packet queue is live",
-          detail: `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work outranks refresh or release review right now.`,
-          summary: `Grounded to the RTP cycle registry, with first-packet generation currently outranking refresh and release work across the visible cycles.`,
+          detail: `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so generate work outranks refresh or release-review work right now.`,
+          summary: `Grounded to the RTP cycle registry, with generate work currently outranking refresh and release-review work across the visible cycles.`,
         }
       : registryPacketPosture === "refresh"
         ? {
             title: "Refresh queue is live",
-            detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the main registry posture right now.`,
-            summary: `Grounded to the RTP cycle registry, with stale packet refresh currently outranking first-generation and release review work across the visible cycles.`,
+            detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet refresh is the main registry posture right now.`,
+            summary: `Grounded to the RTP cycle registry, with refresh work currently outranking generate and release-review work across the visible cycles.`,
           }
         : {
             title: "Release-review queue is live",
-            detail: context.recommendedCycle
-              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for release review from the registry.`
-              : "The visible RTP packet queue is materially current enough that release review is now the main registry posture.",
-            summary: `Grounded to the RTP cycle registry, with release review currently outranking packet generation and refresh work across the visible cycles.`,
+            detail: hasRtpFundingBackedReleaseReviewPressure(context)
+              ? rtpFundingReviewPressure
+              : context.recommendedCycle
+              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for release-review work from the registry.`
+              : "The visible RTP packet queue is materially current enough that release-review work is now the main registry posture.",
+            summary: `Grounded to the RTP cycle registry, with release-review work currently outranking generate and refresh work across the visible cycles.`,
           };
 
   return {
@@ -275,7 +288,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
         ? `Recommended cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
         : "No RTP cycle is visible yet from this registry snapshot.",
       rtpFundingReviewCount > 0
-        ? `${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though packet freshness already reads current.`
+        ? rtpFundingReviewPressure
         : null,
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
@@ -285,7 +298,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
       ? {
           label: "Current runtime cue",
           title: context.operationsSummary.nextCommand.title,
-          detail: context.operationsSummary.nextCommand.detail,
+          detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
           label: "Current runtime cue",
@@ -298,6 +311,8 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
 }
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
     linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
@@ -310,18 +325,18 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
     cyclePacketWorkPosture === "generate"
       ? {
           title: "First packet work comes first",
-          detail: "This cycle still lacks a usable current packet artifact, so first-generation planning outranks refresh or release review right now.",
-          summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and first-packet setup posture before release work begins.`,
+          detail: "This cycle still lacks a usable current packet artifact, so generate planning outranks refresh or release-review work right now.",
+          summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and generate posture before release-review work begins.`,
         }
       : cyclePacketWorkPosture === "refresh"
         ? {
             title: "Refresh work comes first",
             detail: recommendedPacketDetail,
-            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and stale packet refresh posture before release review.`,
+            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and refresh posture before release-review work.`,
           }
         : {
             title: "Release review comes first",
-            detail: recommendedPacketDetail,
+            detail: hasRtpFundingBackedReleaseReviewPressure(context) ? rtpFundingReviewPressure : recommendedPacketDetail,
             summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and release-review packet posture.`,
           };
 
@@ -339,14 +354,16 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
       context.rtpCycle.summary || "The RTP cycle does not yet carry a strong summary narrative on the record itself.",
       `${context.counts.readyForReviewChapters} chapters are ready for review and ${context.counts.completeChapters} are complete.`,
       context.packetSummary.recommendedReport
-        ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
+        ? hasRtpFundingBackedReleaseReviewPressure(context)
+          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with funding-backed release-review pressure still open.`
+          : `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No RTP board packet is linked yet.",
     ],
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",
           title: context.operationsSummary.nextCommand.title,
-          detail: context.operationsSummary.nextCommand.detail,
+          detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
           label: "Current runtime cue",
@@ -527,13 +544,13 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
   const rtpPacketPreviewPosture =
     packetPosture === "generate"
       ? {
-          summary: `Grounded to this RTP-linked packet's first-generation setup, cycle anchor, artifact history, and provenance metadata before release review begins.`,
+          summary: `Grounded to this RTP-linked packet's generate setup, cycle anchor, artifact history, and provenance metadata before release-review work begins.`,
           cueTitle: "First packet work comes first",
-          cueDetail: "This RTP-linked packet still needs its first usable artifact, so first-generation setup outranks refresh and release review right now.",
+          cueDetail: "This RTP-linked packet still needs its first usable artifact, so generate setup outranks refresh and release-review work right now.",
         }
       : packetPosture === "refresh"
         ? {
-            summary: `Grounded to this RTP-linked packet's stale refresh posture, cycle anchor, artifact history, and provenance metadata before release review.`,
+            summary: `Grounded to this RTP-linked packet's refresh posture, cycle anchor, artifact history, and provenance metadata before release-review work.`,
             cueTitle: "Refresh work comes first",
             cueDetail: packetFreshness.detail,
           }
@@ -638,6 +655,7 @@ function buildWorkspaceResponse(
 ): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Workspace overview";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -769,7 +787,7 @@ function buildWorkspaceResponse(
     workflowId,
     label,
     title: `${context.workspace.name ?? "Workspace"} overview`,
-    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"} funding-backed release review even though packet freshness already reads current.` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
+    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${rtpFundingReviewPressure}` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
     findings: [
       context.recentProject
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
@@ -778,7 +796,7 @@ function buildWorkspaceResponse(
         ? `Next command: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
         : "No immediate command-queue pressure is visible from the workspace snapshot.",
       rtpFundingReviewCount > 0
-        ? `${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review.`
+        ? rtpFundingReviewPressure
         : missingFundingAnchorCount > 0
         ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist.`
         : fundingSourcingCount > 0
@@ -1022,6 +1040,8 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
 
 function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP registry brief";
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -1033,7 +1053,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       label,
       title: `First RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: registryPacketPosture === "generate"
-        ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so first-generation work is the top registry queue posture right now.`
+        ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so generate work is the top registry queue posture right now.`
         : "The registry does not currently show any RTP cycles missing a first packet.",
       findings: [
         context.recommendedCycle
@@ -1065,7 +1085,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       label,
       title: `RTP refresh queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: registryPacketPosture === "refresh"
-        ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet regeneration is the top registry queue posture right now.`
+        ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet refresh is the top registry queue posture right now.`
         : "The registry does not currently show stale RTP packets that need refresh.",
       findings: [
         context.recommendedCycle
@@ -1096,17 +1116,21 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       workflowId,
       label,
       title: `Release-review RTP queue: ${context.workspace.name ?? "Current workspace"}`,
-      summary: context.recommendedCycle
-        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for RTP packet release review from the registry.`
+      summary: hasRtpFundingBackedReleaseReviewPressure(context)
+        ? rtpFundingReviewPressure
+        : context.recommendedCycle
+        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for RTP packet release-review work from the registry.`
         : "No release-review RTP packet anchor is visible yet from the registry snapshot.",
       findings: [
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
-        context.recommendedCycle
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? rtpFundingReviewPressure
+          : context.recommendedCycle
           ? `Recommended cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.status}, ${context.recommendedCycle.packetFreshnessLabel}).`
-          : "No RTP cycle is available yet to anchor release review.",
+          : "No RTP cycle is available yet to anchor release-review work.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
-          : "No broader workspace queue pressure is currently outranking release review in the RTP registry.",
+          : "No broader workspace queue pressure is currently outranking release-review work in the RTP registry.",
       ],
       nextSteps: [
         context.recommendedCycle
@@ -1128,13 +1152,17 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       workflowId,
       label,
       title: `RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
-      summary: context.recommendedCycle
+      summary: hasRtpFundingBackedReleaseReviewPressure(context)
+        ? `${context.recommendedCycle ? `${context.recommendedCycle.title} is currently the strongest RTP queue anchor. ` : ""}${rtpFundingReviewPressure}`
+        : context.recommendedCycle
         ? `${context.recommendedCycle.title} is currently the strongest RTP queue anchor, and the registry shows ${context.counts.refreshRecommendedCount} cycle packet${context.counts.refreshRecommendedCount === 1 ? "" : "s"} needing refresh plus ${context.counts.noPacketCount} cycle${context.counts.noPacketCount === 1 ? "" : "s"} still missing a generated packet.`
         : "No RTP packet queue posture is visible yet because there are no cycles in the registry snapshot.",
       findings: [
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
-        context.recommendedCycle
-          ? `${context.recommendedCycle.title} currently reads as ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()}.`
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? rtpFundingReviewPressure
+          : context.recommendedCycle
+          ? `${context.recommendedCycle.title} is in ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()} posture.`
           : "No RTP cycle is available yet to act as a packet anchor.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
@@ -1144,7 +1172,9 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
         context.recommendedCycle
           ? `Open /rtp/${context.recommendedCycle.id} to work the strongest current RTP packet or cycle signal first.`
           : "Create the first RTP cycle before expecting packet queue behavior.",
-        context.counts.noPacketCount > 0
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? "Run the funding-backed release-review lane before treating current packet freshness as settled."
+          : context.counts.noPacketCount > 0
           ? "Create first packets for missing cycles before spending too long on already-current packet polish."
           : "Refresh the stale packets first, then verify that the registry queue and packet trace stay aligned.",
       ],
@@ -1161,7 +1191,9 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
     workflowId,
     label,
     title: `RTP registry brief: ${context.workspace.name ?? "Current workspace"}`,
-    summary: `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}, with packet posture split between ${context.counts.refreshRecommendedCount} needing refresh and ${context.counts.noPacketCount} still missing a generated packet.`,
+    summary: hasRtpFundingBackedReleaseReviewPressure(context)
+      ? `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}. ${rtpFundingReviewPressure}`
+      : `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}, with packet posture split between ${context.counts.refreshRecommendedCount} needing refresh and ${context.counts.noPacketCount} still missing a generated packet.`,
     findings: [
       `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, ${context.counts.archivedCycles} archived.`,
       context.recommendedCycle
@@ -1190,6 +1222,8 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
 
 function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
+  const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
     linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
@@ -1201,13 +1235,13 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       workflowId,
       label,
       title: `First packet plan: ${context.rtpCycle.title}`,
-      summary: `${context.rtpCycle.title} still needs a usable current RTP board packet artifact, so first-generation planning is the top cycle-level packet move right now.`,
+      summary: `${context.rtpCycle.title} still needs a usable current RTP board packet artifact, so generate planning is the top cycle-level packet move right now.`,
       findings: [
         context.packetSummary.linkedReportCount > 0
           ? `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.noPacketCount} missing a generated artifact.`
           : "No linked packet record exists yet, so the cycle still needs its first RTP board-packet trail.",
         context.packetSummary.recommendedReport
-          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
           : "Once the first packet record exists, it can be generated and reviewed in the normal RTP packet lane.",
         context.readiness.ready
           ? "Cycle readiness is materially in place for first-packet generation."
@@ -1215,7 +1249,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       ],
       nextSteps: [
         context.packetSummary.recommendedReport
-          ? `Open /reports/${context.packetSummary.recommendedReport.id} to confirm packet sections and first-generation basis.`
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to confirm packet sections and generate basis.`
           : "Create or attach the first RTP board packet record before expecting artifact generation.",
         context.readiness.ready
           ? "Once packet sections and source basis are confirmed, generate the first board packet artifact."
@@ -1239,7 +1273,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.refreshRecommendedCount} needing refresh.`,
         context.packetSummary.recommendedReport
-          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
           : "No linked packet record is available yet, so refresh is not possible until packet generation exists.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
@@ -1265,20 +1299,26 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       workflowId,
       label,
       title: `Release review: ${context.rtpCycle.title}`,
-      summary: `${context.rtpCycle.title} has a materially current RTP packet anchor, so release review is the top cycle-level packet move right now.`,
+      summary: hasRtpFundingBackedReleaseReviewPressure(context)
+        ? `${context.rtpCycle.title} has a materially current RTP packet anchor, but ${rtpFundingReviewPressure}`
+        : `${context.rtpCycle.title} has a materially current RTP packet anchor, so release-review work is the top cycle-level packet move right now.`,
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible.`,
         context.packetSummary.recommendedReport
-          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} currently reads as ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
-          : "No linked packet record is available yet, so release review is premature.",
+          ? hasRtpFundingBackedReleaseReviewPressure(context)
+            ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is current, but funding-backed release-review pressure is still open.`
+            : `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
+          : "No linked packet record is available yet, so release-review work is premature.",
         context.readiness.ready
-          ? "Cycle readiness is materially in place for release review."
+          ? "Cycle readiness is materially in place for release-review work."
           : context.readiness.reason,
       ],
       nextSteps: [
-        context.packetSummary.recommendedReport
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? "Resolve the funding-backed release-review pressure before treating the current packet as settled."
+          : context.packetSummary.recommendedReport
           ? `Open /reports/${context.packetSummary.recommendedReport.id} to verify release posture on the lead board packet.`
-          : "Create and mature a packet before expecting release review work.",
+          : "Create and mature a packet before expecting release-review work.",
         "Verify packet freshness, cycle drift, and packet audit posture before board/public use.",
       ],
       evidence: [
@@ -1297,14 +1337,18 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       title: `Packet posture: ${context.rtpCycle.title}`,
       summary: context.packetSummary.recommendedReport
         ? cyclePacketWorkPosture === "generate"
-          ? `${context.rtpCycle.title} currently needs first-packet work before release review, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
+          ? `${context.rtpCycle.title} currently needs generate work before release-review work, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
           : cyclePacketWorkPosture === "refresh"
-            ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before release review.`
-            : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release review.`
+            ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before release-review work.`
+            : hasRtpFundingBackedReleaseReviewPressure(context)
+              ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is current but still under funding-backed release-review pressure.`
+              : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release-review work.`
         : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? "" : "s"}, ${context.packetSummary.refreshRecommendedCount} needing refresh, ${context.packetSummary.noPacketCount} with no generated artifact.`,
-        context.packetSummary.recommendedReport
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? rtpFundingReviewPressure
+          : context.packetSummary.recommendedReport
           ? context.packetSummary.recommendedReport.packetFreshness.detail
           : "No linked packet record is available to refresh or review yet.",
         context.operationsSummary.nextCommand
@@ -1312,7 +1356,9 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
           : "No broader workspace queue pressure is currently outranking this RTP cycle from the current snapshot.",
       ],
       nextSteps: [
-        context.packetSummary.recommendedReport
+        hasRtpFundingBackedReleaseReviewPressure(context)
+          ? "Run the funding-backed release-review lane before treating current packet freshness as settled."
+          : context.packetSummary.recommendedReport
           ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current RTP packet posture.`
           : "Create or attach the first RTP board packet before treating this cycle as packet-ready.",
         context.readiness.ready
@@ -1721,7 +1767,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       workflowId,
       label,
       title: `First packet plan for ${context.report.title}`,
-      summary: `${context.report.title} still needs its first usable RTP board packet artifact. The main job now is confirming that the cycle basis, packet sections, and source runs are strong enough to justify generation.`,
+      summary: `${context.report.title} still needs its first usable RTP board packet artifact. The main job now is confirming that the cycle basis, packet sections, and source runs are strong enough to justify generate work.`,
       findings: [
         context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
         `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}`,
@@ -1801,7 +1847,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       nextSteps: [
         context.latestArtifact ? "Review the latest artifact rather than the draft record alone before sharing anything." : "Generate an artifact first so there is a stable packet to review.",
         context.rtpCycle && packetPosture === "refresh"
-          ? "Regenerate this RTP packet from current cycle state before treating it as ready for release review."
+          ? "Refresh this RTP packet from current cycle state before treating it as ready for release-review work."
           : null,
         holdCount > 0
           ? "Clear or explicitly acknowledge the held run-audit items before external release."

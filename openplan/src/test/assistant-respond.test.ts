@@ -225,10 +225,14 @@ describe("assistant response builders", () => {
       },
     };
 
+    const preview = buildAssistantPreview(context);
     const response = buildAssistantResponse(context, "workspace-overview");
 
-    expect(response.summary).toContain("funding-backed release review");
-    expect(response.findings.join(" ")).toContain("current RTP packet still needs funding-backed release review");
+    expect(preview.summary).toContain("funding-backed release-review pressure");
+    expect(preview.facts.join(" ")).toContain("funding-backed release-review pressure");
+    expect(preview.operatorCue?.detail).toContain("funding-backed release-review pressure");
+    expect(response.summary).toContain("funding-backed release-review pressure");
+    expect(response.findings.join(" ")).toContain("funding-backed release-review pressure");
     expect(response.nextSteps.join(" ")).toContain("/reports/report-rtp-1#packet-release-review");
   });
 });
