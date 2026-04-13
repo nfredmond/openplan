@@ -4,8 +4,10 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+const SECONDARY_WORKSPACE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const PROGRAM_ID = "11111111-1111-4111-8111-111111111111";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -72,6 +74,14 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
+
+vi.mock("@/lib/workspaces/current", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/workspaces/current")>("@/lib/workspaces/current");
+  return {
+    ...actual,
+    loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+  };
+});
 
 import { GET as getFundingOpportunities, POST as postFundingOpportunities } from "@/app/api/funding-opportunities/route";
 
@@ -147,6 +157,23 @@ describe("/api/funding-opportunities", () => {
       error: null,
     });
 
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: {
+        workspace_id: WORKSPACE_ID,
+        role: "member",
+        workspaces: {
+          name: "Primary workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Primary workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
+    });
+
     fundingOpportunitiesSingleMock.mockResolvedValue({
       data: {
         id: OPPORTUNITY_ID,
@@ -214,6 +241,45 @@ describe("/api/funding-opportunities", () => {
         opportunity_status: "upcoming",
         agency_name: "Caltrans",
         expected_award_amount: 500000,
+      })
+    );
+  });
+
+  it("POST without programId or projectId uses the helper-selected current workspace", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: {
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        role: "owner",
+        workspaces: {
+          name: "Newest workspace",
+          plan: "pilot",
+          created_at: "2026-04-13T01:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Newest workspace",
+        plan: "pilot",
+        created_at: "2026-04-13T01:00:00.000Z",
+      },
+    });
+
+    const response = await postFundingOpportunities(
+      jsonRequest({
+        title: "Unanchored grant lead",
+        status: "upcoming",
+        agencyName: "Caltrans",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalled();
+    expect(fundingOpportunitiesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        program_id: null,
+        project_id: null,
+        title: "Unanchored grant lead",
+        opportunity_status: "upcoming",
       })
     );
   });
