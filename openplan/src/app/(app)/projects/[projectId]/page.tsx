@@ -809,7 +809,7 @@ export default async function ProjectDetailPage({
         ...report,
         packetFreshness: getReportPacketFreshness({
           latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: report.generated_at,
+          generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
           updatedAt: report.updated_at,
         }),
         comparisonDigest,

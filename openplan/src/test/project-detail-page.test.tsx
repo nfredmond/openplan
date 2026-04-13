@@ -504,6 +504,46 @@ describe("ProjectDetailPage", () => {
     );
   });
 
+  it("keeps artifact-backed linked reports in current-packet posture when report generated_at is null", async () => {
+    reportsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-1",
+          title: "Downtown Safety Packet",
+          summary: "Packet with corridor safety recommendations.",
+          report_type: "project_status",
+          status: "generated",
+          updated_at: "2026-03-28T21:10:00.000Z",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+        {
+          id: "report-2",
+          title: "Board Packet",
+          summary: null,
+          report_type: "board_packet",
+          status: "generated",
+          updated_at: "2026-03-28T19:00:00.000Z",
+          generated_at: null,
+          latest_artifact_kind: "html",
+        },
+      ],
+      count: 2,
+      error: null,
+    });
+
+    await renderPage();
+
+    const boardPacketCard = screen
+      .getAllByText("Board Packet")
+      .map((node) => node.closest("a"))
+      .find((node) => node?.getAttribute("href") === "/reports/report-2");
+
+    expect(boardPacketCard).not.toBeNull();
+    expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2");
+    expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
+  });
+
   it("shows an empty reporting state when no reports are linked", async () => {
     reportsLimitMock.mockResolvedValueOnce({ data: [], count: 0, error: null });
 
