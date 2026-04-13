@@ -137,26 +137,47 @@ export default async function EngagementCampaignDetailPage({
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
-  const reportSectionLinksResult = reportRecords.length
-    ? await supabase
-        .from("report_sections")
-        .select("report_id, section_key, enabled, config_json")
-        .in(
-          "report_id",
-          reportRecords.map((report) => report.id)
-        )
-    : { data: [], error: null };
+  const [reportSectionLinksResult, reportArtifactsResult] = reportRecords.length
+    ? await Promise.all([
+        supabase
+          .from("report_sections")
+          .select("report_id, section_key, enabled, config_json")
+          .in(
+            "report_id",
+            reportRecords.map((report) => report.id)
+          ),
+        supabase
+          .from("report_artifacts")
+          .select("report_id, generated_at")
+          .in(
+            "report_id",
+            reportRecords.map((report) => report.id)
+          ),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
   const reportIdsExplicitlyLinkedToCampaign = collectReportIdsLinkedToEngagementCampaign(
     (reportSectionLinksResult.data ?? []) as ReportSectionLinkRow[],
     campaign.id
   );
+  const latestArtifactByReportId = new Map<string, { generated_at: string | null }>();
+  for (const row of (reportArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>) {
+    const current = latestArtifactByReportId.get(row.report_id);
+    const rowTime = row.generated_at ? new Date(row.generated_at).getTime() : Number.NEGATIVE_INFINITY;
+    const currentTime = current?.generated_at ? new Date(current.generated_at).getTime() : Number.NEGATIVE_INFINITY;
+    if (!current || rowTime > currentTime) {
+      latestArtifactByReportId.set(row.report_id, { generated_at: row.generated_at });
+    }
+  }
   const campaignLinkedReports = reportRecords
     .map((report) => ({
       ...report,
       isExplicitCampaignSource: reportIdsExplicitlyLinkedToCampaign.has(report.id),
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
     }))
@@ -544,7 +565,9 @@ export default async function EngagementCampaignDetailPage({
                       <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
                       <p className="module-record-summary">
                         Updated {fmtDateTime(report.updated_at)}
-                        {report.generated_at ? ` • Generated ${fmtDateTime(report.generated_at)}` : " • Draft report record"}
+                        {latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at
+                          ? ` • Generated ${fmtDateTime(latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at)}`
+                          : " • Draft report record"}
                       </p>
                     </div>
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />

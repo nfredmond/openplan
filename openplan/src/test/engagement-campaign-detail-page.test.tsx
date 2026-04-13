@@ -48,6 +48,9 @@ const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
 
+const reportArtifactsInMock = vi.fn();
+const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
@@ -66,6 +69,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_sections") {
     return { select: reportSectionsSelectMock };
+  }
+  if (table === "report_artifacts") {
+    return { select: reportArtifactsSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -256,6 +262,20 @@ describe("EngagementCampaignDetailPage", () => {
       error: null,
     });
 
+    reportArtifactsInMock.mockResolvedValue({
+      data: [
+        {
+          report_id: "report-1",
+          generated_at: "2026-03-28T20:00:00.000Z",
+        },
+        {
+          report_id: "report-2",
+          generated_at: "2026-03-28T19:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -275,6 +295,42 @@ describe("EngagementCampaignDetailPage", () => {
     expect(screen.getByTestId("engagement-report-create-button")).toHaveTextContent(
       /Downtown Safety Packet/i
     );
+  });
+
+  it("keeps explicit campaign packet guidance current when the newest artifact is fresher than the report row", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-1",
+          project_id: "project-1",
+          title: "Downtown Safety Packet",
+          report_type: "project_status",
+          status: "generated",
+          generated_at: null,
+          updated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+      ],
+      error: null,
+    });
+    reportArtifactsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          report_id: "report-1",
+          generated_at: "2026-03-28T20:30:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Refresh recommended/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("engagement-report-create-button")).toHaveTextContent(
+      /Downtown Safety Packet/i
+    );
+    expect(screen.getAllByText(/run release review on the current packet/i).length).toBeGreaterThan(0);
   });
 
   it("shows the empty report state when no reports exist for the linked project", async () => {
