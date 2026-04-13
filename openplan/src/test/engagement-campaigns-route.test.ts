@@ -21,6 +21,14 @@ const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
 const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
 
+const rtpCycleMaybeSingleMock = vi.fn();
+const rtpCycleEqMock = vi.fn(() => ({ maybeSingle: rtpCycleMaybeSingleMock }));
+const rtpCycleSelectMock = vi.fn(() => ({ eq: rtpCycleEqMock }));
+
+const rtpCycleChapterMaybeSingleMock = vi.fn();
+const rtpCycleChapterEqMock = vi.fn(() => ({ maybeSingle: rtpCycleChapterMaybeSingleMock }));
+const rtpCycleChapterSelectMock = vi.fn(() => ({ eq: rtpCycleChapterEqMock }));
+
 const membershipMaybeSingleMock = vi.fn();
 const membershipLimitMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
 const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock, limit: membershipLimitMock }));
@@ -50,6 +58,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return {
       select: projectSelectMock,
+    };
+  }
+
+  if (table === "rtp_cycles") {
+    return {
+      select: rtpCycleSelectMock,
+    };
+  }
+
+  if (table === "rtp_cycle_chapters") {
+    return {
+      select: rtpCycleChapterSelectMock,
     };
   }
 
@@ -136,6 +156,23 @@ describe("/api/engagement/campaigns", () => {
       data: {
         id: "33333333-3333-4333-8333-333333333333",
         workspace_id: "44444444-4444-4444-8444-444444444444",
+      },
+      error: null,
+    });
+
+    rtpCycleMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "88888888-8888-4888-8888-888888888888",
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+      },
+      error: null,
+    });
+
+    rtpCycleChapterMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "99999999-9999-4999-8999-999999999999",
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+        rtp_cycle_id: "88888888-8888-4888-8888-888888888888",
       },
       error: null,
     });
@@ -251,6 +288,77 @@ describe("/api/engagement/campaigns", () => {
         title: "Unlinked operator intake",
       })
     );
+  });
+
+  it("POST creates a campaign for an anchored RTP cycle without consulting the helper", async () => {
+    campaignsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+        project_id: null,
+        rtp_cycle_id: "88888888-8888-4888-8888-888888888888",
+        rtp_cycle_chapter_id: null,
+        title: "RTP outreach campaign",
+        status: "draft",
+        engagement_type: "comment_collection",
+      },
+      error: null,
+    });
+
+    const response = await postCampaigns(
+      jsonRequest({
+        rtpCycleId: "88888888-8888-4888-8888-888888888888",
+        title: "RTP outreach campaign",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(campaignsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+        project_id: null,
+        rtp_cycle_id: "88888888-8888-4888-8888-888888888888",
+        rtp_cycle_chapter_id: null,
+        title: "RTP outreach campaign",
+      })
+    );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
+  });
+
+  it("POST creates a campaign for an anchored RTP chapter without consulting the helper", async () => {
+    campaignsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+        project_id: null,
+        rtp_cycle_id: "88888888-8888-4888-8888-888888888888",
+        rtp_cycle_chapter_id: "99999999-9999-4999-8999-999999999999",
+        title: "Chapter outreach campaign",
+        status: "draft",
+        engagement_type: "comment_collection",
+      },
+      error: null,
+    });
+
+    const response = await postCampaigns(
+      jsonRequest({
+        rtpCycleId: "88888888-8888-4888-8888-888888888888",
+        rtpCycleChapterId: "99999999-9999-4999-8999-999999999999",
+        title: "Chapter outreach campaign",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(campaignsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+        project_id: null,
+        rtp_cycle_id: "88888888-8888-4888-8888-888888888888",
+        rtp_cycle_chapter_id: "99999999-9999-4999-8999-999999999999",
+        title: "Chapter outreach campaign",
+      })
+    );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 
   it("POST returns 403 when helper-selected workspace role is unsupported", async () => {
