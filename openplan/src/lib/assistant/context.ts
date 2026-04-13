@@ -1960,6 +1960,7 @@ async function loadReportContext(
     }));
 
   const latestArtifact = ((artifacts ?? []) as Array<any>)[0] ?? null;
+  const effectiveGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
   const engagementCampaignId = extractEngagementCampaignId(sections ?? []);
   const engagementCampaignResult = engagementCampaignId
     ? await supabase
@@ -1980,7 +1981,7 @@ async function loadReportContext(
       status: report.status,
       reportType: report.report_type,
       rtpCycleId: report.rtp_cycle_id,
-      generatedAt: report.generated_at,
+      generatedAt: effectiveGeneratedAt,
       latestArtifactKind: report.latest_artifact_kind,
       updatedAt: report.updated_at,
     },
