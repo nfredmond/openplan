@@ -27,7 +27,7 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectFundingStackSummary,
@@ -488,40 +488,10 @@ export default async function ProjectDetailPage({
     .order("created_at", { ascending: false })
     .limit(5);
 
-  const [workspaceProjectsResult, workspacePlansResult, workspaceProgramsResult, workspaceReportsResult, workspaceFundingOpportunitiesResult, workspaceProjectFundingProfilesResult] =
-    await Promise.all([
-      supabase
-        .from("projects")
-        .select("id, name, status, delivery_phase, updated_at")
-        .eq("workspace_id", project.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("plans")
-        .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
-        .eq("workspace_id", project.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("programs")
-        .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-        .eq("workspace_id", project.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("reports")
-        .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-        .eq("workspace_id", project.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("funding_opportunities")
-        .select(
-          "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
-        )
-        .eq("workspace_id", project.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("project_funding_profiles")
-        .select("project_id, funding_need_amount, local_match_need_amount")
-        .eq("workspace_id", project.workspace_id),
-    ]);
+  const operationsSummaryPromise = loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    project.workspace_id
+  );
 
   const {
     data: projectReportData,
@@ -535,23 +505,6 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(4);
-
-  const workspaceReportIds = ((workspaceReportsResult.data ?? []) as Array<{ id: string }>).map(
-    (report) => report.id
-  );
-  const workspaceReportArtifactsResult = workspaceReportIds.length
-    ? await supabase
-        .from("report_artifacts")
-        .select("report_id, generated_at, metadata_json")
-        .in("report_id", workspaceReportIds)
-        .order("generated_at", { ascending: false })
-    : { data: [], error: null };
-  const latestWorkspaceArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of (workspaceReportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
-    if (!latestWorkspaceArtifactByReportId.has(artifact.report_id)) {
-      latestWorkspaceArtifactByReportId.set(artifact.report_id, artifact);
-    }
-  }
 
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
@@ -938,62 +891,7 @@ export default async function ProjectDetailPage({
     now
   );
 
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: ((workspaceProjectsResult.data ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>),
-    plans: ((workspacePlansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    programs: ((workspaceProgramsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>),
-    reports: ((workspaceReportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>).map((report) => ({
-      ...report,
-      metadata_json:
-        latestWorkspaceArtifactByReportId.get(report.id)?.metadata_json ?? report.metadata_json ?? null,
-    })),
-    fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      decision_state?: string | null;
-      expected_award_amount?: number | string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    projectFundingProfiles: ((workspaceProjectFundingProfilesResult.data ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>),
-  });
+  const operationsSummary = await operationsSummaryPromise;
 
   const timelineItems: TimelineItem[] = [
     ...milestones.map((item) => ({

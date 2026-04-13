@@ -83,6 +83,38 @@ const datasetLinksOrderMock = vi.fn();
 const datasetLinksEqMock = vi.fn(() => ({ order: datasetLinksOrderMock }));
 const datasetLinksSelectMock = vi.fn(() => ({ eq: datasetLinksEqMock }));
 
+const projectRtpLinksOrderMock = vi.fn();
+const projectRtpLinksEqMock = vi.fn(() => ({ order: projectRtpLinksOrderMock }));
+const projectRtpLinksSelectMock = vi.fn(() => ({ eq: projectRtpLinksEqMock }));
+
+const rtpCyclesOrderMock = vi.fn();
+const rtpCyclesEqMock = vi.fn(() => ({ order: rtpCyclesOrderMock }));
+const rtpCyclesInMock = vi.fn();
+const rtpCyclesSelectMock = vi.fn(() => ({ eq: rtpCyclesEqMock, in: rtpCyclesInMock }));
+
+const projectFundingProfileMaybeSingleMock = vi.fn();
+const projectFundingProfileLimitMock = vi.fn();
+const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingProfileMaybeSingleMock, limit: projectFundingProfileLimitMock }));
+const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock }));
+
+const fundingAwardsLimitMock = vi.fn();
+const fundingAwardsOrderMock = vi.fn(() => ({ limit: fundingAwardsLimitMock }));
+const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
+
+const fundingOpportunitiesLimitMock = vi.fn();
+const fundingOpportunitiesOrderMock = vi.fn(() => ({ limit: fundingOpportunitiesLimitMock }));
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock }));
+
+const datasetsInMock = vi.fn();
+const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
+
+const connectorsInMock = vi.fn();
+const connectorsSelectMock = vi.fn(() => ({ in: connectorsInMock }));
+
+const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
+
 const buildProjectControlsSummaryMock = vi.fn();
 const summarizeBillingInvoiceRecordsMock = vi.fn();
 const buildProjectStageGateSummaryMock = vi.fn();
@@ -133,6 +165,27 @@ const fromMock = vi.fn((table: string) => {
   if (table === "data_dataset_project_links") {
     return { select: datasetLinksSelectMock };
   }
+  if (table === "project_rtp_cycle_links") {
+    return { select: projectRtpLinksSelectMock };
+  }
+  if (table === "rtp_cycles") {
+    return { select: rtpCyclesSelectMock };
+  }
+  if (table === "project_funding_profiles") {
+    return { select: projectFundingProfileSelectMock };
+  }
+  if (table === "funding_awards") {
+    return { select: fundingAwardsSelectMock };
+  }
+  if (table === "funding_opportunities") {
+    return { select: fundingOpportunitiesSelectMock };
+  }
+  if (table === "data_datasets") {
+    return { select: datasetsSelectMock };
+  }
+  if (table === "data_connectors") {
+    return { select: connectorsSelectMock };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -158,6 +211,22 @@ vi.mock("@/components/projects/project-record-composer", () => ({
   ProjectRecordComposer: () => <div data-testid="project-record-composer" />,
 }));
 
+vi.mock("@/components/projects/project-rtp-linker", () => ({
+  ProjectRtpLinker: () => <div data-testid="project-rtp-linker" />,
+}));
+
+vi.mock("@/components/projects/project-funding-profile-editor", () => ({
+  ProjectFundingProfileEditor: () => <div data-testid="project-funding-profile-editor" />,
+}));
+
+vi.mock("@/components/projects/project-funding-award-creator", () => ({
+  ProjectFundingAwardCreator: () => <div data-testid="project-funding-award-creator" />,
+}));
+
+vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
+  FundingOpportunityDecisionControls: () => <div data-testid="funding-opportunity-decision-controls" />,
+}));
+
 vi.mock("@/lib/projects/controls", () => ({
   buildProjectControlsSummary: (...args: unknown[]) => buildProjectControlsSummaryMock(...args),
 }));
@@ -169,6 +238,15 @@ vi.mock("@/lib/billing/invoice-records", () => ({
 vi.mock("@/lib/stage-gates/summary", () => ({
   buildProjectStageGateSummary: (...args: unknown[]) => buildProjectStageGateSummaryMock(...args),
 }));
+
+vi.mock("@/lib/operations/workspace-summary", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>("@/lib/operations/workspace-summary");
+  return {
+    ...actual,
+    loadWorkspaceOperationsSummaryForWorkspace: (...args: unknown[]) =>
+      loadWorkspaceOperationsSummaryForWorkspaceMock(...args),
+  };
+});
 
 import ProjectDetailPage from "@/app/(app)/projects/[projectId]/page";
 
@@ -279,6 +357,15 @@ describe("ProjectDetailPage", () => {
     meetingsLimitMock.mockResolvedValue({ data: [], error: null });
     invoicesLimitMock.mockResolvedValue({ data: [], error: null });
     datasetLinksOrderMock.mockResolvedValue({ data: [], error: null });
+    projectRtpLinksOrderMock.mockResolvedValue({ data: [], error: null });
+    rtpCyclesOrderMock.mockResolvedValue({ data: [], error: null });
+    rtpCyclesInMock.mockResolvedValue({ data: [], error: null });
+    projectFundingProfileMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    projectFundingProfileLimitMock.mockResolvedValue({ data: [], error: null });
+    fundingAwardsLimitMock.mockResolvedValue({ data: [], error: null });
+    fundingOpportunitiesLimitMock.mockResolvedValue({ data: [], error: null });
+    datasetsInMock.mockResolvedValue({ data: [], error: null });
+    connectorsInMock.mockResolvedValue({ data: [], error: null });
 
     reportsLimitMock.mockResolvedValue({
       data: [
@@ -317,6 +404,27 @@ describe("ProjectDetailPage", () => {
       overdueMilestoneCount: 0,
       nextMilestone: null,
       nextSubmittal: null,
+      deadlineSummary: {
+        totalCount: 0,
+        overdueCount: 0,
+        upcomingCount: 0,
+        nextDeadline: null,
+        items: [],
+      },
+      recommendedNextAction: {
+        label: "No immediate controls action",
+        detail: "Controls are clear right now.",
+        tone: "info",
+        targetId: null,
+        targetRowId: null,
+      },
+      attentionSummary: {
+        reportPackets: { count: 0, targetId: null, targetRowId: null },
+        blockedMilestones: { count: 0, targetId: null, targetRowId: null },
+        overdueMilestones: { count: 0, targetId: null, targetRowId: null },
+        overdueSubmittals: { count: 0, targetId: null, targetRowId: null },
+        overdueInvoices: { count: 0, targetId: null, targetRowId: null },
+      },
     });
 
     summarizeBillingInvoiceRecordsMock.mockReturnValue({
@@ -337,6 +445,40 @@ describe("ProjectDetailPage", () => {
       gates: [],
     });
 
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
+      posture: "stable",
+      headline: "Everything is queued correctly",
+      detail: "No workspace-wide follow-up is currently blocking the project spine.",
+      counts: {
+        projects: 1,
+        activeProjects: 1,
+        plans: 0,
+        plansNeedingSetup: 0,
+        programs: 0,
+        activePrograms: 0,
+        reports: 2,
+        reportRefreshRecommended: 1,
+        reportNoPacket: 0,
+        reportPacketCurrent: 1,
+        rtpFundingReviewPackets: 0,
+        comparisonBackedReports: 0,
+        fundingOpportunities: 0,
+        openFundingOpportunities: 0,
+        closingSoonFundingOpportunities: 0,
+        projectFundingNeedAnchorProjects: 0,
+        projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
+        queueDepth: 0,
+      },
+      nextCommand: null,
+      commandQueue: [],
+      fullCommandQueue: [],
+    });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -355,8 +497,8 @@ describe("ProjectDetailPage", () => {
     expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Evidence-backed/i)).toBeInTheDocument();
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
-    expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /^Open report$/i })).toHaveAttribute(
+    expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#drift-since-generation"
     );
