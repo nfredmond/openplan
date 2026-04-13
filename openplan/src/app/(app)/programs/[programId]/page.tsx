@@ -166,6 +166,11 @@ type FundingOpportunityDetailRow = {
     | null;
 };
 
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string | null;
+};
+
 export default async function ProgramDetailPage({
   params,
 }: {
@@ -331,7 +336,11 @@ export default async function ProgramDetailPage({
       ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
       : Promise.resolve({ data: [], error: null }),
     reportIds.length
-      ? supabase.from("report_artifacts").select("report_id").in("report_id", reportIds)
+      ? supabase
+          .from("report_artifacts")
+          .select("report_id, generated_at")
+          .in("report_id", reportIds)
+          .order("generated_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -344,8 +353,12 @@ export default async function ProgramDetailPage({
   }
 
   const artifactCountsByReport = new Map<string, number>();
-  for (const row of reportArtifactsResult.data ?? []) {
+  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const row of (reportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
     artifactCountsByReport.set(row.report_id, (artifactCountsByReport.get(row.report_id) ?? 0) + 1);
+    if (!latestArtifactByReportId.has(row.report_id)) {
+      latestArtifactByReportId.set(row.report_id, row);
+    }
   }
 
   const linkedPlans = mergeRecords(
@@ -386,10 +399,11 @@ export default async function ProgramDetailPage({
       updated_at: string | null;
     }>).map((report) => ({
       ...report,
+      generated_at: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
       artifactCount: artifactCountsByReport.get(report.id) ?? 0,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
     })),
@@ -405,10 +419,11 @@ export default async function ProgramDetailPage({
       updated_at: string | null;
     }>).map((report) => ({
       ...report,
+      generated_at: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
       artifactCount: artifactCountsByReport.get(report.id) ?? 0,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
     }))
