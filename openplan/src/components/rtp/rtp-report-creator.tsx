@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FilePlus2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { describeRtpPacketPresetStage } from "@/lib/reports/catalog";
+import { createRtpPacketRecord } from "@/lib/reports/client";
 
 export function RtpReportCreator({
   rtpCycleId,
@@ -42,40 +43,13 @@ export function RtpReportCreator({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/reports", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          rtpCycleId,
-          reportType: "board_packet",
-          title: defaultTitle,
-        }),
+      const result = await createRtpPacketRecord({
+        rtpCycleId,
+        title: defaultTitle,
+        generateAfterCreate: true,
       });
 
-      const payload = (await response.json()) as { reportId?: string; error?: string };
-      if (!response.ok || !payload.reportId) {
-        throw new Error(payload.error || "Failed to create RTP board packet record");
-      }
-
-      const generateResponse = await fetch(`/api/reports/${payload.reportId}/generate`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ format: "html" }),
-      });
-
-      const generatePayload = (await generateResponse.json().catch(() => null)) as
-        | { error?: string }
-        | null;
-
-      if (!generateResponse.ok) {
-        throw new Error(generatePayload?.error || "Failed to generate the first RTP packet artifact");
-      }
-
-      router.push(`/reports/${payload.reportId}`);
+      router.push(`/reports/${result.reportId}`);
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create and generate the RTP board packet");

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getReportNavigationHref } from "@/lib/reports/catalog";
+import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
 
 type PacketAttention = "missing" | "generate" | "reset" | "refresh" | "current";
 
@@ -40,25 +41,6 @@ export function RtpRegistryPacketRowAction({
     );
   }
 
-  async function generateReport(targetReportId: string) {
-    const response = await fetch(`/api/reports/${targetReportId}/generate`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ format: "html" }),
-    });
-
-    const payload = (await response.json()) as {
-      error?: string;
-      warnings?: Array<unknown>;
-    };
-
-    if (!response.ok) {
-      throw new Error(payload.error || "Failed to generate RTP packet");
-    }
-
-    return payload.warnings?.length ?? 0;
-  }
-
   async function handleClick() {
     setIsSubmitting(true);
     setMessage(null);
@@ -69,26 +51,13 @@ export function RtpRegistryPacketRowAction({
       let warningCount = 0;
 
       if (packetAttention === "missing") {
-        const createResponse = await fetch("/api/reports", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            rtpCycleId: cycleId,
-            reportType: "board_packet",
-          }),
+        const createResult = await createRtpPacketRecord({
+          rtpCycleId: cycleId,
+          generateAfterCreate: true,
         });
 
-        const createPayload = (await createResponse.json()) as {
-          error?: string;
-          reportId?: string;
-        };
-
-        if (!createResponse.ok || !createPayload.reportId) {
-          throw new Error(createPayload.error || "Failed to create the first RTP packet record");
-        }
-
-        activeReportId = createPayload.reportId;
-        warningCount = await generateReport(activeReportId);
+        activeReportId = createResult.reportId;
+        warningCount = createResult.warningCount;
         setMessage(
           `Created and generated the first RTP packet.${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned.` : ""}`
         );
@@ -111,7 +80,7 @@ export function RtpRegistryPacketRowAction({
           throw new Error("No RTP packet record was found to regenerate after preset reset");
         }
 
-        warningCount = await generateReport(activeReportId);
+        warningCount = (await generateReportArtifact(activeReportId)).warningCount;
         setMessage(
           `Reset the packet to its recommended phase preset and regenerated it.${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned.` : ""}`
         );
@@ -120,7 +89,7 @@ export function RtpRegistryPacketRowAction({
           throw new Error("No RTP packet record was found to regenerate");
         }
 
-        warningCount = await generateReport(activeReportId);
+        warningCount = (await generateReportArtifact(activeReportId)).warningCount;
         setMessage(
           `${needsFirstArtifact ? "Generated the first RTP packet artifact." : "Regenerated the RTP packet from current source state."}${warningCount > 0 ? ` ${warningCount} generation warning${warningCount === 1 ? " was" : "s were"} returned.` : ""}`
         );

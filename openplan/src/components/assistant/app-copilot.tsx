@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
+import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -1415,16 +1416,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
     try {
       if (executeAction.kind === "generate_report_artifact") {
-        const response = await fetch(`/api/reports/${executeAction.reportId}/generate`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ format: "html" }),
-        });
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to generate report artifact");
-        }
+        await generateReportArtifact(executeAction.reportId);
 
         const completedStatus: OperationInvocationState = {
           linkId: link.id,
@@ -1454,41 +1446,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       }
 
       if (executeAction.kind === "create_rtp_packet_record") {
-        const createResponse = await fetch("/api/reports", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            rtpCycleId: executeAction.rtpCycleId,
-            reportType: "board_packet",
-          }),
+        await createRtpPacketRecord({
+          rtpCycleId: executeAction.rtpCycleId,
+          generateAfterCreate: executeAction.generateAfterCreate,
         });
-
-        if (!createResponse.ok) {
-          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to create RTP packet record");
-        }
-
-        const createPayload = (await createResponse.json().catch(() => null)) as
-          | { reportId?: string; report?: { id?: string | null } | null }
-          | null;
-        const createdReportId = createPayload?.reportId ?? createPayload?.report?.id ?? null;
-
-        if (!createdReportId) {
-          throw new Error("Created RTP packet record did not return a report id");
-        }
-
-        if (executeAction.generateAfterCreate) {
-          const generateResponse = await fetch(`/api/reports/${createdReportId}/generate`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ format: "html" }),
-          });
-
-          if (!generateResponse.ok) {
-            const payload = (await generateResponse.json().catch(() => null)) as { error?: string } | null;
-            throw new Error(payload?.error ?? "Failed to generate first RTP packet artifact");
-          }
-        }
 
         const completedStatus: OperationInvocationState = {
           linkId: link.id,

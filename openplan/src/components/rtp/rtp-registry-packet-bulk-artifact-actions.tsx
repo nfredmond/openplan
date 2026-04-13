@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileCog, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { generateReportArtifact } from "@/lib/reports/client";
 
 export function RtpRegistryPacketBulkArtifactActions({
   reportIds,
@@ -39,23 +40,9 @@ export function RtpRegistryPacketBulkArtifactActions({
 
     try {
       for (const reportId of reportIds) {
-        const response = await fetch(`/api/reports/${reportId}/generate`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ format: "html" }),
-        });
-
-        const payload = (await response.json()) as {
-          error?: string;
-          warnings?: Array<unknown>;
-        };
-
-        if (!response.ok) {
-          throw new Error(payload.error || "Failed to generate one or more RTP packets");
-        }
-
+        const generation = await generateReportArtifact(reportId);
         successCount += 1;
-        warningCount += payload.warnings?.length ?? 0;
+        warningCount += generation.warningCount;
       }
 
       setMessage(

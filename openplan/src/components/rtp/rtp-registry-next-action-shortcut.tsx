@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
 
 export type DominantActionKey =
   | "createPacket"
@@ -31,25 +32,6 @@ export function RtpRegistryNextActionShortcut({
     return null;
   }
 
-  async function generateReport(targetReportId: string) {
-    const response = await fetch(`/api/reports/${targetReportId}/generate`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ format: "html" }),
-    });
-
-    const payload = (await response.json()) as {
-      error?: string;
-      warnings?: Array<unknown>;
-    };
-
-    if (!response.ok) {
-      throw new Error(payload.error || "Failed to generate one or more RTP packets");
-    }
-
-    return payload.warnings?.length ?? 0;
-  }
-
   async function handleApply() {
     setIsSubmitting(true);
     setMessage(null);
@@ -62,26 +44,13 @@ export function RtpRegistryNextActionShortcut({
         let createdCount = 0;
 
         for (const cycleId of cycleIds) {
-          const createResponse = await fetch("/api/reports", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              rtpCycleId: cycleId,
-              reportType: "board_packet",
-            }),
+          const createResult = await createRtpPacketRecord({
+            rtpCycleId: cycleId,
+            generateAfterCreate: true,
           });
 
-          const createPayload = (await createResponse.json()) as {
-            error?: string;
-            reportId?: string;
-          };
-
-          if (!createResponse.ok || !createPayload.reportId) {
-            throw new Error(createPayload.error || "Failed to create one or more RTP packet records");
-          }
-
           createdCount += 1;
-          warningCount += await generateReport(createPayload.reportId);
+          warningCount += createResult.warningCount;
         }
 
         setMessage(
@@ -104,7 +73,7 @@ export function RtpRegistryNextActionShortcut({
 
         let regeneratedCount = 0;
         for (const reportId of [...new Set(reportIds)]) {
-          warningCount += await generateReport(reportId);
+          warningCount += (await generateReportArtifact(reportId)).warningCount;
           regeneratedCount += 1;
         }
 
@@ -114,7 +83,7 @@ export function RtpRegistryNextActionShortcut({
       } else {
         let generatedCount = 0;
         for (const reportId of [...new Set(reportIds)]) {
-          warningCount += await generateReport(reportId);
+          warningCount += (await generateReportArtifact(reportId)).warningCount;
           generatedCount += 1;
         }
 
