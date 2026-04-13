@@ -38,6 +38,7 @@ import {
   isGrantsCommand,
   isGrantsDecisionCommand,
   isGrantsReimbursementCommand,
+  isGrantsSourcingCommand,
 } from "@/lib/operations/grants-links";
 import {
   buildProjectFundingStackSummary,
@@ -856,6 +857,7 @@ export default async function GrantsPage({
   const leadReimbursementCommand = grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null;
   const leadAwardCommand = grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null;
   const leadDecisionCommand = grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null;
+  const leadSourcingCommand = grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null;
 
   return (
     <section className="module-page">
@@ -996,6 +998,23 @@ export default async function GrantsPage({
             id="grants-gap-resolution-lane"
             className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24" : "scroll-mt-24"}
           >
+            {leadSourcingCommand ? (
+              <div className="mb-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold tracking-tight">Lead sourcing and gap command from workspace queue</p>
+                      <StatusBadge tone={leadSourcingCommand.tone}>{leadSourcingCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+                    </div>
+                    <p className="mt-1">{leadSourcingCommand.detail}</p>
+                  </div>
+                  <Link href={leadSourcingCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                    Open sourcing lane
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : null}
             <div
               id="grants-opportunity-creator"
               className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "rounded-[1.7rem] ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]" : ""}

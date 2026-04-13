@@ -4,6 +4,7 @@ import {
   isGrantsCommand,
   isGrantsDecisionCommand,
   isGrantsReimbursementCommand,
+  isGrantsSourcingCommand,
   resolveWorkspaceCommandHref,
 } from "@/lib/operations/grants-links";
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
@@ -93,6 +94,57 @@ describe("grants-links", () => {
         })
       )
     ).toBe(false);
+  });
+
+  it("identifies sourcing and gap grants commands", () => {
+    expect(
+      isGrantsSourcingCommand(
+        buildCommand({
+          key: "source-project-funding-opportunities",
+          targetProjectId: "project-source-1",
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      isGrantsSourcingCommand(
+        buildCommand({
+          key: "close-project-funding-gaps",
+          targetProjectId: "project-gap-1",
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      isGrantsSourcingCommand(
+        buildCommand({
+          key: "record-awarded-funding",
+          targetOpportunityId: "opportunity-award-1",
+        })
+      )
+    ).toBe(false);
+  });
+
+  it("routes sourcing commands into the grants opportunity creator lane", () => {
+    expect(
+      resolveWorkspaceCommandHref(
+        buildCommand({
+          key: "source-project-funding-opportunities",
+          targetProjectId: "project-source-1",
+        })
+      )
+    ).toBe("/grants?focusProjectId=project-source-1#grants-opportunity-creator");
+  });
+
+  it("routes funding-gap commands into the grants gap lane", () => {
+    expect(
+      resolveWorkspaceCommandHref(
+        buildCommand({
+          key: "close-project-funding-gaps",
+          targetProjectId: "project-gap-1",
+        })
+      )
+    ).toBe("/grants?focusProjectId=project-gap-1#grants-gap-resolution-lane");
   });
 
   it("routes opportunity-decision commands into the focused opportunity lane", () => {
