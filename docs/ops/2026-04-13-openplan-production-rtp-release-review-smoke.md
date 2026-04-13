@@ -1,31 +1,36 @@
 # OpenPlan Production RTP Release-Review Smoke — 2026-04-13
 
 - Base URL: https://openplan-natford.vercel.app
-- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T00-47-17-791Z@natfordplanning.com
+- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T00-57-45-742Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: 6972025e-b56e-4fd8-84db-7c5037e95d61
-- RTP cycle id: d5cc173d-05f9-4a43-800a-477e5b08f8d3
-- Project id: 1a1301fb-d94d-4f94-927f-a838858d5fbc
-- Opportunity id: aead3a5c-3e5d-49ff-9338-96359f15f051
-- Award id: e649fe46-e671-41c2-ae11-5568718b9477
-- Invoice id: 493548e3-f432-4bc6-8e7b-8f139596f94e
-- Report id: 95846d55-ca33-45a9-a563-7e3b0d3b1faa
+- Workspace id: 34016d64-75fd-427b-82b3-c173e04fad7a
+- RTP cycle id: 89b8e190-eb64-4be4-bb88-80aee6b802a7
+- Project id: ea0ddc45-5944-49ea-9d88-e5794a347121
+- Plan id: 95a6ff4b-d7b3-475c-bc22-e8206920070f
+- Program id: eaff3acc-afd5-4bf1-afac-6647c0a9e254
+- Opportunity id: aab6d8bd-1317-40ee-8087-1bc8b8e5caf1
+- Award id: ea5c3233-db51-4c41-9dab-2f29ef86f488
+- Invoice id: 4f5b6cd7-dbb3-4ba7-abc9-e2262de8a957
+- Report id: 0263bce1-13c4-4720-ac31-ff45ab822477
 
 ## Pass/Fail Notes
-- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T00-47-17-791Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T00-57-45-742Z@natfordplanning.com.
 - PASS: Signed into production successfully.
-- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 00-47-17.
-- PASS: Current workspace resolved to 6972025e-b56e-4fd8-84db-7c5037e95d61 instead of the freshly bootstrapped workspace 31fdcb2c-0db1-4671-8156-f05acb6cfc4c; RTP smoke data was aligned to the active workspace selection.
+- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 00-57-45.
+- PASS: Current workspace resolved to 34016d64-75fd-427b-82b3-c173e04fad7a instead of the freshly bootstrapped workspace 9fb20994-83aa-486c-bec8-af136dd43a11; RTP smoke data was aligned to the active workspace selection.
 - PASS: Created production RTP cycle Production RTP Release Smoke 2026-04-13.
-- PASS: Seeded linked RTP project RTP Funding Smoke Project 00-47-17 in the active workspace.
+- PASS: Seeded linked RTP project RTP Funding Smoke Project 00-57-45 in the active workspace.
 - PASS: Linked the smoke project into the RTP cycle portfolio.
 - PASS: Seeded funding profile, opportunity, award, and reimbursement packet for the linked RTP project.
 - PASS: Created RTP board-packet record from the production API.
 - PASS: Generated the first RTP packet artifact on production through the existing report generation route.
+- PASS: Seeded linked plan and program records so detail-surface runtime cues can be proven on production.
 - PASS: Dashboard quick actions and shared command board copy both surfaced the RTP funding-backed release-review lane.
 - PASS: Analysis Studio surfaced the shared RTP funding-review runtime cue and inherited the same command-board pressure while keeping the smoke project as the visible project context.
 - PASS: Project detail surfaced the shared RTP funding-review runtime cue directly on the canonical project spine.
 - PASS: Plans registry inherited the shared RTP funding-review runtime cue from the central workspace loader.
+- PASS: Plan detail surfaced the direct RTP funding-review runtime cue on the planning spine, not just the shared command board.
+- PASS: Program detail surfaced the direct RTP funding-review runtime cue on the programming spine, not just the shared command board.
 - PASS: Data Hub inherited the shared RTP funding-review runtime cue from the central workspace loader.
 - PASS: Reports surface showed RTP funding-review queue pressure and the shared runtime cue pointed back to the RTP funding release-review packet before opening detail.
 - PASS: Production RTP registry rendered the release-review lane CTA, the row-level current-packet action, and funding-backed release-review cues before opening the packet detail.
@@ -37,6 +42,8 @@
 - 2026-04-13-prod-rtp-release-review-analysis-workspace.png
 - 2026-04-13-prod-rtp-release-review-project-detail.png
 - 2026-04-13-prod-rtp-release-review-plans.png
+- 2026-04-13-prod-rtp-release-review-plan-detail.png
+- 2026-04-13-prod-rtp-release-review-program-detail.png
 - 2026-04-13-prod-rtp-release-review-data-hub.png
 - 2026-04-13-prod-rtp-release-review-02-reports-runtime-cue.png
 - 2026-04-13-prod-rtp-release-review-01-registry.png

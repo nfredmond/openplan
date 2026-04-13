@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramDetailControls } from "@/components/programs/program-detail-controls";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
@@ -678,6 +679,7 @@ export default async function ProgramDetailPage({
               relatedProjects: projectLinkIds,
             }}
           />
+          <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
             label="Workspace command board"

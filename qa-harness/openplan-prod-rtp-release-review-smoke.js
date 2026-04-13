@@ -35,6 +35,8 @@ async function main() {
   const workspaceName = `OpenPlan Prod RTP Release Smoke ${stamp.slice(11, 19)}`;
   const cycleTitle = `Production RTP Release Smoke ${stamp.slice(0, 10)}`;
   const projectName = `RTP Funding Smoke Project ${stamp.slice(11, 19)}`;
+  const planTitle = `RTP Funding Smoke Plan ${stamp.slice(11, 19)}`;
+  const programTitle = `RTP Funding Smoke Program ${stamp.slice(11, 19)}`;
   const opportunityTitle = `RTP linked funding opportunity ${stamp.slice(11, 19)}`;
   const awardTitle = `RTP linked funding award ${stamp.slice(11, 19)}`;
   const invoiceNumber = `RTP-FUND-${stamp.slice(11, 19).replace(/-/g, '')}`;
@@ -270,6 +272,51 @@ async function main() {
     }
     notes.push('Generated the first RTP packet artifact on production through the existing report generation route.');
 
+    const planResult = await appFetch('/api/plans', {
+      projectId: ids.projectId,
+      title: planTitle,
+      planType: 'regional',
+      status: 'active',
+      geographyLabel: 'Nevada County, California',
+      horizonYear: 2045,
+      summary: 'Production smoke plan used to verify shared runtime cue propagation on plan detail.',
+      links: [
+        { linkType: 'project_record', linkedId: ids.projectId },
+        { linkType: 'report', linkedId: ids.reportId },
+      ],
+    });
+    if (planResult.status !== 201) {
+      throw new Error(`Smoke plan creation failed: ${planResult.status} ${JSON.stringify(planResult.data)}`);
+    }
+    ids.planId = planResult.data.planId ?? null;
+
+    const programResult = await appFetch('/api/programs', {
+      projectId: ids.projectId,
+      title: programTitle,
+      programType: 'rtip',
+      status: 'assembling',
+      cycleName: 'FY 2026-27 RTIP',
+      fundingClassification: 'mixed',
+      sponsorAgency: 'Nevada County Transportation Commission',
+      ownerLabel: 'Programming lead',
+      cadenceLabel: 'Biennial adoption',
+      fiscalYearStart: 2026,
+      fiscalYearEnd: 2027,
+      nominationDueAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+      adoptionTargetAt: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString(),
+      summary: 'Production smoke program used to verify shared runtime cue propagation on program detail.',
+      links: [
+        { linkType: 'project_record', linkedId: ids.projectId },
+        { linkType: 'plan', linkedId: ids.planId },
+        { linkType: 'report', linkedId: ids.reportId },
+      ],
+    });
+    if (programResult.status !== 201) {
+      throw new Error(`Smoke program creation failed: ${programResult.status} ${JSON.stringify(programResult.data)}`);
+    }
+    ids.programId = programResult.data.programId ?? null;
+    notes.push('Seeded linked plan and program records so detail-surface runtime cues can be proven on production.');
+
     await page.goto(`${productionBaseUrl}/dashboard`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Move into the right module lane/i }).waitFor({ timeout: 30000 });
     const dashboardReviewLink = page.getByRole('link', { name: /Open RTP funding release review/i }).first();
@@ -320,6 +367,28 @@ async function main() {
     }
     notes.push('Plans registry inherited the shared RTP funding-review runtime cue from the central workspace loader.');
     await screenshot('prod-rtp-release-review-plans');
+
+    await page.goto(`${productionBaseUrl}/plans/${ids.planId}`, { waitUntil: 'networkidle' });
+    await page.getByText(new RegExp(planTitle, 'i')).first().waitFor({ timeout: 30000 });
+    const planDetailRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await planDetailRuntimeCueLink.waitFor({ timeout: 30000 });
+    const planDetailRuntimeCueHref = await planDetailRuntimeCueLink.getAttribute('href');
+    if (planDetailRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Plan detail runtime cue did not target the expected RTP funding review. Received ${planDetailRuntimeCueHref}`);
+    }
+    notes.push('Plan detail surfaced the direct RTP funding-review runtime cue on the planning spine, not just the shared command board.');
+    await screenshot('prod-rtp-release-review-plan-detail');
+
+    await page.goto(`${productionBaseUrl}/programs/${ids.programId}`, { waitUntil: 'networkidle' });
+    await page.getByText(new RegExp(programTitle, 'i')).first().waitFor({ timeout: 30000 });
+    const programDetailRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await programDetailRuntimeCueLink.waitFor({ timeout: 30000 });
+    const programDetailRuntimeCueHref = await programDetailRuntimeCueLink.getAttribute('href');
+    if (programDetailRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Program detail runtime cue did not target the expected RTP funding review. Received ${programDetailRuntimeCueHref}`);
+    }
+    notes.push('Program detail surfaced the direct RTP funding-review runtime cue on the programming spine, not just the shared command board.');
+    await screenshot('prod-rtp-release-review-program-detail');
 
     await page.goto(`${productionBaseUrl}/data-hub`, { waitUntil: 'networkidle' });
     await page.getByText(/Data Hub now uses the same internal hierarchy as the rest of OpenPlan/i).first().waitFor({ timeout: 30000 });
@@ -420,6 +489,8 @@ async function main() {
       `- Workspace id: ${ids.workspaceId ?? 'unknown'}`,
       `- RTP cycle id: ${ids.rtpCycleId ?? 'unknown'}`,
       `- Project id: ${ids.projectId ?? 'unknown'}`,
+      `- Plan id: ${ids.planId ?? 'unknown'}`,
+      `- Program id: ${ids.programId ?? 'unknown'}`,
       `- Opportunity id: ${ids.opportunityId ?? 'unknown'}`,
       `- Award id: ${ids.awardId ?? 'unknown'}`,
       `- Invoice id: ${ids.invoiceId ?? 'unknown'}`,

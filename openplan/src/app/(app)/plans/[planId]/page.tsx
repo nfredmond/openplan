@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanDetailControls } from "@/components/plans/plan-detail-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -737,6 +738,7 @@ export default async function PlanDetailPage({
             plan={plan}
             projects={(projectsResult.data ?? []).map((project) => ({ id: project.id, name: project.name }))}
           />
+          <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
             label="Workspace command board"
