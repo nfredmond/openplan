@@ -1,25 +1,25 @@
 # OpenPlan Production RTP Release-Review Smoke — 2026-04-13
 
 - Base URL: https://openplan-natford.vercel.app
-- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T01-28-59-562Z@natfordplanning.com
+- QA user email: openplan-prod-rtp-release-smoke-2026-04-13T01-51-22-542Z@natfordplanning.com
 - QA user id: unknown
-- Workspace id: 3943d6ed-ed36-4e5a-a6a8-0716475aeb2f
-- RTP cycle id: ff3f25aa-10af-42fc-b110-0ff8c62cbb35
-- Project id: 4b2141d7-61c5-4a54-917c-20f8d7059c76
-- Plan id: c39d9dc1-65af-4c7f-b05b-f435bb32070c
-- Program id: 45359f24-e740-4f38-ac91-c46386a366b9
-- Opportunity id: 886bb8b8-ff3a-408a-bcfb-2418521c9fc1
-- Award id: 3aae8a40-3636-451e-afcc-3370fa305add
-- Invoice id: 9458d846-2651-48c2-a823-8c8f62226caa
-- Report id: 2f5a5e1c-d6e1-4cc8-9c23-1ad4cee40dfa
+- Workspace id: 734b2de6-ec21-44cf-9bb9-f34ec8a87fe0
+- RTP cycle id: 5f456d65-b4e6-4d72-a36a-c8a6d4b88838
+- Project id: c91b377b-8284-47ab-806a-acd9b2a919c1
+- Plan id: b83e0e50-625c-4d0b-aa27-cb7bf6d7e8fa
+- Program id: 2a69a43f-bc23-4763-a7e5-90a93e2c8850
+- Opportunity id: d5030494-8a1a-49a7-8289-ce3aa22ef1a8
+- Award id: 0775d0fe-87bd-41a9-9bb7-44c62008b934
+- Invoice id: ec8faa20-d254-46e1-9544-9f43fb2c4d8d
+- Report id: 16630b7e-7f76-4db0-b203-e84549e87364
 
 ## Pass/Fail Notes
-- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T01-28-59-562Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-prod-rtp-release-smoke-2026-04-13T01-51-22-542Z@natfordplanning.com.
 - PASS: Signed into production successfully.
-- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 01-28-59.
+- PASS: Bootstrapped workspace OpenPlan Prod RTP Release Smoke 01-51-22.
 - PASS: Current workspace resolved to the freshly bootstrapped workspace, so production proof stayed on the intended operator path.
 - PASS: Created production RTP cycle Production RTP Release Smoke 2026-04-13.
-- PASS: Seeded linked RTP project RTP Funding Smoke Project 01-28-59 in the active workspace.
+- PASS: Seeded linked RTP project RTP Funding Smoke Project 01-51-22 in the active workspace.
 - PASS: Linked the smoke project into the RTP cycle portfolio.
 - PASS: Seeded funding profile, opportunity, award, and reimbursement packet for the linked RTP project.
 - PASS: Created RTP board-packet record from the production API.
