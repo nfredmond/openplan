@@ -88,4 +88,68 @@ describe("WorkspaceCommandBoard", () => {
     );
     expect(screen.getByText(/Funding review: 1/i)).toBeInTheDocument();
   });
+
+  it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          detail: "A funding need anchor is missing.",
+          counts: {
+            ...summary.counts,
+            reportPacketCurrent: 0,
+            rtpFundingReviewPackets: 0,
+            projectFundingNeedAnchorProjects: 1,
+            queueDepth: 1,
+          },
+          nextCommand: {
+            key: "anchor-project-funding-needs",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Anchor project funding needs",
+            detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+            href: "/projects/project-anchor#project-funding-opportunities",
+            targetProjectId: "project-anchor",
+            tone: "warning",
+            priority: 3,
+            badges: [{ label: "Missing anchors", value: 1 }],
+          },
+          commandQueue: [
+            {
+              key: "anchor-project-funding-needs",
+              moduleKey: "grants",
+              moduleLabel: "Grants OS",
+              title: "Anchor project funding needs",
+              detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+              href: "/projects/project-anchor#project-funding-opportunities",
+              targetProjectId: "project-anchor",
+              tone: "warning",
+              priority: 3,
+              badges: [{ label: "Missing anchors", value: 1 }],
+            },
+          ],
+          fullCommandQueue: [
+            {
+              key: "anchor-project-funding-needs",
+              moduleKey: "grants",
+              moduleLabel: "Grants OS",
+              title: "Anchor project funding needs",
+              detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+              href: "/projects/project-anchor#project-funding-opportunities",
+              targetProjectId: "project-anchor",
+              tone: "warning",
+              priority: 3,
+              badges: [{ label: "Missing anchors", value: 1 }],
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(screen.getByText("Grants OS")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Anchor project funding needs/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
+    );
+  });
 });

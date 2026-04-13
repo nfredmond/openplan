@@ -33,6 +33,7 @@ import {
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
 import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+import { isGrantsCommand } from "@/lib/operations/grants-links";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -178,17 +179,6 @@ type DecisionFilter = "all" | FundingOpportunityDecision;
 
 const STATUS_FILTERS: StatusFilter[] = ["all", "open", "upcoming", "awarded", "closed", "archived"];
 const DECISION_FILTERS: DecisionFilter[] = ["all", "pursue", "monitor", "skip"];
-const GRANTS_QUEUE_KEYS = new Set([
-  "funding-windows-closing",
-  "anchor-project-funding-needs",
-  "source-project-funding-opportunities",
-  "advance-project-funding-decisions",
-  "record-awarded-funding",
-  "start-project-reimbursement-packets",
-  "relink-project-invoice-awards",
-  "advance-project-reimbursement-invoicing",
-  "close-project-funding-gaps",
-]);
 
 function normalizeJoinedRecord<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) {
@@ -852,7 +842,7 @@ export default async function GrantsPage({
       : null) ?? null;
   const awardConversionOpportunity = focusedAwardConversionOpportunity ?? leadAwardConversionOpportunity;
   const grantsQueue = operationsSummary.fullCommandQueue
-    .filter((item) => GRANTS_QUEUE_KEYS.has(item.key))
+    .filter((item) => isGrantsCommand(item))
     .map((item) => ({
       ...item,
       href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId, invoiceById),

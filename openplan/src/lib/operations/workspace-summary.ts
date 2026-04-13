@@ -185,6 +185,8 @@ export type WorkspaceOperationsReportSourceRow = {
 
 export type WorkspaceCommandQueueItem = {
   key: string;
+  moduleKey?: "grants";
+  moduleLabel?: string;
   title: string;
   detail: string;
   href: string;
@@ -577,7 +579,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
 
   const reportSourceRows = (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[];
   const reportIds = reportSourceRows.map((report) => report.id).filter((id): id is string => Boolean(id));
-  let latestArtifactByReportId = new Map<string, { generated_at: string | null; metadata_json: Record<string, unknown> | null }>();
+  const latestArtifactByReportId = new Map<string, { generated_at: string | null; metadata_json: Record<string, unknown> | null }>();
 
   if (reportIds.length > 0) {
     const { data: reportArtifactsData } = await supabase
@@ -1087,6 +1089,8 @@ export function buildWorkspaceOperationsSummary({
   if (closingSoonFundingOpportunities > 0) {
     queueCandidates.push({
       key: "funding-windows-closing",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Advance near-term funding windows",
       detail: `${closingSoonFundingOpportunities} open funding opportunit${closingSoonFundingOpportunities === 1 ? "y closes" : "ies close"} within 14 days.${firstClosingOpportunity?.title ? ` ${firstClosingOpportunity.title} is the first deadline to reopen.` : ""}${firstClosingProgram?.title ? ` Reopen ${firstClosingProgram.title} first.` : firstClosingProject?.name ? ` Reopen ${firstClosingProject.name} first.` : ""}`,
       href: firstClosingOpportunity?.programId
@@ -1109,6 +1113,8 @@ export function buildWorkspaceOperationsSummary({
     const firstFundingNeedAnchorProject = projectFundingNeedAnchorProjects[0];
     queueCandidates.push({
       key: "anchor-project-funding-needs",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Anchor project funding needs",
       detail: `${projectFundingNeedAnchorProjects.length} project funding lane${projectFundingNeedAnchorProjects.length === 1 ? " has" : "s have"} linked opportunities but still no recorded funding-need anchor.${firstFundingNeedAnchorProject ? ` Reopen ${firstFundingNeedAnchorProject.project.name} first so the gap can be measured honestly.` : ""}`,
       href: firstFundingNeedAnchorProject
@@ -1129,6 +1135,8 @@ export function buildWorkspaceOperationsSummary({
     const firstFundingAwardRecordProject = fundingAwardRecordProjects[0];
     queueCandidates.push({
       key: "record-awarded-funding",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Record awarded funding",
       detail: `${fundingAwardRecordProjects.length} project funding stack${fundingAwardRecordProjects.length === 1 ? " has" : "s have"} an opportunity already marked awarded but no funding-award record yet.${firstFundingAwardRecordProject ? ` Reopen ${firstFundingAwardRecordProject.project.name} first and convert ${firstFundingAwardRecordProject.awardedOpportunity.title} into a committed award entry.` : ""}`,
       href: firstFundingAwardRecordProject
@@ -1155,6 +1163,8 @@ export function buildWorkspaceOperationsSummary({
     const firstReimbursementStartProject = reimbursementStartProjects[0];
     queueCandidates.push({
       key: "start-project-reimbursement-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Start reimbursement packets",
       detail: `${reimbursementStartProjects.length} project funding stack${reimbursementStartProjects.length === 1 ? " has" : "s have"} committed awards with uninvoiced dollars but no reimbursement packet started yet.${firstReimbursementStartProject ? ` Reopen ${firstReimbursementStartProject.project.name} first and start the packet against ${formatCurrency(firstReimbursementStartProject.summary.uninvoicedAwardAmount)} still uninvoiced.` : ""}`,
       href: firstReimbursementStartProject
@@ -1180,6 +1190,8 @@ export function buildWorkspaceOperationsSummary({
     const firstInvoiceAwardRelinkProject = invoiceAwardRelinkProjects[0];
     queueCandidates.push({
       key: "relink-project-invoice-awards",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Relink invoice reimbursement records",
       detail: `${invoiceAwardRelinkProjects.length} project reimbursement lane${invoiceAwardRelinkProjects.length === 1 ? " has" : "s have"} an exact invoice-to-award relink available right now.${firstInvoiceAwardRelinkProject ? ` Reopen ${firstInvoiceAwardRelinkProject.project.name} first and attach ${firstInvoiceAwardRelinkProject.invoice.id} to ${firstInvoiceAwardRelinkProject.award.title}.` : ""}`,
       href: firstInvoiceAwardRelinkProject
@@ -1205,6 +1217,8 @@ export function buildWorkspaceOperationsSummary({
     const firstReimbursementAdvanceProject = reimbursementAdvanceProjects[0];
     queueCandidates.push({
       key: "advance-project-reimbursement-invoicing",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Advance reimbursement invoicing",
       detail: `${reimbursementAdvanceProjects.length} project funding stack${reimbursementAdvanceProjects.length === 1 ? " has" : "s have"} reimbursement work underway and still needs follow-through.${firstReimbursementAdvanceProject ? ` Reopen ${firstReimbursementAdvanceProject.project.name} first and move ${formatCurrency(
         Math.max(
@@ -1245,6 +1259,8 @@ export function buildWorkspaceOperationsSummary({
     const firstFundingGapProject = fundingGapProjects[0];
     queueCandidates.push({
       key: "close-project-funding-gaps",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Close project funding gaps",
       detail: `${fundingGapProjects.length} project funding stack${fundingGapProjects.length === 1 ? " still shows" : "s still show"} an uncovered gap after current pursued dollars.${firstFundingGapProject ? ` ${firstFundingGapProject.project.name} still carries ${formatCurrency(firstFundingGapProject.summary.unfundedAfterLikelyAmount)} uncovered.` : ""}`,
       href: firstFundingGapProject ? `/projects/${firstFundingGapProject.project.id}#project-funding-opportunities` : "/projects",
@@ -1263,6 +1279,8 @@ export function buildWorkspaceOperationsSummary({
     const firstFundingSourcingProject = fundingSourcingProjects[0];
     queueCandidates.push({
       key: "source-project-funding-opportunities",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Source project funding opportunities",
       detail: `${fundingSourcingProjects.length} project funding stack${fundingSourcingProjects.length === 1 ? " has" : "s have"} a recorded funding need but still no linked funding opportunities.${firstFundingSourcingProject ? ` Reopen ${firstFundingSourcingProject.project.name} first and source candidate programs.` : ""}`,
       href: firstFundingSourcingProject
@@ -1286,6 +1304,8 @@ export function buildWorkspaceOperationsSummary({
     const firstFundingDecisionProject = fundingDecisionProjects[0];
     queueCandidates.push({
       key: "advance-project-funding-decisions",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Advance project funding decisions",
       detail: `${fundingDecisionProjects.length} project funding stack${fundingDecisionProjects.length === 1 ? " has" : "s have"} linked opportunities but nothing marked pursue yet.${firstFundingDecisionProject?.leadOpportunity ? ` ${firstFundingDecisionProject.leadOpportunity.title} is the first grant decision to advance for ${firstFundingDecisionProject.project.name}.` : firstFundingDecisionProject ? ` Reopen ${firstFundingDecisionProject.project.name} first and choose the lead opportunity.` : ""}`,
       href: firstFundingDecisionProject

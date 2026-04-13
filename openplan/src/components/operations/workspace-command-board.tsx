@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { isGrantsQueueItem, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 function postureTone(posture: WorkspaceOperationsSummary["posture"]) {
@@ -115,10 +115,13 @@ export function WorkspaceCommandBoard({
       <div className="mt-5 grid gap-3">
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
-            <Link key={item.key} href={isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
+            <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    {item.moduleLabel ? <StatusBadge tone="neutral">{item.moduleLabel}</StatusBadge> : null}
+                  </div>
                   <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
                 </div>
                 <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>

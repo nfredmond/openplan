@@ -4,7 +4,7 @@ import { ArrowRight, FileText, FolderKanban, Landmark, Radar, ShieldCheck } from
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { isGrantsQueueItem, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
   buildWorkspaceOperationsSummaryFromSourceRows,
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
     }>,
   });
 
-  const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsQueueItem(item)) ?? null;
+  const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsCommand(item)) ?? null;
   const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
 
   const actions = [
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
     operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
       ? [
           {
-            href: isGrantsQueueItem(operationsSummary.nextCommand)
+            href: isGrantsCommand(operationsSummary.nextCommand)
               ? resolveSharedGrantsQueueHref(operationsSummary.nextCommand)
               : operationsSummary.nextCommand.href,
             title:

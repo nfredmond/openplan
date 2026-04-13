@@ -1,5 +1,8 @@
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
 
+export const GRANTS_COMMAND_MODULE_KEY = "grants" as const;
+export const GRANTS_COMMAND_MODULE_LABEL = "Grants OS";
+
 const GRANTS_QUEUE_KEYS = new Set([
   "funding-windows-closing",
   "anchor-project-funding-needs",
@@ -32,6 +35,12 @@ function buildFocusedInvoiceHref(invoiceId: string | null | undefined) {
 
 export function isGrantsQueueItem(item: Pick<WorkspaceCommandQueueItem, "key"> | null | undefined) {
   return Boolean(item && GRANTS_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && (item.moduleKey === GRANTS_COMMAND_MODULE_KEY || isGrantsQueueItem(item)));
 }
 
 export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): string {
@@ -69,5 +78,5 @@ export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): s
 }
 
 export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): string {
-  return isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href;
+  return isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href;
 }
