@@ -198,6 +198,7 @@ export default async function ReportsPage({
 
       return {
         ...report,
+        latestArtifact,
         project: Array.isArray(report.projects)
           ? report.projects[0] ?? null
           : report.projects ?? null,
