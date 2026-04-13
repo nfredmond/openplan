@@ -22,6 +22,10 @@ const GRANTS_REIMBURSEMENT_QUEUE_KEYS = new Set([
 ]);
 
 const GRANTS_AWARD_QUEUE_KEYS = new Set(["record-awarded-funding"]);
+const GRANTS_DECISION_QUEUE_KEYS = new Set([
+  "funding-windows-closing",
+  "advance-project-funding-decisions",
+]);
 
 function buildFocusedProjectHref(projectId: string | null | undefined, anchor: string) {
   if (!projectId) return `/grants${anchor}`;
@@ -61,6 +65,12 @@ export function isGrantsAwardCommand(
   item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
 ) {
   return Boolean(item && isGrantsCommand(item) && GRANTS_AWARD_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsDecisionCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && GRANTS_DECISION_QUEUE_KEYS.has(item.key));
 }
 
 export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): string {

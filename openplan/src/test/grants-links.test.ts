@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isGrantsAwardCommand,
   isGrantsCommand,
+  isGrantsDecisionCommand,
   isGrantsReimbursementCommand,
   resolveWorkspaceCommandHref,
 } from "@/lib/operations/grants-links";
@@ -72,6 +73,37 @@ describe("grants-links", () => {
         })
       )
     ).toBe(false);
+  });
+
+  it("identifies opportunity-decision grants commands", () => {
+    expect(
+      isGrantsDecisionCommand(
+        buildCommand({
+          key: "funding-windows-closing",
+          targetOpportunityId: "opportunity-close-1",
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      isGrantsDecisionCommand(
+        buildCommand({
+          key: "record-awarded-funding",
+          targetOpportunityId: "opportunity-award-1",
+        })
+      )
+    ).toBe(false);
+  });
+
+  it("routes opportunity-decision commands into the focused opportunity lane", () => {
+    expect(
+      resolveWorkspaceCommandHref(
+        buildCommand({
+          key: "funding-windows-closing",
+          targetOpportunityId: "opportunity-close-1",
+        })
+      )
+    ).toBe("/grants?focusOpportunityId=opportunity-close-1#funding-opportunity-opportunity-close-1");
   });
 
   it("routes award-conversion commands into the grants award conversion composer", () => {
