@@ -71,7 +71,7 @@ export function WorkspaceCommandBoard({
             {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
           </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} current for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} funding-backed.` : "."}
+            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} funding-backed.` : "."}
           </p>
         </div>
         <div className="module-subpanel">
