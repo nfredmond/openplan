@@ -283,6 +283,15 @@ async function main() {
     notes.push('Dashboard quick actions and shared command board copy both surfaced the RTP funding-backed release-review lane.');
     await screenshot('prod-rtp-release-review-dashboard');
 
+    await page.goto(`${productionBaseUrl}/explore`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /Corridor analysis workspace/i }).waitFor({ timeout: 30000 });
+    await page.getByText(/What should move around this analysis workspace/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
+    await page.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/1 current for release review, 1 funding-backed\./i).first().waitFor({ timeout: 30000 });
+    notes.push('Analysis Studio inherited the shared command-board RTP funding-review pressure while keeping the smoke project as the visible project context.');
+    await screenshot('prod-rtp-release-review-analysis-workspace');
+
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
     await page.getByText(/1 RTP funding review/i).first().waitFor({ timeout: 30000 });
