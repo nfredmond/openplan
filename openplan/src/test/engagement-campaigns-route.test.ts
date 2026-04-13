@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const campaignsOrderMock = vi.fn();
 const campaignsEqStatusMock = vi.fn(() => ({ order: campaignsOrderMock }));
@@ -68,6 +69,14 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
+
+vi.mock("@/lib/workspaces/current", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/workspaces/current")>("@/lib/workspaces/current");
+  return {
+    ...actual,
+    loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+  };
+});
 
 import { GET as getCampaigns, POST as postCampaigns } from "@/app/api/engagement/campaigns/route";
 
@@ -139,6 +148,23 @@ describe("/api/engagement/campaigns", () => {
       error: null,
     });
 
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: {
+        workspace_id: "77777777-7777-4777-8777-777777777777",
+        role: "member",
+        workspaces: {
+          name: "Operator workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Operator workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
+    });
+
     campaignsSingleMock.mockResolvedValue({
       data: {
         id: "55555555-5555-4555-8555-555555555555",
@@ -206,11 +232,10 @@ describe("/api/engagement/campaigns", () => {
         created_by: "22222222-2222-4222-8222-222222222222",
       })
     );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 
-  it("POST returns 403 when direct workspace membership role is unsupported", async () => {
-    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock } as never);
-
+  it("POST creates an unlinked campaign in the helper-selected workspace", async () => {
     const response = await postCampaigns(
       jsonRequest({
         title: "Unlinked operator intake",
@@ -218,16 +243,34 @@ describe("/api/engagement/campaigns", () => {
     );
 
     expect(response.status).toBe(201);
+    expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalledWith(expect.anything(), "22222222-2222-4222-8222-222222222222");
+    expect(campaignsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "77777777-7777-4777-8777-777777777777",
+        project_id: null,
+        title: "Unlinked operator intake",
+      })
+    );
+  });
 
-    membershipMaybeSingleMock.mockResolvedValueOnce({
-      data: {
-        workspace_id: "44444444-4444-4444-8444-444444444444",
+  it("POST returns 403 when helper-selected workspace role is unsupported", async () => {
+    
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: {
+        workspace_id: "77777777-7777-4777-8777-777777777777",
         role: "viewer",
+        workspaces: {
+          name: "Operator workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
       },
-      error: null,
+      workspace: {
+        name: "Operator workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
     });
-
-    membershipSelectMock.mockReturnValueOnce({ eq: membershipEqUserMock } as never);
 
     const deniedResponse = await postCampaigns(
       jsonRequest({
