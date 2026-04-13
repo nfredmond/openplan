@@ -298,6 +298,18 @@ async function main() {
     notes.push('Analysis Studio surfaced the shared RTP funding-review runtime cue and inherited the same command-board pressure while keeping the smoke project as the visible project context.');
     await screenshot('prod-rtp-release-review-analysis-workspace');
 
+    await page.goto(`${productionBaseUrl}/projects/${ids.projectId}`, { waitUntil: 'networkidle' });
+    await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
+    const projectRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await projectRuntimeCueLink.waitFor({ timeout: 30000 });
+    const projectRuntimeCueHref = await projectRuntimeCueLink.getAttribute('href');
+    if (projectRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Project runtime cue did not target the expected RTP funding review. Received ${projectRuntimeCueHref}`);
+    }
+    await page.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i).first().waitFor({ timeout: 30000 });
+    notes.push('Project detail surfaced the shared RTP funding-review runtime cue directly on the canonical project spine.');
+    await screenshot('prod-rtp-release-review-project-detail');
+
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
     await page.getByText(/1 RTP funding review/i).first().waitFor({ timeout: 30000 });

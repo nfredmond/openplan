@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
@@ -535,6 +536,23 @@ export default async function ProjectDetailPage({
     .order("updated_at", { ascending: false })
     .limit(4);
 
+  const workspaceReportIds = ((workspaceReportsResult.data ?? []) as Array<{ id: string }>).map(
+    (report) => report.id
+  );
+  const workspaceReportArtifactsResult = workspaceReportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", workspaceReportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+  const latestWorkspaceArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const artifact of (workspaceReportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
+    if (!latestWorkspaceArtifactByReportId.has(artifact.report_id)) {
+      latestWorkspaceArtifactByReportId.set(artifact.report_id, artifact);
+    }
+  }
+
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
     .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
@@ -953,7 +971,11 @@ export default async function ProjectDetailPage({
       generated_at: string | null;
       updated_at: string | null;
       metadata_json: Record<string, unknown> | null;
-    }>),
+    }>).map((report) => ({
+      ...report,
+      metadata_json:
+        latestWorkspaceArtifactByReportId.get(report.id)?.metadata_json ?? report.metadata_json ?? null,
+    })),
     fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
       id: string;
       title: string;
@@ -1442,6 +1464,7 @@ export default async function ProjectDetailPage({
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-6">
           <ProjectRecordComposer projectId={project.id} />
+          <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
             label="Workspace command board"

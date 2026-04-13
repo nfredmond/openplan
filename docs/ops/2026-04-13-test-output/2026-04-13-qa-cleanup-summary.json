@@ -1,128 +1,14 @@
 {
-  "startedAt": "2026-04-13T00:26:22.461Z",
+  "startedAt": "2026-04-13T00:37:08.146Z",
   "mode": "apply",
   "createdAfter": "2026-04-12",
   "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
   "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run|county-scaffold|layout-audit/i",
   "stripeSessionResults": [],
-  "deletePlan": [
-    {
-      "table": "report_artifacts",
-      "column": "id",
-      "plannedCount": 1
-    },
-    {
-      "table": "report_sections",
-      "column": "id",
-      "plannedCount": 6
-    },
-    {
-      "table": "billing_events",
-      "column": "workspace_id",
-      "plannedCount": 2
-    },
-    {
-      "table": "reports",
-      "column": "id",
-      "plannedCount": 1
-    },
-    {
-      "table": "projects",
-      "column": "id",
-      "plannedCount": 1
-    },
-    {
-      "table": "workspace_members",
-      "column": "workspace_id",
-      "plannedCount": 2
-    },
-    {
-      "table": "workspaces",
-      "column": "id",
-      "plannedCount": 2
-    }
-  ],
-  "deleteResults": [
-    {
-      "table": "report_artifacts",
-      "column": "id",
-      "countPlanned": 1,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 1,
-      "error": null
-    },
-    {
-      "table": "report_sections",
-      "column": "id",
-      "countPlanned": 6,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 6,
-      "error": null
-    },
-    {
-      "table": "billing_events",
-      "column": "workspace_id",
-      "countPlanned": 2,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 0,
-      "error": null
-    },
-    {
-      "table": "reports",
-      "column": "id",
-      "countPlanned": 1,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 1,
-      "error": null
-    },
-    {
-      "table": "projects",
-      "column": "id",
-      "countPlanned": 1,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 1,
-      "error": null
-    },
-    {
-      "table": "workspace_members",
-      "column": "workspace_id",
-      "countPlanned": 2,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 2,
-      "error": null
-    },
-    {
-      "table": "workspaces",
-      "column": "id",
-      "countPlanned": 2,
-      "ok": true,
-      "status": 200,
-      "deletedCount": 2,
-      "error": null
-    }
-  ],
-  "authPlan": [
-    {
-      "userId": "e03e9408-5a63-4080-ad6a-b72ff2ca9032",
-      "email": "openplan-prod-rtp-release-smoke-2026-04-13t00-25-37-626z@natfordplanning.com",
-      "created_at": "2026-04-13T00:25:37.993045Z"
-    }
-  ],
-  "authDeletes": [
-    {
-      "userId": "e03e9408-5a63-4080-ad6a-b72ff2ca9032",
-      "email": "openplan-prod-rtp-release-smoke-2026-04-13t00-25-37-626z@natfordplanning.com",
-      "ok": true,
-      "status": 200,
-      "error": null
-    }
-  ],
+  "deletePlan": [],
+  "deleteResults": [],
+  "authPlan": [],
+  "authDeletes": [],
   "verification": {
     "remainingWorkspaceCount": 0,
     "remainingUserCount": 0,
@@ -130,31 +16,12 @@
     "remainingUsers": []
   },
   "targets": {
-    "workspaceCount": 2,
-    "projectCount": 1,
-    "reportCount": 1,
+    "workspaceCount": 0,
+    "projectCount": 0,
+    "reportCount": 0,
     "campaignCount": 0,
     "countyRunCount": 0,
-    "userCount": 1,
-    "workspaces": [
-      {
-        "id": "26d07114-8b35-4b97-bfc0-0842733c1dd4",
-        "name": "openplan-prod-rtp-release-smoke-2026-04-13t00-25-37-626z",
-        "slug": "openplan-prod-rtp-release-smoke-2026-04-13t00-25-37-626z-e03e9408",
-        "plan": "free",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-13T00:25:37.992631+00:00"
-      },
-      {
-        "id": "e496b284-ebd1-4c15-be5f-847ec79df706",
-        "name": "OpenPlan Prod RTP Release Smoke 00-25-37",
-        "slug": "openplan-prod-rtp-release-smoke-00-25-37",
-        "plan": "pilot",
-        "subscription_plan": null,
-        "subscription_status": "pilot",
-        "created_at": "2026-04-13T00:25:44.277427+00:00"
-      }
-    ]
+    "userCount": 0,
+    "workspaces": []
   }
 }
