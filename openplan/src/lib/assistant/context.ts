@@ -502,6 +502,23 @@ function daysUntil(value: string | null | undefined, now = new Date()): number |
   return Math.round((parsed - now.getTime()) / 86400000);
 }
 
+function buildLatestArtifactGeneratedAtByReportId(
+  rows: Array<{ report_id: string; generated_at: string | null }>
+): Map<string, string | null> {
+  const latestByReportId = new Map<string, string | null>();
+
+  for (const row of rows) {
+    const current = latestByReportId.get(row.report_id);
+    const rowTime = row.generated_at ? new Date(row.generated_at).getTime() : Number.NEGATIVE_INFINITY;
+    const currentTime = current ? new Date(current).getTime() : Number.NEGATIVE_INFINITY;
+    if (!latestByReportId.has(row.report_id) || rowTime > currentTime) {
+      latestByReportId.set(row.report_id, row.generated_at);
+    }
+  }
+
+  return latestByReportId;
+}
+
 function resolveExactInvoiceAwardRelink(
   fundingAwards: Array<{ id: string }>,
   fundingInvoices: Array<{ id: string; funding_award_id: string | null; status: string | null }>
@@ -1071,6 +1088,18 @@ async function loadRtpRegistryContext(
     latest_artifact_kind: string | null;
     updated_at: string;
   }>;
+  const packetArtifactResult = packetReports.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at")
+        .in(
+          "report_id",
+          packetReports.map((report) => report.id)
+        )
+    : { data: [], error: null };
+  const latestArtifactGeneratedAtByReportId = buildLatestArtifactGeneratedAtByReportId(
+    (packetArtifactResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>
+  );
   const firstPacketByCycleId = new Map<string, { freshness: ReturnType<typeof getReportPacketFreshness> }>();
   const packetReportCountByCycleId = new Map<string, number>();
   const cycleUpdatedAtById = new Map(cycles.map((cycle) => [cycle.id, cycle.updated_at]));
@@ -1084,7 +1113,7 @@ async function loadRtpRegistryContext(
     firstPacketByCycleId.set(report.rtp_cycle_id, {
       freshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactGeneratedAtByReportId.get(report.id) ?? report.generated_at,
         updatedAt: cycleUpdatedAtById.get(report.rtp_cycle_id) ?? report.updated_at,
       }),
     });
@@ -1300,6 +1329,18 @@ async function loadRtpContext(
         latest_artifact_kind: string | null;
         updated_at: string;
       }>);
+  const packetArtifactsResult = packetReports.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at")
+        .in(
+          "report_id",
+          packetReports.map((report) => report.id)
+        )
+    : { data: [], error: null };
+  const latestArtifactGeneratedAtByReportId = buildLatestArtifactGeneratedAtByReportId(
+    (packetArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>
+  );
 
   const packetSummaries = packetReports
     .map((report) => ({
@@ -1308,7 +1349,7 @@ async function loadRtpContext(
       updatedAt: report.updated_at,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifactGeneratedAtByReportId.get(report.id) ?? report.generated_at,
         updatedAt: cycle.updated_at,
       }),
     }))
