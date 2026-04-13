@@ -4,10 +4,12 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const PROGRAM_ID = "11111111-1111-4111-8111-111111111111";
 const PROGRAM_CREATED_ID = "99999999-9999-4999-8999-999999999999";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+const SECONDARY_WORKSPACE_ID = "88888888-8888-4888-8888-888888888888";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 
 const programsOrderMock = vi.fn();
@@ -135,6 +137,14 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
+vi.mock("@/lib/workspaces/current", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/workspaces/current")>("@/lib/workspaces/current");
+  return {
+    ...actual,
+    loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+  };
+});
+
 import { GET as getPrograms, POST as postPrograms } from "@/app/api/programs/route";
 
 function jsonRequest(payload: unknown) {
@@ -233,6 +243,23 @@ describe("/api/programs", () => {
       error: null,
     });
 
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: {
+        workspace_id: WORKSPACE_ID,
+        role: "member",
+        workspaces: {
+          name: "Primary workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Primary workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
+    });
+
     programsSingleMock.mockResolvedValue({
       data: {
         id: PROGRAM_CREATED_ID,
@@ -308,6 +335,44 @@ describe("/api/programs", () => {
         title: "2027 RTIP Downtown package",
         program_type: "rtip",
         cycle_name: "2027 RTIP",
+      })
+    );
+  });
+
+  it("POST without projectId uses the helper-selected current workspace", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: {
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        role: "owner",
+        workspaces: {
+          name: "Newest workspace",
+          plan: "pilot",
+          created_at: "2026-04-13T01:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Newest workspace",
+        plan: "pilot",
+        created_at: "2026-04-13T01:00:00.000Z",
+      },
+    });
+
+    const response = await postPrograms(
+      jsonRequest({
+        title: "Unanchored RTIP",
+        programType: "rtip",
+        cycleName: "2029 RTIP",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalled();
+    expect(programsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        project_id: null,
+        title: "Unanchored RTIP",
+        cycle_name: "2029 RTIP",
       })
     );
   });

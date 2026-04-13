@@ -4,9 +4,11 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 const PLAN_ID = "11111111-1111-4111-8111-111111111111";
 const PLAN_CREATED_ID = "99999999-9999-4999-8999-999999999999";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+const SECONDARY_WORKSPACE_ID = "88888888-8888-4888-8888-888888888888";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 const SCENARIO_ID = "55555555-5555-4555-8555-555555555555";
 const CAMPAIGN_ID = "66666666-6666-4666-8666-666666666666";
@@ -123,6 +125,14 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
+vi.mock("@/lib/workspaces/current", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/workspaces/current")>("@/lib/workspaces/current");
+  return {
+    ...actual,
+    loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+  };
+});
+
 import { GET as getPlans, POST as postPlans } from "@/app/api/plans/route";
 
 function jsonRequest(payload: unknown) {
@@ -197,6 +207,23 @@ describe("/api/plans", () => {
         role: "member",
       },
       error: null,
+    });
+
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: {
+        workspace_id: WORKSPACE_ID,
+        role: "member",
+        workspaces: {
+          name: "Primary workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Primary workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
     });
 
     scenarioWorkspaceInMock.mockResolvedValue({
@@ -302,5 +329,41 @@ describe("/api/plans", () => {
         created_by: "22222222-2222-4222-8222-222222222222",
       },
     ]);
+  });
+
+  it("POST without projectId uses the helper-selected current workspace", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: {
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        role: "owner",
+        workspaces: {
+          name: "Newest workspace",
+          plan: "pilot",
+          created_at: "2026-04-13T01:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Newest workspace",
+        plan: "pilot",
+        created_at: "2026-04-13T01:00:00.000Z",
+      },
+    });
+
+    const response = await postPlans(
+      jsonRequest({
+        title: "Unanchored ATP",
+        planType: "atp",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalled();
+    expect(plansInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: SECONDARY_WORKSPACE_ID,
+        project_id: null,
+        title: "Unanchored ATP",
+      })
+    );
   });
 });
