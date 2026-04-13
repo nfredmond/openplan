@@ -285,6 +285,16 @@ async function main() {
 
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
+    await page.getByText(/1 RTP funding review/i).first().waitFor({ timeout: 30000 });
+    const reportQueue = page.locator('div').filter({ has: page.getByText(/Report packet queue/i) }).first();
+    await reportQueue.waitFor({ timeout: 30000 });
+    const reportQueueText = await reportQueue.textContent();
+    if (!reportQueueText || !reportQueueText.includes('run funding-backed release review')) {
+      throw new Error(`Reports queue did not surface RTP funding-backed release review copy. Queue text: ${reportQueueText}`);
+    }
+    if (!reportQueueText.includes(`${cycleTitle} Board / Binder`)) {
+      throw new Error(`Reports queue did not surface the RTP smoke report title. Queue text: ${reportQueueText}`);
+    }
     const runtimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
     const runtimeCueCount = await runtimeCueLink.count();
     if (runtimeCueCount < 1) {
@@ -303,7 +313,7 @@ async function main() {
       throw new Error(`Reports runtime cue did not target the expected RTP funding release review. Received ${runtimeCueHref}`);
     }
     await page.getByText(/Shared runtime cue:/i).first().waitFor({ timeout: 30000 });
-    notes.push('Shared runtime reports cue pointed back to the RTP funding release-review packet before opening detail.');
+    notes.push('Reports surface showed RTP funding-review queue pressure and the shared runtime cue pointed back to the RTP funding release-review packet before opening detail.');
     await screenshot('prod-rtp-release-review-02-reports-runtime-cue');
 
     await page.goto(`${productionBaseUrl}/rtp`, { waitUntil: 'networkidle' });

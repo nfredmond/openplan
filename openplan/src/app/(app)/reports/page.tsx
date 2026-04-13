@@ -15,7 +15,11 @@ import { ReportCreator } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  parseStoredRtpFundingReview,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -199,6 +203,9 @@ export default async function ReportsPage({
       const fundingSnapshot = parseStoredFundingSnapshot(
         latestArtifact?.metadata_json ?? null
       );
+      const storedRtpFundingReview = parseStoredRtpFundingReview(
+        latestArtifact?.metadata_json ?? null
+      );
 
       return {
         ...report,
@@ -218,6 +225,7 @@ export default async function ReportsPage({
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
         fundingSnapshot,
+        storedRtpFundingReview,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
       };
@@ -246,6 +254,9 @@ export default async function ReportsPage({
   ).length;
   const currentPacketCount = reports.filter(
     (report) => report.packetFreshness.label === "Packet current"
+  ).length;
+  const rtpFundingReviewCount = reports.filter(
+    (report) => report.packetFreshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
   ).length;
   const evidenceBackedCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest)
@@ -302,6 +313,7 @@ export default async function ReportsPage({
     .filter(
       (report) =>
         report.packetFreshness.label !== "Packet current" ||
+        Boolean(report.storedRtpFundingReview?.needsAttention) ||
         Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
         (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
     )
@@ -310,6 +322,9 @@ export default async function ReportsPage({
       const badges: Array<{ label: string; value?: string | number | null }> = [];
       if (report.packetFreshness.label !== "Packet current") {
         badges.push({ label: report.packetFreshness.label });
+      }
+      if (report.storedRtpFundingReview?.needsAttention) {
+        badges.push({ label: report.storedRtpFundingReview.label });
       }
       if ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0) {
         badges.push({
@@ -330,10 +345,13 @@ export default async function ReportsPage({
             ? `First action: refresh ${report.title}`
             : report.packetFreshness.label === "No packet"
               ? `First action: generate ${report.title}`
+              : report.storedRtpFundingReview?.needsAttention
+                ? `First action: run funding-backed release review on ${report.title}`
               : report.evidenceChainDigest?.blockedGateDetail
                 ? `First action: review governance hold in ${report.title}`
                 : `First action: review comparison-backed packet ${report.title}`,
         detail:
+          report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
           report.packetFreshness.detail,
         badges,
@@ -546,6 +564,7 @@ export default async function ReportsPage({
             <span className="module-inline-item"><strong>{scenarioSpineVisibleCount}</strong> scenario spine visible</span>
             <span className="module-inline-item"><strong>{comparisonSnapshotVisibleCount}</strong> comparison-backed</span>
             <span className="module-inline-item"><strong>{fundingSnapshotVisibleCount}</strong> funding-backed</span>
+            {rtpFundingReviewCount > 0 ? <span className="module-inline-item"><strong>{rtpFundingReviewCount}</strong> RTP funding review</span> : null}
             <span className="module-inline-item"><strong>{readyComparisonSnapshotCount}</strong> ready saved comparisons</span>
             {fundingGapVisibleCount > 0 ? <span className="module-inline-item"><strong>{fundingGapVisibleCount}</strong> funding gap{fundingGapVisibleCount === 1 ? "" : "s"} surfaced</span> : null}
             <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
@@ -567,7 +586,7 @@ export default async function ReportsPage({
               </h2>
             </div>
           </div>
-          <div className="module-record-detail-grid cols-3 mt-5">
+          <div className="module-record-detail-grid cols-4 mt-5">
             <div className="module-subpanel bg-white/[0.04] text-amber-50">
               <p className="module-summary-label text-amber-200/70">Packets</p>
               <p className="module-summary-value text-amber-50">{currentPacketCount}</p>
@@ -582,6 +601,11 @@ export default async function ReportsPage({
               <p className="module-summary-label text-amber-200/70">Needs attention</p>
               <p className="module-summary-value text-amber-50">{blockedGovernanceCount}</p>
               <p className="module-summary-detail text-amber-50/72">Governance blockers that should be resolved before shipment.</p>
+            </div>
+            <div className="module-subpanel bg-white/[0.04] text-amber-50">
+              <p className="module-summary-label text-amber-200/70">Funding review</p>
+              <p className="module-summary-value text-amber-50">{rtpFundingReviewCount}</p>
+              <p className="module-summary-detail text-amber-50/72">Current RTP packets whose release review still carries linked-project funding follow-through.</p>
             </div>
           </div>
           <div className="mt-5">

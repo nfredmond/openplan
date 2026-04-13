@@ -272,7 +272,15 @@ function asNumber(value: unknown): number | null {
   return null;
 }
 
-function parseStoredRtpFundingReview(metadata: Record<string, unknown> | null | undefined) {
+export type StoredRtpFundingReview = {
+  label: string;
+  detail: string;
+  needsAttention: boolean;
+};
+
+export function parseStoredRtpFundingReview(
+  metadata: Record<string, unknown> | null | undefined
+): StoredRtpFundingReview | null {
   const sourceContext = asRecord(metadata?.sourceContext);
   const snapshot = asRecord(sourceContext?.rtpFundingSnapshot);
   if (!snapshot) {

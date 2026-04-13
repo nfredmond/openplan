@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-04-13T00:11:40.739Z",
+  "mode": "apply",
+  "createdAfter": "2026-04-12",
+  "envPath": "/home/narford/.openclaw/workspace/openplan/openplan/.env.local",
+  "qaPattern": "/qa|proof|trace|canary|debug|smoke|scenario-compare|managed-run|county-scaffold|layout-audit/i",
+  "stripeSessionResults": [],
+  "deletePlan": [],
+  "deleteResults": [],
+  "authPlan": [],
+  "authDeletes": [],
+  "verification": {
+    "remainingWorkspaceCount": 0,
+    "remainingUserCount": 0,
+    "remainingWorkspaces": [],
+    "remainingUsers": []
+  },
+  "targets": {
+    "workspaceCount": 0,
+    "projectCount": 0,
+    "reportCount": 0,
+    "campaignCount": 0,
+    "countyRunCount": 0,
+    "userCount": 0,
+    "workspaces": []
+  }
+}
