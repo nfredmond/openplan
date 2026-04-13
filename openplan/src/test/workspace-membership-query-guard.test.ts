@@ -18,19 +18,31 @@ function collectSourceFiles(root: string): string[] {
   });
 }
 
-describe("workspace membership query guard", () => {
-  it("does not use arbitrary first-membership reads in app source", () => {
-    const offenders = collectSourceFiles(SOURCE_ROOT)
-      .map((filePath) => ({
-        filePath,
-        content: fs.readFileSync(filePath, "utf8"),
-      }))
-      .filter(({ content }) => {
-        const snippets = Array.from(content.matchAll(/from\("workspace_members"\)[\s\S]{0,320}?limit\(1\)/g)).map((match) => match[0]);
-        return snippets.some((snippet) => !snippet.includes('.eq("workspace_id"'));
-      })
-      .map(({ filePath }) => path.relative(process.cwd(), filePath));
+function collectWorkspaceMembershipQueryOffenders() {
+  const riskyPatterns = [
+    /from\("workspace_members"\)[\s\S]{0,320}?limit\(1\)/g,
+    /from\("workspace_members"\)[\s\S]{0,320}?maybeSingle\(\)/g,
+    /from\("workspace_members"\)[\s\S]{0,320}?single\(\)/g,
+  ];
 
-    expect(offenders).toEqual([]);
+  return collectSourceFiles(SOURCE_ROOT)
+    .map((filePath) => ({
+      filePath,
+      content: fs.readFileSync(filePath, "utf8"),
+    }))
+    .filter(({ content }) =>
+      riskyPatterns.some((pattern) => {
+        const snippets = Array.from(content.matchAll(pattern)).map((match) => match[0]);
+        return snippets.some(
+          (snippet) => !snippet.includes('.eq("workspace_id"') && !snippet.includes("loadCurrentWorkspaceMembership")
+        );
+      })
+    )
+    .map(({ filePath }) => path.relative(process.cwd(), filePath));
+}
+
+describe("workspace membership query guard", () => {
+  it("does not use arbitrary workspace-membership fallbacks in app source", () => {
+    expect(collectWorkspaceMembershipQueryOffenders()).toEqual([]);
   });
 });
