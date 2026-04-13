@@ -329,6 +329,7 @@ describe("/api/plans", () => {
         created_by: "22222222-2222-4222-8222-222222222222",
       },
     ]);
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 
   it("POST without projectId uses the helper-selected current workspace", async () => {

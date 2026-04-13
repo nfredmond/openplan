@@ -243,6 +243,7 @@ describe("/api/funding-opportunities", () => {
         expected_award_amount: 500000,
       })
     );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 
   it("POST without programId or projectId uses the helper-selected current workspace", async () => {

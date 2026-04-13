@@ -337,6 +337,7 @@ describe("/api/programs", () => {
         cycle_name: "2027 RTIP",
       })
     );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 
   it("POST without projectId uses the helper-selected current workspace", async () => {

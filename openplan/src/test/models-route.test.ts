@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
@@ -83,6 +84,14 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
+
+vi.mock("@/lib/workspaces/current", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/workspaces/current")>("@/lib/workspaces/current");
+  return {
+    ...actual,
+    loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+  };
+});
 
 import { GET as getModels, POST as postModels } from "@/app/api/models/route";
 
@@ -164,6 +173,23 @@ describe("/api/models", () => {
       error: null,
     });
 
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: {
+        workspace_id: WORKSPACE_ID,
+        role: "member",
+        workspaces: {
+          name: "Primary workspace",
+          plan: "pilot",
+          created_at: "2026-04-12T18:00:00.000Z",
+        },
+      },
+      workspace: {
+        name: "Primary workspace",
+        plan: "pilot",
+        created_at: "2026-04-12T18:00:00.000Z",
+      },
+    });
+
     modelsSingleMock.mockResolvedValue({
       data: {
         id: CREATED_MODEL_ID,
@@ -235,5 +261,6 @@ describe("/api/models", () => {
         created_by: "22222222-2222-4222-8222-222222222222",
       })
     );
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
   });
 });
