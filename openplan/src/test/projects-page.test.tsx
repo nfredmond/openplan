@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -15,6 +16,9 @@ const reportsOrderMock = vi.fn();
 const reportsInMock = vi.fn(() => ({ order: reportsOrderMock }));
 const reportsSelectMock = vi.fn(() => ({ in: reportsInMock }));
 
+const projectRtpLinksInMock = vi.fn();
+const projectRtpLinksSelectMock = vi.fn(() => ({ in: projectRtpLinksInMock }));
+
 const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
@@ -25,6 +29,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "reports") {
     return { select: reportsSelectMock };
+  }
+  if (table === "project_rtp_cycle_links") {
+    return { select: projectRtpLinksSelectMock };
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
@@ -117,7 +124,7 @@ describe("ProjectsPage", () => {
           title: "Downtown Safety Packet",
           status: "generated",
           updated_at: "2026-03-28T21:10:00.000Z",
-          generated_at: "2026-03-28T20:00:00.000Z",
+          generated_at: null,
           latest_artifact_kind: "html",
         },
         {
@@ -132,6 +139,8 @@ describe("ProjectsPage", () => {
       ],
       error: null,
     });
+
+    projectRtpLinksInMock.mockResolvedValue({ data: [], error: null });
 
     reportArtifactsOrderMock.mockResolvedValue({
       data: [
@@ -191,17 +200,24 @@ describe("ProjectsPage", () => {
   it("surfaces report packet health on project cards", async () => {
     await renderPage();
 
-    expect(screen.getByText(/1 project with report attention/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/1 project with evidence-backed packets/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText(/1 governance hold surfaced/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Report packet posture/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Downtown Safety Packet/i)).toBeInTheDocument();
+    const reportAttentionChip = screen.getAllByText("Report attention")[0]?.closest("div");
+    const evidenceBackedChip = screen.getAllByText("Evidence-backed")[0]?.closest("div");
+    const governanceHoldChip = screen.getAllByText("Governance hold")[0]?.closest("div");
+
+    expect(reportAttentionChip).not.toBeNull();
+    expect(evidenceBackedChip).not.toBeNull();
+    expect(governanceHoldChip).not.toBeNull();
+
+    expect(within(reportAttentionChip as HTMLElement).getByText("1")).toBeInTheDocument();
+    expect(within(evidenceBackedChip as HTMLElement).getByText("1")).toBeInTheDocument();
+    expect(within(governanceHoldChip as HTMLElement).getByText("1")).toBeInTheDocument();
+
+    expect(screen.getAllByText(/Portfolio packet command/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Downtown Safety Packet/i).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Next action: open this report and regenerate the packet\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
-    expect(screen.getByText(/No report records linked yet\./i)).toBeInTheDocument();
+    expect(screen.getAllByText(/No report records linked yet\./i).length).toBeGreaterThan(0);
   });
 });

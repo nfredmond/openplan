@@ -218,21 +218,22 @@ export default async function ProjectsPage() {
 
   for (const report of (projectReportsData ?? []) as ProjectReportRow[]) {
     const current = reportsByProjectId.get(report.project_id) ?? [];
+    const latestArtifact = latestArtifactByReportId.get(report.id) ?? null;
     current.push({
       ...report,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: report.generated_at,
+        generatedAt: latestArtifact?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
       comparisonDigest: describeComparisonSnapshotAggregate(
         parseStoredComparisonSnapshotAggregate(
-          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+          latestArtifact?.metadata_json ?? null
         )
       ),
       evidenceChainDigest: describeEvidenceChainSummary(
         parseStoredEvidenceChainSummary(
-          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+          latestArtifact?.metadata_json ?? null
         )
       ),
     });
