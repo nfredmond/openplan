@@ -15,6 +15,7 @@ import mapboxgl, {
 } from "mapbox-gl";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import type { Run } from "@/components/runs/RunHistory";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { Button } from "@/components/ui/button";
@@ -3140,6 +3141,11 @@ export default function ExplorePage() {
                       <p className="module-summary-detail">Latest analysis history for this workspace</p>
                     </div>
                   </div>
+
+                  <WorkspaceRuntimeCue
+                    summary={analysisContext.operationsSummary}
+                    className="mt-4 border-white/10 bg-white/[0.05] text-white/82"
+                  />
 
                   <WorkspaceCommandBoard
                     summary={analysisContext.operationsSummary}

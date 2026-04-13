@@ -287,9 +287,15 @@ async function main() {
     await page.getByRole('heading', { name: /Corridor analysis workspace/i }).waitFor({ timeout: 30000 });
     await page.getByText(/What should move around this analysis workspace/i).first().waitFor({ timeout: 30000 });
     await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
+    const analysisRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await analysisRuntimeCueLink.waitFor({ timeout: 30000 });
+    const analysisRuntimeCueHref = await analysisRuntimeCueLink.getAttribute('href');
+    if (analysisRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Analysis Studio runtime cue did not target the expected RTP funding review. Received ${analysisRuntimeCueHref}`);
+    }
     await page.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i).first().waitFor({ timeout: 30000 });
     await page.getByText(/1 current for release review, 1 funding-backed\./i).first().waitFor({ timeout: 30000 });
-    notes.push('Analysis Studio inherited the shared command-board RTP funding-review pressure while keeping the smoke project as the visible project context.');
+    notes.push('Analysis Studio surfaced the shared RTP funding-review runtime cue and inherited the same command-board pressure while keeping the smoke project as the visible project context.');
     await screenshot('prod-rtp-release-review-analysis-workspace');
 
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
