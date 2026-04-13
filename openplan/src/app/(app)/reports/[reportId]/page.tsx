@@ -1466,8 +1466,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             <div className="module-summary-card">
               <p className="module-summary-label">Generated</p>
               <p className="module-summary-value text-base">
-                {report.generated_at
-                  ? formatDateTime(report.generated_at)
+                {latestArtifact?.generated_at ?? report.generated_at
+                  ? formatDateTime(latestArtifact?.generated_at ?? report.generated_at)
                   : "Not yet"}
               </p>
             </div>

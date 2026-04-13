@@ -53,6 +53,34 @@ const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMo
 const scenarioSetsInMock = vi.fn();
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 
+const scenarioAssumptionSetsInMock = vi.fn();
+const scenarioAssumptionSetsSelectMock = vi.fn(() => ({ in: scenarioAssumptionSetsInMock }));
+
+const scenarioDataPackagesInMock = vi.fn();
+const scenarioDataPackagesSelectMock = vi.fn(() => ({ in: scenarioDataPackagesInMock }));
+
+const scenarioIndicatorSnapshotsInMock = vi.fn();
+const scenarioIndicatorSnapshotsSelectMock = vi.fn(() => ({ in: scenarioIndicatorSnapshotsInMock }));
+
+const scenarioComparisonSnapshotsInMock = vi.fn();
+const scenarioComparisonSnapshotsSelectMock = vi.fn(() => ({ in: scenarioComparisonSnapshotsInMock }));
+
+const projectFundingProfileMaybeSingleMock = vi.fn();
+const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingProfileMaybeSingleMock }));
+const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+
+const fundingAwardsOrderMock = vi.fn();
+const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+
+const fundingOpportunitiesOrderMock = vi.fn();
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+
+const billingInvoicesOrderMock = vi.fn();
+const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
+const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
 const stageGateEqWorkspaceMock = vi.fn(() => ({ order: stageGateOrderMock }));
@@ -79,6 +107,7 @@ const meetingsEqProjectMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqProjectMock }));
 
 const authGetUserMock = vi.fn();
+const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
   if (table === "reports") {
@@ -114,6 +143,30 @@ const fromMock = vi.fn((table: string) => {
   if (table === "scenario_sets") {
     return { select: scenarioSetsSelectMock };
   }
+  if (table === "scenario_assumption_sets") {
+    return { select: scenarioAssumptionSetsSelectMock };
+  }
+  if (table === "scenario_data_packages") {
+    return { select: scenarioDataPackagesSelectMock };
+  }
+  if (table === "scenario_indicator_snapshots") {
+    return { select: scenarioIndicatorSnapshotsSelectMock };
+  }
+  if (table === "scenario_comparison_snapshots") {
+    return { select: scenarioComparisonSnapshotsSelectMock };
+  }
+  if (table === "project_funding_profiles") {
+    return { select: projectFundingProfileSelectMock };
+  }
+  if (table === "funding_awards") {
+    return { select: fundingAwardsSelectMock };
+  }
+  if (table === "funding_opportunities") {
+    return { select: fundingOpportunitiesSelectMock };
+  }
+  if (table === "billing_invoice_records") {
+    return { select: billingInvoicesSelectMock };
+  }
   if (table === "stage_gate_decisions") {
     return { select: stageGateSelectMock };
   }
@@ -144,6 +197,18 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
 }));
 
+vi.mock("@/lib/operations/workspace-summary", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>(
+    "@/lib/operations/workspace-summary"
+  );
+
+  return {
+    ...actual,
+    loadWorkspaceOperationsSummaryForWorkspace: (...args: unknown[]) =>
+      loadWorkspaceOperationsSummaryForWorkspaceMock(...args),
+  };
+});
+
 vi.mock("@/components/reports/report-detail-controls", () => ({
   ReportDetailControls: () => <div data-testid="report-detail-controls" />,
 }));
@@ -159,6 +224,26 @@ describe("ReportDetailPage", () => {
         user: {
           id: "user-1",
         },
+      },
+    });
+
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
+      posture: "under control",
+      nextCommand: null,
+      nextActions: [],
+      commandQueue: [],
+      counts: {
+        queueDepth: 0,
+        reportRefreshRecommended: 0,
+        reportNoPacket: 0,
+        rtpFundingReviewPackets: 0,
+        projectFundingNeedAnchorProjects: 0,
+        projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
       },
     });
 
@@ -412,6 +497,15 @@ describe("ReportDetailPage", () => {
       error: null,
     });
 
+    scenarioAssumptionSetsInMock.mockResolvedValue({ data: [], error: null });
+    scenarioDataPackagesInMock.mockResolvedValue({ data: [], error: null });
+    scenarioIndicatorSnapshotsInMock.mockResolvedValue({ data: [], error: null });
+    scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [], error: null });
+    projectFundingProfileMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    fundingAwardsOrderMock.mockResolvedValue({ data: [], error: null });
+    fundingOpportunitiesOrderMock.mockResolvedValue({ data: [], error: null });
+    billingInvoicesOrderMock.mockResolvedValue({ data: [], error: null });
+
     stageGateLimitMock.mockResolvedValue({
       data: [
         {
@@ -625,5 +719,34 @@ describe("ReportDetailPage", () => {
       "href",
       "/projects/project-1#project-governance"
     );
+  });
+
+  it("shows latest artifact timing in the summary card when report generated_at is null", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "report-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        title: "Downtown Safety Packet",
+        report_type: "project_status",
+        status: "generated",
+        summary: "Report packet summarizing planning evidence and engagement handoff.",
+        generated_at: null,
+        latest_artifact_url: null,
+        latest_artifact_kind: "html",
+        created_at: "2026-03-28T17:00:00.000Z",
+        updated_at: "2026-03-28T18:05:00.000Z",
+      },
+      error: null,
+    });
+
+    const page = await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+    });
+
+    render(page);
+
+    expect(screen.queryByText(/^Not yet$/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/3\/28\/2026/i).length).toBeGreaterThan(0);
   });
 });
