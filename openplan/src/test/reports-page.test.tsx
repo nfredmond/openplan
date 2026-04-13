@@ -201,5 +201,6 @@ describe("ReportsPage", () => {
     const reportLink = screen.getAllByText(/Artifact-backed report/i)[0]?.closest("a");
     expect(reportLink).toHaveAttribute("href", "/reports/report-1#drift-since-generation");
     expect(screen.queryByText(/Action Next action: open this report and generate the first packet\./i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Generated/i).length).toBeGreaterThan(0);
   });
 });

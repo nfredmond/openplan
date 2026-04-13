@@ -820,7 +820,11 @@ export default async function ReportsPage({
                         ) : null}
                       </>
                     ) : null}
-                    {report.generated_at ? <span className="module-record-chip">Generated {formatDateTime(report.generated_at)}</span> : null}
+                    {report.latestArtifact?.generated_at ?? report.generated_at ? (
+                      <span className="module-record-chip">
+                        Generated {formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="module-record-detail-grid cols-2 mt-4">
