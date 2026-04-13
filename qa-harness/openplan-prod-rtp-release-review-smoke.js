@@ -310,6 +310,28 @@ async function main() {
     notes.push('Project detail surfaced the shared RTP funding-review runtime cue directly on the canonical project spine.');
     await screenshot('prod-rtp-release-review-project-detail');
 
+    await page.goto(`${productionBaseUrl}/plans`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: /Plans/i }).waitFor({ timeout: 30000 });
+    const plansRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await plansRuntimeCueLink.waitFor({ timeout: 30000 });
+    const plansRuntimeCueHref = await plansRuntimeCueLink.getAttribute('href');
+    if (plansRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Plans runtime cue did not target the expected RTP funding review. Received ${plansRuntimeCueHref}`);
+    }
+    notes.push('Plans registry inherited the shared RTP funding-review runtime cue from the central workspace loader.');
+    await screenshot('prod-rtp-release-review-plans');
+
+    await page.goto(`${productionBaseUrl}/data-hub`, { waitUntil: 'networkidle' });
+    await page.getByText(/Data Hub now uses the same internal hierarchy as the rest of OpenPlan/i).first().waitFor({ timeout: 30000 });
+    const dataHubRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
+    await dataHubRuntimeCueLink.waitFor({ timeout: 30000 });
+    const dataHubRuntimeCueHref = await dataHubRuntimeCueLink.getAttribute('href');
+    if (dataHubRuntimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
+      throw new Error(`Data Hub runtime cue did not target the expected RTP funding review. Received ${dataHubRuntimeCueHref}`);
+    }
+    notes.push('Data Hub inherited the shared RTP funding-review runtime cue from the central workspace loader.');
+    await screenshot('prod-rtp-release-review-data-hub');
+
     await page.goto(`${productionBaseUrl}/reports`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Report packets and exports/i }).waitFor({ timeout: 30000 });
     await page.getByText(/1 RTP funding review/i).first().waitFor({ timeout: 30000 });

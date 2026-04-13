@@ -14,7 +14,10 @@ import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-com
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 
 type MembershipRow = {
@@ -325,52 +328,10 @@ export default async function DataHubPage() {
   ).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects,
-    plans: (plansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>,
-    programs: (programsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>,
-    reports: (reportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>,
-    fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      decision_state?: string | null;
-      expected_award_amount?: number | string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>,
-    projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>,
-  });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    workspaceId
+  );
 
   const liveFoundations = [
     {

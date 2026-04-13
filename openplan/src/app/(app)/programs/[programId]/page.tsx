@@ -33,7 +33,10 @@ import {
   programStatusTone,
   titleizeProgramValue,
 } from "@/lib/programs/catalog";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import {
   buildModelWorkspaceSummary,
   formatModelFamilyLabel,
@@ -576,58 +579,10 @@ export default async function ProgramDetailPage({
     adoptionTargetAt: program.adoption_target_at,
   });
 
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: ((projectsResult.data ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>),
-    plans: ((allPlansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    programs: ((workspaceProgramsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>),
-    reports: ((allReportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>),
-    fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      decision_state?: string | null;
-      expected_award_amount?: number | string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    projectFundingProfiles: ((workspaceProjectFundingProfilesResult.data ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>),
-  });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    program.workspace_id
+  );
 
   const supportingModelReadyCount = supportingModels.filter((model) => model.readiness.ready).length;
   const projectBasedModelCount = supportingModels.filter((model) => model.supportBasis !== "plan").length;

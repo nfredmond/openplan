@@ -9,7 +9,10 @@ import { ReportPacketCommandQueue } from "@/components/reports/report-packet-com
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -464,40 +467,10 @@ export default async function ProgramsPage({
     (program) => program.packetSummary.attentionCount > 0
   ).length;
 
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: ((projectsData ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>),
-    plans: ((workspacePlansData ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    programs: allTypedPrograms,
-    reports: ((workspaceReportsData ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>),
-    fundingOpportunities: fundingOpportunities,
-    projectFundingProfiles: ((projectFundingProfilesData ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>),
-  });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    membership.workspace_id
+  );
   const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
     if (!opportunity.program_id) return true;
     const packetSummary = packetSummaryByProgramId.get(opportunity.program_id);

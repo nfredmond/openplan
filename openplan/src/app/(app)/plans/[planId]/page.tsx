@@ -16,6 +16,10 @@ import { PlanDetailControls } from "@/components/plans/plan-detail-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildPlanArtifactCoverage,
@@ -27,7 +31,6 @@ import {
   formatPlanTypeLabel,
   planStatusTone,
 } from "@/lib/plans/catalog";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import {
   buildModelWorkspaceSummary,
   formatModelFamilyLabel,
@@ -591,58 +594,10 @@ export default async function PlanDetailPage({
     geographyLabel: plan.geography_label,
     horizonYear: plan.horizon_year,
   });
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: ((projectsResult.data ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>),
-    plans: ((workspacePlansResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      geography_label: string | null;
-      horizon_year: number | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    programs: ((workspaceProgramsResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>),
-    reports: ((workspaceReportsResult.data ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>),
-    fundingOpportunities: ((workspaceFundingOpportunitiesResult.data ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      decision_state?: string | null;
-      expected_award_amount?: number | string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    projectFundingProfiles: ((workspaceProjectFundingProfilesResult.data ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>),
-  });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    plan.workspace_id
+  );
   const artifactCoverage = buildPlanArtifactCoverage({
     scenarioCount: linkedScenarios.length,
     engagementCampaignCount: linkedCampaigns.length,

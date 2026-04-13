@@ -6,7 +6,10 @@ import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-c
 import { PlanCreator } from "@/components/plans/plan-creator";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import {
+  loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceOperationsSupabaseLike,
+} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
@@ -232,50 +235,10 @@ export default async function PlansPage({
   const adoptedCount = typedPlans.filter((plan) => plan.status === "adopted").length;
   const readyFoundationCount = typedPlans.filter((plan) => plan.readiness.ready).length;
 
-  const operationsSummary = buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: ((projectsData ?? []) as Array<{
-      id: string;
-      name: string;
-      status: string | null;
-      delivery_phase: string | null;
-      updated_at: string | null;
-    }>),
-    plans: allTypedPlans,
-    programs: ((programsData ?? []) as Array<{
-      id: string;
-      title: string;
-      status: string | null;
-      nomination_due_at: string | null;
-      adoption_target_at: string | null;
-      updated_at: string | null;
-    }>),
-    reports: ((workspaceReportsData ?? []) as Array<{
-      id: string;
-      title: string | null;
-      status: string | null;
-      latest_artifact_kind: string | null;
-      generated_at: string | null;
-      updated_at: string | null;
-      metadata_json: Record<string, unknown> | null;
-    }>),
-    fundingOpportunities: ((fundingOpportunitiesData ?? []) as Array<{
-      id: string;
-      title: string;
-      opportunity_status: string | null;
-      decision_state?: string | null;
-      expected_award_amount?: number | string | null;
-      closes_at: string | null;
-      decision_due_at: string | null;
-      program_id: string | null;
-      project_id: string | null;
-      updated_at: string | null;
-    }>),
-    projectFundingProfiles: ((projectFundingProfilesData ?? []) as Array<{
-      project_id: string;
-      funding_need_amount: number | string | null;
-      local_match_need_amount?: number | string | null;
-    }>),
-  });
+  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
+    supabase as unknown as WorkspaceOperationsSupabaseLike,
+    membership.workspace_id
+  );
 
   return (
     <section className="module-page">
