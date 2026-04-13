@@ -577,7 +577,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
 
   const reportSourceRows = (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[];
   const reportIds = reportSourceRows.map((report) => report.id).filter((id): id is string => Boolean(id));
-  let latestArtifactMetadataByReportId = new Map<string, Record<string, unknown> | null>();
+  let latestArtifactByReportId = new Map<string, { generated_at: string | null; metadata_json: Record<string, unknown> | null }>();
 
   if (reportIds.length > 0) {
     const { data: reportArtifactsData } = await supabase
@@ -592,16 +592,24 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       generated_at: string | null;
       metadata_json: Record<string, unknown> | null;
     }>)) {
-      if (!latestArtifactMetadataByReportId.has(artifact.report_id)) {
-        latestArtifactMetadataByReportId.set(artifact.report_id, artifact.metadata_json ?? null);
+      if (!latestArtifactByReportId.has(artifact.report_id)) {
+        latestArtifactByReportId.set(artifact.report_id, {
+          generated_at: artifact.generated_at,
+          metadata_json: artifact.metadata_json ?? null,
+        });
       }
     }
   }
 
-  const mergedReportSourceRows = reportSourceRows.map((report) => ({
-    ...report,
-    metadata_json: latestArtifactMetadataByReportId.get(report.id) ?? report.metadata_json,
-  }));
+  const mergedReportSourceRows = reportSourceRows.map((report) => {
+    const latestArtifact = latestArtifactByReportId.get(report.id);
+
+    return {
+      ...report,
+      generated_at: latestArtifact?.generated_at ?? report.generated_at,
+      metadata_json: latestArtifact?.metadata_json ?? report.metadata_json,
+    };
+  });
 
   return buildWorkspaceOperationsSummaryFromSourceRows({
     projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
