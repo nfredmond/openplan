@@ -176,6 +176,48 @@ describe("ReportsPage", () => {
                 stageGateHoldCount: 0,
                 stageGateBlockedGateLabel: null,
               },
+              projectFundingSnapshot: {
+                capturedAt: "2026-03-28T19:45:00.000Z",
+                projectUpdatedAt: "2026-03-28T19:40:00.000Z",
+                latestSourceUpdatedAt: "2026-03-28T19:45:00.000Z",
+                fundingNeedAmount: 1200000,
+                localMatchNeedAmount: 100000,
+                committedFundingAmount: 300000,
+                committedMatchAmount: 50000,
+                likelyFundingAmount: 400000,
+                totalPotentialFundingAmount: 700000,
+                remainingFundingGap: 900000,
+                remainingMatchGap: 50000,
+                unfundedAfterLikelyAmount: 500000,
+                requestedReimbursementAmount: 0,
+                paidReimbursementAmount: 0,
+                outstandingReimbursementAmount: 0,
+                draftReimbursementAmount: 0,
+                uninvoicedAwardAmount: 300000,
+                nextObligationAt: null,
+                awardRiskCount: 0,
+                awardCount: 1,
+                opportunityCount: 2,
+                openOpportunityCount: 2,
+                pursuedOpportunityCount: 1,
+                awardedOpportunityCount: 0,
+                closingSoonOpportunityCount: 0,
+                reimbursementPacketCount: 0,
+                status: "partially_funded",
+                label: "Partially funded",
+                reason: "Committed awards cover part of the need, but a gap remains.",
+                pipelineStatus: "partially_covered",
+                pipelineLabel: "Gap remains",
+                pipelineReason: "Pursued opportunities still do not close the gap.",
+                reimbursementStatus: "not_started",
+                reimbursementLabel: "Reimbursement not started",
+                reimbursementReason: "No reimbursement records exist yet.",
+                hasTargetNeed: true,
+                coverageRatio: 0.25,
+                pipelineCoverageRatio: 0.58,
+                reimbursementCoverageRatio: 0,
+                paidReimbursementCoverageRatio: 0,
+              },
             },
           },
         },
@@ -202,5 +244,8 @@ describe("ReportsPage", () => {
     expect(reportLink).toHaveAttribute("href", "/reports/report-1#drift-since-generation");
     expect(screen.queryByText(/Action Next action: open this report and generate the first packet\./i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/Generated/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
+    expect(screen.getByText(/Open gap resolution/i)).toBeInTheDocument();
+    expect(screen.getByText(/in Grants OS/i)).toBeInTheDocument();
   });
 });

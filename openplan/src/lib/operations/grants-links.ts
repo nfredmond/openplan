@@ -1,4 +1,3 @@
-import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
 
 export const GRANTS_COMMAND_MODULE_KEY = "grants" as const;
@@ -155,12 +154,20 @@ export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): st
   return isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href;
 }
 
-export function resolveRtpFundingFollowThrough(snapshot: PortfolioFundingSnapshot | null | undefined) {
+type FundingFollowThroughLike = {
+  unfundedAfterLikelyAmount: number;
+  outstandingReimbursementAmount: number;
+  uninvoicedAwardAmount: number;
+  likelyCoveredProjectCount?: number | null;
+  pipelineStatus?: string | null;
+};
+
+export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLike | null | undefined) {
   if (!snapshot) {
     return null;
   }
 
-  if (snapshot.gapProjectCount > 0) {
+  if (snapshot.unfundedAfterLikelyAmount > 0) {
     return {
       href: "/grants#grants-gap-resolution-lane",
       title: "Linked RTP projects still carry uncovered funding gaps.",
@@ -184,7 +191,7 @@ export function resolveRtpFundingFollowThrough(snapshot: PortfolioFundingSnapsho
     };
   }
 
-  if (snapshot.likelyCoveredProjectCount > 0) {
+  if ((snapshot.likelyCoveredProjectCount ?? 0) > 0 || snapshot.pipelineStatus === "likely_covered") {
     return {
       href: "/grants#grants-opportunity-creator",
       title: "This RTP packet still depends on pursued grant pipeline instead of secured dollars.",

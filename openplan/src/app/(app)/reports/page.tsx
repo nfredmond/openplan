@@ -45,6 +45,7 @@ import {
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
+import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
@@ -197,6 +198,8 @@ export default async function ReportsPage({
         latestArtifact?.metadata_json ?? null
       );
 
+      const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
+
       return {
         ...report,
         latestArtifact,
@@ -219,6 +222,7 @@ export default async function ReportsPage({
         storedRtpFundingReview,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
+        grantsFollowThrough,
       };
     })
     .sort((left, right) => {
@@ -871,6 +875,17 @@ export default async function ReportsPage({
                           <p className="mt-2 font-medium text-foreground/90">{report.fundingDigest.headline}</p>
                           <p className="mt-1">{report.fundingDigest.detail}</p>
                           {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
+                          {report.grantsFollowThrough ? (
+                            <div className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/[0.08] px-3 py-3">
+                              <p className="text-xs font-medium text-foreground">Grants follow-through</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{report.grantsFollowThrough.title}</p>
+                              <p className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--pine)]">
+                                {report.grantsFollowThrough.actionLabel}
+                                <ArrowRight className="h-3.5 w-3.5" />
+                                <span className="text-[0.7rem] font-medium text-muted-foreground">in Grants OS</span>
+                              </p>
+                            </div>
+                          ) : null}
                         </>
                       ) : (
                         <p className="mt-2">No funding snapshot is attached to the latest artifact yet.</p>
