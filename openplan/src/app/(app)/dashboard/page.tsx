@@ -110,8 +110,9 @@ export default async function DashboardPage() {
 
   const actions = [
     ...(operationsSummary.nextCommand?.key === "review-current-report-packets"
-      ? [
+        ? [
           {
+            key: "rtp-grants-follow-through",
             href: operationsSummary.nextCommand.href,
             title: grantsRoutedRtpFundingReview ? "Open RTP grants follow-through" : "Open RTP funding release review",
             description:
@@ -128,6 +129,7 @@ export default async function DashboardPage() {
     operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
       ? [
           {
+            key: "grants-reimbursement-follow-through",
             href: isGrantsCommand(operationsSummary.nextCommand)
               ? resolveSharedGrantsQueueHref(operationsSummary.nextCommand)
               : operationsSummary.nextCommand.href,
@@ -144,18 +146,21 @@ export default async function DashboardPage() {
         ]
       : []),
     {
+      key: "analysis-studio",
       href: "/explore",
       title: "Open Analysis Studio",
       description: "Run corridor analysis with map context, metrics, and report-ready outputs intact.",
       icon: Radar,
     },
     {
+      key: "projects-module",
       href: "/projects",
       title: "Open Projects Module",
       description: "Move into the project control rooms for deliverables, risks, decisions, issues, and meetings.",
       icon: FolderKanban,
     },
     {
+      key: "grants-surface",
       href: leadGrantsCommand ? resolveSharedGrantsQueueHref(leadGrantsCommand) : "/grants",
       title: "Open Grants Surface",
       description: leadGrantsCommand
@@ -164,6 +169,7 @@ export default async function DashboardPage() {
       icon: Landmark,
     },
     {
+      key: "reports-surface",
       href: "/reports",
       title: "Open Reports Surface",
       description: "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
@@ -298,7 +304,7 @@ export default async function DashboardPage() {
               const Icon = action.icon;
               return (
                 <Link
-                  key={action.href}
+                  key={action.key}
                   href={action.href}
                   className="module-subpanel group transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_16px_36px_rgba(4,12,20,0.08)]"
                 >
