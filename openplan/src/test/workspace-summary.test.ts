@@ -62,6 +62,7 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.counts.reportPacketCurrent).toBe(1);
     expect(summary.counts.rtpFundingReviewPackets).toBe(1);
     expect(summary.nextCommand?.key).toBe("review-current-report-packets");
+    expect(summary.nextCommand?.title).toBe("Run Grants follow-through on current packets");
     expect(summary.nextCommand?.moduleLabel).toBe("Grants OS");
     expect(summary.nextCommand?.tone).toBe("warning");
     expect(summary.nextCommand?.href).toBe("/grants#grants-gap-resolution-lane");

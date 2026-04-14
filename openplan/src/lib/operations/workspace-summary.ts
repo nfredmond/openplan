@@ -1096,8 +1096,12 @@ export function buildWorkspaceOperationsSummary({
     const currentRtpFundingReviewFollowThrough = firstCurrentRtpFundingReviewReport?.grantsFollowThrough ?? null;
     queueCandidates.push({
       key: "review-current-report-packets",
-      title: "Run release review on current packets",
-      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${currentRtpFundingReviewFollowThrough ? ` Reopen ${currentRtpFundingReviewFollowThrough.actionLabel.toLowerCase()} in Grants OS first because ${currentRtpFundingReviewFollowThrough.title.charAt(0).toLowerCase()}${currentRtpFundingReviewFollowThrough.title.slice(1)}` : firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
+      title: currentRtpFundingReviewFollowThrough
+        ? "Run Grants follow-through on current packets"
+        : "Run release review on current packets",
+      detail: currentRtpFundingReviewFollowThrough
+        ? `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state, but ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still needs" : "s still need"} linked-project funding follow-through in Grants OS before packet posture is treated as settled. Reopen ${currentRtpFundingReviewFollowThrough.actionLabel.toLowerCase()} first because ${currentRtpFundingReviewFollowThrough.title.charAt(0).toLowerCase()}${currentRtpFundingReviewFollowThrough.title.slice(1)}`
+        : `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
       href: currentRtpFundingReviewFollowThrough?.href
         ?? (firstCurrentReport
           ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)

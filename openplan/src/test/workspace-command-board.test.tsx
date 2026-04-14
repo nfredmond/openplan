@@ -5,7 +5,7 @@ import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summ
 
 const summary: WorkspaceOperationsSummary = {
   posture: "attention",
-  headline: "Run release review on current packets",
+  headline: "Run Grants follow-through on current packets",
   detail: "A current RTP packet still carries linked-project funding follow-up.",
   counts: {
     projects: 1,
@@ -36,7 +36,7 @@ const summary: WorkspaceOperationsSummary = {
       key: "review-current-report-packets",
       moduleKey: "grants",
       moduleLabel: "Grants OS",
-      title: "Run release review on current packets",
+      title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
@@ -51,7 +51,7 @@ const summary: WorkspaceOperationsSummary = {
       key: "review-current-report-packets",
       moduleKey: "grants",
       moduleLabel: "Grants OS",
-      title: "Run release review on current packets",
+      title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
@@ -67,7 +67,7 @@ const summary: WorkspaceOperationsSummary = {
       key: "review-current-report-packets",
       moduleKey: "grants",
       moduleLabel: "Grants OS",
-      title: "Run release review on current packets",
+      title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
@@ -88,7 +88,7 @@ describe("WorkspaceCommandBoard", () => {
       screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Run release review on current packets/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Run Grants follow-through on current packets/i })).toHaveAttribute(
       "href",
       "/grants#grants-gap-resolution-lane"
     );
