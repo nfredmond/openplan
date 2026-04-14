@@ -127,6 +127,11 @@ describe("grants-links", () => {
   });
 
   it("keeps grants queue callout copy coherent across lane variants", () => {
+    expect(resolveGrantsQueueCalloutCopy("workspace", buildCommand({ tone: "warning" }))).toEqual({
+      title: "Lead workspace grant command",
+      actionLabel: "Open next grants action",
+      badgeLabel: "Next",
+    });
     expect(resolveGrantsQueueCalloutCopy("sourcing", buildCommand({ tone: "warning" }))).toEqual({
       title: "Lead sourcing and gap command from workspace queue",
       actionLabel: "Open sourcing lane",

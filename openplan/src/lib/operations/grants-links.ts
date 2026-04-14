@@ -32,9 +32,13 @@ const GRANTS_SOURCING_QUEUE_KEYS = new Set([
   "close-project-funding-gaps",
 ]);
 
-export type GrantsQueueCalloutKind = "sourcing" | "reimbursement" | "award" | "decision";
+export type GrantsQueueCalloutKind = "workspace" | "sourcing" | "reimbursement" | "award" | "decision";
 
 const GRANTS_QUEUE_CALLOUT_COPY: Record<GrantsQueueCalloutKind, { title: string; actionLabel: string }> = {
+  workspace: {
+    title: "Lead workspace grant command",
+    actionLabel: "Open next grants action",
+  },
   sourcing: {
     title: "Lead sourcing and gap command from workspace queue",
     actionLabel: "Open sourcing lane",
