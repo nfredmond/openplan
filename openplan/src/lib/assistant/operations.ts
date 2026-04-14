@@ -94,7 +94,7 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 
 function describeWorkspaceNextCommandLink(context: {
   operationsSummary: {
-    nextCommand: { key: string; title: string } | null;
+    nextCommand: { key: string; title: string; moduleKey?: string } | null;
     counts: { rtpFundingReviewPackets: number };
   };
 }) {
@@ -106,12 +106,16 @@ function describeWorkspaceNextCommandLink(context: {
   if (nextCommand.key === "review-current-report-packets" && context.operationsSummary.counts.rtpFundingReviewPackets > 0) {
     const count = context.operationsSummary.counts.rtpFundingReviewPackets;
     return {
-      label: "Open RTP funding release review",
+      label: nextCommand.moduleKey === "grants" ? "Open RTP grants follow-through" : "Open RTP funding release review",
       statusLabel: `${count} funding-backed packet${count === 1 ? "" : "s"}`,
       reason:
-        "Current RTP packets are aligned enough for release review, but linked-project funding posture still needs verification before those packets are treated as fully settled.",
+        nextCommand.moduleKey === "grants"
+          ? "Current RTP packets are aligned enough on freshness, but linked-project grant follow-through now outranks local packet polish before those packets are treated as fully settled."
+          : "Current RTP packets are aligned enough for release review, but linked-project funding posture still needs verification before those packets are treated as fully settled.",
       auditNote:
-        "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet posture.",
+        nextCommand.moduleKey === "grants"
+          ? "Use the Grants OS follow-through lane to resolve funding gaps, uninvoiced awards, or reimbursement pressure before finalizing packet posture."
+          : "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet posture.",
     };
   }
 

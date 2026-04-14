@@ -48,9 +48,11 @@ export function WorkspaceCommandBoard({
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
   const rtpFundingReviewCount = summary.counts.rtpFundingReviewPackets;
   const baseDescription = description ?? summary.detail;
+  const rtpFundingReviewRoutesThroughGrants =
+    summary.nextCommand?.key === "review-current-report-packets" && summary.nextCommand.moduleKey === "grants";
   const effectiveDescription =
     rtpFundingReviewCount > 0
-      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"} funding-backed release review even though packet freshness already reads current.`
+      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"}${rtpFundingReviewRoutesThroughGrants ? " Grants OS follow-through before packet release review is treated as settled." : " funding-backed release review even though packet freshness already reads current."}`
       : baseDescription;
 
   return (
@@ -71,7 +73,7 @@ export function WorkspaceCommandBoard({
             {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
           </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} funding-backed.` : "."}
+            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
           </p>
         </div>
         <div className="module-subpanel">

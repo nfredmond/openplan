@@ -1,10 +1,16 @@
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
+import {
+  GRANTS_COMMAND_MODULE_KEY,
+  GRANTS_COMMAND_MODULE_LABEL,
+  resolveRtpFundingFollowThrough,
+} from "@/lib/operations/grants-links";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
   describeComparisonSnapshotAggregate,
   getReportNavigationHref,
   getReportPacketFreshness,
+  parseStoredFundingSnapshot,
   parseStoredComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
 import type { StatusTone } from "@/lib/ui/status";
@@ -658,6 +664,22 @@ export function buildWorkspaceOperationsSummary({
     const comparisonAggregate = parseStoredComparisonSnapshotAggregate(report.metadataJson);
     const comparisonDigest = describeComparisonSnapshotAggregate(comparisonAggregate);
     const storedRtpFundingReview = parseStoredRtpFundingReview(report.metadataJson);
+    const storedFundingSnapshot = parseStoredFundingSnapshot(report.metadataJson);
+    const fallbackRtpFundingSnapshot = asRecord(asRecord(report.metadataJson?.sourceContext)?.rtpFundingSnapshot);
+    const grantsFollowThrough = resolveRtpFundingFollowThrough(
+      storedFundingSnapshot
+        ? storedFundingSnapshot
+        : fallbackRtpFundingSnapshot
+          ? {
+              unfundedAfterLikelyAmount: (asNumber(fallbackRtpFundingSnapshot.gapProjectCount) ?? 0) > 0 ? 1 : 0,
+              outstandingReimbursementAmount: asNumber(
+                fallbackRtpFundingSnapshot.outstandingReimbursementAmount
+              ) ?? 0,
+              uninvoicedAwardAmount: asNumber(fallbackRtpFundingSnapshot.uninvoicedAwardAmount) ?? 0,
+              likelyCoveredProjectCount: asNumber(fallbackRtpFundingSnapshot.likelyCoveredProjectCount) ?? 0,
+            }
+          : null
+    );
 
     return {
       ...report,
@@ -665,6 +687,8 @@ export function buildWorkspaceOperationsSummary({
       comparisonAggregate,
       comparisonDigest,
       storedRtpFundingReview,
+      storedFundingSnapshot,
+      grantsFollowThrough,
     };
   });
 
@@ -1069,13 +1093,17 @@ export function buildWorkspaceOperationsSummary({
   }
 
   if (reportPacketCurrent > 0) {
+    const currentRtpFundingReviewFollowThrough = firstCurrentRtpFundingReviewReport?.grantsFollowThrough ?? null;
     queueCandidates.push({
       key: "review-current-report-packets",
       title: "Run release review on current packets",
-      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
-      href: firstCurrentReport
-        ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
-        : "/reports?freshness=current",
+      detail: `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${currentRtpFundingReviewFollowThrough ? ` Reopen ${currentRtpFundingReviewFollowThrough.actionLabel.toLowerCase()} in Grants OS first because ${currentRtpFundingReviewFollowThrough.title.charAt(0).toLowerCase()}${currentRtpFundingReviewFollowThrough.title.slice(1)}` : firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
+      href: currentRtpFundingReviewFollowThrough?.href
+        ?? (firstCurrentReport
+          ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
+          : "/reports?freshness=current"),
+      moduleKey: currentRtpFundingReviewFollowThrough ? GRANTS_COMMAND_MODULE_KEY : undefined,
+      moduleLabel: currentRtpFundingReviewFollowThrough ? GRANTS_COMMAND_MODULE_LABEL : undefined,
       tone: rtpFundingReviewPackets > 0 ? "warning" : "info",
       priority: 2.5,
       badges: [

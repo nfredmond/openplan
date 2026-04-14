@@ -32,14 +32,16 @@ const summary: WorkspaceOperationsSummary = {
     projectFundingGapProjects: 0,
     queueDepth: 1,
   },
-  nextCommand: {
-    key: "review-current-report-packets",
-    title: "Run release review on current packets",
-    detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-    href: "/reports/report-rtp-1#packet-release-review",
-    tone: "warning",
-    priority: 2.5,
-    badges: [
+    nextCommand: {
+      key: "review-current-report-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
+      title: "Run release review on current packets",
+      detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+      href: "/grants#grants-gap-resolution-lane",
+      tone: "warning",
+      priority: 2.5,
+      badges: [
       { label: "Current", value: 1 },
       { label: "Funding review", value: 1 },
     ],
@@ -47,9 +49,11 @@ const summary: WorkspaceOperationsSummary = {
   commandQueue: [
     {
       key: "review-current-report-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Run release review on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-      href: "/reports/report-rtp-1#packet-release-review",
+      href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
       priority: 2.5,
       badges: [
@@ -61,9 +65,11 @@ const summary: WorkspaceOperationsSummary = {
   fullCommandQueue: [
     {
       key: "review-current-report-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Run release review on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-      href: "/reports/report-rtp-1#packet-release-review",
+      href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
       priority: 2.5,
       badges: [
@@ -79,13 +85,14 @@ describe("WorkspaceCommandBoard", () => {
     render(<WorkspaceCommandBoard summary={summary} />);
 
     expect(
-      screen.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i)
+      screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/1 ready for release review, 1 funding-backed\./i)).toBeInTheDocument();
+    expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Run release review on current packets/i })).toHaveAttribute(
       "href",
-      "/reports/report-rtp-1#packet-release-review"
+      "/grants#grants-gap-resolution-lane"
     );
+    expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getByText(/Funding review: 1/i)).toBeInTheDocument();
   });
 

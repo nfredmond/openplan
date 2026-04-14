@@ -118,9 +118,11 @@ describe("assistant funding operations", () => {
         },
         nextCommand: {
           key: "review-current-report-packets",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-          href: "/reports/report-rtp-1#packet-release-review",
+          href: "/grants#grants-gap-resolution-lane",
           tone: "warning",
           priority: 2.5,
           badges: [
@@ -131,9 +133,11 @@ describe("assistant funding operations", () => {
         commandQueue: [
           {
             key: "review-current-report-packets",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-            href: "/reports/report-rtp-1#packet-release-review",
+            href: "/grants#grants-gap-resolution-lane",
             tone: "warning",
             priority: 2.5,
             badges: [
@@ -147,9 +151,9 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open RTP funding release review");
+    expect(action?.label).toBe("Open RTP grants follow-through");
     expect(action?.statusLabel).toBe("1 funding-backed packet");
-    expect(action?.href).toBe("/reports/report-rtp-1#packet-release-review");
+    expect(action?.href).toBe("/grants#grants-gap-resolution-lane");
   });
 
   it("exposes a workspace-level execute action for the lead missing funding anchor", () => {

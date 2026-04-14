@@ -26,9 +26,12 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 
   if (command.key === "review-current-report-packets" && summary.counts.rtpFundingReviewPackets > 0) {
     return {
-      message: `Shared runtime cue: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} linked-project funding follow-up, so release review should verify funding posture before treating the packet as truly settled.`,
+      message:
+        command.moduleKey === "grants"
+          ? `Shared runtime cue: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} linked-project grant follow-through, so Grants OS now outranks local packet polish before those packets are treated as truly settled.`
+          : `Shared runtime cue: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} linked-project funding follow-up, so release review should verify funding posture before treating the packet as truly settled.`,
       href,
-      ctaLabel: "Open RTP funding review",
+      ctaLabel: command.moduleKey === "grants" ? "Open Grants follow-through" : "Open RTP funding review",
     };
   }
 

@@ -119,9 +119,11 @@ describe("WorkspaceRuntimeCue", () => {
         summary={buildSummary(
           {
             key: "review-current-report-packets",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-            href: "/reports/report-rtp-1#packet-release-review",
+            href: "/grants#grants-gap-resolution-lane",
             tone: "warning",
             priority: 2.5,
             badges: [{ label: "Funding review", value: 1 }],
@@ -133,12 +135,12 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Shared runtime cue: 1 current RTP packet still carries linked-project funding follow-up, so release review should verify funding posture before treating the packet as truly settled."
+        "Shared runtime cue: 1 current RTP packet still carries linked-project grant follow-through, so Grants OS now outranks local packet polish before those packets are treated as truly settled."
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open RTP funding review" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Grants follow-through" })).toHaveAttribute(
       "href",
-      "/reports/report-rtp-1#packet-release-review"
+      "/grants#grants-gap-resolution-lane"
     );
   });
 });
