@@ -13,6 +13,7 @@ const GRANTS_QUEUE_KEYS = new Set([
   "relink-project-invoice-awards",
   "advance-project-reimbursement-invoicing",
   "close-project-funding-gaps",
+  "review-comparison-backed-reports",
 ]);
 
 const GRANTS_REIMBURSEMENT_QUEUE_KEYS = new Set([
@@ -107,6 +108,12 @@ export function isGrantsSourcingCommand(
   item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
 ) {
   return Boolean(item && isGrantsCommand(item) && GRANTS_SOURCING_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsModelingCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && item.key === "review-comparison-backed-reports");
 }
 
 export function resolveGrantsQueueCalloutCopy(kind: GrantsQueueCalloutKind, item: Pick<WorkspaceCommandQueueItem, "tone">) {

@@ -39,6 +39,7 @@ import {
   isGrantsAwardCommand,
   isGrantsCommand,
   isGrantsDecisionCommand,
+  isGrantsModelingCommand,
   isGrantsReimbursementCommand,
   isGrantsSourcingCommand,
   resolveGrantsQueueCalloutCopy,
@@ -905,6 +906,7 @@ export default async function GrantsPage({
   const leadAwardCommand = grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null;
   const leadDecisionCommand = grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null;
   const leadSourcingCommand = grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null;
+  const leadModelingCommand = grantsQueue.find((item) => isGrantsModelingCommand(item)) ?? null;
 
   return (
     <section className="module-page">
@@ -962,6 +964,7 @@ export default async function GrantsPage({
             <span className="module-inline-item"><strong>{fundingAwards.length}</strong> award records recorded</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingReimbursementStartProjects + operationsSummary.counts.projectFundingReimbursementActiveProjects}</strong> reimbursement follow-through</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingGapProjects}</strong> funding gap projects</span>
+            <span className="module-inline-item"><strong>{operationsSummary.counts.comparisonBackedReports}</strong> comparison-backed packets</span>
           </div>
         </article>
 
@@ -1246,6 +1249,51 @@ export default async function GrantsPage({
               </div>
             )}
           </article>
+
+          {leadModelingCommand ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Modeling write-back</p>
+                  <h2 className="module-section-title">Comparison-backed packet evidence is now part of the grants lane</h2>
+                  <p className="module-section-description">
+                    Saved scenario comparison context can now stay visible while you make pursue, gap-closure, and prioritization calls. Keep the caveat explicit, this is planning support, not proof of award likelihood.
+                  </p>
+                </div>
+                <StatusBadge tone="info">
+                  {operationsSummary.counts.comparisonBackedReports === 1
+                    ? "1 packet"
+                    : `${operationsSummary.counts.comparisonBackedReports} packets`}
+                </StatusBadge>
+              </div>
+
+              <Link href={leadModelingCommand.href} className="module-subpanel block transition-colors hover:border-primary/35">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <StatusBadge tone="info">Modeling-backed</StatusBadge>
+                      <StatusBadge tone="neutral">Reports → Grants</StatusBadge>
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-foreground">{leadModelingCommand.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{leadModelingCommand.detail}</p>
+                  </div>
+                  <Sparkles className="mt-1 h-5 w-5 text-[color:var(--pine)]" />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {leadModelingCommand.badges.map((badge) => (
+                    <StatusBadge key={`modeling-grants-${badge.label}`} tone="neutral">
+                      {badge.label}
+                      {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+                    </StatusBadge>
+                  ))}
+                </div>
+                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                  Review packet evidence before grant posture changes
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </Link>
+            </article>
+          ) : null}
 
           <article className="module-section-surface">
             <div className="module-section-header">

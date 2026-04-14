@@ -3,6 +3,7 @@ import {
   isGrantsAwardCommand,
   isGrantsCommand,
   isGrantsDecisionCommand,
+  isGrantsModelingCommand,
   isGrantsReimbursementCommand,
   isGrantsSourcingCommand,
   resolveGrantsQueueCalloutCopy,
@@ -96,6 +97,23 @@ describe("grants-links", () => {
         })
       )
     ).toBe(false);
+  });
+
+  it("treats comparison-backed report posture as a grants-relevant modeling command", () => {
+    const modelingCommand = buildCommand({
+      key: "review-comparison-backed-reports",
+      moduleKey: "reports",
+      moduleLabel: "Reports",
+      href: "/reports?posture=comparison-backed",
+      title: "Review comparison-backed packet posture",
+      detail:
+        "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices.",
+      badges: [{ label: "Comparison-backed", value: 1 }],
+    });
+
+    expect(isGrantsCommand(modelingCommand)).toBe(true);
+    expect(isGrantsModelingCommand(modelingCommand)).toBe(true);
+    expect(resolveWorkspaceCommandHref(modelingCommand)).toBe("/reports?posture=comparison-backed");
   });
 
   it("identifies sourcing and gap grants commands", () => {
