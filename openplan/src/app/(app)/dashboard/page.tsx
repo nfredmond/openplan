@@ -103,6 +103,7 @@ export default async function DashboardPage() {
 
   const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsCommand(item)) ?? null;
   const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
+  const comparisonBackedReportCount = operationsSummary.counts.comparisonBackedReports;
   const grantsRoutedRtpFundingReview =
     operationsSummary.nextCommand?.key === "review-current-report-packets" &&
     operationsSummary.nextCommand.moduleKey === "grants" &&
@@ -172,7 +173,10 @@ export default async function DashboardPage() {
       key: "reports-surface",
       href: "/reports",
       title: "Open Reports Surface",
-      description: "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
+      description:
+        comparisonBackedReportCount > 0
+          ? `${comparisonBackedReportCount} comparison-backed report packet${comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing. Treat that context as planning support, not proof of award likelihood or a replacement for funding-source review.`
+          : "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
       icon: FileText,
     },
   ];
@@ -273,6 +277,11 @@ export default async function DashboardPage() {
                 {grantsRoutedRtpFundingReview
                   ? `Current RTP packet work is now a Grants OS follow-through lane, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} linked-project funding cleanup before packet posture is truly settled.`
                   : `Current RTP packet work is not just freshness, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.`}
+              </div>
+            ) : null}
+            {comparisonBackedReportCount > 0 ? (
+              <div className="module-operator-item">
+                {comparisonBackedReportCount} comparison-backed report packet{comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing, but that evidence still does not prove award likelihood or replace funding-source review.
               </div>
             ) : null}
             <div className="module-operator-item">

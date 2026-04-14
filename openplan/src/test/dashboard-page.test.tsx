@@ -196,4 +196,81 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText(/Grants OS follow-through/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
   });
+
+  it("surfaces comparison-backed report posture as planning support in dashboard copy", async () => {
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
+      posture: "active",
+      headline: "Review comparison-backed packet posture",
+      detail: "Comparison-backed packet posture is visible in the workspace queue.",
+      counts: {
+        projects: 1,
+        activeProjects: 1,
+        plans: 0,
+        plansNeedingSetup: 0,
+        programs: 0,
+        activePrograms: 0,
+        reports: 1,
+        reportRefreshRecommended: 0,
+        reportNoPacket: 0,
+        reportPacketCurrent: 0,
+        rtpFundingReviewPackets: 0,
+        comparisonBackedReports: 1,
+        fundingOpportunities: 1,
+        openFundingOpportunities: 1,
+        closingSoonFundingOpportunities: 0,
+        projectFundingNeedAnchorProjects: 0,
+        projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
+        queueDepth: 1,
+      },
+      nextCommand: {
+        key: "review-comparison-backed-reports",
+        title: "Review comparison-backed packet posture",
+        detail:
+          "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+        href: "/reports?posture=comparison-backed",
+        tone: "info",
+        priority: 9,
+        badges: [{ label: "Comparison-backed", value: 1 }],
+      },
+      commandQueue: [
+        {
+          key: "review-comparison-backed-reports",
+          title: "Review comparison-backed packet posture",
+          detail:
+            "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+          href: "/reports?posture=comparison-backed",
+          tone: "info",
+          priority: 9,
+          badges: [{ label: "Comparison-backed", value: 1 }],
+        },
+      ],
+      fullCommandQueue: [
+        {
+          key: "review-comparison-backed-reports",
+          title: "Review comparison-backed packet posture",
+          detail:
+            "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+          href: "/reports?posture=comparison-backed",
+          tone: "info",
+          priority: 9,
+          badges: [{ label: "Comparison-backed", value: 1 }],
+        },
+      ],
+    });
+
+    await renderPage();
+
+    expect(
+      screen.getAllByText(/comparison-backed report packet can support grant planning language or prioritization framing/i).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open Reports Surface/i })).toHaveAttribute("href", "/reports");
+  });
 });
