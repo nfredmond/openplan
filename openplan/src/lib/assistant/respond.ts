@@ -335,7 +335,10 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
     linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
@@ -378,14 +381,17 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
       `${context.counts.readyForReviewChapters} chapters are ready for review and ${context.counts.completeChapters} are complete.`,
       context.packetSummary.recommendedReport
         ? hasRtpFundingBackedReleaseReviewPressure(context)
-          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with funding-backed release-review pressure still open.`
+          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"} still open.`
           : `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No RTP board packet is linked yet.",
     ],
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",
-          title: context.operationsSummary.nextCommand.title,
+          title:
+            grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
+              ? "Open RTP grants follow-through"
+              : context.operationsSummary.nextCommand.title,
           detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
@@ -1251,7 +1257,10 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
 function buildRtpResponse(context: RtpAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP brief";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const cyclePacketWorkPosture = resolveRtpPacketWorkPostureFromCounts({
     linkedReportCount: context.packetSummary.linkedReportCount,
     noPacketCount: context.packetSummary.noPacketCount,
@@ -1334,7 +1343,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible.`,
         context.packetSummary.recommendedReport
           ? hasRtpFundingBackedReleaseReviewPressure(context)
-            ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is current, but funding-backed release-review pressure is still open.`
+            ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is current, but ${grantsRoutedRtpFundingReview ? "Grants OS follow-through is" : "funding-backed release-review pressure is"} still open.`
             : `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
           : "No linked packet record is available yet, so release-review work is premature.",
         context.readiness.ready
@@ -1343,7 +1352,9 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       ],
       nextSteps: [
         hasRtpFundingBackedReleaseReviewPressure(context)
-          ? "Resolve the funding-backed release-review pressure before treating the current packet as settled."
+          ? grantsRoutedRtpFundingReview
+            ? "Resolve the Grants OS follow-through before treating the current packet as settled."
+            : "Resolve the funding-backed release-review pressure before treating the current packet as settled."
           : context.packetSummary.recommendedReport
           ? `Open /reports/${context.packetSummary.recommendedReport.id} to verify release posture on the lead board packet.`
           : "Create and mature a packet before expecting release-review work.",
@@ -1369,7 +1380,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
           : cyclePacketWorkPosture === "refresh"
             ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before release-review work.`
             : hasRtpFundingBackedReleaseReviewPressure(context)
-              ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is current but still under funding-backed release-review pressure.`
+              ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is current but still under ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"}.`
               : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release-review work.`
         : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
       findings: [
@@ -1385,7 +1396,9 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       ],
       nextSteps: [
         hasRtpFundingBackedReleaseReviewPressure(context)
-          ? "Run the funding-backed release-review lane before treating current packet freshness as settled."
+          ? grantsRoutedRtpFundingReview
+            ? "Run the Grants OS follow-through lane before treating current packet freshness as settled."
+            : "Run the funding-backed release-review lane before treating current packet freshness as settled."
           : context.packetSummary.recommendedReport
           ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current RTP packet posture.`
           : "Create or attach the first RTP board packet before treating this cycle as packet-ready.",
