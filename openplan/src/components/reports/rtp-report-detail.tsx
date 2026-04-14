@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
+import { ArrowRight, BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportSectionControls } from "@/components/reports/rtp-report-section-controls";
@@ -17,6 +17,7 @@ import {
   reportStatusTone,
 } from "@/lib/reports/catalog";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 
 function compareCountMetric(label: string, generated: number | null, current: number | null) {
   if (generated === null && current === null) {
@@ -170,6 +171,9 @@ export function RtpReportDetail({
     updatedAt: cycle?.updated_at ?? report.updated_at,
   });
   const packetWorkStatus = getReportPacketWorkStatus(packetFreshness.label);
+  const grantsFollowThrough = resolveRtpFundingFollowThrough(
+    currentContext.fundingSnapshot ?? generationContext.fundingSnapshot
+  );
   const driftItems = [
     compareCountMetric("Chapters in scope", generationContext.chapterCount, currentContext.chapterCount),
     compareCountMetric(
@@ -442,6 +446,24 @@ export function RtpReportDetail({
                     <p className="mt-1 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reason ?? "No current RTP funding posture is available."}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
                   </div>
+                </div>
+              ) : null}
+              {grantsFollowThrough ? (
+                <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-500/[0.08] px-4 py-4">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-amber-900/80 dark:text-amber-200/80">
+                    Grants follow-through
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{grantsFollowThrough.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Funding posture changed outside the packet itself, so release review should reopen the shared grants lane before this RTP artifact is treated as fully settled.
+                  </p>
+                  <Link
+                    href={grantsFollowThrough.href}
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                  >
+                    {grantsFollowThrough.actionLabel}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
               ) : null}
             </div>

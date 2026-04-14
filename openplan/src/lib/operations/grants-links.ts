@@ -1,3 +1,4 @@
+import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
 
 export const GRANTS_COMMAND_MODULE_KEY = "grants" as const;
@@ -152,4 +153,44 @@ export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): s
 
 export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): string {
   return isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href;
+}
+
+export function resolveRtpFundingFollowThrough(snapshot: PortfolioFundingSnapshot | null | undefined) {
+  if (!snapshot) {
+    return null;
+  }
+
+  if (snapshot.gapProjectCount > 0) {
+    return {
+      href: "/grants#grants-gap-resolution-lane",
+      title: "Linked RTP projects still carry uncovered funding gaps.",
+      actionLabel: "Open gap resolution",
+    };
+  }
+
+  if (snapshot.outstandingReimbursementAmount > 0) {
+    return {
+      href: "/grants#grants-reimbursement-triage",
+      title: "Reimbursement follow-through is still active across linked RTP projects.",
+      actionLabel: "Open reimbursement triage",
+    };
+  }
+
+  if (snapshot.uninvoicedAwardAmount > 0) {
+    return {
+      href: "/grants#grants-awards-reimbursement",
+      title: "Committed award dollars exist, but invoice follow-through has not caught up yet.",
+      actionLabel: "Open awards and reimbursement",
+    };
+  }
+
+  if (snapshot.likelyCoveredProjectCount > 0) {
+    return {
+      href: "/grants#grants-opportunity-creator",
+      title: "This RTP packet still depends on pursued grant pipeline instead of secured dollars.",
+      actionLabel: "Open funding opportunity queue",
+    };
+  }
+
+  return null;
 }

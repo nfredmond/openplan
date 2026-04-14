@@ -6,6 +6,7 @@ import {
   isGrantsReimbursementCommand,
   isGrantsSourcingCommand,
   resolveGrantsQueueCalloutCopy,
+  resolveRtpFundingFollowThrough,
   resolveWorkspaceCommandHref,
 } from "@/lib/operations/grants-links";
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
@@ -221,5 +222,63 @@ describe("grants-links", () => {
         })
       )
     ).toBe("/grants?focusInvoiceId=invoice-1#grants-reimbursement-triage");
+  });
+
+  it("maps RTP funding review signals back into the right grants follow-through lane", () => {
+    expect(
+      resolveRtpFundingFollowThrough({
+        capturedAt: null,
+        latestSourceUpdatedAt: null,
+        linkedProjectCount: 4,
+        trackedProjectCount: 4,
+        fundedProjectCount: 1,
+        likelyCoveredProjectCount: 1,
+        gapProjectCount: 2,
+        committedFundingAmount: 500000,
+        likelyFundingAmount: 200000,
+        totalPotentialFundingAmount: 700000,
+        unfundedAfterLikelyAmount: 300000,
+        paidReimbursementAmount: 0,
+        outstandingReimbursementAmount: 0,
+        uninvoicedAwardAmount: 0,
+        awardRiskCount: 0,
+        label: "Partially funded",
+        reason: "Gap remains.",
+        reimbursementLabel: "Reimbursement posture unknown",
+        reimbursementReason: "No reimbursement records.",
+      })
+    ).toEqual({
+      href: "/grants#grants-gap-resolution-lane",
+      title: "Linked RTP projects still carry uncovered funding gaps.",
+      actionLabel: "Open gap resolution",
+    });
+
+    expect(
+      resolveRtpFundingFollowThrough({
+        capturedAt: null,
+        latestSourceUpdatedAt: null,
+        linkedProjectCount: 2,
+        trackedProjectCount: 2,
+        fundedProjectCount: 2,
+        likelyCoveredProjectCount: 0,
+        gapProjectCount: 0,
+        committedFundingAmount: 500000,
+        likelyFundingAmount: 0,
+        totalPotentialFundingAmount: 500000,
+        unfundedAfterLikelyAmount: 0,
+        paidReimbursementAmount: 100000,
+        outstandingReimbursementAmount: 50000,
+        uninvoicedAwardAmount: 0,
+        awardRiskCount: 0,
+        label: "Funded",
+        reason: "Committed awards meet the need.",
+        reimbursementLabel: "Reimbursement in flight",
+        reimbursementReason: "Outstanding reimbursement remains.",
+      })
+    ).toEqual({
+      href: "/grants#grants-reimbursement-triage",
+      title: "Reimbursement follow-through is still active across linked RTP projects.",
+      actionLabel: "Open reimbursement triage",
+    });
   });
 });
