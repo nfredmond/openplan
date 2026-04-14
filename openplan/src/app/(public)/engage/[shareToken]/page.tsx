@@ -114,7 +114,7 @@ export default async function PublicEngagementPage({
           <div className="public-meta-strip">
             {project ? <span>Linked project: {project.name}</span> : <span>Standalone public engagement page</span>}
             <span>Share-ready public lane</span>
-            <span>{getEngagementLabel(campaign.engagement_type)}</span>
+            <span>Mode: {getEngagementLabel(campaign.engagement_type)}</span>
           </div>
 
           <div className="public-headline-block">

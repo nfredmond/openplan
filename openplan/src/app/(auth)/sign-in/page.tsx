@@ -71,13 +71,13 @@ function SignInForm() {
       <div className="space-y-4 px-6 py-5 sm:px-7">
         {createdState === "1" ? (
           <article className={noticeClass("info")}>
-            <p className="font-semibold">Account created. Next step is workspace setup.</p>
+            <p className="font-semibold">Account created — next step is your first workspace.</p>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5">
               <li>Sign in with the email and password you just created.</li>
               <li>Create or open the correct workspace from Projects.</li>
               <li>
                 If you selected {selectedPlan === "starter" ? "Starter" : selectedPlan === "professional" ? "Professional" : "an early-access"} pricing,
-                start billing only after you confirm the correct workspace target inside the app.
+                launch billing only after you are inside the correct workspace context.
               </li>
             </ol>
           </article>

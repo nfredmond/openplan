@@ -14,6 +14,31 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
 
+function looksLikeOptionalSummaryFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return /Unexpected table|does not exist|schema cache|could not find the table/i.test(error.message);
+}
+
+async function loadWorkspaceOperationsSummarySafe(
+  supabase: WorkspaceOperationsSupabaseLike,
+  workspaceId: string,
+  audit: ReturnType<typeof createApiAuditLogger>
+) {
+  try {
+    return await loadWorkspaceOperationsSummaryForWorkspace(supabase, workspaceId);
+  } catch (error) {
+    if (!looksLikeOptionalSummaryFailure(error)) {
+      throw error;
+    }
+
+    audit.warn("operations_summary_optional_unavailable", {
+      workspaceId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
 type ProjectRow = {
   id: string;
   name: string;
@@ -123,9 +148,10 @@ export async function GET(request: NextRequest) {
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-      loadWorkspaceOperationsSummaryForWorkspace(
+      loadWorkspaceOperationsSummarySafe(
         supabase as unknown as WorkspaceOperationsSupabaseLike,
-        parsed.data
+        parsed.data,
+        audit
       ),
     ]);
 

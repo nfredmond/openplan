@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
+import {
+  touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, validateRunAccess } from "@/lib/scenarios/api";
 
@@ -169,7 +172,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const packetWriteback = await touchScenarioLinkedReportPackets({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: access.scenarioSet.id,
       workspaceId: access.scenarioSet.workspace_id,
     });

@@ -99,6 +99,11 @@ type ProgramReportRow = {
   updated_at: string | null;
 };
 
+type ProgramReportArtifactRow = {
+  report_id: string;
+  generated_at: string | null;
+};
+
 type FundingOpportunityRow = {
   id: string;
   workspace_id: string;
@@ -275,6 +280,29 @@ export default async function ProgramsPage({
         .in("id", explicitReportIds)
     : { data: [], error: null };
 
+  const reportIds = Array.from(
+    new Set(
+      [
+        ...((projectReportsResult.data ?? []) as ProgramReportRow[]).map((row) => row.id),
+        ...((explicitReportsResult.data ?? []) as ProgramReportRow[]).map((row) => row.id),
+      ].filter(Boolean)
+    )
+  );
+  const reportArtifactsResult = reportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at")
+        .in("report_id", reportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+
+  const latestArtifactGeneratedAtByReportId = new Map<string, string | null>();
+  for (const artifact of (reportArtifactsResult.data ?? []) as ProgramReportArtifactRow[]) {
+    if (!latestArtifactGeneratedAtByReportId.has(artifact.report_id)) {
+      latestArtifactGeneratedAtByReportId.set(artifact.report_id, artifact.generated_at);
+    }
+  }
+
   const planCountsByProject = new Map<string, number>();
   for (const row of plansResult.data ?? []) {
     if (!row.project_id) continue;
@@ -303,7 +331,8 @@ export default async function ProgramsPage({
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: row.generated_at,
+        generatedAt:
+          latestArtifactGeneratedAtByReportId.get(row.id) ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     };
@@ -321,7 +350,8 @@ export default async function ProgramsPage({
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: row.generated_at,
+        generatedAt:
+          latestArtifactGeneratedAtByReportId.get(row.id) ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     });
