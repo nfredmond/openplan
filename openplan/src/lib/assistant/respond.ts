@@ -267,7 +267,10 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
 
 function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): AssistantPreview {
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -314,13 +317,16 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
         ? rtpFundingReviewPressure
         : null,
       context.operationsSummary.nextCommand
-        ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
+        ? `Workspace next command: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}.`
         : registryPosture.detail,
     ].filter(Boolean) as string[],
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",
-          title: context.operationsSummary.nextCommand.title,
+          title:
+            grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
+              ? "Open RTP grants follow-through"
+              : context.operationsSummary.nextCommand.title,
           detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
@@ -1075,7 +1081,10 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
 function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflowId: string): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "RTP registry brief";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const registryPacketPosture = resolveRtpPacketWorkPostureFromCounts({
     noPacketCount: context.counts.noPacketCount,
     refreshRecommendedCount: context.counts.refreshRecommendedCount,
@@ -1199,7 +1208,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
           ? `${context.recommendedCycle.title} is in ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()} posture.`
           : "No RTP cycle is available yet to act as a packet anchor.",
         context.operationsSummary.nextCommand
-          ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+          ? `Workspace queue pressure: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}. ${rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail}`
           : "No broader workspace queue pressure is currently outranking the RTP registry from the current snapshot.",
       ],
       nextSteps: [
@@ -1207,7 +1216,9 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
           ? `Open /rtp/${context.recommendedCycle.id} to work the strongest current RTP packet or cycle signal first.`
           : "Create the first RTP cycle before expecting packet queue behavior.",
         hasRtpFundingBackedReleaseReviewPressure(context)
-          ? "Run the funding-backed release-review lane before treating current packet freshness as settled."
+          ? grantsRoutedRtpFundingReview
+            ? "Run the Grants OS follow-through lane before treating current packet freshness as settled."
+            : "Run the funding-backed release-review lane before treating current packet freshness as settled."
           : context.counts.noPacketCount > 0
           ? "Create first packets for missing cycles before spending too long on already-current packet polish."
           : "Refresh the stale packets first, then verify that the registry queue and packet trace stay aligned.",
