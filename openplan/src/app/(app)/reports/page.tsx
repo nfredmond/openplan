@@ -42,6 +42,7 @@ import {
   parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
+  resolveReportPacketSourceUpdatedAt,
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
@@ -212,8 +213,10 @@ export default async function ReportsPage({
         packetFreshness: getReportPacketFreshness({
           latestArtifactKind: report.latest_artifact_kind,
           generatedAt: latestArtifact?.generated_at ?? report.generated_at,
-          updatedAt:
-            (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
+          updatedAt: resolveReportPacketSourceUpdatedAt([
+            Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at,
+            report.updated_at,
+          ]),
         }),
         evidenceChainSummary,
         scenarioSpineSummary,

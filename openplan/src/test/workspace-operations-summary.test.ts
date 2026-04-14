@@ -2,6 +2,35 @@ import { describe, expect, it } from "vitest";
 import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 
 describe("workspace operations summary", () => {
+  it("treats report write-back timestamps as source freshness for RTP packets", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [],
+      plans: [],
+      programs: [],
+      reports: [
+        {
+          id: "report-rtp",
+          title: "RTP board packet",
+          status: "generated",
+          latest_artifact_kind: "html",
+          generated_at: "2026-04-12T10:00:00.000Z",
+          updated_at: "2026-04-14T10:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              rtpCycleUpdatedAt: "2026-04-11T10:00:00.000Z",
+            },
+          },
+        },
+      ],
+      fundingOpportunities: [],
+      now: new Date("2026-04-14T12:00:00.000Z"),
+    });
+
+    expect(summary.counts.reportRefreshRecommended).toBe(1);
+    expect(summary.nextCommand?.key).toBe("refresh-report-packets");
+    expect(summary.nextCommand?.href).toBe("/reports/report-rtp#drift-since-generation");
+  });
+
   it("prioritizes missing funding-need anchors before measurable funding gaps", () => {
     const summary = buildWorkspaceOperationsSummaryFromSourceRows({
       projects: [

@@ -22,6 +22,7 @@ import {
   getReportPacketFreshness,
   getReportPacketWorkStatus,
   getRtpPacketPresetAlignment,
+  resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -743,7 +744,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ? getReportPacketFreshness({
             latestArtifactKind: packetReport.latest_artifact_kind,
             generatedAt: packetReport.generated_at,
-            updatedAt: cycle.updated_at,
+            updatedAt: resolveReportPacketSourceUpdatedAt([cycle.updated_at, packetReport.updated_at]),
           })
         : {
             label: "No packet",

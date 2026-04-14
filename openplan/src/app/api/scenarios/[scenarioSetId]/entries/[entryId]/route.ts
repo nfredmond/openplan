@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, validateRunAccess } from "@/lib/scenarios/api";
 
@@ -167,10 +168,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update scenario entry" }, { status: 500 });
     }
 
+    const packetWriteback = await touchScenarioLinkedReportPackets({
+      supabase,
+      scenarioSetId: access.scenarioSet.id,
+      workspaceId: access.scenarioSet.workspace_id,
+    });
+
+    if (packetWriteback.error) {
+      audit.warn("scenario_entry_report_packet_writeback_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        entryId: existingEntry.id,
+        message: packetWriteback.error.message,
+        code: packetWriteback.error.code ?? null,
+      });
+    }
+
     audit.info("scenario_entry_updated", {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
       entryId: existingEntry.id,
+      packetWritebackReportCount: packetWriteback.touchedReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

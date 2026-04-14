@@ -12,6 +12,7 @@ import {
   getReportPacketFreshness,
   parseStoredFundingSnapshot,
   parseStoredComparisonSnapshotAggregate,
+  resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import type { StatusTone } from "@/lib/ui/status";
 
@@ -347,25 +348,19 @@ function resolveReportSourceUpdatedAt(report: WorkspaceOperationsReportRow): str
   const sourceContext = asRecord(report.metadataJson?.sourceContext);
 
   const rtpCycleUpdatedAt = typeof sourceContext?.rtpCycleUpdatedAt === "string" ? sourceContext.rtpCycleUpdatedAt : null;
-  if (rtpCycleUpdatedAt) {
-    return rtpCycleUpdatedAt;
-  }
-
   const projectUpdatedAt = typeof sourceContext?.projectUpdatedAt === "string" ? sourceContext.projectUpdatedAt : null;
-  if (projectUpdatedAt) {
-    return projectUpdatedAt;
-  }
-
   const projectFundingSnapshot = asRecord(sourceContext?.projectFundingSnapshot);
   const latestFundingSourceUpdatedAt =
     typeof projectFundingSnapshot?.latestSourceUpdatedAt === "string"
       ? projectFundingSnapshot.latestSourceUpdatedAt
       : null;
-  if (latestFundingSourceUpdatedAt) {
-    return latestFundingSourceUpdatedAt;
-  }
 
-  return report.updatedAt;
+  return resolveReportPacketSourceUpdatedAt([
+    rtpCycleUpdatedAt,
+    projectUpdatedAt,
+    latestFundingSourceUpdatedAt,
+    report.updatedAt,
+  ]);
 }
 
 function resolveExactWorkspaceBillingInvoiceId(invoices: WorkspaceOperationsBillingInvoiceRow[]): string | null {

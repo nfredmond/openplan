@@ -12,6 +12,7 @@ import {
   normalizeReportFreshnessFilter,
   normalizeReportPostureFilter,
   parseStoredFundingSnapshot,
+  resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 
 describe("getReportPacketFreshness", () => {
@@ -43,6 +44,16 @@ describe("getReportPacketFreshness", () => {
         updatedAt: "2026-03-28T20:00:00.000Z",
       })
     ).toMatchObject({ label: "Packet current", tone: "success" });
+  });
+
+  it("uses the latest tracked source timestamp for packet freshness checks", () => {
+    expect(
+      resolveReportPacketSourceUpdatedAt([
+        "2026-04-12T10:00:00.000Z",
+        "2026-04-14T10:00:00.000Z",
+        "not-a-date",
+      ])
+    ).toBe("2026-04-14T10:00:00.000Z");
   });
 
   it("returns action labels for each freshness state", () => {
