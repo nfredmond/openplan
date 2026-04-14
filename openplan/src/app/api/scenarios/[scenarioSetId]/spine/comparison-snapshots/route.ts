@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { SCENARIO_COMPARISON_SNAPSHOT_STATUSES } from "@/lib/scenarios/catalog";
 
@@ -333,11 +334,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
       comparisonIndicatorDeltas = (insertedDeltas ?? []) as Array<Record<string, unknown>>;
     }
 
+    const packetWriteback = await touchScenarioLinkedReportPackets({
+      supabase,
+      scenarioSetId: access.scenarioSet.id,
+      workspaceId: access.scenarioSet.workspace_id,
+    });
+
+    if (packetWriteback.error) {
+      audit.warn("comparison_snapshot_report_packet_writeback_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        comparisonSnapshotId: comparisonSnapshot.id,
+        message: packetWriteback.error.message,
+        code: packetWriteback.error.code ?? null,
+      });
+    }
+
     audit.info("comparison_snapshot_created", {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
       comparisonSnapshotId: comparisonSnapshot.id,
       indicatorDeltaCount: comparisonIndicatorDeltas.length,
+      packetWritebackReportCount: packetWriteback.touchedReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 
