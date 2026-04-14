@@ -306,6 +306,22 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  scenarioSetTitle: "Downtown alternatives",
+                  baselineLabel: "Existing conditions",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      status: "ready",
+                      candidateEntryLabel: "Protected bike package",
+                      indicatorDeltaCount: 4,
+                      updatedAt: "2026-03-28T19:30:00.000Z",
+                    },
+                  ],
+                },
+              ],
               evidenceChainSummary: {
                 linkedRunCount: 2,
                 scenarioSetLinkCount: 1,
@@ -498,6 +514,14 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/Evidence-backed/i)).toBeInTheDocument();
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not proof of award likelihood/i)
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#drift-since-generation"

@@ -844,6 +844,8 @@ export default async function ProjectDetailPage({
   ).length;
   const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedReport = projectReports[0] ?? null;
+  const comparisonBackedFundingReport =
+    projectReports.find((report) => Boolean(report.comparisonDigest)) ?? null;
   const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [];
     if (report.packetFreshness.label !== "Packet current") {
@@ -1605,6 +1607,11 @@ export default async function ProjectDetailPage({
                     ? `${fmtCurrency(committedFundingAmount)} committed, ${fmtCurrency(likelyFundingAmount)} likely, leaving ${fmtCurrency(remainingFundingGap)} still unfunded against a ${fmtCurrency(fundingNeedAmount)} target need.`
                     : fundingStackSummary.pipelineReason}
                 </p>
+                {comparisonBackedFundingReport?.comparisonDigest ? (
+                  <div className="module-note mt-3 text-sm">
+                    Saved comparison context from {comparisonBackedFundingReport.title} can support grant planning language or prioritization framing for this funding stack. It is planning evidence to review against each funding source, not proof of award likelihood.
+                  </div>
+                ) : null}
               </div>
               <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reimbursement posture</p>

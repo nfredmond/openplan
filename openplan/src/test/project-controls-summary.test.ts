@@ -104,4 +104,29 @@ describe("project controls summary", () => {
     expect(summary.recommendedNextAction.targetId).toBe("project-reporting");
     expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-123");
   });
+
+  it("caveats comparison-backed report context as planning support", () => {
+    const summary = buildProjectControlsSummary(
+      [],
+      [],
+      [],
+      {
+        refreshRecommendedCount: 0,
+        noPacketCount: 0,
+        comparisonBackedCount: 1,
+        recommendedReportId: "report-456",
+        recommendedReportTitle: "Grant framing packet",
+      },
+      "2026-03-10T00:00:00.000Z"
+    );
+
+    expect(summary.controlHealth).toBe("active");
+    expect(summary.recommendedNextAction.label).toBe("Review comparison-backed packet");
+    expect(summary.recommendedNextAction.detail).toContain(
+      "saved comparison context that can support grant planning language or prioritization framing"
+    );
+    expect(summary.recommendedNextAction.detail).toContain(
+      "not proof of award likelihood or a replacement for funding-source review"
+    );
+  });
 });
