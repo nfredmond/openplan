@@ -308,6 +308,7 @@ export default async function ReportsPage({
     .filter(
       (report) =>
         report.packetFreshness.label !== "Packet current" ||
+        Boolean(report.grantsFollowThrough) ||
         Boolean(report.storedRtpFundingReview?.needsAttention) ||
         Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
         (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
@@ -315,6 +316,8 @@ export default async function ReportsPage({
     .slice(0, 5)
     .map((report) => {
       const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
+      const grantsFollowThroughFirst =
+        packetWorkStatus.key === "release-review" && report.grantsFollowThrough;
       const badges: Array<{ label: string; value?: string | number | null }> = [];
       badges.push({ label: packetWorkStatus.label });
       if (report.packetFreshness.label !== "Packet current") {
@@ -322,6 +325,9 @@ export default async function ReportsPage({
       }
       if (report.storedRtpFundingReview?.needsAttention) {
         badges.push({ label: report.storedRtpFundingReview.label });
+      }
+      if (grantsFollowThroughFirst) {
+        badges.push({ label: "Grants follow-through" });
       }
       if ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0) {
         badges.push({
@@ -335,19 +341,24 @@ export default async function ReportsPage({
 
       return {
         key: report.id,
-        href: getReportNavigationHref(report.id, report.packetFreshness.label),
+        href: grantsFollowThroughFirst
+          ? report.grantsFollowThrough.href
+          : getReportNavigationHref(report.id, report.packetFreshness.label),
         title: report.title,
         subtitle:
-          report.storedRtpFundingReview?.needsAttention
-            ? `First action: run funding-backed release review on ${report.title}`
-            : report.evidenceChainDigest?.blockedGateDetail
-              ? `First action: review governance hold in ${report.title}`
-              : packetWorkStatus.key === "generate-first"
-                ? `First action: generate the first packet for ${report.title}`
-                : packetWorkStatus.key === "refresh"
-                  ? `First action: refresh ${report.title}`
-                  : `First action: run release review on ${report.title}`,
+          grantsFollowThroughFirst
+            ? `First action: ${report.grantsFollowThrough.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
+            : report.storedRtpFundingReview?.needsAttention
+              ? `First action: run funding-backed release review on ${report.title}`
+              : report.evidenceChainDigest?.blockedGateDetail
+                ? `First action: review governance hold in ${report.title}`
+                : packetWorkStatus.key === "generate-first"
+                  ? `First action: generate the first packet for ${report.title}`
+                  : packetWorkStatus.key === "refresh"
+                    ? `First action: refresh ${report.title}`
+                    : `First action: run release review on ${report.title}`,
         detail:
+          (grantsFollowThroughFirst ? report.grantsFollowThrough.title : null) ??
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
           packetWorkStatus.detail,
