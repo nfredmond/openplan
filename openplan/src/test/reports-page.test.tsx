@@ -176,6 +176,22 @@ describe("ReportsPage", () => {
                 stageGateHoldCount: 0,
                 stageGateBlockedGateLabel: null,
               },
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  scenarioSetTitle: "Downtown alternatives",
+                  baselineLabel: "Existing conditions",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      status: "ready",
+                      candidateEntryLabel: "Protected bike package",
+                      indicatorDeltaCount: 4,
+                      updatedAt: "2026-03-28T19:50:00.000Z",
+                    },
+                  ],
+                },
+              ],
               projectFundingSnapshot: {
                 capturedAt: "2026-03-28T19:45:00.000Z",
                 projectUpdatedAt: "2026-03-28T19:40:00.000Z",
@@ -248,6 +264,12 @@ describe("ReportsPage", () => {
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getByText(/Open gap resolution/i)).toBeInTheDocument();
     expect(screen.getByText(/in Grants OS/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/saved comparison context can support grant planning language or prioritization framing for this packet/i).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
+    ).toBeGreaterThan(0);
   });
 
   it("routes current report queue actions into Grants OS when funding follow-through is the real next move", async () => {

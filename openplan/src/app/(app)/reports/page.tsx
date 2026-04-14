@@ -364,7 +364,9 @@ export default async function ReportsPage({
           (grantsFollowThroughFirst ? report.grantsFollowThrough.title : null) ??
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
-          packetWorkStatus.detail,
+          ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+            ? `${report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0} saved comparison${(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) === 1 ? " can" : "s can"} support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`
+            : packetWorkStatus.detail),
         badges,
       };
     });
@@ -868,12 +870,17 @@ export default async function ReportsPage({
                         <p className="mt-1">{report.evidenceChainDigest.detail}</p>
                         {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
                         {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
-                          <p className="mt-1">
-                            Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
-                            {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
-                              ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
-                              : ""}
-                          </p>
+                          <>
+                            <p className="mt-1">
+                              Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
+                              {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
+                                ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
+                                : ""}
+                            </p>
+                            <p className="mt-1">
+                              Saved comparison context can support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.
+                            </p>
+                          </>
                         ) : null}
                       </div>
                     ) : (
