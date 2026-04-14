@@ -96,6 +96,79 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText(/Funding review: 1/i)).toBeInTheDocument();
   });
 
+  it("shows comparison-backed queue caveats as planning support", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          posture: "active",
+          detail: "Saved comparison-backed packet work is ready for review.",
+          counts: {
+            ...summary.counts,
+            reportPacketCurrent: 0,
+            rtpFundingReviewPackets: 0,
+            comparisonBackedReports: 1,
+            queueDepth: 1,
+          },
+          nextCommand: {
+            key: "review-comparison-backed-reports",
+            title: "Review comparison-backed packet posture",
+            detail:
+              "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+            href: "/reports?posture=comparison-backed",
+            tone: "info",
+            priority: 9,
+            badges: [
+              { label: "Comparison-backed", value: 1 },
+              { label: "Ready comparisons", value: 1 },
+            ],
+          },
+          commandQueue: [
+            {
+              key: "review-comparison-backed-reports",
+              title: "Review comparison-backed packet posture",
+              detail:
+                "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+              href: "/reports?posture=comparison-backed",
+              tone: "info",
+              priority: 9,
+              badges: [
+                { label: "Comparison-backed", value: 1 },
+                { label: "Ready comparisons", value: 1 },
+              ],
+            },
+          ],
+          fullCommandQueue: [
+            {
+              key: "review-comparison-backed-reports",
+              title: "Review comparison-backed packet posture",
+              detail:
+                "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+              href: "/reports?posture=comparison-backed",
+              tone: "info",
+              priority: 9,
+              badges: [
+                { label: "Comparison-backed", value: 1 },
+                { label: "Ready comparisons", value: 1 },
+              ],
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(
+      screen.getByText(/saved comparison context that can support grant planning language or prioritization framing/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not proof of award likelihood or a replacement for funding-source review/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Review comparison-backed packet posture/i })).toHaveAttribute(
+      "href",
+      "/reports?posture=comparison-backed"
+    );
+  });
+
   it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
     render(
       <WorkspaceCommandBoard

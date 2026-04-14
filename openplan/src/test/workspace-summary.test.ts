@@ -158,4 +158,55 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.counts.reportPacketCurrent).toBe(1);
     expect(summary.nextCommand?.key).toBe("review-current-report-packets");
   });
+
+  it("caveats comparison-backed reports as planning support in the workspace queue", () => {
+    const summary = buildWorkspaceOperationsSummary({
+      projects: [],
+      plans: [],
+      programs: [],
+      reports: [
+        {
+          id: "report-comparison-1",
+          title: "Grant Strategy Packet",
+          status: "generated",
+          latestArtifactKind: "html",
+          generatedAt: "2026-04-12T20:00:00.000Z",
+          updatedAt: "2026-04-12T20:00:00.000Z",
+          metadataJson: {
+            sourceContext: {
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      status: "ready",
+                      updatedAt: "2026-04-12T19:45:00.000Z",
+                      candidateEntryLabel: "Bundled delivery scenario",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ],
+      fundingOpportunities: [],
+      fundingAwards: [],
+      fundingInvoices: [],
+      projectSubmittals: [],
+      projectFundingProfiles: [],
+    });
+
+    const comparisonCommand = summary.fullCommandQueue.find(
+      (item) => item.key === "review-comparison-backed-reports"
+    );
+
+    expect(comparisonCommand?.detail).toContain(
+      "saved comparison context that can support grant planning language or prioritization framing"
+    );
+    expect(comparisonCommand?.detail).toContain(
+      "not proof of award likelihood or a replacement for funding-source review"
+    );
+  });
 });
