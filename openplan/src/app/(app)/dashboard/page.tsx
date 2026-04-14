@@ -103,15 +103,21 @@ export default async function DashboardPage() {
 
   const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsCommand(item)) ?? null;
   const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
+  const grantsRoutedRtpFundingReview =
+    operationsSummary.nextCommand?.key === "review-current-report-packets" &&
+    operationsSummary.nextCommand.moduleKey === "grants" &&
+    rtpFundingReviewCount > 0;
 
   const actions = [
     ...(operationsSummary.nextCommand?.key === "review-current-report-packets"
       ? [
           {
             href: operationsSummary.nextCommand.href,
-            title: "Open RTP funding release review",
+            title: grantsRoutedRtpFundingReview ? "Open RTP grants follow-through" : "Open RTP funding release review",
             description:
-              rtpFundingReviewCount > 0
+              grantsRoutedRtpFundingReview
+                ? `Jump straight into Grants OS for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
+                : rtpFundingReviewCount > 0
                 ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
                 : "Jump straight into the current RTP packet release-review lane.",
             icon: FileText,
@@ -247,7 +253,9 @@ export default async function DashboardPage() {
           <p className="module-operator-copy">
             Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
             {rtpFundingReviewCount > 0
-              ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
+              ? grantsRoutedRtpFundingReview
+                ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} Grants OS follow-through even though freshness already reads current.`
+                : ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
               : ""}
           </p>
           <div className="module-operator-list">
@@ -256,7 +264,9 @@ export default async function DashboardPage() {
             </div>
             {rtpFundingReviewCount > 0 ? (
               <div className="module-operator-item">
-                Current RTP packet work is not just freshness, {rtpFundingReviewCount} packet{rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.
+                {grantsRoutedRtpFundingReview
+                  ? `Current RTP packet work is now a Grants OS follow-through lane, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} linked-project funding cleanup before packet posture is truly settled.`
+                  : `Current RTP packet work is not just freshness, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.`}
               </div>
             ) : null}
             <div className="module-operator-item">

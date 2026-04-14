@@ -66,6 +66,23 @@ function formatRtpFundingBackedReleaseReviewPressure(count: number): string {
   return `${count} current RTP packet${count === 1 ? "" : "s"} still ${count === 1 ? "carries" : "carry"} funding-backed release-review pressure that must be resolved before packet posture can be treated as settled.`;
 }
 
+function formatRtpGrantsFollowThroughPressure(count: number): string {
+  return `${count} current RTP packet${count === 1 ? " still needs" : "s still need"} Grants OS follow-through before packet posture can be treated as settled.`;
+}
+
+function isRtpFundingReviewRoutedThroughGrants(context: {
+  operationsSummary: {
+    nextCommand: { key: string; moduleKey?: string | null } | null;
+    counts: { rtpFundingReviewPackets: number };
+  };
+}): boolean {
+  return (
+    context.operationsSummary.counts.rtpFundingReviewPackets > 0 &&
+    context.operationsSummary.nextCommand?.key === "review-current-report-packets" &&
+    context.operationsSummary.nextCommand.moduleKey === "grants"
+  );
+}
+
 function hasRtpFundingBackedReleaseReviewPressure(context: { operationsSummary: WorkspaceOperationsSummary }): boolean {
   return context.operationsSummary.counts.rtpFundingReviewPackets > 0;
 }
@@ -78,7 +95,10 @@ function metricLabel(metrics: Record<string, unknown>, key: string): string {
 function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPreview {
   const title = context.kind === "analysis_studio" ? "Analysis Studio copilot" : context.workspace.name ?? "Workspace copilot";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -102,7 +122,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         ? `Latest run: ${context.recentRuns[0].title} · ${formatDateTime(context.recentRuns[0].createdAt)}`
         : "No recent analysis runs are visible yet.",
     rtpFundingReviewCount > 0
-      ? `RTP funding review: ${rtpFundingReviewPressure}`
+      ? `${grantsRoutedRtpFundingReview ? "RTP grants follow-through" : "RTP funding review"}: ${rtpFundingReviewPressure}`
       : context.operationsSummary.nextCommand
       ? `Command queue: ${context.operationsSummary.nextCommand.title}`
       : "Command queue is currently clear from the workspace snapshot.",
@@ -131,7 +151,10 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
     operatorCue: context.operationsSummary.nextCommand
       ? {
           label: "Current runtime cue",
-          title: context.operationsSummary.nextCommand.title,
+          title:
+            grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
+              ? "Open RTP grants follow-through"
+              : context.operationsSummary.nextCommand.title,
           detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
@@ -655,7 +678,10 @@ function buildWorkspaceResponse(
 ): AssistantResponse {
   const label = findAssistantAction(context.kind, workflowId)?.label ?? "Workspace overview";
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
-  const rtpFundingReviewPressure = formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
+  const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
+  const rtpFundingReviewPressure = grantsRoutedRtpFundingReview
+    ? formatRtpGrantsFollowThroughPressure(rtpFundingReviewCount)
+    : formatRtpFundingBackedReleaseReviewPressure(rtpFundingReviewCount);
   const missingFundingAnchorCount = context.operationsSummary.counts.projectFundingNeedAnchorProjects;
   const fundingSourcingCount = context.operationsSummary.counts.projectFundingSourcingProjects;
   const fundingDecisionCount = context.operationsSummary.counts.projectFundingDecisionProjects;
@@ -793,7 +819,7 @@ function buildWorkspaceResponse(
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
         : "No current project snapshot is visible from this workspace request.",
       context.operationsSummary.nextCommand
-        ? `Next command: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
+        ? `Next command: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}. ${rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail}`
         : "No immediate command-queue pressure is visible from the workspace snapshot.",
       rtpFundingReviewCount > 0
         ? rtpFundingReviewPressure
@@ -822,7 +848,9 @@ function buildWorkspaceResponse(
     ],
     nextSteps: [
       context.operationsSummary.nextCommand
-        ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
+        ? grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to resolve RTP-linked Grants OS follow-through before treating current packet freshness as settled.`
+          : `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
         : context.currentRun
           ? "Open the analysis-focus workflow for a run-grounded brief."
           : "Open Analysis Studio or a project detail page to deepen grounding.",

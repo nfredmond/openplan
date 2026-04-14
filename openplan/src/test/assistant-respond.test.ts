@@ -184,9 +184,11 @@ describe("assistant response builders", () => {
         },
         nextCommand: {
           key: "review-current-report-packets",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-          href: "/reports/report-rtp-1#packet-release-review",
+          href: "/grants#grants-gap-resolution-lane",
           tone: "warning",
           priority: 2.5,
           badges: [
@@ -197,9 +199,11 @@ describe("assistant response builders", () => {
         commandQueue: [
           {
             key: "review-current-report-packets",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-            href: "/reports/report-rtp-1#packet-release-review",
+            href: "/grants#grants-gap-resolution-lane",
             tone: "warning",
             priority: 2.5,
             badges: [
@@ -211,9 +215,11 @@ describe("assistant response builders", () => {
         fullCommandQueue: [
           {
             key: "review-current-report-packets",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-            href: "/reports/report-rtp-1#packet-release-review",
+            href: "/grants#grants-gap-resolution-lane",
             tone: "warning",
             priority: 2.5,
             badges: [
@@ -228,11 +234,12 @@ describe("assistant response builders", () => {
     const preview = buildAssistantPreview(context);
     const response = buildAssistantResponse(context, "workspace-overview");
 
-    expect(preview.summary).toContain("funding-backed release-review pressure");
-    expect(preview.facts.join(" ")).toContain("funding-backed release-review pressure");
-    expect(preview.operatorCue?.detail).toContain("funding-backed release-review pressure");
-    expect(response.summary).toContain("funding-backed release-review pressure");
-    expect(response.findings.join(" ")).toContain("funding-backed release-review pressure");
-    expect(response.nextSteps.join(" ")).toContain("/reports/report-rtp-1#packet-release-review");
+    expect(preview.summary).toContain("Grants OS follow-through");
+    expect(preview.facts.join(" ")).toContain("RTP grants follow-through");
+    expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");
+    expect(preview.operatorCue?.detail).toContain("Grants OS follow-through");
+    expect(response.summary).toContain("Grants OS follow-through");
+    expect(response.findings.join(" ")).toContain("Open RTP grants follow-through");
+    expect(response.nextSteps.join(" ")).toContain("/grants#grants-gap-resolution-lane");
   });
 });

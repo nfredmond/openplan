@@ -34,9 +34,11 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
     },
     nextCommand: {
       key: "review-current-report-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
       title: "Run release review on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-      href: "/reports/report-rtp-1#packet-release-review",
+      href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
       priority: 2.5,
       badges: [
@@ -47,9 +49,11 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
     commandQueue: [
       {
         key: "review-current-report-packets",
+        moduleKey: "grants",
+        moduleLabel: "Grants OS",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-        href: "/reports/report-rtp-1#packet-release-review",
+        href: "/grants#grants-gap-resolution-lane",
         tone: "warning",
         priority: 2.5,
         badges: [
@@ -61,9 +65,11 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
     fullCommandQueue: [
       {
         key: "review-current-report-packets",
+        moduleKey: "grants",
+        moduleLabel: "Grants OS",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-        href: "/reports/report-rtp-1#packet-release-review",
+        href: "/grants#grants-gap-resolution-lane",
         tone: "warning",
         priority: 2.5,
         badges: [
@@ -111,11 +117,11 @@ describe("assistant RTP funding preview", () => {
   it("surfaces RTP funding release review in workspace preview copy", () => {
     const preview = buildAssistantPreview(buildWorkspaceContext());
 
-    expect(preview.summary).toMatch(/1 current RTP packet still needs funding-backed release review/i);
+    expect(preview.summary).toMatch(/1 current RTP packet still needs Grants OS follow-through/i);
     expect(preview.facts).toContain(
-      "RTP funding review: 1 current packet still needs funding-backed release review."
+      "RTP grants follow-through: 1 current RTP packet still needs Grants OS follow-through before packet posture can be treated as settled."
     );
     expect(preview.stats.some((stat) => stat.label === "RTP funding review" && stat.value === "1")).toBe(true);
-    expect(preview.operatorCue?.title).toBe("Run release review on current packets");
+    expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");
   });
 });
