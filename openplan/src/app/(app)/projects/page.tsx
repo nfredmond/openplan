@@ -129,7 +129,7 @@ function describeProjectPacketCommand(project: {
   if (project.reportSummary.comparisonBackedCount > 0 && report) {
     return {
       label: `First action: review comparison-backed packet ${report.title}`,
-      detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context for this project.`,
+      detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing for this project. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`,
     };
   }
 
