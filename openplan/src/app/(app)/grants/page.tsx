@@ -16,6 +16,7 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
+  type WorkspaceCommandQueueItem,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import {
@@ -34,11 +35,13 @@ import {
 } from "@/lib/billing/invoice-records";
 import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import {
+  type GrantsQueueCalloutKind,
   isGrantsAwardCommand,
   isGrantsCommand,
   isGrantsDecisionCommand,
   isGrantsReimbursementCommand,
   isGrantsSourcingCommand,
+  resolveGrantsQueueCalloutCopy,
 } from "@/lib/operations/grants-links";
 import {
   buildProjectFundingStackSummary,
@@ -480,6 +483,41 @@ function resolveGrantsQueueHref(
   }
 
   return item.href;
+}
+
+function GrantsQueueCallout({
+  kind,
+  command,
+  className = "mt-5",
+}: {
+  kind: GrantsQueueCalloutKind;
+  command: Pick<WorkspaceCommandQueueItem, "detail" | "href" | "tone">;
+  className?: string;
+}) {
+  const copy = resolveGrantsQueueCalloutCopy(kind, command);
+
+  return (
+    <div
+      className={`${className} rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold tracking-tight">{copy.title}</p>
+            <StatusBadge tone={command.tone}>{copy.badgeLabel}</StatusBadge>
+          </div>
+          <p className="mt-1">{command.detail}</p>
+        </div>
+        <Link
+          href={command.href}
+          className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+        >
+          {copy.actionLabel}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 export default async function GrantsPage({
@@ -999,21 +1037,7 @@ export default async function GrantsPage({
             className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24" : "scroll-mt-24"}
           >
             {leadSourcingCommand ? (
-              <div className="mb-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold tracking-tight">Lead sourcing and gap command from workspace queue</p>
-                      <StatusBadge tone={leadSourcingCommand.tone}>{leadSourcingCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
-                    </div>
-                    <p className="mt-1">{leadSourcingCommand.detail}</p>
-                  </div>
-                  <Link href={leadSourcingCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                    Open sourcing lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
+              <GrantsQueueCallout kind="sourcing" command={leadSourcingCommand} className="mb-5" />
             ) : null}
             <div
               id="grants-opportunity-creator"
@@ -1084,21 +1108,7 @@ export default async function GrantsPage({
             </div>
 
             {leadReimbursementCommand ? (
-              <div className="mt-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold tracking-tight">Lead reimbursement command from workspace queue</p>
-                      <StatusBadge tone={leadReimbursementCommand.tone}>{leadReimbursementCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
-                    </div>
-                    <p className="mt-1">{leadReimbursementCommand.detail}</p>
-                  </div>
-                  <Link href={leadReimbursementCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                    Open reimbursement follow-through
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
+              <GrantsQueueCallout kind="reimbursement" command={leadReimbursementCommand} />
             ) : null}
 
             <div className="module-summary-grid cols-5 mt-5">
@@ -1280,21 +1290,7 @@ export default async function GrantsPage({
 
           <article id="grants-award-conversion-lane" className="module-section-surface">
             {leadAwardCommand ? (
-              <div className="mb-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold tracking-tight">Lead award conversion command from workspace queue</p>
-                      <StatusBadge tone={leadAwardCommand.tone}>{leadAwardCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
-                    </div>
-                    <p className="mt-1">{leadAwardCommand.detail}</p>
-                  </div>
-                  <Link href={leadAwardCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                    Open award conversion
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
+              <GrantsQueueCallout kind="award" command={leadAwardCommand} className="mb-5" />
             ) : null}
             <div className="module-section-header">
               <div className="module-section-heading">
@@ -1611,21 +1607,7 @@ export default async function GrantsPage({
           </div>
 
           {leadDecisionCommand ? (
-            <div className="mt-5 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold tracking-tight">Lead opportunity decision command from workspace queue</p>
-                    <StatusBadge tone={leadDecisionCommand.tone}>{leadDecisionCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
-                  </div>
-                  <p className="mt-1">{leadDecisionCommand.detail}</p>
-                </div>
-                <Link href={leadDecisionCommand.href} className="inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                  Open opportunity decision
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
+            <GrantsQueueCallout kind="decision" command={leadDecisionCommand} />
           ) : null}
 
           <div className="mt-5 flex flex-wrap gap-3">

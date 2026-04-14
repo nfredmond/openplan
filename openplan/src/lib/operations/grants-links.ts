@@ -32,6 +32,27 @@ const GRANTS_SOURCING_QUEUE_KEYS = new Set([
   "close-project-funding-gaps",
 ]);
 
+export type GrantsQueueCalloutKind = "sourcing" | "reimbursement" | "award" | "decision";
+
+const GRANTS_QUEUE_CALLOUT_COPY: Record<GrantsQueueCalloutKind, { title: string; actionLabel: string }> = {
+  sourcing: {
+    title: "Lead sourcing and gap command from workspace queue",
+    actionLabel: "Open sourcing lane",
+  },
+  reimbursement: {
+    title: "Lead reimbursement command from workspace queue",
+    actionLabel: "Open reimbursement follow-through",
+  },
+  award: {
+    title: "Lead award conversion command from workspace queue",
+    actionLabel: "Open award conversion",
+  },
+  decision: {
+    title: "Lead opportunity decision command from workspace queue",
+    actionLabel: "Open opportunity decision",
+  },
+};
+
 function buildFocusedProjectHref(projectId: string | null | undefined, anchor: string) {
   if (!projectId) return `/grants${anchor}`;
   const params = new URLSearchParams({ focusProjectId: projectId });
@@ -82,6 +103,13 @@ export function isGrantsSourcingCommand(
   item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
 ) {
   return Boolean(item && isGrantsCommand(item) && GRANTS_SOURCING_QUEUE_KEYS.has(item.key));
+}
+
+export function resolveGrantsQueueCalloutCopy(kind: GrantsQueueCalloutKind, item: Pick<WorkspaceCommandQueueItem, "tone">) {
+  return {
+    ...GRANTS_QUEUE_CALLOUT_COPY[kind],
+    badgeLabel: item.tone === "warning" ? "Next" : "Queue",
+  };
 }
 
 export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): string {

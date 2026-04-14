@@ -5,6 +5,7 @@ import {
   isGrantsDecisionCommand,
   isGrantsReimbursementCommand,
   isGrantsSourcingCommand,
+  resolveGrantsQueueCalloutCopy,
   resolveWorkspaceCommandHref,
 } from "@/lib/operations/grants-links";
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
@@ -123,6 +124,29 @@ describe("grants-links", () => {
         })
       )
     ).toBe(false);
+  });
+
+  it("keeps grants queue callout copy coherent across lane variants", () => {
+    expect(resolveGrantsQueueCalloutCopy("sourcing", buildCommand({ tone: "warning" }))).toEqual({
+      title: "Lead sourcing and gap command from workspace queue",
+      actionLabel: "Open sourcing lane",
+      badgeLabel: "Next",
+    });
+    expect(resolveGrantsQueueCalloutCopy("reimbursement", buildCommand({ tone: "info" }))).toEqual({
+      title: "Lead reimbursement command from workspace queue",
+      actionLabel: "Open reimbursement follow-through",
+      badgeLabel: "Queue",
+    });
+    expect(resolveGrantsQueueCalloutCopy("award", buildCommand({ tone: "warning" }))).toEqual({
+      title: "Lead award conversion command from workspace queue",
+      actionLabel: "Open award conversion",
+      badgeLabel: "Next",
+    });
+    expect(resolveGrantsQueueCalloutCopy("decision", buildCommand({ tone: "success" }))).toEqual({
+      title: "Lead opportunity decision command from workspace queue",
+      actionLabel: "Open opportunity decision",
+      badgeLabel: "Queue",
+    });
   });
 
   it("routes sourcing commands into the grants opportunity creator lane", () => {
