@@ -78,6 +78,14 @@ describe("assistant response builders", () => {
       },
       linkedDatasets: [],
       recentRuns: [],
+      reportSummary: {
+        linkedReportCount: 0,
+        evidenceBackedCount: 0,
+        comparisonBackedCount: 0,
+        noPacketCount: 0,
+        refreshRecommendedCount: 0,
+        recommendedReport: null,
+      },
     };
 
     const preview = buildAssistantPreview(context);

@@ -63,6 +63,14 @@ function buildProjectContext(): ProjectAssistantContext {
     } as unknown as ProjectAssistantContext["stageGateSummary"],
     linkedDatasets: [],
     recentRuns: [],
+    reportSummary: {
+      linkedReportCount: 0,
+      evidenceBackedCount: 0,
+      comparisonBackedCount: 0,
+      noPacketCount: 0,
+      refreshRecommendedCount: 0,
+      recommendedReport: null,
+    },
   };
 }
 
@@ -148,6 +156,8 @@ function buildProgramContext(): ProgramAssistantContext {
         reports: 0,
         reportRefreshRecommended: 0,
         reportNoPacket: 0,
+        reportPacketCurrent: 0,
+        rtpFundingReviewPackets: 0,
         comparisonBackedReports: 0,
         fundingOpportunities: 1,
         openFundingOpportunities: 1,
@@ -350,5 +360,39 @@ describe("project and program funding operations", () => {
       expect(action.executeAction.invoiceId).toBe("invoice-2");
       expect(action.executeAction.fundingAwardId).toBe("award-2");
     }
+  });
+
+  it("surfaces comparison-backed packet evidence in project funding posture as planning support", () => {
+    const context = buildProjectContext();
+    context.fundingSummary.pursueCount = 1;
+    context.fundingSummary.leadOpportunity = null;
+    context.reportSummary = {
+      linkedReportCount: 1,
+      evidenceBackedCount: 1,
+      comparisonBackedCount: 1,
+      noPacketCount: 0,
+      refreshRecommendedCount: 0,
+      recommendedReport: {
+        id: "report-1",
+        title: "Grant Planning Packet",
+        packetFreshness: {
+          label: "Packet current",
+          tone: "success",
+          detail: "The packet is current with saved report context.",
+        },
+        comparisonDigest: {
+          headline: "1 saved comparison · 1 ready",
+          detail: "3 indicator deltas · Latest comparison updated Apr 11, 2026, 11:00 AM",
+        },
+      },
+    };
+
+    const links = buildAssistantOperations(context);
+    const fundingAgent = links.find((link) => link.id === "project-funding-agent");
+    const fundingRecord = links.find((link) => link.id === "project-funding-record");
+
+    expect(fundingAgent?.reason).toContain("Saved comparison context from Grant Planning Packet can support grant planning language");
+    expect(fundingAgent?.reason).toContain("does not prove award likelihood");
+    expect(fundingRecord?.reason).toContain("Saved comparison context from Grant Planning Packet can support grant planning language");
   });
 });

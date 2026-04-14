@@ -518,6 +518,12 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
   const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
+  const comparisonBackedReportCount = context.reportSummary.comparisonBackedCount;
+  const recommendedReport = context.reportSummary.recommendedReport;
+  const comparisonEvidenceReason =
+    comparisonBackedReportCount > 0
+      ? ` Saved comparison context from ${recommendedReport?.title ?? "the project reporting lane"} can support grant planning language, but it does not prove award likelihood or replace funding source review.`
+      : "";
 
   return compactQuickLinks([
     context.fundingSummary.opportunityCount === 0
@@ -700,16 +706,16 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                     : `${context.fundingSummary.opportunityCount} linked`,
           reason:
             context.fundingSummary.closingSoonCount > 0
-              ? "This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup."
+              ? `This project has near-term funding deadlines, so grant timing should be checked before less urgent cleanup.${comparisonEvidenceReason}`
               : awardRecordCount > 0
-                ? "This project already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden."
+                ? `This project already has an awarded opportunity without a matching funding-award record, so committed-dollar bookkeeping should be reconciled before remaining gap claims harden.${comparisonEvidenceReason}`
                 : exactInvoiceAwardRelink
-                  ? "This project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through."
+                  ? `This project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through.${comparisonEvidenceReason}`
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                  ? "Committed awards are recorded, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
+                  ? `Committed awards are recorded, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup.${comparisonEvidenceReason}`
                   : (projectGapAmount ?? 0) > 0
-                    ? "This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup."
-                    : "Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.",
+                    ? `This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup.${comparisonEvidenceReason}`
+                    : `Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_agent",
           auditNote: "Use the project funding section to verify pursue, monitor, skip, award, reimbursement, and funding-gap posture before changing delivery assumptions.",
@@ -780,12 +786,12 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                     : "Funding linked",
           reason:
             awardRecordCount > 0
-              ? "Use the project funding section to record awarded dollars before relying on remaining gap math."
+              ? `Use the project funding section to record awarded dollars before relying on remaining gap math.${comparisonEvidenceReason}`
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                ? "Use the project invoice lane to move committed awards into reimbursement workflow before delivery posture drifts."
+                ? `Use the project invoice lane to move committed awards into reimbursement workflow before delivery posture drifts.${comparisonEvidenceReason}`
                 : (projectGapAmount ?? 0) > 0
-                  ? "Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality."
-                  : "Use the project funding section as the canonical grant strategy lane for this project.",
+                  ? `Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality.${comparisonEvidenceReason}`
+                  : `Use the project funding section as the canonical grant strategy lane for this project.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_record",
           auditNote: "Confirm funding gap, opportunity posture, award timing, and reimbursement posture before promising delivery scope.",

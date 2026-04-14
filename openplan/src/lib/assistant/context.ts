@@ -19,7 +19,11 @@ import {
   RTP_CHAPTER_TEMPLATES,
 } from "@/lib/rtp/catalog";
 import { compareRtpPacketPostureForCycle } from "@/lib/assistant/rtp-packet-posture";
-import { getReportPacketFreshness } from "@/lib/reports/catalog";
+import {
+  describeComparisonSnapshotAggregate,
+  getReportPacketFreshness,
+  parseStoredComparisonSnapshotAggregate,
+} from "@/lib/reports/catalog";
 import {
   buildScenarioComparisonBoard,
 } from "@/lib/scenarios/comparison-board";
@@ -142,6 +146,19 @@ export type ProjectAssistantContext = {
     createdAt: string;
     summaryText: string | null;
   }>;
+  reportSummary: {
+    linkedReportCount: number;
+    evidenceBackedCount: number;
+    comparisonBackedCount: number;
+    noPacketCount: number;
+    refreshRecommendedCount: number;
+    recommendedReport: {
+      id: string;
+      title: string | null;
+      packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+      comparisonDigest: ReturnType<typeof describeComparisonSnapshotAggregate>;
+    } | null;
+  };
 };
 
 export type RtpRegistryAssistantContext = {
@@ -784,6 +801,7 @@ async function loadProjectContext(
     fundingAwardsResult,
     fundingInvoicesResult,
     reimbursementSubmittalsResult,
+    projectReportsResult,
   ] = await Promise.all([
     supabase.from("project_deliverables").select("id").eq("project_id", project.id),
     supabase.from("project_risks").select("id, status, severity").eq("project_id", project.id),
@@ -825,6 +843,12 @@ async function loadProjectContext(
       .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
       .eq("project_id", project.id),
     supabase.from("project_submittals").select("id").eq("project_id", project.id).eq("submittal_type", "reimbursement"),
+    supabase
+      .from("reports")
+      .select("id, title, status, generated_at, latest_artifact_kind, updated_at, metadata_json")
+      .eq("project_id", project.id)
+      .order("updated_at", { ascending: false })
+      .limit(50),
   ]);
 
   const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
@@ -959,6 +983,76 @@ async function loadProjectContext(
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
+  const projectReports = looksLikePendingSchema(projectReportsResult.error?.message)
+    ? []
+    : ((projectReportsResult.data ?? []) as Array<{
+        id: string;
+        title: string | null;
+        status: string | null;
+        generated_at: string | null;
+        latest_artifact_kind: string | null;
+        updated_at: string | null;
+        metadata_json: Record<string, unknown> | null;
+      }>);
+  const reportArtifactsResult = projectReports.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in(
+          "report_id",
+          projectReports.map((report) => report.id)
+        )
+        .order("generated_at", { ascending: false })
+        .limit(Math.max(projectReports.length * 4, projectReports.length))
+    : { data: [], error: null };
+  const latestArtifactByReportId = new Map<
+    string,
+    { generated_at: string | null; metadata_json: Record<string, unknown> | null }
+  >();
+
+  for (const artifact of ((reportArtifactsResult.data ?? []) as Array<{
+    report_id: string;
+    generated_at: string | null;
+    metadata_json: Record<string, unknown> | null;
+  }>)) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) {
+      latestArtifactByReportId.set(artifact.report_id, {
+        generated_at: artifact.generated_at,
+        metadata_json: artifact.metadata_json ?? null,
+      });
+    }
+  }
+
+  const linkedReports = projectReports
+    .map((report) => {
+      const latestArtifact = latestArtifactByReportId.get(report.id);
+      const metadata = latestArtifact?.metadata_json ?? report.metadata_json;
+      const comparisonAggregate = parseStoredComparisonSnapshotAggregate(metadata);
+
+      return {
+        id: report.id,
+        title: report.title,
+        status: report.status,
+        updatedAt: report.updated_at,
+        hasEvidence: Boolean(asSourceContext(metadata)),
+        comparisonDigest: describeComparisonSnapshotAggregate(comparisonAggregate),
+        comparisonSnapshotCount: comparisonAggregate?.comparisonSnapshotCount ?? 0,
+        packetFreshness: getReportPacketFreshness({
+          latestArtifactKind: report.latest_artifact_kind,
+          generatedAt: latestArtifact?.generated_at ?? report.generated_at,
+          updatedAt: report.updated_at,
+        }),
+      };
+    })
+    .sort((left, right) => {
+      const postureDelta = compareRtpPacketPostureForCycle(left.packetFreshness.label, right.packetFreshness.label);
+      if (postureDelta !== 0) return postureDelta;
+      if (left.comparisonSnapshotCount !== right.comparisonSnapshotCount) {
+        return right.comparisonSnapshotCount - left.comparisonSnapshotCount;
+      }
+      return new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime();
+    });
+
   return {
     kind: "project",
     workspace,
@@ -1043,6 +1137,21 @@ async function loadProjectContext(
       createdAt: run.created_at,
       summaryText: run.summary_text,
     })),
+    reportSummary: {
+      linkedReportCount: linkedReports.length,
+      evidenceBackedCount: linkedReports.filter((report) => report.hasEvidence).length,
+      comparisonBackedCount: linkedReports.filter((report) => report.comparisonSnapshotCount > 0).length,
+      noPacketCount: linkedReports.filter((report) => report.packetFreshness.label === "No packet").length,
+      refreshRecommendedCount: linkedReports.filter((report) => report.packetFreshness.label === "Refresh recommended").length,
+      recommendedReport: linkedReports[0]
+        ? {
+            id: linkedReports[0].id,
+            title: linkedReports[0].title,
+            packetFreshness: linkedReports[0].packetFreshness,
+            comparisonDigest: linkedReports[0].comparisonDigest,
+          }
+        : null,
+    },
   };
 }
 
