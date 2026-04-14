@@ -159,6 +159,7 @@ type FundingFollowThroughLike = {
   outstandingReimbursementAmount: number;
   uninvoicedAwardAmount: number;
   likelyCoveredProjectCount?: number | null;
+  gapProjectCount?: number | null;
   pipelineStatus?: string | null;
 };
 
@@ -167,7 +168,7 @@ export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLik
     return null;
   }
 
-  if (snapshot.unfundedAfterLikelyAmount > 0) {
+  if (snapshot.unfundedAfterLikelyAmount > 0 || (snapshot.gapProjectCount ?? 0) > 0) {
     return {
       href: "/grants#grants-gap-resolution-lane",
       title: "Linked RTP projects still carry uncovered funding gaps.",

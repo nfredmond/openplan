@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
+import {
+  touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { SCENARIO_COMPARISON_SNAPSHOT_STATUSES } from "@/lib/scenarios/catalog";
 
@@ -335,7 +338,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const packetWriteback = await touchScenarioLinkedReportPackets({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: access.scenarioSet.id,
       workspaceId: access.scenarioSet.workspace_id,
     });

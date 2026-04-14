@@ -344,6 +344,25 @@ export function parseStoredRtpFundingReview(
   };
 }
 
+const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
+
+function hasMaterialReportWritebackAfterGeneration(
+  generatedAt: string | null | undefined,
+  updatedAt: string | null | undefined
+) {
+  if (!generatedAt || !updatedAt) {
+    return false;
+  }
+
+  const generatedMs = new Date(generatedAt).getTime();
+  const updatedMs = new Date(updatedAt).getTime();
+  if (!Number.isFinite(generatedMs) || !Number.isFinite(updatedMs)) {
+    return false;
+  }
+
+  return updatedMs - generatedMs > REPORT_WRITEBACK_GRACE_MS;
+}
+
 function resolveReportSourceUpdatedAt(report: WorkspaceOperationsReportRow): string | null {
   const sourceContext = asRecord(report.metadataJson?.sourceContext);
 
@@ -355,12 +374,19 @@ function resolveReportSourceUpdatedAt(report: WorkspaceOperationsReportRow): str
       ? projectFundingSnapshot.latestSourceUpdatedAt
       : null;
 
-  return resolveReportPacketSourceUpdatedAt([
+  const trackedSourceUpdatedAt = resolveReportPacketSourceUpdatedAt([
     rtpCycleUpdatedAt,
     projectUpdatedAt,
     latestFundingSourceUpdatedAt,
-    report.updatedAt,
   ]);
+
+  if (!trackedSourceUpdatedAt) {
+    return report.updatedAt;
+  }
+
+  return hasMaterialReportWritebackAfterGeneration(report.generatedAt, report.updatedAt)
+    ? resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, report.updatedAt])
+    : trackedSourceUpdatedAt;
 }
 
 function resolveExactWorkspaceBillingInvoiceId(invoices: WorkspaceOperationsBillingInvoiceRow[]): string | null {

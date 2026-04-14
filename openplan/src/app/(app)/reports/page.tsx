@@ -96,6 +96,61 @@ type ReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
+
+function hasMaterialReportWritebackAfterGeneration(
+  generatedAt: string | null | undefined,
+  updatedAt: string | null | undefined
+) {
+  if (!generatedAt || !updatedAt) {
+    return false;
+  }
+
+  const generatedMs = new Date(generatedAt).getTime();
+  const updatedMs = new Date(updatedAt).getTime();
+  if (!Number.isFinite(generatedMs) || !Number.isFinite(updatedMs)) {
+    return false;
+  }
+
+  return updatedMs - generatedMs > REPORT_WRITEBACK_GRACE_MS;
+}
+
+function resolveTrackedReportSourceUpdatedAt(input: {
+  generatedAt: string | null;
+  reportUpdatedAt: string | null;
+  cycleUpdatedAt: string | null;
+  artifactMetadata: Record<string, unknown> | null;
+}) {
+  const sourceContext = asRecord(input.artifactMetadata?.sourceContext);
+  const projectFundingSnapshot = asRecord(sourceContext?.projectFundingSnapshot);
+  const trackedSourceUpdatedAt = resolveReportPacketSourceUpdatedAt([
+    input.cycleUpdatedAt,
+    typeof sourceContext?.projectUpdatedAt === "string"
+      ? sourceContext.projectUpdatedAt
+      : null,
+    typeof sourceContext?.rtpCycleUpdatedAt === "string"
+      ? sourceContext.rtpCycleUpdatedAt
+      : null,
+    typeof projectFundingSnapshot?.latestSourceUpdatedAt === "string"
+      ? projectFundingSnapshot.latestSourceUpdatedAt
+      : null,
+  ]);
+
+  if (!trackedSourceUpdatedAt) {
+    return input.reportUpdatedAt;
+  }
+
+  return hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)
+    ? resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, input.reportUpdatedAt])
+    : trackedSourceUpdatedAt;
+}
+
 function buildReportsFilterHref(filters: {
   freshness: ReportFreshnessFilter;
   posture: ReportPostureFilter;
@@ -198,7 +253,20 @@ export default async function ReportsPage({
       const storedRtpFundingReview = parseStoredRtpFundingReview(
         latestArtifact?.metadata_json ?? null
       );
-
+      const rtpCycle = Array.isArray(report.rtp_cycles)
+        ? report.rtp_cycles[0] ?? null
+        : report.rtp_cycles ?? null;
+      const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
+      const packetFreshness = getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: packetGeneratedAt,
+        updatedAt: resolveTrackedReportSourceUpdatedAt({
+          generatedAt: packetGeneratedAt,
+          reportUpdatedAt: report.updated_at,
+          cycleUpdatedAt: rtpCycle?.updated_at ?? null,
+          artifactMetadata: latestArtifact?.metadata_json ?? null,
+        }),
+      });
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
 
       return {
@@ -207,17 +275,8 @@ export default async function ReportsPage({
         project: Array.isArray(report.projects)
           ? report.projects[0] ?? null
           : report.projects ?? null,
-        rtpCycle: Array.isArray(report.rtp_cycles)
-          ? report.rtp_cycles[0] ?? null
-          : report.rtp_cycles ?? null,
-        packetFreshness: getReportPacketFreshness({
-          latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: latestArtifact?.generated_at ?? report.generated_at,
-          updatedAt: resolveReportPacketSourceUpdatedAt([
-            Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at,
-            report.updated_at,
-          ]),
-        }),
+        rtpCycle,
+        packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
@@ -320,7 +379,7 @@ export default async function ReportsPage({
     .map((report) => {
       const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
       const grantsFollowThroughFirst =
-        packetWorkStatus.key === "release-review" && report.grantsFollowThrough;
+        packetWorkStatus.key === "release-review" ? report.grantsFollowThrough : null;
       const badges: Array<{ label: string; value?: string | number | null }> = [];
       badges.push({ label: packetWorkStatus.label });
       if (report.packetFreshness.label !== "Packet current") {
@@ -345,12 +404,12 @@ export default async function ReportsPage({
       return {
         key: report.id,
         href: grantsFollowThroughFirst
-          ? report.grantsFollowThrough.href
+          ? grantsFollowThroughFirst.href
           : getReportNavigationHref(report.id, report.packetFreshness.label),
         title: report.title,
         subtitle:
           grantsFollowThroughFirst
-            ? `First action: ${report.grantsFollowThrough.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
+            ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
             : report.storedRtpFundingReview?.needsAttention
               ? `First action: run funding-backed release review on ${report.title}`
               : report.evidenceChainDigest?.blockedGateDetail
@@ -361,7 +420,7 @@ export default async function ReportsPage({
                     ? `First action: refresh ${report.title}`
                     : `First action: run release review on ${report.title}`,
         detail:
-          (grantsFollowThroughFirst ? report.grantsFollowThrough.title : null) ??
+          (grantsFollowThroughFirst ? grantsFollowThroughFirst.title : null) ??
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
           ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0

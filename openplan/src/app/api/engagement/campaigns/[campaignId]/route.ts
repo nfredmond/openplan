@@ -320,7 +320,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
-    if (nextProjectId) {
+    if (parsed.data.projectId !== undefined && nextProjectId) {
       const { data: project } = await supabase
         .from("projects")
         .select("id, workspace_id")

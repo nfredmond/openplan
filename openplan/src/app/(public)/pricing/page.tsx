@@ -66,7 +66,7 @@ export default function PricingPage() {
         <article className="public-hero">
           <p className="public-kicker">Pricing</p>
           <div className="public-headline-block">
-            <h1 className="public-title">OpenPlan early-access pricing</h1>
+            <h1 className="public-title">OpenPlan Early Access Pricing</h1>
             <p className="public-lead max-w-4xl">
               Transparent supervised-pilot pricing for the current OpenPlan product surface. Account creation is self-serve,
               while workspace activation, billing status, and first-success onboarding remain intentionally bounded to the
