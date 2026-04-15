@@ -3,7 +3,10 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
-import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
+import {
+  touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -124,7 +127,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const { touchedReportIds, error: writebackError } = await touchScenarioLinkedReportPackets({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: entryRow.scenario_set_id,
       workspaceId: access.model.workspace_id,
       touchedAt: now,

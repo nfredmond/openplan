@@ -11,7 +11,10 @@ import {
   mergeScenarioLaunchPayload,
 } from "@/lib/models/run-launch";
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
-import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
+import {
+  touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -424,7 +427,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       const { touchedReportIds, error: writebackError } = await touchScenarioLinkedReportPackets({
-        supabase,
+        supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
         scenarioSetId: scenarioEntry.scenario_set_id,
         workspaceId: access.model.workspace_id,
         touchedAt: completedAt,
