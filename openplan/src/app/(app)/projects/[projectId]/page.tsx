@@ -18,6 +18,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { AerialMissionCreator } from "@/components/aerial/aerial-mission-creator";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
@@ -2730,8 +2731,14 @@ export default async function ProjectDetailPage({
         </div>
 
         {aerialProjectPosture.missionCount === 0 ? (
-          <div className="module-empty-state mt-5 text-sm">
-            No aerial missions linked yet. Add a mission to start connecting field collection to this project evidence chain.
+          <div className="mt-5 space-y-4">
+            <div className="module-empty-state text-sm">
+              No aerial missions linked yet. Log the first mission to start connecting field collection to this project evidence chain.
+            </div>
+            <AerialMissionCreator
+              projectId={project.id}
+              description="Corridor surveys, site inspections, and AOI captures linked here contribute to the field evidence chain."
+            />
           </div>
         ) : (
           <div className="mt-5 space-y-4">
@@ -2800,6 +2807,8 @@ export default async function ProjectDetailPage({
                 );
               })}
             </div>
+
+            <AerialMissionCreator projectId={project.id} titleLabel="Log another mission" />
           </div>
         )}
       </article>
