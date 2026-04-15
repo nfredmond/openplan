@@ -112,6 +112,20 @@ export function WorkspaceCommandBoard({
               : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
           </p>
         </div>
+        {summary.counts.aerialMissions > 0 ? (
+          <div className="module-subpanel sm:col-span-2">
+            <p className="module-summary-label">Aerial evidence</p>
+            <p className="module-summary-value">{summary.counts.aerialMissions}</p>
+            <p className="module-summary-detail">
+              {summary.counts.aerialActiveMissions} active, {summary.counts.aerialReadyPackages} evidence package{summary.counts.aerialReadyPackages === 1 ? "" : "s"} ready.
+              {summary.aerialPosture?.verificationReadiness === "ready"
+                ? " Field verification support packages are ready."
+                : summary.aerialPosture?.verificationReadiness === "partial"
+                ? " Partial field verification evidence is available."
+                : " Evidence packages pending QA and verification."}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-5 space-y-1">
