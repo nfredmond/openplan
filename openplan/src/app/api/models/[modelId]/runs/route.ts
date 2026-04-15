@@ -11,6 +11,7 @@ import {
   mergeScenarioLaunchPayload,
 } from "@/lib/models/run-launch";
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -419,6 +420,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
           runId: analysisPayload.runId,
           message: attachError.message,
           code: attachError.code ?? null,
+        });
+      }
+
+      const { touchedReportIds, error: writebackError } = await touchScenarioLinkedReportPackets({
+        supabase,
+        scenarioSetId: scenarioEntry.scenario_set_id,
+        workspaceId: access.model.workspace_id,
+        touchedAt: completedAt,
+      });
+
+      if (writebackError) {
+        audit.warn("scenario_report_writeback_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          scenarioEntryId: scenarioEntry.id,
+          message: writebackError.message,
+          code: writebackError.code ?? null,
+        });
+      } else {
+        audit.info("scenario_report_writeback_succeeded", {
+          modelId: access.model.id,
+          modelRunId,
+          scenarioEntryId: scenarioEntry.id,
+          touchedReportCount: touchedReportIds.length,
         });
       }
     }
