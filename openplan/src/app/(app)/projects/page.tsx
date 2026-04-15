@@ -9,6 +9,8 @@ import {
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
+import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/catalog";
+import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -209,6 +211,35 @@ export default async function ProjectsPage({
     }
   }
 
+  const aerialMissionsResult = projectIds.length
+    ? await supabase
+        .from("aerial_missions")
+        .select("id, project_id, status")
+        .in("project_id", projectIds)
+    : { data: [], error: null };
+  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+    ? []
+    : ((aerialMissionsResult.data ?? []) as Array<{ id: string; project_id: string; status: string }>);
+
+  const aerialMissionIds = aerialMissions.map((m) => m.id);
+  const aerialPackagesResult = aerialMissionIds.length
+    ? await supabase
+        .from("aerial_evidence_packages")
+        .select("mission_id, project_id, status, verification_readiness")
+        .in("mission_id", aerialMissionIds)
+    : { data: [], error: null };
+  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+    ? []
+    : ((aerialPackagesResult.data ?? []) as Array<{ mission_id: string; project_id: string; status: string; verification_readiness: string }>);
+
+  const aerialPostureByProjectId = new Map<string, AerialProjectPosture>();
+  for (const projectId of projectIds) {
+    const missions = aerialMissions.filter((m) => m.project_id === projectId);
+    if (missions.length === 0) continue;
+    const packages = aerialPackages.filter((p) => p.project_id === projectId);
+    aerialPostureByProjectId.set(projectId, buildAerialProjectPosture(missions, packages));
+  }
+
   const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
     (projectReportsData ?? []) as Array<{
       id: string;
@@ -323,6 +354,7 @@ export default async function ProjectsPage({
       grantModelingEvidence,
       grantModelingReadiness,
       grantModelingSupport,
+      aerialPosture: aerialPostureByProjectId.get(project.id) ?? null,
       rtpSummary: {
         totalCount: rtpLinks.length,
         constrainedCount: rtpLinks.filter((link) => link.portfolio_role === "constrained").length,
@@ -441,6 +473,15 @@ export default async function ProjectsPage({
               <span>RTP-linked</span>
               <strong>{projectsLinkedToRtpCount}</strong>
             </div>
+            {(() => {
+              const aerialCoverageCount = projects.filter((p) => (p.aerialPosture?.missionCount ?? 0) > 0).length;
+              return aerialCoverageCount > 0 ? (
+                <div className="module-record-chip">
+                  <span>Aerial coverage</span>
+                  <strong>{aerialCoverageCount}</strong>
+                </div>
+              ) : null;
+            })()}
           </div>
         </article>
 
@@ -604,6 +645,17 @@ export default async function ProjectsPage({
                       ) : null}
                       {project.reportSummary.governanceHoldCount > 0 ? (
                         <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
+                      ) : null}
+                      {project.aerialPosture && project.aerialPosture.missionCount > 0 ? (
+                        <span className="module-record-chip">
+                          <span>Aerial</span>
+                          <strong>{project.aerialPosture.missionCount} mission{project.aerialPosture.missionCount === 1 ? "" : "s"}</strong>
+                        </span>
+                      ) : null}
+                      {project.aerialPosture?.verificationReadiness === "ready" ? (
+                        <span className="module-record-chip"><span>Verification</span><strong>Ready</strong></span>
+                      ) : project.aerialPosture?.verificationReadiness === "partial" ? (
+                        <span className="module-record-chip"><span>Verification</span><strong>Partial</strong></span>
                       ) : null}
                     </div>
 

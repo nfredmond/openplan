@@ -23,6 +23,12 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const aerialMissionsInMock = vi.fn();
+const aerialMissionsSelectMock = vi.fn(() => ({ in: aerialMissionsInMock }));
+
+const aerialPackagesInMock = vi.fn();
+const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
@@ -35,6 +41,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "aerial_missions") {
+    return { select: aerialMissionsSelectMock };
+  }
+  if (table === "aerial_evidence_packages") {
+    return { select: aerialPackagesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -166,6 +178,8 @@ describe("ProjectsPage", () => {
     });
 
     projectRtpLinksInMock.mockResolvedValue({ data: [], error: null });
+    aerialMissionsInMock.mockResolvedValue({ data: [], error: null });
+    aerialPackagesInMock.mockResolvedValue({ data: [], error: null });
 
     reportArtifactsOrderMock.mockResolvedValue({
       data: [
