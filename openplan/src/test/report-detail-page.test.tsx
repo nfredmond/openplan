@@ -413,6 +413,19 @@ describe("ReportDetailPage", () => {
                   scenarioSetUpdatedAt: "2026-03-28T17:35:00.000Z",
                   latestMatchedEntryUpdatedAt: "2026-03-28T17:40:00.000Z",
                   latestMatchedRunCreatedAt: "2026-03-12T00:00:00.000Z",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      candidateEntryId: "scenario-entry-alt",
+                      candidateEntryLabel: "Protected bike package",
+                      baselineEntryId: "scenario-entry-baseline",
+                      label: "Protected bike package vs Existing conditions",
+                      status: "ready",
+                      updatedAt: "2026-03-28T17:42:00.000Z",
+                      indicatorDeltaCount: 3,
+                      summary: "Bike and crossing indicators improved against baseline.",
+                    },
+                  ],
                 },
               ],
               reportOrigin: "engagement_campaign_handoff",
@@ -680,6 +693,20 @@ describe("ReportDetailPage", () => {
     );
     expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
     expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
+    expect(screen.getByText("Packet release review")).toBeInTheDocument();
+    expect(screen.getByText("Grant planning posture")).toBeInTheDocument();
+    expect(screen.getByText(/Refresh supporting packet before final pursue language/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/planning support only, not proof of award likelihood/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open grant decisions/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-1"
+    );
+    expect(screen.getByRole("link", { name: /Review packet controls/i })).toHaveAttribute(
+      "href",
+      "#report-controls"
+    );
     expect(screen.queryByText(/0 linked set/i)).not.toBeInTheDocument();
     expect(screen.getByText(/1 linked set/i)).toBeInTheDocument();
     expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
