@@ -18,6 +18,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { AerialEvidencePackageCreator } from "@/components/aerial/aerial-evidence-package-creator";
 import { AerialMissionCreator } from "@/components/aerial/aerial-mission-creator";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
@@ -2808,6 +2809,9 @@ export default async function ProjectDetailPage({
               })}
             </div>
 
+            <AerialEvidencePackageCreator
+              missionOptions={aerialMissions.map((m) => ({ id: m.id, title: m.title }))}
+            />
             <AerialMissionCreator projectId={project.id} titleLabel="Log another mission" />
           </div>
         )}

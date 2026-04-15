@@ -241,6 +241,10 @@ vi.mock("@/components/aerial/aerial-mission-creator", () => ({
   AerialMissionCreator: () => <div data-testid="aerial-mission-creator" />,
 }));
 
+vi.mock("@/components/aerial/aerial-evidence-package-creator", () => ({
+  AerialEvidencePackageCreator: () => <div data-testid="aerial-evidence-package-creator" />,
+}));
+
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
   FundingOpportunityDecisionControls: () => <div data-testid="funding-opportunity-decision-controls" />,
 }));
