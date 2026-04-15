@@ -1661,6 +1661,29 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (aerialPosture && aerialPosture.missionCount > 0) {
+    const aerialDetail =
+      aerialPosture.verificationReadiness === "ready"
+        ? `${aerialPosture.readyPackageCount} evidence package${aerialPosture.readyPackageCount === 1 ? " is" : "s are"} ready to support field verification. Review before the next site visit to ensure materials are current.`
+        : aerialPosture.activeMissionCount > 0
+        ? `${aerialPosture.activeMissionCount} mission${aerialPosture.activeMissionCount === 1 ? " is" : "s are"} active. Evidence packages are pending QA and verification — check back after collection concludes.`
+        : `${aerialPosture.completeMissionCount} of ${aerialPosture.missionCount} mission${aerialPosture.missionCount === 1 ? "" : "s"} complete. Review evidence packages before treating field capture as verification-ready.`;
+
+    queueCandidates.push({
+      key: "review-aerial-evidence",
+      title: "Review aerial evidence posture",
+      detail: aerialDetail,
+      href: "/projects",
+      tone: aerialPosture.verificationReadiness === "ready" ? "success" : "info",
+      priority: 10,
+      badges: [
+        { label: "Missions", value: aerialPosture.missionCount },
+        { label: "Active", value: aerialPosture.activeMissionCount },
+        { label: "Packages ready", value: aerialPosture.readyPackageCount },
+      ],
+    });
+  }
+
   const fullCommandQueue = queueCandidates.sort((left, right) => left.priority - right.priority);
   const commandQueue = fullCommandQueue.slice(0, 5);
 
