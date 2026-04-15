@@ -165,10 +165,6 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     line-height: 1.58;
-    background-image:
-      radial-gradient(1100px 520px at 10% -12%, color-mix(in srgb, var(--copper) 18%, transparent), transparent 72%),
-      radial-gradient(980px 460px at 86% 0%, color-mix(in srgb, var(--pine) 16%, transparent), transparent 68%);
-    background-attachment: fixed;
   }
 
   ::selection {
@@ -332,7 +328,7 @@
   .workspace-module-surface {
     position: relative;
     overflow: hidden;
-    border-radius: 1.5rem;
+    border-radius: 0.75rem;
     border: 1px solid rgba(201, 213, 225, 0.72);
     background:
       linear-gradient(180deg, rgba(252, 253, 254, 0.98) 0%, rgba(246, 249, 251, 0.98) 22%, rgba(239, 244, 247, 0.98) 100%),
@@ -376,7 +372,7 @@
     inset: -1rem -1rem auto;
     z-index: -1;
     height: 13rem;
-    border-radius: 2.25rem;
+    border-radius: 0.75rem;
     background:
       radial-gradient(520px 180px at 12% 10%, rgba(16, 185, 129, 0.12), transparent 70%),
       radial-gradient(460px 180px at 88% 0%, rgba(59, 130, 246, 0.1), transparent 72%),
@@ -423,27 +419,15 @@
     min-width: 0;
     position: relative;
     overflow: hidden;
-    border-radius: 1.85rem;
+    border-radius: 0.75rem;
     border: 1px solid rgba(199, 210, 220, 0.74);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.94) 24%, rgba(248, 250, 252, 0.94) 100%),
-      radial-gradient(460px 120px at 16% 0%, rgba(86, 162, 113, 0.08), transparent 72%);
-    box-shadow:
-      0 22px 56px rgba(4, 12, 20, 0.08),
-      0 8px 24px rgba(4, 12, 20, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(4, 12, 20, 0.04);
   }
 
   .module-intro-card::before,
   .module-section-surface::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 5.25rem;
-    background:
-      linear-gradient(180deg, rgba(207, 218, 226, 0.28), rgba(255, 255, 255, 0)),
-      radial-gradient(360px 120px at 16% 0%, rgba(63, 127, 184, 0.06), transparent 72%);
-    pointer-events: none;
+    content: none;
   }
 
   .module-section-surface > *,
@@ -547,23 +531,19 @@
   .module-note,
   .module-empty-state {
     min-width: 0;
-    border-radius: 1.25rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(199, 210, 220, 0.72);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 250, 252, 0.9));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      0 8px 18px rgba(15, 23, 42, 0.04);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
 
   .module-summary-card {
     padding: 1rem;
-    min-height: 8rem;
   }
 
   @media (min-width: 1024px) {
     .module-summary-card {
       padding: 1.1rem;
-      min-height: 8.5rem;
     }
   }
 
@@ -595,16 +575,12 @@
   .module-operator-card {
     position: relative;
     overflow: hidden;
-    border-radius: 1.85rem;
+    border-radius: 0.75rem;
     border: 1px solid rgba(148, 163, 184, 0.16);
-    background:
-      linear-gradient(180deg, rgba(27, 39, 52, 0.96) 0%, rgba(17, 24, 39, 0.96) 100%),
-      radial-gradient(420px 150px at 22% 0%, rgba(59, 130, 246, 0.14), transparent 70%);
+    background: #111827;
     padding: 1.35rem;
     color: #f1f5f9;
-    box-shadow:
-      0 20px 48px rgba(2, 8, 23, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 1px 3px rgba(2, 8, 23, 0.2);
   }
 
   @media (min-width: 1024px) {
@@ -614,12 +590,7 @@
   }
 
   .module-operator-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 5.25rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
-    pointer-events: none;
+    content: none;
   }
 
   .module-operator-card > * {
@@ -665,14 +636,13 @@
   }
 
   .module-operator-item {
-    border-radius: 1.15rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.09);
     background: rgba(255, 255, 255, 0.04);
-    padding: 0.9rem 1rem;
+    padding: 0.75rem 0.9rem;
     font-size: 0.88rem;
     line-height: 1.5;
     color: rgba(226, 232, 240, 0.84);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .module-section-surface {
@@ -706,26 +676,19 @@
     position: relative;
     display: grid;
     gap: 0.7rem;
-    border-radius: 1.22rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(199, 210, 220, 0.72);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 252, 0.92));
+    background: #ffffff;
     padding: 0.95rem 1rem;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.58),
-      0 8px 18px rgba(15, 23, 42, 0.035);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      box-shadow 180ms ease,
-      transform 180ms ease;
+      border-color 150ms ease,
+      box-shadow 150ms ease;
   }
 
   .module-record-row.is-interactive:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      0 14px 28px rgba(15, 23, 42, 0.06);
+    border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
   }
 
   .module-record-row.is-selected {
@@ -927,7 +890,7 @@
     display: grid;
     gap: 0.9rem;
     margin-top: 1rem;
-    border-radius: 1.35rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(199, 210, 220, 0.76);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.9));
     padding: 1rem 1.05rem;
@@ -1041,7 +1004,7 @@
   .module-run-history-sync-banner {
     display: grid;
     gap: 0.3rem;
-    border-radius: 1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(199, 210, 220, 0.76);
     background: rgba(255, 255, 255, 0.7);
     padding: 0.78rem 0.9rem;
@@ -1115,7 +1078,7 @@
   }
 
   .module-run-history-statebox {
-    border-radius: 1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(199, 210, 220, 0.72);
     background: rgba(255, 255, 255, 0.74);
     padding: 0.85rem 0.9rem;
@@ -1211,17 +1174,13 @@
 
   .dark .module-record-row {
     border-color: rgba(64, 82, 96, 0.78);
-    background: linear-gradient(180deg, rgba(18, 28, 38, 0.92), rgba(13, 22, 31, 0.94));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.03),
-      0 10px 22px rgba(0, 0, 0, 0.16);
+    background: rgba(18, 28, 38, 0.92);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   .dark .module-record-row.is-interactive:hover {
-    border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04),
-      0 18px 32px rgba(0, 0, 0, 0.22);
+    border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
   }
 
   .dark .module-record-row.is-selected {
@@ -1363,12 +1322,11 @@
   }
 
   .module-alert {
-    border-radius: 1.4rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(253, 186, 116, 0.48);
     background: rgba(255, 247, 237, 0.88);
     padding: 1rem 1.1rem;
     color: rgb(146, 64, 14);
-    box-shadow: 0 10px 24px rgba(180, 83, 9, 0.07);
   }
 
   .dark .module-alert {
@@ -1379,38 +1337,36 @@
 
   .module-select {
     display: flex;
-    height: 2.75rem;
+    height: 2.5rem;
     width: 100%;
-    border-radius: 1rem;
+    border-radius: 0.375rem;
     border: 1px solid var(--input);
-    background: rgba(255, 255, 255, 0.86);
+    background: #ffffff;
     padding: 0 0.85rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--foreground);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
 
   .module-tabs-list {
     width: 100%;
     justify-content: flex-start;
-    gap: 0.5rem;
+    gap: 0.25rem;
     overflow-x: auto;
-    border-radius: 1.25rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(199, 210, 220, 0.72);
-    background: rgba(255, 255, 255, 0.72);
-    padding: 0.5rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    background: rgba(247, 248, 244, 0.72);
+    padding: 0.25rem;
   }
 
   .module-tab-trigger {
     gap: 0.5rem;
-    border-radius: 0.75rem;
-    padding: 0.5rem 0.8rem;
+    border-radius: 0.375rem;
+    padding: 0.45rem 0.8rem;
   }
 
   .module-tab-trigger[data-state="active"] {
-    background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   }
 
   .analysis-sidepanel-stack {
@@ -1422,7 +1378,7 @@
     position: relative;
     display: grid;
     gap: 0.65rem;
-    border-radius: 1rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(71, 85, 105, 0.62);
     background: rgba(7, 14, 20, 0.42);
     padding: 0.9rem 0.95rem;
@@ -1499,7 +1455,7 @@
     gap: 0.35rem;
     min-height: 1.45rem;
     border-left: 1px solid rgba(125, 211, 252, 0.22);
-    border-radius: 0.45rem;
+    border-radius: 0.375rem;
     background: rgba(2, 8, 15, 0.32);
     padding: 0.16rem 0.5rem;
     font-size: 0.58rem;
@@ -1533,7 +1489,7 @@
 
   .analysis-sidepanel-stat,
   .analysis-sidepanel-field {
-    border-radius: 0.95rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.34);
     padding: 0.7rem 0.78rem;
@@ -1564,7 +1520,7 @@
     min-width: 0;
     display: grid;
     gap: 0.6rem;
-    border-radius: 1.25rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: linear-gradient(180deg, rgba(17, 31, 43, 0.92), rgba(9, 18, 27, 0.9));
     padding: 0.95rem 1rem;
@@ -1647,7 +1603,7 @@
   .analysis-run-pair-board {
     position: relative;
     overflow: hidden;
-    border-radius: 1.35rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(125, 211, 252, 0.14);
     background: linear-gradient(180deg, rgba(8, 24, 35, 0.78), rgba(7, 15, 24, 0.92));
     padding: 0.95rem;
@@ -1708,7 +1664,7 @@
   .analysis-run-pair-surface {
     display: grid;
     gap: 0.75rem;
-    border-radius: 1.1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.28);
     padding: 0.9rem;
@@ -1723,7 +1679,7 @@
   }
 
   .analysis-run-pair-field {
-    border-radius: 0.95rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.28);
     padding: 0.78rem 0.82rem;
@@ -1741,7 +1697,7 @@
   .analysis-run-history-handoff {
     display: grid;
     gap: 0.9rem;
-    border-radius: 1.3rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(125, 211, 252, 0.14);
     background: linear-gradient(180deg, rgba(7, 18, 28, 0.72), rgba(6, 14, 22, 0.9));
     padding: 0.95rem;
@@ -1796,7 +1752,7 @@
   .analysis-run-history-handoff-card {
     display: grid;
     gap: 0.3rem;
-    border-radius: 1.1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.3);
     padding: 0.9rem 0.95rem;
@@ -1858,7 +1814,7 @@
   .analysis-comparison-narrative {
     display: grid;
     gap: 1rem;
-    border-radius: 1.5rem;
+    border-radius: 0.75rem;
     border: 1px solid rgba(125, 211, 252, 0.16);
     background:
       linear-gradient(180deg, rgba(7, 19, 29, 0.92), rgba(7, 16, 24, 0.98)),
@@ -1953,7 +1909,7 @@
   .analysis-comparison-headline-card {
     display: grid;
     gap: 0.55rem;
-    border-radius: 1.1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(2, 8, 15, 0.24));
     padding: 0.95rem 1rem;
@@ -2006,7 +1962,7 @@
   .analysis-comparison-support-row,
   .analysis-comparison-evidence-row,
   .analysis-comparison-evidence-empty {
-    border-radius: 1rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.3);
     padding: 0.82rem 0.9rem;
@@ -2075,7 +2031,7 @@
   .analysis-comparison-evidence-values p {
     display: grid;
     gap: 0.18rem;
-    border-radius: 0.85rem;
+    border-radius: 0.5rem;
     background: rgba(255, 255, 255, 0.03);
     padding: 0.62rem 0.7rem;
   }
@@ -2118,7 +2074,7 @@
   .analysis-sidepanel-select {
     height: 2.5rem;
     width: 100%;
-    border-radius: 0.95rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(2, 8, 15, 0.66);
     padding: 0 0.85rem;
@@ -2130,7 +2086,7 @@
   .analysis-studio-surface {
     position: relative;
     overflow: hidden;
-    border-radius: 1.05rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(71, 85, 105, 0.62);
     background:
       linear-gradient(180deg, rgba(10, 18, 26, 0.96), rgba(8, 15, 22, 0.94)),
@@ -2270,7 +2226,7 @@
   .analysis-context-summary-row {
     display: grid;
     gap: 0.28rem;
-    border-radius: 0.95rem;
+    border-radius: 0.375rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.28);
     padding: 0.72rem 0.82rem;
@@ -2284,7 +2240,7 @@
   }
 
   .analysis-explore-shell {
-    border-radius: 1.35rem;
+    border-radius: 0.75rem;
     border: 1px solid rgba(51, 65, 85, 0.82);
     background: linear-gradient(180deg, rgba(7, 13, 18, 0.98), rgba(8, 14, 21, 0.96));
     box-shadow: 0 18px 54px rgba(2, 8, 15, 0.28);
@@ -2296,7 +2252,7 @@
   }
 
   .analysis-explore-map-intro {
-    border-radius: 1rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(125, 211, 252, 0.18);
     background: linear-gradient(180deg, rgba(7, 15, 22, 0.9), rgba(8, 15, 22, 0.82));
     padding: 1rem 1.05rem 1.05rem;
@@ -2318,7 +2274,7 @@
   .analysis-explore-rail [data-slot="badge"],
   .analysis-explore-surface [data-slot="badge"] {
     min-height: 1.55rem;
-    border-radius: 0.55rem;
+    border-radius: 0.5rem;
     letter-spacing: 0.14em;
   }
 
@@ -2331,7 +2287,7 @@
   }
 
   .analysis-explore-context-surface {
-    border-radius: 1.05rem;
+    border-radius: 0.5rem;
     border-color: rgba(71, 85, 105, 0.62);
     background:
       linear-gradient(180deg, rgba(10, 18, 26, 0.96), rgba(8, 15, 22, 0.94)),
@@ -2349,7 +2305,7 @@
   .analysis-explore-context-surface .module-subpanel,
   .analysis-explore-context-surface .module-empty-state,
   .analysis-explore-context-surface .module-alert {
-    border-radius: 0.9rem;
+    border-radius: 0.5rem;
     box-shadow: none;
   }
 
@@ -2374,7 +2330,7 @@
     min-height: 1.4rem;
     border-left-width: 1px;
     border-left-color: rgba(125, 211, 252, 0.22);
-    border-radius: 0.45rem;
+    border-radius: 0.375rem;
     background: rgba(2, 8, 15, 0.3);
     padding: 0.16rem 0.5rem;
     font-size: 0.58rem;
@@ -2391,7 +2347,7 @@
   .analysis-explore-surface {
     gap: 0;
     overflow: hidden;
-    border-radius: 1.05rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(71, 85, 105, 0.68);
     background: linear-gradient(180deg, rgba(10, 18, 26, 0.98), rgba(9, 16, 24, 0.96));
     color: #e2e8f0;
@@ -2435,6 +2391,73 @@
       border-right: 0;
       border-bottom: 1px solid rgba(51, 65, 85, 0.72);
     }
+  }
+
+  /* ===== App Shell Layout ===== */
+
+  .openplan-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    background: var(--background);
+  }
+
+  .openplan-left-rail {
+    flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(9, 14, 18, 0.99), rgba(11, 18, 24, 0.98));
+    color: #e8edf2;
+  }
+
+  .openplan-main-stage {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .openplan-topbar {
+    flex-shrink: 0;
+    background: rgba(247, 248, 244, 0.97);
+    backdrop-filter: blur(12px);
+  }
+
+  .openplan-workbench {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .openplan-shell {
+      flex-direction: row;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .openplan-left-rail {
+      width: 15.5rem;
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: sticky;
+      top: 0;
+    }
+
+    .openplan-main-stage {
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .openplan-workbench {
+      overflow-y: auto;
+    }
+  }
+
+  /* Sidebar block (used by AppSecondaryNav) */
+  .openplan-rail-block {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.025);
+    padding: 0.85rem 0.9rem;
   }
 }
 
@@ -2537,7 +2560,7 @@
   inset: -0.75rem -0.75rem auto;
   z-index: -1;
   height: 12rem;
-  border-radius: 2rem;
+  border-radius: 0.75rem;
   background:
     radial-gradient(520px 180px at 12% 10%, rgba(16, 185, 129, 0.11), transparent 70%),
     radial-gradient(460px 180px at 88% 0%, rgba(59, 130, 246, 0.08), transparent 72%),

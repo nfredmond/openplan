@@ -659,13 +659,13 @@ export default async function PlanDetailPage({
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="module-intro-kicker">
             <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
-            <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
-            <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
-            <StatusBadge tone={artifactCoverage.tone}>{artifactCoverage.label}</StatusBadge>
-            <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
           </div>
+          <p className="text-[0.73rem] text-muted-foreground">
+            {readiness.label} · {artifactCoverage.label} · {workflow.label}
+          </p>
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
@@ -692,7 +692,7 @@ export default async function PlanDetailPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -708,7 +708,7 @@ export default async function PlanDetailPage({
               </div>
             ))}
           </div>
-          <div className="mt-5 rounded-[22px] border border-border/70 bg-background/30 p-4">
+          <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Planning output cue
             </p>
@@ -718,7 +718,7 @@ export default async function PlanDetailPage({
             <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
           </div>
           {workflow.actionItems.length > 0 ? (
-            <div className="mt-5 rounded-[22px] border border-border/70 bg-background/30 p-4">
+            <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Next actions
               </p>
@@ -756,13 +756,13 @@ export default async function PlanDetailPage({
                 Keep this page focused on the formal planning record: what is linked, what is ready, and what still needs operator action.
               </p>
             </div>
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
               <GitBranch className="h-5 w-5" />
             </span>
           </div>
 
           <div className="mt-5 space-y-4">
-            <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
                 <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
@@ -771,7 +771,7 @@ export default async function PlanDetailPage({
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Readiness checklist</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">
                   {readiness.readyCheckCount}/{readiness.totalCheckCount}
@@ -783,7 +783,7 @@ export default async function PlanDetailPage({
                 </p>
               </div>
 
-              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Linkage ledger</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{planLinks.length}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -795,7 +795,7 @@ export default async function PlanDetailPage({
             </div>
 
             {workflow.reviewNotes.length > 0 ? (
-              <div className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Review notes</p>
                 <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                   {workflow.reviewNotes.map((note) => (
@@ -819,23 +819,23 @@ export default async function PlanDetailPage({
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Geography</p>
               <p className="mt-2 text-sm">{plan.geography_label ?? "Not set"}</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Horizon year</p>
               <p className="mt-2 text-sm">{plan.horizon_year ?? "Not set"}</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Created</p>
               <p className="mt-2 text-sm">{formatPlanDateTime(plan.created_at)}</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Updated</p>
               <p className="mt-2 text-sm">{formatPlanDateTime(plan.updated_at)}</p>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/70 p-4 md:col-span-2">
+            <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4 md:col-span-2">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Record posture</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 Formal planning record only. Use linked scenarios, engagement, and reports to review basis and outputs; do not treat this surface as chapter authoring.
@@ -863,7 +863,7 @@ export default async function PlanDetailPage({
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="block rounded-[22px] border border-border/80 bg-background/80 p-5 transition hover:border-primary/35"
+                  className="block rounded-[0.5rem] border border-border/80 bg-background/80 p-5 transition hover:border-primary/35"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-2">
@@ -903,25 +903,20 @@ export default async function PlanDetailPage({
           ) : (
             <div className="mt-5 space-y-3">
               {linkedScenarios.map((scenario) => (
-                <Link key={scenario.id} href={`/scenarios/${scenario.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
+                <Link key={scenario.id} href={`/scenarios/${scenario.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
-                    <StatusBadge tone="neutral">{linkBasisLabel(scenario.linkBasis)}</StatusBadge>
                     {scenario.status ? (
                       <StatusBadge tone={scenarioStatusTone(scenario.status)}>{titleizeScenarioValue(scenario.status)}</StatusBadge>
                     ) : null}
-                    <StatusBadge tone={scenario.baseline_entry_id ? "success" : "warning"}>
-                      {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
-                    </StatusBadge>
+                    <span className="module-record-chip"><span>Via</span><strong>{linkBasisLabel(scenario.linkBasis)}</strong></span>
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{scenario.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {scenario.summary || scenario.planning_question || "No scenario summary captured yet."}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{pluralize(scenario.entryCount, "entry")}</span>
-                    <span>{pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")}</span>
-                    <span>{pluralize(scenario.attachedRunCount, "attached run")}</span>
-                  </div>
+                  <p className="mt-2 text-[0.73rem] text-muted-foreground">
+                    {pluralize(scenario.entryCount, "entry")} · {pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · {pluralize(scenario.attachedRunCount, "attached run")} · {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
+                  </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {scenario.linkBasis === "project"
                       ? "Inherited from the primary project."
@@ -952,23 +947,18 @@ export default async function PlanDetailPage({
           ) : (
             <div className="mt-5 space-y-3">
               {linkedCampaigns.map((campaign) => (
-                <Link key={campaign.id} href={`/engagement/${campaign.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
+                <Link key={campaign.id} href={`/engagement/${campaign.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
-                    <StatusBadge tone="neutral">{linkBasisLabel(campaign.linkBasis)}</StatusBadge>
                     {campaign.status ? (
                       <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
                     ) : null}
-                    {campaign.engagement_type ? <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge> : null}
+                    {campaign.engagement_type ? <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span> : null}
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{campaign.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{pluralize(campaign.categoryCount, "category")}</span>
-                    <span>{pluralize(campaign.itemCount, "item")}</span>
-                    <span>{campaign.approvedItemCount} approved</span>
-                    <span>{campaign.pendingItemCount} pending</span>
-                    <span>{campaign.flaggedItemCount} flagged</span>
-                  </div>
+                  <p className="mt-2 text-[0.73rem] text-muted-foreground">
+                    {pluralize(campaign.categoryCount, "category")} · {pluralize(campaign.itemCount, "item")} · {campaign.approvedItemCount} approved · {campaign.pendingItemCount} pending{campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""} · via {linkBasisLabel(campaign.linkBasis)}
+                  </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {campaign.linkBasis === "project"
                       ? "Inherited from the primary project."
@@ -999,23 +989,16 @@ export default async function PlanDetailPage({
           ) : (
             <div className="mt-5 space-y-3">
               {linkedReports.map((report) => (
-                <Link key={report.id} href={`/reports/${report.id}`} className="block rounded-2xl border border-border/70 bg-background/70 p-4">
+                <Link key={report.id} href={`/reports/${report.id}`} className="block rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                   <div className="flex flex-wrap gap-2">
-                    <StatusBadge tone="neutral">{linkBasisLabel(report.linkBasis)}</StatusBadge>
                     {report.status ? <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge> : null}
-                    {report.report_type ? <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge> : null}
-                    {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
+                    {report.report_type ? <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span> : null}
                   </div>
                   <h3 className="mt-3 font-semibold tracking-tight">{report.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{pluralize(report.linkedRunCount, "linked run")}</span>
-                    <span>{pluralize(report.enabledSectionCount, "enabled section")}</span>
-                    <span>{pluralize(report.artifactCount, "artifact")}</span>
-                    <span>
-                      {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
-                    </span>
-                  </div>
+                  <p className="mt-2 text-[0.73rem] text-muted-foreground">
+                    {pluralize(report.linkedRunCount, "linked run")} · {pluralize(report.enabledSectionCount, "enabled section")} · {pluralize(report.artifactCount, "artifact")}{report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""} · {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"} · via {linkBasisLabel(report.linkBasis)}
+                  </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {report.linkBasis === "project"
                       ? "Inherited from the primary project."
@@ -1057,17 +1040,17 @@ export default async function PlanDetailPage({
         ) : (
           <div className="mt-5 space-y-4">
             <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Supporting models</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{supportingModelReadyCount} currently pass every explicit readiness check.</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">With project basis</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{projectBasedModelCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">Models that arrive through or remain anchored to the primary project context.</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Explicit plan links</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitModelCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">Direct model references stored on or uniquely tied to this plan.</p>
@@ -1080,10 +1063,8 @@ export default async function PlanDetailPage({
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone="neutral">{modelLinkBasisLabel(model.linkBasis)}</StatusBadge>
                         <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
-                        <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
-                        <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
+                        <span className="module-record-chip"><span>Family</span><strong>{formatModelFamilyLabel(model.model_family)}</strong></span>
                       </div>
 
                       <div className="space-y-1.5">
@@ -1098,18 +1079,9 @@ export default async function PlanDetailPage({
                     </div>
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config version pending"}</span>
-                    <span className="module-record-chip">{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</span>
-                    <span className="module-record-chip">{model.linkageCounts.datasets} datasets</span>
-                    <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
-                    <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
-                    <span className="module-record-chip">
-                      {model.readiness.missingCheckCount > 0
-                        ? `${model.readiness.missingCheckCount} readiness gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`
-                        : "No readiness gaps"}
-                    </span>
-                  </div>
+                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    {model.readiness.label} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {model.linkageCounts.datasets} datasets · {model.linkageCounts.runs} runs · {model.linkageCounts.reports} reports · via {modelLinkBasisLabel(model.linkBasis)}
+                  </p>
 
                   <p className="mt-3 text-sm text-muted-foreground">
                     {model.readiness.missingCheckLabels.length > 0
@@ -1140,24 +1112,24 @@ export default async function PlanDetailPage({
         ) : (
           <div className="mt-5 space-y-4">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Projects</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitProjectCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {inheritedProjectCount > 0 ? `${inheritedProjectCount} more inherited from the primary project.` : "No inherited project context."}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Scenarios</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitScenarioCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{inheritedScenarioCount} inherited from project linkage.</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Campaigns</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitCampaignCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{inheritedCampaignCount} inherited from project linkage.</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reports</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitReportCount}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{inheritedReportCount} inherited from project linkage.</p>
@@ -1166,7 +1138,7 @@ export default async function PlanDetailPage({
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {planLinks.map((link) => (
-              <div key={link.id} className="rounded-2xl border border-border/70 bg-background/70 p-4">
+              <div key={link.id} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {formatPlanLinkTypeLabel(link.link_type)}
                 </p>

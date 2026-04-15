@@ -1430,17 +1430,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               "No summary provided. Use the controls to describe this report\u2019s purpose and generate an HTML packet."}
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <StatusBadge tone={reportStatusTone(report.status)}>
               {formatReportStatusLabel(report.status)}
             </StatusBadge>
-            <StatusBadge tone="info">
-              {formatReportTypeLabel(report.report_type)}
-            </StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span>
             {report.latest_artifact_kind ? (
-              <StatusBadge tone="neutral">
-                {report.latest_artifact_kind.toUpperCase()}
-              </StatusBadge>
+              <span className="text-[0.73rem] text-muted-foreground">{report.latest_artifact_kind.toUpperCase()}</span>
             ) : null}
           </div>
 
@@ -1531,7 +1527,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Sections */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <Sparkles className="h-5 w-5" />
               </span>
               <div>
@@ -1551,7 +1547,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               {sectionList.map((section, index) => (
                 <div
                   key={section.id}
-                  className="flex items-center gap-3 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 transition-colors"
+                  className="flex items-center gap-3 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 transition-colors"
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-card text-[0.7rem] font-semibold tabular-nums text-muted-foreground">
                     {index + 1}
@@ -1578,7 +1574,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Linked runs */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 <Hash className="h-5 w-5" />
               </span>
               <div>
@@ -1601,7 +1597,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 runs.map((run) => (
                   <div
                     key={run.id}
-                    className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <h4 className="text-sm font-semibold tracking-tight">
                       {run.title}
@@ -1621,7 +1617,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Artifact history */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--copper)]/10 text-[color:var(--copper)]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-[color:var(--copper)]/10 text-[color:var(--copper)]">
                 <Clock3 className="h-5 w-5" />
               </span>
               <div>
@@ -1645,7 +1641,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   <div
                     id={`artifact-${artifact.id}`}
                     key={artifact.id}
-                    className="flex items-center justify-between gap-3 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <div className="min-w-0">
                       <h4 className="text-sm font-semibold tracking-tight">
@@ -1670,7 +1666,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Source history */}
           <article className="module-section-surface">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div>
@@ -1683,7 +1679,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               </div>
             </div>
             <div className="mt-4 space-y-2.5">
-              <p className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
                 Generated artifacts include run-level audit metadata so every
                 packet can be traced back to its source analysis and reviewed
                 for completeness.
@@ -1698,7 +1694,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 runAudit.map((item) => (
                   <div
                     key={item.runId}
-                    className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -1743,7 +1739,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             </div>
             {sourceContext || engagementCampaign ? (
               <div id="evidence-chain-summary" className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Evidence chain summary
                   </p>
@@ -1752,7 +1748,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Linked runs
                     </p>
@@ -1760,7 +1756,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.linkedRunCount}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Scenario basis
                     </p>
@@ -1768,7 +1764,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.scenarioSetLinkCount} linked set{evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Scenario spine
                     </p>
@@ -1778,7 +1774,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         : `${storedScenarioSpineSummary?.assumptionSetCount ?? evidenceChainSummary.scenarioAssumptionSetCount} assumptions · ${storedScenarioSpineSummary?.dataPackageCount ?? evidenceChainSummary.scenarioDataPackageCount} packages · ${storedScenarioSpineSummary?.indicatorSnapshotCount ?? evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators`}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Project records
                     </p>
@@ -1786,7 +1782,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.totalProjectRecordCount} across {evidenceChainSummary.projectRecordGroupCount} group{evidenceChainSummary.projectRecordGroupCount === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Governance
                     </p>
@@ -1794,7 +1790,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.stageGateLabel} · {evidenceChainSummary.stageGatePassCount} pass / {evidenceChainSummary.stageGateHoldCount} hold
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Engagement posture
                     </p>
@@ -1809,7 +1805,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Linked evidence
                     </p>
@@ -1819,7 +1815,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {String(sourceContext?.decisionCount ?? 0)} decisions
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Source snapshot
                     </p>
@@ -1832,7 +1828,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                   {engagementCampaign ? (
-                    <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
+                    <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                         Engagement source
                       </p>
@@ -1892,7 +1888,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {driftItems.length > 0 ? (
               <div id="drift-since-generation" className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Drift since generation
                   </p>
@@ -1907,7 +1903,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     return (
                       <div
                         key={item.key}
-                        className="flex flex-col gap-2 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
+                        className="flex flex-col gap-2 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
                       >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -1939,7 +1935,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {stageGateSnapshot ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Governance and stage-gate provenance
                   </p>
@@ -1948,7 +1944,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -1972,7 +1968,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       Version {stageGateSnapshot.templateVersion} · {stageGateSnapshot.passCount} pass · {stageGateSnapshot.holdCount} hold · {stageGateSnapshot.notStartedCount} not started
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Control health
                     </p>
@@ -1983,7 +1979,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount} gate{stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount === 1 ? "" : "s"} in the active template include operator control evidence.
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Blocked gate
                     </p>
@@ -2002,7 +1998,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         : "No formal HOLD decision is recorded in this artifact snapshot."}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Next gate
                     </p>
@@ -2026,7 +2022,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {projectRecordsSnapshot.length > 0 ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Project records provenance
                   </p>
@@ -2038,7 +2034,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   {projectRecordsSnapshot.map((item) => (
                     <div
                       key={item.key}
-                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                      className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -2075,7 +2071,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {scenarioSetLinks.length > 0 ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Scenario basis
                   </p>
@@ -2093,7 +2089,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   {scenarioSetLinks.map((link) => (
                     <div
                       key={link.scenarioSetId}
-                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-4"
+                      className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -2234,7 +2230,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Related links */}
           <article className="module-section-surface">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-500/10 text-slate-700 dark:text-slate-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-slate-500/10 text-slate-700 dark:text-slate-300">
                 <Link2 className="h-5 w-5" />
               </span>
               <div>
@@ -2306,7 +2302,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </StatusBadge>
                 ) : null}
               </div>
-              <div className="mt-5 overflow-hidden rounded-[18px] border border-border/70 bg-white shadow-inner">
+              <div className="mt-5 overflow-hidden rounded-[0.5rem] border border-border/70 bg-white shadow-inner">
                 <iframe
                   title="Latest report artifact preview"
                   className="h-[900px] w-full"

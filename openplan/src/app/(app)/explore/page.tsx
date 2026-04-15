@@ -24,7 +24,7 @@ import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Layers3, Map as MapIcon, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { buildMetricDeltas, deltaTone, formatDelta, type MetricDelta } from "@/lib/analysis/compare";
 import {
   formatCrashUserFilterLabel,
@@ -2530,463 +2530,26 @@ export default function ExplorePage() {
       : "tract";
 
   return (
-    <section className="analysis-explore-shell grid min-h-[calc(100vh-7rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
-      <div className="analysis-explore-mapstage relative overflow-hidden">
-        <div ref={mapContainerRef} className="h-[720px] min-h-[720px] w-full" />
+    <section className="analysis-explore-shell grid min-h-[calc(100dvh-3rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
+        <div ref={mapContainerRef} className="absolute inset-0" />
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(5,10,15,0.88),rgba(5,10,15,0))]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,rgba(5,10,15,0.94),rgba(5,10,15,0))]" />
-
-        <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,400px)] text-white sm:left-5 sm:top-5">
-          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
-            <Sparkles className="h-3.5 w-3.5" />
-            Analysis Studio
+        {!analysisResult ? (
+          <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
+            <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-cyan-300/70">
+              Analysis Studio
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">
+              Upload a corridor to begin.
+            </h2>
+            <p className="mt-1.5 text-[0.82rem] leading-relaxed text-slate-300/80">
+              Draw or upload a study boundary, frame the planning question, and run the analysis.
+            </p>
           </div>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-[1.7rem]">
-            Analyze corridors and keep the results tied to your project.
-          </h2>
-          <p className="mt-2 text-sm text-slate-300/86">
-            Upload a corridor, frame the planning question, and work through maps, metrics, and reporting in one place.
-          </p>
-          <p className="mt-4 text-sm leading-6 text-slate-300/78">{analysisSummary}</p>
-        </div>
-
-        <div className="hidden absolute right-4 top-4 z-10 max-h-[calc(100%-2.5rem)] max-w-[min(84%,320px)] overflow-y-auto pr-1 sm:right-5 sm:top-5">
-          <div className="rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.84)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">Overlays</p>
-                <p className="mt-1 text-sm text-slate-200/88">Control the visible geometry and any project-linked coverage footprints.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCameraMode((mode) => (mode === "regional" ? "cinematic" : "regional"))}
-                className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-emerald-100 transition hover:border-emerald-200/30"
-              >
-                {cameraMode === "regional" ? "Regional" : "Cinematic"}
-              </button>
-            </div>
-
-            <div className="mt-4 analysis-sidepanel-stack">
-              <button
-                type="button"
-                onClick={() => setShowPolygonFill((value) => !value)}
-                className={["analysis-sidepanel-row", "is-interactive", showPolygonFill ? "is-active" : "is-muted"].join(" ")}
-              >
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Base geometry</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">Corridor footprint</p>
-                    <p className="analysis-sidepanel-body">Primary analysis boundary and overall corridor score envelope.</p>
-                    <div className="analysis-sidepanel-meta">
-                      <span className="analysis-sidepanel-chip">Operator base layer</span>
-                    </div>
-                  </div>
-                  <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowPoints((value) => !value)}
-                className={["analysis-sidepanel-row", "is-interactive", showPoints ? "is-active" : "is-muted"].join(" ")}
-              >
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Reference anchor</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">Corridor centroid</p>
-                    <p className="analysis-sidepanel-body">Reference anchor for the current corridor run.</p>
-                    <div className="analysis-sidepanel-meta">
-                      <span className="analysis-sidepanel-chip">Map orientation</span>
-                    </div>
-                  </div>
-                  <StatusBadge tone={showPoints ? "success" : "neutral"}>{showPoints ? "Visible" : "Hidden"}</StatusBadge>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowTracts((value) => !value)}
-                className={["analysis-sidepanel-row", "is-interactive", showTracts ? "is-active" : "is-muted"].join(" ")}
-              >
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Context geometry</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">Census tract layer</p>
-                    <p className="analysis-sidepanel-body">Base tract geometry used for choropleths and tract-scope coverage overlays.</p>
-                    <div className="analysis-sidepanel-meta">
-                      <span className="analysis-sidepanel-chip">Supports tract theming</span>
-                    </div>
-                  </div>
-                  <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
-                </div>
-              </button>
-
-              <div className={["analysis-sidepanel-row", switrsPointLayerAvailable && showCrashes ? "is-warning" : switrsPointLayerAvailable ? "is-active" : "is-muted"].join(" ")}>
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Safety lane</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">SWITRS collision lane</p>
-                    <p className="analysis-sidepanel-body">
-                      Real crash points only when local SWITRS geometry is available for the current California run.
-                    </p>
-                    <div className="analysis-sidepanel-meta">
-                      <span className="analysis-sidepanel-chip">
-                        {switrsPointLayerAvailable ? `${filteredCrashPointCount}/${crashPointCount} points in current filter` : "Drawable points unavailable"}
-                      </span>
-                    </div>
-                  </div>
-                  <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
-                    {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
-                  </StatusBadge>
-                </div>
-                <div className="analysis-sidepanel-actions">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={showCrashes ? "secondary" : "outline"}
-                    disabled={!switrsPointLayerAvailable}
-                    onClick={() => setShowCrashes((value) => !value)}
-                  >
-                    {showCrashes ? "Hide collisions" : "Show collisions"}
-                  </Button>
-                </div>
-                <div className="analysis-sidepanel-field-grid cols-2">
-                  <select
-                    value={crashSeverityFilter}
-                    onChange={(event) => setCrashSeverityFilter(event.target.value as CrashSeverityFilter)}
-                    disabled={!switrsPointLayerAvailable}
-                    className="analysis-sidepanel-select"
-                  >
-                    <option value="all">All severities</option>
-                    <option value="fatal">Fatal only</option>
-                    <option value="severe_injury">Severe injury</option>
-                    <option value="injury">Other injury</option>
-                  </select>
-                  <select
-                    value={crashUserFilter}
-                    onChange={(event) => setCrashUserFilter(event.target.value as CrashUserFilter)}
-                    disabled={!switrsPointLayerAvailable}
-                    className="analysis-sidepanel-select"
-                  >
-                    <option value="all">All users</option>
-                    <option value="pedestrian">Ped only</option>
-                    <option value="bicycle">Bike only</option>
-                    <option value="vru">Ped or bike</option>
-                  </select>
-                </div>
-                <p className="analysis-sidepanel-body">
-                  {switrsPointLayerAvailable
-                    ? `${filteredCrashPointCount} of ${crashPointCount} crash points match the current filter stack.`
-                    : "Current crash source does not include drawable local SWITRS points yet."}
-                </p>
-              </div>
-
-              <div className={["analysis-sidepanel-row", activeDatasetOverlay ? "is-warning" : "is-muted"].join(" ")}>
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Project overlay</span>
-                      <span className="analysis-sidepanel-chip">{analysisContext?.counts.overlayReadyDatasets ?? 0} ready</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">Project-linked coverage lane</p>
-                    <p className="analysis-sidepanel-body">
-                      Uses real available geometry only: tract coverage for tract-scoped datasets, corridor footprint for corridor/route-scoped datasets.
-                    </p>
-                  </div>
-                  <StatusBadge tone={activeDatasetOverlay ? "warning" : "neutral"}>{activeDatasetOverlay ? "Active" : "None"}</StatusBadge>
-                </div>
-                {activeDatasetOverlay ? (
-                  <div className="analysis-sidepanel-row is-active">
-                    <div className="analysis-sidepanel-head">
-                      <div className="analysis-sidepanel-main">
-                        <div className="analysis-sidepanel-kicker">
-                          <span className="analysis-sidepanel-chip">{titleize(activeDatasetOverlay.geographyScope)} scope</span>
-                          <span className="analysis-sidepanel-chip">{activeDatasetOverlay.connectorLabel ?? "Manual source"}</span>
-                        </div>
-                        <p className="analysis-sidepanel-title">{activeDatasetOverlay.name}</p>
-                        <p className="analysis-sidepanel-body">
-                          {activeDatasetOverlay.thematicReady
-                            ? `Thematic overlay bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeOverlayGeometryLabel} geometry.`
-                            : "Coverage footprint only — dataset-specific values are not fabricated."}
-                        </p>
-                      </div>
-                      <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage"}</StatusBadge>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="analysis-sidepanel-body">
-                    Choose a drawable linked dataset from the Project Context panel to display its coverage footprint or thematic overlay.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden absolute bottom-4 left-4 z-10 max-h-[320px] max-w-[min(82%,340px)] overflow-y-auto rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:bottom-5 sm:left-5">
-          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
-            <Layers3 className="h-3.5 w-3.5" />
-            Map layers
-          </div>
-          <div className="mt-3 analysis-sidepanel-stack">
-            <div className={["analysis-sidepanel-row", corridorGeojson ? "is-active" : "is-muted"].join(" ")}>
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Corridor geometry</p>
-                  <p className="analysis-sidepanel-body">Uploaded corridor boundary currently driving the studio map.</p>
-                </div>
-                <StatusBadge tone={corridorGeojson ? "success" : "neutral"}>{corridorGeojson ? "Loaded" : "Waiting"}</StatusBadge>
-              </div>
-            </div>
-            <div className={["analysis-sidepanel-row", analysisResult ? "is-active" : "is-muted"].join(" ")}>
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Analysis result layer</p>
-                  <p className="analysis-sidepanel-body">Live corridor intelligence result currently loaded into the scene.</p>
-                </div>
-                <StatusBadge tone={analysisResult ? "success" : "neutral"}>{analysisResult ? "Live" : "Idle"}</StatusBadge>
-              </div>
-            </div>
-            <div className={["analysis-sidepanel-row", showTracts && analysisResult ? "is-active" : "is-muted"].join(" ")}>
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Census tracts</p>
-                  <p className="analysis-sidepanel-body">Tract layer visibility for contextual equity and demographic theming.</p>
-                </div>
-                <StatusBadge tone={showTracts && analysisResult ? "success" : "neutral"}>{showTracts && analysisResult ? "Visible" : "Hidden / waiting"}</StatusBadge>
-              </div>
-            </div>
-            <div className={["analysis-sidepanel-row", switrsPointLayerAvailable && showCrashes ? "is-warning" : "is-muted"].join(" ")}>
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Crash lane</p>
-                  <p className="analysis-sidepanel-body">
-                    {switrsPointLayerAvailable
-                      ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)} · ${filteredCrashPointCount}/${crashPointCount} drawable points`
-                      : "Needs local SWITRS geometry in the current analysis result."}
-                  </p>
-                </div>
-                <StatusBadge tone={switrsPointLayerAvailable && showCrashes ? "warning" : "neutral"}>
-                  {switrsPointLayerAvailable && showCrashes ? "Visible" : switrsPointLayerAvailable ? "Ready" : "Unavailable"}
-                </StatusBadge>
-              </div>
-            </div>
-            <div className="analysis-sidepanel-row">
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Tract theme</p>
-                  <p className="analysis-sidepanel-body">Switch the live tract metric without leaving the map context.</p>
-                </div>
-                <StatusBadge tone="info">{tractMetric}</StatusBadge>
-              </div>
-              <select
-                value={tractMetric}
-                onChange={(event) => setTractMetric(event.target.value as typeof tractMetric)}
-                className="analysis-sidepanel-select"
-              >
-                <option value="minority">Minority share</option>
-                <option value="poverty">Poverty share</option>
-                <option value="income">Median income</option>
-                <option value="disadvantaged">Disadvantaged flag</option>
-              </select>
-            </div>
-            <div className={["analysis-sidepanel-row", mapExperienceReady ? "is-active" : "is-warning"].join(" ")}>
-              <div className="analysis-sidepanel-head">
-                <div className="analysis-sidepanel-main">
-                  <p className="analysis-sidepanel-title">Map engine</p>
-                  <p className="analysis-sidepanel-body">Production map runtime posture for the current environment.</p>
-                </div>
-                <StatusBadge tone={mapExperienceReady ? "success" : "warning"}>{mapExperienceReady ? "Mapbox" : "Token needed"}</StatusBadge>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden mx-4 mb-4 mt-4 rounded-[24px] border border-white/10 bg-[rgba(7,14,20,0.86)] p-4 text-white shadow-[0_20px_54px_rgba(0,0,0,0.26)] backdrop-blur-xl sm:mx-5 sm:mb-5">
-          <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-300/80">
-            <MapIcon className="h-3.5 w-3.5" />
-            Tract legend
-          </div>
-          {!mapExperienceReady ? (
-            <div className="mt-3 analysis-sidepanel-row is-warning">
-              <p className="analysis-sidepanel-body">
-                Add <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.72rem]">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to activate the production map experience.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-3 analysis-sidepanel-stack">
-              <div className="analysis-sidepanel-row">
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Tract theme</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">{tractLegend.label}</p>
-                    <p className="analysis-sidepanel-body">{tractLegend.note}</p>
-                  </div>
-                  <StatusBadge tone="info">Active</StatusBadge>
-                </div>
-                <div className="analysis-sidepanel-stack">
-                  {tractLegend.items.map((item) => (
-                    <div key={`${tractLegend.label}-${item.label}`} className="analysis-sidepanel-field">
-                      <div className="flex items-center gap-2 text-xs text-slate-200/88">
-                        <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {activeDatasetOverlay ? (
-                <div className="analysis-sidepanel-row is-warning">
-                  <div className="analysis-sidepanel-head">
-                    <div className="analysis-sidepanel-main">
-                      <div className="analysis-sidepanel-kicker">
-                        <span className="analysis-sidepanel-chip">{activeDatasetOverlay.thematicReady ? "Thematic overlay" : "Coverage overlay"}</span>
-                        <span className="analysis-sidepanel-chip">{titleize(activeDatasetOverlay.geographyScope)} scope</span>
-                      </div>
-                      <p className="analysis-sidepanel-title">{activeDatasetOverlay.name}</p>
-                      <p className="analysis-sidepanel-body">
-                        {activeDatasetOverlay.thematicReady
-                          ? `Bound to ${activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey)} using real ${activeOverlayGeometryLabel} geometry.`
-                          : "Only existing geometry is drawn; dataset-specific values are not fabricated."}
-                      </p>
-                    </div>
-                    <StatusBadge tone="warning">{activeDatasetOverlay.thematicReady ? "Thematic" : "Coverage"}</StatusBadge>
-                  </div>
-                  {activeOverlayLegend ? (
-                    <div className="analysis-sidepanel-stack">
-                      <div className="analysis-sidepanel-head">
-                        <div className="analysis-sidepanel-main">
-                          <p className="analysis-sidepanel-title">{activeOverlayLegend.label}</p>
-                          <p className="analysis-sidepanel-body">{activeOverlayLegend.note}</p>
-                        </div>
-                        <StatusBadge tone="warning">Legend</StatusBadge>
-                      </div>
-                      {activeOverlayLegend.items.map((item) => (
-                        <div key={`${activeOverlayLegend.label}-${item.label}`} className="analysis-sidepanel-field">
-                          <div className="flex items-center gap-2 text-xs text-slate-200/88">
-                            <span className="h-3 w-3 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
-                            {item.label}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              <div className={["analysis-sidepanel-row", switrsPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}>
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Crash data</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">Crash details</p>
-                    <p className="analysis-sidepanel-body">
-                      {switrsPointLayerAvailable
-                        ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}`
-                        : "Crash details appear only when the current run uses local SWITRS geometry."}
-                    </p>
-                  </div>
-                  <StatusBadge tone={switrsPointLayerAvailable ? "warning" : "neutral"}>{switrsPointLayerAvailable ? "Live" : "No point layer"}</StatusBadge>
-                </div>
-                {hoveredCrash ? (
-                  <div className="analysis-sidepanel-stat-grid cols-2">
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Collision</p>
-                      <p className="analysis-sidepanel-value">{hoveredCrash.severityLabel}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Year</p>
-                      <p className="analysis-sidepanel-value">{hoveredCrash.collisionYear ?? "Unknown"}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Fatalities</p>
-                      <p className="analysis-sidepanel-value">{hoveredCrash.fatalCount}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Injured</p>
-                      <p className="analysis-sidepanel-value">{hoveredCrash.injuryCount}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat sm:col-span-2">
-                      <p className="analysis-sidepanel-label">VRU flags</p>
-                      <p className="analysis-sidepanel-value">
-                        {hoveredCrash.pedestrianInvolved ? "Ped" : "—"}
-                        {hoveredCrash.pedestrianInvolved && hoveredCrash.bicyclistInvolved ? " · " : ""}
-                        {hoveredCrash.bicyclistInvolved ? "Bike" : hoveredCrash.pedestrianInvolved ? "" : "None"}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="analysis-sidepanel-body">
-                    {switrsPointLayerAvailable
-                      ? "Hover a SWITRS collision point to inspect severity and vulnerable road user flags."
-                      : "Crash details appear only when the current run uses local SWITRS geometry."}
-                  </p>
-                )}
-              </div>
-
-              <div className={["analysis-sidepanel-row", hoveredTract ? "is-active" : "is-muted"].join(" ")}>
-                <div className="analysis-sidepanel-head">
-                  <div className="analysis-sidepanel-main">
-                    <div className="analysis-sidepanel-kicker">
-                      <span className="analysis-sidepanel-chip">Tract details</span>
-                    </div>
-                    <p className="analysis-sidepanel-title">{hoveredTract ? hoveredTract.name : "Tract inspector idle"}</p>
-                    <p className="analysis-sidepanel-body">
-                      {hoveredTract
-                        ? `GEOID ${hoveredTract.geoid}`
-                        : "Hover over a visible census tract to inspect its current attributes and verify what the active theme is showing."}
-                    </p>
-                  </div>
-                  <StatusBadge tone={hoveredTract?.isDisadvantaged ? "warning" : "neutral"}>{hoveredTract ? hoveredTractMetricValue : "Waiting"}</StatusBadge>
-                </div>
-                {hoveredTract ? (
-                  <div className="analysis-sidepanel-stat-grid cols-2">
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Population</p>
-                      <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Median income</p>
-                      <p className="analysis-sidepanel-value">{formatCurrency(hoveredTract.medianIncome)}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Minority share</p>
-                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctMinority)}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Poverty share</p>
-                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctBelowPoverty)}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Zero-vehicle HH</p>
-                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.zeroVehiclePct)}</p>
-                    </div>
-                    <div className="analysis-sidepanel-stat">
-                      <p className="analysis-sidepanel-label">Transit commute</p>
-                      <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.transitCommutePct)}</p>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
+        ) : null}
       </div>
 
-      <aside className="analysis-explore-rail flex h-[720px] min-h-[720px] flex-col overflow-y-auto">
+      <aside className="analysis-explore-rail flex min-h-0 flex-col overflow-y-auto">
         <div className="analysis-explore-rail-header">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Analysis Studio</p>
           <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor analysis workspace</h2>
@@ -3005,14 +2568,15 @@ export default function ExplorePage() {
               </div>
 
               <div className="analysis-studio-body">
-                <div className="analysis-studio-input-stack">
-                  <Input
-                    value={workspaceId}
-                    onChange={(event) => setWorkspaceId(event.target.value)}
-                    placeholder="Workspace UUID"
-                  />
+                {workspaceLoadState === "loading" ? (
+                  <p className="analysis-studio-note">Connecting to workspace…</p>
+                ) : workspaceLoadState === "loaded" && workspaceName ? (
+                  <p className="analysis-studio-note">
+                    Connected to <strong className="text-white">{workspaceName}</strong>
+                  </p>
+                ) : (
                   <p className="analysis-studio-note">{workspaceHelperText}</p>
-                </div>
+                )}
 
                 {workspaceLoadState === "signedOut" ? (
                   <div className="analysis-sidepanel-row is-muted">
@@ -3262,6 +2826,207 @@ export default function ExplorePage() {
             <div className="analysis-studio-surface-slot">
               <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
             </div>
+
+            {/* Map layer controls — moved from dead floating panel */}
+            <section className="analysis-studio-surface">
+              <div className="analysis-studio-header">
+                <div className="analysis-studio-heading">
+                  <p className="analysis-studio-label">Map layers</p>
+                  <h3 className="analysis-studio-title">Layer visibility</h3>
+                </div>
+                <StatusBadge tone={mapReady ? "success" : "neutral"}>{mapReady ? "Ready" : "Init"}</StatusBadge>
+              </div>
+              <div className="analysis-studio-body">
+                <div className="analysis-sidepanel-stack">
+                  <button
+                    type="button"
+                    onClick={() => setShowPolygonFill((v) => !v)}
+                    className={["analysis-sidepanel-row is-interactive", showPolygonFill ? "is-active" : "is-muted"].join(" ")}
+                  >
+                    <div className="analysis-sidepanel-head">
+                      <p className="analysis-sidepanel-title">Corridor fill</p>
+                      <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowTracts((v) => !v)}
+                    className={["analysis-sidepanel-row is-interactive", showTracts ? "is-active" : "is-muted"].join(" ")}
+                  >
+                    <div className="analysis-sidepanel-head">
+                      <p className="analysis-sidepanel-title">Census tracts</p>
+                      <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCrashes((v) => !v)}
+                    className={["analysis-sidepanel-row is-interactive", showCrashes && switrsPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}
+                  >
+                    <div className="analysis-sidepanel-head">
+                      <p className="analysis-sidepanel-title">Crash data</p>
+                      <StatusBadge tone={showCrashes && switrsPointLayerAvailable ? "warning" : "neutral"}>
+                        {switrsPointLayerAvailable ? (showCrashes ? "Visible" : "Hidden") : "No data"}
+                      </StatusBadge>
+                    </div>
+                  </button>
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  <p className="analysis-studio-inline-meta-label">Tract theme</p>
+                  <select
+                    value={tractMetric}
+                    onChange={(event) => setTractMetric(event.target.value as typeof tractMetric)}
+                    className="analysis-sidepanel-select"
+                  >
+                    <option value="minority">Minority share</option>
+                    <option value="poverty">Poverty share</option>
+                    <option value="income">Median income</option>
+                    <option value="disadvantaged">Disadvantaged flag</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {/* Map intelligence — tract legend + live hover inspectors */}
+            {(showTracts || switrsPointLayerAvailable) ? (
+              <section className="analysis-studio-surface">
+                <div className="analysis-studio-header">
+                  <div className="analysis-studio-heading">
+                    <p className="analysis-studio-label">Map intelligence</p>
+                    <h3 className="analysis-studio-title">Live hover inspector</h3>
+                    <p className="analysis-studio-description">Hover a census tract or crash point on the map to inspect its attributes here.</p>
+                  </div>
+                  <StatusBadge tone={hoveredTract || hoveredCrash ? "success" : "neutral"}>
+                    {hoveredTract || hoveredCrash ? "Active" : "Idle"}
+                  </StatusBadge>
+                </div>
+                <div className="analysis-studio-body">
+                  <div className="analysis-sidepanel-stack">
+                    {showTracts ? (
+                      <>
+                        <div className="analysis-sidepanel-row">
+                          <div className="analysis-sidepanel-head">
+                            <div className="analysis-sidepanel-main">
+                              <p className="analysis-sidepanel-title">{tractLegend.label}</p>
+                              <p className="analysis-sidepanel-body">{tractLegend.note}</p>
+                            </div>
+                            <StatusBadge tone="info">Legend</StatusBadge>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            {tractLegend.items.map((item) => (
+                              <div key={`legend-${item.label}`} className="flex items-center gap-2 py-0.5 text-xs text-slate-300/90">
+                                <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/15" style={{ backgroundColor: item.color }} />
+                                {item.label}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className={["analysis-sidepanel-row", hoveredTract ? "is-active" : "is-muted"].join(" ")}>
+                          <div className="analysis-sidepanel-head">
+                            <div className="analysis-sidepanel-main">
+                              <div className="analysis-sidepanel-kicker">
+                                <span className="analysis-sidepanel-chip">Tract inspector</span>
+                              </div>
+                              <p className="analysis-sidepanel-title">
+                                {hoveredTract ? hoveredTract.name : "No tract hovered"}
+                              </p>
+                              <p className="analysis-sidepanel-body">
+                                {hoveredTract ? `GEOID ${hoveredTract.geoid}` : "Hover a visible census tract to inspect its attributes."}
+                              </p>
+                            </div>
+                            <StatusBadge tone={hoveredTract?.isDisadvantaged ? "warning" : "neutral"}>
+                              {hoveredTract ? hoveredTractMetricValue : "Idle"}
+                            </StatusBadge>
+                          </div>
+                          {hoveredTract ? (
+                            <div className="analysis-sidepanel-stat-grid cols-2">
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Population</p>
+                                <p className="analysis-sidepanel-value">{hoveredTract.population?.toLocaleString() ?? "N/A"}</p>
+                              </div>
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Median income</p>
+                                <p className="analysis-sidepanel-value">{formatCurrency(hoveredTract.medianIncome)}</p>
+                              </div>
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Minority share</p>
+                                <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctMinority)}</p>
+                              </div>
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Poverty share</p>
+                                <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.pctBelowPoverty)}</p>
+                              </div>
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Zero-vehicle HH</p>
+                                <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.zeroVehiclePct)}</p>
+                              </div>
+                              <div className="analysis-sidepanel-stat">
+                                <p className="analysis-sidepanel-label">Transit commute</p>
+                                <p className="analysis-sidepanel-value">{formatPercent(hoveredTract.transitCommutePct)}</p>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </>
+                    ) : null}
+
+                    {switrsPointLayerAvailable ? (
+                      <div className={["analysis-sidepanel-row", hoveredCrash ? "is-warning" : "is-muted"].join(" ")}>
+                        <div className="analysis-sidepanel-head">
+                          <div className="analysis-sidepanel-main">
+                            <div className="analysis-sidepanel-kicker">
+                              <span className="analysis-sidepanel-chip">Crash inspector</span>
+                            </div>
+                            <p className="analysis-sidepanel-title">
+                              {hoveredCrash ? hoveredCrash.severityLabel : "Crash details"}
+                            </p>
+                            <p className="analysis-sidepanel-body">
+                              {hoveredCrash
+                                ? `${titleize(crashSeverityFilter)} · ${formatCrashUserFilterLabel(crashUserFilter)}`
+                                : "Hover a SWITRS collision point to inspect severity and VRU flags."}
+                            </p>
+                          </div>
+                          <StatusBadge tone={hoveredCrash ? "warning" : "neutral"}>
+                            {hoveredCrash ? "Hovering" : "Idle"}
+                          </StatusBadge>
+                        </div>
+                        {hoveredCrash ? (
+                          <div className="analysis-sidepanel-stat-grid cols-2">
+                            <div className="analysis-sidepanel-stat">
+                              <p className="analysis-sidepanel-label">Collision</p>
+                              <p className="analysis-sidepanel-value">{hoveredCrash.severityLabel}</p>
+                            </div>
+                            <div className="analysis-sidepanel-stat">
+                              <p className="analysis-sidepanel-label">Year</p>
+                              <p className="analysis-sidepanel-value">{hoveredCrash.collisionYear ?? "Unknown"}</p>
+                            </div>
+                            <div className="analysis-sidepanel-stat">
+                              <p className="analysis-sidepanel-label">Fatalities</p>
+                              <p className="analysis-sidepanel-value">{hoveredCrash.fatalCount}</p>
+                            </div>
+                            <div className="analysis-sidepanel-stat">
+                              <p className="analysis-sidepanel-label">Injured</p>
+                              <p className="analysis-sidepanel-value">{hoveredCrash.injuryCount}</p>
+                            </div>
+                            <div className="analysis-sidepanel-stat sm:col-span-2">
+                              <p className="analysis-sidepanel-label">VRU flags</p>
+                              <p className="analysis-sidepanel-value">
+                                {[
+                                  hoveredCrash.pedestrianInvolved ? "Ped" : null,
+                                  hoveredCrash.bicyclistInvolved ? "Bike" : null,
+                                ].filter(Boolean).join(" · ") || "None"}
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             <section className="analysis-studio-surface">
               <div className="analysis-studio-header">
                 <div className="analysis-studio-heading">
@@ -3318,26 +3083,39 @@ export default function ExplorePage() {
                   <p className="analysis-studio-note">Current template: {reportTemplate.toUpperCase()}</p>
                 </div>
 
-                <div className="analysis-studio-action-row">
-                  <Button type="button" onClick={() => void runAnalysis()} disabled={!canSubmit || isSubmitting}>
-                    {isSubmitting ? "Running analysis..." : "Run Analysis + Refresh Map"}
-                  </Button>
+                <div className="space-y-2">
                   <Button
                     type="button"
-                    variant="secondary"
-                    onClick={() => void generateReport()}
-                    disabled={!analysisResult?.runId || isGeneratingReport}
+                    className="w-full"
+                    onClick={() => void runAnalysis()}
+                    disabled={!canSubmit || isSubmitting}
                   >
-                    {isGeneratingReport ? "Generating report..." : `Open ${reportTemplate.toUpperCase()} HTML Report`}
+                    {isSubmitting ? "Running analysis…" : "Run Analysis"}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void downloadPdfReport()}
-                    disabled={!analysisResult?.runId || isDownloadingPdf}
-                  >
-                    {isDownloadingPdf ? "Preparing PDF..." : `Download ${reportTemplate.toUpperCase()} PDF`}
-                  </Button>
+                  {analysisResult?.runId ? (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => void generateReport()}
+                        disabled={isGeneratingReport}
+                      >
+                        {isGeneratingReport ? "Generating…" : `${reportTemplate.toUpperCase()} Report`}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => void downloadPdfReport()}
+                        disabled={isDownloadingPdf}
+                      >
+                        {isDownloadingPdf ? "Preparing…" : "PDF"}
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
 
                 {error ? <ErrorState compact title="Please review" description={error} /> : null}
@@ -3411,7 +3189,7 @@ export default function ExplorePage() {
                     </div>
                   ) : null}
 
-                  <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="rounded-[0.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="max-w-[16rem]">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/76">Current run posture</p>
@@ -3438,7 +3216,7 @@ export default function ExplorePage() {
                         <div
                           key={item.label}
                           className={[
-                            "rounded-[20px] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+                            "rounded-[0.5rem] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
                             item.emphasis ? "sm:col-span-2 bg-[linear-gradient(180deg,rgba(34,197,94,0.12),rgba(255,255,255,0.035))]" : "",
                           ]
                             .filter(Boolean)
@@ -3452,7 +3230,7 @@ export default function ExplorePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-white/8 bg-black/15 p-4">
+                  <div className="rounded-[0.5rem] border border-white/8 bg-black/15 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Output actions</p>
@@ -3471,7 +3249,7 @@ export default function ExplorePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                  <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Map review context</p>
@@ -3500,13 +3278,13 @@ export default function ExplorePage() {
                   </div>
 
                   <div className="grid gap-3">
-                    <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Summary brief</p>
                       <p className="mt-3 text-sm leading-6 text-slate-100/90">{analysisResult.summary}</p>
                     </div>
 
                     {analysisResult.aiInterpretation ? (
-                      <div className="rounded-[22px] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(14,35,48,0.88),rgba(11,20,29,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                      <div className="rounded-[0.5rem] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(14,35,48,0.88),rgba(11,20,29,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-cyan-200/78">AI interpretation</p>
                           <StatusBadge tone="info">Human review required</StatusBadge>
@@ -3516,7 +3294,7 @@ export default function ExplorePage() {
                     ) : null}
                   </div>
 
-                  <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+                  <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Data source checks</p>
@@ -3528,7 +3306,7 @@ export default function ExplorePage() {
                     </div>
                     <div className="mt-4 space-y-3">
                       {sourceTransparency.map((item) => (
-                        <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/18 px-4 py-3">
+                        <div key={item.key} className="rounded-[0.5rem] border border-white/8 bg-black/18 px-4 py-3">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="text-sm font-medium text-white">{item.label}</p>
                             <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
@@ -3963,7 +3741,7 @@ export default function ExplorePage() {
               <CardContent className="space-y-4 px-6 py-5">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {planningSignals.map((signal) => (
-                    <div key={signal.label} className="rounded-2xl border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                    <div key={signal.label} className="rounded-[0.5rem] border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{signal.label}</p>
                       <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{signal.value}</p>
                       <p className="mt-2 text-xs text-muted-foreground">{signal.note}</p>
@@ -3972,11 +3750,11 @@ export default function ExplorePage() {
                 </div>
 
                 <div className="grid gap-3 xl:grid-cols-2">
-                  <div className="rounded-[26px] border border-border/80 bg-[linear-gradient(180deg,rgba(11,19,27,0.98),rgba(15,24,33,0.94))] p-5 text-slate-100 shadow-[0_20px_48px_rgba(0,0,0,0.16)]">
+                  <div className="rounded-[0.75rem] border border-border/80 bg-[linear-gradient(180deg,rgba(11,19,27,0.98),rgba(15,24,33,0.94))] p-5 text-slate-100 shadow-[0_20px_48px_rgba(0,0,0,0.16)]">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">Data fabric status</p>
                     <div className="mt-4 space-y-3">
                       {geospatialSourceCards.map((item) => (
-                        <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
+                        <div key={item.label} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] p-3.5">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="text-sm font-medium text-white">{item.label}</p>
                             <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
@@ -3987,10 +3765,10 @@ export default function ExplorePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[26px] border border-border/80 bg-background p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
+                  <div className="rounded-[0.75rem] border border-border/80 bg-background p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Citations & next geospatial lanes</p>
                     <div className="mt-4 space-y-3">
-                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                      <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                         <p className="text-sm font-medium text-foreground">Census retrieval</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {sourceSnapshots?.census?.retrievalUrl ?? "Census retrieval URL not captured for this run."}
@@ -3999,7 +3777,7 @@ export default function ExplorePage() {
                           Fetched: {sourceSnapshots?.census?.fetchedAt ? formatRunTimestamp(sourceSnapshots.census.fetchedAt) : "Unknown"}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                      <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                         <p className="text-sm font-medium text-foreground">Crash lane posture</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           Current crash source: {formatSourceToken(sourceSnapshots?.crashes?.source)}.
@@ -4008,7 +3786,7 @@ export default function ExplorePage() {
                             : " SWITRS-backed safety coverage is active for this corridor run."}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-border/80 bg-card p-3.5">
+                      <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                         <p className="text-sm font-medium text-foreground">Next layer buildout</p>
                         <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-muted-foreground">
                           <li>Census tract geometry + choropleth overlays</li>
@@ -4038,7 +3816,7 @@ export default function ExplorePage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 px-6 py-5">
-                <div className="rounded-[22px] border border-amber-400/18 bg-amber-400/8 p-4">
+                <div className="rounded-[0.5rem] border border-amber-400/18 bg-amber-400/8 p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">Operator release note</p>
                   <p className="mt-3 text-sm leading-6 text-slate-100/88">
                     Treat the cards above as working analysis surfaces, not self-certifying deliverables. Before external use, verify citations, source posture, and equity implications.
@@ -4047,7 +3825,7 @@ export default function ExplorePage() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {disclosureItems.map((item) => (
-                    <div key={item.title} className="rounded-[18px] border border-white/8 bg-black/18 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                    <div key={item.title} className="rounded-[0.5rem] border border-white/8 bg-black/18 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="text-sm font-medium text-white">{item.title}</p>
                         <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Review" : item.tone === "info" ? "Disclosure" : "Assumption"}</StatusBadge>

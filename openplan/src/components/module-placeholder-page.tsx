@@ -24,7 +24,7 @@ export function ModulePlaceholderPage({
 }: ModulePlaceholderPageProps) {
   return (
     <section className="space-y-6">
-      <header className="relative overflow-hidden rounded-[28px] border border-border/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0.94))] p-6 shadow-[0_22px_56px_rgba(4,12,20,0.08)] sm:p-7">
+      <header className="relative overflow-hidden rounded-[0.75rem] border border-border/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0.94))] p-6 shadow-[0_22px_56px_rgba(4,12,20,0.08)] sm:p-7">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(207,218,226,0.24),rgba(255,255,255,0))]"
@@ -61,18 +61,18 @@ export function ModulePlaceholderPage({
       </header>
 
       <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[28px] border border-border/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.92))] p-6 shadow-[0_22px_56px_rgba(4,12,20,0.08)]">
+        <article className="rounded-[0.75rem] border border-border/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.92))] p-6 shadow-[0_22px_56px_rgba(4,12,20,0.08)]">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">What belongs here</p>
           <ul className="mt-4 space-y-3">
             {bullets.map((bullet) => (
-              <li key={bullet} className="rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+              <li key={bullet} className="rounded-[0.5rem] border border-border/70 bg-background/75 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                 {bullet}
               </li>
             ))}
           </ul>
         </article>
 
-        <article className="relative overflow-hidden rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(13,24,34,0.97),rgba(8,15,21,0.95))] p-6 text-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.24)]">
+        <article className="relative overflow-hidden rounded-[0.75rem] border border-border/70 bg-[linear-gradient(180deg,rgba(13,24,34,0.97),rgba(8,15,21,0.95))] p-6 text-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.24)]">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))]"
@@ -82,7 +82,7 @@ export function ModulePlaceholderPage({
           <p className="relative mt-3 text-sm text-slate-300/85">
             The immediate goal is to make OpenPlan feel and behave like a serious planning operations platform, not a landing page with tools attached.
           </p>
-          <div className="relative mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="relative mt-5 rounded-[0.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300/82 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             Next implementation wave: bind these views to first-class Planning OS objects, shared filters, audit history, and project-scoped workflows.
           </div>
         </article>

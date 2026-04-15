@@ -217,19 +217,19 @@ export function ModelDetailControls({
             orchestration.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
           <Settings2 className="h-5 w-5" />
         </span>
       </div>
 
       <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Anchors</p>
             <p className="mt-2 text-lg font-semibold text-foreground">{anchorsCount}/2</p>
             <p className="mt-1 text-sm text-muted-foreground">Primary project and scenario context.</p>
           </div>
-          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Explicit links</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Link2 className="h-4 w-4 text-muted-foreground" />
@@ -237,7 +237,7 @@ export function ModelDetailControls({
             </p>
             <p className="mt-1 text-sm text-muted-foreground">Attached provenance, outputs, and related records.</p>
           </div>
-          <div className="rounded-[20px] border border-border/70 bg-background/75 p-3.5">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Timestamps</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Clock3 className="h-4 w-4 text-muted-foreground" />
@@ -396,9 +396,9 @@ export function ModelDetailControls({
           </TabsContent>
 
           <TabsContent value="provenance" className="pt-4 space-y-4">
-            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/20 p-4">
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-200/70 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.5rem] border border-emerald-200/70 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
                   <ShieldCheck className="h-4.5 w-4.5" />
                 </span>
                 <div>
@@ -450,7 +450,7 @@ export function ModelDetailControls({
           </TabsContent>
 
           <TabsContent value="links" className="pt-4 space-y-4">
-            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/20 p-4">
               <p className="text-sm font-semibold text-foreground">Link supporting records with chips instead of platform-native multi-select.</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Primary project and primary scenario anchors stay out of this additional link stack automatically.
@@ -551,7 +551,7 @@ export function ModelDetailControls({
           </TabsContent>
 
           <TabsContent value="timestamps" className="pt-4 space-y-4">
-            <div className="rounded-[20px] border border-border/70 bg-muted/20 p-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/20 p-4">
               <p className="text-sm font-semibold text-foreground">Timebox the evidence trail.</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Record when the model was last validated and when the latest run evidence was captured.
@@ -586,7 +586,7 @@ export function ModelDetailControls({
         </Tabs>
 
         {error ? (
-          <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}

@@ -72,7 +72,7 @@ export function FundingOpportunityDecisionControls({
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+    <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
       <div className="space-y-3">
         <div className="grid gap-3 md:grid-cols-[180px_220px_minmax(0,1fr)] md:items-start">
           <div className="space-y-1.5">

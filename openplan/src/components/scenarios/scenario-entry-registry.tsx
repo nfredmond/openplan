@@ -75,7 +75,7 @@ function FormError({ error }: { error: string | null }) {
   if (!error) return null;
 
   return (
-    <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {error}
     </p>
   );
@@ -363,7 +363,7 @@ function ScenarioEntryCard({
         <span className="module-record-chip">Reports {entryLinkedReports.length}</span>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/75 p-4 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 rounded-[0.5rem] border border-border/70 bg-background/75 p-4 lg:grid-cols-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Evidence</p>
           <p className="mt-2 text-sm font-medium">{entry.attachedRun?.title ?? "No run attached"}</p>
@@ -396,7 +396,7 @@ function ScenarioEntryCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-[20px] border border-border/70 bg-background/60 p-4 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 rounded-[0.5rem] border border-border/70 bg-background/60 p-4 lg:grid-cols-3">
         <div className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Operator actions</p>
@@ -461,7 +461,7 @@ function ScenarioEntryCard({
         </div>
       </div>
 
-      <details className="mt-4 rounded-[20px] border border-border/70 bg-background/60 p-4">
+      <details className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/60 p-4">
         <summary className="cursor-pointer text-sm font-semibold tracking-tight text-foreground">
           Manage entry
         </summary>
@@ -688,7 +688,7 @@ export function ScenarioEntryRegistry({
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[20px] border border-border/70 bg-background/80 p-4">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Ready alternatives</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight">{comparisonSummary.readyAlternatives}</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -697,7 +697,7 @@ export function ScenarioEntryRegistry({
                 : "No alternatives are registered yet."}
             </p>
           </div>
-          <div className="rounded-[20px] border border-border/70 bg-background/80 p-4">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Baseline posture</p>
             <p className="mt-2 text-lg font-semibold tracking-tight">
               {!comparisonSummary.baselineEntryPresent
@@ -714,7 +714,7 @@ export function ScenarioEntryRegistry({
                   : "Attach a run to the baseline so alternatives can become comparison-ready."}
             </p>
           </div>
-          <div className="rounded-[20px] border border-border/70 bg-background/80 p-4">
+          <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Blocked alternatives</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight">{comparisonSummary.blockedAlternatives}</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -733,7 +733,7 @@ export function ScenarioEntryRegistry({
               });
 
               return (
-                <div key={entry.id} className="rounded-[20px] border border-border/70 bg-background/80 p-4">
+                <div key={entry.id} className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-1">
                       <p className="text-sm font-semibold tracking-tight">{entry.label}</p>

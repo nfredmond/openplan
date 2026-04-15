@@ -106,9 +106,11 @@ export function AppSecondaryNav() {
   }
 
   return (
-    <div className="shell-ledger-panel gap-0">
-      <p className="shell-panel-kicker">{section.title}</p>
-      <ul className="mt-3 divide-y divide-white/[0.06] border-t border-white/[0.06]">
+    <div className="px-3 pt-1 pb-2">
+      <p className="mb-1.5 px-2 text-[0.62rem] font-bold uppercase tracking-[0.2em] text-slate-600">
+        {section.title}
+      </p>
+      <ul className="space-y-0.5">
         {section.items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -116,19 +118,13 @@ export function AppSecondaryNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 text-[0.82rem] transition-all duration-200",
-                  active ? "text-white" : "text-slate-300/72 hover:text-white"
+                  "block rounded px-2 py-1.5 text-[0.8rem] transition-colors duration-150",
+                  active
+                    ? "bg-white/[0.07] text-white"
+                    : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                 )}
               >
-                <span className="min-w-0">{item.label}</span>
-                <span
-                  className={cn(
-                    "text-[0.58rem] font-semibold uppercase tracking-[0.18em]",
-                    active ? "text-emerald-100/84" : "text-slate-500"
-                  )}
-                >
-                  {active ? "Current" : "Lane"}
-                </span>
+                {item.label}
               </Link>
             </li>
           );

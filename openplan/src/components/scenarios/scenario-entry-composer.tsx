@@ -24,7 +24,7 @@ function FormError({ error }: { error: string | null }) {
   if (!error) return null;
 
   return (
-    <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {error}
     </p>
   );
@@ -102,7 +102,7 @@ export function ScenarioEntryComposer({ scenarioSetId, hasBaseline, runs }: Scen
             Add the entry, attach the best available run, and keep assumptions structured so readiness is clear from the start.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
           <GitCompareArrows className="h-5 w-5" />
         </span>
       </div>

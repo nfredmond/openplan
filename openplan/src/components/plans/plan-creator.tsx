@@ -23,7 +23,7 @@ function FormError({ error }: { error: string | null }) {
   if (!error) return null;
 
   return (
-    <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {error}
     </p>
   );
@@ -86,7 +86,7 @@ export function PlanCreator({ projects }: { projects: ProjectOption[] }) {
             and reports without pretending the document is already complete.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/12 text-amber-700 dark:text-amber-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
           <FilePlus2 className="h-5 w-5" />
         </span>
       </div>

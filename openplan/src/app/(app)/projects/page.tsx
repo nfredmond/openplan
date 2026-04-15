@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
@@ -146,7 +147,11 @@ function describeProjectPacketCommand(project: {
   };
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -306,6 +311,16 @@ export default async function ProjectsPage() {
     return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
   });
 
+  const { status: statusFilter = null } = await searchParams;
+  const filteredProjects = statusFilter
+    ? projects.filter((project) => project.status === statusFilter)
+    : projects;
+
+  const statusCounts = projects.reduce<Record<string, number>>((acc, project) => {
+    acc[project.status] = (acc[project.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const activeCount = projects.filter((project) => project.status === "active").length;
   const planningTypes = new Set(projects.map((project) => project.plan_type)).size;
   const scopingCount = projects.filter((project) => project.delivery_phase === "scoping").length;
@@ -390,7 +405,7 @@ export default async function ProjectsPage() {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <Layers3 className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -417,13 +432,39 @@ export default async function ProjectsPage() {
             <div className="module-section-heading">
               <p className="module-section-label">Portfolio</p>
               <h2 className="module-section-title">Project records</h2>
-              <p className="module-section-description">All saved projects in the current workspace.</p>
             </div>
             <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
               <span>Total</span>
               <strong>{projects.length}</strong>
             </span>
+          </div>
+
+          {/* Status filter bar */}
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <Link
+              href="/projects"
+              className={cn(
+                "rounded px-2 py-0.5 transition-colors",
+                !statusFilter ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800"
+              )}
+            >
+              All ({projects.length})
+            </Link>
+            {Object.entries(statusCounts)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([status, count]) => (
+                <Link
+                  key={status}
+                  href={`/projects?status=${status}`}
+                  className={cn(
+                    "rounded px-2 py-0.5 transition-colors",
+                    statusFilter === status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800"
+                  )}
+                >
+                  {titleize(status)} ({count})
+                </Link>
+              ))}
           </div>
 
           {projects.length === 0 ? (
@@ -463,98 +504,64 @@ export default async function ProjectsPage() {
                 />
               </div>
 
-              <div className="mt-5 module-record-list">
-                {projects.map((project) => (
-                <Link key={project.id} href={`/projects/${project.id}`} className="module-record-row is-interactive group block">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <span className="module-record-chip"><span>Status</span><strong>{titleize(project.status)}</strong></span>
-                        <span className="module-record-chip"><span>Plan</span><strong>{titleize(project.plan_type)}</strong></span>
-                        <span className="module-record-chip"><span>Phase</span><strong>{titleize(project.delivery_phase)}</strong></span>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
-                            {project.name}
-                          </h3>
-                          <p className="module-record-stamp">Updated {fmtDate(project.updated_at)}</p>
+              <div className="mt-4 module-record-list">
+                {filteredProjects.length === 0 ? (
+                  <div className="module-empty-state text-sm">
+                    No projects match the current filter.{" "}
+                    <Link href="/projects" className="text-emerald-700 underline-offset-2 hover:underline">
+                      Clear filter
+                    </Link>
+                  </div>
+                ) : filteredProjects.map((project) => (
+                  <Link key={project.id} href={`/projects/${project.id}`} className="module-record-row is-interactive group block">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <span className="module-record-chip"><span>Status</span><strong>{titleize(project.status)}</strong></span>
+                          <span className="module-record-chip"><span>Plan</span><strong>{titleize(project.plan_type)}</strong></span>
+                          <span className="module-record-chip"><span>Phase</span><strong>{titleize(project.delivery_phase)}</strong></span>
                         </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {project.summary ||
-                            "No summary yet — this project workspace is ready for planning, reporting, and analysis activity."}
-                        </p>
-                      </div>
-                    </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                  </div>
-
-                  <div className="module-record-meta">
-                    <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
-                    <span className="module-record-chip"><span>Tier</span><strong>{titleize(project.workspace?.plan ?? "pilot")}</strong></span>
-                    <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
-                    {project.rtpSummary.totalCount > 0 ? (
-                      <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>
-                    ) : null}
-                    {project.rtpSummary.constrainedCount > 0 ? (
-                      <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
-                    ) : null}
-                    <span className="module-record-chip"><span>Reports</span><strong>{project.reportSummary.totalCount}</strong></span>
-                    {project.reportSummary.attentionCount > 0 ? (
-                      <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
-                    ) : null}
-                    {project.reportSummary.evidenceBackedCount > 0 ? (
-                      <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
-                    ) : null}
-                    {project.reportSummary.comparisonBackedCount > 0 ? (
-                      <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
-                    ) : null}
-                    {project.reportSummary.governanceHoldCount > 0 ? (
-                      <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-3 border-t border-border/70 pt-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Portfolio packet command
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {project.packetCommand.label}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {project.packetCommand.detail}
-                    </p>
-                    {project.reportSummary.recommendedReport ? (
-                      <>
-                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                          {getReportPacketActionLabel(
-                            project.reportSummary.recommendedReport.packetFreshness.label
-                          )}
-                        </p>
-                        {project.reportSummary.recommendedReport.evidenceChainDigest ? (
-                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                            {project.reportSummary.recommendedReport.evidenceChainDigest.headline}
-                            {project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail
-                              ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <h3 className="module-record-title transition group-hover:text-primary">
+                              {project.name}
+                            </h3>
+                            <p className="module-record-stamp shrink-0">Updated {fmtDate(project.updated_at)}</p>
+                          </div>
+                          <p className="module-record-summary line-clamp-2">
+                            {project.summary || "No summary yet."}
+                          </p>
+                          <p className="text-[0.73rem] text-muted-foreground">
+                            {project.workspace?.name ?? "Unknown workspace"}
+                            {project.reportSummary.totalCount > 0
+                              ? ` · ${project.reportSummary.totalCount} report${project.reportSummary.totalCount === 1 ? "" : "s"}${project.reportSummary.attentionCount > 0 ? `, ${project.reportSummary.attentionCount} need attention` : ""}`
+                              : " · No reports yet"}
+                            {project.rtpSummary.totalCount > 0
+                              ? ` · ${project.rtpSummary.totalCount} RTP cycle${project.rtpSummary.totalCount === 1 ? "" : "s"}`
                               : ""}
                           </p>
-                        ) : null}
-                        {project.reportSummary.recommendedReport.comparisonDigest ? (
-                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                            {project.reportSummary.recommendedReport.comparisonDigest.headline}
-                            {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
-                          </p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        No report records linked yet. Open the project to create the first packet trail.
+                        </div>
+                      </div>
+
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                    </div>
+
+                    <div className="mt-2.5 border-t border-border/50 pt-2.5">
+                      <p className="text-[0.76rem] font-semibold text-foreground">
+                        {project.packetCommand.label}
                       </p>
-                    )}
-                  </div>
-                </Link>
+                      <p className="mt-0.5 text-[0.73rem] leading-relaxed text-muted-foreground">
+                        {project.packetCommand.detail}
+                        {project.reportSummary.recommendedReport?.evidenceChainDigest?.blockedGateDetail
+                          ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
+                          : ""}
+                        {project.reportSummary.recommendedReport?.comparisonDigest
+                          ? ` · ${project.reportSummary.recommendedReport.comparisonDigest.headline}`
+                          : ""}
+                      </p>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </>

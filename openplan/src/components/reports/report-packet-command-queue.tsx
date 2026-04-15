@@ -24,7 +24,7 @@ export function ReportPacketCommandQueue({
   emptyLabel?: string;
 }) {
   return (
-    <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+    <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -46,7 +46,7 @@ export function ReportPacketCommandQueue({
             <Link
               key={item.key}
               href={item.href}
-              className="block rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+              className="block rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

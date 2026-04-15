@@ -377,7 +377,7 @@ export default async function DataHubPage() {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -471,7 +471,7 @@ export default async function DataHubPage() {
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <Link2 className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -672,7 +672,7 @@ export default async function DataHubPage() {
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 <RefreshCw className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -741,7 +741,7 @@ export default async function DataHubPage() {
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/10 text-violet-700 dark:text-violet-300">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div className="module-section-heading">

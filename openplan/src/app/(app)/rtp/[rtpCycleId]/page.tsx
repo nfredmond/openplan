@@ -454,7 +454,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -508,7 +508,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   The shell is no longer just seeded structure. Each chapter can now carry explicit workflow status, working summary, and guidance.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
                 <FileStack className="h-5 w-5" />
               </span>
             </div>
@@ -531,11 +531,10 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                             <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>
                               {formatRtpChapterStatusLabel(chapter.status)}
                             </StatusBadge>
-                            <StatusBadge tone="neutral">{titleizeRtpValue(chapter.section_type)}</StatusBadge>
-                            {chapter.required ? <StatusBadge tone="success">Required</StatusBadge> : null}
-                            <StatusBadge tone="neutral">{chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</StatusBadge>
+                            <span className="module-record-chip"><span>Section</span><strong>{titleizeRtpValue(chapter.section_type)}</strong></span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
+                          <p className="mt-1 text-[0.73rem] text-muted-foreground">{chapter.required ? "Required" : "Optional"} · {chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
                         </div>
                         <div className="text-right text-xs text-muted-foreground">
                           <div>Updated {formatRtpDateTime(chapter.updated_at)}</div>
@@ -543,14 +542,14 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
                         <p className="mt-2 text-sm text-muted-foreground">
                           {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
                         </p>
                       </div>
 
-                      <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
                         <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
                           {chapter.content_markdown?.trim() || "No draft chapter content yet. Start writing the actual RTP section text here."}
@@ -558,7 +557,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                       </div>
 
                       {chapterCampaigns.length > 0 ? (
-                        <div className="space-y-2 rounded-2xl border border-border/70 bg-background px-4 py-3">
+                        <div className="space-y-2 rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
                           {chapterCampaigns.map((campaign) => (
                             <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
@@ -613,7 +612,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   Export the current cycle, chapter, portfolio, and engagement posture without waiting for deeper report-model integration.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/12 text-amber-700 dark:text-amber-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
                 <FileStack className="h-5 w-5" />
               </span>
             </div>
@@ -632,7 +631,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             </div>
 
             {packetReportsWithComparison.length > 0 ? (
-              <div className="mt-4 space-y-3 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+              <div className="mt-4 space-y-3 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
                 <div>
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Existing packet records
@@ -693,7 +692,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   The RTP chapter workflow and project portfolio now sit under the same cycle record, with real funding posture pulled from project funding profiles and awards.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
                 <FolderKanban className="h-5 w-5" />
               </span>
             </div>
@@ -747,11 +746,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                           {formatRtpPortfolioRoleLabel(link.portfolio_role)}
                         </StatusBadge>
                         <StatusBadge tone={projectFundingStackTone(link.fundingStack.pipelineStatus)}>{link.fundingStack.pipelineLabel}</StatusBadge>
-                        <StatusBadge tone={projectFundingReimbursementTone(link.fundingStack.reimbursementStatus)}>
-                          {link.fundingStack.reimbursementLabel}
-                        </StatusBadge>
                         {project?.status ? (
-                          <StatusBadge tone={projectStatusTone(project.status)}>{formatProjectStatusLabel(project.status)}</StatusBadge>
+                          <span className="module-record-chip"><span>Status</span><strong>{formatProjectStatusLabel(project.status)}</strong></span>
                         ) : null}
                       </div>
                       <div>
@@ -760,17 +756,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                           {link.priority_rationale?.trim() || project?.summary?.trim() || "No prioritization rationale recorded yet."}
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        <span className="module-record-chip">Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)}</span>
-                        <span className="module-record-chip">Likely {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.likelyFundingAmount)}</span>
-                        <span className="module-record-chip">Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)}</span>
-                        <span className="module-record-chip">Paid {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.paidReimbursementAmount)}</span>
-                        <span className="module-record-chip">Outstanding {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.outstandingReimbursementAmount)}</span>
-                        <span className="module-record-chip">Uninvoiced {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.uninvoicedAwardAmount)}</span>
-                        {link.fundingStack.awardRiskCount > 0 ? (
-                          <span className="module-record-chip">{link.fundingStack.awardRiskCount} award risk</span>
-                        ) : null}
-                      </div>
+                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                        {link.fundingStack.reimbursementLabel} · Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)} · Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)} · Paid {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.paidReimbursementAmount)} · Outstanding {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.outstandingReimbursementAmount)}{link.fundingStack.awardRiskCount > 0 ? ` · ${link.fundingStack.awardRiskCount} award risk` : ""}
+                      </p>
                       {project?.id ? (
                         <Link href={`/projects/${project.id}`} className="module-inline-action w-fit">
                           Open project workspace
@@ -792,7 +780,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   Use whole-cycle campaigns for planwide public review, then point deeper campaigns at specific chapters as needed.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/12 text-violet-700 dark:text-violet-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
                 <MessageSquare className="h-5 w-5" />
               </span>
             </div>

@@ -130,7 +130,7 @@ export function RtpRegistryPacketQueueCommandBoard({
             Run the recommended packet-queue sequence from the registry: create missing records, reset stale customized layouts, then generate every queued packet artifact.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
           <FileCog className="h-5 w-5" />
         </span>
       </div>
@@ -159,7 +159,7 @@ export function RtpRegistryPacketQueueCommandBoard({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4 text-sm text-muted-foreground">
+        <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4 text-sm text-muted-foreground">
           <p className="font-semibold text-foreground">Recommended sequence</p>
           <ol className="mt-2 space-y-2">
             <li>1. Create first packet records for cycles that still have none.</li>

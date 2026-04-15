@@ -335,7 +335,7 @@ export function RtpReportDetail({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <RouteIcon className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -381,7 +381,7 @@ export function RtpReportDetail({
                 <p className="module-section-description">This compares the latest packet artifact against the current RTP cycle state.</p>
               </div>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
                 <StatusBadge tone={packetWorkStatus.tone}>{packetWorkStatus.label}</StatusBadge>
@@ -455,7 +455,7 @@ export function RtpReportDetail({
                 <p className="module-section-description">Explicit comparison between the saved packet snapshot and the current RTP source state.</p>
               </div>
             </div>
-            <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={changedDriftItems.length === 0 ? "success" : "warning"}>
                   {changedDriftItems.length === 0
@@ -526,7 +526,7 @@ export function RtpReportDetail({
                 <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.outstandingReimbursementAmount ?? 0)}</p>
               </div>
             </div>
-            <div className="mt-4 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+            <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Section composition at generation time</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {generationContext.enabledSectionKeys.length > 0
@@ -534,7 +534,7 @@ export function RtpReportDetail({
                   : "No section composition captured on this artifact."}
               </p>
             </div>
-            <div className="mt-4 rounded-2xl border border-border/70 bg-background px-4 py-4">
+            <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current source composition</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {currentContext.enabledSectionKeys.length > 0
@@ -543,12 +543,12 @@ export function RtpReportDetail({
               </p>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Generation-time preset</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.presetLabel ?? "Unknown preset"}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{generationContext.presetStatusLabel ?? "Unknown status"}</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background px-4 py-4">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current preset posture</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.presetLabel ?? "Unknown preset"}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{currentContext.presetStatusLabel ?? "Unknown status"}</p>
@@ -598,7 +598,7 @@ export function RtpReportDetail({
                 <h2 className="module-section-title">Generation history</h2>
                 <p className="module-section-description">Generated packet artifacts attached to this RTP cycle report record.</p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
                 <FileOutput className="h-5 w-5" />
               </span>
             </div>
@@ -627,7 +627,7 @@ export function RtpReportDetail({
                 <h2 className="module-section-title">RTP cycle source</h2>
                 <p className="module-section-description">The underlying RTP cycle this packet record is representing.</p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
                 <BookOpenText className="h-5 w-5" />
               </span>
             </div>
@@ -647,7 +647,7 @@ export function RtpReportDetail({
                     </p>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+                <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Cycle summary</p>
                   <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                     {cycle.summary?.trim() || "No cycle summary recorded yet."}
@@ -669,7 +669,7 @@ export function RtpReportDetail({
               </div>
             </div>
             {latestHtml ? (
-              <div className="overflow-hidden rounded-2xl border border-border/70 bg-background">
+              <div className="overflow-hidden rounded-[0.5rem] border border-border/70 bg-background">
                 <div className="max-h-[70vh] overflow-auto p-0" dangerouslySetInnerHTML={{ __html: latestHtml }} />
               </div>
             ) : (

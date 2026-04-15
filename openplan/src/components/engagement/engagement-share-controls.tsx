@@ -112,7 +112,7 @@ export function EngagementShareControls({
             campaign status is Active.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/12 text-violet-700 dark:text-violet-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
           <Globe className="h-5 w-5" />
         </span>
       </div>

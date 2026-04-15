@@ -567,7 +567,7 @@ export default async function ReportsPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-amber-200" />
             </span>
             <div>
@@ -579,42 +579,32 @@ export default async function ReportsPage({
               </h2>
             </div>
           </div>
-          <div className="module-record-detail-grid cols-4 mt-5">
-            <div className="module-subpanel bg-white/[0.04] text-amber-50">
-              <p className="module-summary-label text-amber-200/70">Packets</p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div>
+              <p className="module-summary-label text-amber-200/70">Packets current</p>
               <p className="module-summary-value text-amber-50">{currentPacketCount}</p>
-              <p className="module-summary-detail text-amber-50/72">Current packet artifacts already available for review.</p>
             </div>
-            <div className="module-subpanel bg-white/[0.04] text-amber-50">
-              <p className="module-summary-label text-amber-200/70">Ready to review</p>
+            <div>
+              <p className="module-summary-label text-amber-200/70">Evidence-backed</p>
               <p className="module-summary-value text-amber-50">{evidenceBackedCount}</p>
-              <p className="module-summary-detail text-amber-50/72">Evidence summaries attached and surfaced in the record lane.</p>
             </div>
-            <div className="module-subpanel bg-white/[0.04] text-amber-50">
-              <p className="module-summary-label text-amber-200/70">Needs attention</p>
+            <div>
+              <p className="module-summary-label text-amber-200/70">Governance hold</p>
               <p className="module-summary-value text-amber-50">{blockedGovernanceCount}</p>
-              <p className="module-summary-detail text-amber-50/72">Governance blockers that should be resolved before shipment.</p>
             </div>
-            <div className="module-subpanel bg-white/[0.04] text-amber-50">
+            <div>
               <p className="module-summary-label text-amber-200/70">Funding review</p>
               <p className="module-summary-value text-amber-50">{rtpFundingReviewCount}</p>
-              <p className="module-summary-detail text-amber-50/72">Current RTP packets whose release review still carries linked-project funding follow-through.</p>
             </div>
           </div>
           <div className="mt-5">
             <WorkspaceRuntimeCue summary={operationsSummary} className="border-white/10 bg-white/[0.06] text-amber-50/82" />
           </div>
-          <ul className="mt-5 space-y-2.5 text-[0.84rem] leading-relaxed text-amber-50/82">
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Keep report packets connected to the work that produced them.
-            </li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Generate HTML packets now and prepare exports for delivery.
-            </li>
-            <li className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              Missing source context is surfaced clearly during review.
-            </li>
-          </ul>
+          <div className="module-operator-list mt-5">
+            <div className="module-operator-item">Keep report packets connected to the work that produced them.</div>
+            <div className="module-operator-item">Generate HTML packets now and prepare exports for delivery.</div>
+            <div className="module-operator-item">Missing source context is surfaced clearly during review.</div>
+          </div>
         </article>
       </header>
 
@@ -636,7 +626,7 @@ export default async function ReportsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
                 <FileStack className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -754,129 +744,35 @@ export default async function ReportsPage({
                         <StatusBadge tone={reportStatusTone(report.status)}>
                           {formatReportStatusLabel(report.status)}
                         </StatusBadge>
-                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                        {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
                         <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
-                        <StatusBadge tone={packetWorkStatus.tone}>{packetWorkStatus.label}</StatusBadge>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{report.title}</h3>
-                          <p className="module-record-stamp">Updated {formatDateTime(report.updated_at)}</p>
+                          <h3 className="module-record-title transition group-hover:text-primary">{report.title}</h3>
+                          <p className="module-record-stamp shrink-0">Updated {formatDateTime(report.updated_at)}</p>
                         </div>
                         <p className="module-record-summary line-clamp-2">
-                          {report.summary || "No summary provided. Open the report to add context and generate artifacts."}
+                          {report.summary || "No summary provided."}
+                        </p>
+                        <p className="text-[0.73rem] text-muted-foreground">
+                          {report.rtpCycle ? `RTP Cycle · ${report.rtpCycle.title}` : (report.project?.name ?? "No project")}
+                          {` · ${formatReportTypeLabel(report.report_type)}`}
+                          {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
+                          {(report.latestArtifact?.generated_at ?? report.generated_at) ? ` · Generated ${formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}` : ""}
+                          {(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0 ? ` · ${report.comparisonSnapshotAggregate!.comparisonSnapshotCount} comparison${report.comparisonSnapshotAggregate!.comparisonSnapshotCount === 1 ? "" : "s"}` : ""}
                         </p>
                       </div>
                     </div>
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">
-                      {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
-                    </span>
-                    <span className="module-record-chip">Next step {packetWorkStatus.label}</span>
-                    <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
-                    {report.evidenceChainSummary && report.evidenceChainSummary.scenarioSetLinkCount > 0 ? (
-                      <span className="module-record-chip">
-                        {report.evidenceChainSummary.scenarioSetLinkCount} scenario set{report.evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
-                      </span>
-                    ) : null}
-                    {report.scenarioSpineSummary ? (
-                      report.scenarioSpineSummary.pendingCount > 0 ? (
-                        <span className="module-record-chip">Scenario spine pending</span>
-                      ) : (
-                        <>
-                          {(report.scenarioSpineSummary.assumptionSetCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
-                            <span className="module-record-chip">
-                              {report.scenarioSpineSummary.assumptionSetCount} assumptions
-                            </span>
-                          ) : null}
-                          {(report.scenarioSpineSummary.dataPackageCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
-                            <span className="module-record-chip">
-                              {report.scenarioSpineSummary.dataPackageCount} packages
-                            </span>
-                          ) : null}
-                          {(report.scenarioSpineSummary.indicatorSnapshotCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
-                            <span className="module-record-chip">
-                              {report.scenarioSpineSummary.indicatorSnapshotCount} indicators
-                            </span>
-                          ) : null}
-                        </>
-                      )
-                    ) : null}
-                    {report.comparisonSnapshotAggregate &&
-                    report.comparisonSnapshotAggregate.comparisonSnapshotCount > 0 ? (
-                      <>
-                        <span className="module-record-chip">
-                          {report.comparisonSnapshotAggregate.comparisonSnapshotCount} saved comparison{report.comparisonSnapshotAggregate.comparisonSnapshotCount === 1 ? "" : "s"}
-                        </span>
-                        <span className="module-record-chip">
-                          {report.comparisonSnapshotAggregate.indicatorDeltaCount} comparison delta{report.comparisonSnapshotAggregate.indicatorDeltaCount === 1 ? "" : "s"}
-                        </span>
-                      </>
-                    ) : null}
-                    {report.fundingSnapshot ? (
-                      <>
-                        <span className="module-record-chip">
-                          {report.fundingSnapshot.label}
-                        </span>
-                        {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
-                          <span className="module-record-chip">
-                            Uncovered {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(report.fundingSnapshot.unfundedAfterLikelyAmount)}
-                          </span>
-                        ) : null}
-                      </>
-                    ) : null}
-                    {report.latestArtifact?.generated_at ?? report.generated_at ? (
-                      <span className="module-record-chip">
-                        Generated {formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="module-record-detail-grid cols-2 mt-4">
-                    <div className="module-note text-sm">
-                      <p className="font-medium text-foreground">Packet posture</p>
-                      <p className="mt-2 font-medium text-foreground/90">{packetWorkStatus.label}</p>
-                      <p className="mt-1">{packetWorkStatus.detail}</p>
-                      <p className="mt-1">{report.packetFreshness.detail}</p>
-                    </div>
-                    {report.evidenceChainDigest ? (
-                      <div className="module-note text-sm">
-                        <p className="font-medium text-foreground">Evidence chain posture</p>
-                        <p className="mt-2 font-medium text-foreground/90">{report.evidenceChainDigest.headline}</p>
-                        <p className="mt-1">{report.evidenceChainDigest.detail}</p>
-                        {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
-                        {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
-                          <p className="mt-1">
-                            Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
-                            {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
-                              ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
-                              : ""}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="module-note text-sm">
-                        <p className="font-medium text-foreground">Evidence chain posture</p>
-                        <p className="mt-2">No evidence summary attached to the latest artifact yet.</p>
-                      </div>
-                    )}
-                    <div className="module-note text-sm">
-                      <p className="font-medium text-foreground">Funding posture</p>
-                      {report.fundingDigest ? (
-                        <>
-                          <p className="mt-2 font-medium text-foreground/90">{report.fundingDigest.headline}</p>
-                          <p className="mt-1">{report.fundingDigest.detail}</p>
-                          {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
-                        </>
-                      ) : (
-                        <p className="mt-2">No funding snapshot is attached to the latest artifact yet.</p>
-                      )}
-                    </div>
-                  </div>
+                  {(report.packetFreshness.label !== "Packet current" || report.evidenceChainDigest?.blockedGateDetail || report.fundingDigest) ? (
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
+                      {packetWorkStatus.detail}
+                      {report.evidenceChainDigest?.blockedGateDetail ? ` · ${report.evidenceChainDigest.blockedGateDetail}` : ""}
+                      {report.fundingDigest?.headline ? ` · ${report.fundingDigest.headline}` : ""}
+                    </p>
+                  ) : null}
                 </Link>
                 );
               })}
@@ -887,7 +783,7 @@ export default async function ReportsPage({
 
       <article className="module-section-surface">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
             <FolderKanban className="h-5 w-5" />
           </span>
           <div>

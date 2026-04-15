@@ -66,7 +66,7 @@ export function StateBlock({
   return (
     <div
       className={cn(
-        "rounded-2xl border px-4 py-3",
+        "rounded-[0.5rem] border px-4 py-3",
         styles.container,
         compact ? "space-y-1.5" : "space-y-2.5",
         className

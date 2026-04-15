@@ -107,7 +107,7 @@ export function EngagementBulkModeration({
             Select items and apply status changes in bulk. Showing {pendingItems.length} pending and {flaggedItems.length} flagged items.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/12 text-amber-700 dark:text-amber-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
           <Zap className="h-5 w-5" />
         </span>
       </div>

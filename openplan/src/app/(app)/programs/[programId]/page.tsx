@@ -655,11 +655,11 @@ export default async function ProgramDetailPage({
             <p className="module-intro-description">{program.summary || "Track scope, timing, delivery relationships, and linked work in a single record for the program."}</p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="module-intro-kicker">
             <StatusBadge tone={programStatusTone(program.status)}>{formatProgramStatusLabel(program.status)}</StatusBadge>
-            <StatusBadge tone="info">{formatProgramTypeLabel(program.program_type)}</StatusBadge>
-            <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatProgramTypeLabel(program.program_type)}</strong></span>
           </div>
+          <p className="text-[0.73rem] text-muted-foreground">{readiness.label}</p>
 
           <div className="module-summary-grid cols-3 mt-6">
             <div className="module-summary-card">
@@ -720,7 +720,7 @@ export default async function ProgramDetailPage({
 
           <div className="mt-5 space-y-3">
             {readiness.checks.map((check) => (
-              <div key={check.key} className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{check.label}</p>
@@ -732,7 +732,7 @@ export default async function ProgramDetailPage({
             ))}
           </div>
 
-          <div className="mt-5 rounded-2xl border border-border/70 bg-background/80 p-4">
+          <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workflow summary</p>
             <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
@@ -767,35 +767,35 @@ export default async function ProgramDetailPage({
             </div>
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
                   {formatProgramFundingClassificationLabel(program.funding_classification)}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.sponsor_agency || "Not set"}</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.owner_label || "Unassigned"}</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.cadence_label || "Not set"}</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
                   {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Nomination due</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.nomination_due_at)}</p>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+              <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Adoption target</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.adoption_target_at)}</p>
               </div>
@@ -863,7 +863,6 @@ export default async function ProgramDetailPage({
                             <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
                               {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
                             </StatusBadge>
-                            <StatusBadge tone="neutral">{opportunity.project?.name ?? "No linked project"}</StatusBadge>
                           </div>
 
                           <div className="space-y-1.5">
@@ -882,6 +881,7 @@ export default async function ProgramDetailPage({
                               <MetaItem>Opens {formatProgramDateTime(opportunity.opens_at)}</MetaItem>
                               <MetaItem>Closes {formatProgramDateTime(opportunity.closes_at)}</MetaItem>
                               <MetaItem>Decision {formatProgramDateTime(opportunity.decision_due_at)}</MetaItem>
+                              {opportunity.project?.name ? <MetaItem>Project {opportunity.project.name}</MetaItem> : null}
                             </MetaList>
                           </div>
                         </div>
@@ -919,9 +919,8 @@ export default async function ProgramDetailPage({
                         <div className="module-record-head">
                           <div className="module-record-main">
                             <div className="module-record-kicker">
-                              <StatusBadge tone="neutral">{linkBasisLabel(project.linkBasis)}</StatusBadge>
-                              <StatusBadge tone="info">{titleizeProgramValue(project.plan_type)}</StatusBadge>
-                              <StatusBadge tone="neutral">{titleizeProgramValue(project.delivery_phase)}</StatusBadge>
+                              <span className="module-record-chip"><span>Type</span><strong>{titleizeProgramValue(project.plan_type)}</strong></span>
+                              <span className="module-record-chip"><span>Phase</span><strong>{titleizeProgramValue(project.delivery_phase)}</strong></span>
                             </div>
                             <div className="space-y-1.5">
                               <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">
@@ -953,9 +952,8 @@ export default async function ProgramDetailPage({
                         <div className="module-record-head">
                           <div className="module-record-main">
                             <div className="module-record-kicker">
-                              <StatusBadge tone="neutral">{linkBasisLabel(plan.linkBasis)}</StatusBadge>
                               <StatusBadge tone={planStatusTone(plan.status)}>{formatPlanStatusLabel(plan.status)}</StatusBadge>
-                              <StatusBadge tone="info">{formatPlanTypeLabel(plan.plan_type)}</StatusBadge>
+                              <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
                             </div>
                             <div className="space-y-1.5">
                               <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">
@@ -986,17 +984,17 @@ export default async function ProgramDetailPage({
                 ) : (
                   <div className="space-y-3">
                     <div className="grid gap-3 md:grid-cols-3">
-                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting models</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{supportingModels.length}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{supportingModelReadyCount} fully ready.</p>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project context</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{projectBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models anchored to the package project.</p>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Linked plan basis</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{planBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models surfaced through linked plans.</p>
@@ -1009,10 +1007,8 @@ export default async function ProgramDetailPage({
                           <div className="module-record-head">
                             <div className="module-record-main">
                               <div className="module-record-kicker">
-                                <StatusBadge tone="neutral">{modelSupportBasisLabel(model.supportBasis)}</StatusBadge>
                                 <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
-                                <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
-                                <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
+                                <span className="module-record-chip"><span>Family</span><strong>{formatModelFamilyLabel(model.model_family)}</strong></span>
                               </div>
                               <div className="space-y-1.5">
                                 <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">
@@ -1022,6 +1018,8 @@ export default async function ProgramDetailPage({
                                   {model.summary || "No summary on file for this supporting model record."}
                                 </p>
                                 <MetaList>
+                                  <MetaItem>{model.readiness.label}</MetaItem>
+                                  <MetaItem>Via {modelSupportBasisLabel(model.supportBasis)}</MetaItem>
                                   <MetaItem>{model.config_version ? `Config ${model.config_version}` : "Config pending"}</MetaItem>
                                   <MetaItem>{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</MetaItem>
                                   <MetaItem>{model.linkageCounts.runs} runs</MetaItem>
@@ -1072,9 +1070,7 @@ export default async function ProgramDetailPage({
                         <div className="module-record-head">
                           <div className="module-record-main">
                             <div className="module-record-kicker">
-                              <StatusBadge tone="neutral">{linkBasisLabel(report.linkBasis)}</StatusBadge>
                               <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                              <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
                               <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                             </div>
                             <div className="space-y-1.5">
@@ -1114,11 +1110,10 @@ export default async function ProgramDetailPage({
                         <div className="module-record-head">
                           <div className="module-record-main">
                             <div className="module-record-kicker">
-                              <StatusBadge tone="neutral">{linkBasisLabel(campaign.linkBasis)}</StatusBadge>
                               <StatusBadge tone={engagementStatusTone(campaign.status ?? "draft")}>
                                 {titleizeEngagementValue(campaign.status)}
                               </StatusBadge>
-                              <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
+                              <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
                             </div>
                             <div className="space-y-1.5">
                               <h3 className="module-record-title text-[1.02rem] transition group-hover:text-primary">

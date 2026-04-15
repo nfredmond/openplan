@@ -64,7 +64,7 @@ export function WorkspaceCommandBoard({
         <StatusBadge tone={postureTone(summary.posture)}>{postureLabel(summary.posture)}</StatusBadge>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="module-subpanel">
           <p className="module-summary-label">Packet work</p>
           <p className="module-summary-value">
@@ -112,35 +112,44 @@ export function WorkspaceCommandBoard({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3">
+      <div className="mt-5 space-y-1">
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
-            <Link key={item.key} href={isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
-                </div>
-                <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+            <Link
+              key={item.key}
+              href={isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href}
+              className="flex items-start justify-between gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.87rem] font-semibold text-gray-900">{item.title}</p>
+                <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{item.detail}</p>
+                {item.badges.length > 0 ? (
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {item.badges.map((badge) => (
+                      <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
+                        {badge.label}
+                        {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+                      </StatusBadge>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.badges.map((badge) => (
-                  <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
-                    {badge.label}
-                    {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
-                  </StatusBadge>
-                ))}
-              </div>
+              <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
             </Link>
           ))
         ) : (
-          <div className="module-subpanel text-sm text-muted-foreground">
-            No immediate queue pressure is visible from the current workspace snapshot.
-          </div>
+          <p className="text-[0.82rem] text-muted-foreground">
+            No immediate queue pressure visible from the current workspace snapshot.
+          </p>
         )}
       </div>
 
-      {children ? <div className="mt-5 grid gap-3">{children}</div> : null}
+      {children ? (
+        <div className="mt-5 space-y-1">
+          <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Baseline</p>
+          {children}
+        </div>
+      ) : null}
     </article>
   );
 }

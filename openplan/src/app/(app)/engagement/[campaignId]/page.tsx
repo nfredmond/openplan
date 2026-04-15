@@ -231,11 +231,9 @@ export default async function EngagementCampaignDetailPage({
             <StatusBadge tone={engagementStatusTone(campaign.status)}>
               {titleizeEngagementValue(campaign.status)}
             </StatusBadge>
-            <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-            <StatusBadge tone={counts.statusCounts.flagged > 0 ? "warning" : "success"}>
-              {counts.statusCounts.flagged > 0 ? `${counts.statusCounts.flagged} flagged` : "No flagged items"}
-            </StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
           </div>
+          <p className="text-[0.73rem] text-muted-foreground">{counts.statusCounts.flagged > 0 ? `${counts.statusCounts.flagged} flagged` : "No flagged items"}</p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{campaign.title}</h1>
             <p className="module-intro-description">
@@ -269,7 +267,7 @@ export default async function EngagementCampaignDetailPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -488,7 +486,7 @@ export default async function EngagementCampaignDetailPage({
                 Linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
               </p>
             </div>
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
               <FileStack className="h-5 w-5" />
             </span>
           </div>
@@ -549,13 +547,10 @@ export default async function EngagementCampaignDetailPage({
                     <div className="module-record-main">
                       <div className="module-record-kicker">
                         <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                        <StatusBadge tone={report.isExplicitCampaignSource ? "success" : "neutral"}>
-                          {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}
-                        </StatusBadge>
                         <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                       </div>
                       <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                      <p className="module-record-summary">{formatReportTypeLabel(report.report_type)} · {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}</p>
                       <p className="module-record-summary">
                         {report.isExplicitCampaignSource
                           ? "This report explicitly includes this campaign as an engagement source section."

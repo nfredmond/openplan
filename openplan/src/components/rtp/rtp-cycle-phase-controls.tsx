@@ -106,7 +106,7 @@ export function RtpCyclePhaseControls({
             Move the RTP cycle into its next phase and optionally push the recommended packet preset to linked RTP packet records.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
           <WandSparkles className="h-5 w-5" />
         </span>
       </div>
@@ -131,7 +131,7 @@ export function RtpCyclePhaseControls({
           </select>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+        <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recommended packet preset</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{describeRtpPacketPresetStage(presetStage)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -141,7 +141,7 @@ export function RtpCyclePhaseControls({
           </p>
         </div>
 
-        <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background px-4 py-4 text-sm text-foreground">
+        <label className="flex items-start gap-3 rounded-[0.5rem] border border-border/70 bg-background px-4 py-4 text-sm text-foreground">
           <input
             type="checkbox"
             className="mt-0.5 h-4 w-4 rounded border-input"
@@ -158,7 +158,7 @@ export function RtpCyclePhaseControls({
         </label>
 
         {error ? (
-          <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}

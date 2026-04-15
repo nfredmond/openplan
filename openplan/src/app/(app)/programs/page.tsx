@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
@@ -97,6 +98,11 @@ type ProgramReportRow = {
   generated_at: string | null;
   latest_artifact_kind: string | null;
   updated_at: string | null;
+};
+
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
 };
 
 type FundingOpportunityRow = {
@@ -275,6 +281,28 @@ export default async function ProgramsPage({
         .in("id", explicitReportIds)
     : { data: [], error: null };
 
+  const reportIds = Array.from(
+    new Set([
+      ...((projectReportsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id),
+      ...((explicitReportsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id),
+    ])
+  );
+
+  const reportArtifactsResult = reportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at")
+        .in("report_id", reportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+
+  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
+  for (const row of (reportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
+    if (!latestArtifactByReportId.has(row.report_id)) {
+      latestArtifactByReportId.set(row.report_id, row);
+    }
+  }
+
   const planCountsByProject = new Map<string, number>();
   for (const row of plansResult.data ?? []) {
     if (!row.project_id) continue;
@@ -299,11 +327,12 @@ export default async function ProgramsPage({
   const generatedReportCountsByProject = new Map<string, number>();
   for (const row of (projectReportsResult.data ?? []) as ProgramReportRow[]) {
     if (!row.project_id) continue;
+    const latestArtifact = latestArtifactByReportId.get(row.id) ?? null;
     const hydratedRow = {
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: row.generated_at,
+        generatedAt: latestArtifact?.generated_at ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     };
@@ -317,11 +346,12 @@ export default async function ProgramsPage({
   }
 
   for (const row of (explicitReportsResult.data ?? []) as ProgramReportRow[]) {
+    const latestArtifact = latestArtifactByReportId.get(row.id) ?? null;
     explicitReportById.set(row.id, {
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: row.generated_at,
+        generatedAt: latestArtifact?.generated_at ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     });
@@ -567,7 +597,7 @@ export default async function ProgramsPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -613,6 +643,23 @@ export default async function ProgramsPage({
               <FolderKanban className="h-3.5 w-3.5" />
               <strong>{typedPrograms.length}</strong> total
             </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <Link href="/programs" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+              All ({allTypedPrograms.length})
+            </Link>
+            {[
+              { value: "draft", label: "Draft" },
+              { value: "assembling", label: "Assembling" },
+              { value: "submitted", label: "Submitted" },
+              { value: "programmed", label: "Programmed" },
+              { value: "closed", label: "Closed" },
+            ].map((opt) => (
+              <Link key={opt.value} href={`/programs?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+                {opt.label} ({allTypedPrograms.filter((p) => p.status === opt.value).length})
+              </Link>
+            ))}
           </div>
 
           {typedPrograms.length === 0 ? (
@@ -689,28 +736,10 @@ export default async function ProgramsPage({
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">Cycle {program.cycle_name}</span>
-                    <span className="module-record-chip">
-                      {formatProgramFundingClassificationLabel(program.funding_classification)}
-                    </span>
-                    <span className="module-record-chip">Window {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
-                    <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
-                    <span className="module-record-chip">Owner {program.owner_label ?? "Unassigned"}</span>
-                    <span className="module-record-chip">Cadence {program.cadence_label ?? "Not set"}</span>
-                    <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
-                    <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
-                    <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
-                    {program.packetSummary.attentionCount > 0 ? (
-                      <span className="module-record-chip">Packet attention {program.packetSummary.attentionCount}</span>
-                    ) : null}
-                    {program.packetSummary.refreshRecommendedCount > 0 ? (
-                      <span className="module-record-chip">Refresh {program.packetSummary.refreshRecommendedCount}</span>
-                    ) : null}
-                    {program.packetSummary.noPacketCount > 0 ? (
-                      <span className="module-record-chip">No packet {program.packetSummary.noPacketCount}</span>
-                    ) : null}
-                  </div>
+                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    {program.project?.name ?? "No primary project"} · Cycle {program.cycle_name} · {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)} · {program.linkageCounts.plans} plans · {program.linkageCounts.reports} reports
+                    {program.packetSummary.attentionCount > 0 ? ` · ${program.packetSummary.attentionCount} packet action${program.packetSummary.attentionCount === 1 ? "" : "s"} needed` : ""}
+                  </p>
 
                   <div className="mt-3 border-t border-border/70 pt-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

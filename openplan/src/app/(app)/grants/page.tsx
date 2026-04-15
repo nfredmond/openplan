@@ -920,7 +920,7 @@ export default async function GrantsPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -940,7 +940,7 @@ export default async function GrantsPage({
             <WorkspaceRuntimeCue summary={operationsSummary} className="border-white/10 bg-white/[0.06] text-emerald-50/82" />
           </div>
           {leadGrantsCommand ? (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-emerald-50/82">
+            <div className="mt-4 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-emerald-50/82">
               <p className="font-semibold text-emerald-50">Lead workspace grant command</p>
               <p className="mt-1">{leadGrantsCommand.detail}</p>
               <Link href={leadGrantsCommand.href} className="mt-3 inline-flex items-center gap-2 font-semibold text-emerald-100 transition hover:text-white">
@@ -977,7 +977,7 @@ export default async function GrantsPage({
                   initialNotes={fundingNeedEditorProject.notes}
                 />
                 {activeFocusedProjectId === fundingNeedEditorProject.project.id ? (
-                  <div className="mt-3 rounded-2xl border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
+                  <div className="mt-3 rounded-[0.5rem] border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
                     <p className="font-semibold">Focused from workspace queue</p>
                     <p className="mt-1">
                       {fundingNeedEditorProject.project.name} already has linked opportunities but still needs a recorded funding-need anchor before gap and award posture can be trusted.
@@ -1022,7 +1022,7 @@ export default async function GrantsPage({
                 }
               />
               {activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? (
-                <div className="mt-3 rounded-2xl border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
+                <div className="mt-3 rounded-[0.5rem] border border-sky-400/35 bg-sky-400/10 px-4 py-3 text-sm text-sky-950 dark:text-sky-100">
                   <p className="font-semibold">Focused from workspace queue</p>
                   <p className="mt-1">
                     {fundingOpportunityCreatorMode === "gap" && focusedFundingGapProject
@@ -1131,9 +1131,6 @@ export default async function GrantsPage({
                           <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
                           {overdue ? <StatusBadge tone="danger">Overdue</StatusBadge> : null}
                           {entry.isExactRelink ? <StatusBadge tone="success">Exact relink ready</StatusBadge> : null}
-                          {award ? <StatusBadge tone="info">{award.title}</StatusBadge> : null}
-                          {isFocusedRow ? <StatusBadge tone="info">Focused from triage</StatusBadge> : null}
-                          {isJustRelinkedRow ? <StatusBadge tone="success">Relink just saved</StatusBadge> : null}
                         </div>
 
                         <div className="space-y-1.5">
@@ -1260,14 +1257,14 @@ export default async function GrantsPage({
             {awardConversionOpportunity ? (
               <div
                 id="grants-award-conversion-composer"
-                className={`mt-5 scroll-mt-24 rounded-3xl ${
+                className={`mt-5 scroll-mt-24 rounded-[0.75rem] ${
                   activeFocusedOpportunityId === awardConversionOpportunity.id
                     ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
                     : ""
                 }`}
               >
                 {activeFocusedOpportunityId === awardConversionOpportunity.id ? (
-                  <div className="mb-3 rounded-2xl border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
+                  <div className="mb-3 rounded-[0.5rem] border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
                     <p className="font-semibold tracking-tight">Focused from workspace queue</p>
                     <p className="mt-1">This award conversion creator is pre-targeted to {awardConversionOpportunity.title} so the grants command board can record the exact committed award it flagged next.</p>
                   </div>
@@ -1422,14 +1419,14 @@ export default async function GrantsPage({
                 {reimbursementComposerStack ? (
                   <div
                     id="grants-reimbursement-composer"
-                    className={`mt-5 scroll-mt-24 rounded-3xl ${
+                    className={`mt-5 scroll-mt-24 rounded-[0.75rem] ${
                       activeFocusedProjectId === reimbursementComposerStack.project.id
                         ? "ring-2 ring-sky-400/80 ring-offset-2 ring-offset-background shadow-[0_0_0_1px_rgba(56,189,248,0.15)]"
                         : ""
                     }`}
                   >
                     {activeFocusedProjectId === reimbursementComposerStack.project.id ? (
-                      <div className="mb-3 rounded-2xl border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
+                      <div className="mb-3 rounded-[0.5rem] border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
                         <p className="font-semibold tracking-tight">Focused from workspace queue</p>
                         <p className="mt-1">This reimbursement composer is pre-targeted to {reimbursementComposerStack.project.name} so the grants command board can start the exact packet it flagged next.</p>
                       </div>
@@ -1485,14 +1482,7 @@ export default async function GrantsPage({
                         <StatusBadge tone={projectFundingReimbursementTone(item.summary.reimbursementStatus)}>
                           {item.summary.reimbursementLabel}
                         </StatusBadge>
-                        {activeFocusedProjectId === item.project.id ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                         <StatusBadge tone="info">{item.awards.length} award{item.awards.length === 1 ? "" : "s"}</StatusBadge>
-                        {item.summary.awardRiskCount > 0 ? (
-                          <StatusBadge tone="warning">{item.summary.awardRiskCount} at risk</StatusBadge>
-                        ) : null}
-                        {item.summary.nextObligationAt && isDecisionSoon(item.summary.nextObligationAt) ? (
-                          <StatusBadge tone="warning">Obligation soon</StatusBadge>
-                        ) : null}
                       </div>
 
                       <div className="space-y-1.5">
@@ -1541,7 +1531,7 @@ export default async function GrantsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
                 <CalendarClock className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -1639,10 +1629,7 @@ export default async function GrantsPage({
                         <StatusBadge tone={fundingOpportunityDecisionTone(opportunity.decision_state)}>
                           {formatFundingOpportunityDecisionLabel(opportunity.decision_state)}
                         </StatusBadge>
-                        {activeFocusedOpportunityId === opportunity.id && opportunity.opportunity_status !== "awarded" ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                         {closesSoon ? <StatusBadge tone="warning">Closing soon</StatusBadge> : null}
-                        {decisionSoon ? <StatusBadge tone="warning">Decision due soon</StatusBadge> : null}
-                        {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}
                       </div>
 
                       <div className="space-y-1.5">
@@ -1655,27 +1642,20 @@ export default async function GrantsPage({
                         </p>
                       </div>
 
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
-                        <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
-                        <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
-                        <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
-                        <span className="module-record-chip">Opens {formatDateTime(opportunity.opens_at)}</span>
-                        <span className="module-record-chip">Closes {formatDateTime(opportunity.closes_at)}</span>
-                        <span className="module-record-chip">Decision due {formatDateTime(opportunity.decision_due_at)}</span>
-                        <span className="module-record-chip">Project {opportunity.project?.name ?? "Not linked"}</span>
-                      </div>
+                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                        {opportunity.project?.name ?? "No project"}{opportunity.program ? ` · ${opportunity.program.title}` : ""} · {formatCurrency(opportunity.expected_award_amount)} likely · Closes {formatDateTime(opportunity.closes_at)}
+                      </p>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-3">
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
                           <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
                         </div>
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
                           <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
                         </div>
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
                           <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
                         </div>

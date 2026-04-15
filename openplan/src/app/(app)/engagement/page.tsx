@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const ENGAGEMENT_STATUS_FILTER_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "closed", label: "Closed" },
+  { value: "archived", label: "Archived" },
+] as const;
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -132,6 +140,12 @@ export default async function EngagementPage({
     .filter((campaign) => (filters.projectId ? campaign.project_id === filters.projectId : true))
     .filter((campaign) => (filters.status ? campaign.status === filters.status : true));
 
+  const allCampaignCount = (campaignsData ?? []).length;
+  const statusCountsAll = ((campaignsData ?? []) as CampaignRow[]).reduce<Record<string, number>>((acc, c) => {
+    acc[c.status] = (acc[c.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const activeCount = campaigns.filter((campaign) => campaign.status === "active").length;
   const closedCount = campaigns.filter((campaign) => campaign.status === "closed").length;
   const draftCount = campaigns.filter((campaign) => campaign.status === "draft").length;
@@ -179,7 +193,7 @@ export default async function EngagementPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -207,15 +221,31 @@ export default async function EngagementPage({
             <div className="module-section-heading">
               <p className="module-section-label">Catalog</p>
               <h2 className="module-section-title">Current engagement campaigns</h2>
-              <p className="module-section-description">
-                Filter in the URL with <code>?projectId=...</code> or <code>?status=...</code> when you need a narrower
-                operational view.
-              </p>
             </div>
-            <span className="module-inline-item">
+            <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
-              <strong>{campaigns.length}</strong> total
+              <span>Total</span>
+              <strong>{campaigns.length}</strong>
             </span>
+          </div>
+
+          {/* Status filter bar */}
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <Link
+              href="/engagement"
+              className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+            >
+              All ({allCampaignCount})
+            </Link>
+            {ENGAGEMENT_STATUS_FILTER_OPTIONS.map((option) => (
+              <Link
+                key={option.value}
+                href={`/engagement?status=${option.value}`}
+                className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+              >
+                {option.label} ({statusCountsAll[option.value] ?? 0})
+              </Link>
+            ))}
           </div>
 
           {campaigns.length === 0 ? (
@@ -239,38 +269,30 @@ export default async function EngagementPage({
                         <StatusBadge tone={engagementStatusTone(campaign.status)}>
                           {titleizeEngagementValue(campaign.status)}
                         </StatusBadge>
-                        <StatusBadge tone="info">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                        <StatusBadge tone={campaign.counts.totalItems > 0 ? "success" : "neutral"}>
-                          {campaign.counts.totalItems} items
-                        </StatusBadge>
-                        <StatusBadge tone={campaign.readiness.tone}>{campaign.readiness.label}</StatusBadge>
+                        <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
+                          <h3 className="module-record-title transition group-hover:text-primary">
                             {campaign.title}
                           </h3>
-                          <p className="module-record-stamp">Updated {fmtDateTime(campaign.updated_at)}</p>
+                          <p className="module-record-stamp shrink-0">Updated {fmtDateTime(campaign.updated_at)}</p>
                         </div>
                         <p className="module-record-summary line-clamp-2">
-                          {campaign.summary ||
-                            "No summary yet. Open the campaign to define categories, register intake, and review moderation state."}
+                          {campaign.summary || "No summary yet."}
+                        </p>
+                        <p className="text-[0.73rem] text-muted-foreground">
+                          {campaign.project?.name ?? "No project linked"}
+                          {campaign.categoryCount > 0 ? ` · ${campaign.categoryCount} categor${campaign.categoryCount === 1 ? "y" : "ies"}` : ""}
+                          {campaign.counts.totalItems > 0 ? ` · ${campaign.counts.totalItems} item${campaign.counts.totalItems === 1 ? "" : "s"}` : ""}
+                          {campaign.counts.statusCounts.flagged > 0 ? ` · ${campaign.counts.statusCounts.flagged} flagged` : ""}
+                          {campaign.counts.geolocatedItems > 0 ? ` · ${campaign.counts.geolocatedItems} geolocated` : ""}
                         </p>
                       </div>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                  </div>
-
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">Project {campaign.project?.name ?? "Unlinked"}</span>
-                    <span className="module-record-chip">Categories {campaign.categoryCount}</span>
-                    <span className="module-record-chip">Readiness {campaign.readiness.completeCount}/{campaign.readiness.totalChecks}</span>
-                    <span className="module-record-chip">Approved {campaign.counts.statusCounts.approved}</span>
-                    <span className="module-record-chip">Flagged {campaign.counts.statusCounts.flagged}</span>
-                    <span className="module-record-chip">Recent {campaign.counts.recentActivity.count}</span>
-                    <span className="module-record-chip">Geolocated {campaign.counts.geolocatedItems}</span>
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
                 </Link>
               ))}

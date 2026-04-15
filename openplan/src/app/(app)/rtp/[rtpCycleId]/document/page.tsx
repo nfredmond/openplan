@@ -221,7 +221,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <RouteIcon className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -300,7 +300,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+            <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current cycle summary</p>
               <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                 {cycle.summary?.trim() || "No cycle summary recorded yet."}
@@ -316,7 +316,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                 <h2 className="module-section-title">Portfolio posture</h2>
                 <p className="module-section-description">The projects currently tied to this RTP cycle and how they are framed.</p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
                 <FolderKanban className="h-5 w-5" />
               </span>
             </div>
@@ -348,7 +348,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                 <h2 className="module-section-title">Engagement posture</h2>
                 <p className="module-section-description">Cycle-wide and chapter-specific engagement targets attached to this RTP update.</p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/12 text-violet-700 dark:text-violet-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
                 <MessageSquare className="h-5 w-5" />
               </span>
             </div>
@@ -392,21 +392,21 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
+                  <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Working summary</p>
                     <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                       {chapter.summary?.trim() || "No working summary recorded yet."}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-border/70 bg-background px-4 py-4">
+                  <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft section text</p>
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
                       {chapter.content_markdown?.trim() || "No draft section content yet."}
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border/70 bg-background px-4 py-4">
+                  <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Editorial guidance</p>
                     <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                       {chapter.guidance?.trim() || "No editorial guidance recorded yet."}
@@ -414,7 +414,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                   </div>
 
                   {chapterCampaigns.length > 0 ? (
-                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-4">
+                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
                       <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
                       <div className="mt-3 space-y-3">
                         {chapterCampaigns.map((campaign) => (
