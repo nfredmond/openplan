@@ -316,7 +316,7 @@ describe("DashboardPage", () => {
         operatorDetail:
           "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across 2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
         leadDecisionDetail:
-          "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Grant Strategy Packet is the lead packet to review. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
+          "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Grant Strategy Packet is the lead packet to review. Recommended next move: Advance to pursue now. Grant Strategy Packet appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
       },
       nextCommand: {
         key: "advance-project-funding-decisions",
@@ -333,6 +333,7 @@ describe("DashboardPage", () => {
         badges: [
           { label: "Decision gaps", value: 1 },
           { label: "Modeling", value: "Appears decision-ready" },
+          { label: "Next move", value: "Advance to pursue now" },
         ],
       },
       commandQueue: [
@@ -351,6 +352,7 @@ describe("DashboardPage", () => {
           badges: [
             { label: "Decision gaps", value: 1 },
             { label: "Modeling", value: "Appears decision-ready" },
+            { label: "Next move", value: "Advance to pursue now" },
           ],
         },
       ],
@@ -370,6 +372,7 @@ describe("DashboardPage", () => {
           badges: [
             { label: "Decision gaps", value: 1 },
             { label: "Modeling", value: "Appears decision-ready" },
+            { label: "Next move", value: "Advance to pursue now" },
           ],
         },
       ],
@@ -383,6 +386,7 @@ describe("DashboardPage", () => {
     expect(
       screen.getByText(/ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready/i)
     ).toBeInTheDocument();
+    expect(screen.getByText(/Recommended next move: Advance to pursue now/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open Grants Surface/i })).toHaveAttribute(
       "href",
       "/grants?focusOpportunityId=opp-1#funding-opportunity-opp-1"
