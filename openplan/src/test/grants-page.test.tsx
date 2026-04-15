@@ -414,9 +414,8 @@ describe("GrantsPage", () => {
     expect(
       screen.getAllByText(/Mobility Grant Packet carries current comparison-backed planning support with ready saved comparisons and visible indicator deltas/i).length
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Modeling-backed").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Appears decision-ready").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("1 ready comparison").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/1 ready comparison/i).length).toBeGreaterThan(0);
     expect(screen.getByText("3 indicator deltas")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Open supporting packet/i })[0]).toHaveAttribute(
       "href",

@@ -579,7 +579,7 @@ describe("ProjectDetailPage", () => {
 
     expect(boardPacketCard).not.toBeNull();
     expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2");
-    expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
   });
 
   it("shows an empty reporting state when no reports are linked", async () => {

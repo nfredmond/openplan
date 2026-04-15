@@ -63,7 +63,7 @@ vi.mock("@/components/projects/project-workspace-creator", () => ({
 import ProjectsPage from "@/app/(app)/projects/page";
 
 async function renderPage() {
-  render(await ProjectsPage());
+  render(await ProjectsPage({ searchParams: Promise.resolve({}) }));
 }
 
 describe("ProjectsPage", () => {
