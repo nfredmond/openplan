@@ -250,4 +250,120 @@ describe("assistant response builders", () => {
     expect(response.findings.join(" ")).toContain("Open RTP grants follow-through");
     expect(response.nextSteps.join(" ")).toContain("/grants#grants-gap-resolution-lane");
   });
+
+  it("uses grant modeling detail in workspace funding responses when funding decisions lead the queue", () => {
+    const context: WorkspaceAssistantContext = {
+      kind: "workspace",
+      workspace: {
+        id: "11111111-1111-4111-8111-111111111111",
+        name: "Nevada County Vision Zero",
+        plan: "pilot",
+        role: "owner",
+      },
+      recentProject: {
+        id: "22222222-2222-4222-8222-222222222222",
+        name: "Modeled Project",
+        status: "active",
+        planType: "regional_transportation_plan",
+        deliveryPhase: "analysis",
+        updatedAt: "2026-04-15T12:00:00.000Z",
+      },
+      recentRuns: [],
+      currentRun: null,
+      baselineRun: null,
+      operationsSummary: {
+        posture: "attention",
+        headline: "Advance project funding decisions",
+        detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project. Modeling posture: Appears decision-ready.",
+        counts: {
+          projects: 1,
+          activeProjects: 1,
+          plans: 0,
+          plansNeedingSetup: 0,
+          programs: 0,
+          activePrograms: 0,
+          reports: 0,
+          reportRefreshRecommended: 0,
+          reportNoPacket: 0,
+          reportPacketCurrent: 0,
+          rtpFundingReviewPackets: 0,
+          comparisonBackedReports: 0,
+          fundingOpportunities: 1,
+          openFundingOpportunities: 1,
+          closingSoonFundingOpportunities: 0,
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 1,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 0,
+          projectFundingGapProjects: 0,
+          queueDepth: 1,
+        },
+        grantModelingSummary: {
+          breakdown: { decisionReady: 1, refreshRecommended: 0, thin: 0, noVisibleSupport: 0 },
+          breakdownSummary: "1 opportunity-linked project: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 0 without visible support.",
+          operatorDetail: "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead.",
+          leadDecisionDetail: "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Recommended next move: Advance to pursue now.",
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project.",
+          href: "/projects/project-modeled#project-funding-opportunities",
+          targetProjectId: "project-modeled",
+          targetProjectName: "Modeled Project",
+          targetOpportunityId: "opp-modeled-1",
+          tone: "warning",
+          priority: 5,
+          badges: [
+            { label: "Decision gaps", value: 1 },
+            { label: "Modeling", value: "Appears decision-ready" },
+          ],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project.",
+            href: "/projects/project-modeled#project-funding-opportunities",
+            targetProjectId: "project-modeled",
+            targetProjectName: "Modeled Project",
+            targetOpportunityId: "opp-modeled-1",
+            tone: "warning",
+            priority: 5,
+            badges: [
+              { label: "Decision gaps", value: 1 },
+              { label: "Modeling", value: "Appears decision-ready" },
+            ],
+          },
+        ],
+        fullCommandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project.",
+            href: "/projects/project-modeled#project-funding-opportunities",
+            targetProjectId: "project-modeled",
+            targetProjectName: "Modeled Project",
+            targetOpportunityId: "opp-modeled-1",
+            tone: "warning",
+            priority: 5,
+            badges: [
+              { label: "Decision gaps", value: 1 },
+              { label: "Modeling", value: "Appears decision-ready" },
+            ],
+          },
+        ],
+      },
+    };
+
+    const response = buildAssistantResponse(context, "workspace-funding");
+
+    expect(response.summary).toContain("ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
+    expect(response.findings.join(" ")).toContain("Lead grant decision cue");
+    expect(response.findings.join(" ")).toContain("Advance to pursue now");
+    expect(response.nextSteps.join(" ")).toContain("use this lead grant cue before treating the stack as a real funding pipeline");
+    expect(response.nextSteps.join(" ")).toContain("/grants?focusOpportunityId=opp-modeled-1#funding-opportunity-opp-modeled-1");
+  });
 });

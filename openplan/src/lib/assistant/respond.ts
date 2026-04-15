@@ -705,6 +705,8 @@ function buildWorkspaceResponse(
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
   const reimbursementStartCommand = context.operationsSummary.commandQueue.find((item) => item.key === "start-project-reimbursement-packets");
   const reimbursementAdvanceCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-reimbursement-invoicing");
+  const fundingDecisionCommand = context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions");
+  const leadFundingDecisionDetail = context.operationsSummary.grantModelingSummary?.leadDecisionDetail ?? null;
 
   if (workflowId === "analysis-focus" && context.currentRun) {
     return {
@@ -748,7 +750,9 @@ function buildWorkspaceResponse(
           : fundingSourcingCount > 0
           ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} a grounded need but still no linked funding opportunities, so sourcing candidates comes before gap-closing choreography.`
           : fundingDecisionCount > 0
-          ? `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but nothing marked pursue yet, so grant-decision work comes before gap-closing math.`
+          ? leadFundingDecisionDetail
+            ? `${leadFundingDecisionDetail} Grant-decision work still comes before gap-closing math.`
+            : `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but nothing marked pursue yet, so grant-decision work comes before gap-closing math.`
           : fundingAwardRecordCount > 0
           ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " already has" : "s already have"} an opportunity marked awarded but still no funding-award record, so committed-dollar reconciliation comes before final gap math.`
           : invoiceRelinkCount > 0
@@ -769,7 +773,9 @@ function buildWorkspaceResponse(
           : fundingSourcingCount > 0
           ? `Projects needing funding sourcing: ${fundingSourcingCount}.`
           : fundingDecisionCount > 0
-          ? `Projects needing pursue decisions: ${fundingDecisionCount}.`
+          ? leadFundingDecisionDetail
+            ? `Lead grant decision cue: ${leadFundingDecisionDetail}`
+            : `Projects needing pursue decisions: ${fundingDecisionCount}.`
           : fundingAwardRecordCount > 0
           ? `Awarded opportunities still missing funding-award records: ${fundingAwardRecordCount}.`
           : invoiceRelinkCount > 0
@@ -791,7 +797,9 @@ function buildWorkspaceResponse(
           : fundingSourcingCount > 0
           ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "source-project-funding-opportunities") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and source candidate programs before treating the project as a quantified funding gap.`
           : fundingDecisionCount > 0
-          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
+          ? leadFundingDecisionDetail
+            ? `Open ${resolveWorkspaceCommandHref(fundingDecisionCommand ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and use this lead grant cue before treating the stack as a real funding pipeline: ${leadFundingDecisionDetail}`
+            : `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
           : fundingAwardRecordCount > 0
           ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "record-awarded-funding") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
           : invoiceRelinkCount > 0
