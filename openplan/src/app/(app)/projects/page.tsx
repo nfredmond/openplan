@@ -4,6 +4,11 @@ import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
+  buildGrantDecisionModelingSupport,
+  buildProjectGrantModelingEvidenceByProjectId,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
+import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportNavigationHref,
@@ -199,6 +204,22 @@ export default async function ProjectsPage() {
     }
   }
 
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    (projectReportsData ?? []) as Array<{
+      id: string;
+      project_id: string;
+      title: string;
+      updated_at: string;
+      generated_at: string | null;
+      latest_artifact_kind: string | null;
+    }>,
+    (reportArtifactsData ?? []) as Array<{
+      report_id: string;
+      generated_at: string;
+      metadata_json: Record<string, unknown> | null;
+    }>
+  );
+
   const reportsByProjectId = new Map<
     string,
     Array<
@@ -269,6 +290,15 @@ export default async function ProjectsPage() {
     const comparisonBackedCount = reports.filter((report) =>
       Boolean(report.comparisonDigest)
     ).length;
+    const grantModelingEvidence =
+      projectGrantModelingEvidenceByProjectId.get(project.id) ?? null;
+    const grantModelingReadiness = describeProjectGrantModelingReadiness(
+      grantModelingEvidence
+    );
+    const grantModelingSupport = buildGrantDecisionModelingSupport(
+      grantModelingEvidence,
+      project.name
+    );
 
     const projectRecord = {
       ...project,
@@ -285,6 +315,9 @@ export default async function ProjectsPage() {
         governanceHoldCount,
         recommendedReport: reports[0] ?? null,
       },
+      grantModelingEvidence,
+      grantModelingReadiness,
+      grantModelingSupport,
       rtpSummary: {
         totalCount: rtpLinks.length,
         constrainedCount: rtpLinks.filter((link) => link.portfolio_role === "constrained").length,
@@ -293,9 +326,17 @@ export default async function ProjectsPage() {
       },
     };
 
+    const packetCommand = describeProjectPacketCommand(projectRecord);
+    if (
+      projectRecord.reportSummary.comparisonBackedCount > 0 &&
+      projectRecord.grantModelingEvidence
+    ) {
+      packetCommand.detail = projectRecord.grantModelingSupport.recommendedNextActionSummary;
+    }
+
     return {
       ...projectRecord,
-      packetCommand: describeProjectPacketCommand(projectRecord),
+      packetCommand,
     };
   }).sort((left, right) => {
     const commandPriority = getProjectPacketCommandPriority(left) - getProjectPacketCommandPriority(right);
@@ -511,6 +552,9 @@ export default async function ProjectsPage() {
                     {project.reportSummary.comparisonBackedCount > 0 ? (
                       <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
                     ) : null}
+                    {project.grantModelingReadiness ? (
+                      <span className="module-record-chip"><span>Grant review</span><strong>{project.grantModelingReadiness.label}</strong></span>
+                    ) : null}
                     {project.reportSummary.governanceHoldCount > 0 ? (
                       <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
                     ) : null}
@@ -546,6 +590,27 @@ export default async function ProjectsPage() {
                             {project.reportSummary.recommendedReport.comparisonDigest.headline}
                             {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
                           </p>
+                        ) : null}
+                        {project.grantModelingEvidence ? (
+                          <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                              Grant release review
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {project.grantModelingReadiness ? (
+                                <span className="module-record-chip">{project.grantModelingReadiness.label}</span>
+                              ) : null}
+                              <span className="module-record-chip">
+                                Suggested {titleize(project.grantModelingSupport.recommendedDecisionState)}
+                              </span>
+                              <span className="module-record-chip">
+                                Lead packet {project.grantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                              {project.grantModelingSupport.recommendedNextActionSummary}
+                            </p>
+                          </div>
                         ) : null}
                       </>
                     ) : (
