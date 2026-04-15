@@ -273,4 +273,119 @@ describe("DashboardPage", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Open Reports Surface/i })).toHaveAttribute("href", "/reports");
   });
+
+  it("explains why modeling-ready grant decisions are rising from the dashboard overview", async () => {
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
+      posture: "attention",
+      headline: "Advance project funding decisions",
+      detail: "Modeled funding decisions are rising in the grants queue.",
+      counts: {
+        projects: 2,
+        activeProjects: 2,
+        plans: 0,
+        plansNeedingSetup: 0,
+        programs: 0,
+        activePrograms: 0,
+        reports: 1,
+        reportRefreshRecommended: 0,
+        reportNoPacket: 0,
+        reportPacketCurrent: 1,
+        rtpFundingReviewPackets: 0,
+        comparisonBackedReports: 1,
+        fundingOpportunities: 2,
+        openFundingOpportunities: 2,
+        closingSoonFundingOpportunities: 1,
+        projectFundingNeedAnchorProjects: 0,
+        projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 1,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
+        queueDepth: 1,
+      },
+      grantModelingSummary: {
+        breakdown: {
+          decisionReady: 1,
+          refreshRecommended: 0,
+          thin: 0,
+          noVisibleSupport: 1,
+        },
+        breakdownSummary:
+          "2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support.",
+        operatorDetail:
+          "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across 2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
+        leadDecisionDetail:
+          "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Grant Strategy Packet is the lead packet to review. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
+      },
+      nextCommand: {
+        key: "advance-project-funding-decisions",
+        moduleKey: "grants",
+        moduleLabel: "Grants OS",
+        title: "Advance project funding decisions",
+        detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
+        href: "/projects/project-1#project-funding-opportunities",
+        targetProjectId: "project-1",
+        targetProjectName: "Modeled Project",
+        targetOpportunityId: "opp-1",
+        tone: "warning",
+        priority: 5,
+        badges: [
+          { label: "Decision gaps", value: 1 },
+          { label: "Modeling", value: "Appears decision-ready" },
+        ],
+      },
+      commandQueue: [
+        {
+          key: "advance-project-funding-decisions",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Advance project funding decisions",
+          detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
+          href: "/projects/project-1#project-funding-opportunities",
+          targetProjectId: "project-1",
+          targetProjectName: "Modeled Project",
+          targetOpportunityId: "opp-1",
+          tone: "warning",
+          priority: 5,
+          badges: [
+            { label: "Decision gaps", value: 1 },
+            { label: "Modeling", value: "Appears decision-ready" },
+          ],
+        },
+      ],
+      fullCommandQueue: [
+        {
+          key: "advance-project-funding-decisions",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Advance project funding decisions",
+          detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
+          href: "/projects/project-1#project-funding-opportunities",
+          targetProjectId: "project-1",
+          targetProjectName: "Modeled Project",
+          targetOpportunityId: "opp-1",
+          tone: "warning",
+          priority: 5,
+          badges: [
+            { label: "Decision gaps", value: 1 },
+            { label: "Modeling", value: "Appears decision-ready" },
+          ],
+        },
+      ],
+    });
+
+    await renderPage();
+
+    expect(
+      screen.getByText(/opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open Grants Surface/i })).toHaveAttribute(
+      "href",
+      "/grants?focusOpportunityId=opp-1#funding-opportunity-opp-1"
+    );
+  });
 });

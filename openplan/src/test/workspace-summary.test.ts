@@ -247,6 +247,15 @@ describe("workspace summary RTP funding review", () => {
     expect(comparisonCommand?.detail).toContain(
       "saved comparison context that can support grant planning language or prioritization framing"
     );
+    expect(summary.grantModelingSummary?.breakdownSummary).toBe(
+      "2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support."
+    );
+    expect(summary.grantModelingSummary?.operatorDetail).toContain(
+      "opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work"
+    );
+    expect(summary.grantModelingSummary?.operatorDetail).toContain(
+      "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review."
+    );
     expect(comparisonCommand?.detail).toContain(
       "Across 2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support."
     );

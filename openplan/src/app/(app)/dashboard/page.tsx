@@ -102,6 +102,7 @@ export default async function DashboardPage() {
   });
 
   const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsCommand(item)) ?? null;
+  const grantModelingSummary = operationsSummary.grantModelingSummary ?? null;
   const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
   const comparisonBackedReportCount = operationsSummary.counts.comparisonBackedReports;
   const grantsRoutedRtpFundingReview =
@@ -164,9 +165,12 @@ export default async function DashboardPage() {
       key: "grants-surface",
       href: leadGrantsCommand ? resolveSharedGrantsQueueHref(leadGrantsCommand) : "/grants",
       title: "Open Grants Surface",
-      description: leadGrantsCommand
-        ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
-        : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
+      description:
+        leadGrantsCommand?.key === "advance-project-funding-decisions" && grantModelingSummary?.leadDecisionDetail
+          ? grantModelingSummary.leadDecisionDetail
+          : leadGrantsCommand
+            ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
+            : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
       icon: Landmark,
     },
     {
@@ -283,6 +287,9 @@ export default async function DashboardPage() {
               <div className="module-operator-item">
                 {comparisonBackedReportCount} comparison-backed report packet{comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing, but that evidence still does not prove award likelihood or replace funding-source review.
               </div>
+            ) : null}
+            {grantModelingSummary?.operatorDetail ? (
+              <div className="module-operator-item">{grantModelingSummary.operatorDetail}</div>
             ) : null}
             <div className="module-operator-item">
               Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
