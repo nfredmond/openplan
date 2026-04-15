@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  GRANT_MODELING_PLANNING_CAVEAT,
+  buildGrantDecisionModelingSupport,
   buildProjectGrantModelingEvidenceByProjectId,
   compareProjectGrantModelingEvidenceForQueue,
   describeProjectGrantModelingReadiness,
@@ -359,5 +361,29 @@ describe("grants modeling evidence queue posture", () => {
 
     expect(compareProjectGrantModelingEvidenceForQueue(stronger, weaker)).toBeLessThan(0);
     expect(compareProjectGrantModelingEvidenceForQueue(weaker, stronger)).toBeGreaterThan(0);
+  });
+});
+
+describe("buildGrantDecisionModelingSupport", () => {
+  it("reuses the decision-ready recommendation wording for shared command surfaces", () => {
+    const support = buildGrantDecisionModelingSupport(buildEvidence({ title: "Mobility Grant Packet" }), "Modeled Project");
+
+    expect(support.recommendedNextActionTitle).toBe("Advance to pursue now");
+    expect(support.recommendedDecisionState).toBe("pursue");
+    expect(support.recommendedNextActionSummary).toContain(
+      "Mobility Grant Packet appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current."
+    );
+    expect(support.recommendedNextActionSummary).toContain(GRANT_MODELING_PLANNING_CAVEAT);
+  });
+
+  it("keeps the recommendation conservative when no modeling support is visible", () => {
+    const support = buildGrantDecisionModelingSupport(null, "Modeled Project");
+
+    expect(support.recommendedNextActionTitle).toBe("Keep monitoring or add support first");
+    expect(support.recommendedDecisionState).toBe("monitor");
+    expect(support.recommendedNextActionSummary).toContain(
+      "No visible modeling-backed packet is linked yet"
+    );
+    expect(support.recommendedNextActionSummary).toContain(GRANT_MODELING_PLANNING_CAVEAT);
   });
 });

@@ -1,5 +1,7 @@
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import {
+  GRANT_MODELING_PLANNING_CAVEAT,
+  buildGrantDecisionModelingSupport,
   buildProjectGrantModelingEvidenceByProjectId,
   compareProjectGrantModelingEvidenceForQueue,
   describeProjectGrantModelingReadiness,
@@ -309,9 +311,6 @@ function asNumber(value: unknown): number | null {
   }
   return null;
 }
-
-const GRANT_MODELING_PLANNING_CAVEAT =
-  "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.";
 
 function formatGrantModelingPostureLabel(
   readiness: ReturnType<typeof describeProjectGrantModelingReadiness>
@@ -1092,12 +1091,14 @@ export function buildWorkspaceOperationsSummary({
     firstFundingDecisionProject?.modelingEvidence?.leadComparisonReport.title
       ? `${firstFundingDecisionProject.modelingEvidence.leadComparisonReport.title} is the lead packet to review.`
       : "";
+  const firstFundingDecisionProjectRecommendation = firstFundingDecisionProject
+    ? buildGrantDecisionModelingSupport(
+        firstFundingDecisionProject.modelingEvidence,
+        firstFundingDecisionProject.project.name
+      )
+    : null;
   const grantModelingLeadDecisionDetail = firstFundingDecisionProject
-    ? firstFundingDecisionProject.modelingReadiness?.key === "decision-ready"
-      ? `${firstFundingDecisionProject.leadOpportunity?.title ?? "The lead funding decision"} for ${firstFundingDecisionProject.project.name} is rising because modeling posture appears decision-ready.${firstFundingDecisionProjectLeadPacketDetail ? ` ${firstFundingDecisionProjectLeadPacketDetail}` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
-      : firstFundingDecisionProject.modelingReadiness
-        ? `${firstFundingDecisionProject.leadOpportunity?.title ?? "The lead funding decision"} for ${firstFundingDecisionProject.project.name} is still visible in the decision queue while modeling posture reads ${firstFundingDecisionProject.modelingReadiness.label.toLowerCase()}.${firstFundingDecisionProjectLeadPacketDetail ? ` ${firstFundingDecisionProjectLeadPacketDetail}` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
-        : null
+    ? `${firstFundingDecisionProject.leadOpportunity?.title ?? "The lead funding decision"} for ${firstFundingDecisionProject.project.name} ${firstFundingDecisionProject.modelingReadiness?.key === "decision-ready" ? "is rising because modeling posture appears decision-ready." : firstFundingDecisionProject.modelingReadiness ? `is still visible in the decision queue while modeling posture reads ${firstFundingDecisionProject.modelingReadiness.label.toLowerCase()}.` : "is still visible in the decision queue while modeling posture shows no visible support."}${firstFundingDecisionProjectLeadPacketDetail ? ` ${firstFundingDecisionProjectLeadPacketDetail}` : ""}${firstFundingDecisionProjectRecommendation ? ` Recommended next move: ${firstFundingDecisionProjectRecommendation.recommendedNextActionTitle}. ${firstFundingDecisionProjectRecommendation.recommendedNextActionSummary}` : ""}`
     : null;
   const grantModelingSummary: WorkspaceGrantModelingSummary | null = grantModelingOpportunityBreakdownSummary
     ? {
@@ -1548,9 +1549,7 @@ export function buildWorkspaceOperationsSummary({
 
   if (fundingDecisionProjects.length > 0) {
     const firstFundingDecisionProjectModelingDetail = firstFundingDecisionProject
-      ? firstFundingDecisionProject.modelingReadiness
-        ? `Modeling posture for ${firstFundingDecisionProject.project.name}: ${firstFundingDecisionProject.modelingReadiness.label}.${firstFundingDecisionProject.modelingEvidence?.leadComparisonReport.title ? ` ${firstFundingDecisionProject.modelingEvidence.leadComparisonReport.title} is the lead packet to review.` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
-        : `No visible comparison-backed modeling support is attached to ${firstFundingDecisionProject.project.name} yet, so this decision still depends on direct funding-source review without that planning signal.`
+      ? `Modeling posture for ${firstFundingDecisionProject.project.name}: ${formatGrantModelingPostureLabel(firstFundingDecisionProject.modelingReadiness)}.${firstFundingDecisionProjectRecommendation ? ` Recommended next move: ${firstFundingDecisionProjectRecommendation.recommendedNextActionTitle}. ${firstFundingDecisionProjectRecommendation.recommendedNextActionSummary}` : ""}`
       : "";
     queueCandidates.push({
       key: "advance-project-funding-decisions",
@@ -1570,6 +1569,7 @@ export function buildWorkspaceOperationsSummary({
         { label: "Decision gaps", value: fundingDecisionProjects.length },
         { label: "Lead need", value: firstFundingDecisionProject ? formatCurrency(firstFundingDecisionProject.summary.fundingNeedAmount) : null },
         { label: "Modeling", value: formatGrantModelingPostureLabel(firstFundingDecisionProject?.modelingReadiness ?? null) },
+        { label: "Next move", value: firstFundingDecisionProjectRecommendation?.recommendedNextActionTitle ?? null },
       ],
     });
   }

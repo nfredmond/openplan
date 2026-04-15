@@ -5,6 +5,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   type ReportComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
+import type { FundingOpportunityDecision } from "@/lib/programs/catalog";
 
 export type ProjectGrantModelingReportRow = {
   id: string;
@@ -51,6 +52,19 @@ export type ProjectGrantModelingEvidence = {
   projectId: string;
   comparisonBackedCount: number;
   leadComparisonReport: ProjectGrantModelingLeadReport;
+};
+
+export const GRANT_MODELING_PLANNING_CAVEAT =
+  "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.";
+
+export type GrantDecisionModelingSupport = {
+  title: string;
+  summary: string;
+  readinessNoteSuggestion: string;
+  decisionRationaleSuggestion: string;
+  recommendedNextActionTitle: string;
+  recommendedNextActionSummary: string;
+  recommendedDecisionState: FundingOpportunityDecision;
 };
 
 function getGrantSupportFreshnessPriority(label: string) {
@@ -266,4 +280,62 @@ export function buildProjectGrantModelingEvidenceByProjectId(
   }
 
   return evidenceByProjectId;
+}
+
+export function buildGrantDecisionModelingSupport(
+  evidence: ProjectGrantModelingEvidence | null | undefined,
+  projectName?: string | null
+): GrantDecisionModelingSupport {
+  if (!evidence) {
+    const subject = projectName
+      ? `${projectName} has no visible modeling-backed packet linked yet.`
+      : "No visible modeling-backed packet is linked yet.";
+
+    return {
+      title: projectName ? `${projectName} modeling posture` : "Modeling posture",
+      summary: `${subject} Keep monitoring or add support before relying on modeling language for this opportunity. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture or add supporting packet evidence first because no visible modeling support is linked yet. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      decisionRationaleSuggestion: `Decision context should stay in monitor posture until operators add visible modeling support or confirm the funding source can proceed without it. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedNextActionTitle: "Keep monitoring or add support first",
+      recommendedNextActionSummary: `No visible modeling-backed packet is linked yet, so keep this opportunity in monitor posture or add support before relying on modeling language. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedDecisionState: "monitor",
+    };
+  }
+
+  const leadReport = evidence.leadComparisonReport;
+  const readiness = describeProjectGrantModelingReadiness(evidence);
+
+  if (readiness?.key === "decision-ready") {
+    return {
+      title: leadReport.title,
+      summary: `${readiness.detail} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      readinessNoteSuggestion: `Recommended next action: advance this opportunity to pursue now because modeling posture appears decision-ready in ${leadReport.title}. ${leadReport.comparisonDigest.headline}. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      decisionRationaleSuggestion: `Advance this opportunity to pursue now because ${leadReport.title} appears decision-ready as planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedNextActionTitle: "Advance to pursue now",
+      recommendedNextActionSummary: `${leadReport.title} appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedDecisionState: "pursue",
+    };
+  }
+
+  if (readiness?.key === "stale") {
+    return {
+      title: leadReport.title,
+      summary: `${readiness.detail} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture and refresh ${leadReport.title} before final pursue language. ${leadReport.packetFreshness.detail} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      decisionRationaleSuggestion: `Keep this opportunity in monitor posture until ${leadReport.title} is refreshed; the current packet is useful for planning support but should not drive final pursue language yet. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedNextActionTitle: "Refresh supporting packet before final pursue language",
+      recommendedNextActionSummary: `${leadReport.title} still helps with planning context, but operators should refresh the supporting packet before leaning on it for final pursue language. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedDecisionState: "monitor",
+    };
+  }
+
+  return {
+    title: leadReport.title,
+    summary: `${readiness?.detail ?? `Saved comparison context from ${leadReport.title} can support readiness and prioritization language for this opportunity. ${leadReport.comparisonDigest.detail}`} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+    readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture and strengthen evidence before relying on ${leadReport.title} for grant triage. ${leadReport.comparisonDigest.headline}. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+    decisionRationaleSuggestion: `Keep this opportunity in monitor posture until ${leadReport.title} carries stronger comparison-backed planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+    recommendedNextActionTitle: "Strengthen evidence before relying on it",
+    recommendedNextActionSummary: `${leadReport.title} is still thin as planning support, so operators should strengthen the evidence before relying on it for pursue language. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+    recommendedDecisionState: "monitor",
+  };
 }

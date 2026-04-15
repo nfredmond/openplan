@@ -273,12 +273,17 @@ describe("workspace operations summary", () => {
     expect(decisionCommand?.targetProjectId).toBe("project-modeled");
     expect(decisionCommand?.targetOpportunityId).toBe("opp-modeled-1");
     expect(decisionCommand?.detail).toContain("Modeling posture for Modeled Project: Appears decision-ready.");
+    expect(decisionCommand?.detail).toContain("Recommended next move: Advance to pursue now.");
     expect(decisionCommand?.detail).toContain(
       "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review."
     );
     expect(decisionCommand?.badges).toContainEqual({
       label: "Modeling",
       value: "Appears decision-ready",
+    });
+    expect(decisionCommand?.badges).toContainEqual({
+      label: "Next move",
+      value: "Advance to pursue now",
     });
   });
 
