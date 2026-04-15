@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const touchScenarioLinkedReportPacketsMock = vi.fn();
 
 const scenarioSetMaybeSingleMock = vi.fn();
 const scenarioSetEqMock = vi.fn(() => ({ maybeSingle: scenarioSetMaybeSingleMock }));
@@ -40,6 +41,9 @@ const reportRunsInMock = vi.fn();
 const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
 
 const baselineMaybeSingleMock = vi.fn();
+const spineOrderMock = vi.fn().mockResolvedValue({ data: [], error: null });
+const spineEqMock = vi.fn(() => ({ order: spineOrderMock }));
+const spineSelectMock = vi.fn(() => ({ eq: spineEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -91,6 +95,17 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (
+    table === "scenario_assumption_sets" ||
+    table === "scenario_data_packages" ||
+    table === "scenario_indicator_snapshots" ||
+    table === "scenario_comparison_snapshots"
+  ) {
+    return {
+      select: spineSelectMock,
+    };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -100,6 +115,10 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+}));
+
+vi.mock("@/lib/reports/scenario-writeback", () => ({
+  touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
 }));
 
 import { GET as getScenarioDetail, PATCH as patchScenarioDetail } from "@/app/api/scenarios/[scenarioSetId]/route";
@@ -206,6 +225,10 @@ describe("/api/scenarios/[scenarioSetId]", () => {
       },
       error: null,
     });
+    touchScenarioLinkedReportPacketsMock.mockResolvedValue({
+      touchedReportIds: ["99999999-9999-4999-8999-999999999999"],
+      error: null,
+    });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -302,6 +325,12 @@ describe("/api/scenarios/[scenarioSetId]", () => {
         title: "Updated set",
         status: "active",
         baseline_entry_id: "55555555-5555-4555-8555-555555555555",
+      })
+    );
+    expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scenarioSetId: "11111111-1111-4111-8111-111111111111",
+        workspaceId: "33333333-3333-4333-8333-333333333333",
       })
     );
   });

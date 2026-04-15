@@ -283,6 +283,15 @@ Make grant changes affect planning truth outside `/grants`.
 ### Gate to pass
 A meaningful grant update changes RTP or project-control posture visibly.
 
+### Progress through 2026-04-14
+- RTP packet detail now writes grant pressure back into explicit follow-through actions that route into Grants OS.
+- Reports registry now surfaces grant follow-through at both the report-row level and the top report packet queue when current packets are actually blocked by grant reality.
+- RTP registry cycle cards now expose a real Grants OS action when aggregate cycle funding posture still needs gap resolution, reimbursement triage, award conversion, or pipeline follow-through.
+- Workspace command board, runtime cue, and dashboard quick actions now treat current RTP packet pressure as Grants OS follow-through when funding posture, not packet freshness, is the real blocker.
+- Assistant preview/response layers for workspace, RTP cycle, and RTP registry now use grants-first wording when the routed next move is Grants OS instead of local packet polish.
+- Focused rendered coverage now exists for dashboard grants posture, RTP cycle-card grants follow-through, current-report queue grants routing, RTP cycle assistant grants copy, and RTP registry assistant grants copy.
+- Best next confidence lane is browser-level smoke on the updated dashboard, RTP, and reports surfaces once the browser control path is reliable enough for interactive proof.
+
 ---
 
 ## Day 5. Modeling write-back, packet basis, and comparison reuse

@@ -112,6 +112,22 @@ describe("ProjectsPage", () => {
             created_at: "2026-03-27T18:00:00.000Z",
           },
         },
+        {
+          id: "project-3",
+          workspace_id: "workspace-3",
+          name: "Eastside Funding Strategy",
+          summary: "Candidate package with modeled alternatives already compared.",
+          status: "active",
+          plan_type: "grant_strategy",
+          delivery_phase: "funding",
+          created_at: "2026-03-26T18:00:00.000Z",
+          updated_at: "2026-03-26T21:10:00.000Z",
+          workspaces: {
+            name: "OpenPlan Delivery",
+            plan: "pilot",
+            created_at: "2026-03-26T18:00:00.000Z",
+          },
+        },
       ],
       error: null,
     });
@@ -136,6 +152,15 @@ describe("ProjectsPage", () => {
           generated_at: "2026-03-28T19:00:00.000Z",
           latest_artifact_kind: "html",
         },
+        {
+          id: "report-3",
+          project_id: "project-3",
+          title: "Eastside Grant Packet",
+          status: "generated",
+          updated_at: "2026-03-26T21:10:00.000Z",
+          generated_at: "2026-03-26T21:10:00.000Z",
+          latest_artifact_kind: "html",
+        },
       ],
       error: null,
     });
@@ -149,6 +174,22 @@ describe("ProjectsPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  scenarioSetTitle: "Downtown alternatives",
+                  baselineLabel: "Existing conditions",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      status: "ready",
+                      candidateEntryLabel: "Protected bike package",
+                      indicatorDeltaCount: 4,
+                      updatedAt: "2026-03-28T19:30:00.000Z",
+                    },
+                  ],
+                },
+              ],
               evidenceChainSummary: {
                 linkedRunCount: 2,
                 scenarioSetLinkCount: 1,
@@ -187,6 +228,43 @@ describe("ProjectsPage", () => {
             },
           },
         },
+        {
+          report_id: "report-3",
+          generated_at: "2026-03-26T21:10:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-2",
+                  scenarioSetTitle: "Funding alternatives",
+                  baselineLabel: "Current package",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-2",
+                      status: "ready",
+                      candidateEntryLabel: "Bundled delivery scenario",
+                      indicatorDeltaCount: 3,
+                      updatedAt: "2026-03-26T20:55:00.000Z",
+                    },
+                  ],
+                },
+              ],
+              evidenceChainSummary: {
+                linkedRunCount: 1,
+                scenarioSetLinkCount: 1,
+                projectRecordGroupCount: 1,
+                totalProjectRecordCount: 2,
+                engagementLabel: "Active",
+                engagementItemCount: 2,
+                engagementReadyForHandoffCount: 2,
+                stageGateLabel: "Complete",
+                stageGatePassCount: 2,
+                stageGateHoldCount: 0,
+                stageGateBlockedGateLabel: null,
+              },
+            },
+          },
+        },
       ],
       error: null,
     });
@@ -209,7 +287,7 @@ describe("ProjectsPage", () => {
     expect(governanceHoldChip).not.toBeNull();
 
     expect(within(reportAttentionChip as HTMLElement).getByText("1")).toBeInTheDocument();
-    expect(within(evidenceBackedChip as HTMLElement).getByText("1")).toBeInTheDocument();
+    expect(within(evidenceBackedChip as HTMLElement).getByText("2")).toBeInTheDocument();
     expect(within(governanceHoldChip as HTMLElement).getByText("1")).toBeInTheDocument();
 
     expect(screen.getAllByText(/Portfolio packet command/i).length).toBeGreaterThan(0);
@@ -218,6 +296,15 @@ describe("ProjectsPage", () => {
       screen.getByText(/Next action: open this report and regenerate the packet\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Grant release review/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
+    expect(screen.getByText(/Suggested Pursue/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText(/No report records linked yet\./i).length).toBeGreaterThan(0);
   });
 });

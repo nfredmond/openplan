@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { isGrantsQueueItem, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 function postureTone(posture: WorkspaceOperationsSummary["posture"]) {
@@ -48,9 +48,11 @@ export function WorkspaceCommandBoard({
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
   const rtpFundingReviewCount = summary.counts.rtpFundingReviewPackets;
   const baseDescription = description ?? summary.detail;
+  const rtpFundingReviewRoutesThroughGrants =
+    summary.nextCommand?.key === "review-current-report-packets" && summary.nextCommand.moduleKey === "grants";
   const effectiveDescription =
     rtpFundingReviewCount > 0
-      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"} funding-backed release review even though packet freshness already reads current.`
+      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"}${rtpFundingReviewRoutesThroughGrants ? " Grants OS follow-through before packet release review is treated as settled." : " funding-backed release review even though packet freshness already reads current."}`
       : baseDescription;
 
   return (
@@ -71,7 +73,7 @@ export function WorkspaceCommandBoard({
             {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
           </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} funding-backed.` : "."}
+            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
           </p>
         </div>
         <div className="module-subpanel">
@@ -115,26 +117,25 @@ export function WorkspaceCommandBoard({
       <div className="mt-5 space-y-1">
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
-            <Link
-              key={item.key}
-              href={isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href}
-              className="flex items-start justify-between gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-[0.87rem] font-semibold text-gray-900">{item.title}</p>
-                <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{item.detail}</p>
-                {item.badges.length > 0 ? (
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    {item.badges.map((badge) => (
-                      <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
-                        {badge.label}
-                        {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
-                      </StatusBadge>
-                    ))}
+            <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    {item.moduleLabel ? <StatusBadge tone="neutral">{item.moduleLabel}</StatusBadge> : null}
                   </div>
-                ) : null}
+                  <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                </div>
+                <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
               </div>
-              <StatusBadge tone={item.tone}>{item.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.badges.map((badge) => (
+                  <StatusBadge key={`${item.key}-${badge.label}`} tone="neutral">
+                    {badge.label}
+                    {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+                  </StatusBadge>
+                ))}
+              </div>
             </Link>
           ))
         ) : (

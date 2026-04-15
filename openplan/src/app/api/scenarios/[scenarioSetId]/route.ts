@@ -3,6 +3,10 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
+  touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
+import {
   SCENARIO_SET_STATUSES,
   buildScenarioLinkedReports,
   buildScenarioReportDraft,
@@ -426,9 +430,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update scenario set" }, { status: 500 });
     }
 
+    const packetWriteback = await touchScenarioLinkedReportPackets({
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
+      scenarioSetId: access.scenarioSet.id,
+      workspaceId: access.scenarioSet.workspace_id,
+    });
+
+    if (packetWriteback.error) {
+      audit.warn("scenario_set_report_packet_writeback_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        message: packetWriteback.error.message,
+        code: packetWriteback.error.code ?? null,
+      });
+    }
+
     audit.info("scenario_set_updated", {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
+      packetWritebackReportCount: packetWriteback.touchedReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

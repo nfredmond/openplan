@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const touchScenarioLinkedReportPacketsMock = vi.fn();
 
 const scenarioSetMaybeSingleMock = vi.fn();
 const scenarioSetEqMock = vi.fn(() => ({ maybeSingle: scenarioSetMaybeSingleMock }));
@@ -74,6 +75,10 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
+vi.mock("@/lib/reports/scenario-writeback", () => ({
+  touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
+}));
+
 import { POST as postScenarioEntry } from "@/app/api/scenarios/[scenarioSetId]/entries/route";
 import { PATCH as patchScenarioEntry } from "@/app/api/scenarios/[scenarioSetId]/entries/[entryId]/route";
 
@@ -135,6 +140,10 @@ describe("scenario entry routes", () => {
         label: "Protected bike package",
         attached_run_id: "55555555-5555-4555-8555-555555555555",
       },
+      error: null,
+    });
+    touchScenarioLinkedReportPacketsMock.mockResolvedValue({
+      touchedReportIds: ["99999999-9999-4999-8999-999999999999"],
       error: null,
     });
 
@@ -224,6 +233,12 @@ describe("scenario entry routes", () => {
         label: "Updated alternative",
         status: "ready",
         attached_run_id: "55555555-5555-4555-8555-555555555555",
+      })
+    );
+    expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scenarioSetId: "11111111-1111-4111-8111-111111111111",
+        workspaceId: "33333333-3333-4333-8333-333333333333",
       })
     );
   });

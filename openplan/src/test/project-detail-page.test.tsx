@@ -306,6 +306,22 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              scenarioSetLinks: [
+                {
+                  scenarioSetId: "scenario-set-1",
+                  scenarioSetTitle: "Downtown alternatives",
+                  baselineLabel: "Existing conditions",
+                  comparisonSnapshots: [
+                    {
+                      comparisonSnapshotId: "comparison-1",
+                      status: "ready",
+                      candidateEntryLabel: "Protected bike package",
+                      indicatorDeltaCount: 4,
+                      updatedAt: "2026-03-28T19:30:00.000Z",
+                    },
+                  ],
+                },
+              ],
               evidenceChainSummary: {
                 linkedRunCount: 2,
                 scenarioSetLinkCount: 1,
@@ -498,6 +514,28 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/Evidence-backed/i)).toBeInTheDocument();
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/not proof of award likelihood/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open packet review/i })).toHaveAttribute(
+      "href",
+      "/reports/report-1#drift-since-generation"
+    );
+    expect(screen.getByRole("link", { name: /Open Grants OS/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-1"
+    );
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#drift-since-generation"

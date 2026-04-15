@@ -30,6 +30,31 @@ function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
 }
 
+function looksLikeOptionalQueryFallback(message: string | null | undefined) {
+  return looksLikePendingSchema(message) || /Unexpected table:/i.test(message ?? "");
+}
+
+async function safeOptionalQuery<T>(
+  run: () => PromiseLike<{ data: T; error: { message: string; code?: string | null } | null }>,
+  fallbackData: T
+) {
+  try {
+    const result = await run();
+    if (result.error && looksLikeOptionalQueryFallback(result.error.message)) {
+      return { data: fallbackData, error: null };
+    }
+
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (looksLikeOptionalQueryFallback(message)) {
+      return { data: fallbackData, error: null };
+    }
+
+    throw error;
+  }
+}
+
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
@@ -500,26 +525,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false })
         .limit(8),
-      supabase
-        .from("project_funding_profiles")
-        .select("id, funding_need_amount, local_match_need_amount, updated_at")
-        .eq("project_id", report.project_id)
-        .maybeSingle(),
-      supabase
-        .from("funding_awards")
-        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-        .eq("project_id", report.project_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("funding_opportunities")
-        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-        .eq("project_id", report.project_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("billing_invoice_records")
-        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
-        .eq("project_id", report.project_id)
-        .order("created_at", { ascending: false }),
+      safeOptionalQuery(
+        () =>
+          supabase
+            .from("project_funding_profiles")
+            .select("id, funding_need_amount, local_match_need_amount, updated_at")
+            .eq("project_id", report.project_id)
+            .maybeSingle(),
+        null
+      ),
+      safeOptionalQuery(
+        () =>
+          supabase
+            .from("funding_awards")
+            .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .eq("project_id", report.project_id)
+            .order("updated_at", { ascending: false }),
+        [] as Array<Record<string, unknown>>
+      ),
+      safeOptionalQuery(
+        () =>
+          supabase
+            .from("funding_opportunities")
+            .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .eq("project_id", report.project_id)
+            .order("updated_at", { ascending: false }),
+        [] as Array<Record<string, unknown>>
+      ),
+      safeOptionalQuery(
+        () =>
+          supabase
+            .from("billing_invoice_records")
+            .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .eq("project_id", report.project_id)
+            .order("created_at", { ascending: false }),
+        [] as Array<Record<string, unknown>>
+      ),
     ]);
 
     const loadErrors = [

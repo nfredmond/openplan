@@ -5,7 +5,7 @@ import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summ
 
 const summary: WorkspaceOperationsSummary = {
   posture: "attention",
-  headline: "Run release review on current packets",
+  headline: "Run Grants follow-through on current packets",
   detail: "A current RTP packet still carries linked-project funding follow-up.",
   counts: {
     projects: 1,
@@ -32,14 +32,16 @@ const summary: WorkspaceOperationsSummary = {
     projectFundingGapProjects: 0,
     queueDepth: 1,
   },
-  nextCommand: {
-    key: "review-current-report-packets",
-    title: "Run release review on current packets",
-    detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-    href: "/reports/report-rtp-1#packet-release-review",
-    tone: "warning",
-    priority: 2.5,
-    badges: [
+    nextCommand: {
+      key: "review-current-report-packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
+      title: "Run Grants follow-through on current packets",
+      detail: "1 current RTP packet still carries funding follow-up from linked projects.",
+      href: "/grants#grants-gap-resolution-lane",
+      tone: "warning",
+      priority: 2.5,
+      badges: [
       { label: "Current", value: 1 },
       { label: "Funding review", value: 1 },
     ],
@@ -47,9 +49,11 @@ const summary: WorkspaceOperationsSummary = {
   commandQueue: [
     {
       key: "review-current-report-packets",
-      title: "Run release review on current packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
+      title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-      href: "/reports/report-rtp-1#packet-release-review",
+      href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
       priority: 2.5,
       badges: [
@@ -61,9 +65,11 @@ const summary: WorkspaceOperationsSummary = {
   fullCommandQueue: [
     {
       key: "review-current-report-packets",
-      title: "Run release review on current packets",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
+      title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-      href: "/reports/report-rtp-1#packet-release-review",
+      href: "/grants#grants-gap-resolution-lane",
       tone: "warning",
       priority: 2.5,
       badges: [
@@ -79,13 +85,154 @@ describe("WorkspaceCommandBoard", () => {
     render(<WorkspaceCommandBoard summary={summary} />);
 
     expect(
-      screen.getByText(/1 current RTP packet still needs funding-backed release review even though packet freshness already reads current\./i)
+      screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/1 ready for release review, 1 funding-backed\./i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Run release review on current packets/i })).toHaveAttribute(
+    expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Run Grants follow-through on current packets/i })).toHaveAttribute(
       "href",
-      "/reports/report-rtp-1#packet-release-review"
+      "/grants#grants-gap-resolution-lane"
     );
+    expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getByText(/Funding review: 1/i)).toBeInTheDocument();
+  });
+
+  it("shows comparison-backed queue caveats as planning support", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          posture: "active",
+          detail: "Saved comparison-backed packet work is ready for review.",
+          counts: {
+            ...summary.counts,
+            reportPacketCurrent: 0,
+            rtpFundingReviewPackets: 0,
+            comparisonBackedReports: 1,
+            queueDepth: 1,
+          },
+          nextCommand: {
+            key: "review-comparison-backed-reports",
+            title: "Review comparison-backed packet posture",
+            detail:
+              "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+            href: "/reports?posture=comparison-backed",
+            tone: "info",
+            priority: 9,
+            badges: [
+              { label: "Comparison-backed", value: 1 },
+              { label: "Ready comparisons", value: 1 },
+            ],
+          },
+          commandQueue: [
+            {
+              key: "review-comparison-backed-reports",
+              title: "Review comparison-backed packet posture",
+              detail:
+                "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+              href: "/reports?posture=comparison-backed",
+              tone: "info",
+              priority: 9,
+              badges: [
+                { label: "Comparison-backed", value: 1 },
+                { label: "Ready comparisons", value: 1 },
+                { label: "Modeling triage", value: "1 ready · 0 refresh · 0 thin · 1 none" },
+              ],
+            },
+          ],
+          fullCommandQueue: [
+            {
+              key: "review-comparison-backed-reports",
+              title: "Review comparison-backed packet posture",
+              detail:
+                "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
+              href: "/reports?posture=comparison-backed",
+              tone: "info",
+              priority: 9,
+              badges: [
+                { label: "Comparison-backed", value: 1 },
+                { label: "Ready comparisons", value: 1 },
+                { label: "Modeling triage", value: "1 ready · 0 refresh · 0 thin · 1 none" },
+              ],
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(
+      screen.getByText(/saved comparison context that can support grant planning language or prioritization framing/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not proof of award likelihood or a replacement for funding-source review/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Review comparison-backed packet posture/i })).toHaveAttribute(
+      "href",
+      "/reports?posture=comparison-backed"
+    );
+    expect(screen.getByText(/Modeling triage: 1 ready · 0 refresh · 0 thin · 1 none/i)).toBeInTheDocument();
+  });
+
+  it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          detail: "A funding need anchor is missing.",
+          counts: {
+            ...summary.counts,
+            reportPacketCurrent: 0,
+            rtpFundingReviewPackets: 0,
+            projectFundingNeedAnchorProjects: 1,
+            queueDepth: 1,
+          },
+          nextCommand: {
+            key: "anchor-project-funding-needs",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Anchor project funding needs",
+            detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+            href: "/projects/project-anchor#project-funding-opportunities",
+            targetProjectId: "project-anchor",
+            tone: "warning",
+            priority: 3,
+            badges: [{ label: "Missing anchors", value: 1 }],
+          },
+          commandQueue: [
+            {
+              key: "anchor-project-funding-needs",
+              moduleKey: "grants",
+              moduleLabel: "Grants OS",
+              title: "Anchor project funding needs",
+              detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+              href: "/projects/project-anchor#project-funding-opportunities",
+              targetProjectId: "project-anchor",
+              tone: "warning",
+              priority: 3,
+              badges: [{ label: "Missing anchors", value: 1 }],
+            },
+          ],
+          fullCommandQueue: [
+            {
+              key: "anchor-project-funding-needs",
+              moduleKey: "grants",
+              moduleLabel: "Grants OS",
+              title: "Anchor project funding needs",
+              detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+              href: "/projects/project-anchor#project-funding-opportunities",
+              targetProjectId: "project-anchor",
+              tone: "warning",
+              priority: 3,
+              badges: [{ label: "Missing anchors", value: 1 }],
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(screen.getByText("Grants OS")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Anchor project funding needs/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
+    );
   });
 });

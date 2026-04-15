@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
+  buildGrantDecisionModelingSupport,
+  buildProjectGrantModelingEvidenceByProjectId,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
+import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportNavigationHref,
@@ -130,7 +135,7 @@ function describeProjectPacketCommand(project: {
   if (project.reportSummary.comparisonBackedCount > 0 && report) {
     return {
       label: `First action: review comparison-backed packet ${report.title}`,
-      detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context for this project.`,
+      detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing for this project. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`,
     };
   }
 
@@ -204,6 +209,22 @@ export default async function ProjectsPage({
     }
   }
 
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    (projectReportsData ?? []) as Array<{
+      id: string;
+      project_id: string;
+      title: string;
+      updated_at: string;
+      generated_at: string | null;
+      latest_artifact_kind: string | null;
+    }>,
+    (reportArtifactsData ?? []) as Array<{
+      report_id: string;
+      generated_at: string;
+      metadata_json: Record<string, unknown> | null;
+    }>
+  );
+
   const reportsByProjectId = new Map<
     string,
     Array<
@@ -274,6 +295,15 @@ export default async function ProjectsPage({
     const comparisonBackedCount = reports.filter((report) =>
       Boolean(report.comparisonDigest)
     ).length;
+    const grantModelingEvidence =
+      projectGrantModelingEvidenceByProjectId.get(project.id) ?? null;
+    const grantModelingReadiness = describeProjectGrantModelingReadiness(
+      grantModelingEvidence
+    );
+    const grantModelingSupport = buildGrantDecisionModelingSupport(
+      grantModelingEvidence,
+      project.name
+    );
 
     const projectRecord = {
       ...project,
@@ -290,6 +320,9 @@ export default async function ProjectsPage({
         governanceHoldCount,
         recommendedReport: reports[0] ?? null,
       },
+      grantModelingEvidence,
+      grantModelingReadiness,
+      grantModelingSupport,
       rtpSummary: {
         totalCount: rtpLinks.length,
         constrainedCount: rtpLinks.filter((link) => link.portfolio_role === "constrained").length,
@@ -298,9 +331,17 @@ export default async function ProjectsPage({
       },
     };
 
+    const packetCommand = describeProjectPacketCommand(projectRecord);
+    if (
+      projectRecord.reportSummary.comparisonBackedCount > 0 &&
+      projectRecord.grantModelingEvidence
+    ) {
+      packetCommand.detail = projectRecord.grantModelingSupport.recommendedNextActionSummary;
+    }
+
     return {
       ...projectRecord,
-      packetCommand: describeProjectPacketCommand(projectRecord),
+      packetCommand,
     };
   }).sort((left, right) => {
     const commandPriority = getProjectPacketCommandPriority(left) - getProjectPacketCommandPriority(right);
@@ -532,34 +573,98 @@ export default async function ProjectsPage({
                           <p className="module-record-summary line-clamp-2">
                             {project.summary || "No summary yet."}
                           </p>
-                          <p className="text-[0.73rem] text-muted-foreground">
-                            {project.workspace?.name ?? "Unknown workspace"}
-                            {project.reportSummary.totalCount > 0
-                              ? ` · ${project.reportSummary.totalCount} report${project.reportSummary.totalCount === 1 ? "" : "s"}${project.reportSummary.attentionCount > 0 ? `, ${project.reportSummary.attentionCount} need attention` : ""}`
-                              : " · No reports yet"}
-                            {project.rtpSummary.totalCount > 0
-                              ? ` · ${project.rtpSummary.totalCount} RTP cycle${project.rtpSummary.totalCount === 1 ? "" : "s"}`
-                              : ""}
-                          </p>
                         </div>
                       </div>
 
                       <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                     </div>
 
-                    <div className="mt-2.5 border-t border-border/50 pt-2.5">
-                      <p className="text-[0.76rem] font-semibold text-foreground">
+                    <div className="module-record-meta">
+                      <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
+                      <span className="module-record-chip"><span>Tier</span><strong>{titleize(project.workspace?.plan ?? "pilot")}</strong></span>
+                      <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
+                      {project.rtpSummary.totalCount > 0 ? (
+                        <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>
+                      ) : null}
+                      {project.rtpSummary.constrainedCount > 0 ? (
+                        <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
+                      ) : null}
+                      <span className="module-record-chip"><span>Reports</span><strong>{project.reportSummary.totalCount}</strong></span>
+                      {project.reportSummary.attentionCount > 0 ? (
+                        <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
+                      ) : null}
+                      {project.reportSummary.evidenceBackedCount > 0 ? (
+                        <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
+                      ) : null}
+                      {project.reportSummary.comparisonBackedCount > 0 ? (
+                        <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
+                      ) : null}
+                      {project.grantModelingReadiness ? (
+                        <span className="module-record-chip"><span>Grant review</span><strong>{project.grantModelingReadiness.label}</strong></span>
+                      ) : null}
+                      {project.reportSummary.governanceHoldCount > 0 ? (
+                        <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3 border-t border-border/70 pt-3">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Portfolio packet command
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
                         {project.packetCommand.label}
                       </p>
-                      <p className="mt-0.5 text-[0.73rem] leading-relaxed text-muted-foreground">
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                         {project.packetCommand.detail}
-                        {project.reportSummary.recommendedReport?.evidenceChainDigest?.blockedGateDetail
-                          ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
-                          : ""}
-                        {project.reportSummary.recommendedReport?.comparisonDigest
-                          ? ` · ${project.reportSummary.recommendedReport.comparisonDigest.headline}`
-                          : ""}
                       </p>
+                      {project.reportSummary.recommendedReport ? (
+                        <>
+                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                            {getReportPacketActionLabel(
+                              project.reportSummary.recommendedReport.packetFreshness.label
+                            )}
+                          </p>
+                          {project.reportSummary.recommendedReport.evidenceChainDigest ? (
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                              {project.reportSummary.recommendedReport.evidenceChainDigest.headline}
+                              {project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail
+                                ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
+                                : ""}
+                            </p>
+                          ) : null}
+                          {project.reportSummary.recommendedReport.comparisonDigest ? (
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                              {project.reportSummary.recommendedReport.comparisonDigest.headline}
+                              {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
+                            </p>
+                          ) : null}
+                          {project.grantModelingEvidence ? (
+                            <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
+                              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                                Grant release review
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {project.grantModelingReadiness ? (
+                                  <span className="module-record-chip">{project.grantModelingReadiness.label}</span>
+                                ) : null}
+                                <span className="module-record-chip">
+                                  Suggested {titleize(project.grantModelingSupport.recommendedDecisionState)}
+                                </span>
+                                <span className="module-record-chip">
+                                  Lead packet {project.grantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                                </span>
+                              </div>
+                              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                                {project.grantModelingSupport.recommendedNextActionSummary}
+                              </p>
+                            </div>
+                          ) : null}
+                        </>
+                      ) : (
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          No report records linked yet. Open the project to create the first packet trail.
+                        </p>
+                      )}
                     </div>
                   </Link>
                 ))}

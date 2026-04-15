@@ -422,7 +422,7 @@ export function PublicEngagementPortal({
                 </div>
                 <div className="public-fact">
                   <p className="public-fact-label">Time</p>
-                  <p className="public-fact-detail text-foreground">Takes about 2 to 3 minutes. One main response is required.</p>
+                  <p className="public-fact-detail text-foreground">Takes about 2–3 minutes. One main response is required.</p>
                 </div>
                 <div className="public-fact">
                   <p className="public-fact-label">What happens next</p>

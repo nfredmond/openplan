@@ -4,7 +4,7 @@ import { ArrowRight, FileText, FolderKanban, Landmark, Radar, ShieldCheck } from
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { isGrantsQueueItem, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
   buildWorkspaceOperationsSummaryFromSourceRows,
@@ -101,17 +101,26 @@ export default async function DashboardPage() {
     }>,
   });
 
-  const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsQueueItem(item)) ?? null;
+  const leadGrantsCommand = operationsSummary.fullCommandQueue.find((item) => isGrantsCommand(item)) ?? null;
+  const grantModelingSummary = operationsSummary.grantModelingSummary ?? null;
   const rtpFundingReviewCount = operationsSummary.counts.rtpFundingReviewPackets;
+  const comparisonBackedReportCount = operationsSummary.counts.comparisonBackedReports;
+  const grantsRoutedRtpFundingReview =
+    operationsSummary.nextCommand?.key === "review-current-report-packets" &&
+    operationsSummary.nextCommand.moduleKey === "grants" &&
+    rtpFundingReviewCount > 0;
 
   const actions = [
     ...(operationsSummary.nextCommand?.key === "review-current-report-packets"
-      ? [
+        ? [
           {
+            key: "rtp-grants-follow-through",
             href: operationsSummary.nextCommand.href,
-            title: "Open RTP funding release review",
+            title: grantsRoutedRtpFundingReview ? "Open RTP grants follow-through" : "Open RTP funding release review",
             description:
-              rtpFundingReviewCount > 0
+              grantsRoutedRtpFundingReview
+                ? `Jump straight into Grants OS for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
+                : rtpFundingReviewCount > 0
                 ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
                 : "Jump straight into the current RTP packet release-review lane.",
             icon: FileText,
@@ -122,7 +131,8 @@ export default async function DashboardPage() {
     operationsSummary.nextCommand?.key === "advance-project-reimbursement-invoicing"
       ? [
           {
-            href: isGrantsQueueItem(operationsSummary.nextCommand)
+            key: "grants-reimbursement-follow-through",
+            href: isGrantsCommand(operationsSummary.nextCommand)
               ? resolveSharedGrantsQueueHref(operationsSummary.nextCommand)
               : operationsSummary.nextCommand.href,
             title:
@@ -138,29 +148,39 @@ export default async function DashboardPage() {
         ]
       : []),
     {
+      key: "analysis-studio",
       href: "/explore",
       title: "Open Analysis Studio",
       description: "Run corridor analysis with map context, metrics, and report-ready outputs intact.",
       icon: Radar,
     },
     {
+      key: "projects-module",
       href: "/projects",
       title: "Open Projects Module",
       description: "Move into the project control rooms for deliverables, risks, decisions, issues, and meetings.",
       icon: FolderKanban,
     },
     {
+      key: "grants-surface",
       href: leadGrantsCommand ? resolveSharedGrantsQueueHref(leadGrantsCommand) : "/grants",
       title: "Open Grants Surface",
-      description: leadGrantsCommand
-        ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
-        : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
+      description:
+        leadGrantsCommand?.key === "advance-project-funding-decisions" && grantModelingSummary?.leadDecisionDetail
+          ? grantModelingSummary.leadDecisionDetail
+          : leadGrantsCommand
+            ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
+            : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
       icon: Landmark,
     },
     {
+      key: "reports-surface",
       href: "/reports",
       title: "Open Reports Surface",
-      description: "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
+      description:
+        comparisonBackedReportCount > 0
+          ? `${comparisonBackedReportCount} comparison-backed report packet${comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing. Treat that context as planning support, not proof of award likelihood or a replacement for funding-source review.`
+          : "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
       icon: FileText,
     },
   ];
@@ -243,7 +263,9 @@ export default async function DashboardPage() {
           <p className="module-operator-copy">
             Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
             {rtpFundingReviewCount > 0
-              ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
+              ? grantsRoutedRtpFundingReview
+                ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} Grants OS follow-through even though freshness already reads current.`
+                : ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
               : ""}
           </p>
           <div className="module-operator-list">
@@ -252,8 +274,18 @@ export default async function DashboardPage() {
             </div>
             {rtpFundingReviewCount > 0 ? (
               <div className="module-operator-item">
-                Current RTP packet work is not just freshness, {rtpFundingReviewCount} packet{rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.
+                {grantsRoutedRtpFundingReview
+                  ? `Current RTP packet work is now a Grants OS follow-through lane, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} linked-project funding cleanup before packet posture is truly settled.`
+                  : `Current RTP packet work is not just freshness, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.`}
               </div>
+            ) : null}
+            {comparisonBackedReportCount > 0 ? (
+              <div className="module-operator-item">
+                {comparisonBackedReportCount} comparison-backed report packet{comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing, but that evidence still does not prove award likelihood or replace funding-source review.
+              </div>
+            ) : null}
+            {grantModelingSummary?.operatorDetail ? (
+              <div className="module-operator-item">{grantModelingSummary.operatorDetail}</div>
             ) : null}
             <div className="module-operator-item">
               Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
@@ -281,7 +313,7 @@ export default async function DashboardPage() {
               const Icon = action.icon;
               return (
                 <Link
-                  key={action.href}
+                  key={action.key}
                   href={action.href}
                   className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40"
                 >

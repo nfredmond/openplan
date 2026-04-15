@@ -118,9 +118,11 @@ describe("assistant funding operations", () => {
         },
         nextCommand: {
           key: "review-current-report-packets",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-          href: "/reports/report-rtp-1#packet-release-review",
+          href: "/grants#grants-gap-resolution-lane",
           tone: "warning",
           priority: 2.5,
           badges: [
@@ -131,9 +133,11 @@ describe("assistant funding operations", () => {
         commandQueue: [
           {
             key: "review-current-report-packets",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
-            href: "/reports/report-rtp-1#packet-release-review",
+            href: "/grants#grants-gap-resolution-lane",
             tone: "warning",
             priority: 2.5,
             badges: [
@@ -147,9 +151,9 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open RTP funding release review");
+    expect(action?.label).toBe("Open RTP grants follow-through");
     expect(action?.statusLabel).toBe("1 funding-backed packet");
-    expect(action?.href).toBe("/reports/report-rtp-1#packet-release-review");
+    expect(action?.href).toBe("/grants#grants-gap-resolution-lane");
   });
 
   it("exposes a workspace-level execute action for the lead missing funding anchor", () => {
@@ -701,5 +705,116 @@ describe("assistant funding operations", () => {
     expect(fundingAgent?.label).toBe("Review invoice award relinks in panel");
     expect(fundingAgent?.href).toBe("/grants?focusInvoiceId=invoice-1#grants-reimbursement-triage");
     expect(fundingAgent?.statusLabel).toBe("1 relink ready");
+  });
+
+  it("specializes the next-command link for a funding decision when modeling posture is decision-ready", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance project funding decisions",
+        detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project. Modeling posture: Appears decision-ready.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 1,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingGapProjects: 0,
+        },
+        grantModelingSummary: {
+          breakdown: { decisionReady: 1, refreshRecommended: 0, thin: 0, noVisibleSupport: 1 },
+          breakdownSummary: "2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support.",
+          operatorDetail: "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead.",
+          leadDecisionDetail: "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Recommended next move: Advance to pursue now.",
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project.",
+          href: "/projects/project-modeled#project-funding-opportunities",
+          targetProjectId: "project-modeled",
+          targetProjectName: "Modeled Project",
+          targetOpportunityId: "opp-modeled-1",
+          tone: "warning",
+          priority: 5,
+          badges: [{ label: "Decision gaps", value: 1 }, { label: "Modeling", value: "Appears decision-ready" }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Modeled Project.",
+            href: "/projects/project-modeled#project-funding-opportunities",
+            targetProjectId: "project-modeled",
+            targetProjectName: "Modeled Project",
+            targetOpportunityId: "opp-modeled-1",
+            tone: "warning",
+            priority: 5,
+            badges: [{ label: "Decision gaps", value: 1 }, { label: "Modeling", value: "Appears decision-ready" }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open decision-ready grant lane");
+    expect(action?.statusLabel).toBe("1 decision-ready");
+    expect(action?.reason).toContain("is rising because modeling posture appears decision-ready");
+    expect(action?.reason).toContain("Advance to pursue now");
+    expect(action?.auditNote).toContain("modeling posture and recommended next move");
+  });
+
+  it("specializes the next-command link for a funding decision when modeling context exists but none are decision-ready", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance project funding decisions",
+        detail: "A funding decision lane is visible. Modeling posture: Appears thin.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 1,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingGapProjects: 0,
+        },
+        grantModelingSummary: {
+          breakdown: { decisionReady: 0, refreshRecommended: 0, thin: 1, noVisibleSupport: 0 },
+          breakdownSummary: "1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 1 appears thin, 0 without visible support.",
+          operatorDetail: "Within grant decision work, projects with thin modeling support are still visible in the queue.",
+          leadDecisionDetail: "SB1 Local Partnership for Thin Project is still visible in the decision queue while modeling posture reads appears thin.",
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "SB1 Local Partnership is the first grant decision to advance for Thin Project. Modeling posture for Thin Project: Appears thin.",
+          href: "/projects/project-thin#project-funding-opportunities",
+          targetProjectId: "project-thin",
+          targetProjectName: "Thin Project",
+          targetOpportunityId: "opp-thin-1",
+          tone: "warning",
+          priority: 5,
+          badges: [{ label: "Decision gaps", value: 1 }, { label: "Modeling", value: "Appears thin" }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "SB1 Local Partnership is the first grant decision to advance for Thin Project. Modeling posture for Thin Project: Appears thin.",
+            href: "/projects/project-thin#project-funding-opportunities",
+            targetProjectId: "project-thin",
+            targetProjectName: "Thin Project",
+            targetOpportunityId: "opp-thin-1",
+            tone: "warning",
+            priority: 5,
+            badges: [{ label: "Decision gaps", value: 1 }, { label: "Modeling", value: "Appears thin" }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open lead grant decision lane");
+    expect(action?.statusLabel).toBe("Modeling context available");
+    expect(action?.reason).toContain("still visible in the decision queue while modeling posture reads appears thin");
+    expect(action?.auditNote).toContain("modeling posture and recommended next move");
   });
 });

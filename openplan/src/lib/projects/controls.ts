@@ -283,7 +283,7 @@ export function buildProjectControlsSummary(
               : comparisonBackedCount > 0
                 ? {
                     label: "Review comparison-backed packet",
-                    detail: `${comparisonBackedCount} report${comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context. ${reportSummary?.recommendedReportTitle ? `Start with ${reportSummary.recommendedReportTitle} before creating another revision.` : "Start in the reporting lane and confirm the saved comparison story is still current."}`,
+                    detail: `${comparisonBackedCount} report${comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing. ${reportSummary?.recommendedReportTitle ? `Start with ${reportSummary.recommendedReportTitle} before creating another revision.` : "Start in the reporting lane and confirm the saved comparison story is still current."} Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`,
                     tone: "info" as const,
                     targetId: PROJECT_CONTROL_TARGET_IDS.report,
                     targetRowId: recommendedReportRowId,

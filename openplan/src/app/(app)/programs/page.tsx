@@ -100,9 +100,9 @@ type ProgramReportRow = {
   updated_at: string | null;
 };
 
-type ReportArtifactRow = {
+type ProgramReportArtifactRow = {
   report_id: string;
-  generated_at: string;
+  generated_at: string | null;
 };
 
 type FundingOpportunityRow = {
@@ -282,12 +282,13 @@ export default async function ProgramsPage({
     : { data: [], error: null };
 
   const reportIds = Array.from(
-    new Set([
-      ...((projectReportsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id),
-      ...((explicitReportsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id),
-    ])
+    new Set(
+      [
+        ...((projectReportsResult.data ?? []) as ProgramReportRow[]).map((row) => row.id),
+        ...((explicitReportsResult.data ?? []) as ProgramReportRow[]).map((row) => row.id),
+      ].filter(Boolean)
+    )
   );
-
   const reportArtifactsResult = reportIds.length
     ? await supabase
         .from("report_artifacts")
@@ -296,10 +297,10 @@ export default async function ProgramsPage({
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
 
-  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const row of (reportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
-    if (!latestArtifactByReportId.has(row.report_id)) {
-      latestArtifactByReportId.set(row.report_id, row);
+  const latestArtifactGeneratedAtByReportId = new Map<string, string | null>();
+  for (const artifact of (reportArtifactsResult.data ?? []) as ProgramReportArtifactRow[]) {
+    if (!latestArtifactGeneratedAtByReportId.has(artifact.report_id)) {
+      latestArtifactGeneratedAtByReportId.set(artifact.report_id, artifact.generated_at);
     }
   }
 
@@ -327,12 +328,11 @@ export default async function ProgramsPage({
   const generatedReportCountsByProject = new Map<string, number>();
   for (const row of (projectReportsResult.data ?? []) as ProgramReportRow[]) {
     if (!row.project_id) continue;
-    const latestArtifact = latestArtifactByReportId.get(row.id) ?? null;
     const hydratedRow = {
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: latestArtifact?.generated_at ?? row.generated_at,
+        generatedAt: latestArtifactGeneratedAtByReportId.get(row.id) ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     };
@@ -346,12 +346,11 @@ export default async function ProgramsPage({
   }
 
   for (const row of (explicitReportsResult.data ?? []) as ProgramReportRow[]) {
-    const latestArtifact = latestArtifactByReportId.get(row.id) ?? null;
     explicitReportById.set(row.id, {
       ...row,
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: row.latest_artifact_kind,
-        generatedAt: latestArtifact?.generated_at ?? row.generated_at,
+        generatedAt: latestArtifactGeneratedAtByReportId.get(row.id) ?? row.generated_at,
         updatedAt: row.updated_at,
       }),
     });

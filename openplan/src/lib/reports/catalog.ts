@@ -132,6 +132,18 @@ export function getReportPacketPriority(freshnessLabel: string) {
   }
 }
 
+export function resolveReportPacketSourceUpdatedAt(
+  values: Array<string | null | undefined>
+): string | null {
+  const latest = values
+    .filter((value): value is string => Boolean(value))
+    .map((value) => ({ value, time: new Date(value).getTime() }))
+    .filter((item) => Number.isFinite(item.time))
+    .sort((left, right) => right.time - left.time)[0];
+
+  return latest?.value ?? null;
+}
+
 export function getReportNavigationHref(reportId: string, freshnessLabel: string) {
   switch (getReportPacketWorkStatus(freshnessLabel).key) {
     case "refresh":
@@ -558,14 +570,14 @@ export function getReportPacketFreshness({
     return {
       label: "Refresh recommended",
       tone: "warning",
-      detail: "The report record changed after the latest packet was generated.",
+      detail: "The report or one of its tracked source records changed after the latest packet was generated.",
     };
   }
 
   return {
     label: "Packet current",
     tone: "success",
-    detail: "The latest packet is current with the saved report record.",
+    detail: "The latest packet is current with the saved report record and tracked source timestamps.",
   };
 }
 

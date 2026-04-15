@@ -1,5 +1,8 @@
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
 
+export const GRANTS_COMMAND_MODULE_KEY = "grants" as const;
+export const GRANTS_COMMAND_MODULE_LABEL = "Grants OS";
+
 const GRANTS_QUEUE_KEYS = new Set([
   "funding-windows-closing",
   "anchor-project-funding-needs",
@@ -10,7 +13,50 @@ const GRANTS_QUEUE_KEYS = new Set([
   "relink-project-invoice-awards",
   "advance-project-reimbursement-invoicing",
   "close-project-funding-gaps",
+  "review-comparison-backed-reports",
 ]);
+
+const GRANTS_REIMBURSEMENT_QUEUE_KEYS = new Set([
+  "start-project-reimbursement-packets",
+  "relink-project-invoice-awards",
+  "advance-project-reimbursement-invoicing",
+]);
+
+const GRANTS_AWARD_QUEUE_KEYS = new Set(["record-awarded-funding"]);
+const GRANTS_DECISION_QUEUE_KEYS = new Set([
+  "funding-windows-closing",
+  "advance-project-funding-decisions",
+]);
+const GRANTS_SOURCING_QUEUE_KEYS = new Set([
+  "anchor-project-funding-needs",
+  "source-project-funding-opportunities",
+  "close-project-funding-gaps",
+]);
+
+export type GrantsQueueCalloutKind = "workspace" | "sourcing" | "reimbursement" | "award" | "decision";
+
+const GRANTS_QUEUE_CALLOUT_COPY: Record<GrantsQueueCalloutKind, { title: string; actionLabel: string }> = {
+  workspace: {
+    title: "Lead workspace grant command",
+    actionLabel: "Open next grants action",
+  },
+  sourcing: {
+    title: "Lead sourcing and gap command from workspace queue",
+    actionLabel: "Open sourcing lane",
+  },
+  reimbursement: {
+    title: "Lead reimbursement command from workspace queue",
+    actionLabel: "Open reimbursement follow-through",
+  },
+  award: {
+    title: "Lead award conversion command from workspace queue",
+    actionLabel: "Open award conversion",
+  },
+  decision: {
+    title: "Lead opportunity decision command from workspace queue",
+    actionLabel: "Open opportunity decision",
+  },
+};
 
 function buildFocusedProjectHref(projectId: string | null | undefined, anchor: string) {
   if (!projectId) return `/grants${anchor}`;
@@ -32,6 +78,49 @@ function buildFocusedInvoiceHref(invoiceId: string | null | undefined) {
 
 export function isGrantsQueueItem(item: Pick<WorkspaceCommandQueueItem, "key"> | null | undefined) {
   return Boolean(item && GRANTS_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && (item.moduleKey === GRANTS_COMMAND_MODULE_KEY || isGrantsQueueItem(item)));
+}
+
+export function isGrantsReimbursementCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && GRANTS_REIMBURSEMENT_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsAwardCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && GRANTS_AWARD_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsDecisionCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && GRANTS_DECISION_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsSourcingCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && GRANTS_SOURCING_QUEUE_KEYS.has(item.key));
+}
+
+export function isGrantsModelingCommand(
+  item: Pick<WorkspaceCommandQueueItem, "key" | "moduleKey"> | null | undefined
+) {
+  return Boolean(item && isGrantsCommand(item) && item.key === "review-comparison-backed-reports");
+}
+
+export function resolveGrantsQueueCalloutCopy(kind: GrantsQueueCalloutKind, item: Pick<WorkspaceCommandQueueItem, "tone">) {
+  return {
+    ...GRANTS_QUEUE_CALLOUT_COPY[kind],
+    badgeLabel: item.tone === "warning" ? "Next" : "Queue",
+  };
 }
 
 export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): string {
@@ -69,5 +158,54 @@ export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): s
 }
 
 export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): string {
-  return isGrantsQueueItem(item) ? resolveSharedGrantsQueueHref(item) : item.href;
+  return isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href;
+}
+
+type FundingFollowThroughLike = {
+  unfundedAfterLikelyAmount: number;
+  outstandingReimbursementAmount: number;
+  uninvoicedAwardAmount: number;
+  likelyCoveredProjectCount?: number | null;
+  gapProjectCount?: number | null;
+  pipelineStatus?: string | null;
+};
+
+export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLike | null | undefined) {
+  if (!snapshot) {
+    return null;
+  }
+
+  if (snapshot.unfundedAfterLikelyAmount > 0 || (snapshot.gapProjectCount ?? 0) > 0) {
+    return {
+      href: "/grants#grants-gap-resolution-lane",
+      title: "Linked RTP projects still carry uncovered funding gaps.",
+      actionLabel: "Open gap resolution",
+    };
+  }
+
+  if (snapshot.outstandingReimbursementAmount > 0) {
+    return {
+      href: "/grants#grants-reimbursement-triage",
+      title: "Reimbursement follow-through is still active across linked RTP projects.",
+      actionLabel: "Open reimbursement triage",
+    };
+  }
+
+  if (snapshot.uninvoicedAwardAmount > 0) {
+    return {
+      href: "/grants#grants-awards-reimbursement",
+      title: "Committed award dollars exist, but invoice follow-through has not caught up yet.",
+      actionLabel: "Open awards and reimbursement",
+    };
+  }
+
+  if ((snapshot.likelyCoveredProjectCount ?? 0) > 0 || snapshot.pipelineStatus === "likely_covered") {
+    return {
+      href: "/grants#grants-opportunity-creator",
+      title: "This RTP packet still depends on pursued grant pipeline instead of secured dollars.",
+      actionLabel: "Open funding opportunity queue",
+    };
+  }
+
+  return null;
 }

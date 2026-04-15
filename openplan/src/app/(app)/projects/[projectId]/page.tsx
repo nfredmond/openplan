@@ -27,6 +27,10 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
@@ -794,10 +798,11 @@ export default async function ProjectDetailPage({
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
+      const comparisonAggregate = parseStoredComparisonSnapshotAggregate(
+        latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+      );
       const comparisonDigest = describeComparisonSnapshotAggregate(
-        parseStoredComparisonSnapshotAggregate(
-          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
-        )
+        comparisonAggregate
       );
       const evidenceChainDigest = describeEvidenceChainSummary(
         parseStoredEvidenceChainSummary(
@@ -812,6 +817,7 @@ export default async function ProjectDetailPage({
           generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
           updatedAt: report.updated_at,
         }),
+        comparisonAggregate,
         comparisonDigest,
         evidenceChainDigest,
       };
@@ -844,6 +850,33 @@ export default async function ProjectDetailPage({
   ).length;
   const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedReport = projectReports[0] ?? null;
+  const comparisonBackedFundingReport =
+    projectReports.find((report) => Boolean(report.comparisonDigest)) ?? null;
+  const projectGrantModelingEvidence =
+    comparisonBackedFundingReport?.comparisonAggregate && comparisonBackedFundingReport.comparisonDigest
+      ? {
+          projectId: project.id,
+          comparisonBackedCount: comparisonBackedReportCount,
+          leadComparisonReport: {
+            id: comparisonBackedFundingReport.id,
+            title: comparisonBackedFundingReport.title,
+            href: getReportNavigationHref(
+              comparisonBackedFundingReport.id,
+              comparisonBackedFundingReport.packetFreshness.label
+            ),
+            packetFreshness: comparisonBackedFundingReport.packetFreshness,
+            comparisonAggregate: comparisonBackedFundingReport.comparisonAggregate,
+            comparisonDigest: comparisonBackedFundingReport.comparisonDigest,
+          },
+        }
+      : null;
+  const projectGrantModelingReadiness = describeProjectGrantModelingReadiness(
+    projectGrantModelingEvidence
+  );
+  const projectGrantModelingSupport = buildGrantDecisionModelingSupport(
+    projectGrantModelingEvidence,
+    project.name
+  );
   const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [];
     if (report.packetFreshness.label !== "Packet current") {
@@ -1240,6 +1273,47 @@ export default async function ProjectDetailPage({
                   </p>
                 </div>
               ) : null}
+              {projectGrantModelingEvidence ? (
+                <div
+                  id="project-packet-release-review"
+                  className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5"
+                >
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Packet release review
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <StatusBadge tone={projectGrantModelingReadiness?.tone ?? "neutral"}>
+                      {projectGrantModelingReadiness?.label ?? "No visible support"}
+                    </StatusBadge>
+                    <StatusBadge tone={projectGrantModelingEvidence.leadComparisonReport.packetFreshness.tone}>
+                      {projectGrantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                    </StatusBadge>
+                    <StatusBadge tone="info">
+                      Suggested {titleize(projectGrantModelingSupport.recommendedDecisionState)}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-2 text-xs font-medium leading-relaxed text-foreground/90">
+                    {projectGrantModelingSupport.recommendedNextActionTitle}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {projectGrantModelingSupport.recommendedNextActionSummary}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href={projectGrantModelingEvidence.leadComparisonReport.href}
+                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                    >
+                      Open packet review
+                    </Link>
+                    <Link
+                      href={`/grants?focusProjectId=${project.id}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                    >
+                      Open Grants OS
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
               <div className="mt-4 flex flex-wrap gap-2">
                 {recommendedReport ? (
                   <Link
@@ -1592,6 +1666,11 @@ export default async function ProjectDetailPage({
                     ? `${fmtCurrency(committedFundingAmount)} committed, ${fmtCurrency(likelyFundingAmount)} likely, leaving ${fmtCurrency(remainingFundingGap)} still unfunded against a ${fmtCurrency(fundingNeedAmount)} target need.`
                     : fundingStackSummary.pipelineReason}
                 </p>
+                {comparisonBackedFundingReport?.comparisonDigest ? (
+                  <div className="module-note mt-3 text-sm">
+                    Saved comparison context from {comparisonBackedFundingReport.title} can support grant planning language or prioritization framing for this funding stack. It is planning evidence to review against each funding source, not proof of award likelihood.
+                  </div>
+                ) : null}
               </div>
               <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reimbursement posture</p>

@@ -16,6 +16,10 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
+import {
   loadWorkspaceOperationsSummaryForWorkspace,
   parseStoredRtpFundingReview,
   type WorkspaceOperationsSupabaseLike,
@@ -23,6 +27,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
+  describeComparisonSnapshotAggregate,
   describeFundingSnapshot,
   describeEvidenceChainSummary,
   formatDateTime,
@@ -42,9 +47,12 @@ import {
   parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
+  resolveReportPacketSourceUpdatedAt,
+  titleize,
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
+import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
@@ -93,6 +101,61 @@ type ReportArtifactRow = {
   generated_at: string;
   metadata_json: Record<string, unknown> | null;
 };
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
+
+function hasMaterialReportWritebackAfterGeneration(
+  generatedAt: string | null | undefined,
+  updatedAt: string | null | undefined
+) {
+  if (!generatedAt || !updatedAt) {
+    return false;
+  }
+
+  const generatedMs = new Date(generatedAt).getTime();
+  const updatedMs = new Date(updatedAt).getTime();
+  if (!Number.isFinite(generatedMs) || !Number.isFinite(updatedMs)) {
+    return false;
+  }
+
+  return updatedMs - generatedMs > REPORT_WRITEBACK_GRACE_MS;
+}
+
+function resolveTrackedReportSourceUpdatedAt(input: {
+  generatedAt: string | null;
+  reportUpdatedAt: string | null;
+  cycleUpdatedAt: string | null;
+  artifactMetadata: Record<string, unknown> | null;
+}) {
+  const sourceContext = asRecord(input.artifactMetadata?.sourceContext);
+  const projectFundingSnapshot = asRecord(sourceContext?.projectFundingSnapshot);
+  const trackedSourceUpdatedAt = resolveReportPacketSourceUpdatedAt([
+    input.cycleUpdatedAt,
+    typeof sourceContext?.projectUpdatedAt === "string"
+      ? sourceContext.projectUpdatedAt
+      : null,
+    typeof sourceContext?.rtpCycleUpdatedAt === "string"
+      ? sourceContext.rtpCycleUpdatedAt
+      : null,
+    typeof projectFundingSnapshot?.latestSourceUpdatedAt === "string"
+      ? projectFundingSnapshot.latestSourceUpdatedAt
+      : null,
+  ]);
+
+  if (!trackedSourceUpdatedAt) {
+    return input.reportUpdatedAt;
+  }
+
+  return hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)
+    ? resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, input.reportUpdatedAt])
+    : trackedSourceUpdatedAt;
+}
 
 function buildReportsFilterHref(filters: {
   freshness: ReportFreshnessFilter;
@@ -196,29 +259,68 @@ export default async function ReportsPage({
       const storedRtpFundingReview = parseStoredRtpFundingReview(
         latestArtifact?.metadata_json ?? null
       );
+      const rtpCycle = Array.isArray(report.rtp_cycles)
+        ? report.rtp_cycles[0] ?? null
+        : report.rtp_cycles ?? null;
+      const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
+      const packetFreshness = getReportPacketFreshness({
+        latestArtifactKind: report.latest_artifact_kind,
+        generatedAt: packetGeneratedAt,
+        updatedAt: resolveTrackedReportSourceUpdatedAt({
+          generatedAt: packetGeneratedAt,
+          reportUpdatedAt: report.updated_at,
+          cycleUpdatedAt: rtpCycle?.updated_at ?? null,
+          artifactMetadata: latestArtifact?.metadata_json ?? null,
+        }),
+      });
+      const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
+      const project = Array.isArray(report.projects)
+        ? report.projects[0] ?? null
+        : report.projects ?? null;
+      const comparisonSnapshotDigest = describeComparisonSnapshotAggregate(
+        comparisonSnapshotAggregate
+      );
+      const grantModelingEvidence =
+        project && comparisonSnapshotAggregate && comparisonSnapshotDigest
+          ? {
+              projectId: project.id,
+              comparisonBackedCount: 1,
+              leadComparisonReport: {
+                id: report.id,
+                title: report.title,
+                href: `/reports/${report.id}#packet-release-review`,
+                packetFreshness,
+                comparisonAggregate: comparisonSnapshotAggregate,
+                comparisonDigest: comparisonSnapshotDigest,
+              },
+            }
+          : null;
+      const grantModelingReadiness = describeProjectGrantModelingReadiness(
+        grantModelingEvidence
+      );
+      const grantModelingSupport = buildGrantDecisionModelingSupport(
+        grantModelingEvidence,
+        project?.name ?? null
+      );
 
       return {
         ...report,
         latestArtifact,
-        project: Array.isArray(report.projects)
-          ? report.projects[0] ?? null
-          : report.projects ?? null,
-        rtpCycle: Array.isArray(report.rtp_cycles)
-          ? report.rtp_cycles[0] ?? null
-          : report.rtp_cycles ?? null,
-        packetFreshness: getReportPacketFreshness({
-          latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: latestArtifact?.generated_at ?? report.generated_at,
-          updatedAt:
-            (Array.isArray(report.rtp_cycles) ? report.rtp_cycles[0]?.updated_at : report.rtp_cycles?.updated_at) ?? report.updated_at,
-        }),
+        project,
+        rtpCycle,
+        packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
+        comparisonSnapshotDigest,
         fundingSnapshot,
         storedRtpFundingReview,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
+        grantsFollowThrough,
+        grantModelingEvidence,
+        grantModelingReadiness,
+        grantModelingSupport,
       };
     })
     .sort((left, right) => {
@@ -304,6 +406,7 @@ export default async function ReportsPage({
     .filter(
       (report) =>
         report.packetFreshness.label !== "Packet current" ||
+        Boolean(report.grantsFollowThrough) ||
         Boolean(report.storedRtpFundingReview?.needsAttention) ||
         Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
         (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
@@ -311,6 +414,8 @@ export default async function ReportsPage({
     .slice(0, 5)
     .map((report) => {
       const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
+      const grantsFollowThroughFirst =
+        packetWorkStatus.key === "release-review" ? report.grantsFollowThrough : null;
       const badges: Array<{ label: string; value?: string | number | null }> = [];
       badges.push({ label: packetWorkStatus.label });
       if (report.packetFreshness.label !== "Packet current") {
@@ -318,6 +423,9 @@ export default async function ReportsPage({
       }
       if (report.storedRtpFundingReview?.needsAttention) {
         badges.push({ label: report.storedRtpFundingReview.label });
+      }
+      if (grantsFollowThroughFirst) {
+        badges.push({ label: "Grants follow-through" });
       }
       if ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0) {
         badges.push({
@@ -331,22 +439,32 @@ export default async function ReportsPage({
 
       return {
         key: report.id,
-        href: getReportNavigationHref(report.id, report.packetFreshness.label),
+        href: grantsFollowThroughFirst
+          ? grantsFollowThroughFirst.href
+          : getReportNavigationHref(report.id, report.packetFreshness.label),
         title: report.title,
         subtitle:
-          report.storedRtpFundingReview?.needsAttention
-            ? `First action: run funding-backed release review on ${report.title}`
-            : report.evidenceChainDigest?.blockedGateDetail
-              ? `First action: review governance hold in ${report.title}`
-              : packetWorkStatus.key === "generate-first"
-                ? `First action: generate the first packet for ${report.title}`
-                : packetWorkStatus.key === "refresh"
-                  ? `First action: refresh ${report.title}`
-                  : `First action: run release review on ${report.title}`,
+          grantsFollowThroughFirst
+            ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
+            : report.storedRtpFundingReview?.needsAttention
+              ? `First action: run funding-backed release review on ${report.title}`
+              : report.evidenceChainDigest?.blockedGateDetail
+                ? `First action: review governance hold in ${report.title}`
+                : packetWorkStatus.key === "generate-first"
+                  ? `First action: generate the first packet for ${report.title}`
+                  : packetWorkStatus.key === "refresh"
+                    ? `First action: refresh ${report.title}`
+                    : `First action: run release review on ${report.title}`,
         detail:
+          (grantsFollowThroughFirst ? grantsFollowThroughFirst.title : null) ??
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
-          packetWorkStatus.detail,
+          ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0 &&
+          report.grantModelingEvidence
+            ? report.grantModelingSupport.recommendedNextActionSummary
+            : (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+              ? `${report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0} saved comparison${(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) === 1 ? " can" : "s can"} support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`
+              : packetWorkStatus.detail),
         badges,
       };
     });
@@ -766,13 +884,145 @@ export default async function ReportsPage({
                     <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  {(report.packetFreshness.label !== "Packet current" || report.evidenceChainDigest?.blockedGateDetail || report.fundingDigest) ? (
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
-                      {packetWorkStatus.detail}
-                      {report.evidenceChainDigest?.blockedGateDetail ? ` · ${report.evidenceChainDigest.blockedGateDetail}` : ""}
-                      {report.fundingDigest?.headline ? ` · ${report.fundingDigest.headline}` : ""}
-                    </p>
-                  ) : null}
+                  <div className="module-record-meta">
+                    <span className="module-record-chip">
+                      {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
+                    </span>
+                    <span className="module-record-chip">Next step {packetWorkStatus.label}</span>
+                    <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
+                    {report.evidenceChainSummary && report.evidenceChainSummary.scenarioSetLinkCount > 0 ? (
+                      <span className="module-record-chip">
+                        {report.evidenceChainSummary.scenarioSetLinkCount} scenario set{report.evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
+                      </span>
+                    ) : null}
+                    {report.scenarioSpineSummary ? (
+                      report.scenarioSpineSummary.pendingCount > 0 ? (
+                        <span className="module-record-chip">Scenario spine pending</span>
+                      ) : (
+                        <>
+                          {(report.scenarioSpineSummary.assumptionSetCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
+                            <span className="module-record-chip">
+                              {report.scenarioSpineSummary.assumptionSetCount} assumptions
+                            </span>
+                          ) : null}
+                          {(report.scenarioSpineSummary.dataPackageCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
+                            <span className="module-record-chip">
+                              {report.scenarioSpineSummary.dataPackageCount} packages
+                            </span>
+                          ) : null}
+                          {(report.scenarioSpineSummary.indicatorSnapshotCount > 0 || report.evidenceChainSummary?.scenarioSetLinkCount) ? (
+                            <span className="module-record-chip">
+                              {report.scenarioSpineSummary.indicatorSnapshotCount} indicators
+                            </span>
+                          ) : null}
+                        </>
+                      )
+                    ) : null}
+                    {report.comparisonSnapshotAggregate &&
+                    report.comparisonSnapshotAggregate.comparisonSnapshotCount > 0 ? (
+                      <>
+                        <span className="module-record-chip">
+                          {report.comparisonSnapshotAggregate.comparisonSnapshotCount} saved comparison{report.comparisonSnapshotAggregate.comparisonSnapshotCount === 1 ? "" : "s"}
+                        </span>
+                        <span className="module-record-chip">
+                          {report.comparisonSnapshotAggregate.indicatorDeltaCount} comparison delta{report.comparisonSnapshotAggregate.indicatorDeltaCount === 1 ? "" : "s"}
+                        </span>
+                        {report.grantModelingReadiness ? (
+                          <span className="module-record-chip">{report.grantModelingReadiness.label}</span>
+                        ) : null}
+                        {report.grantModelingEvidence ? (
+                          <span className="module-record-chip">
+                            Suggested {titleize(report.grantModelingSupport.recommendedDecisionState)}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {report.fundingSnapshot ? (
+                      <>
+                        <span className="module-record-chip">
+                          {report.fundingSnapshot.label}
+                        </span>
+                        {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
+                          <span className="module-record-chip">
+                            Uncovered {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(report.fundingSnapshot.unfundedAfterLikelyAmount)}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {report.latestArtifact?.generated_at ?? report.generated_at ? (
+                      <span className="module-record-chip">
+                        Generated {formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="module-record-detail-grid cols-2 mt-4">
+                    <div className="module-note text-sm">
+                      <p className="font-medium text-foreground">Packet posture</p>
+                      <p className="mt-2 font-medium text-foreground/90">{packetWorkStatus.label}</p>
+                      <p className="mt-1">{packetWorkStatus.detail}</p>
+                      <p className="mt-1">{report.packetFreshness.detail}</p>
+                    </div>
+                    {report.evidenceChainDigest ? (
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Evidence chain posture</p>
+                        <p className="mt-2 font-medium text-foreground/90">{report.evidenceChainDigest.headline}</p>
+                        <p className="mt-1">{report.evidenceChainDigest.detail}</p>
+                        {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
+                        {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
+                          <>
+                            <p className="mt-1">
+                              Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
+                              {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
+                                ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
+                                : ""}
+                            </p>
+                            {report.grantModelingEvidence ? (
+                              <>
+                                <p className="mt-1 font-medium text-foreground/90">Grant release review</p>
+                                <p className="mt-1">
+                                  {report.grantModelingReadiness?.label ?? "No visible support"}
+                                </p>
+                                <p className="mt-1">{report.grantModelingSupport.recommendedNextActionSummary}</p>
+                              </>
+                            ) : (
+                              <p className="mt-1">
+                                Saved comparison context can support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.
+                              </p>
+                            )}
+                          </>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Evidence chain posture</p>
+                        <p className="mt-2">No evidence summary attached to the latest artifact yet.</p>
+                      </div>
+                    )}
+                    <div className="module-note text-sm">
+                      <p className="font-medium text-foreground">Funding posture</p>
+                      {report.fundingDigest ? (
+                        <>
+                          <p className="mt-2 font-medium text-foreground/90">{report.fundingDigest.headline}</p>
+                          <p className="mt-1">{report.fundingDigest.detail}</p>
+                          {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
+                          {report.grantsFollowThrough ? (
+                            <div className="mt-3 rounded-[0.5rem] border border-amber-400/30 bg-amber-500/[0.08] px-3 py-3">
+                              <p className="text-xs font-medium text-foreground">Grants follow-through</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{report.grantsFollowThrough.title}</p>
+                              <p className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--pine)]">
+                                {report.grantsFollowThrough.actionLabel}
+                                <ArrowRight className="h-3.5 w-3.5" />
+                                <span className="text-[0.7rem] font-medium text-muted-foreground">in Grants OS</span>
+                              </p>
+                            </div>
+                          ) : null}
+                        </>
+                      ) : (
+                        <p className="mt-2">No funding snapshot is attached to the latest artifact yet.</p>
+                      )}
+                    </div>
+                  </div>
                 </Link>
                 );
               })}

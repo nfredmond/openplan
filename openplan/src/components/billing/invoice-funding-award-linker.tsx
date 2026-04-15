@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Loader2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,8 +35,6 @@ export function InvoiceFundingAwardLinker({
   canWrite,
 }: InvoiceFundingAwardLinkerProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [selectedFundingAwardId, setSelectedFundingAwardId] = useState(currentFundingAwardId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -108,11 +106,13 @@ export function InvoiceFundingAwardLinker({
       const savedAward = visibleFundingAwards.find((award) => award.id === (selectedFundingAwardId || null)) ?? null;
       setLastSavedFundingAwardId(selectedFundingAwardId || null);
       setLastSavedFundingAwardTitle(savedAward?.title ?? null);
-      const nextSearch = new URLSearchParams(searchParams.toString());
-      nextSearch.set("focusInvoiceId", invoiceId);
-      nextSearch.set("relinkedInvoiceId", invoiceId);
-      const nextHref = `${pathname}?${nextSearch.toString()}#invoice-record-${invoiceId}`;
-      router.replace(nextHref, { scroll: false });
+      if (typeof window !== "undefined") {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("focusInvoiceId", invoiceId);
+        nextUrl.searchParams.set("relinkedInvoiceId", invoiceId);
+        nextUrl.hash = `invoice-record-${invoiceId}`;
+        window.history.replaceState(null, "", nextUrl.toString());
+      }
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to update invoice funding award link");

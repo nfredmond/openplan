@@ -15,12 +15,14 @@ import {
 import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { buildProjectFundingStackSummary, projectFundingReimbursementTone } from "@/lib/projects/funding";
+import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import {
   formatReportStatusLabel,
   getReportNavigationHref,
   getReportPacketFreshness,
   getReportPacketWorkStatus,
   getRtpPacketPresetAlignment,
+  resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -742,7 +744,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ? getReportPacketFreshness({
             latestArtifactKind: packetReport.latest_artifact_kind,
             generatedAt: packetReport.generated_at,
-            updatedAt: cycle.updated_at,
+            updatedAt: resolveReportPacketSourceUpdatedAt([cycle.updated_at, packetReport.updated_at]),
           })
         : {
             label: "No packet",
@@ -830,6 +832,23 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           0
         ),
       });
+      const grantsFollowThrough = resolveRtpFundingFollowThrough({
+        unfundedAfterLikelyAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.unfundedAfterLikelyAmount,
+          0
+        ),
+        outstandingReimbursementAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.outstandingReimbursementAmount,
+          0
+        ),
+        uninvoicedAwardAmount: cycleFundingSummaries.reduce(
+          (sum, summary) => sum + summary.uninvoicedAwardAmount,
+          0
+        ),
+        likelyCoveredProjectCount: cycleFundingSummaries.filter(
+          (summary) => summary.status !== "funded" && summary.pipelineStatus === "likely_covered"
+        ).length,
+      });
 
       return {
         ...cycle,
@@ -878,6 +897,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetAttention,
         }),
         packetNavigationHref,
+        grantsFollowThrough,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
       };
@@ -1672,6 +1692,12 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       {cycle.packetReport ? (
                         <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
                           Open linked packet
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      ) : null}
+                      {cycle.grantsFollowThrough ? (
+                        <Link href={cycle.grantsFollowThrough.href} className="module-inline-action w-fit">
+                          {cycle.grantsFollowThrough.actionLabel}
                           <ArrowRight className="h-4 w-4" />
                         </Link>
                       ) : null}

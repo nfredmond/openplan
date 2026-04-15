@@ -16,6 +16,10 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { buildPortfolioFundingSnapshot, type PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
@@ -627,6 +631,12 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   );
   const storedFundingSnapshot = parseStoredFundingSnapshot(
     latestArtifact?.metadata_json ?? null
+  );
+  const currentReportComparisonAggregate = parseStoredComparisonSnapshotAggregate(
+    latestArtifact?.metadata_json ?? null
+  );
+  const currentReportComparisonDigest = describeComparisonSnapshotAggregate(
+    currentReportComparisonAggregate
   );
   const liveFundingSnapshot = project
     ? buildProjectFundingSnapshot({
@@ -1394,6 +1404,48 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   }
 
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
+  const currentReportPacketFreshness = latestArtifact?.generated_at ?? report.generated_at
+    ? driftedItems.length > 0
+      ? {
+          label: "Refresh recommended",
+          tone: "warning" as const,
+          detail:
+            "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review.",
+        }
+      : {
+          label: "Packet current",
+          tone: "success" as const,
+          detail:
+            "No live source drift is currently visible against the latest packet snapshot.",
+        }
+    : {
+        label: "No packet",
+        tone: "warning" as const,
+        detail:
+          "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
+      };
+  const currentReportGrantModelingEvidence =
+    project && currentReportComparisonAggregate && currentReportComparisonDigest
+      ? {
+          projectId: project.id,
+          comparisonBackedCount: 1,
+          leadComparisonReport: {
+            id: report.id,
+            title: report.title,
+            href: `/reports/${report.id}#packet-release-review`,
+            packetFreshness: currentReportPacketFreshness,
+            comparisonAggregate: currentReportComparisonAggregate,
+            comparisonDigest: currentReportComparisonDigest,
+          },
+        }
+      : null;
+  const currentReportGrantModelingReadiness = describeProjectGrantModelingReadiness(
+    currentReportGrantModelingEvidence
+  );
+  const currentReportGrantModelingSupport = buildGrantDecisionModelingSupport(
+    currentReportGrantModelingEvidence,
+    project?.name ?? null
+  );
   const driftActionByKey: Record<string, { href: string; label: string } | null> = {
     engagement: engagementCampaign
       ? { href: `/engagement/${engagementCampaign.id}`, label: "Review engagement source" }
@@ -1519,6 +1571,105 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         title="What should move around this report"
         description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
       />
+
+      <article id="packet-release-review" className="module-section-surface">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Release review
+            </p>
+            <h2 className="text-xl font-semibold tracking-tight">Packet release review</h2>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              Use this operator checkpoint to decide whether the current packet is safe to cite in grant triage language. Recommendations remain advisory until someone explicitly saves a decision in the grants lane.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge tone={currentReportPacketFreshness.tone}>
+              {currentReportPacketFreshness.label}
+            </StatusBadge>
+            {currentReportGrantModelingReadiness ? (
+              <StatusBadge tone={currentReportGrantModelingReadiness.tone}>
+                {currentReportGrantModelingReadiness.label}
+              </StatusBadge>
+            ) : null}
+            {currentReportComparisonDigest ? (
+              <StatusBadge tone="info">{currentReportComparisonDigest.headline}</StatusBadge>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-3">
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Packet freshness
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportPacketFreshness.label}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportPacketFreshness.detail}
+            </p>
+          </div>
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Grant planning posture
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportGrantModelingReadiness?.label ?? "No visible support"}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportGrantModelingReadiness?.detail ?? currentReportGrantModelingSupport.summary}
+            </p>
+          </div>
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Modeling digest
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportComparisonDigest?.headline ?? "No saved comparisons in this packet"}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportComparisonDigest?.detail ?? "Saved comparison snapshots have not been captured here yet, so this packet should not drive pursue language on its own."}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Recommended next action
+          </p>
+          <p className="mt-1 text-sm font-semibold text-foreground">
+            {currentReportGrantModelingSupport.recommendedNextActionTitle}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {currentReportGrantModelingSupport.recommendedNextActionSummary}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <StatusBadge tone="neutral">
+              Suggested decision: {titleize(currentReportGrantModelingSupport.recommendedDecisionState)}
+            </StatusBadge>
+            {currentReportGrantModelingEvidence ? (
+              <StatusBadge tone="neutral">
+                {currentReportGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount} indicator delta
+                {currentReportGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount === 1 ? "" : "s"}
+              </StatusBadge>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+          <Link href="#report-controls" className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+            Review packet controls
+            <Link2 className="h-4 w-4" />
+          </Link>
+          {project ? (
+            <Link href={`/grants?focusProjectId=${project.id}`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+              Open grant decisions
+              <Link2 className="h-4 w-4" />
+            </Link>
+          ) : null}
+        </div>
+      </article>
 
       {/* ── Composition + provenance row ─────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">

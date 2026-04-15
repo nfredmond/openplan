@@ -25,6 +25,31 @@ vi.mock("@/components/operations/workspace-command-board", () => ({
 
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 
+function buildFundingSnapshot(overrides: Partial<NonNullable<Parameters<typeof RtpReportDetail>[0]["currentContext"]["fundingSnapshot"]>>) {
+  return {
+    capturedAt: null,
+    latestSourceUpdatedAt: null,
+    linkedProjectCount: 3,
+    trackedProjectCount: 3,
+    fundedProjectCount: 1,
+    likelyCoveredProjectCount: 0,
+    gapProjectCount: 0,
+    committedFundingAmount: 500000,
+    likelyFundingAmount: 0,
+    totalPotentialFundingAmount: 500000,
+    unfundedAfterLikelyAmount: 0,
+    paidReimbursementAmount: 0,
+    outstandingReimbursementAmount: 0,
+    uninvoicedAwardAmount: 0,
+    awardRiskCount: 0,
+    label: "Funded",
+    reason: "Committed awards meet the need.",
+    reimbursementLabel: "Awarded dollars reimbursed",
+    reimbursementReason: "All award-linked invoices are paid.",
+    ...overrides,
+  };
+}
+
 describe("RtpReportDetail", () => {
   it("prefers the latest artifact timestamp for packet freshness", () => {
     render(
@@ -114,4 +139,93 @@ describe("RtpReportDetail", () => {
     expect(screen.queryByText("No packet")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
   });
+
+  it("surfaces the grants follow-through lane when RTP funding posture still needs cross-module work", () => {
+    render(
+      <RtpReportDetail
+        report={{
+          id: "report-1",
+          title: "Nevada County RTP Packet",
+          report_type: "board_packet",
+          status: "generated",
+          summary: "Board packet for release review.",
+          latest_artifact_kind: "html",
+          generated_at: "2026-03-28T18:00:00.000Z",
+          updated_at: "2026-03-28T18:05:00.000Z",
+        }}
+        workspace={{ id: "workspace-1", name: "OpenPlan QA", slug: "openplan-qa" }}
+        cycle={{
+          id: "cycle-1",
+          title: "2027 RTP",
+          status: "draft",
+          summary: "Cycle summary",
+          geography_label: "Nevada County",
+          horizon_start_year: 2027,
+          horizon_end_year: 2050,
+          updated_at: "2026-03-28T17:30:00.000Z",
+        }}
+        sections={[
+          {
+            id: "section-1",
+            section_key: "project_pipeline",
+            title: "Project pipeline",
+            enabled: true,
+            sort_order: 0,
+            config_json: {},
+          },
+        ]}
+        artifacts={[
+          {
+            id: "artifact-1",
+            artifact_kind: "html",
+            generated_at: "2026-03-28T18:00:00.000Z",
+          },
+        ]}
+        comparisonDigest={null}
+        latestHtml={null}
+        generationContext={{
+          generatedAt: "2026-03-28T18:00:00.000Z",
+          enabledSectionKeys: ["project_pipeline"],
+          readinessLabel: "Ready",
+          readinessReason: "Packet is aligned.",
+          workflowLabel: "On track",
+          workflowDetail: "All source sections are captured.",
+          chapterCount: 8,
+          chapterCompleteCount: 8,
+          chapterReadyForReviewCount: 8,
+          linkedProjectCount: 3,
+          engagementCampaignCount: 1,
+          presetStage: null,
+          presetLabel: null,
+          presetStatusLabel: null,
+          presetDetail: null,
+          fundingSnapshot: buildFundingSnapshot({ gapProjectCount: 1, label: "Partially funded", reason: "A gap remains." }),
+        }}
+        currentContext={{
+          enabledSectionKeys: ["project_pipeline"],
+          readinessLabel: "Ready",
+          readinessReason: "Packet is aligned.",
+          workflowLabel: "On track",
+          workflowDetail: "All source sections are captured.",
+          chapterCount: 8,
+          chapterCompleteCount: 8,
+          chapterReadyForReviewCount: 8,
+          linkedProjectCount: 3,
+          engagementCampaignCount: 1,
+          cycleUpdatedAt: "2026-03-28T17:30:00.000Z",
+          presetStage: null,
+          presetLabel: null,
+          presetStatusLabel: null,
+          presetDetail: null,
+          fundingSnapshot: buildFundingSnapshot({ gapProjectCount: 1, label: "Partially funded", reason: "A gap remains." }),
+        }}
+        operationsSummary={{} as WorkspaceOperationsSummary}
+      />
+    );
+
+    expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /Open gap resolution/i });
+    expect(link).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
+  });
+
 });
