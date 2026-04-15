@@ -226,6 +226,18 @@ export type WorkspaceOperationsProjectFundingProfileSourceRow = {
   local_match_need_amount?: number | string | null;
 };
 
+export type WorkspaceGrantModelingSummary = {
+  breakdown: {
+    decisionReady: number;
+    refreshRecommended: number;
+    thin: number;
+    noVisibleSupport: number;
+  };
+  breakdownSummary: string | null;
+  operatorDetail: string | null;
+  leadDecisionDetail: string | null;
+};
+
 export type WorkspaceOperationsSummary = {
   posture: "stable" | "active" | "attention";
   headline: string;
@@ -255,6 +267,7 @@ export type WorkspaceOperationsSummary = {
     projectFundingGapProjects: number;
     queueDepth: number;
   };
+  grantModelingSummary?: WorkspaceGrantModelingSummary | null;
   nextCommand: WorkspaceCommandQueueItem | null;
   commandQueue: WorkspaceCommandQueueItem[];
   fullCommandQueue: WorkspaceCommandQueueItem[];
@@ -1071,6 +1084,29 @@ export function buildWorkspaceOperationsSummary({
 
       return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
     });
+  const firstFundingDecisionProject = fundingDecisionProjects[0] ?? null;
+  const grantModelingOperatorDetail = grantModelingOpportunityBreakdownSummary
+    ? `Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across ${grantModelingOpportunityBreakdownSummary} ${GRANT_MODELING_PLANNING_CAVEAT}`
+    : null;
+  const firstFundingDecisionProjectLeadPacketDetail =
+    firstFundingDecisionProject?.modelingEvidence?.leadComparisonReport.title
+      ? `${firstFundingDecisionProject.modelingEvidence.leadComparisonReport.title} is the lead packet to review.`
+      : "";
+  const grantModelingLeadDecisionDetail = firstFundingDecisionProject
+    ? firstFundingDecisionProject.modelingReadiness?.key === "decision-ready"
+      ? `${firstFundingDecisionProject.leadOpportunity?.title ?? "The lead funding decision"} for ${firstFundingDecisionProject.project.name} is rising because modeling posture appears decision-ready.${firstFundingDecisionProjectLeadPacketDetail ? ` ${firstFundingDecisionProjectLeadPacketDetail}` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
+      : firstFundingDecisionProject.modelingReadiness
+        ? `${firstFundingDecisionProject.leadOpportunity?.title ?? "The lead funding decision"} for ${firstFundingDecisionProject.project.name} is still visible in the decision queue while modeling posture reads ${firstFundingDecisionProject.modelingReadiness.label.toLowerCase()}.${firstFundingDecisionProjectLeadPacketDetail ? ` ${firstFundingDecisionProjectLeadPacketDetail}` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
+        : null
+    : null;
+  const grantModelingSummary: WorkspaceGrantModelingSummary | null = grantModelingOpportunityBreakdownSummary
+    ? {
+        breakdown: grantModelingOpportunityBreakdown,
+        breakdownSummary: grantModelingOpportunityBreakdownSummary,
+        operatorDetail: grantModelingOperatorDetail,
+        leadDecisionDetail: grantModelingLeadDecisionDetail,
+      }
+    : null;
   const fundingAwardRecordProjects = projectFundingProfiles
     .map((profile) => {
       const project = projects.find((item) => item.id === profile.project_id);
@@ -1511,7 +1547,6 @@ export function buildWorkspaceOperationsSummary({
   }
 
   if (fundingDecisionProjects.length > 0) {
-    const firstFundingDecisionProject = fundingDecisionProjects[0];
     const firstFundingDecisionProjectModelingDetail = firstFundingDecisionProject
       ? firstFundingDecisionProject.modelingReadiness
         ? `Modeling posture for ${firstFundingDecisionProject.project.name}: ${firstFundingDecisionProject.modelingReadiness.label}.${firstFundingDecisionProject.modelingEvidence?.leadComparisonReport.title ? ` ${firstFundingDecisionProject.modelingEvidence.leadComparisonReport.title} is the lead packet to review.` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
@@ -1638,6 +1673,7 @@ export function buildWorkspaceOperationsSummary({
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: fullCommandQueue.length,
     },
+    grantModelingSummary,
     nextCommand,
     commandQueue,
     fullCommandQueue,
