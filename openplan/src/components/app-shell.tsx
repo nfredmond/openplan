@@ -4,6 +4,7 @@ import { AlertTriangle, Command } from "lucide-react";
 import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
 import { AppSidebarLink } from "@/components/nav/app-sidebar-link";
 import { AppCopilot } from "@/components/assistant/app-copilot";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -144,7 +145,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                   {user ? shellState.workspaceRole : "Preview mode"}
                 </p>
               </div>
-              <div className="shrink-0">
+              <div className="flex shrink-0 items-center gap-2">
+                <ThemeToggle />
                 {user ? (
                   <form action={handleSignOut}>
                     <button
