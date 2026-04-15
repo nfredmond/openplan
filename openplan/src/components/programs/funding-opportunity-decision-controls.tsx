@@ -6,7 +6,10 @@ import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FUNDING_OPPORTUNITY_DECISION_OPTIONS } from "@/lib/programs/catalog";
+import {
+  FUNDING_OPPORTUNITY_DECISION_OPTIONS,
+  type FundingOpportunityDecision,
+} from "@/lib/programs/catalog";
 
 function toOptionalNumber(value: string): number | null {
   if (!value.trim()) return null;
@@ -34,7 +37,16 @@ export type FundingOpportunityDecisionModelingSupport = {
   summary: string;
   readinessNoteSuggestion: string;
   decisionRationaleSuggestion: string;
+  recommendedNextActionTitle: string;
+  recommendedNextActionSummary: string;
+  recommendedDecisionState: FundingOpportunityDecision;
 };
+
+function getDecisionLabel(value: FundingOpportunityDecision) {
+  return (
+    FUNDING_OPPORTUNITY_DECISION_OPTIONS.find((option) => option.value === value)?.label ?? value
+  );
+}
 
 export function FundingOpportunityDecisionControls({
   opportunityId,
@@ -62,6 +74,11 @@ export function FundingOpportunityDecisionControls({
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const recommendedDecisionLabel = modelingSupport
+    ? getDecisionLabel(modelingSupport.recommendedDecisionState)
+    : null;
+  const recommendationAlreadyApplied =
+    modelingSupport?.recommendedDecisionState === decisionState;
 
   async function handleSave() {
     setIsSaving(true);
@@ -137,40 +154,73 @@ export function FundingOpportunityDecisionControls({
 
         {modelingSupport ? (
           <div className="rounded-2xl border border-sky-200/70 bg-sky-50/80 px-4 py-3 text-sm dark:border-sky-900/60 dark:bg-sky-950/30">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
-                  Modeling-backed decision support
-                </p>
-                <p className="font-semibold">{modelingSupport.title}</p>
-                <p className="text-muted-foreground dark:text-sky-100/85">{modelingSupport.summary}</p>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                    Modeling-aware decision support
+                  </p>
+                  <p className="font-semibold">{modelingSupport.title}</p>
+                  <p className="text-muted-foreground dark:text-sky-100/85">{modelingSupport.summary}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setReadinessNotes((current) =>
+                        appendSuggestedText(current, modelingSupport.readinessNoteSuggestion)
+                      )
+                    }
+                  >
+                    Use in readiness notes
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setDecisionRationale((current) =>
+                        appendSuggestedText(current, modelingSupport.decisionRationaleSuggestion)
+                      )
+                    }
+                  >
+                    Use in rationale
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setReadinessNotes((current) =>
-                      appendSuggestedText(current, modelingSupport.readinessNoteSuggestion)
-                    )
-                  }
-                >
-                  Use in readiness notes
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setDecisionRationale((current) =>
-                      appendSuggestedText(current, modelingSupport.decisionRationaleSuggestion)
-                    )
-                  }
-                >
-                  Use in rationale
-                </Button>
+              <div className="rounded-2xl border border-sky-200/80 bg-background/80 px-3 py-3 dark:border-sky-900/70 dark:bg-sky-950/40">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                      Recommended next action
+                    </p>
+                    <p className="font-semibold">{modelingSupport.recommendedNextActionTitle}</p>
+                    <p className="text-muted-foreground dark:text-sky-100/85">
+                      {modelingSupport.recommendedNextActionSummary}
+                    </p>
+                    <p className="text-xs text-muted-foreground dark:text-sky-100/75">
+                      This only updates the form until you save the decision.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={recommendationAlreadyApplied}
+                      onClick={() => setDecisionState(modelingSupport.recommendedDecisionState)}
+                    >
+                      {recommendationAlreadyApplied
+                        ? `Decision already set to ${recommendedDecisionLabel}`
+                        : `Set decision to ${recommendedDecisionLabel}`}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

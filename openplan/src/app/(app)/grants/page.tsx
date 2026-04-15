@@ -263,21 +263,63 @@ function formatFilterLabel(value: StatusFilter | DecisionFilter) {
 }
 
 function buildGrantDecisionModelingSupport(
-  evidence: ProjectGrantModelingEvidence | null | undefined
+  evidence: ProjectGrantModelingEvidence | null | undefined,
+  projectName?: string | null
 ) {
-  if (!evidence) {
-    return null;
-  }
-
-  const leadReport = evidence.leadComparisonReport;
   const caveat =
     "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.";
 
+  if (!evidence) {
+    const subject = projectName
+      ? `${projectName} has no visible modeling-backed packet linked yet.`
+      : "No visible modeling-backed packet is linked yet.";
+
+    return {
+      title: projectName ? `${projectName} modeling posture` : "Modeling posture",
+      summary: `${subject} Keep monitoring or add support before relying on modeling language for this opportunity. ${caveat}`,
+      readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture or add supporting packet evidence first because no visible modeling support is linked yet. ${caveat}`,
+      decisionRationaleSuggestion: `Decision context should stay in monitor posture until operators add visible modeling support or confirm the funding source can proceed without it. ${caveat}`,
+      recommendedNextActionTitle: "Keep monitoring or add support first",
+      recommendedNextActionSummary: `No visible modeling-backed packet is linked yet, so keep this opportunity in monitor posture or add support before relying on modeling language. ${caveat}`,
+      recommendedDecisionState: "monitor" as const,
+    };
+  }
+
+  const leadReport = evidence.leadComparisonReport;
+  const readiness = describeProjectGrantModelingReadiness(evidence);
+
+  if (readiness?.key === "decision-ready") {
+    return {
+      title: leadReport.title,
+      summary: `${readiness.detail} ${caveat}`,
+      readinessNoteSuggestion: `Recommended next action: advance this opportunity to pursue now because modeling posture appears decision-ready in ${leadReport.title}. ${leadReport.comparisonDigest.headline}. ${caveat}`,
+      decisionRationaleSuggestion: `Advance this opportunity to pursue now because ${leadReport.title} appears decision-ready as planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${caveat}`,
+      recommendedNextActionTitle: "Advance to pursue now",
+      recommendedNextActionSummary: `${leadReport.title} appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current. ${caveat}`,
+      recommendedDecisionState: "pursue" as const,
+    };
+  }
+
+  if (readiness?.key === "stale") {
+    return {
+      title: leadReport.title,
+      summary: `${readiness.detail} ${caveat}`,
+      readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture and refresh ${leadReport.title} before final pursue language. ${leadReport.packetFreshness.detail} ${caveat}`,
+      decisionRationaleSuggestion: `Keep this opportunity in monitor posture until ${leadReport.title} is refreshed; the current packet is useful for planning support but should not drive final pursue language yet. ${caveat}`,
+      recommendedNextActionTitle: "Refresh supporting packet before final pursue language",
+      recommendedNextActionSummary: `${leadReport.title} still helps with planning context, but operators should refresh the supporting packet before leaning on it for final pursue language. ${caveat}`,
+      recommendedDecisionState: "monitor" as const,
+    };
+  }
+
   return {
     title: leadReport.title,
-    summary: `Saved comparison context from ${leadReport.title} can support readiness and prioritization language for this opportunity. ${leadReport.comparisonDigest.detail} ${caveat}`,
-    readinessNoteSuggestion: `Modeling support from ${leadReport.title}: ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
-    decisionRationaleSuggestion: `Decision context can cite ${leadReport.title} as modeling-backed planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
+    summary: `${readiness?.detail ?? `Saved comparison context from ${leadReport.title} can support readiness and prioritization language for this opportunity. ${leadReport.comparisonDigest.detail}`} ${caveat}`,
+    readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture and strengthen evidence before relying on ${leadReport.title} for grant triage. ${leadReport.comparisonDigest.headline}. ${caveat}`,
+    decisionRationaleSuggestion: `Keep this opportunity in monitor posture until ${leadReport.title} carries stronger comparison-backed planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${caveat}`,
+    recommendedNextActionTitle: "Strengthen evidence before relying on it",
+    recommendedNextActionSummary: `${leadReport.title} is still thin as planning support, so operators should strengthen the evidence before relying on it for pursue language. ${caveat}`,
+    recommendedDecisionState: "monitor" as const,
   };
 }
 
@@ -2016,7 +2058,10 @@ export default async function GrantsPage({
                   ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null;
                 const modelingReadiness = describeProjectGrantModelingReadiness(projectGrantModelingEvidence);
-                const decisionModelingSupport = buildGrantDecisionModelingSupport(projectGrantModelingEvidence);
+                const decisionModelingSupport = buildGrantDecisionModelingSupport(
+                  projectGrantModelingEvidence,
+                  opportunity.project?.name ?? null
+                );
 
                 return (
                   <div
