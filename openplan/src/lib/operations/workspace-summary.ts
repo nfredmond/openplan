@@ -1,3 +1,4 @@
+import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/catalog";
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
@@ -14,6 +15,7 @@ import {
   GRANTS_COMMAND_MODULE_LABEL,
   resolveRtpFundingFollowThrough,
 } from "@/lib/operations/grants-links";
+import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
@@ -26,11 +28,13 @@ import {
 } from "@/lib/reports/catalog";
 import type { StatusTone } from "@/lib/ui/status";
 
+type WorkspaceOperationsQueryResult = { data: unknown[] | null; error?: { message?: string } | null };
+
 type WorkspaceOperationsPostEqChain = {
   order: (column: string, options: { ascending: boolean }) => {
-    limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
+    limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
   };
-  limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
+  limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
 };
 
 type WorkspaceOperationsSelectChain = {
@@ -268,8 +272,12 @@ export type WorkspaceOperationsSummary = {
     projectFundingReimbursementActiveProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
+    aerialMissions: number;
+    aerialActiveMissions: number;
+    aerialReadyPackages: number;
   };
   grantModelingSummary?: WorkspaceGrantModelingSummary | null;
+  aerialPosture?: AerialProjectPosture | null;
   nextCommand: WorkspaceCommandQueueItem | null;
   commandQueue: WorkspaceCommandQueueItem[];
   fullCommandQueue: WorkspaceCommandQueueItem[];
@@ -574,6 +582,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   fundingInvoices = [],
   projectSubmittals = [],
   projectFundingProfiles = [],
+  aerialPosture,
   now,
 }: {
   projects: WorkspaceOperationsProjectSourceRow[];
@@ -585,6 +594,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   fundingInvoices?: WorkspaceOperationsBillingInvoiceSourceRow[];
   projectSubmittals?: WorkspaceOperationsProjectSubmittalSourceRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
+  aerialPosture?: AerialProjectPosture | null;
   now?: Date;
 }) {
   return buildWorkspaceOperationsSummary({
@@ -597,6 +607,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     fundingInvoices: mapWorkspaceOperationsBillingInvoiceRows(fundingInvoices),
     projectSubmittals: mapWorkspaceOperationsProjectSubmittalRows(projectSubmittals),
     projectFundingProfiles,
+    aerialPosture,
     now,
   });
 }
@@ -697,6 +708,26 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     };
   });
 
+  const aerialMissionsResult = await supabase
+    .from("aerial_missions")
+    .select("id, status, mission_type")
+    .eq("workspace_id", workspaceId)
+    .limit(500);
+  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+    ? []
+    : ((aerialMissionsResult.data ?? []) as Array<{ id: string; status: string; mission_type: string }>);
+
+  const aerialPackagesResult = await supabase
+    .from("aerial_evidence_packages")
+    .select("id, status, verification_readiness")
+    .eq("workspace_id", workspaceId)
+    .limit(500);
+  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+    ? []
+    : ((aerialPackagesResult.data ?? []) as Array<{ id: string; status: string; verification_readiness: string }>);
+
+  const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
+
   return buildWorkspaceOperationsSummaryFromSourceRows({
     projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
     plans: (plansResult.data ?? []) as WorkspaceOperationsPlanSourceRow[],
@@ -707,6 +738,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     fundingInvoices: (fundingInvoicesResult.data ?? []) as WorkspaceOperationsBillingInvoiceSourceRow[],
     projectSubmittals: (projectSubmittalsResult.data ?? []) as WorkspaceOperationsProjectSubmittalSourceRow[],
     projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
+    aerialPosture: aerialProjectPosture,
   });
 }
 
@@ -720,6 +752,7 @@ export function buildWorkspaceOperationsSummary({
   fundingInvoices = [],
   projectSubmittals = [],
   projectFundingProfiles = [],
+  aerialPosture = null,
   now = new Date(),
 }: {
   projects: WorkspaceOperationsProjectRow[];
@@ -731,6 +764,7 @@ export function buildWorkspaceOperationsSummary({
   fundingInvoices?: WorkspaceOperationsBillingInvoiceRow[];
   projectSubmittals?: WorkspaceOperationsProjectSubmittalRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
+  aerialPosture?: AerialProjectPosture | null;
   now?: Date;
 }): WorkspaceOperationsSummary {
   const reportRows = reports.map((report) => {
@@ -1672,8 +1706,12 @@ export function buildWorkspaceOperationsSummary({
       projectFundingReimbursementActiveProjects: reimbursementAdvanceProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: fullCommandQueue.length,
+      aerialMissions: aerialPosture?.missionCount ?? 0,
+      aerialActiveMissions: aerialPosture?.activeMissionCount ?? 0,
+      aerialReadyPackages: aerialPosture?.readyPackageCount ?? 0,
     },
     grantModelingSummary,
+    aerialPosture: aerialPosture ?? null,
     nextCommand,
     commandQueue,
     fullCommandQueue,
