@@ -48,6 +48,7 @@ import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
 } from "@/lib/projects/funding";
+import { buildProjectGrantModelingEvidenceByProjectId } from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -182,6 +183,21 @@ type ProjectFundingProfileRow = {
   funding_need_amount: number | string | null;
   local_match_need_amount: number | string | null;
   notes?: string | null;
+};
+
+type ProjectGrantModelingReportRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  updated_at: string;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+};
+
+type ReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
 };
 
 type StatusFilter = "all" | FundingOpportunityStatus;
@@ -614,6 +630,32 @@ export default async function GrantsPage({
 
   const projectOptions = (projectsData ?? []) as ProjectOption[];
   const programOptions = (programsData ?? []) as ProgramOption[];
+  const projectIdsWithVisibleFundingOpportunities = Array.from(
+    new Set(
+      ((opportunitiesData ?? []) as FundingOpportunityRow[])
+        .map((opportunity) => opportunity.project_id)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+  const { data: projectGrantReportsData } = projectIdsWithVisibleFundingOpportunities.length
+    ? await supabase
+        .from("reports")
+        .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
+        .in("project_id", projectIdsWithVisibleFundingOpportunities)
+        .order("updated_at", { ascending: false })
+    : { data: [] };
+  const reportIds = ((projectGrantReportsData ?? []) as ProjectGrantModelingReportRow[]).map((report) => report.id);
+  const { data: projectGrantReportArtifactsData } = reportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", reportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [] };
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    (projectGrantReportsData ?? []) as ProjectGrantModelingReportRow[],
+    (projectGrantReportArtifactsData ?? []) as ReportArtifactRow[]
+  );
 
   const opportunities = ((opportunitiesData ?? []) as FundingOpportunityRow[])
     .map((opportunity) => ({
@@ -1722,6 +1764,9 @@ export default async function GrantsPage({
                 const programHref = opportunity.program ? `/programs/${opportunity.program.id}#program-funding-opportunities` : null;
                 const closesSoon = isClosingSoon(opportunity.closes_at);
                 const decisionSoon = isDecisionSoon(opportunity.decision_due_at);
+                const projectGrantModelingEvidence = opportunity.project?.id
+                  ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
+                  : null;
 
                 return (
                   <div
@@ -1744,6 +1789,7 @@ export default async function GrantsPage({
                         {activeFocusedOpportunityId === opportunity.id && opportunity.opportunity_status !== "awarded" ? <StatusBadge tone="info">Focused from workspace queue</StatusBadge> : null}
                         {closesSoon ? <StatusBadge tone="warning">Closing soon</StatusBadge> : null}
                         {decisionSoon ? <StatusBadge tone="warning">Decision due soon</StatusBadge> : null}
+                        {projectGrantModelingEvidence ? <StatusBadge tone="info">Modeling-backed</StatusBadge> : null}
                         {opportunity.program ? <StatusBadge tone="info">{opportunity.program.title}</StatusBadge> : null}
                       </div>
 
@@ -1766,6 +1812,11 @@ export default async function GrantsPage({
                         <span className="module-record-chip">Closes {formatDateTime(opportunity.closes_at)}</span>
                         <span className="module-record-chip">Decision due {formatDateTime(opportunity.decision_due_at)}</span>
                         <span className="module-record-chip">Project {opportunity.project?.name ?? "Not linked"}</span>
+                        {projectGrantModelingEvidence ? (
+                          <span className="module-record-chip">
+                            Modeling {projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.headline}
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -1783,8 +1834,33 @@ export default async function GrantsPage({
                         </div>
                       </div>
 
-                      {(projectHref || programHref) ? (
+                      {projectGrantModelingEvidence ? (
+                        <div className="module-note mt-4 text-sm">
+                          <p className="font-semibold text-foreground">Project modeling evidence</p>
+                          <p className="mt-1 text-muted-foreground">
+                            Saved comparison context from {projectGrantModelingEvidence.leadComparisonReport.title} can support readiness and prioritization language for this opportunity. {projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.detail} Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <StatusBadge tone={projectGrantModelingEvidence.leadComparisonReport.packetFreshness.tone}>
+                              {projectGrantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                            </StatusBadge>
+                            {projectGrantModelingEvidence.comparisonBackedCount > 1 ? (
+                              <StatusBadge tone="neutral">
+                                {projectGrantModelingEvidence.comparisonBackedCount} comparison-backed packets
+                              </StatusBadge>
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {(projectHref || programHref || projectGrantModelingEvidence) ? (
                         <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+                          {projectGrantModelingEvidence ? (
+                            <Link href={projectGrantModelingEvidence.leadComparisonReport.href} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                              Open supporting packet
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          ) : null}
                           {projectHref ? (
                             <Link href={projectHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
                               Open project funding lane
