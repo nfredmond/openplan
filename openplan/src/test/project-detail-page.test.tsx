@@ -245,6 +245,12 @@ vi.mock("@/components/aerial/aerial-evidence-package-creator", () => ({
   AerialEvidencePackageCreator: () => <div data-testid="aerial-evidence-package-creator" />,
 }));
 
+vi.mock("@/components/aerial/aerial-mission-status-editor", () => ({
+  AerialMissionStatusEditor: ({ currentStatus }: { currentStatus: string }) => (
+    <div data-testid="aerial-mission-status-editor">{currentStatus}</div>
+  ),
+}));
+
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
   FundingOpportunityDecisionControls: () => <div data-testid="funding-opportunity-decision-controls" />,
 }));

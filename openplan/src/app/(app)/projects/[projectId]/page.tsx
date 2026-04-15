@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { AerialEvidencePackageCreator } from "@/components/aerial/aerial-evidence-package-creator";
 import { AerialMissionCreator } from "@/components/aerial/aerial-mission-creator";
+import { AerialMissionStatusEditor } from "@/components/aerial/aerial-mission-status-editor";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
@@ -2778,9 +2779,10 @@ export default async function ProjectDetailPage({
                   <div key={mission.id} className="module-record-row">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone={aerialMissionStatusTone(mission.status)}>
-                          {formatAerialMissionStatusLabel(mission.status)}
-                        </StatusBadge>
+                        <AerialMissionStatusEditor
+                          missionId={mission.id}
+                          currentStatus={mission.status as import("@/lib/aerial/catalog").AerialMissionStatus}
+                        />
                         <StatusBadge tone="neutral">{formatAerialMissionTypeLabel(mission.mission_type)}</StatusBadge>
                       </div>
                       <div className="space-y-1.5">
