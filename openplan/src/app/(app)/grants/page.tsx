@@ -48,7 +48,10 @@ import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
 } from "@/lib/projects/funding";
-import { buildProjectGrantModelingEvidenceByProjectId } from "@/lib/grants/modeling-evidence";
+import {
+  buildProjectGrantModelingEvidenceByProjectId,
+  type ProjectGrantModelingEvidence,
+} from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -255,6 +258,25 @@ function formatFilterLabel(value: StatusFilter | DecisionFilter) {
   return value
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function buildGrantDecisionModelingSupport(
+  evidence: ProjectGrantModelingEvidence | null | undefined
+) {
+  if (!evidence) {
+    return null;
+  }
+
+  const leadReport = evidence.leadComparisonReport;
+  const caveat =
+    "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.";
+
+  return {
+    title: leadReport.title,
+    summary: `Saved comparison context from ${leadReport.title} can support readiness and prioritization language for this opportunity. ${leadReport.comparisonDigest.detail} ${caveat}`,
+    readinessNoteSuggestion: `Modeling support from ${leadReport.title}: ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
+    decisionRationaleSuggestion: `Decision context can cite ${leadReport.title} as modeling-backed planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
+  };
 }
 
 function formatCurrency(value: number | string | null | undefined) {
@@ -1767,6 +1789,7 @@ export default async function GrantsPage({
                 const projectGrantModelingEvidence = opportunity.project?.id
                   ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null;
+                const decisionModelingSupport = buildGrantDecisionModelingSupport(projectGrantModelingEvidence);
 
                 return (
                   <div
@@ -1884,6 +1907,7 @@ export default async function GrantsPage({
                           initialFitNotes={opportunity.fit_notes}
                           initialReadinessNotes={opportunity.readiness_notes}
                           initialDecisionRationale={opportunity.decision_rationale}
+                          modelingSupport={decisionModelingSupport}
                         />
                       </div>
                     </div>

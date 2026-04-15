@@ -9,6 +9,7 @@ const redirectMock = vi.fn(() => {
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
+const fundingOpportunityDecisionControlsMock = vi.fn();
 
 const fundingOpportunitiesOrderMock = vi.fn();
 const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
@@ -106,7 +107,10 @@ vi.mock("@/components/programs/funding-opportunity-creator", () => ({
 }));
 
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
-  FundingOpportunityDecisionControls: () => <div data-testid="funding-opportunity-decision-controls" />,
+  FundingOpportunityDecisionControls: (props: unknown) => {
+    fundingOpportunityDecisionControlsMock(props);
+    return <div data-testid="funding-opportunity-decision-controls" />;
+  },
 }));
 
 vi.mock("@/components/projects/project-funding-award-creator", () => ({
@@ -261,6 +265,16 @@ describe("GrantsPage", () => {
     expect(screen.getByRole("link", { name: /Open supporting packet/i })).toHaveAttribute(
       "href",
       "/reports/report-1#packet-release-review"
+    );
+    expect(fundingOpportunityDecisionControlsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelingSupport: expect.objectContaining({
+          title: "Mobility Grant Packet",
+          summary: expect.stringContaining("planning support only, not proof of award likelihood"),
+          readinessNoteSuggestion: expect.stringContaining("1 saved comparison · 1 ready"),
+          decisionRationaleSuggestion: expect.stringContaining("funding-source review"),
+        }),
+      })
     );
   });
 });
