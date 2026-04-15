@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { touchScenarioLinkedReportPackets } from "@/lib/reports/scenario-writeback";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -120,6 +121,30 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (scenarioUpdateError) {
       audit.error("scenario_entry_update_failed", { message: scenarioUpdateError.message, code: scenarioUpdateError.code ?? null });
       return NextResponse.json({ error: "Failed to update scenario entry attachment" }, { status: 500 });
+    }
+
+    const { touchedReportIds, error: writebackError } = await touchScenarioLinkedReportPackets({
+      supabase,
+      scenarioSetId: entryRow.scenario_set_id,
+      workspaceId: access.model.workspace_id,
+      touchedAt: now,
+    });
+
+    if (writebackError) {
+      audit.warn("scenario_report_writeback_failed", {
+        modelId: access.model.id,
+        modelRunId: runRow.id,
+        scenarioEntryId: entryRow.id,
+        message: writebackError.message,
+        code: writebackError.code ?? null,
+      });
+    } else {
+      audit.info("scenario_report_writeback_succeeded", {
+        modelId: access.model.id,
+        modelRunId: runRow.id,
+        scenarioEntryId: entryRow.id,
+        touchedReportCount: touchedReportIds.length,
+      });
     }
 
     const { error: modelRunUpdateError } = await supabase
