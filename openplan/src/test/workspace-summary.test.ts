@@ -161,12 +161,28 @@ describe("workspace summary RTP funding review", () => {
 
   it("caveats comparison-backed reports as planning support in the workspace queue", () => {
     const summary = buildWorkspaceOperationsSummary({
-      projects: [],
+      projects: [
+        {
+          id: "project-1",
+          name: "Modeled Project",
+          status: "active",
+          deliveryPhase: "delivery",
+          updatedAt: "2026-04-12T20:00:00.000Z",
+        },
+        {
+          id: "project-2",
+          name: "Unmodeled Project",
+          status: "active",
+          deliveryPhase: "delivery",
+          updatedAt: "2026-04-12T19:00:00.000Z",
+        },
+      ],
       plans: [],
       programs: [],
       reports: [
         {
           id: "report-comparison-1",
+          projectId: "project-1",
           title: "Grant Strategy Packet",
           status: "generated",
           latestArtifactKind: "html",
@@ -181,6 +197,7 @@ describe("workspace summary RTP funding review", () => {
                     {
                       comparisonSnapshotId: "comparison-1",
                       status: "ready",
+                      indicatorDeltaCount: 3,
                       updatedAt: "2026-04-12T19:45:00.000Z",
                       candidateEntryLabel: "Bundled delivery scenario",
                     },
@@ -191,7 +208,32 @@ describe("workspace summary RTP funding review", () => {
           },
         },
       ],
-      fundingOpportunities: [],
+      fundingOpportunities: [
+        {
+          id: "opp-1",
+          title: "ATP Cycle 8",
+          opportunityStatus: "open",
+          decisionState: "monitor",
+          expectedAwardAmount: 100000,
+          closesAt: "2026-05-12T00:00:00.000Z",
+          decisionDueAt: null,
+          programId: null,
+          projectId: "project-1",
+          updatedAt: "2026-04-12T20:00:00.000Z",
+        },
+        {
+          id: "opp-2",
+          title: "SB1 Local Partnership",
+          opportunityStatus: "open",
+          decisionState: "monitor",
+          expectedAwardAmount: 80000,
+          closesAt: "2026-05-16T00:00:00.000Z",
+          decisionDueAt: null,
+          programId: null,
+          projectId: "project-2",
+          updatedAt: "2026-04-12T19:00:00.000Z",
+        },
+      ],
       fundingAwards: [],
       fundingInvoices: [],
       projectSubmittals: [],
@@ -206,7 +248,14 @@ describe("workspace summary RTP funding review", () => {
       "saved comparison context that can support grant planning language or prioritization framing"
     );
     expect(comparisonCommand?.detail).toContain(
+      "Across 2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support."
+    );
+    expect(comparisonCommand?.detail).toContain(
       "not proof of award likelihood or a replacement for funding-source review"
     );
+    expect(comparisonCommand?.badges).toContainEqual({
+      label: "Modeling triage",
+      value: "1 ready · 0 refresh · 0 thin · 1 none",
+    });
   });
 });

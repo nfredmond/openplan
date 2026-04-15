@@ -179,6 +179,109 @@ describe("workspace operations summary", () => {
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
   });
 
+  it("prefers decision-ready modeling support when funding decisions share the same timing posture", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-modeled",
+          name: "Modeled Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+        {
+          id: "project-unmodeled",
+          name: "Unmodeled Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T16:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [
+        {
+          id: "report-modeled",
+          project_id: "project-modeled",
+          title: "Mobility Grant Packet",
+          status: "generated",
+          latest_artifact_kind: "html",
+          generated_at: "2026-04-11T17:00:00.000Z",
+          updated_at: "2026-04-11T17:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              scenarioSetLinks: [
+                {
+                  comparisonSnapshots: [
+                    {
+                      status: "ready",
+                      indicatorDeltaCount: 3,
+                      updatedAt: "2026-04-11T16:45:00.000Z",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ],
+      fundingOpportunities: [
+        {
+          id: "opp-modeled-1",
+          title: "ATP Cycle 8",
+          opportunity_status: "open",
+          decision_state: "monitor",
+          expected_award_amount: 100000,
+          closes_at: "2026-05-12T00:00:00.000Z",
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-modeled",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+        {
+          id: "opp-unmodeled-1",
+          title: "SB1 Local Partnership",
+          opportunity_status: "open",
+          decision_state: "monitor",
+          expected_award_amount: 100000,
+          closes_at: "2026-05-12T00:00:00.000Z",
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-unmodeled",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      projectFundingProfiles: [
+        {
+          project_id: "project-modeled",
+          funding_need_amount: 300000,
+          local_match_need_amount: 30000,
+        },
+        {
+          project_id: "project-unmodeled",
+          funding_need_amount: 500000,
+          local_match_need_amount: 50000,
+        },
+      ],
+      now: new Date("2026-04-11T12:00:00.000Z"),
+    });
+
+    const decisionCommand = summary.fullCommandQueue.find(
+      (item) => item.key === "advance-project-funding-decisions"
+    );
+
+    expect(decisionCommand?.targetProjectId).toBe("project-modeled");
+    expect(decisionCommand?.targetOpportunityId).toBe("opp-modeled-1");
+    expect(decisionCommand?.detail).toContain("Modeling posture for Modeled Project: Appears decision-ready.");
+    expect(decisionCommand?.detail).toContain(
+      "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review."
+    );
+    expect(decisionCommand?.badges).toContainEqual({
+      label: "Modeling",
+      value: "Appears decision-ready",
+    });
+  });
+
   it("surfaces awarded opportunities without award records before final gap closure", () => {
     const summary = buildWorkspaceOperationsSummaryFromSourceRows({
       projects: [
