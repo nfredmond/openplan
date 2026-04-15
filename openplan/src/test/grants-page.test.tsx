@@ -257,11 +257,17 @@ describe("GrantsPage", () => {
   it("surfaces project-specific modeling evidence on funding opportunity cards", async () => {
     await renderPage();
 
+    expect(
+      screen.getByText(/See where grant modeling support looks strongest, thin, or stale/i)
+    ).toBeInTheDocument();
     expect(screen.getByText("Project modeling evidence")).toBeInTheDocument();
     expect(
-      screen.getByText(/Saved comparison context from Mobility Grant Packet can support readiness and prioritization language for this opportunity/i)
-    ).toBeInTheDocument();
+      screen.getAllByText(/Mobility Grant Packet carries current comparison-backed planning support with ready saved comparisons and visible indicator deltas/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Modeling-backed")).toBeInTheDocument();
+    expect(screen.getAllByText("Appears decision-ready").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 ready comparison")).toBeInTheDocument();
+    expect(screen.getByText("3 indicator deltas")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open supporting packet/i })).toHaveAttribute(
       "href",
       "/reports/report-1#packet-release-review"

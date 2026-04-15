@@ -50,6 +50,7 @@ import {
 } from "@/lib/projects/funding";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
+  describeProjectGrantModelingReadiness,
   type ProjectGrantModelingEvidence,
 } from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
@@ -277,6 +278,61 @@ function buildGrantDecisionModelingSupport(
     readinessNoteSuggestion: `Modeling support from ${leadReport.title}: ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
     decisionRationaleSuggestion: `Decision context can cite ${leadReport.title} as modeling-backed planning support for prioritization. ${leadReport.comparisonDigest.headline}. ${leadReport.comparisonDigest.detail} ${caveat}`,
   };
+}
+
+type GrantsModelingTriageProject = {
+  project: ProjectOption;
+  opportunityCount: number;
+  leadOpportunityId: string;
+  modelingEvidence: ProjectGrantModelingEvidence | null;
+  modelingReadiness: ReturnType<typeof describeProjectGrantModelingReadiness>;
+};
+
+function compareGrantModelingTriageProjects(
+  left: GrantsModelingTriageProject,
+  right: GrantsModelingTriageProject
+) {
+  const leftEvidence = left.modelingEvidence;
+  const rightEvidence = right.modelingEvidence;
+
+  if (!leftEvidence || !rightEvidence) {
+    return right.opportunityCount - left.opportunityCount;
+  }
+
+  if (rightEvidence.comparisonBackedCount !== leftEvidence.comparisonBackedCount) {
+    return rightEvidence.comparisonBackedCount - leftEvidence.comparisonBackedCount;
+  }
+
+  if (
+    rightEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount !==
+    leftEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
+  ) {
+    return (
+      rightEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount -
+      leftEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
+    );
+  }
+
+  if (
+    rightEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount !==
+    leftEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
+  ) {
+    return (
+      rightEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount -
+      leftEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
+    );
+  }
+
+  return right.opportunityCount - left.opportunityCount;
+}
+
+function buildFocusedOpportunityCardHref(opportunityId: string | null | undefined) {
+  if (!opportunityId) {
+    return "/grants";
+  }
+
+  const params = new URLSearchParams({ focusOpportunityId: opportunityId });
+  return `/grants?${params.toString()}#funding-opportunity-${opportunityId}`;
 }
 
 function formatCurrency(value: number | string | null | undefined) {
@@ -971,6 +1027,37 @@ export default async function GrantsPage({
   const leadDecisionCommand = grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null;
   const leadSourcingCommand = grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null;
   const leadModelingCommand = grantsQueue.find((item) => isGrantsModelingCommand(item)) ?? null;
+  const opportunityLinkedModelingProjects = projectOptions
+    .map((project) => {
+      const projectOpportunities = opportunitiesByProjectId.get(project.id) ?? [];
+      if (projectOpportunities.length === 0) {
+        return null;
+      }
+
+      const modelingEvidence = projectGrantModelingEvidenceByProjectId.get(project.id) ?? null;
+      return {
+        project,
+        opportunityCount: projectOpportunities.length,
+        leadOpportunityId: projectOpportunities[0]!.id,
+        modelingEvidence,
+        modelingReadiness: describeProjectGrantModelingReadiness(modelingEvidence),
+      } satisfies GrantsModelingTriageProject;
+    })
+    .filter((item): item is GrantsModelingTriageProject => Boolean(item));
+  const decisionReadyModelingProjects = opportunityLinkedModelingProjects
+    .filter((item) => item.modelingReadiness?.key === "decision-ready")
+    .sort(compareGrantModelingTriageProjects);
+  const staleModelingProjects = opportunityLinkedModelingProjects
+    .filter((item) => item.modelingReadiness?.key === "stale")
+    .sort(compareGrantModelingTriageProjects);
+  const thinModelingProjects = opportunityLinkedModelingProjects
+    .filter((item) => item.modelingReadiness?.key === "thin")
+    .sort(compareGrantModelingTriageProjects);
+  const missingModelingProjects = opportunityLinkedModelingProjects.filter((item) => !item.modelingEvidence);
+  const strongestModelingProject = decisionReadyModelingProjects[0] ?? null;
+  const stalestModelingProject = staleModelingProjects[0] ?? null;
+  const thinnestModelingProject = thinModelingProjects[0] ?? null;
+  const missingModelingProject = missingModelingProjects[0] ?? null;
 
   return (
     <section className="module-page">
@@ -1029,6 +1116,10 @@ export default async function GrantsPage({
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingReimbursementStartProjects + operationsSummary.counts.projectFundingReimbursementActiveProjects}</strong> reimbursement follow-through</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingGapProjects}</strong> funding gap projects</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.comparisonBackedReports}</strong> comparison-backed packets</span>
+            <span className="module-inline-item"><strong>{decisionReadyModelingProjects.length}</strong> appears decision-ready</span>
+            <span className="module-inline-item"><strong>{staleModelingProjects.length}</strong> refresh recommended</span>
+            <span className="module-inline-item"><strong>{thinModelingProjects.length}</strong> appears thin</span>
+            <span className="module-inline-item"><strong>{missingModelingProjects.length}</strong> without visible modeling support</span>
           </div>
         </article>
 
@@ -1314,48 +1405,170 @@ export default async function GrantsPage({
             )}
           </article>
 
-          {leadModelingCommand ? (
+          {leadModelingCommand || opportunityLinkedModelingProjects.length > 0 ? (
             <article className="module-section-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
-                  <p className="module-section-label">Modeling write-back</p>
-                  <h2 className="module-section-title">Comparison-backed packet evidence is now part of the grants lane</h2>
+                  <p className="module-section-label">Modeling triage</p>
+                  <h2 className="module-section-title">See where grant modeling support looks strongest, thin, or stale</h2>
                   <p className="module-section-description">
-                    Saved scenario comparison context can now stay visible while you make pursue, gap-closure, and prioritization calls. Keep the caveat explicit, this is planning support, not proof of award likelihood.
+                    Saved scenario comparison context stays visible here before operators open a funding opportunity or change grant posture. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
                   </p>
                 </div>
-                <StatusBadge tone="info">
-                  {operationsSummary.counts.comparisonBackedReports === 1
-                    ? "1 packet"
-                    : `${operationsSummary.counts.comparisonBackedReports} packets`}
+                <StatusBadge tone={opportunityLinkedModelingProjects.length > 0 ? "info" : "neutral"}>
+                  {opportunityLinkedModelingProjects.length === 1
+                    ? "1 linked project"
+                    : `${opportunityLinkedModelingProjects.length} linked projects`}
                 </StatusBadge>
               </div>
 
-              <Link href={leadModelingCommand.href} className="module-subpanel block transition-colors hover:border-primary/35">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap gap-2">
-                      <StatusBadge tone="info">Modeling-backed</StatusBadge>
-                      <StatusBadge tone="neutral">Reports → Grants</StatusBadge>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="module-subpanel">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Appears decision-ready</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Current packets with ready saved comparisons and visible indicator deltas.
+                      </p>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-foreground">{leadModelingCommand.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{leadModelingCommand.detail}</p>
+                    <StatusBadge tone="success">{decisionReadyModelingProjects.length}</StatusBadge>
                   </div>
-                  <Sparkles className="mt-1 h-5 w-5 text-[color:var(--pine)]" />
+                  {strongestModelingProject ? (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground">{strongestModelingProject.project.name}</p>
+                      <p className="mt-1">{strongestModelingProject.modelingReadiness?.detail}</p>
+                      <Link
+                        href={strongestModelingProject.modelingEvidence?.leadComparisonReport.href ?? "/reports?posture=comparison-backed"}
+                        className="mt-3 inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                      >
+                        Open strongest packet
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      No linked project currently shows current comparison-backed support that appears decision-ready.
+                    </p>
+                  )}
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {leadModelingCommand.badges.map((badge) => (
-                    <StatusBadge key={`modeling-grants-${badge.label}`} tone="neutral">
-                      {badge.label}
-                      {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
-                    </StatusBadge>
-                  ))}
+
+                <div className="module-subpanel">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Refresh recommended</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Comparison-backed packets exist, but the saved grant support is stale against the report record.
+                      </p>
+                    </div>
+                    <StatusBadge tone="warning">{staleModelingProjects.length}</StatusBadge>
+                  </div>
+                  {stalestModelingProject ? (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground">{stalestModelingProject.project.name}</p>
+                      <p className="mt-1">{stalestModelingProject.modelingReadiness?.detail}</p>
+                      <Link
+                        href={stalestModelingProject.modelingEvidence?.leadComparisonReport.href ?? "/reports?posture=comparison-backed"}
+                        className="mt-3 inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                      >
+                        Refresh supporting packet
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      No linked project is currently calling for a packet refresh from the grant lane.
+                    </p>
+                  )}
                 </div>
-                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                  Review packet evidence before grant posture changes
-                  <ArrowRight className="h-4 w-4" />
+
+                <div className="module-subpanel">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Appears thin</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Comparison-backed support exists, but the signal is still light for grant triage.
+                      </p>
+                    </div>
+                    <StatusBadge tone="neutral">{thinModelingProjects.length}</StatusBadge>
+                  </div>
+                  {thinnestModelingProject ? (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground">{thinnestModelingProject.project.name}</p>
+                      <p className="mt-1">{thinnestModelingProject.modelingReadiness?.detail}</p>
+                      <Link
+                        href={thinnestModelingProject.modelingEvidence?.leadComparisonReport.href ?? "/reports?posture=comparison-backed"}
+                        className="mt-3 inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                      >
+                        Review thin support
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      No linked project currently looks comparison-backed but thin from this grants snapshot.
+                    </p>
+                  )}
                 </div>
-              </Link>
+
+                <div className="module-subpanel">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">No visible modeling support</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Opportunity-linked projects without a comparison-backed packet visible yet.
+                      </p>
+                    </div>
+                    <StatusBadge tone="warning">{missingModelingProjects.length}</StatusBadge>
+                  </div>
+                  {missingModelingProject ? (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground">{missingModelingProject.project.name}</p>
+                      <p className="mt-1">
+                        {missingModelingProject.opportunityCount} linked opportunit{missingModelingProject.opportunityCount === 1 ? "y is" : "ies are"} visible here, but no comparison-backed packet is attached yet.
+                      </p>
+                      <Link
+                        href={buildFocusedOpportunityCardHref(missingModelingProject.leadOpportunityId)}
+                        className="mt-3 inline-flex items-center gap-2 font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                      >
+                        Open linked opportunity
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Every linked project in the visible grant lane has at least one comparison-backed packet.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {leadModelingCommand ? (
+                <Link href={leadModelingCommand.href} className="module-subpanel mt-3 block transition-colors hover:border-primary/35">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap gap-2">
+                        <StatusBadge tone="info">Modeling-backed</StatusBadge>
+                        <StatusBadge tone="neutral">Reports → Grants</StatusBadge>
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-foreground">{leadModelingCommand.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{leadModelingCommand.detail}</p>
+                    </div>
+                    <Sparkles className="mt-1 h-5 w-5 text-[color:var(--pine)]" />
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {leadModelingCommand.badges.map((badge) => (
+                      <StatusBadge key={`modeling-grants-${badge.label}`} tone="neutral">
+                        {badge.label}
+                        {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+                      </StatusBadge>
+                    ))}
+                  </div>
+                  <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+                    Review packet evidence before grant posture changes
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </Link>
+              ) : null}
             </article>
           ) : null}
 
@@ -1789,6 +2002,7 @@ export default async function GrantsPage({
                 const projectGrantModelingEvidence = opportunity.project?.id
                   ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null;
+                const modelingReadiness = describeProjectGrantModelingReadiness(projectGrantModelingEvidence);
                 const decisionModelingSupport = buildGrantDecisionModelingSupport(projectGrantModelingEvidence);
 
                 return (
@@ -1836,9 +2050,14 @@ export default async function GrantsPage({
                         <span className="module-record-chip">Decision due {formatDateTime(opportunity.decision_due_at)}</span>
                         <span className="module-record-chip">Project {opportunity.project?.name ?? "Not linked"}</span>
                         {projectGrantModelingEvidence ? (
-                          <span className="module-record-chip">
-                            Modeling {projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.headline}
-                          </span>
+                          <>
+                            <span className="module-record-chip">
+                              Modeling {projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.headline}
+                            </span>
+                            {modelingReadiness ? (
+                              <span className="module-record-chip">{modelingReadiness.label}</span>
+                            ) : null}
+                          </>
                         ) : null}
                       </div>
 
@@ -1861,11 +2080,22 @@ export default async function GrantsPage({
                         <div className="module-note mt-4 text-sm">
                           <p className="font-semibold text-foreground">Project modeling evidence</p>
                           <p className="mt-1 text-muted-foreground">
-                            Saved comparison context from {projectGrantModelingEvidence.leadComparisonReport.title} can support readiness and prioritization language for this opportunity. {projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.detail} Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
+                            {modelingReadiness?.detail ?? `Saved comparison context from ${projectGrantModelingEvidence.leadComparisonReport.title} can support readiness and prioritization language for this opportunity. ${projectGrantModelingEvidence.leadComparisonReport.comparisonDigest.detail}`} Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2">
+                            {modelingReadiness ? (
+                              <StatusBadge tone={modelingReadiness.tone}>{modelingReadiness.label}</StatusBadge>
+                            ) : null}
                             <StatusBadge tone={projectGrantModelingEvidence.leadComparisonReport.packetFreshness.tone}>
                               {projectGrantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                            </StatusBadge>
+                            <StatusBadge tone="neutral">
+                              {projectGrantModelingEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount} ready comparison
+                              {projectGrantModelingEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount === 1 ? "" : "s"}
+                            </StatusBadge>
+                            <StatusBadge tone="neutral">
+                              {projectGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount} indicator delta
+                              {projectGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount === 1 ? "" : "s"}
                             </StatusBadge>
                             {projectGrantModelingEvidence.comparisonBackedCount > 1 ? (
                               <StatusBadge tone="neutral">

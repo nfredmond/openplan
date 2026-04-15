@@ -3,6 +3,7 @@ import {
   getReportNavigationHref,
   getReportPacketFreshness,
   parseStoredComparisonSnapshotAggregate,
+  type ReportComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
 
 export type ProjectGrantModelingReportRow = {
@@ -24,11 +25,19 @@ type ProjectGrantComparisonDigest = NonNullable<
   ReturnType<typeof describeComparisonSnapshotAggregate>
 >;
 
+export type ProjectGrantModelingReadinessPosture = {
+  key: "decision-ready" | "stale" | "thin";
+  label: string;
+  tone: "success" | "warning" | "neutral";
+  detail: string;
+};
+
 type ProjectGrantModelingLeadReport = {
   id: string;
   title: string;
   href: string;
   packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+  comparisonAggregate: ReportComparisonSnapshotAggregate;
   comparisonDigest: ProjectGrantComparisonDigest;
 };
 
@@ -51,6 +60,43 @@ function getGrantSupportFreshnessPriority(label: string) {
   }
 }
 
+export function describeProjectGrantModelingReadiness(
+  evidence: ProjectGrantModelingEvidence | null | undefined
+): ProjectGrantModelingReadinessPosture | null {
+  if (!evidence) {
+    return null;
+  }
+
+  const leadReport = evidence.leadComparisonReport;
+  if (leadReport.packetFreshness.label !== "Packet current") {
+    return {
+      key: "stale",
+      label: "Refresh recommended",
+      tone: "warning",
+      detail: `${leadReport.title} has comparison-backed planning support, but the packet should be refreshed before operators lean on it for grant readiness or prioritization. ${leadReport.packetFreshness.detail}`,
+    };
+  }
+
+  if (
+    leadReport.comparisonAggregate.readyComparisonSnapshotCount > 0 &&
+    leadReport.comparisonAggregate.indicatorDeltaCount > 0
+  ) {
+    return {
+      key: "decision-ready",
+      label: "Appears decision-ready",
+      tone: "success",
+      detail: `${leadReport.title} carries current comparison-backed planning support with ready saved comparisons and visible indicator deltas. ${leadReport.comparisonDigest.detail}`,
+    };
+  }
+
+  return {
+    key: "thin",
+    label: "Appears thin",
+    tone: "neutral",
+    detail: `${leadReport.title} has comparison-backed planning support, but the current packet still looks thin for grant triage. ${leadReport.comparisonDigest.detail}`,
+  };
+}
+
 export function buildProjectGrantModelingEvidenceByProjectId(
   reports: ProjectGrantModelingReportRow[] | null | undefined,
   artifacts: ProjectGrantModelingArtifactRow[] | null | undefined
@@ -69,12 +115,16 @@ export function buildProjectGrantModelingEvidenceByProjectId(
       title: string;
       updatedAt: string;
       packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+      comparisonAggregate: ReportComparisonSnapshotAggregate | null;
       comparisonDigest: ProjectGrantComparisonDigest | null;
     }>
   >();
 
   for (const report of reports ?? []) {
     const latestArtifact = latestArtifactByReportId.get(report.id) ?? null;
+    const comparisonAggregate = parseStoredComparisonSnapshotAggregate(
+      latestArtifact?.metadata_json ?? null
+    );
     const projectReports = reportsByProjectId.get(report.project_id) ?? [];
     projectReports.push({
       id: report.id,
@@ -85,9 +135,8 @@ export function buildProjectGrantModelingEvidenceByProjectId(
         generatedAt: latestArtifact?.generated_at ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
-      comparisonDigest: describeComparisonSnapshotAggregate(
-        parseStoredComparisonSnapshotAggregate(latestArtifact?.metadata_json ?? null)
-      ),
+      comparisonAggregate,
+      comparisonDigest: describeComparisonSnapshotAggregate(comparisonAggregate),
     });
     reportsByProjectId.set(report.project_id, projectReports);
   }
@@ -106,10 +155,12 @@ export function buildProjectGrantModelingEvidenceByProjectId(
       return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
     });
 
-    const comparisonBackedReports = sortedReports.filter((report) => Boolean(report.comparisonDigest));
+    const comparisonBackedReports = sortedReports.filter(
+      (report) => Boolean(report.comparisonDigest && report.comparisonAggregate)
+    );
     const leadComparisonReport = comparisonBackedReports[0] ?? null;
 
-    if (!leadComparisonReport?.comparisonDigest) {
+    if (!leadComparisonReport?.comparisonDigest || !leadComparisonReport.comparisonAggregate) {
       continue;
     }
 
@@ -124,6 +175,7 @@ export function buildProjectGrantModelingEvidenceByProjectId(
           leadComparisonReport.packetFreshness.label
         ),
         packetFreshness: leadComparisonReport.packetFreshness,
+        comparisonAggregate: leadComparisonReport.comparisonAggregate,
         comparisonDigest: leadComparisonReport.comparisonDigest,
       },
     });
