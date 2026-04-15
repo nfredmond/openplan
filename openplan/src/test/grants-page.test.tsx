@@ -161,7 +161,7 @@ describe("GrantsPage", () => {
         projectFundingReimbursementStartProjects: 0,
         projectFundingReimbursementActiveProjects: 0,
         projectFundingGapProjects: 0,
-        comparisonBackedReports: 1,
+        comparisonBackedReports: 3,
       },
       fullCommandQueue: [],
     });
@@ -181,8 +181,8 @@ describe("GrantsPage", () => {
           cadence_label: "Annual",
           expected_award_amount: 250000,
           opens_at: "2026-04-01T18:00:00.000Z",
-          closes_at: "2026-05-01T18:00:00.000Z",
-          decision_due_at: "2026-04-24T18:00:00.000Z",
+          closes_at: null,
+          decision_due_at: null,
           fit_notes: "Good policy fit.",
           readiness_notes: "Need implementation narrative.",
           decision_rationale: "Strong local match.",
@@ -196,12 +196,101 @@ describe("GrantsPage", () => {
             name: "Main Street Safety",
           },
         },
+        {
+          id: "opp-2",
+          workspace_id: "workspace-1",
+          project_id: "project-2",
+          program_id: null,
+          title: "ATP 2027",
+          opportunity_status: "open",
+          decision_state: "pursue",
+          agency_name: "Caltrans",
+          owner_label: "B. Planner",
+          cadence_label: "Annual",
+          expected_award_amount: 400000,
+          opens_at: "2026-04-01T18:00:00.000Z",
+          closes_at: null,
+          decision_due_at: null,
+          fit_notes: "Needs refreshed packet.",
+          readiness_notes: "Packet drift noted.",
+          decision_rationale: "Refresh before final pursue call.",
+          decided_at: null,
+          summary: "Active bike safety application.",
+          updated_at: "2026-04-14T21:00:00.000Z",
+          created_at: "2026-04-01T18:00:00.000Z",
+          programs: null,
+          projects: {
+            id: "project-2",
+            name: "River Trail",
+          },
+        },
+        {
+          id: "opp-3",
+          workspace_id: "workspace-1",
+          project_id: "project-3",
+          program_id: null,
+          title: "CMAQ 2027",
+          opportunity_status: "open",
+          decision_state: "pursue",
+          agency_name: "Air District",
+          owner_label: "C. Planner",
+          cadence_label: "Annual",
+          expected_award_amount: 300000,
+          opens_at: "2026-04-01T18:00:00.000Z",
+          closes_at: null,
+          decision_due_at: null,
+          fit_notes: "Support is still thin.",
+          readiness_notes: "Comparison exists but is not ready.",
+          decision_rationale: "Needs more evidence.",
+          decided_at: null,
+          summary: "Fleet electrification concept.",
+          updated_at: "2026-04-14T22:00:00.000Z",
+          created_at: "2026-04-01T18:00:00.000Z",
+          programs: null,
+          projects: {
+            id: "project-3",
+            name: "Clean Fleet",
+          },
+        },
+        {
+          id: "opp-4",
+          workspace_id: "workspace-1",
+          project_id: "project-4",
+          program_id: null,
+          title: "RAISE 2027",
+          opportunity_status: "open",
+          decision_state: "pursue",
+          agency_name: "USDOT",
+          owner_label: "D. Planner",
+          cadence_label: "Annual",
+          expected_award_amount: 900000,
+          opens_at: "2026-04-01T18:00:00.000Z",
+          closes_at: null,
+          decision_due_at: null,
+          fit_notes: "No visible packet yet.",
+          readiness_notes: "Need modeling basis.",
+          decision_rationale: "Too early without support.",
+          decided_at: null,
+          summary: "Bridge modernization application.",
+          updated_at: "2026-04-14T23:00:00.000Z",
+          created_at: "2026-04-01T18:00:00.000Z",
+          programs: null,
+          projects: {
+            id: "project-4",
+            name: "Broadway Bridge",
+          },
+        },
       ],
       error: null,
     });
 
     projectsOrderMock.mockResolvedValue({
-      data: [{ id: "project-1", name: "Main Street Safety" }],
+      data: [
+        { id: "project-1", name: "Main Street Safety" },
+        { id: "project-2", name: "River Trail" },
+        { id: "project-3", name: "Clean Fleet" },
+        { id: "project-4", name: "Broadway Bridge" },
+      ],
       error: null,
     });
     programsOrderMock.mockResolvedValue({ data: [], error: null });
@@ -217,6 +306,22 @@ describe("GrantsPage", () => {
           title: "Mobility Grant Packet",
           updated_at: "2026-04-14T18:00:00.000Z",
           generated_at: "2026-04-14T18:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+        {
+          id: "report-2",
+          project_id: "project-2",
+          title: "Trail Grant Packet",
+          updated_at: "2026-04-14T21:00:00.000Z",
+          generated_at: "2026-04-10T18:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+        {
+          id: "report-3",
+          project_id: "project-3",
+          title: "Fleet Grant Packet",
+          updated_at: "2026-04-14T22:00:00.000Z",
+          generated_at: "2026-04-14T22:00:00.000Z",
           latest_artifact_kind: "html",
         },
       ],
@@ -244,6 +349,44 @@ describe("GrantsPage", () => {
             },
           },
         },
+        {
+          report_id: "report-2",
+          generated_at: "2026-04-10T18:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              scenarioSetLinks: [
+                {
+                  comparisonSnapshots: [
+                    {
+                      status: "ready",
+                      indicatorDeltaCount: 2,
+                      updatedAt: "2026-04-10T17:30:00.000Z",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          report_id: "report-3",
+          generated_at: "2026-04-14T22:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              scenarioSetLinks: [
+                {
+                  comparisonSnapshots: [
+                    {
+                      status: "blocked",
+                      indicatorDeltaCount: 0,
+                      updatedAt: "2026-04-14T21:30:00.000Z",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
       ],
       error: null,
     });
@@ -260,15 +403,18 @@ describe("GrantsPage", () => {
     expect(
       screen.getByText(/See where grant modeling support looks strongest, thin, or stale/i)
     ).toBeInTheDocument();
-    expect(screen.getByText("Project modeling evidence")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Within the same grant timing and decision posture, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work/i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Project modeling evidence").length).toBeGreaterThan(0);
     expect(
       screen.getAllByText(/Mobility Grant Packet carries current comparison-backed planning support with ready saved comparisons and visible indicator deltas/i).length
     ).toBeGreaterThan(0);
-    expect(screen.getByText("Modeling-backed")).toBeInTheDocument();
+    expect(screen.getAllByText("Modeling-backed").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Appears decision-ready").length).toBeGreaterThan(0);
-    expect(screen.getByText("1 ready comparison")).toBeInTheDocument();
+    expect(screen.getAllByText("1 ready comparison").length).toBeGreaterThan(0);
     expect(screen.getByText("3 indicator deltas")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open supporting packet/i })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Open supporting packet/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#packet-release-review"
     );
@@ -282,5 +428,20 @@ describe("GrantsPage", () => {
         }),
       })
     );
+  });
+
+  it("orders similarly staged opportunities by modeling readiness before recency", async () => {
+    await renderPage();
+
+    const renderedOpportunityTitles = Array.from(
+      document.querySelectorAll('[id^="funding-opportunity-"] .module-record-title')
+    ).map((node) => node.textContent);
+
+    expect(renderedOpportunityTitles).toEqual([
+      "SS4A 2027",
+      "ATP 2027",
+      "CMAQ 2027",
+      "RAISE 2027",
+    ]);
   });
 });

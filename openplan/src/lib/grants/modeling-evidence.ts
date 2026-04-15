@@ -32,6 +32,12 @@ export type ProjectGrantModelingReadinessPosture = {
   detail: string;
 };
 
+export type ProjectGrantModelingQueuePosture =
+  | "decision-ready"
+  | "refresh-recommended"
+  | "thin"
+  | "no-visible-support";
+
 type ProjectGrantModelingLeadReport = {
   id: string;
   title: string;
@@ -95,6 +101,84 @@ export function describeProjectGrantModelingReadiness(
     tone: "neutral",
     detail: `${leadReport.title} has comparison-backed planning support, but the current packet still looks thin for grant triage. ${leadReport.comparisonDigest.detail}`,
   };
+}
+
+export function resolveProjectGrantModelingQueuePosture(
+  evidence: ProjectGrantModelingEvidence | null | undefined
+): ProjectGrantModelingQueuePosture {
+  const readiness = describeProjectGrantModelingReadiness(evidence);
+
+  if (!readiness) {
+    return "no-visible-support";
+  }
+
+  if (readiness.key === "decision-ready") {
+    return "decision-ready";
+  }
+
+  if (readiness.key === "stale") {
+    return "refresh-recommended";
+  }
+
+  return "thin";
+}
+
+export function getProjectGrantModelingQueuePriority(
+  evidence: ProjectGrantModelingEvidence | null | undefined
+) {
+  switch (resolveProjectGrantModelingQueuePosture(evidence)) {
+    case "decision-ready":
+      return 0;
+    case "refresh-recommended":
+      return 1;
+    case "thin":
+      return 2;
+    case "no-visible-support":
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+export function compareProjectGrantModelingEvidenceForQueue(
+  left: ProjectGrantModelingEvidence | null | undefined,
+  right: ProjectGrantModelingEvidence | null | undefined
+) {
+  const postureDifference =
+    getProjectGrantModelingQueuePriority(left) - getProjectGrantModelingQueuePriority(right);
+  if (postureDifference !== 0) {
+    return postureDifference;
+  }
+
+  if (!left || !right) {
+    return 0;
+  }
+
+  if (right.comparisonBackedCount !== left.comparisonBackedCount) {
+    return right.comparisonBackedCount - left.comparisonBackedCount;
+  }
+
+  if (
+    right.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount !==
+    left.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
+  ) {
+    return (
+      right.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount -
+      left.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
+    );
+  }
+
+  if (
+    right.leadComparisonReport.comparisonAggregate.indicatorDeltaCount !==
+    left.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
+  ) {
+    return (
+      right.leadComparisonReport.comparisonAggregate.indicatorDeltaCount -
+      left.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
+    );
+  }
+
+  return 0;
 }
 
 export function buildProjectGrantModelingEvidenceByProjectId(

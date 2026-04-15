@@ -1,8 +1,49 @@
 import { describe, expect, it } from "vitest";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
+  compareProjectGrantModelingEvidenceForQueue,
   describeProjectGrantModelingReadiness,
+  getProjectGrantModelingQueuePriority,
+  resolveProjectGrantModelingQueuePosture,
+  type ProjectGrantModelingEvidence,
 } from "@/lib/grants/modeling-evidence";
+
+function buildEvidence(args: {
+  title: string;
+  freshnessLabel?: "Packet current" | "Refresh recommended" | "No packet";
+  readyComparisons?: number;
+  indicatorDeltas?: number;
+  comparisonBackedCount?: number;
+}): ProjectGrantModelingEvidence {
+  const freshnessLabel = args.freshnessLabel ?? "Packet current";
+  return {
+    projectId: `${args.title.toLowerCase().replace(/\s+/g, "-")}-project`,
+    comparisonBackedCount: args.comparisonBackedCount ?? 1,
+    leadComparisonReport: {
+      id: `${args.title.toLowerCase().replace(/\s+/g, "-")}-report`,
+      title: args.title,
+      href: "/reports/report-1#packet-release-review",
+      packetFreshness: {
+        label: freshnessLabel,
+        tone: freshnessLabel === "Packet current" ? "success" : "warning",
+        detail:
+          freshnessLabel === "Packet current"
+            ? "Packet is current."
+            : "Packet refresh is recommended before operators lean on it.",
+      },
+      comparisonAggregate: {
+        comparisonSnapshotCount: args.readyComparisons ?? 1,
+        readyComparisonSnapshotCount: args.readyComparisons ?? 1,
+        indicatorDeltaCount: args.indicatorDeltas ?? 3,
+        latestComparisonSnapshotUpdatedAt: "2026-04-14T17:30:00.000Z",
+      },
+      comparisonDigest: {
+        headline: `${args.readyComparisons ?? 1} saved comparison · ${args.readyComparisons ?? 1} ready`,
+        detail: `${args.indicatorDeltas ?? 3} indicator deltas are already summarized.`,
+      },
+    },
+  };
+}
 
 describe("buildProjectGrantModelingEvidenceByProjectId", () => {
   it("surfaces the lead comparison-backed packet for each project", () => {
@@ -270,5 +311,53 @@ describe("buildProjectGrantModelingEvidenceByProjectId", () => {
       label: "Appears thin",
       tone: "neutral",
     });
+  });
+});
+
+describe("grants modeling evidence queue posture", () => {
+  it("maps readiness into queue posture in grants order", () => {
+    const decisionReady = buildEvidence({ title: "Decision-ready packet" });
+    const refreshRecommended = buildEvidence({
+      title: "Stale packet",
+      freshnessLabel: "Refresh recommended",
+    });
+    const thin = buildEvidence({
+      title: "Thin packet",
+      readyComparisons: 0,
+      indicatorDeltas: 0,
+    });
+
+    expect(resolveProjectGrantModelingQueuePosture(decisionReady)).toBe("decision-ready");
+    expect(resolveProjectGrantModelingQueuePosture(refreshRecommended)).toBe("refresh-recommended");
+    expect(resolveProjectGrantModelingQueuePosture(thin)).toBe("thin");
+    expect(resolveProjectGrantModelingQueuePosture(null)).toBe("no-visible-support");
+
+    expect(getProjectGrantModelingQueuePriority(decisionReady)).toBeLessThan(
+      getProjectGrantModelingQueuePriority(refreshRecommended)
+    );
+    expect(getProjectGrantModelingQueuePriority(refreshRecommended)).toBeLessThan(
+      getProjectGrantModelingQueuePriority(thin)
+    );
+    expect(getProjectGrantModelingQueuePriority(thin)).toBeLessThan(
+      getProjectGrantModelingQueuePriority(null)
+    );
+  });
+
+  it("prefers stronger modeling evidence when two queue items share the same posture", () => {
+    const stronger = buildEvidence({
+      title: "Stronger packet",
+      comparisonBackedCount: 2,
+      readyComparisons: 2,
+      indicatorDeltas: 5,
+    });
+    const weaker = buildEvidence({
+      title: "Weaker packet",
+      comparisonBackedCount: 1,
+      readyComparisons: 1,
+      indicatorDeltas: 2,
+    });
+
+    expect(compareProjectGrantModelingEvidenceForQueue(stronger, weaker)).toBeLessThan(0);
+    expect(compareProjectGrantModelingEvidenceForQueue(weaker, stronger)).toBeGreaterThan(0);
   });
 });

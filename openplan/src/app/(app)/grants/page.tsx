@@ -50,6 +50,7 @@ import {
 } from "@/lib/projects/funding";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
+  compareProjectGrantModelingEvidenceForQueue,
   describeProjectGrantModelingReadiness,
   type ProjectGrantModelingEvidence,
 } from "@/lib/grants/modeling-evidence";
@@ -292,38 +293,46 @@ function compareGrantModelingTriageProjects(
   left: GrantsModelingTriageProject,
   right: GrantsModelingTriageProject
 ) {
-  const leftEvidence = left.modelingEvidence;
-  const rightEvidence = right.modelingEvidence;
+  const modelingDifference = compareProjectGrantModelingEvidenceForQueue(
+    left.modelingEvidence,
+    right.modelingEvidence
+  );
+  if (modelingDifference !== 0) {
+    return modelingDifference;
+  }
 
-  if (!leftEvidence || !rightEvidence) {
+  if (left.opportunityCount !== right.opportunityCount) {
     return right.opportunityCount - left.opportunityCount;
   }
 
-  if (rightEvidence.comparisonBackedCount !== leftEvidence.comparisonBackedCount) {
-    return rightEvidence.comparisonBackedCount - leftEvidence.comparisonBackedCount;
+  return left.project.name.localeCompare(right.project.name);
+}
+
+function compareFundingOpportunitiesForGrantsQueue(
+  left: FundingOpportunityRow & { project: ProjectOption | null },
+  right: FundingOpportunityRow & { project: ProjectOption | null },
+  modelingEvidenceByProjectId: Map<string, ProjectGrantModelingEvidence>
+) {
+  const priorityDifference = getOpportunityPriority(left) - getOpportunityPriority(right);
+  if (priorityDifference !== 0) {
+    return priorityDifference;
   }
 
-  if (
-    rightEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount !==
-    leftEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
-  ) {
-    return (
-      rightEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount -
-      leftEvidence.leadComparisonReport.comparisonAggregate.readyComparisonSnapshotCount
-    );
+  const leftModelingEvidence = left.project?.id
+    ? modelingEvidenceByProjectId.get(left.project.id) ?? null
+    : null;
+  const rightModelingEvidence = right.project?.id
+    ? modelingEvidenceByProjectId.get(right.project.id) ?? null
+    : null;
+  const modelingDifference = compareProjectGrantModelingEvidenceForQueue(
+    leftModelingEvidence,
+    rightModelingEvidence
+  );
+  if (modelingDifference !== 0) {
+    return modelingDifference;
   }
 
-  if (
-    rightEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount !==
-    leftEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
-  ) {
-    return (
-      rightEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount -
-      leftEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount
-    );
-  }
-
-  return right.opportunityCount - left.opportunityCount;
+  return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
 }
 
 function buildFocusedOpportunityCardHref(opportunityId: string | null | undefined) {
@@ -741,11 +750,9 @@ export default async function GrantsPage({
       program: normalizeJoinedRecord(opportunity.programs),
       project: normalizeJoinedRecord(opportunity.projects),
     }))
-    .sort((left, right) => {
-      const priorityDifference = getOpportunityPriority(left) - getOpportunityPriority(right);
-      if (priorityDifference !== 0) return priorityDifference;
-      return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
-    });
+    .sort((left, right) =>
+      compareFundingOpportunitiesForGrantsQueue(left, right, projectGrantModelingEvidenceByProjectId)
+    );
 
   const fundingAwards = ((fundingAwardsData ?? []) as FundingAwardRow[]).map((award) => ({
     ...award,
@@ -1977,6 +1984,12 @@ export default async function GrantsPage({
               })}
             </div>
           </div>
+
+          {opportunityLinkedModelingProjects.length > 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Within the same grant timing and decision posture, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Treat that as planning support only, not proof of award likelihood or a replacement for funding-source review.
+            </p>
+          ) : null}
 
           {opportunities.length === 0 ? (
             <div className="mt-5">
