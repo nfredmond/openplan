@@ -108,9 +108,10 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const gapProjectCount = context.operationsSummary.counts.projectFundingGapProjects;
   const invoiceRelinkCommand = context.operationsSummary.commandQueue.find((item) => item.key === "relink-project-invoice-awards");
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
+  const leadFundingDecisionDetail = context.operationsSummary.grantModelingSummary?.leadDecisionDetail ?? null;
   const summary = context.currentRun
     ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? leadFundingDecisionDetail ? `, lead grant decision cue: ${leadFundingDecisionDetail}` : `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
 
   const facts = [
     context.recentProject
@@ -124,7 +125,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
     rtpFundingReviewCount > 0
       ? `${grantsRoutedRtpFundingReview ? "RTP grants follow-through" : "RTP funding review"}: ${rtpFundingReviewPressure}`
       : context.operationsSummary.nextCommand
-      ? `Command queue: ${context.operationsSummary.nextCommand.title}`
+      ? `Command queue: ${context.operationsSummary.nextCommand.title}.${fundingDecisionCount > 0 && leadFundingDecisionDetail ? ` ${leadFundingDecisionDetail}` : ""}`
       : "Command queue is currently clear from the workspace snapshot.",
     context.baselineRun
       ? `Baseline attached: ${context.baselineRun.title}`
@@ -155,7 +156,12 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
             grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
               ? "Open RTP grants follow-through"
               : context.operationsSummary.nextCommand.title,
-          detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
+          detail:
+            rtpFundingReviewCount > 0
+              ? rtpFundingReviewPressure
+              : fundingDecisionCount > 0 && leadFundingDecisionDetail
+                ? leadFundingDecisionDetail
+                : context.operationsSummary.nextCommand.detail,
         }
       : {
           label: "Current runtime cue",
@@ -833,13 +839,13 @@ function buildWorkspaceResponse(
     workflowId,
     label,
     title: `${context.workspace.name ?? "Workspace"} overview`,
-    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${rtpFundingReviewPressure}` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
+    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${rtpFundingReviewPressure}` : fundingDecisionCount > 0 && leadFundingDecisionDetail ? ` Lead grant decision cue: ${leadFundingDecisionDetail}` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
     findings: [
       context.recentProject
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
         : "No current project snapshot is visible from this workspace request.",
       context.operationsSummary.nextCommand
-        ? `Next command: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}. ${rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail}`
+        ? `Next command: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}. ${rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : fundingDecisionCount > 0 && leadFundingDecisionDetail ? leadFundingDecisionDetail : context.operationsSummary.nextCommand.detail}`
         : "No immediate command-queue pressure is visible from the workspace snapshot.",
       rtpFundingReviewCount > 0
         ? rtpFundingReviewPressure
@@ -848,7 +854,9 @@ function buildWorkspaceResponse(
         : fundingSourcingCount > 0
         ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} need recorded but still no linked opportunities.`
         : fundingDecisionCount > 0
-        ? `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but still nothing marked pursue.`
+        ? leadFundingDecisionDetail
+          ? leadFundingDecisionDetail
+          : `${fundingDecisionCount} project funding stack${fundingDecisionCount === 1 ? " already has" : "s already have"} linked opportunities but still nothing marked pursue.`
         : fundingAwardRecordCount > 0
         ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " has" : "s have"} an awarded opportunity but still no committed funding-award record.`
         : invoiceRelinkCount > 0
