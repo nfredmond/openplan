@@ -16,6 +16,10 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
+import {
   loadWorkspaceOperationsSummaryForWorkspace,
   parseStoredRtpFundingReview,
   type WorkspaceOperationsSupabaseLike,
@@ -23,6 +27,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
+  describeComparisonSnapshotAggregate,
   describeFundingSnapshot,
   describeEvidenceChainSummary,
   formatDateTime,
@@ -43,6 +48,7 @@ import {
   parseStoredScenarioSpineSummary,
   reportStatusTone,
   resolveReportPacketSourceUpdatedAt,
+  titleize,
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
@@ -268,23 +274,53 @@ export default async function ReportsPage({
         }),
       });
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
+      const project = Array.isArray(report.projects)
+        ? report.projects[0] ?? null
+        : report.projects ?? null;
+      const comparisonSnapshotDigest = describeComparisonSnapshotAggregate(
+        comparisonSnapshotAggregate
+      );
+      const grantModelingEvidence =
+        project && comparisonSnapshotAggregate && comparisonSnapshotDigest
+          ? {
+              projectId: project.id,
+              comparisonBackedCount: 1,
+              leadComparisonReport: {
+                id: report.id,
+                title: report.title,
+                href: `/reports/${report.id}#packet-release-review`,
+                packetFreshness,
+                comparisonAggregate: comparisonSnapshotAggregate,
+                comparisonDigest: comparisonSnapshotDigest,
+              },
+            }
+          : null;
+      const grantModelingReadiness = describeProjectGrantModelingReadiness(
+        grantModelingEvidence
+      );
+      const grantModelingSupport = buildGrantDecisionModelingSupport(
+        grantModelingEvidence,
+        project?.name ?? null
+      );
 
       return {
         ...report,
         latestArtifact,
-        project: Array.isArray(report.projects)
-          ? report.projects[0] ?? null
-          : report.projects ?? null,
+        project,
         rtpCycle,
         packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
+        comparisonSnapshotDigest,
         fundingSnapshot,
         storedRtpFundingReview,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
         grantsFollowThrough,
+        grantModelingEvidence,
+        grantModelingReadiness,
+        grantModelingSupport,
       };
     })
     .sort((left, right) => {
@@ -423,9 +459,12 @@ export default async function ReportsPage({
           (grantsFollowThroughFirst ? grantsFollowThroughFirst.title : null) ??
           report.storedRtpFundingReview?.detail ??
           report.evidenceChainDigest?.blockedGateDetail ??
-          ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
-            ? `${report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0} saved comparison${(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) === 1 ? " can" : "s can"} support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`
-            : packetWorkStatus.detail),
+          ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0 &&
+          report.grantModelingEvidence
+            ? report.grantModelingSupport.recommendedNextActionSummary
+            : (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
+              ? `${report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0} saved comparison${(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) === 1 ? " can" : "s can"} support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`
+              : packetWorkStatus.detail),
         badges,
       };
     });
@@ -894,6 +933,14 @@ export default async function ReportsPage({
                         <span className="module-record-chip">
                           {report.comparisonSnapshotAggregate.indicatorDeltaCount} comparison delta{report.comparisonSnapshotAggregate.indicatorDeltaCount === 1 ? "" : "s"}
                         </span>
+                        {report.grantModelingReadiness ? (
+                          <span className="module-record-chip">{report.grantModelingReadiness.label}</span>
+                        ) : null}
+                        {report.grantModelingEvidence ? (
+                          <span className="module-record-chip">
+                            Suggested {titleize(report.grantModelingSupport.recommendedDecisionState)}
+                          </span>
+                        ) : null}
                       </>
                     ) : null}
                     {report.fundingSnapshot ? (
@@ -936,9 +983,19 @@ export default async function ReportsPage({
                                 ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
                                 : ""}
                             </p>
-                            <p className="mt-1">
-                              Saved comparison context can support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.
-                            </p>
+                            {report.grantModelingEvidence ? (
+                              <>
+                                <p className="mt-1 font-medium text-foreground/90">Grant release review</p>
+                                <p className="mt-1">
+                                  {report.grantModelingReadiness?.label ?? "No visible support"}
+                                </p>
+                                <p className="mt-1">{report.grantModelingSupport.recommendedNextActionSummary}</p>
+                              </>
+                            ) : (
+                              <p className="mt-1">
+                                Saved comparison context can support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.
+                              </p>
+                            )}
                           </>
                         ) : null}
                       </div>

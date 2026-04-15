@@ -264,11 +264,14 @@ describe("ReportsPage", () => {
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getByText(/Open gap resolution/i)).toBeInTheDocument();
     expect(screen.getByText(/in Grants OS/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Grant release review/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
     expect(
-      screen.getAllByText(/saved comparison context can support grant planning language or prioritization framing for this packet/i).length
+      screen.getAllByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i).length
     ).toBeGreaterThan(0);
     expect(
-      screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
+      screen.getAllByText(/planning support only, not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
   });
 
