@@ -1,5 +1,13 @@
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import {
+  buildProjectGrantModelingEvidenceByProjectId,
+  compareProjectGrantModelingEvidenceForQueue,
+  describeProjectGrantModelingReadiness,
+  resolveProjectGrantModelingQueuePosture,
+  type ProjectGrantModelingArtifactRow,
+  type ProjectGrantModelingReportRow,
+} from "@/lib/grants/modeling-evidence";
+import {
   GRANTS_COMMAND_MODULE_KEY,
   GRANTS_COMMAND_MODULE_LABEL,
   resolveRtpFundingFollowThrough,
@@ -104,6 +112,7 @@ export type WorkspaceOperationsProjectSubmittalRow = {
 
 export type WorkspaceOperationsReportRow = {
   id: string;
+  projectId?: string | null;
   title: string | null;
   status: string | null;
   latestArtifactKind: string | null;
@@ -182,6 +191,7 @@ export type WorkspaceOperationsProjectSubmittalSourceRow = {
 
 export type WorkspaceOperationsReportSourceRow = {
   id: string;
+  project_id?: string | null;
   title: string | null;
   status: string | null;
   latest_artifact_kind: string | null;
@@ -266,6 +276,12 @@ function formatCurrency(value: number | null | undefined): string {
   }).format(value);
 }
 
+function getFundingDecisionOpportunityStatusPriority(opportunityStatus: string | null | undefined) {
+  if (opportunityStatus === "open") return 0;
+  if (opportunityStatus === "upcoming") return 1;
+  return 2;
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
@@ -279,6 +295,34 @@ function asNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+const GRANT_MODELING_PLANNING_CAVEAT =
+  "Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.";
+
+function formatGrantModelingPostureLabel(
+  readiness: ReturnType<typeof describeProjectGrantModelingReadiness>
+) {
+  return readiness?.label ?? "No visible support";
+}
+
+function buildGrantModelingOpportunityBreakdownSummary(counts: {
+  decisionReady: number;
+  refreshRecommended: number;
+  thin: number;
+  noVisibleSupport: number;
+}) {
+  const total =
+    counts.decisionReady +
+    counts.refreshRecommended +
+    counts.thin +
+    counts.noVisibleSupport;
+
+  if (total === 0) {
+    return null;
+  }
+
+  return `${total} opportunity-linked project${total === 1 ? "" : "s"}: ${counts.decisionReady} appears decision-ready, ${counts.refreshRecommended} refresh recommended, ${counts.thin} appears thin, ${counts.noVisibleSupport} without visible support.`;
 }
 
 export type StoredRtpFundingReview = {
@@ -441,6 +485,7 @@ function mapWorkspaceOperationsProgramRows(
 function mapWorkspaceOperationsReportRows(rows: WorkspaceOperationsReportSourceRow[]): WorkspaceOperationsReportRow[] {
   return rows.map((report) => ({
     id: report.id,
+    projectId: report.project_id,
     title: report.title,
     status: report.status,
     latestArtifactKind: report.latest_artifact_kind,
@@ -569,7 +614,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
     supabase
       .from("reports")
-      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
+      .select("id, project_id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
@@ -750,6 +795,79 @@ export function buildWorkspaceOperationsSummary({
     current.push(opportunity);
     fundingOpportunitiesByProjectId.set(opportunity.projectId, current);
   });
+  const projectGrantModelingReportRows = reportRows.reduce<ProjectGrantModelingReportRow[]>(
+    (rows, report) => {
+      if (!report.projectId || !report.title || !report.updatedAt) {
+        return rows;
+      }
+
+      rows.push({
+        id: report.id,
+        project_id: report.projectId,
+        title: report.title,
+        updated_at: report.updatedAt,
+        generated_at: report.generatedAt,
+        latest_artifact_kind: report.latestArtifactKind,
+      });
+
+      return rows;
+    },
+    []
+  );
+  const projectGrantModelingArtifactRows = reportRows.reduce<ProjectGrantModelingArtifactRow[]>(
+    (rows, report) => {
+      if (!report.projectId || !report.metadataJson) {
+        return rows;
+      }
+
+      rows.push({
+        report_id: report.id,
+        generated_at: report.generatedAt ?? report.updatedAt ?? new Date(0).toISOString(),
+        metadata_json: report.metadataJson,
+      });
+
+      return rows;
+    },
+    []
+  );
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    projectGrantModelingReportRows,
+    projectGrantModelingArtifactRows
+  );
+  const opportunityLinkedProjectIds = [...fundingOpportunitiesByProjectId.keys()];
+  const grantModelingOpportunityBreakdown = opportunityLinkedProjectIds.reduce(
+    (counts, projectId) => {
+      const posture = resolveProjectGrantModelingQueuePosture(
+        projectGrantModelingEvidenceByProjectId.get(projectId) ?? null
+      );
+
+      switch (posture) {
+        case "decision-ready":
+          counts.decisionReady += 1;
+          break;
+        case "refresh-recommended":
+          counts.refreshRecommended += 1;
+          break;
+        case "thin":
+          counts.thin += 1;
+          break;
+        default:
+          counts.noVisibleSupport += 1;
+          break;
+      }
+
+      return counts;
+    },
+    {
+      decisionReady: 0,
+      refreshRecommended: 0,
+      thin: 0,
+      noVisibleSupport: 0,
+    }
+  );
+  const grantModelingOpportunityBreakdownSummary = buildGrantModelingOpportunityBreakdownSummary(
+    grantModelingOpportunityBreakdown
+  );
   const fundingProfileProjectIds = new Set(projectFundingProfiles.map((profile) => profile.project_id));
   const fundingAwardOpportunityIds = new Set(
     fundingAwards.map((award) => award.fundingOpportunityId).filter((value): value is string => Boolean(value))
@@ -891,8 +1009,8 @@ export function buildWorkspaceOperationsSummary({
         return null;
       }
       const leadOpportunity = [...actionableOpportunities].sort((left, right) => {
-        const leftStatusPriority = left.opportunityStatus === "open" ? 0 : left.opportunityStatus === "upcoming" ? 1 : 2;
-        const rightStatusPriority = right.opportunityStatus === "open" ? 0 : right.opportunityStatus === "upcoming" ? 1 : 2;
+        const leftStatusPriority = getFundingDecisionOpportunityStatusPriority(left.opportunityStatus);
+        const rightStatusPriority = getFundingDecisionOpportunityStatusPriority(right.opportunityStatus);
         if (leftStatusPriority !== rightStatusPriority) return leftStatusPriority - rightStatusPriority;
         const leftDueAt = left.closesAt ?? left.decisionDueAt;
         const rightDueAt = right.closesAt ?? right.decisionDueAt;
@@ -906,6 +1024,10 @@ export function buildWorkspaceOperationsSummary({
         project,
         summary,
         leadOpportunity,
+        modelingEvidence: projectGrantModelingEvidenceByProjectId.get(profile.project_id) ?? null,
+        modelingReadiness: describeProjectGrantModelingReadiness(
+          projectGrantModelingEvidenceByProjectId.get(profile.project_id) ?? null
+        ),
       };
     })
     .filter(
@@ -913,7 +1035,42 @@ export function buildWorkspaceOperationsSummary({
         item
       ): item is NonNullable<typeof item> => Boolean(item)
     )
-    .sort((left, right) => right.summary.fundingNeedAmount - left.summary.fundingNeedAmount);
+    .sort((left, right) => {
+      const leftStatusPriority = getFundingDecisionOpportunityStatusPriority(
+        left.leadOpportunity?.opportunityStatus
+      );
+      const rightStatusPriority = getFundingDecisionOpportunityStatusPriority(
+        right.leadOpportunity?.opportunityStatus
+      );
+      if (leftStatusPriority !== rightStatusPriority) {
+        return leftStatusPriority - rightStatusPriority;
+      }
+
+      const leftDueAt = left.leadOpportunity?.closesAt ?? left.leadOpportunity?.decisionDueAt;
+      const rightDueAt = right.leadOpportunity?.closesAt ?? right.leadOpportunity?.decisionDueAt;
+      if (leftDueAt && rightDueAt) {
+        const dueDelta = new Date(leftDueAt).getTime() - new Date(rightDueAt).getTime();
+        if (dueDelta !== 0) {
+          return dueDelta;
+        }
+      } else if (leftDueAt || rightDueAt) {
+        return leftDueAt ? -1 : 1;
+      }
+
+      const modelingDifference = compareProjectGrantModelingEvidenceForQueue(
+        left.modelingEvidence,
+        right.modelingEvidence
+      );
+      if (modelingDifference !== 0) {
+        return modelingDifference;
+      }
+
+      if (right.summary.fundingNeedAmount !== left.summary.fundingNeedAmount) {
+        return right.summary.fundingNeedAmount - left.summary.fundingNeedAmount;
+      }
+
+      return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
+    });
   const fundingAwardRecordProjects = projectFundingProfiles
     .map((profile) => {
       const project = projects.find((item) => item.id === profile.project_id);
@@ -1355,12 +1512,17 @@ export function buildWorkspaceOperationsSummary({
 
   if (fundingDecisionProjects.length > 0) {
     const firstFundingDecisionProject = fundingDecisionProjects[0];
+    const firstFundingDecisionProjectModelingDetail = firstFundingDecisionProject
+      ? firstFundingDecisionProject.modelingReadiness
+        ? `Modeling posture for ${firstFundingDecisionProject.project.name}: ${firstFundingDecisionProject.modelingReadiness.label}.${firstFundingDecisionProject.modelingEvidence?.leadComparisonReport.title ? ` ${firstFundingDecisionProject.modelingEvidence.leadComparisonReport.title} is the lead packet to review.` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}`
+        : `No visible comparison-backed modeling support is attached to ${firstFundingDecisionProject.project.name} yet, so this decision still depends on direct funding-source review without that planning signal.`
+      : "";
     queueCandidates.push({
       key: "advance-project-funding-decisions",
       moduleKey: "grants",
       moduleLabel: "Grants OS",
       title: "Advance project funding decisions",
-      detail: `${fundingDecisionProjects.length} project funding stack${fundingDecisionProjects.length === 1 ? " has" : "s have"} linked opportunities but nothing marked pursue yet.${firstFundingDecisionProject?.leadOpportunity ? ` ${firstFundingDecisionProject.leadOpportunity.title} is the first grant decision to advance for ${firstFundingDecisionProject.project.name}.` : firstFundingDecisionProject ? ` Reopen ${firstFundingDecisionProject.project.name} first and choose the lead opportunity.` : ""}`,
+      detail: `${fundingDecisionProjects.length} project funding stack${fundingDecisionProjects.length === 1 ? " has" : "s have"} linked opportunities but nothing marked pursue yet.${firstFundingDecisionProject?.leadOpportunity ? ` ${firstFundingDecisionProject.leadOpportunity.title} is the first grant decision to advance for ${firstFundingDecisionProject.project.name}.` : firstFundingDecisionProject ? ` Reopen ${firstFundingDecisionProject.project.name} first and choose the lead opportunity.` : ""}${firstFundingDecisionProjectModelingDetail ? ` ${firstFundingDecisionProjectModelingDetail}` : ""}`,
       href: firstFundingDecisionProject
         ? `/projects/${firstFundingDecisionProject.project.id}#project-funding-opportunities`
         : "/projects",
@@ -1372,6 +1534,7 @@ export function buildWorkspaceOperationsSummary({
       badges: [
         { label: "Decision gaps", value: fundingDecisionProjects.length },
         { label: "Lead need", value: firstFundingDecisionProject ? formatCurrency(firstFundingDecisionProject.summary.fundingNeedAmount) : null },
+        { label: "Modeling", value: formatGrantModelingPostureLabel(firstFundingDecisionProject?.modelingReadiness ?? null) },
       ],
     });
   }
@@ -1410,13 +1573,21 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "review-comparison-backed-reports",
       title: "Review comparison-backed packet posture",
-      detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
+      detail: `${comparisonBackedReports} report${comparisonBackedReports === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices.${grantModelingOpportunityBreakdownSummary ? ` Across ${grantModelingOpportunityBreakdownSummary}` : ""} ${GRANT_MODELING_PLANNING_CAVEAT}${firstComparisonBackedReport?.comparisonDigest?.detail ? ` ${firstComparisonBackedReport.comparisonDigest.detail}` : ""}`,
       href: "/reports?posture=comparison-backed",
       tone: "info",
       priority: 9,
       badges: [
         { label: "Comparison-backed", value: comparisonBackedReports },
         { label: "Ready comparisons", value: firstComparisonBackedReport?.comparisonAggregate?.readyComparisonSnapshotCount ?? null },
+        ...(grantModelingOpportunityBreakdownSummary
+          ? [
+              {
+                label: "Modeling triage",
+                value: `${grantModelingOpportunityBreakdown.decisionReady} ready · ${grantModelingOpportunityBreakdown.refreshRecommended} refresh · ${grantModelingOpportunityBreakdown.thin} thin · ${grantModelingOpportunityBreakdown.noVisibleSupport} none`,
+              },
+            ]
+          : []),
       ],
     });
   }

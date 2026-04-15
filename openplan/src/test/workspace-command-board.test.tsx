@@ -135,6 +135,7 @@ describe("WorkspaceCommandBoard", () => {
               badges: [
                 { label: "Comparison-backed", value: 1 },
                 { label: "Ready comparisons", value: 1 },
+                { label: "Modeling triage", value: "1 ready · 0 refresh · 0 thin · 1 none" },
               ],
             },
           ],
@@ -150,6 +151,7 @@ describe("WorkspaceCommandBoard", () => {
               badges: [
                 { label: "Comparison-backed", value: 1 },
                 { label: "Ready comparisons", value: 1 },
+                { label: "Modeling triage", value: "1 ready · 0 refresh · 0 thin · 1 none" },
               ],
             },
           ],
@@ -167,6 +169,7 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/reports?posture=comparison-backed"
     );
+    expect(screen.getByText(/Modeling triage: 1 ready · 0 refresh · 0 thin · 1 none/i)).toBeInTheDocument();
   });
 
   it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
