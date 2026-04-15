@@ -14,6 +14,28 @@ function toOptionalNumber(value: string): number | null {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
+function appendSuggestedText(existing: string, suggestion: string) {
+  const normalizedExisting = existing.trim();
+  const normalizedSuggestion = suggestion.trim();
+
+  if (!normalizedSuggestion) {
+    return existing;
+  }
+
+  if (normalizedExisting.includes(normalizedSuggestion)) {
+    return existing;
+  }
+
+  return normalizedExisting ? `${normalizedExisting}\n\n${normalizedSuggestion}` : normalizedSuggestion;
+}
+
+export type FundingOpportunityDecisionModelingSupport = {
+  title: string;
+  summary: string;
+  readinessNoteSuggestion: string;
+  decisionRationaleSuggestion: string;
+};
+
 export function FundingOpportunityDecisionControls({
   opportunityId,
   initialDecisionState,
@@ -21,6 +43,7 @@ export function FundingOpportunityDecisionControls({
   initialFitNotes,
   initialReadinessNotes,
   initialDecisionRationale,
+  modelingSupport,
 }: {
   opportunityId: string;
   initialDecisionState: (typeof FUNDING_OPPORTUNITY_DECISION_OPTIONS)[number]["value"];
@@ -28,6 +51,7 @@ export function FundingOpportunityDecisionControls({
   initialFitNotes?: string | null;
   initialReadinessNotes?: string | null;
   initialDecisionRationale?: string | null;
+  modelingSupport?: FundingOpportunityDecisionModelingSupport | null;
 }) {
   const router = useRouter();
   const [decisionState, setDecisionState] = useState(initialDecisionState);
@@ -111,18 +135,83 @@ export function FundingOpportunityDecisionControls({
           </div>
         </div>
 
+        {modelingSupport ? (
+          <div className="rounded-2xl border border-sky-200/70 bg-sky-50/80 px-4 py-3 text-sm dark:border-sky-900/60 dark:bg-sky-950/30">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1.5 text-sky-950 dark:text-sky-100">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
+                  Modeling-backed decision support
+                </p>
+                <p className="font-semibold">{modelingSupport.title}</p>
+                <p className="text-muted-foreground dark:text-sky-100/85">{modelingSupport.summary}</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setReadinessNotes((current) =>
+                      appendSuggestedText(current, modelingSupport.readinessNoteSuggestion)
+                    )
+                  }
+                >
+                  Use in readiness notes
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setDecisionRationale((current) =>
+                      appendSuggestedText(current, modelingSupport.decisionRationaleSuggestion)
+                    )
+                  }
+                >
+                  Use in rationale
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fit notes</label>
-            <Textarea rows={3} value={fitNotes} onChange={(event) => setFitNotes(event.target.value)} placeholder="Why this opportunity fits the project." />
+            <label htmlFor={`funding-fit-notes-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Fit notes
+            </label>
+            <Textarea
+              id={`funding-fit-notes-${opportunityId}`}
+              rows={3}
+              value={fitNotes}
+              onChange={(event) => setFitNotes(event.target.value)}
+              placeholder="Why this opportunity fits the project."
+            />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness notes</label>
-            <Textarea rows={3} value={readinessNotes} onChange={(event) => setReadinessNotes(event.target.value)} placeholder="What is ready, missing, or risky." />
+            <label htmlFor={`funding-readiness-notes-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Readiness notes
+            </label>
+            <Textarea
+              id={`funding-readiness-notes-${opportunityId}`}
+              rows={3}
+              value={readinessNotes}
+              onChange={(event) => setReadinessNotes(event.target.value)}
+              placeholder="What is ready, missing, or risky."
+            />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Decision rationale</label>
-            <Textarea rows={3} value={decisionRationale} onChange={(event) => setDecisionRationale(event.target.value)} placeholder="Record why the team chose pursue, monitor, or skip." />
+            <label htmlFor={`funding-decision-rationale-${opportunityId}`} className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Decision rationale
+            </label>
+            <Textarea
+              id={`funding-decision-rationale-${opportunityId}`}
+              rows={3}
+              value={decisionRationale}
+              onChange={(event) => setDecisionRationale(event.target.value)}
+              placeholder="Record why the team chose pursue, monitor, or skip."
+            />
           </div>
         </div>
       </div>
