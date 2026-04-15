@@ -519,9 +519,23 @@ describe("ProjectDetailPage", () => {
         /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
       )
     ).toBeInTheDocument();
+    expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/not proof of award likelihood/i)
+      screen.getByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i)
     ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/not proof of award likelihood/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open packet review/i })).toHaveAttribute(
+      "href",
+      "/reports/report-1#drift-since-generation"
+    );
+    expect(screen.getByRole("link", { name: /Open Grants OS/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-1"
+    );
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#drift-since-generation"
