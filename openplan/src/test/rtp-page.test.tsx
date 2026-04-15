@@ -17,7 +17,7 @@ const projectRtpLinksSelectMock = vi.fn(() => ({ in: projectRtpLinksInMock }));
 
 const reportsOrderMock = vi.fn();
 const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
-const reportsInMock = vi.fn(() => ({ eq: reportsEqMock }));
+const reportsInMock = vi.fn(() => ({ eq: reportsEqMock, order: reportsOrderMock }));
 const reportsSelectMock = vi.fn(() => ({ in: reportsInMock }));
 
 const fundingProfilesInMock = vi.fn();

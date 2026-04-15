@@ -24,6 +24,7 @@ import {
   getRtpPacketPresetAlignment,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
+import { buildProjectGrantModelingEvidenceByProjectId } from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildRtpCycleReadiness,
@@ -119,6 +120,21 @@ type ReportSectionRow = {
   section_key: string;
   enabled: boolean;
   sort_order: number;
+};
+
+type ProjectReportRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  updated_at: string;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+};
+
+type ProjectReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
 };
 
 type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
@@ -632,7 +648,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
   const linkedProjectIds = [...new Set(projectRtpLinks.map((link) => link.project_id))];
 
-  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult, linkedProjectReportsResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -657,6 +673,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("reports")
+          .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
+          .in("project_id", linkedProjectIds)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -671,6 +694,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
     ? []
     : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
+
+  const linkedProjectReports = (linkedProjectReportsResult.data ?? []) as ProjectReportRow[];
+  const linkedProjectReportIds = linkedProjectReports.map((r) => r.id);
+  const linkedProjectReportArtifactsResult = linkedProjectReportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", linkedProjectReportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+  const linkedProjectReportArtifacts = (linkedProjectReportArtifactsResult.data ?? []) as ProjectReportArtifactRow[];
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    linkedProjectReports,
+    linkedProjectReportArtifacts
+  );
+
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
   const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
@@ -900,6 +939,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         grantsFollowThrough,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
+        comparisonBackedProjectCount: cycleLinks.filter(
+          (link) => Boolean(projectGrantModelingEvidenceByProjectId.get(link.project_id))
+        ).length,
+        staleModelingProjectCount: cycleLinks.filter((link) => {
+          const evidence = projectGrantModelingEvidenceByProjectId.get(link.project_id);
+          return evidence?.leadComparisonReport.packetFreshness.label === "Refresh recommended";
+        }).length,
       };
     })
     .filter((cycle) => (filters.status ? cycle.status === filters.status : true));
@@ -1547,6 +1593,19 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.uninvoicedAwardAmount)}</p>
                       </div>
                     </div>
+
+                    {cycle.comparisonBackedProjectCount > 0 ? (
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Project modeling support</p>
+                        <p className="mt-1">
+                          {cycle.comparisonBackedProjectCount} linked project{cycle.comparisonBackedProjectCount === 1 ? "" : "s"} {cycle.comparisonBackedProjectCount === 1 ? "carries" : "carry"} comparison-backed planning support.
+                          {cycle.staleModelingProjectCount > 0
+                            ? ` ${cycle.staleModelingProjectCount} should refresh evidence packets before leaning on them for RTP prioritization language.`
+                            : " Evidence packets appear current."}
+                          {" "}Treat it as planning support only, not a substitute for board deliberation.
+                        </p>
+                      </div>
+                    ) : null}
 
                     <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
