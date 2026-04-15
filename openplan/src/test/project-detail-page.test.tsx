@@ -113,6 +113,14 @@ const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
 const connectorsInMock = vi.fn();
 const connectorsSelectMock = vi.fn(() => ({ in: connectorsInMock }));
 
+const aerialMissionsOrderMock = vi.fn();
+const aerialMissionsEqMock = vi.fn(() => ({ order: aerialMissionsOrderMock }));
+const aerialMissionsSelectMock = vi.fn(() => ({ eq: aerialMissionsEqMock }));
+
+const aerialPackagesOrderMock = vi.fn();
+const aerialPackagesInMock = vi.fn(() => ({ order: aerialPackagesOrderMock }));
+const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
+
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const buildProjectControlsSummaryMock = vi.fn();
@@ -185,6 +193,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "data_connectors") {
     return { select: connectorsSelectMock };
+  }
+  if (table === "aerial_missions") {
+    return { select: aerialMissionsSelectMock };
+  }
+  if (table === "aerial_evidence_packages") {
+    return { select: aerialPackagesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -382,6 +396,8 @@ describe("ProjectDetailPage", () => {
     fundingOpportunitiesLimitMock.mockResolvedValue({ data: [], error: null });
     datasetsInMock.mockResolvedValue({ data: [], error: null });
     connectorsInMock.mockResolvedValue({ data: [], error: null });
+    aerialMissionsOrderMock.mockResolvedValue({ data: [], error: null });
+    aerialPackagesOrderMock.mockResolvedValue({ data: [], error: null });
 
     reportsLimitMock.mockResolvedValue({
       data: [

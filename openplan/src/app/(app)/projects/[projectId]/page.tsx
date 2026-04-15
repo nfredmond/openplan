@@ -11,6 +11,7 @@ import {
   FileStack,
   FolderKanban,
   MessagesSquare,
+  Radar,
   Scale,
   ShieldCheck,
   Siren,
@@ -32,6 +33,15 @@ import {
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
+import {
+  buildAerialProjectPosture,
+  describeAerialProjectPosture,
+  aerialMissionStatusTone,
+  aerialVerificationReadinessTone,
+  formatAerialMissionStatusLabel,
+  formatAerialMissionTypeLabel,
+  formatAerialVerificationReadinessLabel,
+} from "@/lib/aerial/catalog";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectFundingStackSummary,
@@ -923,6 +933,44 @@ export default async function ProjectDetailPage({
     },
     now
   );
+
+  const aerialMissionsResult = await supabase
+    .from("aerial_missions")
+    .select("id, title, status, mission_type, geography_label, collected_at, updated_at")
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false });
+  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+    ? []
+    : ((aerialMissionsResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string;
+        mission_type: string;
+        geography_label: string | null;
+        collected_at: string | null;
+        updated_at: string;
+      }>);
+  const aerialMissionIds = aerialMissions.map((m) => m.id);
+  const aerialPackagesResult = aerialMissionIds.length
+    ? await supabase
+        .from("aerial_evidence_packages")
+        .select("id, mission_id, title, package_type, status, verification_readiness, updated_at")
+        .in("mission_id", aerialMissionIds)
+        .order("updated_at", { ascending: false })
+    : { data: [], error: null };
+  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+    ? []
+    : ((aerialPackagesResult.data ?? []) as Array<{
+        id: string;
+        mission_id: string;
+        title: string;
+        package_type: string;
+        status: string;
+        verification_readiness: string;
+        updated_at: string;
+      }>);
+  const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
+  const aerialProjectPostureDetail = describeAerialProjectPosture(aerialProjectPosture);
 
   const operationsSummary = await operationsSummaryPromise;
 
@@ -2664,6 +2712,97 @@ export default async function ProjectDetailPage({
           )}
         </article>
       </div>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <Radar className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Aerial evidence</p>
+              <h2 className="module-section-title">Field collection and evidence packages</h2>
+              <p className="module-section-description">
+                Aerial missions and evidence packages linked to this project. Evidence package readiness flows into the project evidence chain.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {aerialProjectPosture.missionCount === 0 ? (
+          <div className="module-empty-state mt-5 text-sm">
+            No aerial missions linked yet. Add a mission to start connecting field collection to this project evidence chain.
+          </div>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="module-metric-card">
+                <p className="module-metric-label">Missions</p>
+                <p className="module-metric-value text-sm">{aerialProjectPosture.missionCount}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {aerialProjectPosture.activeMissionCount} active, {aerialProjectPosture.completeMissionCount} complete.
+                </p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Evidence packages</p>
+                <p className="module-metric-value text-sm">{aerialPackages.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {aerialProjectPosture.readyPackageCount} ready or shared.
+                </p>
+              </div>
+              <div className="module-metric-card col-span-2">
+                <p className="module-metric-label">Verification readiness</p>
+                <div className="mt-1">
+                  <StatusBadge tone={aerialVerificationReadinessTone(aerialProjectPosture.verificationReadiness)}>
+                    {formatAerialVerificationReadinessLabel(aerialProjectPosture.verificationReadiness)}
+                  </StatusBadge>
+                </div>
+                {aerialProjectPostureDetail ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{aerialProjectPostureDetail}</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="module-record-list">
+              {aerialMissions.map((mission) => {
+                const missionPackages = aerialPackages.filter((p) => p.mission_id === mission.id);
+                return (
+                  <div key={mission.id} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={aerialMissionStatusTone(mission.status)}>
+                          {formatAerialMissionStatusLabel(mission.status)}
+                        </StatusBadge>
+                        <StatusBadge tone="neutral">{formatAerialMissionTypeLabel(mission.mission_type)}</StatusBadge>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{mission.title}</h3>
+                          <p className="module-record-stamp">Updated {fmtDateTime(mission.updated_at)}</p>
+                        </div>
+                        {mission.geography_label ? (
+                          <p className="module-record-summary">{mission.geography_label}</p>
+                        ) : null}
+                      </div>
+                      {missionPackages.length > 0 ? (
+                        <div className="module-record-meta">
+                          {missionPackages.map((pkg) => (
+                            <span key={pkg.id} className="module-record-chip">
+                              {pkg.title} · <StatusBadge tone={aerialVerificationReadinessTone(pkg.verification_readiness)}>{formatAerialVerificationReadinessLabel(pkg.verification_readiness)}</StatusBadge>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-muted-foreground">No evidence packages yet for this mission.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">
