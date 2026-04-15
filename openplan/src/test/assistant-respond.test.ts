@@ -358,8 +358,15 @@ describe("assistant response builders", () => {
       },
     };
 
+    const preview = buildAssistantPreview(context);
+    const overview = buildAssistantResponse(context, "workspace-overview");
     const response = buildAssistantResponse(context, "workspace-funding");
 
+    expect(preview.summary).toContain("lead grant decision cue: ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
+    expect(preview.facts.join(" ")).toContain("Command queue: Advance project funding decisions. ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready.");
+    expect(preview.operatorCue?.detail).toContain("ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
+    expect(overview.summary).toContain("Lead grant decision cue: ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
+    expect(overview.findings.join(" ")).toContain("Next command: Advance project funding decisions. ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready.");
     expect(response.summary).toContain("ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
     expect(response.findings.join(" ")).toContain("Lead grant decision cue");
     expect(response.findings.join(" ")).toContain("Advance to pursue now");
