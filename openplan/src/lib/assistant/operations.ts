@@ -96,6 +96,10 @@ function describeWorkspaceNextCommandLink(context: {
   operationsSummary: {
     nextCommand: { key: string; title: string; moduleKey?: string } | null;
     counts: { rtpFundingReviewPackets: number };
+    grantModelingSummary?: {
+      breakdown: { decisionReady: number };
+      leadDecisionDetail: string | null;
+    } | null;
   };
 }) {
   const nextCommand = context.operationsSummary.nextCommand;
@@ -116,6 +120,21 @@ function describeWorkspaceNextCommandLink(context: {
         nextCommand.moduleKey === "grants"
           ? "Use the Grants OS follow-through lane to resolve funding gaps, uninvoiced awards, or reimbursement pressure before finalizing packet posture."
           : "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet posture.",
+    };
+  }
+
+  if (
+    nextCommand.key === "advance-project-funding-decisions" &&
+    context.operationsSummary.grantModelingSummary?.leadDecisionDetail
+  ) {
+    const modelingSummary = context.operationsSummary.grantModelingSummary;
+    const decisionReadyCount = modelingSummary.breakdown.decisionReady;
+    return {
+      label: decisionReadyCount > 0 ? "Open decision-ready grant lane" : "Open lead grant decision lane",
+      statusLabel: decisionReadyCount > 0 ? `${decisionReadyCount} decision-ready` : "Modeling context available",
+      reason: modelingSummary.leadDecisionDetail ?? undefined,
+      auditNote:
+        "Review the lead project modeling posture and recommended next move before advancing or adjusting pursue state for any linked opportunity.",
     };
   }
 
