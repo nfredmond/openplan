@@ -400,6 +400,10 @@ describe("GrantsPage", () => {
   it("surfaces project-specific modeling evidence on funding opportunity cards", async () => {
     await renderPage();
 
+    const renderedDecisionControlProps = fundingOpportunityDecisionControlsMock.mock.calls.map(
+      ([props]) => props
+    );
+
     expect(
       screen.getByText(/See where grant modeling support looks strongest, thin, or stale/i)
     ).toBeInTheDocument();
@@ -423,8 +427,23 @@ describe("GrantsPage", () => {
         modelingSupport: expect.objectContaining({
           title: "Mobility Grant Packet",
           summary: expect.stringContaining("planning support only, not proof of award likelihood"),
-          readinessNoteSuggestion: expect.stringContaining("1 saved comparison · 1 ready"),
-          decisionRationaleSuggestion: expect.stringContaining("funding-source review"),
+          readinessNoteSuggestion: expect.stringContaining("advance this opportunity to pursue now"),
+          decisionRationaleSuggestion: expect.stringContaining("appears decision-ready"),
+          recommendedNextActionTitle: "Advance to pursue now",
+          recommendedDecisionState: "pursue",
+        }),
+      })
+    );
+    expect(renderedDecisionControlProps).toContainEqual(
+      expect.objectContaining({
+        opportunityId: "opp-4",
+        modelingSupport: expect.objectContaining({
+          title: "Broadway Bridge modeling posture",
+          recommendedNextActionTitle: "Keep monitoring or add support first",
+          recommendedDecisionState: "monitor",
+          recommendedNextActionSummary: expect.stringContaining(
+            "No visible modeling-backed packet is linked yet"
+          ),
         }),
       })
     );
