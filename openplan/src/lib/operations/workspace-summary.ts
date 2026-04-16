@@ -1421,6 +1421,7 @@ export function buildWorkspaceOperationsSummary({
           : "/programs",
       targetProjectId: firstClosingOpportunity?.projectId ?? null,
       targetOpportunityId: firstClosingOpportunity?.id ?? null,
+      targetOpportunityTitle: firstClosingOpportunity?.title ?? null,
       tone: "warning",
       priority: 2,
       badges: [
@@ -1466,6 +1467,7 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingAwardRecordProject?.project.id ?? null,
       targetProjectName: firstFundingAwardRecordProject?.project.name ?? null,
       targetOpportunityId: firstFundingAwardRecordProject?.awardedOpportunity.id ?? null,
+      targetOpportunityTitle: firstFundingAwardRecordProject?.awardedOpportunity.title ?? null,
       tone: "warning",
       priority: 6,
       badges: [
@@ -1637,6 +1639,7 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingDecisionProject?.project.id ?? null,
       targetProjectName: firstFundingDecisionProject?.project.name ?? null,
       targetOpportunityId: firstFundingDecisionProject?.leadOpportunity?.id ?? null,
+      targetOpportunityTitle: firstFundingDecisionProject?.leadOpportunity?.title ?? null,
       tone: "warning",
       priority: 5,
       badges: [

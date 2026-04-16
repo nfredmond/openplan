@@ -216,6 +216,76 @@ describe("grants-links", () => {
     });
   });
 
+  it("names the lead closing opportunity in the decision callout copy when available", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "decision",
+        buildCommand({
+          key: "funding-windows-closing",
+          tone: "warning",
+          targetOpportunityId: "opportunity-closing-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+        })
+      )
+    ).toEqual({
+      title: "Lead opportunity decision command from workspace queue: ATP Cycle 8",
+      actionLabel: "Open opportunity decision",
+      badgeLabel: "Next",
+    });
+  });
+
+  it("names the lead funding-decision opportunity in the decision callout copy when available", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "decision",
+        buildCommand({
+          key: "advance-project-funding-decisions",
+          tone: "warning",
+          targetOpportunityId: "opportunity-decision-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+        })
+      )
+    ).toEqual({
+      title: "Lead opportunity decision command from workspace queue: ATP Cycle 8",
+      actionLabel: "Open opportunity decision",
+      badgeLabel: "Next",
+    });
+  });
+
+  it("names the lead awarded opportunity in the award callout copy when available", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "award",
+        buildCommand({
+          key: "record-awarded-funding",
+          tone: "warning",
+          targetOpportunityId: "opportunity-award-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+        })
+      )
+    ).toEqual({
+      title: "Lead award conversion command from workspace queue: ATP Cycle 8",
+      actionLabel: "Open award conversion",
+      badgeLabel: "Next",
+    });
+  });
+
+  it("falls back to the plain decision callout copy without a lead opportunity title", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "decision",
+        buildCommand({
+          key: "advance-project-funding-decisions",
+          tone: "warning",
+        })
+      )
+    ).toEqual({
+      title: "Lead opportunity decision command from workspace queue",
+      actionLabel: "Open opportunity decision",
+      badgeLabel: "Next",
+    });
+  });
+
   it("routes sourcing commands into the grants opportunity creator lane", () => {
     expect(
       resolveWorkspaceCommandHref(

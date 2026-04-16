@@ -131,10 +131,11 @@ export function resolveGrantsQueueCalloutCopy(
     kind === "decision" && item.key === "resolve-overdue-funding-decisions"
       ? OVERDUE_DECISION_CALLOUT_COPY
       : GRANTS_QUEUE_CALLOUT_COPY[kind];
-  const title =
-    kind === "decision" && item.key === "resolve-overdue-funding-decisions" && item.targetOpportunityTitle
-      ? `${base.title}: ${item.targetOpportunityTitle}`
-      : base.title;
+  const shouldAppendOpportunityTitle =
+    Boolean(item.targetOpportunityTitle) && (kind === "decision" || kind === "award");
+  const title = shouldAppendOpportunityTitle
+    ? `${base.title}: ${item.targetOpportunityTitle}`
+    : base.title;
   return {
     title,
     actionLabel: base.actionLabel,

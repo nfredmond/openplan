@@ -963,4 +963,193 @@ describe("assistant funding operations", () => {
     expect(action?.reason).toContain("still visible in the decision queue while modeling posture reads appears thin");
     expect(action?.auditNote).toContain("modeling posture and recommended next move");
   });
+
+  it("names the lead closing opportunity in the next-command link when funding windows are closing", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance near-term funding windows",
+        detail: "1 open funding opportunity closes within 14 days. ATP Cycle 8 is the first deadline to reopen.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          closingSoonFundingOpportunities: 1,
+          openFundingOpportunities: 1,
+        },
+        nextCommand: {
+          key: "funding-windows-closing",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Advance near-term funding windows",
+          detail: "1 open funding opportunity closes within 14 days. ATP Cycle 8 is the first deadline to reopen.",
+          href: "/grants?focusOpportunityId=opp-closing-1#funding-opportunity-opp-closing-1",
+          targetOpportunityId: "opp-closing-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+          tone: "warning",
+          priority: 2,
+          badges: [{ label: "Closing soon", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "funding-windows-closing",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Advance near-term funding windows",
+            detail: "1 open funding opportunity closes within 14 days. ATP Cycle 8 is the first deadline to reopen.",
+            href: "/grants?focusOpportunityId=opp-closing-1#funding-opportunity-opp-closing-1",
+            targetOpportunityId: "opp-closing-1",
+            targetOpportunityTitle: "ATP Cycle 8",
+            tone: "warning",
+            priority: 2,
+            badges: [{ label: "Closing soon", value: 1 }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open lead closing funding window");
+    expect(action?.reason).toContain("ATP Cycle 8 is the lead closing window to reopen first.");
+    expect(action?.auditNote).toContain("Lead closing window: ATP Cycle 8.");
+  });
+
+  it("falls back to generic closing-window narration when no lead opportunity title is available", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance near-term funding windows",
+        detail: "1 open funding opportunity closes within 14 days.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          closingSoonFundingOpportunities: 1,
+          openFundingOpportunities: 1,
+        },
+        nextCommand: {
+          key: "funding-windows-closing",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Advance near-term funding windows",
+          detail: "1 open funding opportunity closes within 14 days.",
+          href: "/grants",
+          tone: "warning",
+          priority: 2,
+          badges: [{ label: "Closing soon", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "funding-windows-closing",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Advance near-term funding windows",
+            detail: "1 open funding opportunity closes within 14 days.",
+            href: "/grants",
+            tone: "warning",
+            priority: 2,
+            badges: [{ label: "Closing soon", value: 1 }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.reason).not.toContain("is the lead closing window to reopen first");
+    expect(action?.auditNote).not.toContain("Lead closing window:");
+  });
+
+  it("names the lead awarded opportunity in the next-command link when an award record is missing", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Record awarded funding",
+        detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingAwardRecordProjects: 1,
+        },
+        nextCommand: {
+          key: "record-awarded-funding",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Record awarded funding",
+          detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
+          href: "/grants?focusOpportunityId=opp-award-1#grants-award-conversion-composer",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          targetOpportunityId: "opp-award-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+          tone: "warning",
+          priority: 6,
+          badges: [{ label: "Award records needed", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "record-awarded-funding",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Record awarded funding",
+            detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
+            href: "/grants?focusOpportunityId=opp-award-1#grants-award-conversion-composer",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            targetOpportunityId: "opp-award-1",
+            targetOpportunityTitle: "ATP Cycle 8",
+            tone: "warning",
+            priority: 6,
+            badges: [{ label: "Award records needed", value: 1 }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open lead award conversion lane");
+    expect(action?.reason).toContain("ATP Cycle 8 is the lead awarded opportunity to convert first.");
+    expect(action?.auditNote).toContain("Lead awarded opportunity: ATP Cycle 8.");
+  });
+
+  it("names the lead funding-decision opportunity in the next-command link when modeling is absent", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance project funding decisions",
+        detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingDecisionProjects: 1,
+        },
+        nextCommand: {
+          key: "advance-project-funding-decisions",
+          title: "Advance project funding decisions",
+          detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+          href: "/projects/project-gap#project-funding-opportunities",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          targetOpportunityId: "opp-decision-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+          tone: "warning",
+          priority: 5,
+          badges: [{ label: "Decision gaps", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-funding-decisions",
+            title: "Advance project funding decisions",
+            detail: "ATP Cycle 8 is the first grant decision to advance for Gap Project.",
+            href: "/projects/project-gap#project-funding-opportunities",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            targetOpportunityId: "opp-decision-1",
+            targetOpportunityTitle: "ATP Cycle 8",
+            tone: "warning",
+            priority: 5,
+            badges: [{ label: "Decision gaps", value: 1 }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.label).toBe("Open lead grant decision lane");
+    expect(action?.reason).toContain("ATP Cycle 8 is the lead opportunity decision to advance first.");
+    expect(action?.auditNote).toContain("Lead opportunity decision: ATP Cycle 8.");
+  });
 });

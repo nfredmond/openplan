@@ -161,6 +161,36 @@ function describeWorkspaceNextCommandLink(context: {
     };
   }
 
+  if (nextCommand.key === "advance-project-funding-decisions") {
+    const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
+    return {
+      label: "Open lead grant decision lane",
+      statusLabel: "Workspace command",
+      reason: `The shared workspace queue has a linked funding opportunity that still needs a pursue or skip call before the lane is treated as a true funding stack.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead opportunity decision to advance first.` : ""}`,
+      auditNote: `Use the focused grants opportunity lane to advance pursue or skip before changing records.${leadOpportunityTitle ? ` Lead opportunity decision: ${leadOpportunityTitle}.` : ""}`,
+    };
+  }
+
+  if (nextCommand.key === "funding-windows-closing") {
+    const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
+    return {
+      label: "Open lead closing funding window",
+      statusLabel: "Workspace command",
+      reason: `Monitored funding windows are closing within the near-term timing horizon, so reopening the lead opportunity outranks less urgent cleanup before the window locks.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead closing window to reopen first.` : ""}`,
+      auditNote: `Use the focused grants opportunity lane to review the closing window before acting on later-dated entries.${leadOpportunityTitle ? ` Lead closing window: ${leadOpportunityTitle}.` : ""}`,
+    };
+  }
+
+  if (nextCommand.key === "record-awarded-funding") {
+    const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
+    return {
+      label: "Open lead award conversion lane",
+      statusLabel: "Workspace command",
+      reason: `An opportunity is already marked awarded but still has no funding-award record, so closing that committed-dollar bookkeeping gap outranks further gap analysis.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead awarded opportunity to convert first.` : ""}`,
+      auditNote: `Use the grants award conversion lane to record the committed dollars before the shortfall math is treated as final.${leadOpportunityTitle ? ` Lead awarded opportunity: ${leadOpportunityTitle}.` : ""}`,
+    };
+  }
+
   return {
     label: `Open ${nextCommand.title}`,
     statusLabel: "Workspace command",

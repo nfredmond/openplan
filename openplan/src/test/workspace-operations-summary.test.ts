@@ -272,6 +272,7 @@ describe("workspace operations summary", () => {
 
     expect(decisionCommand?.targetProjectId).toBe("project-modeled");
     expect(decisionCommand?.targetOpportunityId).toBe("opp-modeled-1");
+    expect(decisionCommand?.targetOpportunityTitle).toBe("ATP Cycle 8");
     expect(decisionCommand?.detail).toContain("Modeling posture for Modeled Project: Appears decision-ready.");
     expect(decisionCommand?.detail).toContain("Recommended next move: Advance to pursue now.");
     expect(decisionCommand?.detail).toContain(
@@ -332,6 +333,7 @@ describe("workspace operations summary", () => {
     expect(summary.nextCommand?.key).toBe("record-awarded-funding");
     expect(summary.nextCommand?.targetProjectId).toBe("project-gap");
     expect(summary.nextCommand?.targetOpportunityId).toBe("opp-gap-1");
+    expect(summary.nextCommand?.targetOpportunityTitle).toBe("ATP Cycle 8");
   });
 
   it("surfaces reimbursement packet creation before generic funding-gap cleanup", () => {
@@ -590,6 +592,55 @@ describe("workspace operations summary", () => {
       "/grants?focusOpportunityId=opp-overdue-older#funding-opportunity-opp-overdue-older"
     );
     expect(overdueCommand?.detail).toContain("past their decision deadline");
+  });
+
+  it("carries the lead closing opportunity title on the funding-windows-closing queue item", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-closing",
+          name: "Closing Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
+      fundingOpportunities: [
+        {
+          id: "opp-closing-first",
+          title: "ATP Cycle 8",
+          opportunity_status: "open",
+          decision_state: "pursue",
+          expected_award_amount: 100000,
+          closes_at: "2026-04-20T00:00:00.000Z",
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-closing",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+        {
+          id: "opp-closing-later",
+          title: "SB1 Local Partnership",
+          opportunity_status: "open",
+          decision_state: "pursue",
+          expected_award_amount: 100000,
+          closes_at: "2026-04-25T00:00:00.000Z",
+          decision_due_at: null,
+          program_id: null,
+          project_id: "project-closing",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      now: new Date("2026-04-16T12:00:00.000Z"),
+    });
+
+    const closingCommand = summary.fullCommandQueue.find((item) => item.key === "funding-windows-closing");
+    expect(closingCommand).toBeDefined();
+    expect(closingCommand?.targetOpportunityId).toBe("opp-closing-first");
+    expect(closingCommand?.targetOpportunityTitle).toBe("ATP Cycle 8");
   });
 
   it("surfaces measurable funding gaps after sourcing exists", () => {
