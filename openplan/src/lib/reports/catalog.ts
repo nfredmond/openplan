@@ -79,6 +79,15 @@ export type ReportFundingDigest = {
   timingDetail: string | null;
 };
 
+export type RtpPacketAttention = "missing" | "generate" | "reset" | "refresh" | "current";
+export type RtpRegistryDominantActionKey =
+  | "createPacket"
+  | "resetAndRegenerate"
+  | "generateFirstArtifact"
+  | "refreshArtifact"
+  | "releaseReview"
+  | "traceFollowUp";
+
 export function getReportPacketWorkStatus(
   freshnessLabel: string
 ): ReportPacketWorkStatus {
@@ -123,12 +132,52 @@ export function getReportPacketActionLabel(freshnessLabel: string) {
 
 export function getReportPacketPriority(freshnessLabel: string) {
   switch (getReportPacketWorkStatus(freshnessLabel).key) {
-    case "refresh":
-      return 0;
     case "generate-first":
+      return 0;
+    case "refresh":
       return 1;
     default:
       return 2;
+  }
+}
+
+export function getRtpPacketActionButtonLabel(args: {
+  packetAttention: RtpPacketAttention;
+  needsFirstArtifact?: boolean;
+}) {
+  const { packetAttention, needsFirstArtifact = false } = args;
+
+  if (packetAttention === "current") {
+    return "Open release review";
+  }
+
+  if (packetAttention === "missing") {
+    return "Create and generate first packet";
+  }
+
+  if (packetAttention === "reset") {
+    return "Reset layout and regenerate";
+  }
+
+  if (packetAttention === "generate" || needsFirstArtifact) {
+    return "Generate first packet artifact";
+  }
+
+  return "Refresh packet artifact";
+}
+
+export function getRtpRegistryDominantActionLabel(actionKey: RtpRegistryDominantActionKey) {
+  switch (actionKey) {
+    case "createPacket":
+      return "Create first RTP packets";
+    case "resetAndRegenerate":
+      return "Reset and regenerate RTP packets";
+    case "generateFirstArtifact":
+      return "Generate first packet artifacts";
+    case "refreshArtifact":
+      return "Refresh stale RTP packets";
+    default:
+      return null;
   }
 }
 

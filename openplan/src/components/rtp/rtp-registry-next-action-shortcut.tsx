@@ -4,15 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getRtpRegistryDominantActionLabel, type RtpRegistryDominantActionKey } from "@/lib/reports/catalog";
 import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
 
-export type DominantActionKey =
-  | "createPacket"
-  | "resetAndRegenerate"
-  | "generateFirstArtifact"
-  | "refreshArtifact"
-  | "releaseReview"
-  | "traceFollowUp";
+export type DominantActionKey = RtpRegistryDominantActionKey;
 
 export function RtpRegistryNextActionShortcut({
   actionKey,
@@ -100,14 +95,7 @@ export function RtpRegistryNextActionShortcut({
     }
   }
 
-  const buttonLabel =
-    actionKey === "createPacket"
-      ? "Run dominant create lane"
-      : actionKey === "resetAndRegenerate"
-        ? "Run dominant reset lane"
-        : actionKey === "generateFirstArtifact"
-          ? "Run dominant generate lane"
-          : "Run dominant refresh lane";
+  const buttonLabel = getRtpRegistryDominantActionLabel(actionKey);
 
   const Icon =
     actionKey === "createPacket"
@@ -123,7 +111,7 @@ export function RtpRegistryNextActionShortcut({
     <div className="space-y-2">
       <Button type="button" variant="outline" onClick={handleApply} disabled={isDisabled}>
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
-        {buttonLabel}
+        {buttonLabel ?? "Run RTP queue action"}
       </Button>
       {message ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}

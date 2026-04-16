@@ -7,6 +7,8 @@ import {
   getReportPacketFreshness,
   getReportPacketPriority,
   getReportPacketWorkStatus,
+  getRtpPacketActionButtonLabel,
+  getRtpRegistryDominantActionLabel,
   matchesReportFreshnessFilter,
   matchesReportPostureFilter,
   normalizeReportFreshnessFilter,
@@ -80,9 +82,24 @@ describe("getReportPacketFreshness", () => {
     });
   });
 
-  it("prioritizes stale and missing packets ahead of current ones", () => {
-    expect(getReportPacketPriority("Refresh recommended")).toBeLessThan(getReportPacketPriority("No packet"));
-    expect(getReportPacketPriority("No packet")).toBeLessThan(getReportPacketPriority("Packet current"));
+  it("prioritizes missing packets ahead of stale and current ones", () => {
+    expect(getReportPacketPriority("No packet")).toBeLessThan(getReportPacketPriority("Refresh recommended"));
+    expect(getReportPacketPriority("Refresh recommended")).toBeLessThan(getReportPacketPriority("Packet current"));
+  });
+
+  it("provides consistent RTP packet action labels for touched surfaces", () => {
+    expect(getRtpPacketActionButtonLabel({ packetAttention: "missing" })).toBe("Create and generate first packet");
+    expect(getRtpPacketActionButtonLabel({ packetAttention: "generate" })).toBe("Generate first packet artifact");
+    expect(getRtpPacketActionButtonLabel({ packetAttention: "refresh" })).toBe("Refresh packet artifact");
+    expect(getRtpPacketActionButtonLabel({ packetAttention: "reset" })).toBe("Reset layout and regenerate");
+    expect(getRtpPacketActionButtonLabel({ packetAttention: "current" })).toBe("Open release review");
+  });
+
+  it("provides consistent dominant RTP queue labels", () => {
+    expect(getRtpRegistryDominantActionLabel("createPacket")).toBe("Create first RTP packets");
+    expect(getRtpRegistryDominantActionLabel("generateFirstArtifact")).toBe("Generate first packet artifacts");
+    expect(getRtpRegistryDominantActionLabel("refreshArtifact")).toBe("Refresh stale RTP packets");
+    expect(getRtpRegistryDominantActionLabel("resetAndRegenerate")).toBe("Reset and regenerate RTP packets");
   });
 
   it("formats compact evidence-chain posture for report surfaces", () => {
