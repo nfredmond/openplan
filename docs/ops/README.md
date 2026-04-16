@@ -22,6 +22,7 @@
 | [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) | **Canonical April 2026 architecture expansion memo** — four-system planning OS, standards-first data plane, scenario/evidence spine |
 | [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) | **Shared platform contract spec** — scenarios, assumptions, data packages, indicators, and comparisons |
 | [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
+| [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
 | [2026-04-13 canonical architecture/status/build plan](2026-04-13-openplan-canonical-architecture-status-and-build-plan.md) | **Canonical synthesis memo** — current state, integrated architecture, ruthless phase order, and acceptance criteria |
 | [2026-04-13 2-week integration sprint plan](2026-04-13-openplan-2-week-integration-sprint-plan.md) | **Canonical near-term sprint plan** — day-by-day sequence, owners, gates, and not-now enforcement |
 | [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) | **Canonical execution roadmap** — integrated feature matrix, current maturity, acceptance criteria, and 4–8 week build order |
@@ -40,6 +41,7 @@
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
 - [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
 - [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) — app-wide operations copilot and agent-runtime north star for the next build wave
+- [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) — canonical execution program with exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter
 - [2026-04-13 canonical architecture/status/build plan](2026-04-13-openplan-canonical-architecture-status-and-build-plan.md) — canonical synthesis of current truth, integrated architecture, ruthless phase order, and acceptance criteria
 - [2026-04-13 2-week integration sprint plan](2026-04-13-openplan-2-week-integration-sprint-plan.md) — canonical near-term sprint plan with day-by-day sequence, owners, proof gates, and not-now boundaries
 - [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) — canonical integrated roadmap covering platform core, RTP, grants, aerial, modeling, runtime, dependencies, and sequencing
