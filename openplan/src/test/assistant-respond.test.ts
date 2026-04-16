@@ -1,6 +1,189 @@
 import { describe, expect, it } from "vitest";
 import { buildAssistantPreview, buildAssistantResponse } from "@/lib/assistant/respond";
-import type { ProjectAssistantContext, RunAssistantContext, WorkspaceAssistantContext } from "@/lib/assistant/context";
+import type {
+  ProgramAssistantContext,
+  ProjectAssistantContext,
+  RunAssistantContext,
+  WorkspaceAssistantContext,
+} from "@/lib/assistant/context";
+
+function buildProjectContextWithOverdue(overdueDecisionCount: number): ProjectAssistantContext {
+  return {
+    kind: "project",
+    workspace: {
+      id: "11111111-1111-4111-8111-111111111111",
+      name: "Nevada County Vision Zero",
+      plan: "pilot",
+      role: "member",
+    },
+    project: {
+      id: "22222222-2222-4222-8222-222222222222",
+      name: "SR-49 Safety Program",
+      summary: "Countywide multimodal safety package.",
+      status: "active",
+      planType: "safety_plan",
+      deliveryPhase: "analysis",
+      updatedAt: "2026-03-21T17:00:00.000Z",
+    },
+    counts: {
+      deliverables: 0,
+      risks: 0,
+      issues: 0,
+      decisions: 0,
+      meetings: 0,
+      linkedDatasets: 0,
+      overlayReadyDatasets: 0,
+      recentRuns: 0,
+    },
+    fundingSummary: {
+      opportunityCount: 2,
+      openCount: 2,
+      closingSoonCount: 1,
+      overdueDecisionCount,
+      pursueCount: 0,
+      awardCount: 0,
+      awardRecordCount: 0,
+      fundingNeedAmount: null,
+      gapAmount: null,
+      requestedReimbursementAmount: null,
+      uninvoicedAwardAmount: null,
+      reimbursementStatus: null,
+      reimbursementPacketCount: 0,
+      exactInvoiceAwardRelink: null,
+      leadOpportunity: {
+        id: "opp-overdue",
+        title: "ATP Cycle 8",
+        status: "open",
+        decisionState: "monitor",
+        closesAt: null,
+        decisionDueAt: "2026-03-01T12:00:00.000Z",
+      },
+      leadAwardOpportunity: null,
+    },
+    stageGateSummary: {
+      gates: [],
+      passCount: 0,
+      holdCount: 0,
+      notStartedCount: 0,
+      blockedGate: null,
+      nextGate: null,
+    },
+    linkedDatasets: [],
+    recentRuns: [],
+    reportSummary: {
+      linkedReportCount: 0,
+      evidenceBackedCount: 0,
+      comparisonBackedCount: 0,
+      noPacketCount: 0,
+      refreshRecommendedCount: 0,
+      recommendedReport: null,
+    },
+  };
+}
+
+function buildProgramContextWithOverdue(overdueDecisionCount: number): ProgramAssistantContext {
+  return {
+    kind: "program",
+    workspace: {
+      id: "11111111-1111-4111-8111-111111111111",
+      name: "Nevada County Vision Zero",
+      plan: "pilot",
+      role: "owner",
+    },
+    project: {
+      id: "project-linked",
+      name: "Linked Project",
+    },
+    program: {
+      id: "program-1",
+      title: "2027 RTIP Package",
+      summary: null,
+      status: "assembling",
+      programType: "rtip",
+      cycleName: "2027 RTIP",
+      sponsorAgency: null,
+      updatedAt: "2026-04-11T18:00:00.000Z",
+    },
+    readiness: {
+      label: "Incomplete",
+      ready: false,
+      missingCheckCount: 1,
+    } as unknown as ProgramAssistantContext["readiness"],
+    workflow: {
+      label: "Assembling",
+    } as unknown as ProgramAssistantContext["workflow"],
+    linkageCounts: {
+      plans: 0,
+      reports: 0,
+      engagementCampaigns: 0,
+      relatedProjects: 1,
+    },
+    fundingSummary: {
+      opportunityCount: 2,
+      openCount: 2,
+      closingSoonCount: 1,
+      overdueDecisionCount,
+      pursueCount: 0,
+      awardCount: 0,
+      awardRecordCount: 0,
+      fundingNeedAmount: null,
+      gapAmount: null,
+      requestedReimbursementAmount: null,
+      uninvoicedAwardAmount: null,
+      reimbursementStatus: null,
+      reimbursementPacketCount: 0,
+      exactInvoiceAwardRelink: null,
+      leadOpportunity: {
+        id: "opp-program-overdue",
+        title: "RAISE 2026",
+        status: "open",
+        decisionState: "monitor",
+        closesAt: null,
+        decisionDueAt: "2026-03-04T12:00:00.000Z",
+      },
+      leadAwardOpportunity: null,
+    },
+    packetSummary: {
+      linkedReportCount: 0,
+      attentionCount: 0,
+      noPacketCount: 0,
+      refreshRecommendedCount: 0,
+      recommendedReport: null,
+    },
+    operationsSummary: {
+      posture: "active",
+      headline: "Funding posture",
+      detail: "Funding work is active.",
+      counts: {
+        projects: 1,
+        activeProjects: 1,
+        plans: 0,
+        plansNeedingSetup: 0,
+        programs: 1,
+        activePrograms: 1,
+        reports: 0,
+        reportRefreshRecommended: 0,
+        reportNoPacket: 0,
+        reportPacketCurrent: 0,
+        rtpFundingReviewPackets: 0,
+        comparisonBackedReports: 0,
+        fundingOpportunities: 2,
+        openFundingOpportunities: 2,
+        closingSoonFundingOpportunities: 1,
+        projectFundingNeedAnchorProjects: 0,
+        projectFundingSourcingProjects: 0,
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
+        queueDepth: 0,
+      },
+      nextCommand: null,
+      commandQueue: [],
+    } as unknown as ProgramAssistantContext["operationsSummary"],
+  };
+}
 
 describe("assistant response builders", () => {
   it("builds project blocker responses from project control context", () => {
@@ -35,6 +218,7 @@ describe("assistant response builders", () => {
         opportunityCount: 0,
         openCount: 0,
         closingSoonCount: 0,
+        overdueDecisionCount: 0,
         pursueCount: 0,
         awardCount: 0,
         awardRecordCount: 0,
@@ -372,5 +556,81 @@ describe("assistant response builders", () => {
     expect(response.findings.join(" ")).toContain("Advance to pursue now");
     expect(response.nextSteps.join(" ")).toContain("use this lead grant cue before treating the stack as a real funding pipeline");
     expect(response.nextSteps.join(" ")).toContain("/grants?focusOpportunityId=opp-modeled-1#funding-opportunity-opp-modeled-1");
+  });
+
+  it("prioritizes overdue funding decisions in project preview operator cue", () => {
+    const context = buildProjectContextWithOverdue(2);
+
+    const preview = buildAssistantPreview(context);
+
+    expect(preview.operatorCue?.title).toBe("2 overdue funding decisions need a pursue or skip call");
+    expect(preview.operatorCue?.detail).toContain("outrank newer closing-soon timing");
+    expect(preview.facts.join(" ")).toContain(
+      "2 monitored funding decisions have lapsed the recorded decision deadline"
+    );
+  });
+
+  it("keeps overdue funding decisions singular in project preview when only one is lapsed", () => {
+    const context = buildProjectContextWithOverdue(1);
+
+    const preview = buildAssistantPreview(context);
+
+    expect(preview.operatorCue?.title).toBe("1 overdue funding decision needs a pursue or skip call");
+    expect(preview.facts.join(" ")).toContain(
+      "1 monitored funding decision has lapsed the recorded decision deadline"
+    );
+  });
+
+  it("leads the project funding response summary with overdue decisions ahead of closing-soon count", () => {
+    const context = buildProjectContextWithOverdue(1);
+
+    const response = buildAssistantResponse(context, "project-funding");
+
+    expect(response.summary).toContain(
+      "1 monitored funding decision has already lapsed the recorded decision deadline"
+    );
+    expect(response.findings.join(" ")).toContain(
+      "1 monitored funding decision has lapsed the recorded decision deadline"
+    );
+    expect(response.nextSteps[0]).toContain(
+      "resolve the lapsed monitor decision as pursue or skip"
+    );
+    expect(response.evidence.join(" ")).toContain("Overdue monitor decisions: 1");
+  });
+
+  it("falls back to closing-soon narration when no project funding decisions are overdue", () => {
+    const context = buildProjectContextWithOverdue(0);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "project-funding");
+
+    expect(preview.operatorCue?.title).toBe("1 funding deadline need attention");
+    expect(response.summary).not.toContain("already lapsed");
+    expect(response.findings.join(" ")).toContain(
+      "No monitored funding decision has lapsed the recorded decision deadline on this project."
+    );
+    expect(response.evidence.join(" ")).toContain("Overdue monitor decisions: 0");
+  });
+
+  it("prioritizes overdue funding decisions in program funding response", () => {
+    const context = buildProgramContextWithOverdue(2);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "program-funding");
+
+    expect(preview.facts.join(" ")).toContain(
+      "2 monitored funding decisions have lapsed the recorded decision deadline"
+    );
+    expect(response.summary).toContain(
+      "2 monitored funding decisions have already lapsed the recorded decision deadline"
+    );
+    expect(response.findings.join(" ")).toContain(
+      "2 monitored funding decisions have lapsed the recorded decision deadline"
+    );
+    expect(response.nextSteps[0]).toContain(
+      "resolve the lapsed monitor decision as pursue or skip"
+    );
+    expect(response.nextSteps[0]).toContain("/programs/program-1#program-funding-opportunities");
+    expect(response.evidence.join(" ")).toContain("Overdue monitor decisions: 2");
   });
 });

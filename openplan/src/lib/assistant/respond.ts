@@ -184,6 +184,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
   const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
+  const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
 
   return {
     kind: context.kind,
@@ -202,6 +203,9 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but this project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this project yet.",
+      overdueDecisionCount > 0
+        ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing.`
+        : null,
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
         : null,
@@ -223,6 +227,12 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
           title: `Unblock ${context.stageGateSummary.blockedGate.name}`,
           detail: context.stageGateSummary.blockedGate.rationale || "A stage gate is currently on hold and needs evidence or rationale cleanup.",
         }
+      : overdueDecisionCount > 0
+        ? {
+            label: "Current runtime cue",
+            title: `${overdueDecisionCount} overdue funding decision${overdueDecisionCount === 1 ? " needs" : "s need"} a pursue or skip call`,
+            detail: "Monitored funding opportunities have already lapsed their recorded decision deadline while the window is still open, so these lapsed calls outrank newer closing-soon timing.",
+          }
       : context.fundingSummary.closingSoonCount > 0
         ? {
             label: "Current runtime cue",
@@ -454,6 +464,7 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
   const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
+  const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
 
   return {
     kind: context.kind,
@@ -473,6 +484,9 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but the linked project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
           : "No funding opportunities are linked to this program yet.",
+      overdueDecisionCount > 0
+        ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing.`
+        : null,
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No package opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
         : null,
@@ -948,13 +962,14 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
     const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
     const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
+    const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
     return {
       workflowId,
       label,
       title: `Funding posture for ${context.project.name}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${overdueDecisionCount > 0 ? ` ${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} already lapsed the recorded decision deadline, so those lapsed calls outrank newer closing-soon timing.` : ""}${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.project.name} already has a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no linked funding opportunities yet. The next honest move is sourcing candidate programs, not pretending the gap has already been worked.`
             : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
@@ -976,6 +991,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
           ? `Committed award dollars are logged, but ${formatCurrency(uninvoicedAwardAmount ?? 0)} is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already on the project.` : ""}`
           : "No committed award reimbursement gap is visible from the linked invoice records.",
+        overdueDecisionCount > 0
+          ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so the pursue or skip call is already late.`
+          : "No monitored funding decision has lapsed the recorded decision deadline on this project.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
@@ -987,7 +1005,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
           : "No uncovered funding gap remains after current pursued dollars, or no target need is recorded yet.",
       ],
       nextSteps: [
-        awardRecordCount > 0
+        overdueDecisionCount > 0
+          ? `Open /projects/${context.project.id}#project-funding-opportunities and resolve the lapsed monitor decision as pursue or skip before newer closing-soon timing is treated as more urgent.`
+          : awardRecordCount > 0
           ? `Open /projects/${context.project.id}#project-funding-opportunities to convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
           : exactInvoiceAwardRelink
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
@@ -1019,6 +1039,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
+        `Overdue monitor decisions: ${overdueDecisionCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
         `Award records needed: ${awardRecordCount}`,
         `Exact invoice relink ready: ${exactInvoiceAwardRelink ? "Yes" : "No"}`,
@@ -1076,7 +1097,11 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         : `No formal stage gate is currently on hold; next gate cue is ${context.stageGateSummary.nextGate?.gateId ?? "not yet set"}.`,
     ],
     nextSteps: [
-      blockedGate ? `Resolve ${blockedGate.gateId} evidence gaps before claiming the project is fully ready.` : context.fundingSummary.closingSoonCount > 0
+      blockedGate
+        ? `Resolve ${blockedGate.gateId} evidence gaps before claiming the project is fully ready.`
+        : context.fundingSummary.overdueDecisionCount > 0
+        ? "Resolve the lapsed monitor decision as pursue or skip first so grant posture stops sliding behind newer closing-soon timing."
+        : context.fundingSummary.closingSoonCount > 0
         ? "Recheck the near-term funding windows before less urgent project cleanup so grant timing does not slip."
         : gapAmount !== null && gapAmount > 0
           ? "Tighten the funding strategy next so uncovered scope does not outrun the current grant pipeline."
@@ -1539,6 +1564,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
   const awardCount = context.fundingSummary.awardCount;
   const uninvoicedAwardAmount = context.fundingSummary.uninvoicedAwardAmount;
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
+  const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
 
   if (workflowId === "program-funding") {
     const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
@@ -1548,7 +1574,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       title: `Funding posture: ${context.program.title}`,
       summary:
         context.fundingSummary.opportunityCount > 0
-          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready on the linked project now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open on the linked project.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
+          ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${overdueDecisionCount > 0 ? ` ${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} already lapsed the recorded decision deadline, so those lapsed calls outrank newer closing-soon timing.` : ""}${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready on the linked project now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open on the linked project.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.program.title} already sits on a linked project funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no funding opportunities are linked yet. The next honest move is sourcing candidate programs before talking about gap closure.`
             : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
@@ -1570,6 +1596,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
           ? `Committed award dollars are logged for the linked project, but ${formatCurrency(uninvoicedAwardAmount ?? 0)} is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open there.` : ""}`
           : "No committed award reimbursement gap is visible from the linked invoice records.",
+        overdueDecisionCount > 0
+          ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so the pursue or skip call on this package is already late.`
+          : "No monitored funding decision has lapsed the recorded decision deadline on this package.",
         context.fundingSummary.closingSoonCount > 0
           ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
           : "No near-term funding window is currently closing inside the next 14 days.",
@@ -1581,7 +1610,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
           : "No uncovered linked-project funding gap remains after current pursued dollars, or no target need is recorded yet.",
       ],
       nextSteps: [
-        awardRecordCount > 0
+        overdueDecisionCount > 0
+          ? `Open /programs/${context.program.id}#program-funding-opportunities and resolve the lapsed monitor decision as pursue or skip before newer closing-soon timing is treated as more urgent.`
+          : awardRecordCount > 0
           ? `Open /programs/${context.program.id}#program-funding-opportunities and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
           : exactInvoiceAwardRelink && context.project
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
@@ -1613,6 +1644,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
         `Closing soon: ${context.fundingSummary.closingSoonCount}`,
+        `Overdue monitor decisions: ${overdueDecisionCount}`,
         `Pursue decisions: ${context.fundingSummary.pursueCount}`,
         `Award records needed: ${awardRecordCount}`,
         `Exact invoice relink ready: ${exactInvoiceAwardRelink ? "Yes" : "No"}`,
@@ -1674,7 +1706,9 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         : "No linked packet attention is currently visible on this package.",
     ],
     nextSteps: [
-      context.fundingSummary.closingSoonCount > 0
+      overdueDecisionCount > 0
+        ? "Resolve the lapsed monitor decision as pursue or skip first so grant posture stops sliding behind newer closing-soon timing."
+        : context.fundingSummary.closingSoonCount > 0
         ? "Recheck the near-term funding windows first so grant timing does not slip while packet work continues."
         : gapAmount !== null && gapAmount > 0
           ? "Tighten the funding strategy next so the package does not read as more funded than it really is."

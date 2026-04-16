@@ -97,6 +97,7 @@ export type ProjectAssistantContext = {
     opportunityCount: number;
     openCount: number;
     closingSoonCount: number;
+    overdueDecisionCount: number;
     pursueCount: number;
     awardCount: number;
     awardRecordCount: number;
@@ -302,6 +303,7 @@ export type ProgramAssistantContext = {
     opportunityCount: number;
     openCount: number;
     closingSoonCount: number;
+    overdueDecisionCount: number;
     pursueCount: number;
     awardCount: number;
     awardRecordCount: number;
@@ -1083,6 +1085,12 @@ async function loadProjectContext(
         const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
         return days !== null && days <= 14;
       }).length,
+      overdueDecisionCount: fundingOpportunities.filter((opportunity) => {
+        if (!["open", "upcoming"].includes(opportunity.opportunity_status ?? "")) return false;
+        if ((opportunity.decision_state ?? "") !== "monitor") return false;
+        const days = daysUntil(opportunity.decision_due_at);
+        return days !== null && days < 0;
+      }).length,
       pursueCount: actionableFundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
       awardCount: fundingAwards.length,
       awardRecordCount: fundingOpportunities.filter(
@@ -1636,6 +1644,12 @@ async function loadProgramContext(
     const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
     return days !== null && days <= 14;
   }).length;
+  const fundingOverdueDecisionCount = fundingOpportunities.filter((opportunity) => {
+    if (!["open", "upcoming"].includes(opportunity.opportunity_status ?? "")) return false;
+    if ((opportunity.decision_state ?? "") !== "monitor") return false;
+    const days = daysUntil(opportunity.decision_due_at);
+    return days !== null && days < 0;
+  }).length;
   const actionableFundingOpportunities = fundingOpportunities.filter(
     (opportunity) => !["awarded", "archived"].includes(opportunity.opportunity_status ?? "")
   );
@@ -1794,6 +1808,7 @@ async function loadProgramContext(
       opportunityCount: fundingOpportunities.length,
       openCount: fundingOpenCount,
       closingSoonCount: fundingClosingSoonCount,
+      overdueDecisionCount: fundingOverdueDecisionCount,
       pursueCount: fundingPursueCount,
       awardCount: fundingAwards.length,
       awardRecordCount: fundingOpportunities.filter(
