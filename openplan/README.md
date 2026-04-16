@@ -1,38 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenPlan
 
-## Getting Started
+OpenPlan is a transportation and land use planning operating system being built for small agencies, tribes, counties, RTPAs, transportation commissions, and consultancies that need credible planning workflows without enterprise-software pricing.
 
-First, run the development server:
+## Current product truth
+
+OpenPlan is currently strongest as a **supervised pilot Planning OS**, not a broad self-serve municipal SaaS.
+
+What is real now:
+- authenticated planning workspace flows,
+- projects, plans, programs, models, reports, and scenarios,
+- engagement campaigns and public/share intake,
+- geospatial analysis surfaces and report traceability,
+- county-run onboarding/scaffold workflows,
+- bounded billing/admin and pilot-support operations.
+
+What is **not** currently an honest broad claim:
+- validated forecasting,
+- behavioral-demand readiness,
+- full LAPM/legal-grade compliance automation,
+- fully autonomous self-serve onboarding,
+- or a finished all-in-one planning suite across the entire original vision.
+
+For the canonical April 2026 product boundary, start here:
+- `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`
+- `../docs/ops/2026-04-05-openplan-supervised-external-pilot-packet.md`
+- `../docs/ops/README.md`
+
+## Repository structure
+
+This repo has multiple layers. The main Next.js product app lives in `openplan/`.
+
+- `openplan/` — main Next.js application
+- `docs/` — product, ops, governance, proof, and planning docs
+- `qa-harness/` — production/local smoke and UX review harnesses
+- `scripts/` — modeling, validation, and support utilities
+- `workers/` — supporting worker deployment paths where applicable
+
+## App stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Supabase (Postgres, Auth, Storage, PostGIS)
+- MapLibre GL JS + deck.gl
+- Tailwind CSS
+- Vercel
+
+## Main product surfaces
+
+Current authenticated product surfaces include:
+- Dashboard
+- Projects
+- Plans
+- Programs
+- Models
+- Reports
+- Scenarios
+- Data Hub
+- Engagement
+- Billing
+- County Runs
+- Admin / pilot-readiness tools
+
+## Development
+
+Run commands from the `openplan/` app directory.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+cd openplan
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open:
+- `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm dev
+pnpm build
+pnpm test
+pnpm lint
+```
 
-## Learn More
+## Documentation guide
 
-To learn more about Next.js, take a look at the following resources:
+If you need current truth instead of historical aspiration, prefer the ops docs over older design docs.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Recommended reading order:
+1. `../docs/ops/README.md`
+2. `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`
+3. `../docs/ops/2026-04-05-openplan-supervised-external-pilot-packet.md`
+4. `../docs/ops/2026-04-08-openplan-user-md-alignment-memo.md`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Product positioning discipline
 
-## Deploy on Vercel
+Use disciplined language.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Safe current posture:
+- production-backed,
+- supervised pilot ready,
+- planning-domain continuity,
+- evidence-accurate,
+- guided onboarding.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Unsafe overclaims:
+- fully launched self-serve SaaS,
+- validated forecasting platform,
+- complete LAPM automation,
+- universally proven modeling engine.
 
-For county onramp worker deployment and app env wiring, see `../workers/county_onramp_worker/DEPLOY.md`.
+## Bottom line
+
+OpenPlan is a real planning product with real production-backed workflows.
+
+It is not finished, but it is well beyond prototype theater. Treat it as a serious supervised-pilot Planning OS and keep all external claims inside the current evidence boundary.

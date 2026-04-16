@@ -100,7 +100,7 @@ export default function AdminPage() {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -125,52 +125,39 @@ export default function AdminPage() {
             <p className="module-section-label">Admin modules</p>
             <h2 className="module-section-title">Available controls</h2>
             <p className="module-section-description">
-              Each card below shows whether the feature is available now or still coming soon.
+              Live features are linked below. Staged items are shown as coming soon.
             </p>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="mt-3 space-y-1">
           {adminModules.map((module) => {
             const Icon = module.icon;
-            return (
-              <div
-                key={module.title}
-                className={`rounded-3xl border p-5 transition-all duration-200 ${
-                  module.disabled
-                    ? "border-border/70 bg-background/70"
-                    : "border-border/70 bg-card/85 shadow-[0_14px_34px_rgba(20,33,43,0.08)] hover:-translate-y-0.5 hover:border-primary/35"
-                }`}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-foreground">
-                    <Icon className="h-5 w-5" strokeWidth={1.7} />
+            if (module.disabled) {
+              return (
+                <div key={module.title} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-background/60 px-3 py-2.5 opacity-60">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-400">
+                    <Icon className="h-3.5 w-3.5" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.87rem] font-semibold text-gray-700">{module.title}</p>
+                    <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
+                  </div>
                   <StatusBadge tone={module.tone}>{module.status}</StatusBadge>
                 </div>
-
-                <h3 className="mt-5 text-lg font-semibold tracking-tight text-foreground">{module.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{module.description}</p>
-                <p className="mt-4 rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm text-muted-foreground">
-                  {module.availabilityNote}
-                </p>
-
-                <div className="mt-5">
-                  {module.disabled ? (
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      {module.cta}
-                    </span>
-                  ) : (
-                    <Link
-                      href={module.href}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80"
-                    >
-                      {module.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  )}
+              );
+            }
+            return (
+              <Link key={module.title} href={module.href} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-emerald-700">
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.87rem] font-semibold text-gray-900">{module.title}</p>
+                  <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
                 </div>
-              </div>
+                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-400" />
+              </Link>
             );
           })}
         </div>

@@ -171,9 +171,9 @@ export function ReportCreator({
   }
 
   return (
-    <article className="rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
+    <article className="rounded-[0.75rem] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/12 text-amber-700 dark:text-amber-300">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
           <FilePlus2 className="h-5 w-5" />
         </span>
         <div>
@@ -225,7 +225,7 @@ export function ReportCreator({
           </select>
           {selectedProjectGuidance ? (
             <div
-              className={`rounded-2xl border px-4 py-3 text-sm ${
+              className={`rounded-[0.5rem] border px-4 py-3 text-sm ${
                 selectedProjectGuidance.refreshRecommendedCount > 0 ||
                 selectedProjectGuidance.noPacketCount > 0
                   ? "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"

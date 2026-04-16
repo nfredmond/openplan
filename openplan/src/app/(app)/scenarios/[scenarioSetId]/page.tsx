@@ -287,13 +287,9 @@ export default async function ScenarioSetDetailPage({
           </div>
           <div className="module-record-kicker">
             <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>{titleizeScenarioValue(scenarioSet.status)}</StatusBadge>
-            <StatusBadge tone={baselineEntry ? "success" : "warning"}>
-              {baselineEntry ? "Baseline registered" : "Baseline missing"}
-            </StatusBadge>
-            <StatusBadge tone={comparisonSummary.readyAlternatives > 0 ? "success" : "info"}>
-              {comparisonSummary.readyAlternatives}/{comparisonSummary.totalAlternatives} ready
-            </StatusBadge>
+            <span className="module-record-chip"><span>Baseline</span><strong>{baselineEntry ? "Registered" : "Missing"}</strong></span>
           </div>
+          <p className="text-[0.73rem] text-muted-foreground">{comparisonSummary.readyAlternatives}/{comparisonSummary.totalAlternatives} alternatives ready</p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{scenarioSet.title}</h1>
             <p className="module-intro-description">
@@ -338,7 +334,7 @@ export default async function ScenarioSetDetailPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -476,7 +472,7 @@ export default async function ScenarioSetDetailPage({
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                       {card.headlineMetrics.map((metric) => (
-                        <div key={`${card.entryId}-${metric.key}`} className="rounded-[20px] border border-border/70 bg-background/75 p-4">
+                        <div key={`${card.entryId}-${metric.key}`} className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
                           <div className="flex items-center justify-between gap-3">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{metric.label}</p>
                             <StatusBadge tone={metric.tone}>{metric.deltaLabel}</StatusBadge>
@@ -669,10 +665,6 @@ export default async function ScenarioSetDetailPage({
                         <StatusBadge tone={reportStatusTone(report.status ?? "draft")}>
                           {formatReportStatusLabel(report.status)}
                         </StatusBadge>
-                        <StatusBadge tone="info">{formatReportTypeLabel(report.report_type)}</StatusBadge>
-                        <StatusBadge tone={report.comparisonReady ? "success" : "warning"}>
-                          {report.comparisonReady ? "Comparison-ready" : "Run-linked only"}
-                        </StatusBadge>
                         <StatusBadge tone={report.packetFreshness.tone}>
                           {report.packetFreshness.label}
                         </StatusBadge>
@@ -689,7 +681,7 @@ export default async function ScenarioSetDetailPage({
                               ? `Includes the baseline run from this set, but no comparison-ready alternative yet: ${report.matchedEntryLabels.join(" · ")}`
                               : `Shares alternative runs with this set, but not enough evidence for a comparison-ready packet: ${report.matchedEntryLabels.join(" · ")}`}
                         </p>
-                        <p className="text-sm text-muted-foreground">{report.packetFreshness.detail}</p>
+                        <p className="text-[0.73rem] text-muted-foreground">{formatReportTypeLabel(report.report_type)} · {report.comparisonReady ? "Comparison-ready" : "Run-linked only"} · {report.packetFreshness.detail}</p>
                         <p className="text-sm font-medium text-foreground/80">
                           {getReportPacketActionLabel(report.packetFreshness.label)}
                         </p>

@@ -24,6 +24,7 @@ import {
   getRtpPacketPresetAlignment,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
+import { buildProjectGrantModelingEvidenceByProjectId } from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildRtpCycleReadiness,
@@ -119,6 +120,21 @@ type ReportSectionRow = {
   section_key: string;
   enabled: boolean;
   sort_order: number;
+};
+
+type ProjectReportRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  updated_at: string;
+  generated_at: string | null;
+  latest_artifact_kind: string | null;
+};
+
+type ProjectReportArtifactRow = {
+  report_id: string;
+  generated_at: string;
+  metadata_json: Record<string, unknown> | null;
 };
 
 type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
@@ -632,7 +648,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
   const linkedProjectIds = [...new Set(projectRtpLinks.map((link) => link.project_id))];
 
-  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] = await Promise.all([
+  const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult, linkedProjectReportsResult] = await Promise.all([
     linkedProjectIds.length
       ? supabase
           .from("project_funding_profiles")
@@ -657,6 +673,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
+    linkedProjectIds.length
+      ? supabase
+          .from("reports")
+          .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
+          .in("project_id", linkedProjectIds)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
@@ -671,6 +694,22 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
     ? []
     : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
+
+  const linkedProjectReports = (linkedProjectReportsResult.data ?? []) as ProjectReportRow[];
+  const linkedProjectReportIds = linkedProjectReports.map((r) => r.id);
+  const linkedProjectReportArtifactsResult = linkedProjectReportIds.length
+    ? await supabase
+        .from("report_artifacts")
+        .select("report_id, generated_at, metadata_json")
+        .in("report_id", linkedProjectReportIds)
+        .order("generated_at", { ascending: false })
+    : { data: [], error: null };
+  const linkedProjectReportArtifacts = (linkedProjectReportArtifactsResult.data ?? []) as ProjectReportArtifactRow[];
+  const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
+    linkedProjectReports,
+    linkedProjectReportArtifacts
+  );
+
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
   const fundingAwardsByProjectId = new Map<string, FundingAwardRow[]>();
   const fundingOpportunitiesByProjectId = new Map<string, FundingOpportunityRow[]>();
@@ -900,6 +939,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         grantsFollowThrough,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
+        comparisonBackedProjectCount: cycleLinks.filter(
+          (link) => Boolean(projectGrantModelingEvidenceByProjectId.get(link.project_id))
+        ).length,
+        staleModelingProjectCount: cycleLinks.filter((link) => {
+          const evidence = projectGrantModelingEvidenceByProjectId.get(link.project_id);
+          return evidence?.leadComparisonReport.packetFreshness.label === "Refresh recommended";
+        }).length,
       };
     })
     .filter((cycle) => (filters.status ? cycle.status === filters.status : true));
@@ -1179,7 +1225,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -1471,14 +1517,6 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           </Link>
                           <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                           <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
-                          {cycle.packetQueueTraceState.state === "outpaced" ? (
-                            <StatusBadge tone="warning">Trace outpaced</StatusBadge>
-                          ) : cycle.packetQueueTraceState.state === "unrecorded" ? (
-                            <StatusBadge tone="neutral">Trace unrecorded</StatusBadge>
-                          ) : null}
-                          {cycle.packetQueueTrace.isRecent ? (
-                            <StatusBadge tone="info">Recently changed</StatusBadge>
-                          ) : null}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {cycle.summary?.trim() || "No cycle summary yet. Add the planning scope, board/adoption posture, and intended review frame."}
@@ -1556,7 +1594,20 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                    {cycle.comparisonBackedProjectCount > 0 ? (
+                      <div className="module-note text-sm">
+                        <p className="font-medium text-foreground">Project modeling support</p>
+                        <p className="mt-1">
+                          {cycle.comparisonBackedProjectCount} linked project{cycle.comparisonBackedProjectCount === 1 ? "" : "s"} {cycle.comparisonBackedProjectCount === 1 ? "carries" : "carry"} comparison-backed planning support.
+                          {cycle.staleModelingProjectCount > 0
+                            ? ` ${cycle.staleModelingProjectCount} should refresh evidence packets before leaning on them for RTP prioritization language.`
+                            : " Evidence packets appear current."}
+                          {" "}Treat it as planning support only, not a substitute for board deliberation.
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1617,7 +1668,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1637,7 +1688,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                           </p>
                         </div>
                       </div>
-                      <div className="mt-3 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                      <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           Last queue action
                         </p>
@@ -1656,7 +1707,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             {cycle.packetQueueTrace.isRecent ? <StatusBadge tone="info">Recent</StatusBadge> : null}
                           </div>
                         </div>
-                        <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border/50 bg-background px-3 py-3">
+                        <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
                           <div>
                             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                               Queue trace freshness
@@ -1670,7 +1721,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     </div>
 
                     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-                      <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           Workflow posture
                         </p>
@@ -1678,7 +1729,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         <p className="mt-1 text-sm text-muted-foreground">{cycle.workflow.detail}</p>
                       </div>
 
-                      <div className="rounded-2xl border border-border/70 bg-background px-4 py-3">
+                      <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           Next actions
                         </p>
@@ -1725,7 +1776,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
         <aside className="space-y-4">
           {typedCycles.length > 0 ? (
-            <article className="rounded-3xl border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
+            <article className="rounded-[0.75rem] border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1751,7 +1802,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     <Link
                       key={action.key}
                       href={actionHrefByKey[action.key]}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3"
+                      className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3"
                     >
                       <div>
                         <p className="text-sm font-medium text-foreground">{action.label}</p>
@@ -1768,7 +1819,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                     </Link>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
                     No queue buckets are currently actionable in this filtered view.
                   </div>
                 )}
@@ -1776,17 +1827,17 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
               {dominantCurrentViewActionSelection.count > 0 ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Actionable now</p>
                     <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{totalActionableCurrentViewCount}</p>
                     <p className="mt-1 text-xs text-muted-foreground">All queueable cycles in the current filtered view.</p>
                   </div>
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Dominant share</p>
                     <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{dominantActionImpactPercent}%</p>
                     <p className="mt-1 text-xs text-muted-foreground">Queue load removed if this first lane is cleared.</p>
                   </div>
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Remaining after first pass</p>
                     <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{remainingActionableAfterDominantCount}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Cycles still needing follow-up after the dominant lane.</p>
@@ -1795,7 +1846,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               ) : null}
 
               {runnerUpCurrentViewActionSelection ? (
-                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Next after this lane
                   </p>
@@ -1834,7 +1885,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               ) : null}
 
               {dominantCurrentViewActionSelection.key === "traceFollowUp" && dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Trace follow-up mix
                   </p>
@@ -1877,13 +1928,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               ) : null}
 
               {dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Top affected cycles
                   </p>
                   <div className="mt-3 space-y-2">
                     {dominantActionCycles.slice(0, 3).map((cycle) => (
-                      <div key={cycle.id} className="rounded-2xl border border-border/50 bg-background px-3 py-3">
+                      <div key={cycle.id} className="rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
@@ -2029,7 +2080,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           ) : null}
 
           {unrecordedQueueCycles.length > 0 ? (
-            <article className="rounded-3xl border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
+            <article className="rounded-[0.75rem] border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -2044,7 +2095,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
 
               <div className="mt-4 space-y-2">
-                <div className="rounded-2xl border border-slate-500/20 bg-background/90 px-3 py-3">
+                <div className="rounded-[0.5rem] border border-slate-500/20 bg-background/90 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Coverage mix
                   </p>
@@ -2057,7 +2108,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 </div>
 
                 {unrecordedQueueCycles.slice(0, 5).map((cycle) => (
-                  <div key={cycle.id} className="rounded-2xl border border-slate-500/20 bg-background/90 px-3 py-3">
+                  <div key={cycle.id} className="rounded-[0.5rem] border border-slate-500/20 bg-background/90 px-3 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
@@ -2130,7 +2181,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           ) : null}
 
           {outpacedQueueCycles.length > 0 ? (
-            <article className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.06] p-5 shadow-[0_20px_60px_-48px_rgba(180,83,9,0.35)]">
+            <article className="rounded-[0.75rem] border border-amber-500/25 bg-amber-500/[0.06] p-5 shadow-[0_20px_60px_-48px_rgba(180,83,9,0.35)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -2145,7 +2196,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </div>
 
               <div className="mt-4 space-y-2">
-                <div className="rounded-2xl border border-amber-500/20 bg-background/90 px-3 py-3">
+                <div className="rounded-[0.5rem] border border-amber-500/20 bg-background/90 px-3 py-3">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Cleanup mix
                   </p>
@@ -2158,7 +2209,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 </div>
 
                 {outpacedQueueCycles.slice(0, 5).map((cycle) => (
-                  <div key={cycle.id} className="rounded-2xl border border-amber-500/20 bg-background/90 px-3 py-3">
+                  <div key={cycle.id} className="rounded-[0.5rem] border border-amber-500/20 bg-background/90 px-3 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
@@ -2229,7 +2280,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           ) : null}
 
           {recentQueueActivityCount > 0 ? (
-            <article className="rounded-3xl border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
+            <article className="rounded-[0.75rem] border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Recent queue activity
               </p>
@@ -2317,7 +2368,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                   The cycle now carries portfolio links and a first chapter shell. The next slice can move from structure into editable RTP content.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
                 <Compass className="h-5 w-5" />
               </span>
             </div>

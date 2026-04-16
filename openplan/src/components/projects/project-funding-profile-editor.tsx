@@ -69,7 +69,7 @@ export function ProjectFundingProfileEditor({
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+    <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="project-funding-need-amount" className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding need</label>

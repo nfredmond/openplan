@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function buildFilterHref(params: { projectId?: string; planType?: string; status?: string }) {
+  const search = new URLSearchParams();
+  if (params.projectId) search.set("projectId", params.projectId);
+  if (params.planType) search.set("planType", params.planType);
+  if (params.status) search.set("status", params.status);
+  const qs = search.toString();
+  return `/plans${qs ? `?${qs}` : ""}`;
+}
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanCreator } from "@/components/plans/plan-creator";
@@ -265,7 +275,7 @@ export default async function PlansPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -314,54 +324,45 @@ export default async function PlansPage({
             </span>
           </div>
 
-          <form className="mt-5 grid gap-3 border border-border/70 bg-background/70 p-4 md:grid-cols-3">
-            <select
-              name="projectId"
-              defaultValue={filters.projectId ?? ""}
-              className="module-select h-10 rounded-none"
-            >
-              <option value="">All projects</option>
-              {(projectsData ?? []).map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              name="planType"
-              defaultValue={filters.planType ?? ""}
-              className="module-select h-10 rounded-none"
-            >
-              <option value="">All plan types</option>
-              {PLAN_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+          {/* Filter rows */}
+          <div className="mt-4 space-y-2 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-slate-400">Status:</span>
+              <Link
+                href={buildFilterHref({ ...filters, status: undefined })}
+                className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+              >
+                All
+              </Link>
+              {PLAN_STATUS_OPTIONS.map((option) => (
+                <Link
+                  key={option.value}
+                  href={buildFilterHref({ ...filters, status: option.value })}
+                  className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                >
                   {option.label}
-                </option>
+                </Link>
               ))}
-            </select>
-
-            <div className="flex gap-3">
-              <select
-                name="status"
-                defaultValue={filters.status ?? ""}
-                className="module-select h-10 rounded-none"
-              >
-                <option value="">All statuses</option>
-                {PLAN_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="h-10 shrink-0 border border-border bg-card px-4 text-sm font-medium"
-              >
-                Apply
-              </button>
             </div>
-          </form>
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-slate-400">Type:</span>
+              <Link
+                href={buildFilterHref({ ...filters, planType: undefined })}
+                className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+              >
+                All types
+              </Link>
+              {PLAN_TYPE_OPTIONS.map((option) => (
+                <Link
+                  key={option.value}
+                  href={buildFilterHref({ ...filters, planType: option.value })}
+                  className={cn("rounded px-2 py-0.5 transition-colors", filters.planType === option.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                >
+                  {option.label}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           {typedPlans.length === 0 ? (
             <div className="mt-5">
@@ -379,54 +380,40 @@ export default async function PlansPage({
                       <div className="module-record-kicker">
                         <span className="module-record-chip"><span>Status</span><strong>{formatPlanStatusLabel(plan.status)}</strong></span>
                         <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
-                        <span className="module-record-chip"><span>Readiness</span><strong>{plan.readiness.label}</strong></span>
-                        <span className="module-record-chip"><span>Workflow</span><strong>{plan.workflow.label}</strong></span>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
+                          <h3 className="module-record-title transition group-hover:text-primary">
                             {plan.title}
                           </h3>
-                          <p className="module-record-stamp">Updated {formatPlanDateTime(plan.updated_at)}</p>
+                          <p className="module-record-stamp shrink-0">Updated {formatPlanDateTime(plan.updated_at)}</p>
                         </div>
                         <p className="module-record-summary line-clamp-2">
-                          {plan.summary ||
-                            "No summary yet. Open the plan to inspect linked scenarios, engagement campaigns, reports, and readiness basis."}
+                          {plan.summary || "No summary yet."}
+                        </p>
+                        <p className="text-[0.73rem] text-muted-foreground">
+                          {plan.project?.name ?? "No project linked"}
+                          {plan.geography_label ? ` · ${plan.geography_label}` : ""}
+                          {plan.horizon_year ? ` · ${plan.horizon_year}` : ""}
+                          {` · ${plan.linkageCounts.scenarios} scenario${plan.linkageCounts.scenarios === 1 ? "" : "s"}`}
+                          {` · ${plan.linkageCounts.reports} report${plan.linkageCounts.reports === 1 ? "" : "s"}`}
+                          {plan.readiness.missingCheckCount > 0
+                            ? ` · ${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
+                            : ""}
                         </p>
                       </div>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                  </div>
-
-                  <div className="module-record-meta">
-                    <span className="module-record-chip"><span>Project</span><strong>{plan.project?.name ?? "Unlinked"}</strong></span>
-                    <span className="module-record-chip">
-                      <span>Geography</span>
-                      <strong>{plan.geography_label ? plan.geography_label : "Pending"}</strong>
-                    </span>
-                    <span className="module-record-chip">
-                      <span>Horizon</span>
-                      <strong>{plan.horizon_year ? plan.horizon_year : "Pending"}</strong>
-                    </span>
-                    <span className="module-record-chip"><span>Coverage</span><strong>{plan.artifactCoverage.label}</strong></span>
-                    <span className="module-record-chip"><span>Output</span><strong>{plan.workflow.planningOutputLabel}</strong></span>
-                    <span className="module-record-chip">
-                      <span>Readiness</span>
-                      <strong>{plan.readiness.missingCheckCount > 0 ? `${plan.readiness.missingCheckCount} gaps` : "Clear"}</strong>
-                    </span>
-                    <span className="module-record-chip"><span>Scenarios</span><strong>{plan.linkageCounts.scenarios}</strong></span>
-                    <span className="module-record-chip"><span>Campaigns</span><strong>{plan.linkageCounts.engagementCampaigns}</strong></span>
-                    <span className="module-record-chip"><span>Reports</span><strong>{plan.linkageCounts.reports}</strong></span>
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
                   {plan.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-3 text-sm text-muted-foreground">
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
                       Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm text-muted-foreground">{plan.workflow.reason}</p>
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">{plan.workflow.reason}</p>
                   )}
                 </Link>
               ))}

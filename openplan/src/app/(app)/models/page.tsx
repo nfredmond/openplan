@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ModelCreator } from "@/components/models/model-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -292,7 +293,7 @@ export default async function ModelsPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -329,81 +330,21 @@ export default async function ModelsPage({
             </span>
           </div>
 
-          <form className="mt-5 grid gap-3 rounded-[22px] border border-border/70 bg-background/70 p-4 md:grid-cols-2 xl:grid-cols-[1.3fr_repeat(4,minmax(0,1fr))]">
-            <input
-              type="search"
-              name="q"
-              defaultValue={filters.q ?? ""}
-              placeholder="Search title, owner, version, project, or scenario"
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none md:col-span-2 xl:col-span-1"
-            />
-
-            <select
-              name="projectId"
-              defaultValue={filters.projectId ?? ""}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
-            >
-              <option value="">All projects</option>
-              {(projectsData ?? []).map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              name="modelFamily"
-              defaultValue={filters.modelFamily ?? ""}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
-            >
-              <option value="">All model families</option>
-              {MODEL_FAMILY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              name="status"
-              defaultValue={filters.status ?? ""}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
-            >
-              <option value="">All statuses</option>
-              {MODEL_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex gap-3">
-              <select
-                name="readiness"
-                defaultValue={filters.readiness ?? ""}
-                className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none"
-              >
-                <option value="">All readiness states</option>
-                <option value="ready">Ready</option>
-                <option value="gaps">Has gaps</option>
-              </select>
-              <button
-                type="submit"
-                className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-medium"
-              >
-                Apply
-              </button>
-            </div>
-
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <Link href="/models" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+              All ({models.length})
+            </Link>
+            {MODEL_STATUS_OPTIONS.map((opt) => (
+              <Link key={opt.value} href={`/models?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+                {opt.label} ({models.filter((m) => m.status === opt.value).length})
+              </Link>
+            ))}
             {hasActiveFilters ? (
-              <div className="md:col-span-2 xl:col-span-5 flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/70 bg-background/80 px-3 py-2 text-sm text-muted-foreground">
-                <span>Filters are narrowing the model catalog so you can focus on the records that still need operator attention.</span>
-                <Link href="/models" className="font-medium text-foreground transition hover:text-primary">
-                  Clear filters
-                </Link>
-              </div>
+              <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-slate-400 hover:text-slate-700">
+                Clear filters ×
+              </Link>
             ) : null}
-          </form>
+          </div>
 
           {models.length === 0 ? (
             <div className="mt-5">
@@ -425,8 +366,6 @@ export default async function ModelsPage({
                       <div className="module-record-kicker">
                         <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
                         <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
-                        <StatusBadge tone={model.readiness.ready ? "success" : "warning"}>{model.readiness.label}</StatusBadge>
-                        <StatusBadge tone={model.workflow.tone}>{model.workflow.label}</StatusBadge>
                       </div>
 
                       <div className="space-y-1.5">
@@ -443,37 +382,12 @@ export default async function ModelsPage({
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">Project {model.project?.name ?? "Pending"}</span>
-                    <span className="module-record-chip">Scenario {model.scenarioSet?.title ?? "Pending"}</span>
-                    {model.scenarioSpine ? (
-                      model.scenarioSpine.schemaPending ? (
-                        <span className="module-record-chip">Scenario spine pending</span>
-                      ) : (
-                        <>
-                          <span className="module-record-chip">{model.scenarioSpine.assumptionSetCount} assumptions</span>
-                          <span className="module-record-chip">{model.scenarioSpine.dataPackageCount} data packages</span>
-                          <span className="module-record-chip">{model.scenarioSpine.indicatorSnapshotCount} indicators</span>
-                        </>
-                      )
-                    ) : null}
-                    <span className="module-record-chip">{model.config_version ? `Config ${model.config_version}` : "Config version pending"}</span>
-                    <span className="module-record-chip">{model.linkageCounts.plans} plans</span>
-                    <span className="module-record-chip">{model.linkageCounts.datasets} datasets</span>
-                    <span className="module-record-chip">{model.linkageCounts.runs} runs</span>
-                    <span className="module-record-chip">{model.linkageCounts.reports} reports</span>
-                    <span className="module-record-chip">
-                      {model.readiness.missingCheckCount > 0
-                        ? `${model.readiness.missingCheckCount} readiness gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`
-                        : "No readiness gaps"}
-                    </span>
-                  </div>
-
+                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · {model.linkageCounts.reports} reports · {model.linkageCounts.runs} runs
+                  </p>
                   {model.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-3 text-sm text-muted-foreground">Missing basis: {model.readiness.missingCheckLabels.join(", ")}.</p>
-                  ) : (
-                    <p className="mt-3 text-sm text-muted-foreground">{model.workflow.reason}</p>
-                  )}
+                    <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
+                  ) : null}
                 </Link>
               ))}
             </div>

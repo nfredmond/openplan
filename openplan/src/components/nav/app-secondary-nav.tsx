@@ -125,8 +125,10 @@ export function AppSecondaryNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 text-[0.82rem] transition-all duration-200",
-                  active ? "text-white" : "text-slate-300/72 hover:text-white"
+                  "block rounded px-2 py-1.5 text-[0.8rem] transition-colors duration-150",
+                  active
+                    ? "bg-white/[0.07] text-white"
+                    : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                 )}
               >
                 <span className="min-w-0">

@@ -184,7 +184,7 @@ export function EngagementReportCreateButton({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-border/60 bg-muted/35 p-3 text-xs text-muted-foreground">
+      <div className="rounded-[0.5rem] border border-border/60 bg-muted/35 p-3 text-xs text-muted-foreground">
         <p className="font-semibold text-foreground">What this creates</p>
         <p className="mt-1">
           A project status packet with a frozen engagement handoff snapshot tied to this campaign.

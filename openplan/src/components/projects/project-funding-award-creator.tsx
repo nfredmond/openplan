@@ -98,9 +98,9 @@ export function ProjectFundingAwardCreator({
   }
 
   return (
-    <article className="rounded-2xl border border-border/70 bg-background/80 p-4">
+    <article className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+        <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
           <BadgeDollarSign className="h-4 w-4" />
         </span>
         <div>

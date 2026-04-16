@@ -23,6 +23,12 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const aerialMissionsInMock = vi.fn();
+const aerialMissionsSelectMock = vi.fn(() => ({ in: aerialMissionsInMock }));
+
+const aerialPackagesInMock = vi.fn();
+const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
@@ -35,6 +41,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "aerial_missions") {
+    return { select: aerialMissionsSelectMock };
+  }
+  if (table === "aerial_evidence_packages") {
+    return { select: aerialPackagesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -63,7 +75,7 @@ vi.mock("@/components/projects/project-workspace-creator", () => ({
 import ProjectsPage from "@/app/(app)/projects/page";
 
 async function renderPage() {
-  render(await ProjectsPage());
+  render(await ProjectsPage({ searchParams: Promise.resolve({}) }));
 }
 
 describe("ProjectsPage", () => {
@@ -166,6 +178,8 @@ describe("ProjectsPage", () => {
     });
 
     projectRtpLinksInMock.mockResolvedValue({ data: [], error: null });
+    aerialMissionsInMock.mockResolvedValue({ data: [], error: null });
+    aerialPackagesInMock.mockResolvedValue({ data: [], error: null });
 
     reportArtifactsOrderMock.mockResolvedValue({
       data: [
@@ -297,8 +311,11 @@ describe("ProjectsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Blocked gate: G02/i)).toBeInTheDocument();
     expect(
-      screen.getAllByText(/saved comparison context that can support grant planning language or prioritization framing for this project/i).length
+      screen.getAllByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i).length
     ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Grant release review/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
+    expect(screen.getByText(/Suggested Pursue/i)).toBeInTheDocument();
     expect(
       screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);

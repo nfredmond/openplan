@@ -181,7 +181,7 @@ export function ModelRunEvidencePanel({
   }
 
   return (
-    <div className="mt-4 rounded-[20px] border border-border/70 bg-background/70 p-4">
+    <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Evidence packet</p>
@@ -252,7 +252,7 @@ export function ModelRunEvidencePanel({
               ) : null}
 
               <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-                <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">Packet posture</p>
                     <StatusBadge tone="neutral">{labelForEngineKey(evidence.engine || engineKey)}</StatusBadge>
@@ -281,7 +281,7 @@ export function ModelRunEvidencePanel({
                   </dl>
 
                   {evidence.inputs.query_text ? (
-                    <div className="mt-4 rounded-[16px] border border-border/60 bg-background/90 p-3">
+                    <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Query text</p>
                       <p className="mt-2 text-sm text-foreground">{evidence.inputs.query_text}</p>
                     </div>
@@ -303,7 +303,7 @@ export function ModelRunEvidencePanel({
 
                 <div className="space-y-4">
                   {evidence.scenario_basis ? (
-                    <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                    <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <p className="text-sm font-semibold text-foreground">Scenario basis</p>
                         {evidence.scenario_basis.shared_spine ? (
@@ -363,14 +363,14 @@ export function ModelRunEvidencePanel({
                       ) : null}
                     </div>
                   ) : null}
-                  <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                  <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                     <p className="text-sm font-semibold text-foreground">KPI categories</p>
                     {categories.length === 0 ? (
                       <p className="mt-2 text-sm text-muted-foreground">No KPI categories were registered for this run.</p>
                     ) : (
                       <div className="mt-3 space-y-3">
                         {categories.map((category) => (
-                          <div key={category.category} className="rounded-[16px] border border-border/60 bg-background/90 p-3">
+                          <div key={category.category} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                             <div className="flex items-center justify-between gap-3">
                               <p className="text-sm font-semibold text-foreground capitalize">{category.category}</p>
                               <StatusBadge tone="neutral">{category.count} KPI{category.count === 1 ? "" : "s"}</StatusBadge>
@@ -389,7 +389,7 @@ export function ModelRunEvidencePanel({
                     )}
                   </div>
 
-                  <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                  <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">Run-to-run KPI comparison</p>
@@ -429,7 +429,7 @@ export function ModelRunEvidencePanel({
                     ) : (
                       <>
                         {runMode.key === "behavioral_demand" ? (
-                          <div className="mt-3 rounded-[16px] border border-amber-300/60 bg-amber-50/70 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+                          <div className="mt-3 rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
                             {runMode.comparisonMessage}
                           </div>
                         ) : null}
@@ -465,7 +465,7 @@ export function ModelRunEvidencePanel({
                         ) : null}
 
                         {behavioralComparison ? (
-                          <div className="mt-3 rounded-[16px] border border-amber-300/60 bg-amber-50/70 px-3 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+                          <div className="mt-3 rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 px-3 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
                             <p className="font-semibold">
                               {behavioralComparison.support.status === "behavioral_comparison_available"
                                 ? "Behavioral comparison available"
@@ -534,7 +534,7 @@ export function ModelRunEvidencePanel({
                             {comparisonSummary.highlights.length > 0 ? (
                               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                                 {comparisonSummary.highlights.map((item) => (
-                                  <div key={item.key} className="rounded-[16px] border border-border/60 bg-background/90 p-3">
+                                  <div key={item.key} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                                     <div className="flex items-start justify-between gap-3">
                                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{item.label}</p>
                                       <StatusBadge tone="info">{formatModelRunKpiDelta(item.absoluteDelta, item.unit)}</StatusBadge>
@@ -551,7 +551,7 @@ export function ModelRunEvidencePanel({
                                 ))}
                               </div>
                             ) : (
-                              <div className="rounded-[16px] border border-border/60 bg-background/90 px-3 py-2.5 text-sm text-muted-foreground">
+                              <div className="rounded-[0.5rem] border border-border/60 bg-background/90 px-3 py-2.5 text-sm text-muted-foreground">
                                 {comparisonSummary.comparableCount > 0
                                   ? "Compared KPI rows are currently flat versus the selected baseline."
                                   : runMode.key === "behavioral_demand"
@@ -565,7 +565,7 @@ export function ModelRunEvidencePanel({
                               {comparisonSummary.categories
                                 .filter((category) => category.changedCount > 0)
                                 .map((category) => (
-                                  <div key={category.category} className="rounded-[16px] border border-border/60 bg-background/90 p-3">
+                                  <div key={category.category} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                                     <div className="flex items-center justify-between gap-3">
                                       <p className="text-sm font-semibold text-foreground capitalize">{category.category}</p>
                                       <StatusBadge tone="neutral">
@@ -606,7 +606,7 @@ export function ModelRunEvidencePanel({
                     )}
                   </div>
 
-                  <div className="rounded-[18px] border border-border/65 bg-background/80 p-4">
+                  <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                     <p className="text-sm font-semibold text-foreground">Execution timing</p>
                     {evidence.outputs.stages.length === 0 ? (
                       <p className="mt-2 text-sm text-muted-foreground">No stage timing was recorded for this packet.</p>

@@ -29,7 +29,7 @@ function FormError({ error }: { error: string | null }) {
   if (!error) return null;
 
   return (
-    <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {error}
     </p>
   );
@@ -113,13 +113,13 @@ export function ModelCreator({
             intended to produce. Link specific datasets, reports, plans, and recorded runs on the detail page.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
           <Database className="h-5 w-5" />
         </span>
       </div>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="rounded-[22px] border border-border/70 bg-background/75 p-4">
+        <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Essential setup</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Create the record first. Advanced provenance and detailed links can layer in after the shell exists.
@@ -227,10 +227,10 @@ export function ModelCreator({
           </div>
         </div>
 
-        <details className="group rounded-[22px] border border-border/70 bg-muted/20 p-4">
+        <details className="group rounded-[0.5rem] border border-border/70 bg-muted/20 p-4">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-muted-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] border border-border/70 bg-background/80 text-muted-foreground">
                 <SlidersHorizontal className="h-4.5 w-4.5" />
               </span>
               <div>

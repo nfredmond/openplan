@@ -1,3 +1,4 @@
+import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/catalog";
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
@@ -14,6 +15,7 @@ import {
   GRANTS_COMMAND_MODULE_LABEL,
   resolveRtpFundingFollowThrough,
 } from "@/lib/operations/grants-links";
+import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
@@ -30,11 +32,13 @@ import {
 } from "@/lib/reports/catalog";
 import type { StatusTone } from "@/lib/ui/status";
 
+type WorkspaceOperationsQueryResult = { data: unknown[] | null; error?: { message?: string } | null };
+
 type WorkspaceOperationsPostEqChain = {
   order: (column: string, options: { ascending: boolean }) => {
-    limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
+    limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
   };
-  limit: (count: number) => PromiseLike<{ data: unknown[] | null }>;
+  limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
 };
 
 type WorkspaceOperationsSelectChain = {
@@ -216,7 +220,6 @@ export type WorkspaceCommandQueueItem = {
   targetProjectId?: string | null;
   targetProjectName?: string | null;
   targetOpportunityId?: string | null;
-  targetOpportunityTitle?: string | null;
   targetInvoiceId?: string | null;
   targetFundingAwardId?: string | null;
   tone: StatusTone;
@@ -265,7 +268,6 @@ export type WorkspaceOperationsSummary = {
     fundingOpportunities: number;
     openFundingOpportunities: number;
     closingSoonFundingOpportunities: number;
-    overdueDecisionFundingOpportunities: number;
     projectFundingNeedAnchorProjects: number;
     projectFundingSourcingProjects: number;
     projectFundingDecisionProjects: number;
@@ -274,8 +276,12 @@ export type WorkspaceOperationsSummary = {
     projectFundingReimbursementActiveProjects: number;
     projectFundingGapProjects: number;
     queueDepth: number;
+    aerialMissions: number;
+    aerialActiveMissions: number;
+    aerialReadyPackages: number;
   };
   grantModelingSummary?: WorkspaceGrantModelingSummary | null;
+  aerialPosture?: AerialProjectPosture | null;
   nextCommand: WorkspaceCommandQueueItem | null;
   commandQueue: WorkspaceCommandQueueItem[];
   fullCommandQueue: WorkspaceCommandQueueItem[];
@@ -580,6 +586,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   fundingInvoices = [],
   projectSubmittals = [],
   projectFundingProfiles = [],
+  aerialPosture,
   now,
 }: {
   projects: WorkspaceOperationsProjectSourceRow[];
@@ -591,6 +598,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   fundingInvoices?: WorkspaceOperationsBillingInvoiceSourceRow[];
   projectSubmittals?: WorkspaceOperationsProjectSubmittalSourceRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
+  aerialPosture?: AerialProjectPosture | null;
   now?: Date;
 }) {
   return buildWorkspaceOperationsSummary({
@@ -603,6 +611,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     fundingInvoices: mapWorkspaceOperationsBillingInvoiceRows(fundingInvoices),
     projectSubmittals: mapWorkspaceOperationsProjectSubmittalRows(projectSubmittals),
     projectFundingProfiles,
+    aerialPosture,
     now,
   });
 }
@@ -703,6 +712,26 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     };
   });
 
+  const aerialMissionsResult = await supabase
+    .from("aerial_missions")
+    .select("id, status, mission_type")
+    .eq("workspace_id", workspaceId)
+    .limit(500);
+  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+    ? []
+    : ((aerialMissionsResult.data ?? []) as Array<{ id: string; status: string; mission_type: string }>);
+
+  const aerialPackagesResult = await supabase
+    .from("aerial_evidence_packages")
+    .select("id, status, verification_readiness")
+    .eq("workspace_id", workspaceId)
+    .limit(500);
+  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+    ? []
+    : ((aerialPackagesResult.data ?? []) as Array<{ id: string; status: string; verification_readiness: string }>);
+
+  const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
+
   return buildWorkspaceOperationsSummaryFromSourceRows({
     projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
     plans: (plansResult.data ?? []) as WorkspaceOperationsPlanSourceRow[],
@@ -713,6 +742,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     fundingInvoices: (fundingInvoicesResult.data ?? []) as WorkspaceOperationsBillingInvoiceSourceRow[],
     projectSubmittals: (projectSubmittalsResult.data ?? []) as WorkspaceOperationsProjectSubmittalSourceRow[],
     projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
+    aerialPosture: aerialProjectPosture,
   });
 }
 
@@ -726,6 +756,7 @@ export function buildWorkspaceOperationsSummary({
   fundingInvoices = [],
   projectSubmittals = [],
   projectFundingProfiles = [],
+  aerialPosture = null,
   now = new Date(),
 }: {
   projects: WorkspaceOperationsProjectRow[];
@@ -737,6 +768,7 @@ export function buildWorkspaceOperationsSummary({
   fundingInvoices?: WorkspaceOperationsBillingInvoiceRow[];
   projectSubmittals?: WorkspaceOperationsProjectSubmittalRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
+  aerialPosture?: AerialProjectPosture | null;
   now?: Date;
 }): WorkspaceOperationsSummary {
   const reportRows = reports.map((report) => {
@@ -821,12 +853,6 @@ export function buildWorkspaceOperationsSummary({
     const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
     return days !== null && days <= 14;
   }).length;
-  const overdueDecisionOpportunities = fundingOpportunities.filter((item) => {
-    if (!["open", "upcoming"].includes(item.opportunityStatus ?? "")) return false;
-    if ((item.decisionState ?? "") !== "monitor") return false;
-    const days = daysUntil(item.decisionDueAt, now);
-    return days !== null && days < 0;
-  });
 
   const fundingOpportunitiesByProjectId = new Map<string, WorkspaceOperationsFundingOpportunityRow[]>();
   fundingOpportunities.forEach((opportunity) => {
@@ -1292,17 +1318,6 @@ export function buildWorkspaceOperationsSummary({
   const firstClosingProject = firstClosingOpportunity?.projectId
     ? projects.find((project) => project.id === firstClosingOpportunity.projectId) ?? null
     : null;
-  const firstOverdueDecisionOpportunity = [...overdueDecisionOpportunities].sort((left, right) => {
-    const leftTime = left.decisionDueAt ? new Date(left.decisionDueAt).getTime() : Number.POSITIVE_INFINITY;
-    const rightTime = right.decisionDueAt ? new Date(right.decisionDueAt).getTime() : Number.POSITIVE_INFINITY;
-    return leftTime - rightTime;
-  })[0] ?? null;
-  const firstOverdueDecisionProgram = firstOverdueDecisionOpportunity?.programId
-    ? programs.find((program) => program.id === firstOverdueDecisionOpportunity.programId) ?? null
-    : null;
-  const firstOverdueDecisionProject = firstOverdueDecisionOpportunity?.projectId
-    ? projects.find((project) => project.id === firstOverdueDecisionOpportunity.projectId) ?? null
-    : null;
   const firstPlanNeedingSetup = plans.find((plan) => {
     const readiness = buildPlanReadiness({
       hasProject: Boolean(plan.projectId),
@@ -1384,29 +1399,6 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
-  if (overdueDecisionOpportunities.length > 0) {
-    const overdueCount = overdueDecisionOpportunities.length;
-    queueCandidates.push({
-      key: "resolve-overdue-funding-decisions",
-      moduleKey: "grants",
-      moduleLabel: "Grants OS",
-      title: "Resolve overdue funding decisions",
-      detail: `${overdueCount} monitored funding opportunit${overdueCount === 1 ? "y is" : "ies are"} past their decision deadline without a pursue or skip call.${firstOverdueDecisionOpportunity?.title ? ` ${firstOverdueDecisionOpportunity.title} is the oldest lapsed decision.` : ""}${firstOverdueDecisionProgram?.title ? ` Reopen ${firstOverdueDecisionProgram.title} first.` : firstOverdueDecisionProject?.name ? ` Reopen ${firstOverdueDecisionProject.name} first.` : ""}`,
-      href: firstOverdueDecisionOpportunity?.id
-        ? `/grants?focusOpportunityId=${firstOverdueDecisionOpportunity.id}#funding-opportunity-${firstOverdueDecisionOpportunity.id}`
-        : "/grants",
-      targetProjectId: firstOverdueDecisionOpportunity?.projectId ?? null,
-      targetOpportunityId: firstOverdueDecisionOpportunity?.id ?? null,
-      targetOpportunityTitle: firstOverdueDecisionOpportunity?.title ?? null,
-      tone: "warning",
-      priority: 1.8,
-      badges: [
-        { label: "Overdue decisions", value: overdueCount },
-        { label: "Open", value: openFundingOpportunities },
-      ],
-    });
-  }
-
   if (closingSoonFundingOpportunities > 0) {
     queueCandidates.push({
       key: "funding-windows-closing",
@@ -1421,7 +1413,6 @@ export function buildWorkspaceOperationsSummary({
           : "/programs",
       targetProjectId: firstClosingOpportunity?.projectId ?? null,
       targetOpportunityId: firstClosingOpportunity?.id ?? null,
-      targetOpportunityTitle: firstClosingOpportunity?.title ?? null,
       tone: "warning",
       priority: 2,
       badges: [
@@ -1467,7 +1458,6 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingAwardRecordProject?.project.id ?? null,
       targetProjectName: firstFundingAwardRecordProject?.project.name ?? null,
       targetOpportunityId: firstFundingAwardRecordProject?.awardedOpportunity.id ?? null,
-      targetOpportunityTitle: firstFundingAwardRecordProject?.awardedOpportunity.title ?? null,
       tone: "warning",
       priority: 6,
       badges: [
@@ -1639,7 +1629,6 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingDecisionProject?.project.id ?? null,
       targetProjectName: firstFundingDecisionProject?.project.name ?? null,
       targetOpportunityId: firstFundingDecisionProject?.leadOpportunity?.id ?? null,
-      targetOpportunityTitle: firstFundingDecisionProject?.leadOpportunity?.title ?? null,
       tone: "warning",
       priority: 5,
       badges: [
@@ -1704,6 +1693,29 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (aerialPosture && aerialPosture.missionCount > 0) {
+    const aerialDetail =
+      aerialPosture.verificationReadiness === "ready"
+        ? `${aerialPosture.readyPackageCount} evidence package${aerialPosture.readyPackageCount === 1 ? " is" : "s are"} ready to support field verification. Review before the next site visit to ensure materials are current.`
+        : aerialPosture.activeMissionCount > 0
+        ? `${aerialPosture.activeMissionCount} mission${aerialPosture.activeMissionCount === 1 ? " is" : "s are"} active. Evidence packages are pending QA and verification — check back after collection concludes.`
+        : `${aerialPosture.completeMissionCount} of ${aerialPosture.missionCount} mission${aerialPosture.missionCount === 1 ? "" : "s"} complete. Review evidence packages before treating field capture as verification-ready.`;
+
+    queueCandidates.push({
+      key: "review-aerial-evidence",
+      title: "Review aerial evidence posture",
+      detail: aerialDetail,
+      href: "/projects",
+      tone: aerialPosture.verificationReadiness === "ready" ? "success" : "info",
+      priority: 10,
+      badges: [
+        { label: "Missions", value: aerialPosture.missionCount },
+        { label: "Active", value: aerialPosture.activeMissionCount },
+        { label: "Packages ready", value: aerialPosture.readyPackageCount },
+      ],
+    });
+  }
+
   const fullCommandQueue = queueCandidates.sort((left, right) => left.priority - right.priority);
   const commandQueue = fullCommandQueue.slice(0, 5);
 
@@ -1741,7 +1753,6 @@ export function buildWorkspaceOperationsSummary({
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,
       closingSoonFundingOpportunities,
-      overdueDecisionFundingOpportunities: overdueDecisionOpportunities.length,
       projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
       projectFundingSourcingProjects: fundingSourcingProjects.length,
       projectFundingDecisionProjects: fundingDecisionProjects.length,
@@ -1750,8 +1761,12 @@ export function buildWorkspaceOperationsSummary({
       projectFundingReimbursementActiveProjects: reimbursementAdvanceProjects.length,
       projectFundingGapProjects: fundingGapProjects.length,
       queueDepth: fullCommandQueue.length,
+      aerialMissions: aerialPosture?.missionCount ?? 0,
+      aerialActiveMissions: aerialPosture?.activeMissionCount ?? 0,
+      aerialReadyPackages: aerialPosture?.readyPackageCount ?? 0,
     },
     grantModelingSummary,
+    aerialPosture: aerialPosture ?? null,
     nextCommand,
     commandQueue,
     fullCommandQueue,

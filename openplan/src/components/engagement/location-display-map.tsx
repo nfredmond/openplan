@@ -89,7 +89,7 @@ export function LocationDisplayMap({ items }: { items: MapItem[] }) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/70 mb-4">
+    <div className="relative overflow-hidden rounded-[0.5rem] border border-border/70 mb-4">
       <div ref={mapContainerRef} className="h-[300px] w-full bg-muted/10" />
       <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
         <span className="font-medium text-foreground">Community Input Map</span>

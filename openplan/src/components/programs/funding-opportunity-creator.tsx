@@ -130,7 +130,7 @@ export function FundingOpportunityCreator({
           <h2 className="module-section-title">{title}</h2>
           <p className="module-section-description">{description}</p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
           <CalendarPlus2 className="h-5 w-5" />
         </span>
       </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -141,7 +142,7 @@ export default async function ScenariosPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -170,13 +171,28 @@ export default async function ScenariosPage({
               <p className="module-section-label">Catalog</p>
               <h2 className="module-section-title">Scenario sets in this workspace</h2>
               <p className="module-section-description">
-                Filter in the URL with <code>?projectId=...</code> or <code>?status=...</code> when you need a narrower cut.
+                Filter by status to narrow the catalog to the records that need attention.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
               {scenarioSets.length} total
             </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+            <Link href="/scenarios" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+              All ({scenarioSets.length})
+            </Link>
+            {[
+              { value: "draft", label: "Draft" },
+              { value: "active", label: "Active" },
+              { value: "archived", label: "Archived" },
+            ].map((opt) => (
+              <Link key={opt.value} href={`/scenarios?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+                {opt.label} ({scenarioSets.filter((s) => s.status === opt.value).length})
+              </Link>
+            ))}
           </div>
 
           {scenarioSets.length === 0 ? (
@@ -203,7 +219,6 @@ export default async function ScenariosPage({
                         <StatusBadge tone={scenarioSet.counts.baselineCount > 0 ? "success" : "warning"}>
                           {scenarioSet.counts.baselineCount > 0 ? "Baseline set" : "Baseline missing"}
                         </StatusBadge>
-                        <StatusBadge tone="info">{scenarioSet.counts.alternativeCount} alternatives</StatusBadge>
                       </div>
 
                       <div className="space-y-1.5">
@@ -223,13 +238,9 @@ export default async function ScenariosPage({
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">Project {scenarioSet.project?.name ?? "Unknown"}</span>
-                    <span className="module-record-chip">
-                      {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"}
-                    </span>
-                    <span className="module-record-chip">Created {fmtDateTime(scenarioSet.created_at)}</span>
-                  </div>
+                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    {scenarioSet.project?.name ?? "No project"} · {scenarioSet.counts.alternativeCount} alternatives · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
+                  </p>
                 </Link>
               ))}
             </div>

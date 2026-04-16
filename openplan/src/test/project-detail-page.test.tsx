@@ -113,6 +113,14 @@ const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
 const connectorsInMock = vi.fn();
 const connectorsSelectMock = vi.fn(() => ({ in: connectorsInMock }));
 
+const aerialMissionsOrderMock = vi.fn();
+const aerialMissionsEqMock = vi.fn(() => ({ order: aerialMissionsOrderMock }));
+const aerialMissionsSelectMock = vi.fn(() => ({ eq: aerialMissionsEqMock }));
+
+const aerialPackagesOrderMock = vi.fn();
+const aerialPackagesInMock = vi.fn(() => ({ order: aerialPackagesOrderMock }));
+const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
+
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const buildProjectControlsSummaryMock = vi.fn();
@@ -186,6 +194,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "data_connectors") {
     return { select: connectorsSelectMock };
   }
+  if (table === "aerial_missions") {
+    return { select: aerialMissionsSelectMock };
+  }
+  if (table === "aerial_evidence_packages") {
+    return { select: aerialPackagesSelectMock };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -221,6 +235,20 @@ vi.mock("@/components/projects/project-funding-profile-editor", () => ({
 
 vi.mock("@/components/projects/project-funding-award-creator", () => ({
   ProjectFundingAwardCreator: () => <div data-testid="project-funding-award-creator" />,
+}));
+
+vi.mock("@/components/aerial/aerial-mission-creator", () => ({
+  AerialMissionCreator: () => <div data-testid="aerial-mission-creator" />,
+}));
+
+vi.mock("@/components/aerial/aerial-evidence-package-creator", () => ({
+  AerialEvidencePackageCreator: () => <div data-testid="aerial-evidence-package-creator" />,
+}));
+
+vi.mock("@/components/aerial/aerial-mission-status-editor", () => ({
+  AerialMissionStatusEditor: ({ currentStatus }: { currentStatus: string }) => (
+    <div data-testid="aerial-mission-status-editor">{currentStatus}</div>
+  ),
 }));
 
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
@@ -382,6 +410,8 @@ describe("ProjectDetailPage", () => {
     fundingOpportunitiesLimitMock.mockResolvedValue({ data: [], error: null });
     datasetsInMock.mockResolvedValue({ data: [], error: null });
     connectorsInMock.mockResolvedValue({ data: [], error: null });
+    aerialMissionsOrderMock.mockResolvedValue({ data: [], error: null });
+    aerialPackagesOrderMock.mockResolvedValue({ data: [], error: null });
 
     reportsLimitMock.mockResolvedValue({
       data: [
@@ -519,9 +549,23 @@ describe("ProjectDetailPage", () => {
         /Saved comparison context from Downtown Safety Packet can support grant planning language or prioritization framing for this funding stack\./i
       )
     ).toBeInTheDocument();
+    expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/not proof of award likelihood/i)
+      screen.getByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i)
     ).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/not proof of award likelihood/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open packet review/i })).toHaveAttribute(
+      "href",
+      "/reports/report-1#drift-since-generation"
+    );
+    expect(screen.getByRole("link", { name: /Open Grants OS/i })).toHaveAttribute(
+      "href",
+      "/grants?focusProjectId=project-1"
+    );
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
       "/reports/report-1#drift-since-generation"
@@ -565,7 +609,7 @@ describe("ProjectDetailPage", () => {
 
     expect(boardPacketCard).not.toBeNull();
     expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2");
-    expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
   });
 
   it("shows an empty reporting state when no reports are linked", async () => {

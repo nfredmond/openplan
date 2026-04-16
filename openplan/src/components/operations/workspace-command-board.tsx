@@ -66,7 +66,7 @@ export function WorkspaceCommandBoard({
         <StatusBadge tone={postureTone(summary.posture)}>{postureLabel(summary.posture)}</StatusBadge>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="module-subpanel">
           <p className="module-summary-label">Packet work</p>
           <p className="module-summary-value">
@@ -115,9 +115,23 @@ export function WorkspaceCommandBoard({
               : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
           </p>
         </div>
+        {summary.counts.aerialMissions > 0 ? (
+          <div className="module-subpanel sm:col-span-2">
+            <p className="module-summary-label">Aerial evidence</p>
+            <p className="module-summary-value">{summary.counts.aerialMissions}</p>
+            <p className="module-summary-detail">
+              {summary.counts.aerialActiveMissions} active, {summary.counts.aerialReadyPackages} evidence package{summary.counts.aerialReadyPackages === 1 ? "" : "s"} ready.
+              {summary.aerialPosture?.verificationReadiness === "ready"
+                ? " Field verification support packages are ready."
+                : summary.aerialPosture?.verificationReadiness === "partial"
+                ? " Partial field verification evidence is available."
+                : " Evidence packages pending QA and verification."}
+            </p>
+          </div>
+        ) : null}
       </div>
 
-      <div className="mt-5 grid gap-3">
+      <div className="mt-5 space-y-1">
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
             <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
@@ -142,13 +156,18 @@ export function WorkspaceCommandBoard({
             </Link>
           ))
         ) : (
-          <div className="module-subpanel text-sm text-muted-foreground">
-            No immediate queue pressure is visible from the current workspace snapshot.
-          </div>
+          <p className="text-[0.82rem] text-muted-foreground">
+            No immediate queue pressure visible from the current workspace snapshot.
+          </p>
         )}
       </div>
 
-      {children ? <div className="mt-5 grid gap-3">{children}</div> : null}
+      {children ? (
+        <div className="mt-5 space-y-1">
+          <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Baseline</p>
+          {children}
+        </div>
+      ) : null}
     </article>
   );
 }

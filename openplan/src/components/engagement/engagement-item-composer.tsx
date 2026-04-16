@@ -100,7 +100,7 @@ export function EngagementItemComposer({
             This is the internal registry path for meeting notes, inbox triage, and manually-entered public input.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-copper/12 text-[color:var(--copper)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-copper/12 text-[color:var(--copper)]">
           <MessageSquarePlus className="h-5 w-5" />
         </span>
       </div>
@@ -249,7 +249,7 @@ export function EngagementItemComposer({
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}

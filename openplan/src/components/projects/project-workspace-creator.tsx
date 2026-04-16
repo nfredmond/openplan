@@ -78,7 +78,7 @@ export function ProjectWorkspaceCreator() {
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
             <Plus className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
@@ -181,7 +181,7 @@ export function ProjectWorkspaceCreator() {
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}

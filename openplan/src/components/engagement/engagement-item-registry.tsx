@@ -481,7 +481,7 @@ export function EngagementItemRegistry({
           <ItemRow key={item.id} item={item} categories={categories} />
         ))}
         {filteredItems.length === 0 ? (
-          <div className="rounded-[22px] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
+          <div className="rounded-[0.5rem] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
             No items match the current moderation filters.
           </div>
         ) : null}

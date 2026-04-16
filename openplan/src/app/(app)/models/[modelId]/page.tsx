@@ -429,7 +429,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
           <article className="module-operator-card">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
                 <ShieldCheck className="h-5 w-5 text-emerald-200" />
               </span>
               <div>
@@ -587,7 +587,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
               <div className="mt-5 grid gap-3">
                 {readiness.checks.map((check) => (
-                  <div key={check.key} className="rounded-[20px] border border-border/70 bg-background/70 p-4">
+                  <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{check.label}</p>
                       <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
@@ -623,7 +623,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               ) : (
                 <div className="mt-5 grid gap-4 xl:grid-cols-2">
                   {linkedRecordSections.map((section) => (
-                    <div key={section.title} className="rounded-[22px] border border-border/70 bg-background/70 p-4">
+                    <div key={section.title} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{section.title}</p>
@@ -637,7 +637,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                       ) : (
                         <div className="mt-4 space-y-3">
                           {section.records.map((record) => (
-                            <div key={record.id} className="rounded-[18px] border border-border/65 bg-background/85 p-3.5">
+                            <div key={record.id} className="rounded-[0.5rem] border border-border/65 bg-background/85 p-3.5">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
                                   {record.href ? (

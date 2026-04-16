@@ -408,7 +408,7 @@ function operationCardClasses(link: AssistantQuickLink) {
 
 function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
   return (
-    <div className="rounded-[20px] border border-sky-300/16 bg-sky-400/10 px-4 py-3 shadow-[0_14px_28px_rgba(56,189,248,0.08)]">
+    <div className="rounded-[0.5rem] border border-sky-300/16 bg-sky-400/10 px-4 py-3 shadow-[0_14px_28px_rgba(56,189,248,0.08)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-sky-100/76">{cue.label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{cue.title}</p>
       <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{cue.detail}</p>
@@ -661,7 +661,7 @@ function QuickLinkGrid({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3">
+      <div className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Operations summary</p>
@@ -681,21 +681,21 @@ function QuickLinkGrid({
         </div>
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Review soon</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.reviewSoon}</p>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Support context</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.supportContext}</p>
           </div>
-          <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-400">Approval required</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
           </div>
         </div>
 
-        <div className="mt-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+        <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Execution posture</p>
@@ -825,14 +825,14 @@ function QuickLinkGrid({
           </p>
         ) : null}
 
-        <div className="mt-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+        <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Board cue</p>
           <p className="mt-2 text-sm font-semibold text-white">{boardNarrative.title}</p>
           <p className="mt-1 text-sm leading-relaxed text-slate-300/82">{boardNarrative.detail}</p>
         </div>
       </div>
       {shapedOperations.length ? (
-        <div className="rounded-[22px] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
+        <div className="rounded-[0.5rem] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Shaped operations</p>
@@ -868,7 +868,7 @@ function QuickLinkGrid({
               const isSnoozed = Boolean(snoozeLabel);
 
               return (
-                <div key={`shaped-${operationKey}`} className="rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3">
+                <div key={`shaped-${operationKey}`} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-50">{link.label}</p>
@@ -984,7 +984,7 @@ function QuickLinkGrid({
         </div>
       ) : null}
       {!visibleGroups.length ? (
-        <div className="rounded-[22px] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
+        <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
           No operations match the current board mode and filter.
         </div>
       ) : null}
@@ -995,7 +995,7 @@ function QuickLinkGrid({
             <button
               type="button"
               onClick={() => setGroupState((current) => ({ ...current, [group.key]: !expanded }))}
-              className="flex w-full items-start justify-between gap-3 rounded-[18px] border border-white/8 bg-black/10 px-3.5 py-3 text-left transition hover:border-emerald-300/22 hover:bg-emerald-400/8"
+              className="flex w-full items-start justify-between gap-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3 text-left transition hover:border-emerald-300/22 hover:bg-emerald-400/8"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -1037,7 +1037,7 @@ function QuickLinkGrid({
                   return (
                     <div
                       key={`${group.key}-${link.label}-${link.href}`}
-                      className={`rounded-[20px] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
+                      className={`rounded-[0.5rem] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -1732,7 +1732,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-400/12 text-emerald-200">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] bg-emerald-400/12 text-emerald-200">
                       <Sparkles className="h-5 w-5" />
                     </span>
                     <div>
@@ -1748,7 +1748,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="shrink-0 rounded-2xl text-slate-300 hover:bg-white/7 hover:text-white"
+                  className="shrink-0 rounded-[0.5rem] text-slate-300 hover:bg-white/7 hover:text-white"
                   onClick={() => setOpen(false)}
                   aria-label="Close Planner Agent"
                 >
@@ -1766,7 +1766,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               </div>
 
               {preview?.operatorCue ? (
-                <div className="mt-4 rounded-[22px] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
+                <div className="mt-4 rounded-[0.5rem] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-100/72">{preview.operatorCue.label}</p>
                   <p className="mt-2 text-sm font-semibold text-white">{preview.operatorCue.title}</p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{preview.operatorCue.detail}</p>
@@ -1780,7 +1780,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               ) : null}
 
               {operationStatus ? (
-                <div className="mt-4 rounded-[22px] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
+                <div className="mt-4 rounded-[0.5rem] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/76">In-panel operation</p>
                     <StatusBadge
@@ -1828,7 +1828,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               ) : null}
 
               {operationHistory.length > 0 ? (
-                <div className="mt-4 rounded-[22px] border border-white/8 bg-black/10 px-4 py-3">
+                <div className="mt-4 rounded-[0.5rem] border border-white/8 bg-black/10 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Recent in-panel actions</p>
@@ -1852,7 +1852,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                   <div className="mt-3 space-y-2">
                     {operationHistory.map((entry) => (
-                      <div key={`${entry.linkId}:${entry.startedAt}`} className="rounded-[18px] border border-white/8 bg-white/[0.03] px-3 py-2.5">
+                      <div key={`${entry.linkId}:${entry.startedAt}`} className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] px-3 py-2.5">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
                             <p className="text-sm font-semibold text-white">{entry.label}</p>
@@ -1937,20 +1937,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               <ScrollArea className="min-h-0 px-5 py-4 sm:px-6">
                 <div className="space-y-4 pb-2">
                   {loadingContext ? (
-                    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
+                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
                       Loading Planner Agent context…
                     </div>
                   ) : null}
 
                   {error ? (
-                    <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
+                    <div className="rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
                       {error}
                     </div>
                   ) : null}
 
                   {!loadingContext && messages.length === 0 ? (
-                    <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-slate-300/82">
+                    <div className="rounded-[0.75rem] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-slate-300/82">
                       No grounded context loaded yet.
                     </div>
                   ) : null}
@@ -1959,7 +1959,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     if (message.type === "prompt") {
                       return (
                         <div key={message.id} className="flex justify-end">
-                          <div className="max-w-[88%] rounded-[22px] border border-emerald-300/20 bg-emerald-400/12 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_34px_rgba(16,185,129,0.10)]">
+                          <div className="max-w-[88%] rounded-[0.5rem] border border-emerald-300/20 bg-emerald-400/12 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_34px_rgba(16,185,129,0.10)]">
                             <div className="mb-2 flex items-center justify-end gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-100/78">
                               You
                               <User className="h-3.5 w-3.5" />
@@ -1987,7 +1987,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     if (message.type === "intro") {
                       const introPreview = preview ?? message.preview;
                       return (
-                        <div key={message.id} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
+                        <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
                           <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
                             Planning context
@@ -2000,7 +2000,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           ) : null}
                           <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
                             {introPreview.facts.map((fact) => (
-                              <li key={fact} className="rounded-2xl border border-white/8 bg-black/10 px-3.5 py-2.5">
+                              <li key={fact} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
                                 {fact}
                               </li>
                             ))}
@@ -2022,7 +2022,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     }
 
                     return (
-                      <div key={message.id} className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
+                      <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
                         <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
                           <Bot className="h-3.5 w-3.5 text-emerald-300" />
                           {message.response.label}
@@ -2037,7 +2037,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Findings</p>
                             <ul className="space-y-2 text-sm text-slate-200/88">
                               {message.response.findings.map((finding) => (
-                                <li key={finding} className="rounded-2xl border border-white/8 bg-black/10 px-3.5 py-2.5">
+                                <li key={finding} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
                                   {finding}
                                 </li>
                               ))}
@@ -2048,7 +2048,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Next steps</p>
                             <ul className="space-y-2 text-sm text-slate-200/88">
                               {message.response.nextSteps.map((step) => (
-                                <li key={step} className="rounded-2xl border border-emerald-300/16 bg-emerald-400/8 px-3.5 py-2.5">
+                                <li key={step} className="rounded-[0.5rem] border border-emerald-300/16 bg-emerald-400/8 px-3.5 py-2.5">
                                   {step}
                                 </li>
                               ))}
@@ -2078,7 +2078,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           ) : null}
 
                           {message.response.caution ? (
-                            <div className="rounded-2xl border border-amber-300/16 bg-amber-400/10 px-3.5 py-3 text-sm text-amber-100/92">
+                            <div className="rounded-[0.5rem] border border-amber-300/16 bg-amber-400/10 px-3.5 py-3 text-sm text-amber-100/92">
                               {message.response.caution}
                             </div>
                           ) : null}
@@ -2088,7 +2088,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   })}
 
                   {responding ? (
-                    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
+                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
                       Building grounded response…
                     </div>

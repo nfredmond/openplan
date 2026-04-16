@@ -175,7 +175,7 @@ export default function PilotReadinessPage() {
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -203,40 +203,35 @@ export default function PilotReadinessPage() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 module-record-list">
           {statusList.map((status) => (
-            <article key={status.lane} className="module-subpanel min-h-[190px]">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Check</p>
-                  <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{status.lane}</h3>
-                </div>
-                <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
-              </div>
-
-              <div className="mt-5 space-y-3 text-sm text-muted-foreground">
-                <div>
-                  <div className="font-medium text-foreground">Last run</div>
-                  <p className="mt-1">{status.lastRun}</p>
-                </div>
-                <div>
-                  <div className="font-medium text-foreground">Evidence artifact</div>
-                  <p className="mt-1 break-all">{status.details}</p>
-                </div>
-                <div>
-                  <div className="font-medium text-foreground">Interpretation</div>
-                  <p className="mt-1">
-                    {status.status === "PASS"
-                      ? "This lane has a recent passing proof artifact available for pilot diligence."
-                      : status.status === "FAIL"
-                        ? "This lane currently has failing evidence and should not be described as ready without follow-up."
-                        : status.status === "PENDING"
-                          ? "This lane is tracked but still needs a fresh proof artifact before it can be cited confidently."
-                          : "The current artifact could not be interpreted automatically. Inspect the underlying file before using it in launch-facing language."}
-                  </p>
+            <div key={status.lane} className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <h3 className="module-record-title">{status.lane}</h3>
+                      <p className="module-record-stamp">Last run: {status.lastRun}</p>
+                    </div>
+                    <p className="module-record-summary break-all">
+                      {status.details}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </article>
+              <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                {status.status === "PASS"
+                  ? "Recent passing proof artifact available for pilot diligence."
+                  : status.status === "FAIL"
+                    ? "Failing evidence — needs follow-up before this lane can be cited as ready."
+                    : status.status === "PENDING"
+                      ? "Tracked but still needs a fresh proof artifact."
+                      : "Could not be interpreted automatically. Inspect the source file directly."}
+              </p>
+            </div>
           ))}
         </div>
       </article>

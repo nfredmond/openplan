@@ -16,6 +16,10 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { buildPortfolioFundingSnapshot, type PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
@@ -627,6 +631,12 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   );
   const storedFundingSnapshot = parseStoredFundingSnapshot(
     latestArtifact?.metadata_json ?? null
+  );
+  const currentReportComparisonAggregate = parseStoredComparisonSnapshotAggregate(
+    latestArtifact?.metadata_json ?? null
+  );
+  const currentReportComparisonDigest = describeComparisonSnapshotAggregate(
+    currentReportComparisonAggregate
   );
   const liveFundingSnapshot = project
     ? buildProjectFundingSnapshot({
@@ -1451,6 +1461,48 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   }
 
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
+  const currentReportPacketFreshness = latestArtifact?.generated_at ?? report.generated_at
+    ? driftedItems.length > 0
+      ? {
+          label: "Refresh recommended",
+          tone: "warning" as const,
+          detail:
+            "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review.",
+        }
+      : {
+          label: "Packet current",
+          tone: "success" as const,
+          detail:
+            "No live source drift is currently visible against the latest packet snapshot.",
+        }
+    : {
+        label: "No packet",
+        tone: "warning" as const,
+        detail:
+          "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
+      };
+  const currentReportGrantModelingEvidence =
+    project && currentReportComparisonAggregate && currentReportComparisonDigest
+      ? {
+          projectId: project.id,
+          comparisonBackedCount: 1,
+          leadComparisonReport: {
+            id: report.id,
+            title: report.title,
+            href: `/reports/${report.id}#packet-release-review`,
+            packetFreshness: currentReportPacketFreshness,
+            comparisonAggregate: currentReportComparisonAggregate,
+            comparisonDigest: currentReportComparisonDigest,
+          },
+        }
+      : null;
+  const currentReportGrantModelingReadiness = describeProjectGrantModelingReadiness(
+    currentReportGrantModelingEvidence
+  );
+  const currentReportGrantModelingSupport = buildGrantDecisionModelingSupport(
+    currentReportGrantModelingEvidence,
+    project?.name ?? null
+  );
   const driftActionByKey: Record<string, { href: string; label: string } | null> = {
     engagement: engagementCampaign
       ? { href: `/engagement/${engagementCampaign.id}`, label: "Review engagement source" }
@@ -1487,17 +1539,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               "No summary provided. Use the controls to describe this report\u2019s purpose and generate an HTML packet."}
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <StatusBadge tone={reportStatusTone(report.status)}>
               {formatReportStatusLabel(report.status)}
             </StatusBadge>
-            <StatusBadge tone="info">
-              {formatReportTypeLabel(report.report_type)}
-            </StatusBadge>
+            <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span>
             {report.latest_artifact_kind ? (
-              <StatusBadge tone="neutral">
-                {report.latest_artifact_kind.toUpperCase()}
-              </StatusBadge>
+              <span className="text-[0.73rem] text-muted-foreground">{report.latest_artifact_kind.toUpperCase()}</span>
             ) : null}
           </div>
 
@@ -1581,6 +1629,105 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
       />
 
+      <article id="packet-release-review" className="module-section-surface">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Release review
+            </p>
+            <h2 className="text-xl font-semibold tracking-tight">Packet release review</h2>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              Use this operator checkpoint to decide whether the current packet is safe to cite in grant triage language. Recommendations remain advisory until someone explicitly saves a decision in the grants lane.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge tone={currentReportPacketFreshness.tone}>
+              {currentReportPacketFreshness.label}
+            </StatusBadge>
+            {currentReportGrantModelingReadiness ? (
+              <StatusBadge tone={currentReportGrantModelingReadiness.tone}>
+                {currentReportGrantModelingReadiness.label}
+              </StatusBadge>
+            ) : null}
+            {currentReportComparisonDigest ? (
+              <StatusBadge tone="info">{currentReportComparisonDigest.headline}</StatusBadge>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-3">
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Packet freshness
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportPacketFreshness.label}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportPacketFreshness.detail}
+            </p>
+          </div>
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Grant planning posture
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportGrantModelingReadiness?.label ?? "No visible support"}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportGrantModelingReadiness?.detail ?? currentReportGrantModelingSupport.summary}
+            </p>
+          </div>
+          <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Modeling digest
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {currentReportComparisonDigest?.headline ?? "No saved comparisons in this packet"}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {currentReportComparisonDigest?.detail ?? "Saved comparison snapshots have not been captured here yet, so this packet should not drive pursue language on its own."}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Recommended next action
+          </p>
+          <p className="mt-1 text-sm font-semibold text-foreground">
+            {currentReportGrantModelingSupport.recommendedNextActionTitle}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {currentReportGrantModelingSupport.recommendedNextActionSummary}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <StatusBadge tone="neutral">
+              Suggested decision: {titleize(currentReportGrantModelingSupport.recommendedDecisionState)}
+            </StatusBadge>
+            {currentReportGrantModelingEvidence ? (
+              <StatusBadge tone="neutral">
+                {currentReportGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount} indicator delta
+                {currentReportGrantModelingEvidence.leadComparisonReport.comparisonAggregate.indicatorDeltaCount === 1 ? "" : "s"}
+              </StatusBadge>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+          <Link href="#report-controls" className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+            Review packet controls
+            <Link2 className="h-4 w-4" />
+          </Link>
+          {project ? (
+            <Link href={`/grants?focusProjectId=${project.id}`} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
+              Open grant decisions
+              <Link2 className="h-4 w-4" />
+            </Link>
+          ) : null}
+        </div>
+      </article>
+
       {/* ── Composition + provenance row ─────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         {/* Left: packet composition */}
@@ -1588,7 +1735,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Sections */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <Sparkles className="h-5 w-5" />
               </span>
               <div>
@@ -1608,7 +1755,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               {sectionList.map((section, index) => (
                 <div
                   key={section.id}
-                  className="flex items-center gap-3 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 transition-colors"
+                  className="flex items-center gap-3 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 transition-colors"
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-card text-[0.7rem] font-semibold tabular-nums text-muted-foreground">
                     {index + 1}
@@ -1635,7 +1782,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Linked runs */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 <Hash className="h-5 w-5" />
               </span>
               <div>
@@ -1658,7 +1805,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 runs.map((run) => (
                   <div
                     key={run.id}
-                    className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <h4 className="text-sm font-semibold tracking-tight">
                       {run.title}
@@ -1678,7 +1825,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Artifact history */}
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--copper)]/10 text-[color:var(--copper)]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-[color:var(--copper)]/10 text-[color:var(--copper)]">
                 <Clock3 className="h-5 w-5" />
               </span>
               <div>
@@ -1702,7 +1849,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   <div
                     id={`artifact-${artifact.id}`}
                     key={artifact.id}
-                    className="flex items-center justify-between gap-3 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <div className="min-w-0">
                       <h4 className="text-sm font-semibold tracking-tight">
@@ -1727,7 +1874,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Source history */}
           <article className="module-section-surface">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div>
@@ -1740,7 +1887,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               </div>
             </div>
             <div className="mt-4 space-y-2.5">
-              <p className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
                 Generated artifacts include run-level audit metadata so every
                 packet can be traced back to its source analysis and reviewed
                 for completeness.
@@ -1755,7 +1902,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                 runAudit.map((item) => (
                   <div
                     key={item.runId}
-                    className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                    className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -1800,7 +1947,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             </div>
             {sourceContext || engagementCampaign ? (
               <div id="evidence-chain-summary" className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Evidence chain summary
                   </p>
@@ -1809,7 +1956,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Linked runs
                     </p>
@@ -1817,7 +1964,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.linkedRunCount}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Scenario basis
                     </p>
@@ -1825,7 +1972,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.scenarioSetLinkCount} linked set{evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Scenario spine
                     </p>
@@ -1835,7 +1982,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         : `${storedScenarioSpineSummary?.assumptionSetCount ?? evidenceChainSummary.scenarioAssumptionSetCount} assumptions · ${storedScenarioSpineSummary?.dataPackageCount ?? evidenceChainSummary.scenarioDataPackageCount} packages · ${storedScenarioSpineSummary?.indicatorSnapshotCount ?? evidenceChainSummary.scenarioIndicatorSnapshotCount} indicators`}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Project records
                     </p>
@@ -1843,7 +1990,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.totalProjectRecordCount} across {evidenceChainSummary.projectRecordGroupCount} group{evidenceChainSummary.projectRecordGroupCount === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Governance
                     </p>
@@ -1851,7 +1998,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {evidenceChainSummary.stageGateLabel} · {evidenceChainSummary.stageGatePassCount} pass / {evidenceChainSummary.stageGateHoldCount} hold
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Engagement posture
                     </p>
@@ -1866,7 +2013,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Linked evidence
                     </p>
@@ -1876,7 +2023,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {String(sourceContext?.decisionCount ?? 0)} decisions
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Source snapshot
                     </p>
@@ -1889,7 +2036,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     </p>
                   </div>
                   {engagementCampaign ? (
-                    <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
+                    <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                         Engagement source
                       </p>
@@ -1949,7 +2096,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {driftItems.length > 0 ? (
               <div id="drift-since-generation" className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Drift since generation
                   </p>
@@ -1964,7 +2111,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                     return (
                       <div
                         key={item.key}
-                        className="flex flex-col gap-2 rounded-[18px] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
+                        className="flex flex-col gap-2 rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
                       >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -1996,7 +2143,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {stageGateSnapshot ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Governance and stage-gate provenance
                   </p>
@@ -2005,7 +2152,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -2029,7 +2176,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       Version {stageGateSnapshot.templateVersion} · {stageGateSnapshot.passCount} pass · {stageGateSnapshot.holdCount} hold · {stageGateSnapshot.notStartedCount} not started
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Control health
                     </p>
@@ -2040,7 +2187,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                       {stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount} gate{stageGateSnapshot.controlHealth.gatesWithOperatorControlsCount === 1 ? "" : "s"} in the active template include operator control evidence.
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Blocked gate
                     </p>
@@ -2059,7 +2206,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                         : "No formal HOLD decision is recorded in this artifact snapshot."}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
+                  <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Next gate
                     </p>
@@ -2083,7 +2230,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {projectRecordsSnapshot.length > 0 ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Project records provenance
                   </p>
@@ -2095,7 +2242,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   {projectRecordsSnapshot.map((item) => (
                     <div
                       key={item.key}
-                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3"
+                      className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -2132,7 +2279,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             ) : null}
             {scenarioSetLinks.length > 0 ? (
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Scenario basis
                   </p>
@@ -2150,7 +2297,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   {scenarioSetLinks.map((link) => (
                     <div
                       key={link.scenarioSetId}
-                      className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-4"
+                      className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -2291,7 +2438,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           {/* Related links */}
           <article className="module-section-surface">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-500/10 text-slate-700 dark:text-slate-300">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-slate-500/10 text-slate-700 dark:text-slate-300">
                 <Link2 className="h-5 w-5" />
               </span>
               <div>
@@ -2363,7 +2510,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
                   </StatusBadge>
                 ) : null}
               </div>
-              <div className="mt-5 overflow-hidden rounded-[18px] border border-border/70 bg-white shadow-inner">
+              <div className="mt-5 overflow-hidden rounded-[0.5rem] border border-border/70 bg-white shadow-inner">
                 <iframe
                   title="Latest report artifact preview"
                   className="h-[900px] w-full"

@@ -15,7 +15,7 @@ import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type Managed
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
-  { ssr: false, loading: () => <div className="h-[520px] w-full animate-pulse rounded-2xl bg-zinc-800/50" /> }
+  { ssr: false, loading: () => <div className="h-[520px] w-full animate-pulse rounded-[0.5rem] bg-zinc-800/50" /> }
 );
 
 type ScenarioEntryOption = {
@@ -144,7 +144,7 @@ function ManagedRunPromotionControl({
   const unchanged = scenarioEntryId === (run.scenario_entry_id ?? "");
 
   return (
-    <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+    <div className="mt-3 rounded-[0.5rem] border border-border/70 bg-background/70 p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Promotion / reassignment</p>
@@ -258,7 +258,7 @@ export function ModelRunManager({
             Launch a managed run with immutable input snapshots, then promote or reassign the resulting analysis run into the right scenario entry.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:text-sky-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
           <Play className="h-5 w-5" />
         </span>
       </div>
@@ -293,7 +293,7 @@ export function ModelRunManager({
       ) : null}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="rounded-[24px] border border-border/70 bg-background/75 p-5 space-y-4">
+        <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-5 space-y-4">
           <div>
             <p className="text-sm font-semibold text-foreground">Launch run</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -317,7 +317,7 @@ export function ModelRunManager({
                 </option>
               ))}
             </select>
-            <div className="rounded-[18px] border border-border/60 bg-background/80 p-3 text-sm">
+            <div className="rounded-[0.5rem] border border-border/60 bg-background/80 p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-semibold text-foreground">{selectedRunMode.label}</p>
                 <StatusBadge tone={selectedRunMode.availability === "launchable" ? "info" : "warning"}>
@@ -404,13 +404,13 @@ export function ModelRunManager({
           </div>
 
           {error ? (
-            <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+            <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
               {error}
             </p>
           ) : null}
 
           {selectedRunMode.availability !== "launchable" ? (
-            <div className="rounded-2xl border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+            <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
               Behavioral demand is available here as an honest planner-facing run class, but this form is still prototype/preflight-backed. Managed launch wiring for a full ActivitySim runtime has not been enabled through the model-run API yet.
             </div>
           ) : null}
@@ -421,7 +421,7 @@ export function ModelRunManager({
           </Button>
         </div>
 
-        <div className="rounded-[24px] border border-border/70 bg-background/75 p-5">
+        <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">Run history</p>
@@ -442,7 +442,7 @@ export function ModelRunManager({
           })()}
 
           {modelRuns.some((r) => r.status === "queued" || r.status === "running") ? (
-            <div className="mt-3 flex items-center gap-2 rounded-2xl border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
+            <div className="mt-3 flex items-center gap-2 rounded-[0.5rem] border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
               <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
               <span>One or more runs are in progress. Refresh the page to check for updates.</span>
             </div>
@@ -549,7 +549,7 @@ function ModelRunStagingAndArtifacts({
               <h4 className="mb-2 font-semibold">Execution stages</h4>
               <ul className="space-y-2">
                 {stages.map((stage) => (
-                  <li key={stage.id} className="rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5">
+                  <li key={stage.id} className="rounded-[0.5rem] border border-border/60 bg-background/80 px-3 py-2.5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-medium text-foreground">{stage.stage_name}</p>
@@ -574,7 +574,7 @@ function ModelRunStagingAndArtifacts({
               <h4 className="mb-2 font-semibold">Run artifacts</h4>
               <ul className="space-y-2">
                 {artifacts.map((art) => (
-                  <li key={art.id} className="flex items-center justify-between gap-3 rounded-[16px] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
+                  <li key={art.id} className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
                     <div>
                       <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
                       {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}

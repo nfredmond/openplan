@@ -126,7 +126,7 @@ export function InvoiceFundingAwardLinker({
   }
 
   return (
-    <div className="mt-3 rounded-2xl border border-border/60 bg-muted/15 px-3 py-3">
+    <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">
       <div className="flex flex-wrap items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl border border-border/60 bg-background/80 text-muted-foreground">
           <Link2 className="h-4 w-4" />

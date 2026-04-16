@@ -75,7 +75,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
             Point a campaign at the full RTP cycle or a specific chapter so comments can land on explicit plan sections later.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
           <MessageSquarePlus className="h-5 w-5" />
         </span>
       </div>
@@ -159,7 +159,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}

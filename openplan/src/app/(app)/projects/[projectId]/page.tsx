@@ -11,12 +11,16 @@ import {
   FileStack,
   FolderKanban,
   MessagesSquare,
+  Radar,
   Scale,
   ShieldCheck,
   Siren,
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { AerialEvidencePackageCreator } from "@/components/aerial/aerial-evidence-package-creator";
+import { AerialMissionCreator } from "@/components/aerial/aerial-mission-creator";
+import { AerialMissionStatusEditor } from "@/components/aerial/aerial-mission-status-editor";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
@@ -27,7 +31,20 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
+import {
+  buildAerialProjectPosture,
+  describeAerialProjectPosture,
+  aerialMissionStatusTone,
+  aerialVerificationReadinessTone,
+  formatAerialMissionStatusLabel,
+  formatAerialMissionTypeLabel,
+  formatAerialVerificationReadinessLabel,
+} from "@/lib/aerial/catalog";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectFundingStackSummary,
@@ -794,10 +811,11 @@ export default async function ProjectDetailPage({
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
+      const comparisonAggregate = parseStoredComparisonSnapshotAggregate(
+        latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+      );
       const comparisonDigest = describeComparisonSnapshotAggregate(
-        parseStoredComparisonSnapshotAggregate(
-          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
-        )
+        comparisonAggregate
       );
       const evidenceChainDigest = describeEvidenceChainSummary(
         parseStoredEvidenceChainSummary(
@@ -812,6 +830,7 @@ export default async function ProjectDetailPage({
           generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
           updatedAt: report.updated_at,
         }),
+        comparisonAggregate,
         comparisonDigest,
         evidenceChainDigest,
       };
@@ -846,6 +865,31 @@ export default async function ProjectDetailPage({
   const recommendedReport = projectReports[0] ?? null;
   const comparisonBackedFundingReport =
     projectReports.find((report) => Boolean(report.comparisonDigest)) ?? null;
+  const projectGrantModelingEvidence =
+    comparisonBackedFundingReport?.comparisonAggregate && comparisonBackedFundingReport.comparisonDigest
+      ? {
+          projectId: project.id,
+          comparisonBackedCount: comparisonBackedReportCount,
+          leadComparisonReport: {
+            id: comparisonBackedFundingReport.id,
+            title: comparisonBackedFundingReport.title,
+            href: getReportNavigationHref(
+              comparisonBackedFundingReport.id,
+              comparisonBackedFundingReport.packetFreshness.label
+            ),
+            packetFreshness: comparisonBackedFundingReport.packetFreshness,
+            comparisonAggregate: comparisonBackedFundingReport.comparisonAggregate,
+            comparisonDigest: comparisonBackedFundingReport.comparisonDigest,
+          },
+        }
+      : null;
+  const projectGrantModelingReadiness = describeProjectGrantModelingReadiness(
+    projectGrantModelingEvidence
+  );
+  const projectGrantModelingSupport = buildGrantDecisionModelingSupport(
+    projectGrantModelingEvidence,
+    project.name
+  );
   const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [];
     if (report.packetFreshness.label !== "Packet current") {
@@ -892,6 +936,44 @@ export default async function ProjectDetailPage({
     },
     now
   );
+
+  const aerialMissionsResult = await supabase
+    .from("aerial_missions")
+    .select("id, title, status, mission_type, geography_label, collected_at, updated_at")
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false });
+  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+    ? []
+    : ((aerialMissionsResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string;
+        mission_type: string;
+        geography_label: string | null;
+        collected_at: string | null;
+        updated_at: string;
+      }>);
+  const aerialMissionIds = aerialMissions.map((m) => m.id);
+  const aerialPackagesResult = aerialMissionIds.length
+    ? await supabase
+        .from("aerial_evidence_packages")
+        .select("id, mission_id, title, package_type, status, verification_readiness, updated_at")
+        .in("mission_id", aerialMissionIds)
+        .order("updated_at", { ascending: false })
+    : { data: [], error: null };
+  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+    ? []
+    : ((aerialPackagesResult.data ?? []) as Array<{
+        id: string;
+        mission_id: string;
+        title: string;
+        package_type: string;
+        status: string;
+        verification_readiness: string;
+        updated_at: string;
+      }>);
+  const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
+  const aerialProjectPostureDetail = describeAerialProjectPosture(aerialProjectPosture);
 
   const operationsSummary = await operationsSummaryPromise;
 
@@ -1011,18 +1093,13 @@ export default async function ProjectDetailPage({
 
       <header className="module-header-grid">
         <article className="module-intro-card">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="module-intro-kicker">
             <StatusBadge tone={toneForStatus(project.status)}>{titleize(project.status)}</StatusBadge>
-            <StatusBadge tone="info">{titleize(project.plan_type)}</StatusBadge>
-            <StatusBadge tone="neutral">{titleize(project.delivery_phase)}</StatusBadge>
-            <StatusBadge tone={toneForControlHealth(projectControlsSummary.controlHealth)}>
-              Controls {titleize(projectControlsSummary.controlHealth)}
-            </StatusBadge>
-            {linkedRtpCycleCount > 0 ? <StatusBadge tone="success">RTP {linkedRtpCycleCount} linked</StatusBadge> : null}
-            <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Workspace {workspaceData?.name ?? "Unknown"} · Updated {fmtDateTime(project.updated_at)}
-            </p>
+            <span className="module-record-chip"><span>Type</span><strong>{titleize(project.plan_type)}</strong></span>
           </div>
+          <p className="text-[0.73rem] text-muted-foreground">
+            {titleize(project.delivery_phase)} · Controls {titleize(projectControlsSummary.controlHealth)}{linkedRtpCycleCount > 0 ? ` · RTP ${linkedRtpCycleCount} linked` : ""} · {workspaceData?.name ?? "Unknown workspace"} · Updated {fmtDateTime(project.updated_at)}
+          </p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{project.name}</h1>
             <p className="module-intro-description">
@@ -1067,7 +1144,7 @@ export default async function ProjectDetailPage({
 
         <article className="module-operator-card">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
               <FolderKanban className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
@@ -1094,7 +1171,7 @@ export default async function ProjectDetailPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
               <Target className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
@@ -1132,7 +1209,7 @@ export default async function ProjectDetailPage({
 
         <div className="mt-5">
           {projectRtpLinksPending ? (
-            <div className="rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+            <div className="rounded-[0.5rem] border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
               RTP linkage schema is not available yet in this environment. Run the latest migration, then this project can attach into RTP cycle portfolio tracking.
             </div>
           ) : (
@@ -1155,7 +1232,7 @@ export default async function ProjectDetailPage({
       <article id="project-reporting" className="module-section-surface scroll-mt-24">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
               <FileStack className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
@@ -1211,7 +1288,7 @@ export default async function ProjectDetailPage({
 
             <div className="grid gap-4 md:grid-cols-[0.92fr_1.08fr]">
             <div
-              className={`rounded-3xl border p-5 ${
+              className={`rounded-[0.75rem] border p-5 ${
                 reportAttentionCount > 0
                   ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
                   : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
@@ -1235,7 +1312,7 @@ export default async function ProjectDetailPage({
                   "No reports are linked to this project yet."}
               </p>
               {recommendedReport?.comparisonDigest ? (
-                <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Comparison posture
                   </p>
@@ -1245,6 +1322,47 @@ export default async function ProjectDetailPage({
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {recommendedReport.comparisonDigest.detail}
                   </p>
+                </div>
+              ) : null}
+              {projectGrantModelingEvidence ? (
+                <div
+                  id="project-packet-release-review"
+                  className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5"
+                >
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Packet release review
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <StatusBadge tone={projectGrantModelingReadiness?.tone ?? "neutral"}>
+                      {projectGrantModelingReadiness?.label ?? "No visible support"}
+                    </StatusBadge>
+                    <StatusBadge tone={projectGrantModelingEvidence.leadComparisonReport.packetFreshness.tone}>
+                      {projectGrantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                    </StatusBadge>
+                    <StatusBadge tone="info">
+                      Suggested {titleize(projectGrantModelingSupport.recommendedDecisionState)}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-2 text-xs font-medium leading-relaxed text-foreground/90">
+                    {projectGrantModelingSupport.recommendedNextActionTitle}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {projectGrantModelingSupport.recommendedNextActionSummary}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href={projectGrantModelingEvidence.leadComparisonReport.href}
+                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                    >
+                      Open packet review
+                    </Link>
+                    <Link
+                      href={`/grants?focusProjectId=${project.id}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
+                    >
+                      Open Grants OS
+                    </Link>
+                  </div>
                 </div>
               ) : null}
               <div className="mt-4 flex flex-wrap gap-2">
@@ -1268,7 +1386,7 @@ export default async function ProjectDetailPage({
               </div>
             </div>
 
-            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -1296,7 +1414,7 @@ export default async function ProjectDetailPage({
                     key={report.id}
                     id={`project-report-${report.id}`}
                     href={`/reports/${report.id}`}
-                    className="block rounded-2xl border border-border/70 bg-card/70 p-4 transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_18px_44px_rgba(4,12,20,0.08)]"
+                    className="block rounded-[0.5rem] border border-border/70 bg-card/70 p-4 transition-colors hover:border-primary/35 hover:bg-card"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-1.5">
@@ -1314,15 +1432,13 @@ export default async function ProjectDetailPage({
                       <StatusBadge tone="info">
                         {formatReportTypeLabel(report.report_type)}
                       </StatusBadge>
-                      <StatusBadge tone={report.packetFreshness.tone}>
-                        {report.packetFreshness.label}
-                      </StatusBadge>
                     </div>
+                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{report.packetFreshness.label} · {report.packetFreshness.detail}</p>
                     <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                       {report.packetFreshness.detail}
                     </p>
                     {report.evidenceChainDigest ? (
-                      <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                      <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Evidence posture
                         </p>
@@ -1340,7 +1456,7 @@ export default async function ProjectDetailPage({
                       </div>
                     ) : null}
                     {report.comparisonDigest ? (
-                      <div className="mt-3 rounded-2xl border border-border/60 bg-background/70 px-3 py-2.5">
+                      <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Comparison posture
                         </p>
@@ -1376,7 +1492,7 @@ export default async function ProjectDetailPage({
         <article id="project-governance" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -1415,7 +1531,7 @@ export default async function ProjectDetailPage({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 mt-5">
-            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <div className="flex items-center gap-3">
                 <FileClock className="h-5 w-5 text-amber-500" />
                 <div>
@@ -1434,7 +1550,7 @@ export default async function ProjectDetailPage({
                 </div>
               ) : null}
             </div>
-            <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+            <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <div className="flex items-center gap-3">
                 <Clock3 className="h-5 w-5 text-sky-500" />
                 <div>
@@ -1474,20 +1590,14 @@ export default async function ProjectDetailPage({
                     <p className="module-record-summary">{gate.rationale}</p>
                   </div>
 
-                  <div className="module-record-meta">
-                    {gate.lapmMappings.slice(0, 2).map((item) => (
-                      <span key={`${gate.gateId}-lapm-${item}`} className="module-record-chip">LAPM {item}</span>
-                    ))}
-                    {gate.ceqaVmtMappings.slice(0, 2).map((item) => (
-                      <span key={`${gate.gateId}-ceqa-${item}`} className="module-record-chip">CEQA/VMT {item}</span>
-                    ))}
-                    {gate.outreachMappings.slice(0, 1).map((item) => (
-                      <span key={`${gate.gateId}-outreach-${item}`} className="module-record-chip">Outreach {item}</span>
-                    ))}
-                    {gate.stipRtipMappings.slice(0, 1).map((item) => (
-                      <span key={`${gate.gateId}-stip-${item}`} className="module-record-chip">Programming {item}</span>
-                    ))}
-                  </div>
+                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    {[
+                      ...gate.lapmMappings.slice(0, 2).map((item) => `LAPM ${item}`),
+                      ...gate.ceqaVmtMappings.slice(0, 2).map((item) => `CEQA/VMT ${item}`),
+                      ...gate.outreachMappings.slice(0, 1).map((item) => `Outreach ${item}`),
+                      ...gate.stipRtipMappings.slice(0, 1).map((item) => `Programming ${item}`),
+                    ].join(" · ") || "No compliance mappings recorded"}
+                  </p>
 
                   {gate.evidencePreview.length > 0 ? (
                     <div className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -1541,7 +1651,7 @@ export default async function ProjectDetailPage({
       <article id="project-funding-opportunities" className="module-section-surface">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
               <CalendarClock className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
@@ -1592,7 +1702,7 @@ export default async function ProjectDetailPage({
             </div>
 
             <div className="grid gap-4 md:grid-cols-3 mt-5">
-              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
                 <div className="mt-2">
                   <StatusBadge tone={projectFundingStackTone(fundingStackSummary.pipelineStatus)}>{fundingStackSummary.pipelineLabel}</StatusBadge>
@@ -1613,7 +1723,7 @@ export default async function ProjectDetailPage({
                   </div>
                 ) : null}
               </div>
-              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reimbursement posture</p>
                 <div className="mt-2">
                   <StatusBadge tone={projectFundingReimbursementTone(fundingStackSummary.reimbursementStatus)}>
@@ -1636,7 +1746,7 @@ export default async function ProjectDetailPage({
                   </div>
                 ) : null}
               </div>
-              <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+              <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next obligation</p>
                 <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? "No obligation date recorded"}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -1703,17 +1813,11 @@ export default async function ProjectDetailPage({
                           <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
                         </div>
 
-                        <div className="module-record-meta">
-                          <span className="module-record-chip">Awarded {fmtCurrency(award.awarded_amount)}</span>
-                          <span className="module-record-chip">Match {fmtCurrency(award.match_amount)}</span>
-                          <span className="module-record-chip">Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)}</span>
-                          <span className="module-record-chip">Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)}</span>
-                          <span className="module-record-chip">Uninvoiced {fmtCurrency(Math.max(Number(award.awarded_amount ?? 0) - Number(awardInvoiceSummary?.totalNetAmount ?? 0), 0))}</span>
-                          <span className="module-record-chip">Obligation {fmtDateTime(award.obligation_due_at)}</span>
-                          <span className="module-record-chip">Opportunity {award.opportunity?.title ?? "Not linked"}</span>
-                        </div>
+                        <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                          Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
+                        </p>
 
-                        <div className="mt-4 rounded-2xl border border-border/60 bg-background/70 px-4 py-4">
+                        <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
                               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1733,7 +1837,7 @@ export default async function ProjectDetailPage({
                           {awardInvoices.length > 0 ? (
                             <div className="mt-3 space-y-2">
                               {awardInvoices.map((invoice) => (
-                                <div key={invoice.id} className="rounded-2xl border border-border/60 bg-muted/20 px-3 py-3">
+                                <div key={invoice.id} className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
                                   <div className="flex flex-wrap items-center gap-2">
                                     <StatusBadge tone={toneForInvoiceStatus(invoice.status)}>{titleize(invoice.status)}</StatusBadge>
                                     <StatusBadge tone="info">{titleize(invoice.billing_basis)}</StatusBadge>
@@ -1831,26 +1935,20 @@ export default async function ProjectDetailPage({
                         </p>
                       </div>
 
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
-                        <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
-                        <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
-                        <span className="module-record-chip">Likely {fmtCurrency(opportunity.expected_award_amount)}</span>
-                        <span className="module-record-chip">Opens {fmtDateTime(opportunity.opens_at)}</span>
-                        <span className="module-record-chip">Closes {fmtDateTime(opportunity.closes_at)}</span>
-                        <span className="module-record-chip">Decision due {fmtDateTime(opportunity.decision_due_at)}</span>
-                      </div>
+                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                        {fmtCurrency(opportunity.expected_award_amount)} likely · Closes {fmtDateTime(opportunity.closes_at)}{opportunity.agency_name ? ` · ${opportunity.agency_name}` : ""}
+                      </p>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-3">
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
                           <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
                         </div>
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
                           <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
                         </div>
-                        <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                        <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
                           <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
                         </div>
@@ -1878,7 +1976,7 @@ export default async function ProjectDetailPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
               <Target className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
@@ -1927,7 +2025,7 @@ export default async function ProjectDetailPage({
         </div>
 
         <div className="grid gap-4 md:grid-cols-5 mt-5">
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recommended next action</p>
             <div className="mt-2 flex items-center gap-2">
               <StatusBadge tone={projectControlsSummary.recommendedNextAction.tone}>
@@ -1948,7 +2046,7 @@ export default async function ProjectDetailPage({
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextMilestone?.title ?? "No upcoming milestone recorded"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -1966,7 +2064,7 @@ export default async function ProjectDetailPage({
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next submittal</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextSubmittal?.title ?? "No upcoming submittal recorded"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -1984,7 +2082,7 @@ export default async function ProjectDetailPage({
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice posture</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -1999,7 +2097,7 @@ export default async function ProjectDetailPage({
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Deadline queue</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {projectControlsSummary.deadlineSummary.nextDeadline?.title ?? "No control deadlines recorded"}
@@ -2039,7 +2137,7 @@ export default async function ProjectDetailPage({
         </div>
 
         {projectControlsSummary.deadlineSummary.items.length > 0 ? (
-          <div className="mt-5 rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Control deadline queue</p>
@@ -2058,7 +2156,7 @@ export default async function ProjectDetailPage({
                 <Link
                   key={`${item.kind}-${item.title}-${item.deadlineAt}`}
                   href={buildProjectControlHref(item.targetId, item.targetRowId)}
-                  className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="flex items-start justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -2083,7 +2181,7 @@ export default async function ProjectDetailPage({
           projectControlsSummary.attentionSummary.overdueMilestones.count > 0 ||
           projectControlsSummary.attentionSummary.overdueSubmittals.count > 0 ||
           projectControlsSummary.attentionSummary.overdueInvoices.count > 0) ? (
-          <div className="mt-5 rounded-3xl border border-border/70 bg-background/80 p-5">
+          <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Attention lanes</p>
@@ -2100,7 +2198,7 @@ export default async function ProjectDetailPage({
                     projectControlsSummary.attentionSummary.reportPackets.targetId,
                     projectControlsSummary.attentionSummary.reportPackets.targetRowId
                   )}
-                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Report packets</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.reportPackets.count}</p>
@@ -2116,7 +2214,7 @@ export default async function ProjectDetailPage({
                     projectControlsSummary.attentionSummary.blockedMilestones.targetId,
                     firstBlockedMilestone ? `project-milestone-${firstBlockedMilestone.id}` : undefined
                   )}
-                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Blocked milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.blockedMilestones.count}</p>
@@ -2132,7 +2230,7 @@ export default async function ProjectDetailPage({
                     projectControlsSummary.attentionSummary.overdueMilestones.targetId,
                     firstOverdueMilestone ? `project-milestone-${firstOverdueMilestone.id}` : undefined
                   )}
-                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueMilestones.count}</p>
@@ -2148,7 +2246,7 @@ export default async function ProjectDetailPage({
                     projectControlsSummary.attentionSummary.overdueSubmittals.targetId,
                     firstOverdueSubmittal ? `project-submittal-${firstOverdueSubmittal.id}` : undefined
                   )}
-                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue submittals</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueSubmittals.count}</p>
@@ -2164,7 +2262,7 @@ export default async function ProjectDetailPage({
                     projectControlsSummary.attentionSummary.overdueInvoices.targetId,
                     firstOverdueInvoice ? `project-invoice-${firstOverdueInvoice.id}` : undefined
                   )}
-                  className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
+                  className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue invoices</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueInvoices.count}</p>
@@ -2187,7 +2285,7 @@ export default async function ProjectDetailPage({
         <article id="project-milestones" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
                 <Target className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2226,10 +2324,10 @@ export default async function ProjectDetailPage({
                       </div>
                       <p className="module-record-summary">{milestone.summary || milestone.notes || "No milestone summary yet."}</p>
                     </div>
-                    <div className="module-record-meta">
-                      {milestone.owner_label ? <span className="module-record-chip">Owner {milestone.owner_label}</span> : null}
-                      {milestone.actual_date ? <span className="module-record-chip">Actual {fmtDateTime(milestone.actual_date)}</span> : null}
-                    </div>
+                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                      {milestone.owner_label ? `${milestone.owner_label}` : ""}
+                      {milestone.actual_date ? `${milestone.owner_label ? " · " : ""}Actual ${fmtDateTime(milestone.actual_date)}` : ""}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -2240,7 +2338,7 @@ export default async function ProjectDetailPage({
         <article id="project-submittals" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 <FileClock className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2278,11 +2376,9 @@ export default async function ProjectDetailPage({
                       </div>
                       <p className="module-record-summary">{submittal.notes || "No submittal notes yet."}</p>
                     </div>
-                    <div className="module-record-meta">
-                      {submittal.agency_label ? <span className="module-record-chip">Agency {submittal.agency_label}</span> : null}
-                      {submittal.reference_number ? <span className="module-record-chip">Ref {submittal.reference_number}</span> : null}
-                      <span className="module-record-chip">Cycle {submittal.review_cycle}</span>
-                    </div>
+                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                      Cycle {submittal.review_cycle}{submittal.agency_label ? ` · ${submittal.agency_label}` : ""}{submittal.reference_number ? ` · Ref ${submittal.reference_number}` : ""}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -2293,7 +2389,7 @@ export default async function ProjectDetailPage({
         <article id="project-invoices" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <FileSpreadsheet className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2331,11 +2427,11 @@ export default async function ProjectDetailPage({
                         {invoice.notes || `${titleize(invoice.caltrans_posture)}${invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}`}
                       </p>
                     </div>
-                    <div className="module-record-meta">
-                      {invoice.invoice_date ? <span className="module-record-chip">Invoice {fmtDateTime(invoice.invoice_date)}</span> : null}
-                      {invoice.due_date ? <span className="module-record-chip">Due {fmtDateTime(invoice.due_date)}</span> : null}
-                      {invoice.fundingAward ? <span className="module-record-chip">Funding award {invoice.fundingAward.title}</span> : null}
-                    </div>
+                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                      {invoice.invoice_date ? `Invoice ${fmtDateTime(invoice.invoice_date)}` : ""}
+                      {invoice.due_date ? ` · Due ${fmtDateTime(invoice.due_date)}` : ""}
+                      {invoice.fundingAward ? ` · ${invoice.fundingAward.title}` : ""}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -2348,7 +2444,7 @@ export default async function ProjectDetailPage({
         <article id="project-deliverables" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <ClipboardCheck className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2385,7 +2481,7 @@ export default async function ProjectDetailPage({
         <article id="project-risks" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
                 <AlertTriangle className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2410,9 +2506,7 @@ export default async function ProjectDetailPage({
                       <p className="module-record-summary">{risk.description || "No description yet."}</p>
                     </div>
                     {risk.mitigation ? (
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">Mitigation {risk.mitigation}</span>
-                      </div>
+                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{risk.mitigation}</p>
                     ) : null}
                   </div>
                 </div>
@@ -2424,7 +2518,7 @@ export default async function ProjectDetailPage({
         <article id="project-issues" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-700 dark:text-rose-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-rose-500/10 text-rose-700 dark:text-rose-300">
                 <Siren className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2461,7 +2555,7 @@ export default async function ProjectDetailPage({
         <article id="project-decisions" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/10 text-violet-700 dark:text-violet-300">
                 <Scale className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2488,9 +2582,7 @@ export default async function ProjectDetailPage({
                       <p className="module-record-summary">{decision.rationale}</p>
                     </div>
                     {decision.impact_summary ? (
-                      <div className="module-record-meta">
-                        <span className="module-record-chip">Impact {decision.impact_summary}</span>
-                      </div>
+                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{decision.impact_summary}</p>
                     ) : null}
                   </div>
                 </div>
@@ -2502,7 +2594,7 @@ export default async function ProjectDetailPage({
         <article id="project-meetings" className="module-section-surface scroll-mt-24">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 <MessagesSquare className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2544,7 +2636,7 @@ export default async function ProjectDetailPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <Database className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2588,7 +2680,7 @@ export default async function ProjectDetailPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <Clock3 className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
@@ -2627,7 +2719,110 @@ export default async function ProjectDetailPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <Radar className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Aerial evidence</p>
+              <h2 className="module-section-title">Field collection and evidence packages</h2>
+              <p className="module-section-description">
+                Aerial missions and evidence packages linked to this project. Evidence package readiness flows into the project evidence chain.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {aerialProjectPosture.missionCount === 0 ? (
+          <div className="mt-5 space-y-4">
+            <div className="module-empty-state text-sm">
+              No aerial missions linked yet. Log the first mission to start connecting field collection to this project evidence chain.
+            </div>
+            <AerialMissionCreator
+              projectId={project.id}
+              description="Corridor surveys, site inspections, and AOI captures linked here contribute to the field evidence chain."
+            />
+          </div>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="module-metric-card">
+                <p className="module-metric-label">Missions</p>
+                <p className="module-metric-value text-sm">{aerialProjectPosture.missionCount}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {aerialProjectPosture.activeMissionCount} active, {aerialProjectPosture.completeMissionCount} complete.
+                </p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Evidence packages</p>
+                <p className="module-metric-value text-sm">{aerialPackages.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {aerialProjectPosture.readyPackageCount} ready or shared.
+                </p>
+              </div>
+              <div className="module-metric-card col-span-2">
+                <p className="module-metric-label">Verification readiness</p>
+                <div className="mt-1">
+                  <StatusBadge tone={aerialVerificationReadinessTone(aerialProjectPosture.verificationReadiness)}>
+                    {formatAerialVerificationReadinessLabel(aerialProjectPosture.verificationReadiness)}
+                  </StatusBadge>
+                </div>
+                {aerialProjectPostureDetail ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{aerialProjectPostureDetail}</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="module-record-list">
+              {aerialMissions.map((mission) => {
+                const missionPackages = aerialPackages.filter((p) => p.mission_id === mission.id);
+                return (
+                  <div key={mission.id} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <AerialMissionStatusEditor
+                          missionId={mission.id}
+                          currentStatus={mission.status as import("@/lib/aerial/catalog").AerialMissionStatus}
+                        />
+                        <StatusBadge tone="neutral">{formatAerialMissionTypeLabel(mission.mission_type)}</StatusBadge>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{mission.title}</h3>
+                          <p className="module-record-stamp">Updated {fmtDateTime(mission.updated_at)}</p>
+                        </div>
+                        {mission.geography_label ? (
+                          <p className="module-record-summary">{mission.geography_label}</p>
+                        ) : null}
+                      </div>
+                      {missionPackages.length > 0 ? (
+                        <div className="module-record-meta">
+                          {missionPackages.map((pkg) => (
+                            <span key={pkg.id} className="module-record-chip">
+                              {pkg.title} · <StatusBadge tone={aerialVerificationReadinessTone(pkg.verification_readiness)}>{formatAerialVerificationReadinessLabel(pkg.verification_readiness)}</StatusBadge>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-muted-foreground">No evidence packages yet for this mission.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <AerialEvidencePackageCreator
+              missionOptions={aerialMissions.map((m) => ({ id: m.id, title: m.title }))}
+            />
+            <AerialMissionCreator projectId={project.id} titleLabel="Log another mission" />
+          </div>
+        )}
+      </article>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
               <FileClock className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
@@ -2648,7 +2843,6 @@ export default async function ProjectDetailPage({
                 <div className="module-record-main">
                   <div className="module-record-kicker">
                     <StatusBadge tone={item.tone}>{item.badge}</StatusBadge>
-                    <span className="module-record-chip">{titleize(item.type)}</span>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-start justify-between gap-3">

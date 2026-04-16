@@ -20,8 +20,8 @@ describe("AdminPage", () => {
     expect(screen.getByText("Billing & subscription")).toBeInTheDocument();
     expect(screen.getByText("Pilot readiness")).toBeInTheDocument();
     expect(screen.getAllByText("Staged").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Open billing controls/i })).toHaveAttribute("href", "/billing");
-    expect(screen.getByRole("link", { name: /Open evidence center/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Billing & subscription/i })).toHaveAttribute("href", "/billing");
+    expect(screen.getByRole("link", { name: /Pilot readiness/i })).toHaveAttribute(
       "href",
       "/admin/pilot-readiness"
     );
