@@ -5,6 +5,8 @@
 **Status:** Active implementation grounding note  
 **Purpose:** capture what the repo already proves about the RTP packet loop and identify the next actual gap to close in code.
 
+**Update:** the bounded review-loop slices described here were materially implemented later the same day. See `2026-04-16-openplan-rtp-review-loop-implementation-update.md` for the shipped-state note.
+
 ## Executive Read
 
 I inspected the live RTP seam after publishing the execution program and owner board.
@@ -120,32 +122,31 @@ This is the cheapest high-leverage RTP hardening move now that first-packet crea
 ---
 
 ## Gap B. Bounded public-review/comment-response foundation
-This is the strongest remaining RTP loop gap after packet creation/generation.
+This was the strongest remaining RTP loop gap after packet creation/generation.
 
-### Next real work
-- define the minimum comment-response artifact or summary object
-- link it to RTP cycle and engagement campaign posture
-- expose it in cycle and packet review surfaces
-- ensure the runtime can reference it when recommending release/public-review next steps
+### Same-day implementation outcome
+A bounded version of this gap is now materially closed in repo.
+The code now has:
+- a minimum public-review summary object,
+- linkage to RTP cycle and engagement campaign posture,
+- cycle and packet review surfaces that expose live review-loop state,
+- packet generation snapshots that capture review-loop posture,
+- and export output that carries the same summary into the packet artifact.
 
-### Product rule
-Do not try to build the whole civic engagement universe.
-Build the smallest truthful foundation that lets OpenPlan say:
-- the cycle is in public review,
-- these campaigns/comments are linked,
-- this is the current response posture,
-- and this affects packet readiness.
+### Remaining bounded gap
+What still does **not** exist is a full comment-response workspace or board-ready response authoring system.
+The next pass should keep the scope narrow and truthful.
 
 ---
 
 ## Gap C. Proof refresh for the RTP loop
-Even if the mutation path is real, the proof artifact must be refreshed to match current reality.
+This is now the most immediate remaining RTP documentation/proof gap.
 
 ### Next real work
 - current smoke on first-packet creation/generation
-- current smoke on post-action state
 - current screenshots or equivalent proof for release-review posture
 - explicit note about what remains bounded in public-review flow
+- one follow-up semantics pass through shared runtime/workspace command surfaces if any still rely on freshness-only release wording
 
 ---
 
@@ -162,15 +163,17 @@ Even if the mutation path is real, the proof artifact must be refreshed to match
 - define one bounded comment-response posture lane
 - connect it to cycle detail and packet review posture
 - avoid overbuilding
+- status: materially implemented in bounded form
 
 ## Slice 3
-**RTP proof refresh**
+**RTP proof refresh + remaining semantics pass**
 - browser or route-level smoke
 - docs/ops proof note
+- align any remaining shared runtime/workspace release-review wording
 
 ## Slice 4
 **Then move harder into Grants OS**
-Once RTP is semantically clean and review-ready, push the next major loop into `/grants` and write-back behavior.
+Once RTP is semantically clean, proof-backed, and review-ready across shared surfaces, push the next major loop into `/grants` and write-back behavior.
 
 ---
 
@@ -181,9 +184,9 @@ The repo inspection clarified something important:
 **RTP first-packet generation is not the main missing feature anymore.**
 
 The main RTP work now is:
-- semantic consistency,
-- public-review/operator closure,
-- and proof refresh.
+- final shared-surface semantic consistency,
+- proof refresh,
+- and then harder movement into Grants OS.
 
 That is good news.
 It means OpenPlan can move from “can generate packets” to “can close the RTP operating loop cleanly,” which is exactly the right gateway before Grants OS becomes the next dominant lane.
