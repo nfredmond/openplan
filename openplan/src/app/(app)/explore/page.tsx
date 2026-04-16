@@ -38,6 +38,7 @@ import {
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { downloadGeojson, downloadMetricsCsv, downloadRecordsCsv, downloadText } from "@/lib/export/download";
+import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { resolveStatusTone, toneFromDelta, type StatusTone } from "@/lib/ui/status";
 
 type Position = [number, number] | [number, number, number];
@@ -168,64 +169,7 @@ type AnalysisContextResponse = {
     title: string;
     created_at: string;
   }>;
-  operationsSummary: {
-    posture: "stable" | "active" | "attention";
-    headline: string;
-    detail: string;
-    counts: {
-      projects: number;
-      activeProjects: number;
-      plans: number;
-      plansNeedingSetup: number;
-      programs: number;
-      activePrograms: number;
-      reports: number;
-      reportRefreshRecommended: number;
-      reportNoPacket: number;
-      reportPacketCurrent: number;
-      rtpFundingReviewPackets: number;
-      comparisonBackedReports: number;
-      fundingOpportunities: number;
-      openFundingOpportunities: number;
-      closingSoonFundingOpportunities: number;
-      overdueDecisionFundingOpportunities: number;
-      projectFundingNeedAnchorProjects: number;
-      projectFundingSourcingProjects: number;
-      projectFundingDecisionProjects: number;
-      projectFundingAwardRecordProjects: number;
-      projectFundingReimbursementStartProjects: number;
-      projectFundingReimbursementActiveProjects: number;
-      projectFundingGapProjects: number;
-      queueDepth: number;
-    };
-    nextCommand: {
-      key: string;
-      title: string;
-      detail: string;
-      href: string;
-      tone: "info" | "success" | "warning" | "danger" | "neutral";
-      priority: number;
-      badges: Array<{ label: string; value?: string | number | null }>;
-    } | null;
-    commandQueue: Array<{
-      key: string;
-      title: string;
-      detail: string;
-      href: string;
-      tone: "info" | "success" | "warning" | "danger" | "neutral";
-      priority: number;
-      badges: Array<{ label: string; value?: string | number | null }>;
-    }>;
-    fullCommandQueue: Array<{
-      key: string;
-      title: string;
-      detail: string;
-      href: string;
-      tone: "info" | "success" | "warning" | "danger" | "neutral";
-      priority: number;
-      badges: Array<{ label: string; value?: string | number | null }>;
-    }>;
-  };
+  operationsSummary: WorkspaceOperationsSummary;
 };
 
 type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
