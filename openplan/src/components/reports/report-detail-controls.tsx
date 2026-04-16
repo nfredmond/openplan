@@ -24,6 +24,7 @@ export function ReportDetailControls({
   driftSummary,
   evidenceSummary,
   fundingSummary,
+  reviewSummary,
 }: {
   report: {
     id: string;
@@ -46,6 +47,11 @@ export function ReportDetailControls({
     headline: string;
     detail: string;
     timingDetail?: string | null;
+  } | null;
+  reviewSummary?: {
+    headline: string;
+    detail: string;
+    nextActionLabel?: string | null;
   } | null;
 }) {
   const router = useRouter();
@@ -240,6 +246,23 @@ export function ReportDetailControls({
             {fundingSummary.timingDetail ? (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                 {fundingSummary.timingDetail}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {reviewSummary ? (
+          <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Release review posture
+            </p>
+            <p className="mt-1 font-semibold">{reviewSummary.headline}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {reviewSummary.detail}
+            </p>
+            {reviewSummary.nextActionLabel ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Next operator move: {reviewSummary.nextActionLabel}.
               </p>
             ) : null}
           </div>

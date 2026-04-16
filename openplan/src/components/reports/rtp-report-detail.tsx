@@ -6,14 +6,17 @@ import { RtpReportSectionControls } from "@/components/reports/rtp-report-sectio
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
-import { formatRtpCycleStatusLabel, rtpCycleStatusTone } from "@/lib/rtp/catalog";
+import {
+  buildRtpReleaseReviewSummary,
+  formatRtpCycleStatusLabel,
+  rtpCycleStatusTone,
+} from "@/lib/rtp/catalog";
 import {
   describeReportSectionKey,
   formatDateTime,
   formatReportStatusLabel,
   formatReportTypeLabel,
   getReportPacketFreshness,
-  getReportPacketWorkStatus,
   reportStatusTone,
 } from "@/lib/reports/catalog";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
@@ -186,7 +189,18 @@ export function RtpReportDetail({
     generatedAt: latestArtifactGeneratedAt,
     updatedAt: cycle?.updated_at ?? report.updated_at,
   });
-  const packetWorkStatus = getReportPacketWorkStatus(packetFreshness.label);
+  const currentPublicReviewSummary = currentContext.publicReviewLabel
+    ? {
+        label: currentContext.publicReviewLabel,
+        detail: currentContext.publicReviewDetail ?? "No live public-review summary is available for this RTP packet yet.",
+        tone: currentContext.publicReviewTone ?? "neutral",
+        actionItems: [],
+      }
+    : null;
+  const releaseReviewSummary = buildRtpReleaseReviewSummary({
+    packetFreshnessLabel: packetFreshness.label,
+    publicReviewSummary: currentPublicReviewSummary,
+  });
   const grantsFollowThrough = resolveRtpFundingFollowThrough(
     currentContext.fundingSnapshot ?? generationContext.fundingSnapshot
   );
@@ -370,7 +384,7 @@ export function RtpReportDetail({
             {cycle ? <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge> : null}
             {report.latest_artifact_kind ? <StatusBadge tone="neutral">{report.latest_artifact_kind.toUpperCase()}</StatusBadge> : null}
             <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
-            <StatusBadge tone={packetWorkStatus.tone}>{packetWorkStatus.label}</StatusBadge>
+            <StatusBadge tone={releaseReviewSummary.tone}>{releaseReviewSummary.label}</StatusBadge>
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -428,6 +442,11 @@ export function RtpReportDetail({
               status: report.status,
               hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
             }}
+            reviewSummary={{
+              headline: releaseReviewSummary.label,
+              detail: releaseReviewSummary.detail,
+              nextActionLabel: releaseReviewSummary.nextActionLabel,
+            }}
           />
 
           <WorkspaceCommandBoard
@@ -448,12 +467,13 @@ export function RtpReportDetail({
             <div className="rounded-2xl border border-border/70 bg-muted/25 px-4 py-4">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={packetFreshness.tone}>{packetFreshness.label}</StatusBadge>
-                <StatusBadge tone={packetWorkStatus.tone}>{packetWorkStatus.label}</StatusBadge>
+                <StatusBadge tone={releaseReviewSummary.tone}>{releaseReviewSummary.label}</StatusBadge>
                 {cycle ? <StatusBadge tone="neutral">Cycle updated {formatDateTime(cycle.updated_at)}</StatusBadge> : null}
                 {latestArtifactGeneratedAt ? <StatusBadge tone="neutral">Packet generated {formatDateTime(latestArtifactGeneratedAt)}</StatusBadge> : null}
                 {comparisonDigest ? <StatusBadge tone="info">Comparison-backed</StatusBadge> : null}
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{packetWorkStatus.detail}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{releaseReviewSummary.detail}</p>
+              <p className="mt-2 text-xs text-muted-foreground">Next operator move: {releaseReviewSummary.nextActionLabel}.</p>
               <p className="mt-2 text-xs text-muted-foreground">{packetFreshness.detail}</p>
               {comparisonDigest ? (
                 <div className="mt-4 rounded-xl border border-border/70 bg-background px-3 py-3">

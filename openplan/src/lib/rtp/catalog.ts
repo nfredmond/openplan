@@ -1,3 +1,5 @@
+import { getReportPacketWorkStatus, type ReportStatusTone } from "@/lib/reports/catalog";
+
 export const RTP_CYCLE_STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "public_review", label: "Public Review" },
@@ -123,6 +125,13 @@ export type RtpPublicReviewSummary = {
   detail: string;
   tone: "success" | "warning" | "neutral" | "info";
   actionItems: string[];
+};
+
+export type RtpReleaseReviewSummary = {
+  label: string;
+  detail: string;
+  tone: ReportStatusTone;
+  nextActionLabel: string;
 };
 
 export function titleizeRtpValue(value: string | null | undefined): string {
@@ -300,6 +309,72 @@ export function buildRtpCycleWorkflowSummary({
     detail: "The cycle can now anchor project portfolio, chapter, engagement, and funding work.",
     tone: "success",
     actionItems: ["Link projects into the cycle.", "Start chapter scaffolding.", "Attach public engagement windows."],
+  };
+}
+
+function lowercaseFirst(text: string) {
+  return text.length > 0 ? `${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
+}
+
+export function buildRtpReleaseReviewSummary(input: {
+  packetFreshnessLabel: string;
+  publicReviewSummary: RtpPublicReviewSummary | null;
+}): RtpReleaseReviewSummary {
+  const packetWorkStatus = getReportPacketWorkStatus(input.packetFreshnessLabel);
+
+  if (packetWorkStatus.key !== "release-review") {
+    return {
+      label: packetWorkStatus.label,
+      detail: packetWorkStatus.detail,
+      tone: packetWorkStatus.tone,
+      nextActionLabel:
+        packetWorkStatus.key === "generate-first" ? "Generate first packet" : "Refresh packet",
+    };
+  }
+
+  if (!input.publicReviewSummary) {
+    return {
+      label: packetWorkStatus.label,
+      detail: packetWorkStatus.detail,
+      tone: packetWorkStatus.tone,
+      nextActionLabel: "Open release review",
+    };
+  }
+
+  const summary = input.publicReviewSummary;
+
+  if (summary.label === "Comment-response foundation ready") {
+    return {
+      label: "Release review ready",
+      detail: `The packet is current and ${lowercaseFirst(summary.detail)}`,
+      tone: "success",
+      nextActionLabel: "Open release review",
+    };
+  }
+
+  if (summary.label === "Public review active") {
+    return {
+      label: "Review loop still open",
+      detail: `The packet is current, but ${lowercaseFirst(summary.detail)} Treat release review as in progress until moderation closes.`,
+      tone: "warning",
+      nextActionLabel: "Close pending comment review",
+    };
+  }
+
+  if (summary.label === "Public review foundation ready") {
+    return {
+      label: "Comment basis still forming",
+      detail: `The packet is current and ${lowercaseFirst(summary.detail)} Release review can start, but it should not be treated as settled until approved comments are carried into the packet response summary.`,
+      tone: "info",
+      nextActionLabel: "Build response summary",
+    };
+  }
+
+  return {
+    label: summary.label,
+    detail: summary.detail,
+    tone: summary.tone,
+    nextActionLabel: summary.actionItems[0] ?? "Review public input",
   };
 }
 
