@@ -118,6 +118,13 @@ export type RtpCycleWorkflowSummary = {
   actionItems: string[];
 };
 
+export type RtpPublicReviewSummary = {
+  label: string;
+  detail: string;
+  tone: "success" | "warning" | "neutral" | "info";
+  actionItems: string[];
+};
+
 export function titleizeRtpValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
 
@@ -293,5 +300,96 @@ export function buildRtpCycleWorkflowSummary({
     detail: "The cycle can now anchor project portfolio, chapter, engagement, and funding work.",
     tone: "success",
     actionItems: ["Link projects into the cycle.", "Start chapter scaffolding.", "Attach public engagement windows."],
+  };
+}
+
+export function buildRtpPublicReviewSummary({
+  status,
+  publicReviewOpenAt,
+  publicReviewCloseAt,
+  cycleLevelCampaignCount,
+  chapterCampaignCount,
+  packetRecordCount,
+  generatedPacketCount,
+  pendingCommentCount,
+  approvedCommentCount,
+  readyCommentCount,
+}: {
+  status: string | null | undefined;
+  publicReviewOpenAt: string | null | undefined;
+  publicReviewCloseAt: string | null | undefined;
+  cycleLevelCampaignCount: number;
+  chapterCampaignCount: number;
+  packetRecordCount: number;
+  generatedPacketCount: number;
+  pendingCommentCount: number;
+  approvedCommentCount: number;
+  readyCommentCount: number;
+}): RtpPublicReviewSummary {
+  const hasReviewWindow = Boolean(publicReviewOpenAt && publicReviewCloseAt);
+  const totalCampaignCount = cycleLevelCampaignCount + chapterCampaignCount;
+  const hasPacketArtifact = generatedPacketCount > 0;
+  const actionItems: string[] = [];
+
+  if (!hasReviewWindow) {
+    actionItems.push("Set a public review open and close window before calling the cycle review-ready.");
+  }
+  if (cycleLevelCampaignCount === 0) {
+    actionItems.push("Create one whole-cycle engagement campaign so planwide comments land on a single RTP review target.");
+  }
+  if (totalCampaignCount === 0) {
+    actionItems.push("Add at least one RTP-linked engagement campaign so review comments can feed back into the cycle.");
+  }
+  if (!hasPacketArtifact) {
+    actionItems.push("Create and generate a current RTP packet before board or public review begins.");
+  }
+  if (pendingCommentCount > 0) {
+    actionItems.push(`Resolve ${pendingCommentCount} pending public comment${pendingCommentCount === 1 ? "" : "s"} before final packet closeout.`);
+  }
+  if (approvedCommentCount === 0) {
+    actionItems.push("Approve at least one categorized comment so the cycle has a real comment-response basis, not just setup state.");
+  }
+
+  if (status === "public_review" && hasReviewWindow && totalCampaignCount > 0 && hasPacketArtifact) {
+    if (pendingCommentCount > 0) {
+      return {
+        label: "Public review active",
+        detail: `${pendingCommentCount} comment${pendingCommentCount === 1 ? " is" : "s are"} still waiting for operator review while ${readyCommentCount} approved item${readyCommentCount === 1 ? " is" : "s are"} already ready for packet handoff.`,
+        tone: "warning",
+        actionItems: actionItems.slice(0, 3),
+      };
+    }
+
+    return {
+      label: readyCommentCount > 0 ? "Comment-response foundation ready" : "Public review active",
+      detail:
+        readyCommentCount > 0
+          ? `${readyCommentCount} approved comment${readyCommentCount === 1 ? " is" : "s are"} ready for packet handoff and the current RTP packet is in place for review closure.`
+          : "The cycle is in public review posture with a live window, engagement linkage, and a generated packet, but approved comment-response material is still missing.",
+      tone: readyCommentCount > 0 ? "success" : "info",
+      actionItems:
+        readyCommentCount > 0
+          ? ["Refresh the packet after material comment changes.", "Carry approved comments into the board-ready response summary."]
+          : actionItems.slice(0, 3),
+    };
+  }
+
+  if (hasReviewWindow && totalCampaignCount > 0 && hasPacketArtifact) {
+    return {
+      label: "Public review foundation ready",
+      detail: `The cycle has a review window, ${packetRecordCount} packet record${packetRecordCount === 1 ? "" : "s"} (${generatedPacketCount} generated), and ${totalCampaignCount} linked engagement campaign${totalCampaignCount === 1 ? "" : "s"}.`,
+      tone: approvedCommentCount > 0 ? "success" : "info",
+      actionItems:
+        approvedCommentCount > 0
+          ? ["Move the cycle into public review when intake should open.", "Keep packet refreshes tied to approved comment-response changes."]
+          : actionItems.slice(0, 3),
+    };
+  }
+
+  return {
+    label: actionItems.length > 2 ? "Needs review foundation" : "Review foundation in progress",
+    detail: actionItems[0] ?? "The RTP cycle has the minimum review foundation in place.",
+    tone: actionItems.length > 2 ? "warning" : "neutral",
+    actionItems: actionItems.slice(0, 4),
   };
 }
