@@ -92,6 +92,15 @@ describe("grants-links", () => {
     expect(
       isGrantsDecisionCommand(
         buildCommand({
+          key: "resolve-overdue-funding-decisions",
+          targetOpportunityId: "opportunity-overdue-1",
+        })
+      )
+    ).toBe(true);
+
+    expect(
+      isGrantsDecisionCommand(
+        buildCommand({
           key: "record-awarded-funding",
           targetOpportunityId: "opportunity-award-1",
         })
@@ -204,6 +213,17 @@ describe("grants-links", () => {
         })
       )
     ).toBe("/grants?focusOpportunityId=opportunity-close-1#funding-opportunity-opportunity-close-1");
+  });
+
+  it("routes overdue-decision commands into the focused opportunity lane", () => {
+    expect(
+      resolveWorkspaceCommandHref(
+        buildCommand({
+          key: "resolve-overdue-funding-decisions",
+          targetOpportunityId: "opportunity-overdue-1",
+        })
+      )
+    ).toBe("/grants?focusOpportunityId=opportunity-overdue-1#funding-opportunity-opportunity-overdue-1");
   });
 
   it("routes award-conversion commands into the grants award conversion composer", () => {

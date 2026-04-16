@@ -5,6 +5,7 @@ export const GRANTS_COMMAND_MODULE_LABEL = "Grants OS";
 
 const GRANTS_QUEUE_KEYS = new Set([
   "funding-windows-closing",
+  "resolve-overdue-funding-decisions",
   "anchor-project-funding-needs",
   "source-project-funding-opportunities",
   "advance-project-funding-decisions",
@@ -25,6 +26,7 @@ const GRANTS_REIMBURSEMENT_QUEUE_KEYS = new Set([
 const GRANTS_AWARD_QUEUE_KEYS = new Set(["record-awarded-funding"]);
 const GRANTS_DECISION_QUEUE_KEYS = new Set([
   "funding-windows-closing",
+  "resolve-overdue-funding-decisions",
   "advance-project-funding-decisions",
 ]);
 const GRANTS_SOURCING_QUEUE_KEYS = new Set([
@@ -136,7 +138,11 @@ export function resolveSharedGrantsQueueHref(item: WorkspaceCommandQueueItem): s
     return buildFocusedProjectHref(item.targetProjectId, "#grants-opportunity-creator");
   }
 
-  if (item.key === "funding-windows-closing" || item.key === "advance-project-funding-decisions") {
+  if (
+    item.key === "funding-windows-closing"
+    || item.key === "resolve-overdue-funding-decisions"
+    || item.key === "advance-project-funding-decisions"
+  ) {
     return buildFocusedOpportunityHref(item.targetOpportunityId);
   }
 

@@ -86,6 +86,9 @@ export function WorkspaceCommandBoard({
           <p className="module-summary-value">{summary.counts.openFundingOpportunities}</p>
           <p className="module-summary-detail">
             {summary.counts.closingSoonFundingOpportunities} closing within 14 days
+            {summary.counts.overdueDecisionFundingOpportunities > 0
+              ? `, ${summary.counts.overdueDecisionFundingOpportunities} overdue decision${summary.counts.overdueDecisionFundingOpportunities === 1 ? "" : "s"}`
+              : ""}
             {summary.counts.projectFundingNeedAnchorProjects > 0
               ? `, ${summary.counts.projectFundingNeedAnchorProjects} missing funding anchors`
               : ""}

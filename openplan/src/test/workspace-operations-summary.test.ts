@@ -534,6 +534,63 @@ describe("workspace operations summary", () => {
     expect(summary.nextCommand?.href).toBe("/projects/project-gap#project-invoices");
   });
 
+  it("surfaces overdue monitored funding decisions as a focused grants queue command", () => {
+    const summary = buildWorkspaceOperationsSummaryFromSourceRows({
+      projects: [
+        {
+          id: "project-overdue",
+          name: "Overdue Project",
+          status: "active",
+          delivery_phase: "delivery",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      plans: [],
+      programs: [],
+      reports: [],
+      fundingOpportunities: [
+        {
+          id: "opp-overdue-older",
+          title: "ATP Cycle 8",
+          opportunity_status: "open",
+          decision_state: "monitor",
+          expected_award_amount: 100000,
+          closes_at: "2026-05-20T00:00:00.000Z",
+          decision_due_at: "2026-04-01T00:00:00.000Z",
+          program_id: null,
+          project_id: "project-overdue",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+        {
+          id: "opp-overdue-newer",
+          title: "SB1 Local Partnership",
+          opportunity_status: "open",
+          decision_state: "monitor",
+          expected_award_amount: 100000,
+          closes_at: "2026-05-25T00:00:00.000Z",
+          decision_due_at: "2026-04-10T00:00:00.000Z",
+          program_id: null,
+          project_id: "project-overdue",
+          updated_at: "2026-04-11T17:00:00.000Z",
+        },
+      ],
+      now: new Date("2026-04-16T12:00:00.000Z"),
+    });
+
+    expect(summary.counts.overdueDecisionFundingOpportunities).toBe(2);
+
+    const overdueCommand = summary.fullCommandQueue.find(
+      (item) => item.key === "resolve-overdue-funding-decisions"
+    );
+    expect(overdueCommand).toBeDefined();
+    expect(overdueCommand?.moduleKey).toBe("grants");
+    expect(overdueCommand?.targetOpportunityId).toBe("opp-overdue-older");
+    expect(overdueCommand?.href).toBe(
+      "/grants?focusOpportunityId=opp-overdue-older#funding-opportunity-opp-overdue-older"
+    );
+    expect(overdueCommand?.detail).toContain("past their decision deadline");
+  });
+
   it("surfaces measurable funding gaps after sourcing exists", () => {
     const summary = buildWorkspaceOperationsSummaryFromSourceRows({
       projects: [

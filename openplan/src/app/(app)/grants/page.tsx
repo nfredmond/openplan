@@ -1100,6 +1100,7 @@ export default async function GrantsPage({
             <span className="module-inline-item"><strong>{monitorCount}</strong> monitor</span>
             <span className="module-inline-item"><strong>{skipCount}</strong> skip</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingDecisionProjects}</strong> decision gap projects</span>
+            <span className="module-inline-item"><strong>{operationsSummary.counts.overdueDecisionFundingOpportunities}</strong> overdue decisions</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingAwardRecordProjects}</strong> award records missing</span>
             <span className="module-inline-item"><strong>{fundingAwards.length}</strong> award records recorded</span>
             <span className="module-inline-item"><strong>{operationsSummary.counts.projectFundingReimbursementStartProjects + operationsSummary.counts.projectFundingReimbursementActiveProjects}</strong> reimbursement follow-through</span>
