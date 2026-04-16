@@ -220,6 +220,7 @@ export type WorkspaceCommandQueueItem = {
   targetProjectId?: string | null;
   targetProjectName?: string | null;
   targetOpportunityId?: string | null;
+  targetOpportunityTitle?: string | null;
   targetInvoiceId?: string | null;
   targetFundingAwardId?: string | null;
   tone: StatusTone;
@@ -268,6 +269,7 @@ export type WorkspaceOperationsSummary = {
     fundingOpportunities: number;
     openFundingOpportunities: number;
     closingSoonFundingOpportunities: number;
+    overdueDecisionFundingOpportunities: number;
     projectFundingNeedAnchorProjects: number;
     projectFundingSourcingProjects: number;
     projectFundingDecisionProjects: number;
@@ -853,6 +855,12 @@ export function buildWorkspaceOperationsSummary({
     const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
     return days !== null && days <= 14;
   }).length;
+  const overdueDecisionOpportunities = fundingOpportunities.filter((item) => {
+    if (!["open", "upcoming"].includes(item.opportunityStatus ?? "")) return false;
+    if ((item.decisionState ?? "") !== "monitor") return false;
+    const days = daysUntil(item.decisionDueAt, now);
+    return days !== null && days < 0;
+  });
 
   const fundingOpportunitiesByProjectId = new Map<string, WorkspaceOperationsFundingOpportunityRow[]>();
   fundingOpportunities.forEach((opportunity) => {
@@ -1318,6 +1326,17 @@ export function buildWorkspaceOperationsSummary({
   const firstClosingProject = firstClosingOpportunity?.projectId
     ? projects.find((project) => project.id === firstClosingOpportunity.projectId) ?? null
     : null;
+  const firstOverdueDecisionOpportunity = [...overdueDecisionOpportunities].sort((left, right) => {
+    const leftTime = left.decisionDueAt ? new Date(left.decisionDueAt).getTime() : Number.POSITIVE_INFINITY;
+    const rightTime = right.decisionDueAt ? new Date(right.decisionDueAt).getTime() : Number.POSITIVE_INFINITY;
+    return leftTime - rightTime;
+  })[0] ?? null;
+  const firstOverdueDecisionProgram = firstOverdueDecisionOpportunity?.programId
+    ? programs.find((program) => program.id === firstOverdueDecisionOpportunity.programId) ?? null
+    : null;
+  const firstOverdueDecisionProject = firstOverdueDecisionOpportunity?.projectId
+    ? projects.find((project) => project.id === firstOverdueDecisionOpportunity.projectId) ?? null
+    : null;
   const firstPlanNeedingSetup = plans.find((plan) => {
     const readiness = buildPlanReadiness({
       hasProject: Boolean(plan.projectId),
@@ -1399,6 +1418,29 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  if (overdueDecisionOpportunities.length > 0) {
+    const overdueCount = overdueDecisionOpportunities.length;
+    queueCandidates.push({
+      key: "resolve-overdue-funding-decisions",
+      moduleKey: "grants",
+      moduleLabel: "Grants OS",
+      title: "Resolve overdue funding decisions",
+      detail: `${overdueCount} monitored funding opportunit${overdueCount === 1 ? "y is" : "ies are"} past their decision deadline without a pursue or skip call.${firstOverdueDecisionOpportunity?.title ? ` ${firstOverdueDecisionOpportunity.title} is the oldest lapsed decision.` : ""}${firstOverdueDecisionProgram?.title ? ` Reopen ${firstOverdueDecisionProgram.title} first.` : firstOverdueDecisionProject?.name ? ` Reopen ${firstOverdueDecisionProject.name} first.` : ""}`,
+      href: firstOverdueDecisionOpportunity?.id
+        ? `/grants?focusOpportunityId=${firstOverdueDecisionOpportunity.id}#funding-opportunity-${firstOverdueDecisionOpportunity.id}`
+        : "/grants",
+      targetProjectId: firstOverdueDecisionOpportunity?.projectId ?? null,
+      targetOpportunityId: firstOverdueDecisionOpportunity?.id ?? null,
+      targetOpportunityTitle: firstOverdueDecisionOpportunity?.title ?? null,
+      tone: "warning",
+      priority: 1.8,
+      badges: [
+        { label: "Overdue decisions", value: overdueCount },
+        { label: "Open", value: openFundingOpportunities },
+      ],
+    });
+  }
+
   if (closingSoonFundingOpportunities > 0) {
     queueCandidates.push({
       key: "funding-windows-closing",
@@ -1413,6 +1455,7 @@ export function buildWorkspaceOperationsSummary({
           : "/programs",
       targetProjectId: firstClosingOpportunity?.projectId ?? null,
       targetOpportunityId: firstClosingOpportunity?.id ?? null,
+      targetOpportunityTitle: firstClosingOpportunity?.title ?? null,
       tone: "warning",
       priority: 2,
       badges: [
@@ -1458,6 +1501,7 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingAwardRecordProject?.project.id ?? null,
       targetProjectName: firstFundingAwardRecordProject?.project.name ?? null,
       targetOpportunityId: firstFundingAwardRecordProject?.awardedOpportunity.id ?? null,
+      targetOpportunityTitle: firstFundingAwardRecordProject?.awardedOpportunity.title ?? null,
       tone: "warning",
       priority: 6,
       badges: [
@@ -1629,6 +1673,7 @@ export function buildWorkspaceOperationsSummary({
       targetProjectId: firstFundingDecisionProject?.project.id ?? null,
       targetProjectName: firstFundingDecisionProject?.project.name ?? null,
       targetOpportunityId: firstFundingDecisionProject?.leadOpportunity?.id ?? null,
+      targetOpportunityTitle: firstFundingDecisionProject?.leadOpportunity?.title ?? null,
       tone: "warning",
       priority: 5,
       badges: [
@@ -1753,6 +1798,7 @@ export function buildWorkspaceOperationsSummary({
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,
       closingSoonFundingOpportunities,
+      overdueDecisionFundingOpportunities: overdueDecisionOpportunities.length,
       projectFundingNeedAnchorProjects: projectFundingNeedAnchorProjects.length,
       projectFundingSourcingProjects: fundingSourcingProjects.length,
       projectFundingDecisionProjects: fundingDecisionProjects.length,
