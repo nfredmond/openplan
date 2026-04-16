@@ -358,4 +358,62 @@ describe("ReportsPage", () => {
 
     expect(document.querySelectorAll('a[href="/grants#grants-gap-resolution-lane"]').length).toBeGreaterThan(0);
   });
+
+  it("surfaces RTP review-loop posture in the reports registry when a current packet is not yet settled", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-rtp-1",
+          workspace_id: "workspace-1",
+          project_id: null,
+          rtp_cycle_id: "rtp-1",
+          title: "Nevada County RTP Packet",
+          report_type: "board_packet",
+          status: "generated",
+          summary: "RTP packet for release review.",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+          created_at: "2026-03-28T18:00:00.000Z",
+          updated_at: "2026-03-28T20:00:00.000Z",
+          projects: null,
+          rtp_cycles: {
+            id: "rtp-1",
+            title: "2050 Nevada County RTP",
+            updated_at: "2026-03-28T19:55:00.000Z",
+          },
+        },
+      ],
+      error: null,
+    });
+
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          report_id: "report-rtp-1",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              rtpCycleUpdatedAt: "2026-03-28T19:55:00.000Z",
+              publicReviewSummary: {
+                label: "Public review active",
+                detail: "1 comment is still waiting for operator review while 2 approved items are already ready for packet handoff.",
+                tone: "warning",
+                actionItems: ["Resolve pending comments before closeout."],
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText("Review loop still open").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Action Close pending comment review/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 comment is still waiting for operator review while 2 approved items are already ready for packet handoff\./i)).toBeInTheDocument();
+
+    const reportLink = screen.getAllByText(/Nevada County RTP Packet/i)[0]?.closest("a");
+    expect(reportLink).toHaveAttribute("href", "/reports/report-rtp-1#packet-release-review");
+  });
 });

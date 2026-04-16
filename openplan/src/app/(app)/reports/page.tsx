@@ -16,6 +16,14 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import {
+  buildGrantDecisionModelingSupport,
+  describeProjectGrantModelingReadiness,
+} from "@/lib/grants/modeling-evidence";
+import {
+  buildRtpReleaseReviewSummary,
+  parseStoredRtpPublicReviewSummary,
+} from "@/lib/rtp/catalog";
+import {
   loadWorkspaceOperationsSummaryForWorkspace,
   parseStoredRtpFundingReview,
   type WorkspaceOperationsSupabaseLike,
@@ -253,6 +261,9 @@ export default async function ReportsPage({
       const storedRtpFundingReview = parseStoredRtpFundingReview(
         latestArtifact?.metadata_json ?? null
       );
+      const storedRtpPublicReviewSummary = parseStoredRtpPublicReviewSummary(
+        latestArtifact?.metadata_json ?? null
+      );
       const rtpCycle = Array.isArray(report.rtp_cycles)
         ? report.rtp_cycles[0] ?? null
         : report.rtp_cycles ?? null;
@@ -268,23 +279,61 @@ export default async function ReportsPage({
         }),
       });
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
+      const rtpReleaseReviewSummary = storedRtpPublicReviewSummary
+        ? buildRtpReleaseReviewSummary({
+            packetFreshnessLabel: packetFreshness.label,
+            publicReviewSummary: storedRtpPublicReviewSummary,
+          })
+        : null;
+      const project = Array.isArray(report.projects)
+        ? report.projects[0] ?? null
+        : report.projects ?? null;
+      const comparisonSnapshotDigest = describeComparisonSnapshotAggregate(
+        comparisonSnapshotAggregate
+      );
+      const grantModelingEvidence =
+        project && comparisonSnapshotAggregate && comparisonSnapshotDigest
+          ? {
+              projectId: project.id,
+              comparisonBackedCount: 1,
+              leadComparisonReport: {
+                id: report.id,
+                title: report.title,
+                href: `/reports/${report.id}#packet-release-review`,
+                packetFreshness,
+                comparisonAggregate: comparisonSnapshotAggregate,
+                comparisonDigest: comparisonSnapshotDigest,
+              },
+            }
+          : null;
+      const grantModelingReadiness = describeProjectGrantModelingReadiness(
+        grantModelingEvidence
+      );
+      const grantModelingSupport = buildGrantDecisionModelingSupport(
+        grantModelingEvidence,
+        project?.name ?? null
+      );
 
       return {
         ...report,
         latestArtifact,
-        project: Array.isArray(report.projects)
-          ? report.projects[0] ?? null
-          : report.projects ?? null,
+        project,
         rtpCycle,
         packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
         comparisonSnapshotAggregate,
+        comparisonSnapshotDigest,
         fundingSnapshot,
         storedRtpFundingReview,
+        storedRtpPublicReviewSummary,
+        rtpReleaseReviewSummary,
         evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
         grantsFollowThrough,
+        grantModelingEvidence,
+        grantModelingReadiness,
+        grantModelingSupport,
       };
     })
     .sort((left, right) => {
@@ -372,16 +421,19 @@ export default async function ReportsPage({
         report.packetFreshness.label !== "Packet current" ||
         Boolean(report.grantsFollowThrough) ||
         Boolean(report.storedRtpFundingReview?.needsAttention) ||
+        (report.rtpReleaseReviewSummary?.label ?? "") === "Review loop still open" ||
+        (report.rtpReleaseReviewSummary?.label ?? "") === "Comment basis still forming" ||
         Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
         (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
     )
     .slice(0, 5)
     .map((report) => {
       const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
+      const releaseReviewSummary = report.rtpReleaseReviewSummary;
       const grantsFollowThroughFirst =
         packetWorkStatus.key === "release-review" ? report.grantsFollowThrough : null;
       const badges: Array<{ label: string; value?: string | number | null }> = [];
-      badges.push({ label: packetWorkStatus.label });
+      badges.push({ label: releaseReviewSummary?.label ?? packetWorkStatus.label });
       if (report.packetFreshness.label !== "Packet current") {
         badges.push({ label: report.packetFreshness.label });
       }
@@ -412,6 +464,8 @@ export default async function ReportsPage({
             ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
             : report.storedRtpFundingReview?.needsAttention
               ? `First action: run funding-backed release review on ${report.title}`
+              : releaseReviewSummary && releaseReviewSummary.label !== "Release review ready"
+                ? `First action: ${releaseReviewSummary.nextActionLabel.toLowerCase()} for ${report.title}`
               : report.evidenceChainDigest?.blockedGateDetail
                 ? `First action: review governance hold in ${report.title}`
                 : packetWorkStatus.key === "generate-first"
@@ -422,6 +476,7 @@ export default async function ReportsPage({
         detail:
           (grantsFollowThroughFirst ? grantsFollowThroughFirst.title : null) ??
           report.storedRtpFundingReview?.detail ??
+          (releaseReviewSummary ? releaseReviewSummary.detail : null) ??
           report.evidenceChainDigest?.blockedGateDetail ??
           ((report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
             ? `${report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0} saved comparison${(report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) === 1 ? " can" : "s can"} support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`
@@ -820,6 +875,12 @@ export default async function ReportsPage({
             <div className="mt-5 module-record-list">
               {filteredReports.map((report) => {
                 const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
+                const releaseReviewSummary = report.rtpReleaseReviewSummary;
+                const actionLabel = releaseReviewSummary
+                  ? releaseReviewSummary.label === "Release review ready"
+                    ? "Open release review"
+                    : releaseReviewSummary.nextActionLabel
+                  : getReportPacketActionLabel(report.packetFreshness.label);
 
                 return (
                 <Link
@@ -855,8 +916,8 @@ export default async function ReportsPage({
                     <span className="module-record-chip">
                       {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
                     </span>
-                    <span className="module-record-chip">Next step {packetWorkStatus.label}</span>
-                    <span className="module-record-chip">Action {getReportPacketActionLabel(report.packetFreshness.label)}</span>
+                    <span className="module-record-chip">Next step {releaseReviewSummary?.label ?? packetWorkStatus.label}</span>
+                    <span className="module-record-chip">Action {actionLabel}</span>
                     {report.evidenceChainSummary && report.evidenceChainSummary.scenarioSetLinkCount > 0 ? (
                       <span className="module-record-chip">
                         {report.evidenceChainSummary.scenarioSetLinkCount} scenario set{report.evidenceChainSummary.scenarioSetLinkCount === 1 ? "" : "s"}

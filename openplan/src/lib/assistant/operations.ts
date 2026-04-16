@@ -18,6 +18,10 @@ import {
 } from "@/lib/assistant/rtp-packet-posture";
 import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
+import {
+  buildRtpReleaseReviewSummary,
+  parseStoredRtpPublicReviewSummary,
+} from "@/lib/rtp/catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 
 function formatCurrency(value: number | null | undefined): string {
@@ -1477,6 +1481,17 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
     updatedAt: context.report.updatedAt,
   });
   const packetPosture = resolveRtpPacketWorkPostureFromFreshnessLabel(packetFreshness.label);
+  const storedRtpPublicReviewSummary =
+    context.kind === "rtp_packet_report"
+      ? parseStoredRtpPublicReviewSummary({ sourceContext: context.sourceContext })
+      : null;
+  const rtpReleaseReviewSummary =
+    context.kind === "rtp_packet_report" && storedRtpPublicReviewSummary
+      ? buildRtpReleaseReviewSummary({
+          packetFreshnessLabel: packetFreshness.label,
+          publicReviewSummary: storedRtpPublicReviewSummary,
+        })
+      : null;
   const primaryPacketWorkflow =
     context.kind === "rtp_packet_report"
       ? packetPosture === "generate"
@@ -1495,13 +1510,29 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
               prompt: "What changed since the last RTP packet generation, and what should I verify before refreshing it?",
               promptLabel: "Plan RTP packet refresh in panel",
             }
-          : {
-              label: "Run RTP release check in panel",
-              reason: "The RTP packet is current enough that release review is now the main operator move.",
-              workflowId: "rtp-packet-release",
-              prompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
-              promptLabel: "Run RTP release check in panel",
-            }
+          : rtpReleaseReviewSummary?.label === "Review loop still open"
+            ? {
+                label: "Close RTP review loop in panel",
+                reason: rtpReleaseReviewSummary.detail,
+                workflowId: "rtp-packet-release",
+                prompt: "What is still open in this RTP packet's review loop, and what should close before release review is treated as settled?",
+                promptLabel: "Close RTP review loop in panel",
+              }
+            : rtpReleaseReviewSummary?.label === "Comment basis still forming"
+              ? {
+                  label: "Check RTP comment basis in panel",
+                  reason: rtpReleaseReviewSummary.detail,
+                  workflowId: "rtp-packet-release",
+                  prompt: "What comment-response basis is still missing from this RTP packet before release review is treated as settled?",
+                  promptLabel: "Check RTP comment basis in panel",
+                }
+              : {
+                  label: "Run RTP release check in panel",
+                  reason: rtpReleaseReviewSummary?.detail ?? "The RTP packet is current enough that release review is now the main operator move.",
+                  workflowId: "rtp-packet-release",
+                  prompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
+                  promptLabel: "Run RTP release check in panel",
+                }
       : {
           label: "Run release check in panel",
           reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
@@ -1561,7 +1592,12 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
       targetKind: reportTargetKind,
       actionClass: "review_packet",
       priority: "primary",
-      statusLabel: context.kind === "rtp_packet_report" ? packetFreshness.label : context.rtpCycle ? "RTP packet review" : "Packet review",
+      statusLabel:
+        context.kind === "rtp_packet_report"
+          ? rtpReleaseReviewSummary?.label ?? packetFreshness.label
+          : context.rtpCycle
+            ? "RTP packet review"
+            : "Packet review",
       reason: context.rtpCycle
         ? "Report detail is the canonical RTP packet audit surface for cycle drift, provenance, and artifact history."
         : "Report detail is the canonical packet audit surface for provenance, drift, and artifact history.",

@@ -110,6 +110,47 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.nextCommand?.moduleLabel).toBe("Grants OS");
   });
 
+  it("keeps current RTP packets in a warning lane when the stored review loop is still open", () => {
+    const summary = buildWorkspaceOperationsSummary({
+      projects: [],
+      plans: [],
+      programs: [],
+      reports: [
+        {
+          id: "report-rtp-open-review",
+          title: "Nevada County RTP packet",
+          status: "generated",
+          latestArtifactKind: "html",
+          generatedAt: "2026-04-12T20:00:00.000Z",
+          updatedAt: "2026-04-12T20:00:00.000Z",
+          metadataJson: {
+            sourceContext: {
+              publicReviewSummary: {
+                label: "Public review active",
+                detail: "1 comment is still waiting for operator review while 2 approved items are already ready for packet handoff.",
+                tone: "warning",
+                actionItems: ["Resolve pending comments before closeout."],
+              },
+            },
+          },
+        },
+      ],
+      fundingOpportunities: [],
+      fundingAwards: [],
+      fundingInvoices: [],
+      projectSubmittals: [],
+      projectFundingProfiles: [],
+    });
+
+    expect(summary.counts.reportPacketCurrent).toBe(1);
+    expect(summary.counts.rtpFundingReviewPackets).toBe(0);
+    expect(summary.nextCommand?.key).toBe("review-current-report-packets");
+    expect(summary.nextCommand?.title).toBe("Run release review on current packets");
+    expect(summary.nextCommand?.tone).toBe("warning");
+    expect(summary.nextCommand?.detail).toMatch(/review loop still open/i);
+    expect(summary.nextCommand?.detail).toMatch(/1 comment is still waiting for operator review/i);
+  });
+
   it("prefers latest report artifact timing when loading workspace operations summary", async () => {
     const supabase = createWorkspaceOperationsSupabaseStub({
       projects: [],
