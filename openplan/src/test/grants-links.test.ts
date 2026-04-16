@@ -182,6 +182,40 @@ describe("grants-links", () => {
     });
   });
 
+  it("names the specific lead overdue opportunity in the decision callout copy when available", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "decision",
+        buildCommand({
+          key: "resolve-overdue-funding-decisions",
+          tone: "warning",
+          targetOpportunityId: "opportunity-overdue-1",
+          targetOpportunityTitle: "ATP Cycle 8",
+        })
+      )
+    ).toEqual({
+      title: "Lead overdue opportunity decision command from workspace queue: ATP Cycle 8",
+      actionLabel: "Open overdue decision lane",
+      badgeLabel: "Next",
+    });
+  });
+
+  it("falls back to the overdue callout title without a lead opportunity title", () => {
+    expect(
+      resolveGrantsQueueCalloutCopy(
+        "decision",
+        buildCommand({
+          key: "resolve-overdue-funding-decisions",
+          tone: "warning",
+        })
+      )
+    ).toEqual({
+      title: "Lead overdue opportunity decision command from workspace queue",
+      actionLabel: "Open overdue decision lane",
+      badgeLabel: "Next",
+    });
+  });
+
   it("routes sourcing commands into the grants opportunity creator lane", () => {
     expect(
       resolveWorkspaceCommandHref(

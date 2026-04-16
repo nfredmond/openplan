@@ -98,7 +98,12 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 
 function describeWorkspaceNextCommandLink(context: {
   operationsSummary: {
-    nextCommand: { key: string; title: string; moduleKey?: string } | null;
+    nextCommand: {
+      key: string;
+      title: string;
+      moduleKey?: string;
+      targetOpportunityTitle?: string | null;
+    } | null;
     counts: { rtpFundingReviewPackets: number; overdueDecisionFundingOpportunities: number };
     grantModelingSummary?: {
       breakdown: { decisionReady: number };
@@ -116,13 +121,12 @@ function describeWorkspaceNextCommandLink(context: {
     context.operationsSummary.counts.overdueDecisionFundingOpportunities > 0
   ) {
     const overdueCount = context.operationsSummary.counts.overdueDecisionFundingOpportunities;
+    const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
     return {
       label: "Open overdue grant decision lane",
       statusLabel: `${overdueCount} overdue decision${overdueCount === 1 ? "" : "s"}`,
-      reason:
-        "Monitored funding opportunities are already past their recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing before less urgent cleanup.",
-      auditNote:
-        "Use the focused grants opportunity lane to resolve the lapsed decision as pursue or skip before acting on newer closing windows.",
+      reason: `Monitored funding opportunities are already past their recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing before less urgent cleanup.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead overdue monitor decision to resolve first.` : ""}`,
+      auditNote: `Use the focused grants opportunity lane to resolve the lapsed decision as pursue or skip before acting on newer closing windows.${leadOpportunityTitle ? ` Lead overdue monitor decision: ${leadOpportunityTitle}.` : ""}`,
     };
   }
 

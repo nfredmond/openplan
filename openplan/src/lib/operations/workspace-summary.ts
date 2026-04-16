@@ -216,6 +216,7 @@ export type WorkspaceCommandQueueItem = {
   targetProjectId?: string | null;
   targetProjectName?: string | null;
   targetOpportunityId?: string | null;
+  targetOpportunityTitle?: string | null;
   targetInvoiceId?: string | null;
   targetFundingAwardId?: string | null;
   tone: StatusTone;
@@ -1396,6 +1397,7 @@ export function buildWorkspaceOperationsSummary({
         : "/grants",
       targetProjectId: firstOverdueDecisionOpportunity?.projectId ?? null,
       targetOpportunityId: firstOverdueDecisionOpportunity?.id ?? null,
+      targetOpportunityTitle: firstOverdueDecisionOpportunity?.title ?? null,
       tone: "warning",
       priority: 1.8,
       badges: [

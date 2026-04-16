@@ -60,6 +60,11 @@ const GRANTS_QUEUE_CALLOUT_COPY: Record<GrantsQueueCalloutKind, { title: string;
   },
 };
 
+const OVERDUE_DECISION_CALLOUT_COPY = {
+  title: "Lead overdue opportunity decision command from workspace queue",
+  actionLabel: "Open overdue decision lane",
+} as const;
+
 function buildFocusedProjectHref(projectId: string | null | undefined, anchor: string) {
   if (!projectId) return `/grants${anchor}`;
   const params = new URLSearchParams({ focusProjectId: projectId });
@@ -118,9 +123,21 @@ export function isGrantsModelingCommand(
   return Boolean(item && isGrantsCommand(item) && item.key === "review-comparison-backed-reports");
 }
 
-export function resolveGrantsQueueCalloutCopy(kind: GrantsQueueCalloutKind, item: Pick<WorkspaceCommandQueueItem, "tone">) {
+export function resolveGrantsQueueCalloutCopy(
+  kind: GrantsQueueCalloutKind,
+  item: Pick<WorkspaceCommandQueueItem, "tone" | "key" | "targetOpportunityTitle">
+) {
+  const base =
+    kind === "decision" && item.key === "resolve-overdue-funding-decisions"
+      ? OVERDUE_DECISION_CALLOUT_COPY
+      : GRANTS_QUEUE_CALLOUT_COPY[kind];
+  const title =
+    kind === "decision" && item.key === "resolve-overdue-funding-decisions" && item.targetOpportunityTitle
+      ? `${base.title}: ${item.targetOpportunityTitle}`
+      : base.title;
   return {
-    ...GRANTS_QUEUE_CALLOUT_COPY[kind],
+    title,
+    actionLabel: base.actionLabel,
     badgeLabel: item.tone === "warning" ? "Next" : "Queue",
   };
 }

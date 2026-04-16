@@ -585,6 +585,7 @@ describe("workspace operations summary", () => {
     expect(overdueCommand).toBeDefined();
     expect(overdueCommand?.moduleKey).toBe("grants");
     expect(overdueCommand?.targetOpportunityId).toBe("opp-overdue-older");
+    expect(overdueCommand?.targetOpportunityTitle).toBe("ATP Cycle 8");
     expect(overdueCommand?.href).toBe(
       "/grants?focusOpportunityId=opp-overdue-older#funding-opportunity-opp-overdue-older"
     );

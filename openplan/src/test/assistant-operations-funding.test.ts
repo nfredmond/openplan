@@ -176,6 +176,7 @@ describe("assistant funding operations", () => {
             "2 monitored funding opportunities are past their decision deadline without a pursue or skip call. ATP Cycle 8 is the oldest lapsed decision.",
           href: "/grants?focusOpportunityId=opp-overdue-1#funding-opportunity-opp-overdue-1",
           targetOpportunityId: "opp-overdue-1",
+          targetOpportunityTitle: "ATP Cycle 8",
           tone: "warning",
           priority: 1.8,
           badges: [
@@ -193,6 +194,7 @@ describe("assistant funding operations", () => {
               "2 monitored funding opportunities are past their decision deadline without a pursue or skip call. ATP Cycle 8 is the oldest lapsed decision.",
             href: "/grants?focusOpportunityId=opp-overdue-1#funding-opportunity-opp-overdue-1",
             targetOpportunityId: "opp-overdue-1",
+            targetOpportunityTitle: "ATP Cycle 8",
             tone: "warning",
             priority: 1.8,
             badges: [
@@ -210,7 +212,51 @@ describe("assistant funding operations", () => {
     expect(action?.statusLabel).toBe("2 overdue decisions");
     expect(action?.href).toBe("/grants?focusOpportunityId=opp-overdue-1#funding-opportunity-opp-overdue-1");
     expect(action?.reason).toContain("past their recorded decision deadline");
+    expect(action?.reason).toContain("ATP Cycle 8 is the lead overdue monitor decision to resolve first.");
     expect(action?.auditNote).toContain("focused grants opportunity lane");
+    expect(action?.auditNote).toContain("Lead overdue monitor decision: ATP Cycle 8.");
+  });
+
+  it("falls back to generic overdue narration when no lead opportunity title is available", () => {
+    const links = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Resolve overdue funding decisions",
+        detail: "1 monitored funding opportunity is past its decision deadline.",
+        counts: {
+          projectFundingNeedAnchorProjects: 0,
+          overdueDecisionFundingOpportunities: 1,
+        },
+        nextCommand: {
+          key: "resolve-overdue-funding-decisions",
+          moduleKey: "grants",
+          moduleLabel: "Grants OS",
+          title: "Resolve overdue funding decisions",
+          detail: "1 monitored funding opportunity is past its decision deadline.",
+          href: "/grants",
+          tone: "warning",
+          priority: 1.8,
+          badges: [{ label: "Overdue decisions", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "resolve-overdue-funding-decisions",
+            moduleKey: "grants",
+            moduleLabel: "Grants OS",
+            title: "Resolve overdue funding decisions",
+            detail: "1 monitored funding opportunity is past its decision deadline.",
+            href: "/grants",
+            tone: "warning",
+            priority: 1.8,
+            badges: [{ label: "Overdue decisions", value: 1 }],
+          },
+        ],
+      })
+    );
+
+    const action = links.find((link) => link.id === "workspace-next-command");
+
+    expect(action?.reason).not.toContain("is the lead overdue monitor decision");
+    expect(action?.auditNote).not.toContain("Lead overdue monitor decision:");
   });
 
   it("singularizes the overdue narration when a single decision has lapsed", () => {

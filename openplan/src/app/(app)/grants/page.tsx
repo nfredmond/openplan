@@ -578,7 +578,7 @@ function GrantsQueueCallout({
   variant = "section",
 }: {
   kind: GrantsQueueCalloutKind;
-  command: Pick<WorkspaceCommandQueueItem, "detail" | "href" | "tone">;
+  command: Pick<WorkspaceCommandQueueItem, "detail" | "href" | "tone" | "key" | "targetOpportunityTitle">;
   className?: string;
   variant?: "section" | "hero";
 }) {
