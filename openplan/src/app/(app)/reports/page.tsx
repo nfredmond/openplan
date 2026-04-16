@@ -31,6 +31,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
+  describeComparisonSnapshotAggregate,
   describeFundingSnapshot,
   describeEvidenceChainSummary,
   formatDateTime,
