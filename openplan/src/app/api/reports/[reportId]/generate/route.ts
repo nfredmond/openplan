@@ -377,6 +377,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         options: {
           sectionKeys: enabledSectionKeys,
           titleSuffix: "OpenPlan RTP Packet",
+          publicReviewSummary: {
+            ...publicReviewSummary,
+            cycleLevelCampaignCount,
+            chapterLevelCampaignCount,
+            pendingCommentCount: engagementCounts.moderationQueue.pendingCount,
+            readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
+          },
         },
       });
       const generatedAt = new Date().toISOString();
