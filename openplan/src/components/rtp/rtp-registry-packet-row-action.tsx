@@ -5,10 +5,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, FileCog, FilePlus2, Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getReportNavigationHref } from "@/lib/reports/catalog";
+import {
+  getReportNavigationHref,
+  getRtpPacketActionButtonLabel,
+  type RtpPacketAttention,
+} from "@/lib/reports/catalog";
 import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
-
-type PacketAttention = "missing" | "generate" | "reset" | "refresh" | "current";
 
 export function RtpRegistryPacketRowAction({
   cycleId,
@@ -18,7 +20,7 @@ export function RtpRegistryPacketRowAction({
 }: {
   cycleId: string;
   reportId: string | null;
-  packetAttention: PacketAttention;
+  packetAttention: RtpPacketAttention;
   needsFirstArtifact?: boolean;
 }) {
   const router = useRouter();
@@ -34,7 +36,7 @@ export function RtpRegistryPacketRowAction({
     return (
       <div className="space-y-2">
         <Link href={getReportNavigationHref(reportId, "Packet current")} className="module-inline-action w-fit">
-          Review current packet
+          {getRtpPacketActionButtonLabel({ packetAttention: "current" })}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -103,14 +105,10 @@ export function RtpRegistryPacketRowAction({
     }
   }
 
-  const buttonCopy =
-    packetAttention === "missing"
-      ? "Create and generate packet"
-      : packetAttention === "reset"
-        ? "Reset and regenerate packet"
-        : packetAttention === "generate" || needsFirstArtifact
-          ? "Generate first artifact"
-          : "Regenerate packet";
+  const buttonCopy = getRtpPacketActionButtonLabel({
+    packetAttention,
+    needsFirstArtifact,
+  });
 
   const Icon =
     packetAttention === "missing" ? FilePlus2 : packetAttention === "reset" ? WandSparkles : FileCog;
