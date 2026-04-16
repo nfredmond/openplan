@@ -186,6 +186,8 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
   const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
   const leadOverdueOpportunity = context.fundingSummary.leadOverdueOpportunity;
+  const leadClosingOpportunity = context.fundingSummary.leadClosingOpportunity;
+  const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
 
   return {
     kind: context.kind,
@@ -207,11 +209,14 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
       overdueDecisionCount > 0
         ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing.${leadOverdueOpportunity ? ` ${leadOverdueOpportunity.title} is the lead overdue monitor decision to resolve first.` : ""}`
         : null,
+      context.fundingSummary.closingSoonCount > 0 && leadClosingOpportunity
+        ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days. ${leadClosingOpportunity.title} is the first deadline to reopen.`
+        : null,
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
         : null,
-      awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
-        ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+      awardRecordCount > 0 && leadAwardOpportunity
+        ? `Award record still needed for ${leadAwardOpportunity.title}.`
         : null,
       exactInvoiceAwardRelink
         ? "One exact invoice-to-award relink is ready on this project, so reimbursement bookkeeping can be repaired without guessing any billing values."
@@ -238,13 +243,13 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
         ? {
             label: "Current runtime cue",
             title: `${context.fundingSummary.closingSoonCount} funding deadline${context.fundingSummary.closingSoonCount === 1 ? "" : "s"} need attention`,
-            detail: "Near-term funding windows are active on this project, so grant timing should be reviewed before less urgent control cleanup.",
+            detail: `Near-term funding windows are active on this project, so grant timing should be reviewed before less urgent control cleanup.${leadClosingOpportunity ? ` ${leadClosingOpportunity.title} is the first deadline to reopen.` : ""}`,
           }
         : awardRecordCount > 0
           ? {
               label: "Current runtime cue",
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
-              detail: "An opportunity is already marked awarded, but the committed funding record has not been logged yet.",
+              detail: `An opportunity is already marked awarded, but the committed funding record has not been logged yet.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`,
             }
           : exactInvoiceAwardRelink
             ? {
@@ -467,6 +472,8 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
   const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
   const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
   const leadOverdueOpportunity = context.fundingSummary.leadOverdueOpportunity;
+  const leadClosingOpportunity = context.fundingSummary.leadClosingOpportunity;
+  const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
 
   return {
     kind: context.kind,
@@ -489,11 +496,14 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
       overdueDecisionCount > 0
         ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing.${leadOverdueOpportunity ? ` ${leadOverdueOpportunity.title} is the lead overdue monitor decision to resolve first.` : ""}`
         : null,
+      context.fundingSummary.closingSoonCount > 0 && leadClosingOpportunity
+        ? `${context.fundingSummary.closingSoonCount} package funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days. ${leadClosingOpportunity.title} is the first deadline to reopen.`
+        : null,
       context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
         ? `No package opportunity is marked pursue yet. ${context.fundingSummary.leadOpportunity.title} is the lead grant decision to advance next.`
         : null,
-      awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
-        ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+      awardRecordCount > 0 && leadAwardOpportunity
+        ? `Award record still needed for ${leadAwardOpportunity.title}.`
         : null,
       exactInvoiceAwardRelink
         ? "One exact invoice-to-award relink is ready on the linked project, so reimbursement bookkeeping can be repaired without guessing any billing values."
@@ -521,7 +531,7 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
           ? {
               label: "Current runtime cue",
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
-              detail: "An opportunity is already marked awarded on this package, but the committed funding record has not been logged yet.",
+              detail: `An opportunity is already marked awarded on this package, but the committed funding record has not been logged yet.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`,
             }
           : exactInvoiceAwardRelink
             ? {
@@ -966,6 +976,8 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
     const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
     const leadOverdueOpportunity = context.fundingSummary.leadOverdueOpportunity;
+    const leadClosingOpportunity = context.fundingSummary.leadClosingOpportunity;
+    const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
     return {
       workflowId,
       label,
@@ -985,8 +997,8 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
           ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
           : "At least one linked opportunity is already marked pursue, or no opportunity record exists yet.",
-        awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
-          ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+        awardRecordCount > 0 && leadAwardOpportunity
+          ? `Award record still needed for ${leadAwardOpportunity.title}.`
           : "No awarded opportunity is currently waiting on a project award record.",
         exactInvoiceAwardRelink
           ? "One exact invoice-to-award relink is ready on this project."
@@ -998,7 +1010,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
           ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so the pursue or skip call is already late.${leadOverdueOpportunity ? ` Lead overdue monitor decision: ${leadOverdueOpportunity.title}.` : ""}`
           : "No monitored funding decision has lapsed the recorded decision deadline on this project.",
         context.fundingSummary.closingSoonCount > 0
-          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
+          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.${leadClosingOpportunity ? ` ${leadClosingOpportunity.title} is the first deadline to reopen.` : ""}`
           : "No near-term funding window is currently closing inside the next 14 days.",
         context.fundingSummary.fundingNeedAmount !== null
           ? `Recorded funding need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.`
@@ -1011,7 +1023,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         overdueDecisionCount > 0
           ? `Open /projects/${context.project.id}#project-funding-opportunities and resolve the lapsed monitor decision as pursue or skip before newer closing-soon timing is treated as more urgent.${leadOverdueOpportunity ? ` Lead overdue monitor decision: ${leadOverdueOpportunity.title}.` : ""}`
           : awardRecordCount > 0
-          ? `Open /projects/${context.project.id}#project-funding-opportunities to convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          ? `Open /projects/${context.project.id}#project-funding-opportunities to convert the awarded opportunity into a funding-award record before trusting the remaining gap math.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`
           : exactInvoiceAwardRelink
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
@@ -1569,6 +1581,8 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
   const reimbursementPacketCount = context.fundingSummary.reimbursementPacketCount;
   const overdueDecisionCount = context.fundingSummary.overdueDecisionCount;
   const leadOverdueOpportunity = context.fundingSummary.leadOverdueOpportunity;
+  const leadClosingOpportunity = context.fundingSummary.leadClosingOpportunity;
+  const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
 
   if (workflowId === "program-funding") {
     const exactInvoiceAwardRelink = context.fundingSummary.exactInvoiceAwardRelink;
@@ -1591,8 +1605,8 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         context.fundingSummary.opportunityCount > 0 && context.fundingSummary.pursueCount === 0 && context.fundingSummary.leadOpportunity
           ? `Lead decision to advance: ${context.fundingSummary.leadOpportunity.title}.`
           : "At least one linked package opportunity is already marked pursue, or no opportunity record exists yet.",
-        awardRecordCount > 0 && context.fundingSummary.leadAwardOpportunity
-          ? `Award record still needed for ${context.fundingSummary.leadAwardOpportunity.title}.`
+        awardRecordCount > 0 && leadAwardOpportunity
+          ? `Award record still needed for ${leadAwardOpportunity.title}.`
           : "No awarded opportunity is currently waiting on a package award record.",
         exactInvoiceAwardRelink
           ? "One exact invoice-to-award relink is ready on the linked project."
@@ -1604,7 +1618,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
           ? `${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} lapsed the recorded decision deadline while the window is still open, so the pursue or skip call on this package is already late.${leadOverdueOpportunity ? ` Lead overdue monitor decision: ${leadOverdueOpportunity.title}.` : ""}`
           : "No monitored funding decision has lapsed the recorded decision deadline on this package.",
         context.fundingSummary.closingSoonCount > 0
-          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.`
+          ? `${context.fundingSummary.closingSoonCount} funding opportunit${context.fundingSummary.closingSoonCount === 1 ? "y closes" : "ies close"} within the next 14 days, so timing pressure is real.${leadClosingOpportunity ? ` ${leadClosingOpportunity.title} is the first deadline to reopen.` : ""}`
           : "No near-term funding window is currently closing inside the next 14 days.",
         context.fundingSummary.pursueCount > 0
           ? `${context.fundingSummary.pursueCount} opportunit${context.fundingSummary.pursueCount === 1 ? "y is" : "ies are"} already marked pursue on this package.`
@@ -1617,7 +1631,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
         overdueDecisionCount > 0
           ? `Open /programs/${context.program.id}#program-funding-opportunities and resolve the lapsed monitor decision as pursue or skip before newer closing-soon timing is treated as more urgent.${leadOverdueOpportunity ? ` Lead overdue monitor decision: ${leadOverdueOpportunity.title}.` : ""}`
           : awardRecordCount > 0
-          ? `Open /programs/${context.program.id}#program-funding-opportunities and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
+          ? `Open /programs/${context.program.id}#program-funding-opportunities and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`
           : exactInvoiceAwardRelink && context.project
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project

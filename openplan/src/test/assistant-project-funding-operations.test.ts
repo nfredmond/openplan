@@ -54,6 +54,7 @@ function buildProjectContext(): ProjectAssistantContext {
         decisionDueAt: null,
       },
       leadOverdueOpportunity: null,
+      leadClosingOpportunity: null,
       leadAwardOpportunity: null,
     },
     stageGateSummary: {
@@ -137,6 +138,7 @@ function buildProgramContext(): ProgramAssistantContext {
         decisionDueAt: null,
       },
       leadOverdueOpportunity: null,
+      leadClosingOpportunity: null,
       leadAwardOpportunity: null,
     },
     packetSummary: {

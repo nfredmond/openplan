@@ -127,6 +127,14 @@ export type ProjectAssistantContext = {
       closesAt: string | null;
       decisionDueAt: string | null;
     } | null;
+    leadClosingOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
     leadAwardOpportunity: {
       id: string;
       title: string;
@@ -334,6 +342,14 @@ export type ProgramAssistantContext = {
       decisionDueAt: string | null;
     } | null;
     leadOverdueOpportunity: {
+      id: string;
+      title: string;
+      status: string | null;
+      decisionState: string | null;
+      closesAt: string | null;
+      decisionDueAt: string | null;
+    } | null;
+    leadClosingOpportunity: {
       id: string;
       title: string;
       status: string | null;
@@ -956,6 +972,19 @@ async function loadProjectContext(
     if (leftDue !== rightDue) return leftDue - rightDue;
     return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
   })[0] ?? null;
+  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) => {
+    if ((opportunity.opportunity_status ?? "") !== "open") return false;
+    const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
+    return days !== null && days <= 14;
+  });
+  const leadClosingFundingOpportunity = [...closingSoonFundingOpportunities].sort((left, right) => {
+    const leftDueRaw = left.closes_at ?? left.decision_due_at;
+    const rightDueRaw = right.closes_at ?? right.decision_due_at;
+    const leftDue = leftDueRaw ? new Date(leftDueRaw).getTime() : Number.POSITIVE_INFINITY;
+    const rightDue = rightDueRaw ? new Date(rightDueRaw).getTime() : Number.POSITIVE_INFINITY;
+    if (leftDue !== rightDue) return leftDue - rightDue;
+    return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+  })[0] ?? null;
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
   const datasetsResult = linkedDatasetIds.length
@@ -1144,6 +1173,16 @@ async function loadProjectContext(
             decisionState: leadOverdueFundingOpportunity.decision_state,
             closesAt: leadOverdueFundingOpportunity.closes_at,
             decisionDueAt: leadOverdueFundingOpportunity.decision_due_at,
+          }
+        : null,
+      leadClosingOpportunity: leadClosingFundingOpportunity
+        ? {
+            id: leadClosingFundingOpportunity.id,
+            title: leadClosingFundingOpportunity.title,
+            status: leadClosingFundingOpportunity.opportunity_status,
+            decisionState: leadClosingFundingOpportunity.decision_state,
+            closesAt: leadClosingFundingOpportunity.closes_at,
+            decisionDueAt: leadClosingFundingOpportunity.decision_due_at,
           }
         : null,
       leadAwardOpportunity: leadAwardOpportunity
@@ -1672,11 +1711,20 @@ async function loadProgramContext(
   const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
     ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
   ).length;
-  const fundingClosingSoonCount = fundingOpportunities.filter((opportunity) => {
+  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) => {
     if ((opportunity.opportunity_status ?? "") !== "open") return false;
     const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
     return days !== null && days <= 14;
-  }).length;
+  });
+  const fundingClosingSoonCount = closingSoonFundingOpportunities.length;
+  const leadClosingFundingOpportunity = [...closingSoonFundingOpportunities].sort((left, right) => {
+    const leftDueRaw = left.closes_at ?? left.decision_due_at;
+    const rightDueRaw = right.closes_at ?? right.decision_due_at;
+    const leftDue = leftDueRaw ? new Date(leftDueRaw).getTime() : Number.POSITIVE_INFINITY;
+    const rightDue = rightDueRaw ? new Date(rightDueRaw).getTime() : Number.POSITIVE_INFINITY;
+    if (leftDue !== rightDue) return leftDue - rightDue;
+    return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
+  })[0] ?? null;
   const overdueMonitoredFundingOpportunities = fundingOpportunities.filter((opportunity) => {
     if (!["open", "upcoming"].includes(opportunity.opportunity_status ?? "")) return false;
     if ((opportunity.decision_state ?? "") !== "monitor") return false;
@@ -1879,6 +1927,16 @@ async function loadProgramContext(
             decisionState: leadOverdueFundingOpportunity.decision_state,
             closesAt: leadOverdueFundingOpportunity.closes_at,
             decisionDueAt: leadOverdueFundingOpportunity.decision_due_at,
+          }
+        : null,
+      leadClosingOpportunity: leadClosingFundingOpportunity
+        ? {
+            id: leadClosingFundingOpportunity.id,
+            title: leadClosingFundingOpportunity.title,
+            status: leadClosingFundingOpportunity.opportunity_status,
+            decisionState: leadClosingFundingOpportunity.decision_state,
+            closesAt: leadClosingFundingOpportunity.closes_at,
+            decisionDueAt: leadClosingFundingOpportunity.decision_due_at,
           }
         : null,
       leadAwardOpportunity: leadAwardOpportunity

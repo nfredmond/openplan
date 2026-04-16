@@ -69,6 +69,14 @@ function buildProjectContextWithOverdue(overdueDecisionCount: number): ProjectAs
               decisionDueAt: "2026-03-01T12:00:00.000Z",
             }
           : null,
+      leadClosingOpportunity: {
+        id: "opp-closing",
+        title: "SB 1 LPP",
+        status: "open",
+        decisionState: null,
+        closesAt: "2026-04-22T12:00:00.000Z",
+        decisionDueAt: null,
+      },
       leadAwardOpportunity: null,
     },
     stageGateSummary: {
@@ -163,6 +171,14 @@ function buildProgramContextWithOverdue(overdueDecisionCount: number): ProgramAs
               decisionDueAt: "2026-03-04T12:00:00.000Z",
             }
           : null,
+      leadClosingOpportunity: {
+        id: "opp-program-closing",
+        title: "SS4A Planning",
+        status: "open",
+        decisionState: null,
+        closesAt: "2026-04-20T12:00:00.000Z",
+        decisionDueAt: null,
+      },
       leadAwardOpportunity: null,
     },
     packetSummary: {
@@ -253,6 +269,7 @@ describe("assistant response builders", () => {
         exactInvoiceAwardRelink: null,
         leadOpportunity: null,
         leadOverdueOpportunity: null,
+        leadClosingOpportunity: null,
         leadAwardOpportunity: null,
       },
       stageGateSummary: {
@@ -694,5 +711,125 @@ describe("assistant response builders", () => {
     );
     expect(response.findings.join(" ")).toContain("Lead overdue monitor decision: RAISE 2026.");
     expect(response.nextSteps[0]).toContain("Lead overdue monitor decision: RAISE 2026.");
+  });
+
+  it("names the specific lead closing opportunity in project preview and project funding findings", () => {
+    const context = buildProjectContextWithOverdue(0);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "project-funding");
+
+    expect(preview.facts.join(" ")).toContain(
+      "1 funding opportunity closes within the next 14 days. SB 1 LPP is the first deadline to reopen."
+    );
+    expect(preview.operatorCue?.detail).toContain("SB 1 LPP is the first deadline to reopen.");
+    expect(response.findings.join(" ")).toContain(
+      "1 funding opportunity closes within the next 14 days, so timing pressure is real. SB 1 LPP is the first deadline to reopen."
+    );
+  });
+
+  it("falls back to unnamed closing-soon narration when no lead closing opportunity is available on the project", () => {
+    const context = buildProjectContextWithOverdue(0);
+    const contextWithoutLead: ProjectAssistantContext = {
+      ...context,
+      fundingSummary: { ...context.fundingSummary, leadClosingOpportunity: null },
+    };
+
+    const preview = buildAssistantPreview(contextWithoutLead);
+    const response = buildAssistantResponse(contextWithoutLead, "project-funding");
+
+    expect(preview.facts.join(" ")).not.toContain("SB 1 LPP");
+    expect(preview.operatorCue?.detail).not.toContain("is the first deadline to reopen");
+    expect(response.findings.join(" ")).toContain(
+      "1 funding opportunity closes within the next 14 days, so timing pressure is real."
+    );
+    expect(response.findings.join(" ")).not.toContain("is the first deadline to reopen");
+  });
+
+  it("names the specific lead closing opportunity in program preview and program funding findings", () => {
+    const context = buildProgramContextWithOverdue(0);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "program-funding");
+
+    expect(preview.facts.join(" ")).toContain(
+      "1 package funding opportunity closes within the next 14 days. SS4A Planning is the first deadline to reopen."
+    );
+    expect(response.findings.join(" ")).toContain(
+      "1 funding opportunity closes within the next 14 days, so timing pressure is real. SS4A Planning is the first deadline to reopen."
+    );
+  });
+
+  it("names the specific lead award opportunity in project preview and project funding narration", () => {
+    const baseContext = buildProjectContextWithOverdue(0);
+    const context: ProjectAssistantContext = {
+      ...baseContext,
+      fundingSummary: {
+        ...baseContext.fundingSummary,
+        opportunityCount: 3,
+        openCount: 2,
+        closingSoonCount: 0,
+        awardRecordCount: 1,
+        awardCount: 0,
+        leadClosingOpportunity: null,
+        leadAwardOpportunity: {
+          id: "opp-awarded",
+          title: "HSIP Cycle 11",
+          status: "awarded",
+          decisionState: "pursue",
+          closesAt: null,
+          decisionDueAt: null,
+        },
+      },
+    };
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "project-funding");
+
+    expect(preview.facts.join(" ")).toContain("Award record still needed for HSIP Cycle 11.");
+    expect(preview.operatorCue?.title).toContain("awarded opportunity needs a record");
+    expect(preview.operatorCue?.detail).toContain(
+      "Convert HSIP Cycle 11 into a committed award entry."
+    );
+    expect(response.findings.join(" ")).toContain("Award record still needed for HSIP Cycle 11.");
+    expect(response.nextSteps.join(" ")).toContain(
+      "Convert HSIP Cycle 11 into a committed award entry."
+    );
+  });
+
+  it("names the specific lead award opportunity in program preview and program funding narration", () => {
+    const baseContext = buildProgramContextWithOverdue(0);
+    const context: ProgramAssistantContext = {
+      ...baseContext,
+      fundingSummary: {
+        ...baseContext.fundingSummary,
+        opportunityCount: 3,
+        openCount: 2,
+        closingSoonCount: 0,
+        awardRecordCount: 1,
+        awardCount: 0,
+        leadClosingOpportunity: null,
+        leadAwardOpportunity: {
+          id: "opp-program-awarded",
+          title: "Caltrans SCCP",
+          status: "awarded",
+          decisionState: "pursue",
+          closesAt: null,
+          decisionDueAt: null,
+        },
+      },
+    };
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "program-funding");
+
+    expect(preview.facts.join(" ")).toContain("Award record still needed for Caltrans SCCP.");
+    expect(preview.operatorCue?.detail).toContain(
+      "Convert Caltrans SCCP into a committed award entry."
+    );
+    expect(response.findings.join(" ")).toContain("Award record still needed for Caltrans SCCP.");
+    expect(response.nextSteps.join(" ")).toContain(
+      "Convert Caltrans SCCP into a committed award entry."
+    );
   });
 });
