@@ -111,6 +111,14 @@ describe("RtpReportDetail", () => {
           presetStatusLabel: null,
           presetDetail: null,
           fundingSnapshot: null,
+          publicReviewLabel: "Comment-response foundation ready",
+          publicReviewDetail: "2 approved comments are ready for packet handoff and the current RTP packet is in place for review closure.",
+          publicReviewTone: "success",
+          cycleLevelCampaignCount: 1,
+          chapterLevelCampaignCount: 0,
+          pendingCommentCount: 0,
+          approvedCommentCount: 2,
+          readyCommentCount: 2,
         }}
         currentContext={{
           enabledSectionKeys: ["project_pipeline"],
@@ -211,6 +219,14 @@ describe("RtpReportDetail", () => {
           presetStatusLabel: null,
           presetDetail: null,
           fundingSnapshot: buildFundingSnapshot({ gapProjectCount: 1, label: "Partially funded", reason: "A gap remains." }),
+          publicReviewLabel: "Comment-response foundation ready",
+          publicReviewDetail: "2 approved comments are ready for packet handoff and the current RTP packet is in place for review closure.",
+          publicReviewTone: "success",
+          cycleLevelCampaignCount: 1,
+          chapterLevelCampaignCount: 0,
+          pendingCommentCount: 0,
+          approvedCommentCount: 2,
+          readyCommentCount: 2,
         }}
         currentContext={{
           enabledSectionKeys: ["project_pipeline"],
@@ -244,7 +260,7 @@ describe("RtpReportDetail", () => {
 
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getAllByText("Public review active").length).toBeGreaterThan(0);
-    expect(screen.getByText(/1 comment is still waiting for operator review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/1 comment is still waiting for operator review/i).length).toBeGreaterThan(0);
     const link = screen.getByRole("link", { name: /Open gap resolution/i });
     expect(link).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
   });
