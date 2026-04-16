@@ -19,6 +19,10 @@ import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
+  buildRtpReleaseReviewSummary,
+  parseStoredRtpPublicReviewSummary,
+} from "@/lib/rtp/catalog";
+import {
   describeComparisonSnapshotAggregate,
   getReportNavigationHref,
   getReportPacketFreshness,
@@ -776,6 +780,13 @@ export function buildWorkspaceOperationsSummary({
     const comparisonAggregate = parseStoredComparisonSnapshotAggregate(report.metadataJson);
     const comparisonDigest = describeComparisonSnapshotAggregate(comparisonAggregate);
     const storedRtpFundingReview = parseStoredRtpFundingReview(report.metadataJson);
+    const storedRtpPublicReviewSummary = parseStoredRtpPublicReviewSummary(report.metadataJson);
+    const storedRtpReleaseReviewSummary = storedRtpPublicReviewSummary
+      ? buildRtpReleaseReviewSummary({
+          packetFreshnessLabel: freshness.label,
+          publicReviewSummary: storedRtpPublicReviewSummary,
+        })
+      : null;
     const storedFundingSnapshot = parseStoredFundingSnapshot(report.metadataJson);
     const fallbackRtpFundingSnapshot = asRecord(asRecord(report.metadataJson?.sourceContext)?.rtpFundingSnapshot);
     const grantsFollowThrough = resolveRtpFundingFollowThrough(
@@ -799,6 +810,8 @@ export function buildWorkspaceOperationsSummary({
       comparisonAggregate,
       comparisonDigest,
       storedRtpFundingReview,
+      storedRtpPublicReviewSummary,
+      storedRtpReleaseReviewSummary,
       storedFundingSnapshot,
       grantsFollowThrough,
     };
@@ -823,6 +836,13 @@ export function buildWorkspaceOperationsSummary({
   const reportPacketCurrent = reportRows.filter((report) => report.freshness.label === "Packet current").length;
   const rtpFundingReviewPackets = reportRows.filter(
     (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+  ).length;
+  const rtpReviewLoopOpenPackets = reportRows.filter(
+    (report) =>
+      report.freshness.label === "Packet current"
+      && !report.storedRtpFundingReview?.needsAttention
+      && Boolean(report.storedRtpReleaseReviewSummary)
+      && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"
   ).length;
   const comparisonBackedReports = reportRows.filter(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
@@ -1277,6 +1297,13 @@ export function buildWorkspaceOperationsSummary({
   const firstCurrentRtpFundingReviewReport = reportRows.find(
     (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
   );
+  const firstCurrentRtpReviewLoopReport = reportRows.find(
+    (report) =>
+      report.freshness.label === "Packet current"
+      && !report.storedRtpFundingReview?.needsAttention
+      && Boolean(report.storedRtpReleaseReviewSummary)
+      && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"
+  );
   const firstComparisonBackedReport = reportRows.find(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   );
@@ -1350,18 +1377,23 @@ export function buildWorkspaceOperationsSummary({
         : "Run release review on current packets",
       detail: currentRtpFundingReviewFollowThrough
         ? `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state, but ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still needs" : "s still need"} linked-project funding follow-through in Grants OS before packet posture is treated as settled. Reopen ${currentRtpFundingReviewFollowThrough.actionLabel.toLowerCase()} first because ${currentRtpFundingReviewFollowThrough.title.charAt(0).toLowerCase()}${currentRtpFundingReviewFollowThrough.title.slice(1)}`
-        : `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
+        : firstCurrentRtpReviewLoopReport?.storedRtpReleaseReviewSummary
+          ? `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state, but ${rtpReviewLoopOpenPackets} current RTP packet${rtpReviewLoopOpenPackets === 1 ? " still reads" : "s still read"} as ${firstCurrentRtpReviewLoopReport.storedRtpReleaseReviewSummary.label.toLowerCase()}. ${firstCurrentRtpReviewLoopReport.title ?? "The lead RTP packet"}: ${firstCurrentRtpReviewLoopReport.storedRtpReleaseReviewSummary.detail}`
+          : `${reportPacketCurrent} report packet${reportPacketCurrent === 1 ? " is" : "s are"} currently aligned with source state and ready for release review.${rtpFundingReviewPackets > 0 ? ` ${rtpFundingReviewPackets} current RTP packet${rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects.${firstCurrentRtpFundingReviewReport?.storedRtpFundingReview ? ` ${firstCurrentRtpFundingReviewReport.title ?? "The lead RTP packet"} is flagged as ${firstCurrentRtpFundingReviewReport.storedRtpFundingReview.label.toLowerCase()}.` : ""}` : firstCurrentReport?.title ? ` Start with ${firstCurrentReport.title}.` : ""}`,
       href: currentRtpFundingReviewFollowThrough?.href
-        ?? (firstCurrentReport
-          ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
-          : "/reports?freshness=current"),
+        ?? (firstCurrentRtpReviewLoopReport
+          ? getReportNavigationHref(firstCurrentRtpReviewLoopReport.id, firstCurrentRtpReviewLoopReport.freshness.label)
+          : firstCurrentReport
+            ? getReportNavigationHref(firstCurrentReport.id, firstCurrentReport.freshness.label)
+            : "/reports?freshness=current"),
       moduleKey: currentRtpFundingReviewFollowThrough ? GRANTS_COMMAND_MODULE_KEY : undefined,
       moduleLabel: currentRtpFundingReviewFollowThrough ? GRANTS_COMMAND_MODULE_LABEL : undefined,
-      tone: rtpFundingReviewPackets > 0 ? "warning" : "info",
+      tone: rtpFundingReviewPackets > 0 || rtpReviewLoopOpenPackets > 0 ? "warning" : "info",
       priority: 2.5,
       badges: [
         { label: "Current", value: reportPacketCurrent },
         ...(rtpFundingReviewPackets > 0 ? [{ label: "Funding review", value: rtpFundingReviewPackets }] : []),
+        ...(rtpReviewLoopOpenPackets > 0 ? [{ label: "Review loop open", value: rtpReviewLoopOpenPackets }] : []),
         { label: "Reports", value: reports.length },
       ],
     });

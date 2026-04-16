@@ -1,5 +1,15 @@
 import { getReportPacketWorkStatus, type ReportStatusTone } from "@/lib/reports/catalog";
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 export const RTP_CYCLE_STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "public_review", label: "Public Review" },
@@ -133,6 +143,37 @@ export type RtpReleaseReviewSummary = {
   tone: ReportStatusTone;
   nextActionLabel: string;
 };
+
+export function parseStoredRtpPublicReviewSummary(
+  metadata: Record<string, unknown> | null | undefined
+): RtpPublicReviewSummary | null {
+  const sourceContext = asRecord(metadata?.sourceContext);
+  const summary = asRecord(sourceContext?.publicReviewSummary);
+  if (!summary) {
+    return null;
+  }
+
+  const label = asString(summary.label);
+  const detail = asString(summary.detail);
+  if (!label || !detail) {
+    return null;
+  }
+
+  const tone = asString(summary.tone);
+  const actionItems = Array.isArray(summary.actionItems)
+    ? summary.actionItems.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
+
+  return {
+    label,
+    detail,
+    tone:
+      tone === "success" || tone === "warning" || tone === "info" || tone === "neutral"
+        ? tone
+        : "neutral",
+    actionItems,
+  };
+}
 
 export function titleizeRtpValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
