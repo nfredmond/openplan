@@ -142,6 +142,14 @@ export function RtpReportDetail({
     presetStatusLabel: string | null;
     presetDetail: string | null;
     fundingSnapshot: PortfolioFundingSnapshot | null;
+    publicReviewLabel: string | null;
+    publicReviewDetail: string | null;
+    publicReviewTone: "success" | "warning" | "neutral" | "info" | null;
+    cycleLevelCampaignCount: number | null;
+    chapterLevelCampaignCount: number | null;
+    pendingCommentCount: number | null;
+    approvedCommentCount: number | null;
+    readyCommentCount: number | null;
   };
   currentContext: {
     enabledSectionKeys: string[];
@@ -200,6 +208,26 @@ export function RtpReportDetail({
       generationContext.engagementCampaignCount,
       currentContext.engagementCampaignCount
     ),
+    compareCountMetric(
+      "Cycle review targets",
+      generationContext.cycleLevelCampaignCount,
+      currentContext.cycleLevelCampaignCount
+    ),
+    compareCountMetric(
+      "Chapter review targets",
+      generationContext.chapterLevelCampaignCount,
+      currentContext.chapterLevelCampaignCount
+    ),
+    compareCountMetric(
+      "Pending comments",
+      generationContext.pendingCommentCount,
+      currentContext.pendingCommentCount
+    ),
+    compareCountMetric(
+      "Ready comments",
+      generationContext.readyCommentCount,
+      currentContext.readyCommentCount
+    ),
     generationContext.readinessLabel || currentContext.readinessLabel
       ? {
           label: "Readiness posture",
@@ -254,6 +282,30 @@ export function RtpReportDetail({
             generationContext.presetLabel === currentContext.presetLabel
               ? generationContext.presetDetail ?? currentContext.presetDetail ?? "Preset alignment unchanged."
               : `Generated as ${generationContext.presetStatusLabel ?? "unknown"}; current source is ${currentContext.presetStatusLabel ?? "unknown"}.`,
+        }
+      : null,
+    generationContext.publicReviewLabel || currentContext.publicReviewLabel
+      ? {
+          label: "Public review foundation",
+          status:
+            generationContext.publicReviewLabel === currentContext.publicReviewLabel &&
+            generationContext.publicReviewDetail === currentContext.publicReviewDetail &&
+            generationContext.pendingCommentCount === currentContext.pendingCommentCount &&
+            generationContext.readyCommentCount === currentContext.readyCommentCount
+              ? ("unchanged" as const)
+              : generationContext.pendingCommentCount !== currentContext.pendingCommentCount ||
+                  generationContext.readyCommentCount !== currentContext.readyCommentCount ||
+                  generationContext.cycleLevelCampaignCount !== currentContext.cycleLevelCampaignCount ||
+                  generationContext.chapterLevelCampaignCount !== currentContext.chapterLevelCampaignCount
+                ? ("count_changed" as const)
+                : ("updated" as const),
+          detail:
+            generationContext.publicReviewLabel === currentContext.publicReviewLabel &&
+            generationContext.publicReviewDetail === currentContext.publicReviewDetail &&
+            generationContext.pendingCommentCount === currentContext.pendingCommentCount &&
+            generationContext.readyCommentCount === currentContext.readyCommentCount
+              ? `Still ${currentContext.publicReviewLabel ?? generationContext.publicReviewLabel ?? "unknown"}.`
+              : `Generated as ${generationContext.publicReviewLabel ?? "unknown"} with ${generationContext.readyCommentCount ?? 0} ready and ${generationContext.pendingCommentCount ?? 0} pending comments; current source is ${currentContext.publicReviewLabel ?? "unknown"} with ${currentContext.readyCommentCount ?? 0} ready and ${currentContext.pendingCommentCount ?? 0} pending comments.`,
         }
       : null,
     generationContext.fundingSnapshot || currentContext.fundingSnapshot
@@ -423,6 +475,20 @@ export function RtpReportDetail({
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time workflow</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.workflowLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.workflowDetail ?? "No workflow detail captured."}</p>
+                  </div>
+                </div>
+              ) : null}
+              {generationContext.publicReviewLabel || currentContext.publicReviewLabel ? (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time review loop</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.publicReviewLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.publicReviewDetail ?? "No public-review summary was captured on this packet artifact."}</p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current review loop</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.publicReviewLabel ?? "Unknown"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{currentContext.publicReviewDetail ?? "No live public-review summary is available for this RTP packet yet."}</p>
                   </div>
                 </div>
               ) : null}

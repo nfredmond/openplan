@@ -6,7 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
-import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
+import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
 import {
@@ -21,6 +21,7 @@ import {
 import { buildReportHtml } from "@/lib/reports/html";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
@@ -310,6 +311,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         })),
         capturedAt: report.generated_at ?? new Date().toISOString(),
       });
+      const campaignIds = campaigns.map((campaign) => campaign.id);
+      const engagementItemsResult = campaignIds.length
+        ? await supabase
+            .from("engagement_items")
+            .select(
+              "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+            )
+            .in("campaign_id", campaignIds)
+        : { data: [], error: null };
+      const engagementCounts = summarizeEngagementItems(
+        [],
+        (engagementItemsResult.data ?? []) as Array<{
+          id: string;
+          campaign_id: string;
+          category_id: string | null;
+          status: string | null;
+          source_type: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          moderation_notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        }>
+      );
+      const cycleLevelCampaignCount = campaigns.filter((campaign) => !campaign.rtp_cycle_chapter_id).length;
+      const chapterLevelCampaignCount = campaigns.length - cycleLevelCampaignCount;
       const enabledSectionKeys = sections.filter((section) => section.enabled).map((section) => section.section_key);
       const packetPresetAlignment = getRtpPacketPresetAlignment({
         cycleStatus: cycle.status,
@@ -328,6 +355,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         publicReviewCloseAt: cycle.public_review_close_at,
       });
       const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
+      const publicReviewSummary = buildRtpPublicReviewSummary({
+        status: cycle.status,
+        publicReviewOpenAt: cycle.public_review_open_at,
+        publicReviewCloseAt: cycle.public_review_close_at,
+        cycleLevelCampaignCount,
+        chapterCampaignCount: chapterLevelCampaignCount,
+        packetRecordCount: 1,
+        generatedPacketCount: 1,
+        pendingCommentCount: engagementCounts.moderationQueue.pendingCount,
+        approvedCommentCount: engagementCounts.moderationQueue.approvedCount,
+        readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
+      });
       const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
       const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
       const html = buildRtpExportHtml({
@@ -359,6 +398,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
           chapterReadyForReviewCount,
           linkedProjectCount: linkedProjects.length,
           engagementCampaignCount: campaigns.length,
+          cycleLevelCampaignCount,
+          chapterLevelCampaignCount,
+          engagementPendingCommentCount: engagementCounts.moderationQueue.pendingCount,
+          engagementApprovedCommentCount: engagementCounts.moderationQueue.approvedCount,
+          engagementReadyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
+          publicReviewSummary,
           rtpFundingSnapshot: portfolioFundingSnapshot,
           readiness,
           workflow,

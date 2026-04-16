@@ -729,6 +729,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : [];
     const readinessRecord = asRecord(sourceContext?.readiness);
     const workflowRecord = asRecord(sourceContext?.workflow);
+    const publicReviewRecord = asRecord(sourceContext?.publicReviewSummary);
     const presetAlignmentRecord = asRecord(sourceContext?.packetPresetAlignment);
     const currentPacketPresetAlignment = getRtpPacketPresetAlignment({
       cycleStatus: rtpCycle?.status,
@@ -865,6 +866,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           presetStatusLabel: asNullableString(presetAlignmentRecord?.statusLabel),
           presetDetail: asNullableString(presetAlignmentRecord?.detail),
           fundingSnapshot: storedRtpFundingSnapshot,
+          publicReviewLabel: asNullableString(publicReviewRecord?.label),
+          publicReviewDetail: asNullableString(publicReviewRecord?.detail),
+          publicReviewTone: (asNullableString(publicReviewRecord?.tone) as "success" | "warning" | "neutral" | "info" | null) ?? null,
+          cycleLevelCampaignCount: asNullableNumber(sourceContext?.cycleLevelCampaignCount),
+          chapterLevelCampaignCount: asNullableNumber(sourceContext?.chapterLevelCampaignCount),
+          pendingCommentCount: asNullableNumber(sourceContext?.engagementPendingCommentCount),
+          approvedCommentCount: asNullableNumber(sourceContext?.engagementApprovedCommentCount),
+          readyCommentCount: asNullableNumber(sourceContext?.engagementReadyCommentCount),
         }}
         currentContext={{
           enabledSectionKeys: (sections ?? [])
