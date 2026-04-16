@@ -5,6 +5,7 @@ import {
   formatRtpCycleStatusLabel,
   formatRtpPortfolioRoleLabel,
   titleizeRtpValue,
+  type RtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
 
 export type RtpExportCycle = {
@@ -168,6 +169,12 @@ export function buildRtpExportHtml(input: {
   options?: {
     sectionKeys?: string[];
     titleSuffix?: string;
+    publicReviewSummary?: (RtpPublicReviewSummary & {
+      cycleLevelCampaignCount?: number;
+      chapterLevelCampaignCount?: number;
+      pendingCommentCount?: number;
+      readyCommentCount?: number;
+    }) | null;
   };
 }): string {
   const { cycle, chapters, linkedProjects, campaigns, options } = input;
@@ -186,6 +193,7 @@ export function buildRtpExportHtml(input: {
   const enabledSectionKeys = resolveEnabledSectionKeys(options?.sectionKeys);
   const stats = buildRtpExportStats({ cycle, chapters, linkedProjects, campaigns });
   const titleSuffix = options?.titleSuffix ?? "OpenPlan RTP Export";
+  const publicReviewSummary = options?.publicReviewSummary ?? null;
 
   const sections: string[] = [];
 
@@ -261,6 +269,7 @@ export function buildRtpExportHtml(input: {
   <section class="section">
     <h2>Engagement posture</h2>
     <p class="muted">${esc(`${stats.cycleTargetedCampaignCount} cycle-targeted · ${stats.chapterTargetedCampaignCount} chapter-targeted`)}</p>
+    ${publicReviewSummary ? `<div class="card" style="margin-bottom:12px;"><h3>${esc(publicReviewSummary.label)}</h3><p>${esc(publicReviewSummary.detail)}</p><p class="muted">${esc(`${publicReviewSummary.cycleLevelCampaignCount ?? stats.cycleTargetedCampaignCount} cycle targets · ${publicReviewSummary.chapterLevelCampaignCount ?? stats.chapterTargetedCampaignCount} chapter targets · ${publicReviewSummary.readyCommentCount ?? 0} ready comments · ${publicReviewSummary.pendingCommentCount ?? 0} pending comments`)}</p></div>` : ""}
     ${campaigns.length === 0 ? '<p class="muted">No RTP-linked engagement campaigns yet.</p>' : ""}
     <ul>
       ${campaigns
