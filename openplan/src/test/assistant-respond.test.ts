@@ -58,6 +58,17 @@ function buildProjectContextWithOverdue(overdueDecisionCount: number): ProjectAs
         closesAt: null,
         decisionDueAt: "2026-03-01T12:00:00.000Z",
       },
+      leadOverdueOpportunity:
+        overdueDecisionCount > 0
+          ? {
+              id: "opp-overdue",
+              title: "ATP Cycle 8",
+              status: "open",
+              decisionState: "monitor",
+              closesAt: null,
+              decisionDueAt: "2026-03-01T12:00:00.000Z",
+            }
+          : null,
       leadAwardOpportunity: null,
     },
     stageGateSummary: {
@@ -141,6 +152,17 @@ function buildProgramContextWithOverdue(overdueDecisionCount: number): ProgramAs
         closesAt: null,
         decisionDueAt: "2026-03-04T12:00:00.000Z",
       },
+      leadOverdueOpportunity:
+        overdueDecisionCount > 0
+          ? {
+              id: "opp-program-overdue",
+              title: "RAISE 2026",
+              status: "open",
+              decisionState: "monitor",
+              closesAt: null,
+              decisionDueAt: "2026-03-04T12:00:00.000Z",
+            }
+          : null,
       leadAwardOpportunity: null,
     },
     packetSummary: {
@@ -230,6 +252,7 @@ describe("assistant response builders", () => {
         reimbursementPacketCount: 0,
         exactInvoiceAwardRelink: null,
         leadOpportunity: null,
+        leadOverdueOpportunity: null,
         leadAwardOpportunity: null,
       },
       stageGateSummary: {
@@ -570,6 +593,17 @@ describe("assistant response builders", () => {
     );
   });
 
+  it("names the specific lead overdue opportunity in project preview narration", () => {
+    const context = buildProjectContextWithOverdue(2);
+
+    const preview = buildAssistantPreview(context);
+
+    expect(preview.facts.join(" ")).toContain(
+      "ATP Cycle 8 is the lead overdue monitor decision to resolve first."
+    );
+    expect(preview.operatorCue?.detail).toContain("Lead overdue monitor decision: ATP Cycle 8.");
+  });
+
   it("keeps overdue funding decisions singular in project preview when only one is lapsed", () => {
     const context = buildProjectContextWithOverdue(1);
 
@@ -596,6 +630,18 @@ describe("assistant response builders", () => {
       "resolve the lapsed monitor decision as pursue or skip"
     );
     expect(response.evidence.join(" ")).toContain("Overdue monitor decisions: 1");
+  });
+
+  it("names the specific lead overdue opportunity in project funding response narration", () => {
+    const context = buildProjectContextWithOverdue(1);
+
+    const response = buildAssistantResponse(context, "project-funding");
+
+    expect(response.summary).toContain(
+      "ATP Cycle 8 is the lead overdue monitor decision to resolve first."
+    );
+    expect(response.findings.join(" ")).toContain("Lead overdue monitor decision: ATP Cycle 8.");
+    expect(response.nextSteps[0]).toContain("Lead overdue monitor decision: ATP Cycle 8.");
   });
 
   it("falls back to closing-soon narration when no project funding decisions are overdue", () => {
@@ -632,5 +678,21 @@ describe("assistant response builders", () => {
     );
     expect(response.nextSteps[0]).toContain("/programs/program-1#program-funding-opportunities");
     expect(response.evidence.join(" ")).toContain("Overdue monitor decisions: 2");
+  });
+
+  it("names the specific lead overdue opportunity in program preview and program funding response", () => {
+    const context = buildProgramContextWithOverdue(2);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "program-funding");
+
+    expect(preview.facts.join(" ")).toContain(
+      "RAISE 2026 is the lead overdue monitor decision to resolve first."
+    );
+    expect(response.summary).toContain(
+      "RAISE 2026 is the lead overdue monitor decision to resolve first."
+    );
+    expect(response.findings.join(" ")).toContain("Lead overdue monitor decision: RAISE 2026.");
+    expect(response.nextSteps[0]).toContain("Lead overdue monitor decision: RAISE 2026.");
   });
 });
