@@ -121,8 +121,8 @@ Why it matters:
 ## What is still bounded, not complete
 - no full comment-response authoring workspace exists yet
 - no dedicated board-ready response memo object exists yet
-- runtime/workspace command surfaces still need a final pass so all release-review prompts use the same review-loop-aware summary, not only packet freshness
-- no fresh browser-smoke/proof packet was captured in this pass
+- fresh browser proof for the RTP review-loop surfaces is now captured separately in `2026-04-16-openplan-rtp-review-loop-browser-proof-note.md`
+- one bounded follow-up remains from that smoke: RTP cycle detail still appears to undercount approved handoff-ready comments relative to the report-detail proof lane
 
 ---
 
@@ -168,21 +168,19 @@ Tests:
 ## Best next bounded move
 
 ### Option A, recommended
-Do one more narrow semantics pass through shared runtime/workspace/report-list action surfaces so the rest of OpenPlan stops treating "packet current" as sufficient release-review truth for RTP packets.
+Begin the next major loop in `/grants`, now that RTP packet review posture is materially more honest and browser-proven.
 
 ### Option B
-Run a fresh browser-smoke/proof packet for the RTP review loop and publish screenshots plus route-level evidence.
-
-### Option C
-Begin the next major loop in `/grants`, now that RTP packet review posture is materially more honest.
+Do one bounded RTP cleanup pass on the cycle-detail approved-comment handoff count surfaced during the browser smoke.
 
 ## Recommendation
-Take **Option A first**, then **Option B**, then move harder into `/grants`.
+Take **Option A first**, then return for **Option B** as a bounded cleanup.
 
 Reason:
 - the repo now has the right RTP review-loop primitives
-- the remaining risk is semantic drift across shared control surfaces
-- after that, a proof packet will mean more because the wording and action posture will already be aligned
+- the shared wording pass is done
+- the browser proof packet now exists
+- the remaining RTP gap is narrower and no longer the highest-leverage lane
 
 ---
 
