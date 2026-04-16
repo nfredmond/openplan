@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
@@ -17,6 +18,7 @@ import {
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
+  buildRtpPublicReviewSummary,
   formatRtpChapterStatusLabel,
   formatRtpCycleStatusLabel,
   formatRtpDate,
@@ -138,6 +140,19 @@ type RtpPacketReportRow = {
   id: string;
   title: string;
   updated_at: string;
+};
+
+type EngagementItemSummaryRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 type ReportArtifactRow = {
@@ -314,6 +329,16 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         ...campaign,
         project: Array.isArray(campaign.projects) ? (campaign.projects[0] ?? null) : campaign.projects,
       }));
+  const engagementCampaignIds = engagementCampaigns.map((campaign) => campaign.id);
+  const engagementItemsResult = engagementCampaignIds.length
+    ? await supabase
+        .from("engagement_items")
+        .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
+        .in("campaign_id", engagementCampaignIds)
+    : { data: [], error: null };
+  const engagementItems = looksLikePendingSchema(engagementItemsResult.error?.message)
+    ? []
+    : ((engagementItemsResult.data ?? []) as EngagementItemSummaryRow[]);
 
   const packetReports = (packetReportsResult.data ?? []) as RtpPacketReportRow[];
   const packetReportIds = packetReports.map((report) => report.id);
@@ -352,6 +377,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     }
   }
 
+  const engagementSummary = summarizeEngagementItems([], engagementItems);
+  const generatedPacketCount = packetReportsWithComparison.filter((report) => Boolean(report.generatedAt)).length;
+
   const readiness = buildRtpCycleReadiness({
     geographyLabel: cycle.geography_label,
     horizonStartYear: cycle.horizon_start_year,
@@ -361,6 +389,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     publicReviewCloseAt: cycle.public_review_close_at,
   });
   const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
+  const publicReviewSummary = buildRtpPublicReviewSummary({
+    status: cycle.status,
+    publicReviewOpenAt: cycle.public_review_open_at,
+    publicReviewCloseAt: cycle.public_review_close_at,
+    cycleLevelCampaignCount: cycleLevelCampaigns.length,
+    chapterCampaignCount: engagementCampaigns.length - cycleLevelCampaigns.length,
+    packetRecordCount: packetReportsWithComparison.length,
+    generatedPacketCount,
+    pendingCommentCount: engagementSummary.moderationQueue.pendingCount,
+    approvedCommentCount: engagementSummary.moderationQueue.approvedCount,
+    readyCommentCount: engagementSummary.moderationQueue.readyForHandoffCount,
+  });
 
   const projectLinksWithFunding = projectLinks.map((link) => ({
     ...link,
@@ -781,6 +821,59 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                 })}
               </div>
             )}
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Public review control</p>
+                <h2 className="module-section-title">Comment-response foundation</h2>
+                <p className="module-section-description">
+                  Keep the RTP packet, planwide review target, and moderated public input tied to the same cycle before board closeout.
+                </p>
+              </div>
+              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
+                <MessageSquare className="h-5 w-5" />
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <StatusBadge tone={publicReviewSummary.tone}>{publicReviewSummary.label}</StatusBadge>
+                <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
+              </div>
+
+              <p className="text-sm text-muted-foreground">{publicReviewSummary.detail}</p>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Generated packets</p>
+                  <p className="module-metric-value text-sm">{generatedPacketCount}/{packetReportsWithComparison.length}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Current rendered packet artifacts available for review and export.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Review targets</p>
+                  <p className="module-metric-value text-sm">{cycleLevelCampaigns.length}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Whole-cycle campaigns, plus {engagementCampaigns.length - cycleLevelCampaigns.length} chapter-targeted campaigns.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Approved comments</p>
+                  <p className="module-metric-value text-sm">{engagementSummary.moderationQueue.readyForHandoffCount}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Categorized items ready for packet handoff and response summary work.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Pending comments</p>
+                  <p className="module-metric-value text-sm">{engagementSummary.moderationQueue.pendingCount}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Items still waiting for operator review before packet closeout.</p>
+                </div>
+              </div>
+
+              <div className="module-operator-list">
+                {publicReviewSummary.actionItems.map((item) => (
+                  <div key={item} className="module-operator-item">{item}</div>
+                ))}
+              </div>
+            </div>
           </article>
 
           <article className="module-section-surface">
