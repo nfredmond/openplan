@@ -160,6 +160,14 @@ export function RtpReportDetail({
     presetStatusLabel: string | null;
     presetDetail: string | null;
     fundingSnapshot: PortfolioFundingSnapshot | null;
+    publicReviewLabel: string | null;
+    publicReviewDetail: string | null;
+    publicReviewTone: "success" | "warning" | "neutral" | "info" | null;
+    cycleLevelCampaignCount: number | null;
+    chapterLevelCampaignCount: number | null;
+    pendingCommentCount: number | null;
+    approvedCommentCount: number | null;
+    readyCommentCount: number | null;
   };
   operationsSummary: WorkspaceOperationsSummary;
 }) {
@@ -466,6 +474,46 @@ export function RtpReportDetail({
                   </Link>
                 </div>
               ) : null}
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Public review loop</p>
+                <h2 className="module-section-title">Live comment-response posture</h2>
+                <p className="module-section-description">Current cycle review readiness, engagement targeting, and moderated public-input basis for this RTP packet.</p>
+              </div>
+            </div>
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={currentContext.publicReviewTone ?? "neutral"}>{currentContext.publicReviewLabel ?? "Review status unknown"}</StatusBadge>
+                <StatusBadge tone="neutral">{currentContext.cycleLevelCampaignCount ?? 0} cycle target{(currentContext.cycleLevelCampaignCount ?? 0) === 1 ? "" : "s"}</StatusBadge>
+                <StatusBadge tone="neutral">{currentContext.chapterLevelCampaignCount ?? 0} chapter target{(currentContext.chapterLevelCampaignCount ?? 0) === 1 ? "" : "s"}</StatusBadge>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">{currentContext.publicReviewDetail ?? "No live public-review summary is available for this RTP packet yet."}</p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Whole-cycle campaigns</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.cycleLevelCampaignCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Planwide review targets tied directly to this RTP cycle.</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Chapter campaigns</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.chapterLevelCampaignCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Section-specific comment targets feeding the same cycle review loop.</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Ready comments</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.readyCommentCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Approved categorized items ready for packet handoff.</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Pending comments</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.pendingCommentCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Items still waiting for operator review before review closeout.</p>
+                </div>
+              </div>
             </div>
           </article>
 

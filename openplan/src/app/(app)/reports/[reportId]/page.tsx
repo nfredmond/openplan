@@ -18,7 +18,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { buildPortfolioFundingSnapshot, type PortfolioFundingSnapshot } from "@/lib/projects/funding";
-import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
+import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -515,7 +515,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     report.rtp_cycle_id
       ? supabase
           .from("engagement_campaigns")
-          .select("id")
+          .select("id, rtp_cycle_chapter_id")
           .eq("workspace_id", report.workspace_id)
           .eq("rtp_cycle_id", report.rtp_cycle_id)
       : Promise.resolve({ data: [] }),
@@ -777,7 +777,47 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     );
     const currentRtpChapterRows = (rtpChapters ?? []) as Array<{ id: string; status: string | null }>;
     const currentRtpProjectLinks = (rtpProjectLinks ?? []) as Array<{ id: string }>;
-    const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string }>;
+    const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string; rtp_cycle_chapter_id: string | null }>;
+    const currentRtpCampaignIds = currentRtpCampaigns.map((campaign) => campaign.id);
+    const rtpEngagementItemsResult = currentRtpCampaignIds.length
+      ? await supabase
+          .from("engagement_items")
+          .select(
+            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+          )
+          .in("campaign_id", currentRtpCampaignIds)
+      : { data: [], error: null };
+    const currentRtpEngagementCounts = summarizeEngagementItems(
+      [],
+      (rtpEngagementItemsResult.data ?? []) as Array<{
+        id: string;
+        campaign_id: string;
+        category_id: string | null;
+        status: string | null;
+        source_type: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        moderation_notes: string | null;
+        created_at: string | null;
+        updated_at: string | null;
+      }>
+    );
+    const cycleLevelCampaignCount = currentRtpCampaigns.filter((campaign) => !campaign.rtp_cycle_chapter_id).length;
+    const chapterLevelCampaignCount = currentRtpCampaigns.length - cycleLevelCampaignCount;
+    const currentRtpPublicReview = rtpCycle
+      ? buildRtpPublicReviewSummary({
+          status: rtpCycle.status,
+          publicReviewOpenAt: (rtpCycle as Record<string, unknown>).public_review_open_at as string | null | undefined,
+          publicReviewCloseAt: (rtpCycle as Record<string, unknown>).public_review_close_at as string | null | undefined,
+          cycleLevelCampaignCount,
+          chapterCampaignCount: chapterLevelCampaignCount,
+          packetRecordCount: 1,
+          generatedPacketCount: latestArtifact ? 1 : 0,
+          pendingCommentCount: currentRtpEngagementCounts.moderationQueue.pendingCount,
+          approvedCommentCount: currentRtpEngagementCounts.moderationQueue.approvedCount,
+          readyCommentCount: currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,
+        })
+      : null;
     return (
       <RtpReportDetail
         report={report}
@@ -835,6 +875,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           presetStatusLabel: currentPacketPresetAlignment.statusLabel,
           presetDetail: currentPacketPresetAlignment.detail,
           fundingSnapshot: currentRtpFundingSnapshot,
+          publicReviewLabel: currentRtpPublicReview?.label ?? null,
+          publicReviewDetail: currentRtpPublicReview?.detail ?? null,
+          publicReviewTone: currentRtpPublicReview?.tone ?? null,
+          cycleLevelCampaignCount,
+          chapterLevelCampaignCount,
+          pendingCommentCount: currentRtpEngagementCounts.moderationQueue.pendingCount,
+          approvedCommentCount: currentRtpEngagementCounts.moderationQueue.approvedCount,
+          readyCommentCount: currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,
         }}
         operationsSummary={operationsSummary}
       />

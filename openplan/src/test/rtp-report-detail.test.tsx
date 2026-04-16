@@ -129,6 +129,14 @@ describe("RtpReportDetail", () => {
           presetStatusLabel: null,
           presetDetail: null,
           fundingSnapshot: null,
+          publicReviewLabel: "Comment-response foundation ready",
+          publicReviewDetail: "2 approved comments are ready for packet handoff and the current RTP packet is in place for review closure.",
+          publicReviewTone: "success",
+          cycleLevelCampaignCount: 1,
+          chapterLevelCampaignCount: 0,
+          pendingCommentCount: 0,
+          approvedCommentCount: 2,
+          readyCommentCount: 2,
         }}
         operationsSummary={{} as WorkspaceOperationsSummary}
       />
@@ -138,6 +146,9 @@ describe("RtpReportDetail", () => {
     expect(screen.getAllByText("Release review ready").length).toBeGreaterThan(0);
     expect(screen.queryByText("No packet")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Live comment-response posture")).toBeInTheDocument();
+    expect(screen.getAllByText("Comment-response foundation ready").length).toBeGreaterThan(0);
+    expect(screen.getByText("Approved categorized items ready for packet handoff.")).toBeInTheDocument();
   });
 
   it("surfaces the grants follow-through lane when RTP funding posture still needs cross-module work", () => {
@@ -218,12 +229,22 @@ describe("RtpReportDetail", () => {
           presetStatusLabel: null,
           presetDetail: null,
           fundingSnapshot: buildFundingSnapshot({ gapProjectCount: 1, label: "Partially funded", reason: "A gap remains." }),
+          publicReviewLabel: "Public review active",
+          publicReviewDetail: "1 comment is still waiting for operator review while 2 approved items are already ready for packet handoff.",
+          publicReviewTone: "warning",
+          cycleLevelCampaignCount: 1,
+          chapterLevelCampaignCount: 1,
+          pendingCommentCount: 1,
+          approvedCommentCount: 2,
+          readyCommentCount: 2,
         }}
         operationsSummary={{} as WorkspaceOperationsSummary}
       />
     );
 
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
+    expect(screen.getAllByText("Public review active").length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 comment is still waiting for operator review/i)).toBeInTheDocument();
     const link = screen.getByRole("link", { name: /Open gap resolution/i });
     expect(link).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
   });
