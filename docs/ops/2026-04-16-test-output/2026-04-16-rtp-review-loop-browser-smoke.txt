@@ -1,0 +1,12 @@
+OpenPlan RTP review-loop browser smoke
+Base URL: http://127.0.0.1:3000
+Timestamp: 2026-04-16T15:52:19.196Z
+
+- Reports page: review-loop-aware queue wording rendered, including "Review loop still open" and "Close pending comment review."
+- Report detail: release-review card showed "Review loop still open" with next move "Close pending comment review."
+- RTP cycle detail: public-review foundation card showed live pending-comment posture and public-review-active status.
+
+Artifacts:
+- 2026-04-16-rtp-review-loop-reports-page.png
+- 2026-04-16-rtp-review-loop-report-detail.png
+- 2026-04-16-rtp-review-loop-cycle-detail.png
