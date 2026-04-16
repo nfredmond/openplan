@@ -1,5 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
+import { buildRtpPublicReviewSummary, buildRtpReleaseReviewSummary } from "@/lib/rtp/catalog";
+
+describe("buildRtpReleaseReviewSummary", () => {
+  it("keeps release review open when moderation is still in progress", () => {
+    const summary = buildRtpReleaseReviewSummary({
+      packetFreshnessLabel: "Packet current",
+      publicReviewSummary: {
+        label: "Public review active",
+        detail: "1 comment is still waiting for operator review while 2 approved items are already ready for packet handoff.",
+        tone: "warning",
+        actionItems: ["Resolve pending comments before closeout."],
+      },
+    });
+
+    expect(summary.label).toBe("Review loop still open");
+    expect(summary.tone).toBe("warning");
+    expect(summary.nextActionLabel).toBe("Close pending comment review");
+  });
+
+  it("treats current packets plus approved comments as release-review ready", () => {
+    const summary = buildRtpReleaseReviewSummary({
+      packetFreshnessLabel: "Packet current",
+      publicReviewSummary: {
+        label: "Comment-response foundation ready",
+        detail: "5 approved comments are ready for packet handoff and the current RTP packet is in place for review closure.",
+        tone: "success",
+        actionItems: ["Carry approved comments into the board-ready response summary."],
+      },
+    });
+
+    expect(summary.label).toBe("Release review ready");
+    expect(summary.tone).toBe("success");
+    expect(summary.detail).toMatch(/5 approved comments are ready for packet handoff/i);
+  });
+});
 
 describe("buildRtpPublicReviewSummary", () => {
   it("flags missing review foundation pieces", () => {

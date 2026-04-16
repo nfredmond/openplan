@@ -152,6 +152,7 @@ describe("RtpReportDetail", () => {
 
     expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Release review ready").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Next operator move: Open release review\./i)).toBeInTheDocument();
     expect(screen.queryByText("No packet")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Live comment-response posture")).toBeInTheDocument();
@@ -260,6 +261,8 @@ describe("RtpReportDetail", () => {
 
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getAllByText("Public review active").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Review loop still open").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Next operator move: Close pending comment review\./i)).toBeInTheDocument();
     expect(screen.getAllByText(/1 comment is still waiting for operator review/i).length).toBeGreaterThan(0);
     const link = screen.getByRole("link", { name: /Open gap resolution/i });
     expect(link).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
