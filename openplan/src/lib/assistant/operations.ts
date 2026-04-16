@@ -99,7 +99,7 @@ function compactQuickLinks(links: Array<AssistantQuickLink | null | undefined>):
 function describeWorkspaceNextCommandLink(context: {
   operationsSummary: {
     nextCommand: { key: string; title: string; moduleKey?: string } | null;
-    counts: { rtpFundingReviewPackets: number };
+    counts: { rtpFundingReviewPackets: number; overdueDecisionFundingOpportunities: number };
     grantModelingSummary?: {
       breakdown: { decisionReady: number };
       leadDecisionDetail: string | null;
@@ -109,6 +109,21 @@ function describeWorkspaceNextCommandLink(context: {
   const nextCommand = context.operationsSummary.nextCommand;
   if (!nextCommand) {
     return null;
+  }
+
+  if (
+    nextCommand.key === "resolve-overdue-funding-decisions" &&
+    context.operationsSummary.counts.overdueDecisionFundingOpportunities > 0
+  ) {
+    const overdueCount = context.operationsSummary.counts.overdueDecisionFundingOpportunities;
+    return {
+      label: "Open overdue grant decision lane",
+      statusLabel: `${overdueCount} overdue decision${overdueCount === 1 ? "" : "s"}`,
+      reason:
+        "Monitored funding opportunities are already past their recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing before less urgent cleanup.",
+      auditNote:
+        "Use the focused grants opportunity lane to resolve the lapsed decision as pursue or skip before acting on newer closing windows.",
+    };
   }
 
   if (nextCommand.key === "review-current-report-packets" && context.operationsSummary.counts.rtpFundingReviewPackets > 0) {
