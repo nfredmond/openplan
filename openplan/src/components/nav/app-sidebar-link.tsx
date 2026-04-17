@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Map,
   MessageSquareShare,
+  PlaneTakeoff,
   Route,
   Settings2,
   type LucideIcon,
@@ -34,6 +35,7 @@ const icons = {
   data: Database,
   county: Map,
   reports: FileText,
+  aerial: PlaneTakeoff,
   billing: CreditCard,
   admin: Settings2,
 } satisfies Record<string, LucideIcon>;

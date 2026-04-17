@@ -32,6 +32,7 @@ const navGroups = [
       { href: "/models", label: "Models", icon: "models" as const },
       { href: "/county-runs", label: "County Validation", icon: "county" as const },
       { href: "/data-hub", label: "Data Hub", icon: "data" as const },
+      { href: "/aerial", label: "Aerial Ops", icon: "aerial" as const },
     ],
   },
   {
