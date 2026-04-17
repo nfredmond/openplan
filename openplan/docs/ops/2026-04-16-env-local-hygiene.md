@@ -119,3 +119,21 @@ $ pnpm supabase status
 supabase local development setup is running.
 (no parse error; move-aside workaround no longer needed)
 ```
+
+## Tail cleanup (post-slice)
+
+After the three-file layout was exercised through slices 1–4 of the
+follow-up plan (tsc drift fix, RTP/packet proof, aerial proof, caveat
+gate audit) without regressions, the `.env.local.backup-2026-04-16`
+safety copy was removed:
+
+```
+$ rm openplan/.env.local.backup-2026-04-16
+$ ls openplan/.env*
+.env.example
+.env.local
+.env.production.local
+```
+
+Prod credentials remain safely in `.env.production.local`; no change to
+what gets loaded at dev-time.
