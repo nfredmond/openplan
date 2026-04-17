@@ -30,7 +30,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
+import { executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
+import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -1395,7 +1396,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     }
   }
 
-  async function executeOperation(link: AssistantQuickLink) {
+  async function executeOperation(link: AssistantQuickLink, regroundingDepth = 0) {
     const executeAction = link.executeAction;
     if (!executeAction) return;
 
@@ -1415,267 +1416,55 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     setOperationHistory((current) => upsertOperationHistory(current, runningStatus));
 
     try {
-      if (executeAction.kind === "generate_report_artifact") {
-        await generateReportArtifact(executeAction.reportId);
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        const refreshedPreview = await refreshAssistantPreview();
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-            localConsoleStateOverride: buildLocalConsoleStateSnapshot(refreshedPreview.quickLinks),
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "create_rtp_packet_record") {
-        await createRtpPacketRecord({
-          rtpCycleId: executeAction.rtpCycleId,
-          generateAfterCreate: executeAction.generateAfterCreate,
-        });
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        const refreshedPreview = await refreshAssistantPreview();
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-            localConsoleStateOverride: buildLocalConsoleStateSnapshot(refreshedPreview.quickLinks),
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "create_funding_opportunity") {
-        const createResponse = await fetch("/api/funding-opportunities", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            programId: executeAction.programId,
-            projectId: executeAction.projectId,
-            title: executeAction.title,
-          }),
-        });
-
-        if (!createResponse.ok) {
-          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to create funding opportunity");
-        }
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "create_project_funding_profile") {
-        const createResponse = await fetch(`/api/projects/${executeAction.projectId}/funding-profile`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            fundingNeedAmount: null,
-            localMatchNeedAmount: null,
-            notes: executeAction.notes ?? "Planner Agent created this funding profile anchor. Add funding need and local match next.",
-          }),
-        });
-
-        if (!createResponse.ok) {
-          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to create project funding profile");
-        }
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "update_funding_opportunity_decision") {
-        const updateResponse = await fetch(`/api/funding-opportunities/${executeAction.opportunityId}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            decisionState: executeAction.decisionState,
-          }),
-        });
-
-        if (!updateResponse.ok) {
-          const payload = (await updateResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to update funding opportunity decision");
-        }
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "link_billing_invoice_funding_award") {
-        const updateResponse = await fetch(`/api/billing/invoices/${executeAction.invoiceId}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            workspaceId: executeAction.workspaceId,
-            fundingAwardId: executeAction.fundingAwardId,
-          }),
-        });
-
-        if (!updateResponse.ok) {
-          const payload = (await updateResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to link billing invoice to funding award");
-        }
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-          });
-        }
-        return;
-      }
-
-      if (executeAction.kind === "create_project_record") {
-        const createResponse = await fetch(`/api/projects/${executeAction.projectId}/records`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            recordType: executeAction.recordType,
-            title: executeAction.title,
-            submittalType: executeAction.submittalType,
-            status: executeAction.status,
-            notes: executeAction.notes,
-          }),
-        });
-
-        if (!createResponse.ok) {
-          const payload = (await createResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Failed to create project record");
-        }
-
-        const completedStatus: OperationInvocationState = {
-          linkId: link.id,
-          label: link.label,
-          workflowId: link.workflowId,
-          auditEvent: link.auditEvent,
-          status: "completed",
-          startedAt: operationStartedAt,
-          finishedAt: Date.now(),
-        };
-        setOperationStatus(completedStatus);
-        setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-        setResponding(false);
-
-        if (executeAction.postActionWorkflowId || executeAction.postActionPrompt) {
-          await submitPrompt({
-            workflowId: executeAction.postActionWorkflowId,
-            question: executeAction.postActionPrompt,
-            promptLabel: executeAction.postActionPromptLabel ?? link.label,
-            suppressOperationTracking: true,
-          });
-        }
-        return;
-      }
+      await dispatchRegistryAction(
+        executeAction as Extract<AssistantQuickLinkExecuteAction, { kind: typeof executeAction.kind }>,
+        {
+          onCompleted: () => {
+            const completedStatus: OperationInvocationState = {
+              linkId: link.id,
+              label: link.label,
+              workflowId: link.workflowId,
+              auditEvent: link.auditEvent,
+              status: "completed",
+              startedAt: operationStartedAt,
+              finishedAt: Date.now(),
+            };
+            setOperationStatus(completedStatus);
+            setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
+            setResponding(false);
+          },
+          onPostActionPromptSkipped: ({ depth, maxDepth }) => {
+            setError(
+              `Planner Agent regrounding chain stopped at depth ${depth} of ${maxDepth}. Rerun manually if more follow-up is needed.`
+            );
+          },
+          refreshAssistantPreview: async () => {
+            const preview = await refreshAssistantPreview();
+            return { quickLinks: preview.quickLinks };
+          },
+          submitPostActionPrompt: async ({
+            postActionWorkflowId,
+            postActionPrompt,
+            postActionPromptLabel,
+            refreshedPreviewQuickLinks,
+          }) => {
+            await submitPrompt({
+              workflowId: postActionWorkflowId,
+              question: postActionPrompt,
+              promptLabel: postActionPromptLabel ?? link.label,
+              suppressOperationTracking: true,
+              localConsoleStateOverride:
+                refreshedPreviewQuickLinks !== null
+                  ? buildLocalConsoleStateSnapshot(
+                      refreshedPreviewQuickLinks as Parameters<typeof buildLocalConsoleStateSnapshot>[0]
+                    )
+                  : undefined,
+            });
+          },
+        },
+        { regroundingDepth }
+      );
+      return;
     } catch (executeError) {
       const failedStatus: OperationInvocationState = {
         linkId: link.id,
