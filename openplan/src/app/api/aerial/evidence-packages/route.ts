@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
 
 const AERIAL_PACKAGE_TYPES = ["measurable_output", "qa_bundle", "share_package"] as const;
 const AERIAL_PACKAGE_STATUSES = ["processing", "qa_pending", "ready", "shared"] as const;
@@ -111,6 +112,33 @@ export async function POST(request: NextRequest) {
       workspaceId: mission.workspace_id,
       durationMs: Date.now() - startedAt,
     });
+
+    if (mission.project_id) {
+      const postureResult = await rebuildAerialProjectPosture({
+        supabase,
+        projectId: mission.project_id,
+        workspaceId: mission.workspace_id,
+      });
+
+      if (postureResult.error) {
+        audit.warn("aerial_posture_rebuild_failed", {
+          packageId: pkg.id,
+          projectId: mission.project_id,
+          workspaceId: mission.workspace_id,
+          message: postureResult.error.message,
+          code: postureResult.error.code ?? null,
+        });
+      } else {
+        audit.info("aerial_posture_rebuilt", {
+          packageId: pkg.id,
+          projectId: mission.project_id,
+          workspaceId: mission.workspace_id,
+          missionCount: postureResult.posture?.missionCount ?? 0,
+          readyPackageCount: postureResult.posture?.readyPackageCount ?? 0,
+          verificationReadiness: postureResult.posture?.verificationReadiness ?? "none",
+        });
+      }
+    }
 
     return NextResponse.json({ packageId: pkg.id, package: pkg }, { status: 201 });
   } catch (error) {
