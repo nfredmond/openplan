@@ -506,7 +506,6 @@ describe("workspace operations summary", () => {
           retention_amount: null,
           status: "submitted",
           due_date: "2026-04-01T00:00:00.000Z",
-          updated_at: "2026-04-11T17:15:00.000Z",
         },
       ],
       projectSubmittals: [
@@ -515,7 +514,6 @@ describe("workspace operations summary", () => {
           project_id: "project-gap",
           submittal_type: "reimbursement",
           status: "in_review",
-          title: "Initial reimbursement packet",
           updated_at: "2026-04-11T17:20:00.000Z",
         },
       ],

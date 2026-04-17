@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   markScenarioLinkedReportsBasisStale,
   touchScenarioLinkedReportPackets,
+  type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 
 describe("touchScenarioLinkedReportPackets", () => {
@@ -52,7 +53,7 @@ describe("touchScenarioLinkedReportPackets", () => {
     };
 
     const result = await touchScenarioLinkedReportPackets({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: "scenario-set-1",
       workspaceId: "workspace-1",
       touchedAt: "2026-04-14T10:00:00.000Z",
@@ -92,7 +93,7 @@ describe("touchScenarioLinkedReportPackets", () => {
     };
 
     const result = await touchScenarioLinkedReportPackets({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: "scenario-set-1",
       workspaceId: "workspace-1",
     });
@@ -145,7 +146,7 @@ describe("markScenarioLinkedReportsBasisStale", () => {
     };
 
     const result = await markScenarioLinkedReportsBasisStale({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: "scenario-set-1",
       workspaceId: "workspace-1",
       runId: "model-run-7",
@@ -191,7 +192,7 @@ describe("markScenarioLinkedReportsBasisStale", () => {
     };
 
     const result = await markScenarioLinkedReportsBasisStale({
-      supabase,
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: "scenario-set-1",
       workspaceId: "workspace-1",
       runId: "model-run-7",

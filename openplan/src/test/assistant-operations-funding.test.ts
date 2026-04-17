@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import type { WorkspaceAssistantContext } from "@/lib/assistant/context";
 
-function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["operationsSummary"]>): WorkspaceAssistantContext {
+type OperationsSummaryOverrides = Partial<Omit<WorkspaceAssistantContext["operationsSummary"], "counts">> & {
+  counts?: Partial<WorkspaceAssistantContext["operationsSummary"]["counts"]>;
+};
+
+function buildWorkspaceContext(overrides?: OperationsSummaryOverrides): WorkspaceAssistantContext {
   const operationsSummary: WorkspaceAssistantContext["operationsSummary"] = {
     posture: "attention",
     headline: "Anchor project funding needs",
@@ -32,6 +36,9 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       projectFundingReimbursementActiveProjects: 0,
       projectFundingGapProjects: 0,
       queueDepth: 1,
+      aerialMissions: 0,
+      aerialActiveMissions: 0,
+      aerialReadyPackages: 0,
     },
     nextCommand: {
       key: "anchor-project-funding-needs",

@@ -5,7 +5,7 @@ const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
   throw new Error("notFound");
 });
-const redirectMock = vi.fn(() => {
+const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
 

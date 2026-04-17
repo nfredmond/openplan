@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const createClientMock = vi.fn();
-const redirectMock = vi.fn(() => {
+const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
 const authGetUserMock = vi.fn();

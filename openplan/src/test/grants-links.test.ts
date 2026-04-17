@@ -111,7 +111,7 @@ describe("grants-links", () => {
   it("treats comparison-backed report posture as a grants-relevant modeling command", () => {
     const modelingCommand = buildCommand({
       key: "review-comparison-backed-reports",
-      moduleKey: "reports",
+      moduleKey: "reports" as WorkspaceCommandQueueItem["moduleKey"],
       moduleLabel: "Reports",
       href: "/reports?posture=comparison-backed",
       title: "Review comparison-backed packet posture",
@@ -367,57 +367,55 @@ describe("grants-links", () => {
   });
 
   it("maps RTP funding review signals back into the right grants follow-through lane", () => {
-    expect(
-      resolveRtpFundingFollowThrough({
-        capturedAt: null,
-        latestSourceUpdatedAt: null,
-        linkedProjectCount: 4,
-        trackedProjectCount: 4,
-        fundedProjectCount: 1,
-        likelyCoveredProjectCount: 1,
-        gapProjectCount: 2,
-        committedFundingAmount: 500000,
-        likelyFundingAmount: 200000,
-        totalPotentialFundingAmount: 700000,
-        unfundedAfterLikelyAmount: 300000,
-        paidReimbursementAmount: 0,
-        outstandingReimbursementAmount: 0,
-        uninvoicedAwardAmount: 0,
-        awardRiskCount: 0,
-        label: "Partially funded",
-        reason: "Gap remains.",
-        reimbursementLabel: "Reimbursement posture unknown",
-        reimbursementReason: "No reimbursement records.",
-      })
-    ).toEqual({
+    const gapSnapshot = {
+      capturedAt: null,
+      latestSourceUpdatedAt: null,
+      linkedProjectCount: 4,
+      trackedProjectCount: 4,
+      fundedProjectCount: 1,
+      likelyCoveredProjectCount: 1,
+      gapProjectCount: 2,
+      committedFundingAmount: 500000,
+      likelyFundingAmount: 200000,
+      totalPotentialFundingAmount: 700000,
+      unfundedAfterLikelyAmount: 300000,
+      paidReimbursementAmount: 0,
+      outstandingReimbursementAmount: 0,
+      uninvoicedAwardAmount: 0,
+      awardRiskCount: 0,
+      label: "Partially funded",
+      reason: "Gap remains.",
+      reimbursementLabel: "Reimbursement posture unknown",
+      reimbursementReason: "No reimbursement records.",
+    };
+    expect(resolveRtpFundingFollowThrough(gapSnapshot)).toEqual({
       href: "/grants#grants-gap-resolution-lane",
       title: "Linked RTP projects still carry uncovered funding gaps.",
       actionLabel: "Open gap resolution",
     });
 
-    expect(
-      resolveRtpFundingFollowThrough({
-        capturedAt: null,
-        latestSourceUpdatedAt: null,
-        linkedProjectCount: 2,
-        trackedProjectCount: 2,
-        fundedProjectCount: 2,
-        likelyCoveredProjectCount: 0,
-        gapProjectCount: 0,
-        committedFundingAmount: 500000,
-        likelyFundingAmount: 0,
-        totalPotentialFundingAmount: 500000,
-        unfundedAfterLikelyAmount: 0,
-        paidReimbursementAmount: 100000,
-        outstandingReimbursementAmount: 50000,
-        uninvoicedAwardAmount: 0,
-        awardRiskCount: 0,
-        label: "Funded",
-        reason: "Committed awards meet the need.",
-        reimbursementLabel: "Reimbursement in flight",
-        reimbursementReason: "Outstanding reimbursement remains.",
-      })
-    ).toEqual({
+    const reimbursementSnapshot = {
+      capturedAt: null,
+      latestSourceUpdatedAt: null,
+      linkedProjectCount: 2,
+      trackedProjectCount: 2,
+      fundedProjectCount: 2,
+      likelyCoveredProjectCount: 0,
+      gapProjectCount: 0,
+      committedFundingAmount: 500000,
+      likelyFundingAmount: 0,
+      totalPotentialFundingAmount: 500000,
+      unfundedAfterLikelyAmount: 0,
+      paidReimbursementAmount: 100000,
+      outstandingReimbursementAmount: 50000,
+      uninvoicedAwardAmount: 0,
+      awardRiskCount: 0,
+      label: "Funded",
+      reason: "Committed awards meet the need.",
+      reimbursementLabel: "Reimbursement in flight",
+      reimbursementReason: "Outstanding reimbursement remains.",
+    };
+    expect(resolveRtpFundingFollowThrough(reimbursementSnapshot)).toEqual({
       href: "/grants#grants-reimbursement-triage",
       title: "Reimbursement follow-through is still active across linked RTP projects.",
       actionLabel: "Open reimbursement triage",

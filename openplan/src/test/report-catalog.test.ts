@@ -182,30 +182,35 @@ describe("getReportPacketFreshness", () => {
     expect(
       matchesReportPostureFilter("all", {
         hasEvidenceChain: false,
+        hasComparisonBacked: false,
         hasBlockedGovernance: false,
       })
     ).toBe(true);
     expect(
       matchesReportPostureFilter("evidence-backed", {
         hasEvidenceChain: true,
+        hasComparisonBacked: false,
         hasBlockedGovernance: false,
       })
     ).toBe(true);
     expect(
       matchesReportPostureFilter("evidence-backed", {
         hasEvidenceChain: false,
+        hasComparisonBacked: false,
         hasBlockedGovernance: false,
       })
     ).toBe(false);
     expect(
       matchesReportPostureFilter("governance-hold", {
         hasEvidenceChain: true,
+        hasComparisonBacked: false,
         hasBlockedGovernance: true,
       })
     ).toBe(true);
     expect(
       matchesReportPostureFilter("no-evidence", {
         hasEvidenceChain: false,
+        hasComparisonBacked: false,
         hasBlockedGovernance: false,
       })
     ).toBe(true);

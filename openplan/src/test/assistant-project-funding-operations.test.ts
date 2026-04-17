@@ -168,6 +168,7 @@ function buildProgramContext(): ProgramAssistantContext {
         fundingOpportunities: 1,
         openFundingOpportunities: 1,
         closingSoonFundingOpportunities: 0,
+        overdueDecisionFundingOpportunities: 0,
         projectFundingNeedAnchorProjects: 0,
         projectFundingSourcingProjects: 0,
         projectFundingDecisionProjects: 0,
@@ -176,9 +177,13 @@ function buildProgramContext(): ProgramAssistantContext {
         projectFundingReimbursementActiveProjects: 0,
         projectFundingGapProjects: 1,
         queueDepth: 1,
+        aerialMissions: 0,
+        aerialActiveMissions: 0,
+        aerialReadyPackages: 0,
       },
       nextCommand: null,
       commandQueue: [],
+      fullCommandQueue: [],
     },
   };
 }

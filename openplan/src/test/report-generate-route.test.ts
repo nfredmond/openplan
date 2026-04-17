@@ -87,7 +87,10 @@ const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMo
 
 const artifactsSingleMock = vi.fn();
 const artifactsInsertSelectMock = vi.fn(() => ({ single: artifactsSingleMock }));
-const artifactsInsertMock = vi.fn(() => ({ select: artifactsInsertSelectMock }));
+type ArtifactInsertPayload = {
+  metadata_json?: { htmlContent?: string } & Record<string, unknown>;
+} & Record<string, unknown>;
+const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
 
 const mockAudit = {
   info: vi.fn(),

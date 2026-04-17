@@ -23,6 +23,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       fundingOpportunities: 1,
       openFundingOpportunities: 1,
       closingSoonFundingOpportunities: 0,
+      overdueDecisionFundingOpportunities: 0,
       projectFundingNeedAnchorProjects: 0,
       projectFundingSourcingProjects: 0,
       projectFundingDecisionProjects: 0,
@@ -31,6 +32,9 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       projectFundingReimbursementActiveProjects: 0,
       projectFundingGapProjects: 0,
       queueDepth: 1,
+      aerialMissions: 0,
+      aerialActiveMissions: 0,
+      aerialReadyPackages: 0,
     },
     nextCommand: {
       key: "review-current-report-packets",

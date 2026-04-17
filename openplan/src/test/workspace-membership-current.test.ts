@@ -135,7 +135,7 @@ describe("workspace membership helpers", () => {
     const result = await loadCurrentWorkspaceMembership(
       {
         from: fromMock,
-      },
+      } as unknown as Parameters<typeof loadCurrentWorkspaceMembership>[0],
       "user-1"
     );
 

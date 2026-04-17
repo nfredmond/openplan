@@ -54,6 +54,7 @@ describe("report engagement helpers", () => {
         summary: "Capture walking and crossing feedback.",
         status: "active",
         engagement_type: "comment_collection",
+        share_token: null,
         updated_at: "2026-03-14T02:30:00.000Z",
       },
       categories: [
