@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
+import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
 import {
   FUNDING_AWARD_MATCH_POSTURE_OPTIONS,
   FUNDING_AWARD_RISK_FLAG_OPTIONS,
@@ -167,6 +168,62 @@ export async function POST(request: NextRequest) {
       workspaceId: access.project.workspace_id,
       durationMs: Date.now() - startedAt,
     });
+
+    if (parsed.data.obligationDueAt) {
+      const obligationTargetDate = parsed.data.obligationDueAt.slice(0, 10);
+      const { error: milestoneError } = await supabase.from("project_milestones").insert({
+        project_id: access.project.id,
+        funding_award_id: award.id,
+        title: `Obligation: ${parsed.data.title.trim()}`,
+        summary: "Auto-generated from funding award obligation deadline.",
+        milestone_type: "obligation",
+        phase_code: "programming",
+        status: "scheduled",
+        target_date: obligationTargetDate,
+        created_by: user.id,
+      });
+
+      if (milestoneError) {
+        audit.warn("funding_award_obligation_milestone_failed", {
+          awardId: award.id,
+          projectId: access.project.id,
+          message: milestoneError.message,
+          code: milestoneError.code ?? null,
+        });
+      } else {
+        audit.info("funding_award_obligation_milestone_created", {
+          awardId: award.id,
+          projectId: access.project.id,
+          targetDate: obligationTargetDate,
+        });
+      }
+    }
+
+    const postureResult = await rebuildProjectRtpPosture({
+      supabase,
+      projectId: access.project.id,
+      workspaceId: access.project.workspace_id,
+    });
+
+    if (postureResult.error) {
+      audit.warn("rtp_posture_rebuild_failed", {
+        awardId: award.id,
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        message: postureResult.error.message,
+        code: postureResult.error.code ?? null,
+      });
+    } else {
+      audit.info("rtp_posture_rebuilt", {
+        awardId: award.id,
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        status: postureResult.posture?.status ?? "unknown",
+        pipelineStatus: postureResult.posture?.pipelineStatus ?? "unknown",
+        committedFundingAmount: postureResult.posture?.committedFundingAmount ?? 0,
+        fundingNeedAmount: postureResult.posture?.fundingNeedAmount ?? 0,
+      });
+    }
 
     return NextResponse.json({ awardId: award.id, award }, { status: 201 });
   } catch (error) {
