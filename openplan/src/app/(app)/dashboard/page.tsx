@@ -1,6 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
+import { FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
+import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
+import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
+import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -63,7 +66,6 @@ export default async function DashboardPage() {
   const workspaceCreatedAt = workspace?.created_at ?? null;
   const workspaceRole = membership?.role ?? "member";
   const workspaceId = membership?.workspace_id ?? "";
-  const workspaceIdSnippet = workspaceId ? workspaceId.slice(0, 8) : "unavailable";
 
   const [runsResult, operationsSummary] = workspaceId
     ? await Promise.all([
@@ -220,116 +222,26 @@ export default async function DashboardPage() {
   return (
     <section className="module-page">
       <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">Workspace dashboard</div>
-          <div className="module-intro-body">
-            <div className="flex flex-wrap gap-2">
-              <div className="module-record-chip">
-                <span>Role</span>
-                <strong>{workspaceRole}</strong>
-              </div>
-              <div className="module-record-chip">
-                <span>Plan</span>
-                <strong>{workspacePlan}</strong>
-              </div>
-            </div>
-            <h1 className="module-intro-title">{workspaceName}</h1>
-            <p className="module-intro-description">
-              Use this overview to see current work, recent activity, and the next planning tasks that need attention.
-            </p>
-          </div>
+        <DashboardWorkspaceIntro
+          workspaceName={workspaceName}
+          workspaceRole={workspaceRole}
+          workspacePlan={workspacePlan}
+        >
+          <DashboardKpiGrid cards={kpiCards} />
+        </DashboardWorkspaceIntro>
 
-          <div className="module-summary-grid cols-4">
-            {kpiCards.map((card) => (
-              <div key={card.label} className="module-summary-card">
-                <p className="module-summary-label">{card.label}</p>
-                <p className="module-summary-value">{card.value}</p>
-                <p className="module-summary-detail">{card.detail}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Overview</p>
-              <h2 className="module-operator-title">Start here, then move into the work</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
-            {rtpFundingReviewCount > 0
-              ? grantsRoutedRtpFundingReview
-                ? ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} Grants OS follow-through even though freshness already reads current.`
-                : ` ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} funding-backed release review even though freshness already reads current.`
-              : ""}
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">
-              Review active projects, recent updates, and items that need follow-up.
-            </div>
-            {rtpFundingReviewCount > 0 ? (
-              <div className="module-operator-item">
-                {grantsRoutedRtpFundingReview
-                  ? `Current RTP packet work is now a Grants OS follow-through lane, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still needs" : "s still need"} linked-project funding cleanup before packet posture is truly settled.`
-                  : `Current RTP packet work is not just freshness, ${rtpFundingReviewCount} packet${rtpFundingReviewCount === 1 ? " still carries" : "s still carry"} linked-project funding follow-up.`}
-              </div>
-            ) : null}
-            {comparisonBackedReportCount > 0 ? (
-              <div className="module-operator-item">
-                {comparisonBackedReportCount} comparison-backed report packet{comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing, but that evidence still does not prove award likelihood or replace funding-source review.
-              </div>
-            ) : null}
-            {grantModelingSummary?.operatorDetail ? (
-              <div className="module-operator-item">{grantModelingSummary.operatorDetail}</div>
-            ) : null}
-            <div className="module-operator-item">
-              Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
-            </div>
-            <div className="module-operator-item">
-              {kpis.firstRunAt
-                ? `Time to first result: ${formatTimeToFirstResult(kpis.timeToFirstResultHours)}.`
-                : "No analysis runs yet — open Analysis Studio to start the first corridor study."}
-            </div>
-          </div>
-        </article>
+        <DashboardOperatorGuidance
+          rtpFundingReviewCount={rtpFundingReviewCount}
+          grantsRoutedRtpFundingReview={grantsRoutedRtpFundingReview}
+          comparisonBackedReportCount={comparisonBackedReportCount}
+          grantModelingOperatorDetail={grantModelingSummary?.operatorDetail ?? null}
+          firstRunAt={kpis.firstRunAt}
+          timeToFirstResultFormatted={formatTimeToFirstResult(kpis.timeToFirstResultHours)}
+        />
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Quick actions</p>
-              <h2 className="module-section-title">Move into the work</h2>
-            </div>
-          </div>
-
-          <div className="mt-3 space-y-1">
-            {actions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link
-                  key={action.key}
-                  href={action.href}
-                  className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40"
-                >
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-emerald-700">
-                    <Icon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.87rem] font-semibold text-gray-900">{action.title}</p>
-                    <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{action.description}</p>
-                  </div>
-                  <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-400" />
-                </Link>
-              );
-            })}
-          </div>
-        </article>
+        <DashboardQuickActions actions={actions} />
 
         <WorkspaceCommandBoard summary={operationsSummary}>
           {baselineItems.map((item) => (
