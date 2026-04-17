@@ -34,6 +34,10 @@ import {
   describeComparisonSnapshotAggregate,
   parseStoredComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
+import {
+  loadScenarioComparisonSummaryForProjects,
+  totalReadySnapshotCount,
+} from "@/lib/scenarios/comparison-summary";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -77,6 +81,7 @@ type ProjectLinkProjectRow = {
   status: string;
   delivery_phase: string;
   summary: string | null;
+  rtp_posture_updated_at: string | null;
 };
 
 type ProjectFundingProfileRow = {
@@ -223,7 +228,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .order("created_at", { ascending: true }),
     supabase
       .from("project_rtp_cycle_links")
-      .select("id, project_id, portfolio_role, priority_rationale, created_at, projects(id, name, status, delivery_phase, summary)")
+      .select("id, project_id, portfolio_role, priority_rationale, created_at, projects(id, name, status, delivery_phase, summary, rtp_posture_updated_at)")
       .eq("rtp_cycle_id", cycle.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -432,6 +437,16 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     0
   );
 
+  const scenarioComparisonSummary = linkedProjectIds.length
+    ? await loadScenarioComparisonSummaryForProjects({
+        supabase,
+        projectIds: linkedProjectIds,
+      })
+    : { rows: [], scenarioSetProjectMap: new Map<string, string>(), error: null };
+  const scenarioComparisonRows = scenarioComparisonSummary.rows;
+  const scenarioComparisonIndicatorCount = new Set(scenarioComparisonRows.map((row) => row.indicator_key)).size;
+  const scenarioComparisonReadyCount = totalReadySnapshotCount(scenarioComparisonRows);
+
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
   return (
@@ -488,6 +503,15 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               <p className="module-summary-label">Funding posture</p>
               <p className="module-summary-value">{fundedProjectCount}/{projectLinks.length}</p>
               <p className="module-summary-detail">{likelyCoveredProjectCount} more look coverable from pursued funding, while {unfundedProjectCount} still carry a remaining gap.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Scenario signals</p>
+              <p className="module-summary-value">{scenarioComparisonIndicatorCount}</p>
+              <p className="module-summary-detail">
+                {scenarioComparisonIndicatorCount === 0
+                  ? "No ready scenario comparisons are linked to these projects yet."
+                  : `${scenarioComparisonReadyCount} ready comparison snapshot${scenarioComparisonReadyCount === 1 ? "" : "s"} aggregated across linked projects.`}
+              </p>
             </div>
           </div>
         </article>
@@ -799,6 +823,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                       <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
                         {link.fundingStack.reimbursementLabel} · Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)} · Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)} · Paid {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.paidReimbursementAmount)} · Outstanding {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.outstandingReimbursementAmount)}{link.fundingStack.awardRiskCount > 0 ? ` · ${link.fundingStack.awardRiskCount} award risk` : ""}
                       </p>
+                      {project?.rtp_posture_updated_at ? (
+                        <p className="text-[0.7rem] text-muted-foreground/80">
+                          Posture cached {formatRtpDateTime(project.rtp_posture_updated_at)}
+                        </p>
+                      ) : null}
                       {project?.id ? (
                         <Link href={`/projects/${project.id}`} className="module-inline-action w-fit">
                           Open project workspace
