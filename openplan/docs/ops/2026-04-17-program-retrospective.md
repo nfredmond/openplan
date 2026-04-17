@@ -119,6 +119,12 @@ tickets are marked live.
 added by T3/T4 and trace at least one reader per column before calling
 them integrated.
 
+**Update 2026-04-17:** done. See
+`2026-04-17-stale-mark-reader-audit.md` — T3/T4 are fully integrated
+(writer in 3 model-run + scenario API routes; reader renders
+`rtp_basis_stale` banner in `/reports/[reportId]/page.tsx`). T16
+remains the only outstanding reader-dead case.
+
 ### 2. TS type-drift is a leading indicator, not noise
 
 The 68-error tsc drift on 2026-04-17 looked like test hygiene. In
