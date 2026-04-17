@@ -42,6 +42,11 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const scenarioSetsInMock = vi.fn(async () => ({ data: [], error: null }));
+const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
+const scenarioComparisonSummaryInMock = vi.fn(async () => ({ data: [], error: null }));
+const scenarioComparisonSummarySelectMock = vi.fn(() => ({ in: scenarioComparisonSummaryInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "funding_opportunities") return { select: fundingOpportunitiesSelectMock };
   if (table === "projects") return { select: projectsSelectMock };
@@ -51,6 +56,8 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_funding_profiles") return { select: projectFundingProfilesSelectMock };
   if (table === "reports") return { select: reportsSelectMock };
   if (table === "report_artifacts") return { select: reportArtifactsSelectMock };
+  if (table === "scenario_sets") return { select: scenarioSetsSelectMock };
+  if (table === "scenario_comparison_summary") return { select: scenarioComparisonSummarySelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 

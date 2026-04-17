@@ -5,6 +5,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   type ReportComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import type { FundingOpportunityDecision } from "@/lib/programs/catalog";
 
 export type ProjectGrantModelingReportRow = {
@@ -69,11 +70,11 @@ export type GrantDecisionModelingSupport = {
 
 function getGrantSupportFreshnessPriority(label: string) {
   switch (label) {
-    case "Packet current":
+    case PACKET_FRESHNESS_LABELS.CURRENT:
       return 0;
-    case "Refresh recommended":
+    case PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED:
       return 1;
-    case "No packet":
+    case PACKET_FRESHNESS_LABELS.NO_PACKET:
       return 2;
     default:
       return 3;
@@ -88,10 +89,10 @@ export function describeProjectGrantModelingReadiness(
   }
 
   const leadReport = evidence.leadComparisonReport;
-  if (leadReport.packetFreshness.label !== "Packet current") {
+  if (leadReport.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
     return {
       key: "stale",
-      label: "Refresh recommended",
+      label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
       tone: "warning",
       detail: `${leadReport.title} has comparison-backed planning support, but the packet should be refreshed before operators lean on it for grant readiness or prioritization. ${leadReport.packetFreshness.detail}`,
     };
