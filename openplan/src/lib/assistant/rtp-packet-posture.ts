@@ -1,12 +1,17 @@
+import {
+  PACKET_FRESHNESS_LABELS,
+  type PacketFreshnessLabel,
+} from "@/lib/reports/packet-labels";
+
 export type RtpPacketWorkPosture = "generate" | "refresh" | "release";
 
-export type RtpPacketFreshnessLabel = "No packet" | "Refresh recommended" | "Packet current";
+export type RtpPacketFreshnessLabel = PacketFreshnessLabel;
 
 export function resolveRtpPacketWorkPostureFromFreshnessLabel(
   label: string | null | undefined
 ): RtpPacketWorkPosture {
-  if (label === "No packet") return "generate";
-  if (label === "Refresh recommended") return "refresh";
+  if (label === PACKET_FRESHNESS_LABELS.NO_PACKET) return "generate";
+  if (label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) return "refresh";
   return "release";
 }
 

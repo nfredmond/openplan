@@ -76,6 +76,7 @@ import {
   parseStoredEvidenceChainSummary,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 
@@ -847,10 +848,10 @@ export default async function ProjectDetailPage({
     });
   const reportRecordCount = projectReportCount ?? projectReports.length;
   const refreshRecommendedReportCount = projectReports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
   ).length;
   const noPacketReportCount = projectReports.filter(
-    (report) => report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const evidenceBackedReportCount = projectReports.filter(
     (report) => Boolean(report.evidenceChainDigest)
@@ -892,7 +893,7 @@ export default async function ProjectDetailPage({
   );
   const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [];
-    if (report.packetFreshness.label !== "Packet current") {
+    if (report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
       badges.push({ label: report.packetFreshness.label });
     }
     if (report.comparisonDigest) {
@@ -907,9 +908,9 @@ export default async function ProjectDetailPage({
       href: getReportNavigationHref(report.id, report.packetFreshness.label),
       title: report.title,
       subtitle:
-        report.packetFreshness.label === "Refresh recommended"
+        report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
           ? `First action: refresh ${report.title}`
-          : report.packetFreshness.label === "No packet"
+          : report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
             ? `First action: generate ${report.title}`
             : report.evidenceChainDigest?.blockedGateDetail
               ? `First action: review governance hold in ${report.title}`

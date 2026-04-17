@@ -10,6 +10,7 @@ import {
   getRtpPacketActionButtonLabel,
   type RtpPacketAttention,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createRtpPacketRecord, generateReportArtifact } from "@/lib/reports/client";
 
 export function RtpRegistryPacketRowAction({
@@ -35,7 +36,7 @@ export function RtpRegistryPacketRowAction({
 
     return (
       <div className="space-y-2">
-        <Link href={getReportNavigationHref(reportId, "Packet current")} className="module-inline-action w-fit">
+        <Link href={getReportNavigationHref(reportId, PACKET_FRESHNESS_LABELS.CURRENT)} className="module-inline-action w-fit">
           {getRtpPacketActionButtonLabel({ packetAttention: "current" })}
           <ArrowRight className="h-4 w-4" />
         </Link>

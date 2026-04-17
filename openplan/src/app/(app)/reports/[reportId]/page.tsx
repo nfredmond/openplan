@@ -43,6 +43,9 @@ import {
   reportStatusTone,
   titleize,
 } from "@/lib/reports/catalog";
+import {
+  PACKET_FRESHNESS_LABELS,
+} from "@/lib/reports/packet-labels";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
@@ -447,7 +450,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const { data: report } = await supabase
     .from("reports")
     .select(
-      "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at"
+      "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, rtp_basis_stale, rtp_basis_stale_reason, rtp_basis_stale_run_id, rtp_basis_stale_marked_at"
     )
     .eq("id", reportId)
     .maybeSingle();
@@ -1464,19 +1467,19 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const currentReportPacketFreshness = latestArtifact?.generated_at ?? report.generated_at
     ? driftedItems.length > 0
       ? {
-          label: "Refresh recommended",
+          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
           tone: "warning" as const,
           detail:
             "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review.",
         }
       : {
-          label: "Packet current",
+          label: PACKET_FRESHNESS_LABELS.CURRENT,
           tone: "success" as const,
           detail:
             "No live source drift is currently visible against the latest packet snapshot.",
         }
     : {
-        label: "No packet",
+        label: PACKET_FRESHNESS_LABELS.NO_PACKET,
         tone: "warning" as const,
         detail:
           "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
@@ -1630,6 +1633,21 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       />
 
       <article id="packet-release-review" className="module-section-surface">
+        {report.rtp_basis_stale ? (
+          <div className="mb-4 rounded-[18px] border border-amber-400/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]">
+              Basis stale
+            </p>
+            <p className="mt-1 font-semibold">
+              {report.rtp_basis_stale_reason ?? "An upstream model run succeeded after this packet was last generated."}
+            </p>
+            <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/90">
+              {report.rtp_basis_stale_marked_at
+                ? `Marked stale on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Regenerate the packet to re-ground it on the new run.`
+                : "Regenerate the packet to re-ground it on the new run."}
+            </p>
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -1641,6 +1659,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {report.rtp_basis_stale ? (
+              <StatusBadge tone="warning">Basis stale</StatusBadge>
+            ) : null}
             <StatusBadge tone={currentReportPacketFreshness.tone}>
               {currentReportPacketFreshness.label}
             </StatusBadge>

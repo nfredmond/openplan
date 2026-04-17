@@ -1,4 +1,9 @@
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
+import {
+  PACKET_FRESHNESS_DETAIL,
+  PACKET_FRESHNESS_LABELS,
+  type PacketFreshnessLabel,
+} from "@/lib/reports/packet-labels";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 
 export const REPORT_TYPE_OPTIONS = [
@@ -92,7 +97,7 @@ export function getReportPacketWorkStatus(
   freshnessLabel: string
 ): ReportPacketWorkStatus {
   switch (freshnessLabel) {
-    case "No packet":
+    case PACKET_FRESHNESS_LABELS.NO_PACKET:
       return {
         key: "generate-first",
         label: "Generate first packet",
@@ -100,7 +105,7 @@ export function getReportPacketWorkStatus(
         detail:
           "No current packet artifact exists yet, so first-packet generation should happen before release review starts.",
       };
-    case "Refresh recommended":
+    case PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED:
       return {
         key: "refresh",
         label: "Refresh packet",
@@ -223,11 +228,11 @@ export function matchesReportFreshnessFilter(
 ) {
   switch (filter) {
     case "refresh":
-      return freshnessLabel === "Refresh recommended";
+      return freshnessLabel === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
     case "missing":
-      return freshnessLabel === "No packet";
+      return freshnessLabel === PACKET_FRESHNESS_LABELS.NO_PACKET;
     case "current":
-      return freshnessLabel === "Packet current";
+      return freshnessLabel === PACKET_FRESHNESS_LABELS.CURRENT;
     default:
       return true;
   }
@@ -606,9 +611,9 @@ export function getReportPacketFreshness({
 }): ReportPacketFreshness {
   if (!latestArtifactKind || !generatedAt) {
     return {
-      label: "No packet",
+      label: PACKET_FRESHNESS_LABELS.NO_PACKET,
       tone: "warning",
-      detail: "No generated packet is attached to this report yet.",
+      detail: PACKET_FRESHNESS_DETAIL.NO_PACKET,
     };
   }
 
@@ -617,16 +622,16 @@ export function getReportPacketFreshness({
 
   if (Number.isFinite(generatedAtMs) && Number.isFinite(updatedAtMs) && updatedAtMs > generatedAtMs) {
     return {
-      label: "Refresh recommended",
+      label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
       tone: "warning",
-      detail: "The report or one of its tracked source records changed after the latest packet was generated.",
+      detail: PACKET_FRESHNESS_DETAIL.REFRESH_RECOMMENDED,
     };
   }
 
   return {
-    label: "Packet current",
+    label: PACKET_FRESHNESS_LABELS.CURRENT,
     tone: "success",
-    detail: "The latest packet is current with the saved report record and tracked source timestamps.",
+    detail: PACKET_FRESHNESS_DETAIL.CURRENT,
   };
 }
 

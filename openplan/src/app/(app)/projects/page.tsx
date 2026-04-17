@@ -21,6 +21,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type ProjectRow = {
@@ -312,10 +313,10 @@ export default async function ProjectsPage({
       );
     });
     const refreshRecommendedCount = reports.filter(
-      (report) => report.packetFreshness.label === "Refresh recommended"
+      (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
     ).length;
     const noPacketCount = reports.filter(
-      (report) => report.packetFreshness.label === "No packet"
+      (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
     ).length;
     const evidenceBackedCount = reports.filter((report) =>
       Boolean(report.evidenceChainDigest)

@@ -30,6 +30,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import type { StatusTone } from "@/lib/ui/status";
 
 type WorkspaceOperationsQueryResult = { data: unknown[] | null; error?: { message?: string } | null };
@@ -833,15 +834,15 @@ export function buildWorkspaceOperationsSummary({
     return !readiness.ready;
   }).length;
   const activePrograms = programs.filter((program) => !["adopted", "archived"].includes(program.status ?? "")).length;
-  const reportRefreshRecommended = reportRows.filter((report) => report.freshness.label === "Refresh recommended").length;
-  const reportNoPacket = reportRows.filter((report) => report.freshness.label === "No packet").length;
-  const reportPacketCurrent = reportRows.filter((report) => report.freshness.label === "Packet current").length;
+  const reportRefreshRecommended = reportRows.filter((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length;
+  const reportNoPacket = reportRows.filter((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length;
+  const reportPacketCurrent = reportRows.filter((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT).length;
   const rtpFundingReviewPackets = reportRows.filter(
-    (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+    (report) => report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT && report.storedRtpFundingReview?.needsAttention
   ).length;
   const rtpReviewLoopOpenPackets = reportRows.filter(
     (report) =>
-      report.freshness.label === "Packet current"
+      report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT
       && !report.storedRtpFundingReview?.needsAttention
       && Boolean(report.storedRtpReleaseReviewSummary)
       && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"
@@ -1299,15 +1300,15 @@ export function buildWorkspaceOperationsSummary({
       return new Date(right.project.updatedAt ?? 0).getTime() - new Date(left.project.updatedAt ?? 0).getTime();
     });
 
-  const firstRefreshReport = reportRows.find((report) => report.freshness.label === "Refresh recommended");
-  const firstMissingReport = reportRows.find((report) => report.freshness.label === "No packet");
-  const firstCurrentReport = reportRows.find((report) => report.freshness.label === "Packet current");
+  const firstRefreshReport = reportRows.find((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED);
+  const firstMissingReport = reportRows.find((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET);
+  const firstCurrentReport = reportRows.find((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT);
   const firstCurrentRtpFundingReviewReport = reportRows.find(
-    (report) => report.freshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+    (report) => report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT && report.storedRtpFundingReview?.needsAttention
   );
   const firstCurrentRtpReviewLoopReport = reportRows.find(
     (report) =>
-      report.freshness.label === "Packet current"
+      report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT
       && !report.storedRtpFundingReview?.needsAttention
       && Boolean(report.storedRtpReleaseReviewSummary)
       && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"

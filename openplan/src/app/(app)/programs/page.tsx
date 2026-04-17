@@ -34,6 +34,7 @@ import {
   getReportPacketFreshness,
   getReportPacketPriority,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -404,8 +405,8 @@ export default async function ProgramsPage({
       });
       const packetAttentionCount = sortedLinkedReports.filter(
         (report) =>
-          report.packetFreshness.label === "Refresh recommended" ||
-          report.packetFreshness.label === "No packet"
+          report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED ||
+          report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
       ).length;
       const recommendedReport = sortedLinkedReports[0] ?? null;
       const readiness = buildProgramReadiness({
@@ -435,10 +436,10 @@ export default async function ProgramsPage({
           linkedReportCount: sortedLinkedReports.length,
           attentionCount: packetAttentionCount,
           noPacketCount: sortedLinkedReports.filter(
-            (report) => report.packetFreshness.label === "No packet"
+            (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
           ).length,
           refreshRecommendedCount: sortedLinkedReports.filter(
-            (report) => report.packetFreshness.label === "Refresh recommended"
+            (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
           ).length,
           recommendedReport,
         },
@@ -667,9 +668,9 @@ export default async function ProgramsPage({
                     : `/programs/${program.id}`,
                   title: program.title,
                   subtitle: program.packetSummary.recommendedReport
-                    ? program.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+                    ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
                       ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                      : program.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+                      : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
                         ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
                         : `First action: review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
                     : `First action: create the first packet for ${program.title}`,
@@ -748,9 +749,9 @@ export default async function ProgramsPage({
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
                       {program.packetSummary.recommendedReport
-                        ? program.packetSummary.recommendedReport.packetFreshness.label === "Refresh recommended"
+                        ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
                           ? `Refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                          : program.packetSummary.recommendedReport.packetFreshness.label === "No packet"
+                          : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
                             ? `Generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
                             : `Review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
                         : "Create the first packet trail"}

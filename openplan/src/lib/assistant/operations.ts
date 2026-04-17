@@ -23,6 +23,7 @@ import {
   parseStoredRtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 
 function formatCurrency(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -915,7 +916,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             promptLabel: "Review RTP release-review queue in panel",
           };
   return compactQuickLinks([
-    context.recommendedCycle?.packetFreshnessLabel === "No packet" && context.recommendedCycle.packetReportCount === 0
+    context.recommendedCycle?.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.NO_PACKET && context.recommendedCycle.packetReportCount === 0
       ? quickLink("rtp-registry-create-first-packet", `Create first packet for ${context.recommendedCycle.title}`, `/rtp/${context.recommendedCycle.id}`, {
           targetKind: "rtp_registry",
           actionClass: "review_packet",

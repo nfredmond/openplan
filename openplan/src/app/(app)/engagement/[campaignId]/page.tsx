@@ -22,6 +22,7 @@ import {
   getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient } from "@/lib/supabase/server";
 
@@ -199,10 +200,10 @@ export default async function EngagementCampaignDetailPage({
   const explicitlyLinkedReportCount = campaignLinkedReports.filter((report) => report.isExplicitCampaignSource).length;
   const projectOnlyReportCount = campaignLinkedReports.length - explicitlyLinkedReportCount;
   const refreshRecommendedReportCount = campaignLinkedReports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
   ).length;
   const noPacketReportCount = campaignLinkedReports.filter(
-    (report) => report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const packetAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedCampaignReport =

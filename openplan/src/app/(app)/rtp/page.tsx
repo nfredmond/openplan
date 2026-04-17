@@ -36,6 +36,12 @@ import {
   RTP_CYCLE_STATUS_OPTIONS,
 } from "@/lib/rtp/catalog";
 import {
+  PACKET_FRESHNESS_DETAIL,
+  PACKET_FRESHNESS_LABELS,
+  PACKET_POSTURE_DETAIL,
+  PACKET_POSTURE_LABELS,
+} from "@/lib/reports/packet-labels";
+import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
 
@@ -357,7 +363,7 @@ function buildPacketOperatorStatus(input: {
     };
   }
 
-  if (input.packetPresetPosture.label === "Needs reset") {
+  if (input.packetPresetPosture.label === PACKET_POSTURE_LABELS.NEEDS_RESET) {
     return {
       label: "Intervention needed",
       tone: "warning" as const,
@@ -365,7 +371,7 @@ function buildPacketOperatorStatus(input: {
     };
   }
 
-  if (input.packetFreshness.label === "Refresh recommended") {
+  if (input.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
     const workStatus = getReportPacketWorkStatus(input.packetFreshness.label);
     return {
       label: workStatus.label,
@@ -374,7 +380,7 @@ function buildPacketOperatorStatus(input: {
     };
   }
 
-  if (input.packetFreshness.label === "No packet") {
+  if (input.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET) {
     const workStatus = getReportPacketWorkStatus(input.packetFreshness.label);
     return {
       label: workStatus.label,
@@ -428,7 +434,7 @@ function buildPacketActivityTrace(input: {
     };
   }
 
-  if (!input.packetReport.generated_at || input.packetFreshness.label === "No packet") {
+  if (!input.packetReport.generated_at || input.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET) {
     return {
       label: "Record created",
       tone: "info" as const,
@@ -786,9 +792,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             updatedAt: resolveReportPacketSourceUpdatedAt([cycle.updated_at, packetReport.updated_at]),
           })
         : {
-            label: "No packet",
+            label: PACKET_FRESHNESS_LABELS.NO_PACKET,
             tone: "warning" as const,
-            detail: "No RTP board packet record exists for this cycle yet.",
+            detail: PACKET_FRESHNESS_DETAIL.NO_PACKET_FOR_CYCLE,
           };
       const packetPresetAlignment = packetReport
         ? getRtpPacketPresetAlignment({
@@ -802,14 +808,13 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         : null;
       const packetPresetPosture = !packetReport
         ? {
-            label: "No packet record",
+            label: PACKET_POSTURE_LABELS.NO_RECORD,
             tone: "warning" as const,
-            detail:
-              "Create a linked RTP board packet record so phase-specific packet posture stays visible from the registry.",
+            detail: PACKET_POSTURE_DETAIL.NO_RECORD,
           }
-        : packetFreshness.label === "Refresh recommended" && packetPresetAlignment && !packetPresetAlignment.aligned
+        : packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED && packetPresetAlignment && !packetPresetAlignment.aligned
           ? {
-              label: "Needs reset",
+              label: PACKET_POSTURE_LABELS.NEEDS_RESET,
               tone: "warning" as const,
               detail: `The latest packet is stale and its structure has diverged from the ${packetPresetAlignment.presetLabel.toLowerCase()} for this cycle phase.`,
             }
@@ -820,9 +825,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                 detail: packetPresetAlignment.detail,
               }
             : {
-                label: "Preset unknown",
+                label: PACKET_POSTURE_LABELS.PRESET_UNKNOWN,
                 tone: "neutral" as const,
-                detail: "Packet structure could not be compared against the recommended phase preset.",
+                detail: PACKET_POSTURE_DETAIL.PRESET_UNKNOWN,
               };
       const packetNavigationHref = packetReport
         ? getReportNavigationHref(packetReport.id, packetFreshness.label)
@@ -843,11 +848,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       );
       const packetAttention = !packetReport
         ? ("missing" as const)
-        : packetPresetPosture.label === "Needs reset"
+        : packetPresetPosture.label === PACKET_POSTURE_LABELS.NEEDS_RESET
           ? ("reset" as const)
-          : packetFreshness.label === "No packet"
+          : packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
             ? ("generate" as const)
-            : packetFreshness.label === "Refresh recommended"
+            : packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
             ? ("refresh" as const)
             : ("current" as const);
       const packetFundingReview = buildPacketFundingReview({
@@ -944,7 +949,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ).length,
         staleModelingProjectCount: cycleLinks.filter((link) => {
           const evidence = projectGrantModelingEvidenceByProjectId.get(link.project_id);
-          return evidence?.leadComparisonReport.packetFreshness.label === "Refresh recommended";
+          return evidence?.leadComparisonReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
         }).length,
       };
     })
@@ -1284,7 +1289,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                   <div className="flex flex-wrap justify-end gap-2">
                     {[
                       { value: "all" as const, label: "All", count: allCycles.length },
-                      { value: "reset" as const, label: "Needs reset", count: packetAttentionCounts.reset },
+                      { value: "reset" as const, label: PACKET_POSTURE_LABELS.NEEDS_RESET, count: packetAttentionCounts.reset },
                       { value: "missing" as const, label: "Missing", count: packetAttentionCounts.missing },
                       { value: "generate" as const, label: "Generate first", count: packetAttentionCounts.generate },
                       { value: "refresh" as const, label: "Refresh", count: packetAttentionCounts.refresh },
@@ -1764,7 +1769,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                         cycleId={cycle.id}
                         reportId={cycle.packetReport?.id ?? null}
                         packetAttention={cycle.packetAttention}
-                        needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
+                        needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
                       />
                     </div>
                   </article>
@@ -1974,7 +1979,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
                             cycleId={cycle.id}
                             reportId={cycle.packetReport?.id ?? null}
                             packetAttention={cycle.packetAttention}
-                            needsFirstArtifact={cycle.packetFreshness.label === "No packet"}
+                            needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
                           />
                         </div>
                       </div>

@@ -54,6 +54,7 @@ import {
   getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -616,7 +617,7 @@ export default async function ProgramDetailPage({
     pendingEngagementItemCount: linkedCampaigns.reduce((sum, item) => sum + item.pendingItemCount, 0),
   });
   const programReportAttentionCount = linkedReports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended" || report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED || report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const programReportQueueItems = linkedReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [

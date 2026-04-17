@@ -14,6 +14,7 @@ import {
   getReportPacketPriority,
   reportStatusTone,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { createClient } from "@/lib/supabase/server";
@@ -261,10 +262,10 @@ export default async function ScenarioSetDetailPage({
   const comparisonReadyReportCount = linkedReportsWithFreshness.filter((report) => report.comparisonReady).length;
   const runLinkedOnlyReportCount = linkedReportsWithFreshness.length - comparisonReadyReportCount;
   const refreshRecommendedReportCount = linkedReportsWithFreshness.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
   ).length;
   const noPacketReportCount = linkedReportsWithFreshness.filter(
-    (report) => report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const linkedReportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedLinkedReport = linkedReportsWithFreshness[0] ?? null;

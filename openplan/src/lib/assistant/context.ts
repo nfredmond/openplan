@@ -24,6 +24,7 @@ import {
   getReportPacketFreshness,
   parseStoredComparisonSnapshotAggregate,
 } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import {
   buildScenarioComparisonBoard,
 } from "@/lib/scenarios/comparison-board";
@@ -1221,8 +1222,8 @@ async function loadProjectContext(
       linkedReportCount: linkedReports.length,
       evidenceBackedCount: linkedReports.filter((report) => report.hasEvidence).length,
       comparisonBackedCount: linkedReports.filter((report) => report.comparisonSnapshotCount > 0).length,
-      noPacketCount: linkedReports.filter((report) => report.packetFreshness.label === "No packet").length,
-      refreshRecommendedCount: linkedReports.filter((report) => report.packetFreshness.label === "Refresh recommended").length,
+      noPacketCount: linkedReports.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length,
+      refreshRecommendedCount: linkedReports.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length,
       recommendedReport: linkedReports[0]
         ? {
             id: linkedReports[0].id,
@@ -1312,12 +1313,12 @@ async function loadRtpRegistryContext(
     cycles
       .map((cycle) => ({
         ...cycle,
-        packetFreshnessLabel: firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet",
+        packetFreshnessLabel: firstPacketByCycleId.get(cycle.id)?.freshness.label ?? PACKET_FRESHNESS_LABELS.NO_PACKET,
         packetReportCount: packetReportCountByCycleId.get(cycle.id) ?? 0,
       }))
       .sort((left, right) => {
-        const leftPriority = left.packetFreshnessLabel === "No packet" ? 0 : left.packetFreshnessLabel === "Refresh recommended" ? 1 : 2;
-        const rightPriority = right.packetFreshnessLabel === "No packet" ? 0 : right.packetFreshnessLabel === "Refresh recommended" ? 1 : 2;
+        const leftPriority = left.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.NO_PACKET ? 0 : left.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED ? 1 : 2;
+        const rightPriority = right.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.NO_PACKET ? 0 : right.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED ? 1 : 2;
         if (leftPriority !== rightPriority) return leftPriority - rightPriority;
         return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
       })[0] ?? null;
@@ -1332,8 +1333,8 @@ async function loadRtpRegistryContext(
       adoptedCycles: cycles.filter((cycle) => cycle.status === "adopted").length,
       archivedCycles: cycles.filter((cycle) => cycle.status === "archived").length,
       packetReports: packetReports.length,
-      noPacketCount: cycles.filter((cycle) => (firstPacketByCycleId.get(cycle.id)?.freshness.label ?? "No packet") === "No packet").length,
-      refreshRecommendedCount: cycles.filter((cycle) => firstPacketByCycleId.get(cycle.id)?.freshness.label === "Refresh recommended").length,
+      noPacketCount: cycles.filter((cycle) => (firstPacketByCycleId.get(cycle.id)?.freshness.label ?? PACKET_FRESHNESS_LABELS.NO_PACKET) === PACKET_FRESHNESS_LABELS.NO_PACKET).length,
+      refreshRecommendedCount: cycles.filter((cycle) => firstPacketByCycleId.get(cycle.id)?.freshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length,
     },
     recommendedCycle: recommendedCycle
       ? {
@@ -1588,8 +1589,8 @@ async function loadRtpContext(
     },
     packetSummary: {
       linkedReportCount: packetReports.length,
-      noPacketCount: packetSummaries.filter((report) => report.packetFreshness.label === "No packet").length,
-      refreshRecommendedCount: packetSummaries.filter((report) => report.packetFreshness.label === "Refresh recommended").length,
+      noPacketCount: packetSummaries.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length,
+      refreshRecommendedCount: packetSummaries.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length,
       recommendedReport,
     },
     operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(
@@ -1841,10 +1842,10 @@ async function loadProgramContext(
   const reportCount = explicitReportCount + (projectReportsResult.data?.length ?? 0);
   const generatedReportCount = sortedLinkedReports.filter((report) => report.status === "generated").length;
   const attentionCount = sortedLinkedReports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended" || report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED || report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
-  const noPacketCount = sortedLinkedReports.filter((report) => report.packetFreshness.label === "No packet").length;
-  const refreshRecommendedCount = sortedLinkedReports.filter((report) => report.packetFreshness.label === "Refresh recommended").length;
+  const noPacketCount = sortedLinkedReports.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length;
+  const refreshRecommendedCount = sortedLinkedReports.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length;
 
   const readiness = buildProgramReadiness({
     cycleName: program.cycle_name,

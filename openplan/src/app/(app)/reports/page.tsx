@@ -56,6 +56,9 @@ import {
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
+import {
+  PACKET_FRESHNESS_LABELS,
+} from "@/lib/reports/packet-labels";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 
 type ReportsPageSearchParams = Promise<{
@@ -355,16 +358,16 @@ export default async function ReportsPage({
     (report) => report.status === "draft"
   ).length;
   const refreshRecommendedCount = reports.filter(
-    (report) => report.packetFreshness.label === "Refresh recommended"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
   ).length;
   const noPacketCount = reports.filter(
-    (report) => report.packetFreshness.label === "No packet"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const currentPacketCount = reports.filter(
-    (report) => report.packetFreshness.label === "Packet current"
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
   ).length;
   const rtpFundingReviewCount = reports.filter(
-    (report) => report.packetFreshness.label === "Packet current" && report.storedRtpFundingReview?.needsAttention
+    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT && report.storedRtpFundingReview?.needsAttention
   ).length;
   const evidenceBackedCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest)
@@ -420,7 +423,7 @@ export default async function ReportsPage({
   const reportQueueItems = reports
     .filter(
       (report) =>
-        report.packetFreshness.label !== "Packet current" ||
+        report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT ||
         Boolean(report.grantsFollowThrough) ||
         Boolean(report.storedRtpFundingReview?.needsAttention) ||
         (report.rtpReleaseReviewSummary?.label ?? "") === "Review loop still open" ||
@@ -436,7 +439,7 @@ export default async function ReportsPage({
         packetWorkStatus.key === "release-review" ? report.grantsFollowThrough : null;
       const badges: Array<{ label: string; value?: string | number | null }> = [];
       badges.push({ label: releaseReviewSummary?.label ?? packetWorkStatus.label });
-      if (report.packetFreshness.label !== "Packet current") {
+      if (report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
         badges.push({ label: report.packetFreshness.label });
       }
       if (report.storedRtpFundingReview?.needsAttention) {
@@ -518,7 +521,7 @@ export default async function ReportsPage({
     },
     {
       value: "missing",
-      label: "No packet",
+      label: PACKET_FRESHNESS_LABELS.NO_PACKET,
       count: noPacketCount,
       href: buildReportsFilterHref({
         freshness: "missing",
@@ -527,7 +530,7 @@ export default async function ReportsPage({
     },
     {
       value: "current",
-      label: "Packet current",
+      label: PACKET_FRESHNESS_LABELS.CURRENT,
       count: currentPacketCount,
       href: buildReportsFilterHref({
         freshness: "current",
@@ -622,14 +625,14 @@ export default async function ReportsPage({
       current.latestReportId = report.id;
       current.latestReportTitle = report.title;
     }
-    if (report.packetFreshness.label === "Refresh recommended") {
+    if (report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
       current.refreshRecommendedCount += 1;
       if (!current.recommendedReportId) {
         current.recommendedReportId = report.id;
         current.recommendedReportTitle = report.title;
       }
     }
-    if (report.packetFreshness.label === "No packet") {
+    if (report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET) {
       current.noPacketCount += 1;
       if (!current.recommendedReportId) {
         current.recommendedReportId = report.id;

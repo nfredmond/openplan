@@ -27,6 +27,7 @@ import { buildMetricDeltas } from "@/lib/analysis/compare";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 
 function asNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -328,7 +329,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
       { label: "Cycles", value: `${context.counts.cycles}` },
       { label: "Public review", value: `${context.counts.publicReviewCycles}` },
       { label: "Packet refresh", value: `${context.counts.refreshRecommendedCount}` },
-      { label: "No packet", value: `${context.counts.noPacketCount}` },
+      { label: PACKET_FRESHNESS_LABELS.NO_PACKET, value: `${context.counts.noPacketCount}` },
     ],
     facts: [
       `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, and ${context.counts.archivedCycles} archived cycles are currently visible.`,
