@@ -16,6 +16,10 @@ const artifactDeleteMock = vi.fn();
 const artifactDeleteEqMock = vi.fn();
 const artifactInsertMock = vi.fn();
 const artifactInsertSelectMock = vi.fn();
+const kpiDeleteEqKpiCategoryMock = vi.fn();
+const kpiDeleteEqCountyRunIdMock = vi.fn(() => ({ eq: kpiDeleteEqKpiCategoryMock }));
+const kpiDeleteMock = vi.fn(() => ({ eq: kpiDeleteEqCountyRunIdMock }));
+const kpiInsertMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -188,6 +192,9 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     });
     artifactInsertMock.mockReturnValue({ select: artifactInsertSelectMock });
 
+    kpiDeleteEqKpiCategoryMock.mockResolvedValue({ error: null });
+    kpiInsertMock.mockResolvedValue({ error: null });
+
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
         return {
@@ -199,6 +206,12 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         return {
           delete: artifactDeleteMock,
           insert: artifactInsertMock,
+        };
+      }
+      if (table === "model_run_kpis") {
+        return {
+          delete: kpiDeleteMock,
+          insert: kpiInsertMock,
         };
       }
       throw new Error(`Unexpected table: ${table}`);
@@ -227,6 +240,22 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
       { artifactType: "validation_review_packet_md", path: "/tmp/review.md" },
     ]);
+    expect(kpiInsertMock).toHaveBeenCalledTimes(1);
+    const kpiRows = kpiInsertMock.mock.calls[0]?.[0] as Array<{
+      kpi_name: string;
+      kpi_category: string;
+      value: number | null;
+      county_run_id: string;
+      run_id: null;
+    }>;
+    expect(kpiRows).toHaveLength(6);
+    expect(kpiRows.every((row) => row.kpi_category === "behavioral_onramp")).toBe(true);
+    expect(kpiRows.every((row) => row.county_run_id === "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")).toBe(true);
+    expect(kpiRows.find((row) => row.kpi_name === "total_trips")?.value).toBe(231828.75);
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "county_run_behavioral_kpis_written",
+      expect.objectContaining({ kpiCount: 6, stage: "validated-screening" })
+    );
   });
 
   it("records worker failure callbacks", async () => {

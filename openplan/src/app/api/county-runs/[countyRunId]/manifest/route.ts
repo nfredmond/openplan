@@ -8,6 +8,7 @@ import {
   buildCountyRunRecord,
 } from "@/lib/api/county-onramp-persistence";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
+import { persistBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -182,6 +183,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: artifactInsertError.code ?? null,
       });
       return NextResponse.json({ error: "Failed to store county run artifacts" }, { status: 500 });
+    }
+
+    const kpiResult = await persistBehavioralOnrampKpis({
+      supabase,
+      countyRunId: existingRow.id,
+      manifest,
+    });
+
+    if (kpiResult.error) {
+      audit.warn("county_run_behavioral_kpis_failed", {
+        countyRunId: existingRow.id,
+        message: kpiResult.error.message,
+        code: kpiResult.error.code ?? null,
+      });
+    } else {
+      audit.info("county_run_behavioral_kpis_written", {
+        countyRunId: existingRow.id,
+        kpiCount: kpiResult.inserted.length,
+        stage: manifest.stage,
+      });
     }
 
     const response = presentCountyRunDetail({
