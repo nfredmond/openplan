@@ -28,15 +28,27 @@ function looksLikeOptionalScenarioSpineFallback(message: string | null | undefin
   return looksLikePendingScenarioSpineSchema(message ?? undefined) || /Unexpected table:/i.test(message ?? "");
 }
 
+export type ScenarioSpineSchemaPendingWarning = {
+  source: string;
+  message: string;
+};
+
+export type ReportScenarioSpineWarningHandler = (
+  warning: ScenarioSpineSchemaPendingWarning
+) => void;
+
 async function safeOptionalScenarioQuery(
   run: () => PromiseLike<{
     data: Record<string, unknown>[] | null;
     error: { message: string; code?: string | null } | null;
-  }>
+  }>,
+  source: string,
+  onSchemaPending?: ReportScenarioSpineWarningHandler
 ) {
   try {
     const result = await run();
     if (result.error && looksLikeOptionalScenarioSpineFallback(result.error.message)) {
+      onSchemaPending?.({ source, message: result.error.message });
       return { data: [], error: { message: "schema cache pending" } };
     }
 
@@ -44,6 +56,7 @@ async function safeOptionalScenarioQuery(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (looksLikeOptionalScenarioSpineFallback(message)) {
+      onSchemaPending?.({ source, message });
       return { data: [], error: { message: "schema cache pending" } };
     }
 
@@ -221,9 +234,11 @@ function comparisonSummaryLabel(summary: {
 export async function loadReportScenarioSetLinks({
   supabase,
   linkedRuns,
+  onSchemaPending,
 }: {
   supabase: ReportScenarioSupabaseLike;
   linkedRuns: ReportRunLike[];
+  onSchemaPending?: ReportScenarioSpineWarningHandler;
 }): Promise<{ data: ReportScenarioSetLink[]; error: { message: string; code?: string | null } | null }> {
   if (linkedRuns.length === 0) {
     return { data: [], error: null };
@@ -261,31 +276,43 @@ export async function loadReportScenarioSetLinks({
         "id, scenario_set_id, entry_type, label, attached_run_id, sort_order, created_at, updated_at"
       )
       .in("scenario_set_id", scenarioSetIds),
-    safeOptionalScenarioQuery(() =>
-      supabase
-        .from("scenario_assumption_sets")
-        .select("scenario_set_id, updated_at")
-        .in("scenario_set_id", scenarioSetIds)
+    safeOptionalScenarioQuery(
+      () =>
+        supabase
+          .from("scenario_assumption_sets")
+          .select("scenario_set_id, updated_at")
+          .in("scenario_set_id", scenarioSetIds),
+      "scenario_assumption_sets",
+      onSchemaPending
     ),
-    safeOptionalScenarioQuery(() =>
-      supabase
-        .from("scenario_data_packages")
-        .select("scenario_set_id, updated_at")
-        .in("scenario_set_id", scenarioSetIds)
+    safeOptionalScenarioQuery(
+      () =>
+        supabase
+          .from("scenario_data_packages")
+          .select("scenario_set_id, updated_at")
+          .in("scenario_set_id", scenarioSetIds),
+      "scenario_data_packages",
+      onSchemaPending
     ),
-    safeOptionalScenarioQuery(() =>
-      supabase
-        .from("scenario_indicator_snapshots")
-        .select("scenario_set_id, snapshot_at")
-        .in("scenario_set_id", scenarioSetIds)
+    safeOptionalScenarioQuery(
+      () =>
+        supabase
+          .from("scenario_indicator_snapshots")
+          .select("scenario_set_id, snapshot_at")
+          .in("scenario_set_id", scenarioSetIds),
+      "scenario_indicator_snapshots",
+      onSchemaPending
     ),
-    safeOptionalScenarioQuery(() =>
-      supabase
-        .from("scenario_comparison_snapshots")
-        .select(
-          "id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at"
-        )
-        .in("scenario_set_id", scenarioSetIds)
+    safeOptionalScenarioQuery(
+      () =>
+        supabase
+          .from("scenario_comparison_snapshots")
+          .select(
+            "id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at"
+          )
+          .in("scenario_set_id", scenarioSetIds),
+      "scenario_comparison_snapshots",
+      onSchemaPending
     ),
   ]);
 
@@ -341,11 +368,14 @@ export async function loadReportScenarioSetLinks({
 
   const comparisonSnapshotIds = comparisonSnapshots.map((item) => item.id);
   const comparisonIndicatorDeltasResult = comparisonSnapshotIds.length
-    ? await safeOptionalScenarioQuery(() =>
-        supabase
-          .from("scenario_comparison_indicator_deltas")
-          .select("comparison_snapshot_id")
-          .in("comparison_snapshot_id", comparisonSnapshotIds)
+    ? await safeOptionalScenarioQuery(
+        () =>
+          supabase
+            .from("scenario_comparison_indicator_deltas")
+            .select("comparison_snapshot_id")
+            .in("comparison_snapshot_id", comparisonSnapshotIds),
+        "scenario_comparison_indicator_deltas",
+        onSchemaPending
       )
     : { data: [], error: null };
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import {
   createDefaultTargetedReportSections,
   defaultTargetedReportTitle,
@@ -375,6 +376,35 @@ export async function POST(request: NextRequest) {
       linkedRunCount: runIds.length,
       durationMs: Date.now() - startedAt,
     });
+
+    if (target.kind === "rtp_cycle") {
+      const executionCompletedAt = new Date().toISOString();
+      const executionStartedAt = new Date(startedAt).toISOString();
+      const { error: executionAuditError } = await recordAssistantActionExecution(supabase, {
+        workspaceId: target.workspaceId,
+        userId: user.id,
+        actionKind: "create_rtp_packet_record",
+        auditEvent: "planner_agent.create_rtp_packet_record",
+        approval: "safe",
+        regrounding: "refresh_preview",
+        outcome: "succeeded",
+        inputSummary: {
+          reportId: report.id,
+          rtpCycleId: target.id,
+          reportType: parsed.data.reportType,
+        },
+        startedAt: executionStartedAt,
+        completedAt: executionCompletedAt,
+      });
+
+      if (executionAuditError) {
+        audit.warn("assistant_action_execution_audit_failed", {
+          reportId: report.id,
+          message: executionAuditError.message,
+          code: executionAuditError.code ?? null,
+        });
+      }
+    }
 
     return NextResponse.json(
       {

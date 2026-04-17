@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
@@ -729,6 +730,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const scenarioSetLinksResult = await loadReportScenarioSetLinks({
       supabase: supabase as unknown as ReportScenarioSupabaseLike,
       linkedRuns: linkedRunContext,
+      onSchemaPending: (warning) => {
+        audit.warn("scenario_spine_schema_pending", {
+          reportId: report.id,
+          source: warning.source,
+          message: warning.message,
+        });
+      },
     });
 
     if (scenarioSetLinksResult.error) {
@@ -858,6 +866,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const generatedAt = new Date().toISOString();
     const artifactMetadata = {
+      metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
       auditability: {
@@ -984,6 +993,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       linkedRunCount: linkedRuns.length,
       durationMs: Date.now() - startedAt,
     });
+
+    const executionCompletedAt = new Date().toISOString();
+    const executionStartedAt = new Date(startedAt).toISOString();
+    const { error: executionAuditError } = await recordAssistantActionExecution(supabase, {
+      workspaceId: report.workspace_id,
+      userId: user.id,
+      actionKind: "generate_report_artifact",
+      auditEvent: "planner_agent.generate_report_artifact",
+      approval: "safe",
+      regrounding: "refresh_preview",
+      outcome: "succeeded",
+      inputSummary: {
+        reportId: report.id,
+        artifactId: artifact.id,
+        linkedRunCount: linkedRuns.length,
+      },
+      startedAt: executionStartedAt,
+      completedAt: executionCompletedAt,
+    });
+
+    if (executionAuditError) {
+      audit.warn("assistant_action_execution_audit_failed", {
+        reportId: report.id,
+        artifactId: artifact.id,
+        message: executionAuditError.message,
+        code: executionAuditError.code ?? null,
+      });
+    }
 
     return NextResponse.json(
       {

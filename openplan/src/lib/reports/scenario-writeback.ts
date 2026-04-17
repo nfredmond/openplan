@@ -79,3 +79,65 @@ export async function touchScenarioLinkedReportPackets({
 
   return { touchedReportIds: reportIds, error: null };
 }
+
+export async function markScenarioLinkedReportsBasisStale({
+  supabase,
+  scenarioSetId,
+  workspaceId,
+  runId,
+  reason,
+  markedAt = new Date().toISOString(),
+}: {
+  supabase: ScenarioReportWritebackSupabaseLike;
+  scenarioSetId: string;
+  workspaceId: string;
+  runId: string;
+  reason: string;
+  markedAt?: string;
+}): Promise<{ staleReportIds: string[]; error: { message: string; code?: string | null } | null }> {
+  const entriesResult = await supabase
+    .from("scenario_entries")
+    .select<ScenarioEntryRunRow>("attached_run_id")
+    .eq("scenario_set_id", scenarioSetId);
+
+  if (entriesResult.error) {
+    return { staleReportIds: [], error: entriesResult.error };
+  }
+
+  const runIds = uniqueStrings((entriesResult.data ?? []).map((entry) => entry.attached_run_id));
+  if (runIds.length === 0) {
+    return { staleReportIds: [], error: null };
+  }
+
+  const reportRunsResult = await supabase
+    .from("report_runs")
+    .select<ReportRunRow>("report_id")
+    .in("run_id", runIds);
+
+  if (reportRunsResult.error) {
+    return { staleReportIds: [], error: reportRunsResult.error };
+  }
+
+  const reportIds = uniqueStrings((reportRunsResult.data ?? []).map((link) => link.report_id));
+  if (reportIds.length === 0) {
+    return { staleReportIds: [], error: null };
+  }
+
+  const updateResult = await supabase
+    .from("reports")
+    .update({
+      rtp_basis_stale: true,
+      rtp_basis_stale_reason: reason,
+      rtp_basis_stale_run_id: runId,
+      rtp_basis_stale_marked_at: markedAt,
+      updated_at: markedAt,
+    })
+    .in("id", reportIds)
+    .eq("workspace_id", workspaceId);
+
+  if (updateResult.error) {
+    return { staleReportIds: [], error: updateResult.error };
+  }
+
+  return { staleReportIds: reportIds, error: null };
+}
