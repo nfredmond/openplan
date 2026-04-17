@@ -12,6 +12,7 @@ import {
 } from "@/lib/models/run-launch";
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import {
+  markScenarioLinkedReportsBasisStale,
   touchScenarioLinkedReportPackets,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
@@ -447,6 +448,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
           modelRunId,
           scenarioEntryId: scenarioEntry.id,
           touchedReportCount: touchedReportIds.length,
+        });
+      }
+
+      const staleReason = `Linked model run ${launchTitle} succeeded`;
+      const { staleReportIds, error: staleError } = await markScenarioLinkedReportsBasisStale({
+        supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
+        scenarioSetId: scenarioEntry.scenario_set_id,
+        workspaceId: access.model.workspace_id,
+        runId: modelRunId,
+        reason: staleReason,
+        markedAt: completedAt,
+      });
+
+      if (staleError) {
+        audit.warn("scenario_report_basis_stale_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          scenarioEntryId: scenarioEntry.id,
+          message: staleError.message,
+          code: staleError.code ?? null,
+        });
+      } else if (staleReportIds.length > 0) {
+        audit.info("scenario_report_basis_stale_marked", {
+          modelId: access.model.id,
+          modelRunId,
+          scenarioEntryId: scenarioEntry.id,
+          staleReportCount: staleReportIds.length,
         });
       }
     }

@@ -5,6 +5,7 @@ const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const touchScenarioLinkedReportPacketsMock = vi.fn();
+const markScenarioLinkedReportsBasisStaleMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -79,6 +80,7 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/reports/scenario-writeback", () => ({
   touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
+  markScenarioLinkedReportsBasisStale: (...args: unknown[]) => markScenarioLinkedReportsBasisStaleMock(...args),
 }));
 
 import { PATCH as patchModelRun } from "@/app/api/models/[modelId]/runs/[modelRunId]/route";
@@ -156,6 +158,11 @@ describe("model run write-back", () => {
 
     touchScenarioLinkedReportPacketsMock.mockResolvedValue({
       touchedReportIds: ["report-1"],
+      error: null,
+    });
+
+    markScenarioLinkedReportsBasisStaleMock.mockResolvedValue({
+      staleReportIds: ["report-1"],
       error: null,
     });
 
