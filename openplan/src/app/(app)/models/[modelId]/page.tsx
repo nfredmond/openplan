@@ -5,7 +5,9 @@ import { ModelDetailControls } from "@/components/models/model-detail-controls";
 import { ModelLinkedRecordsBoard } from "@/components/models/model-linked-records";
 import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
+import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { NEVADA_COUNTY_SCREENING_GATE } from "@/lib/examples/nevada-county-2026-03-24";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -138,6 +140,23 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
             .eq("scenario_set_id", model.scenario_set_id)
         : Promise.resolve({ data: [], error: null }),
     ]);
+
+  const { data: workspaceCountyRuns } = await supabase
+    .from("county_runs")
+    .select("stage, status_label")
+    .eq("workspace_id", model.workspace_id);
+
+  const countyRunRows = (workspaceCountyRuns ?? []) as Array<{
+    stage: string | null;
+    status_label: string | null;
+  }>;
+  const hasWorkspacePassingCountyRun = countyRunRows.some(
+    (row) =>
+      row.stage === "validated-screening" &&
+      row.status_label !== null &&
+      row.status_label.trim() !== "" &&
+      row.status_label !== NEVADA_COUNTY_SCREENING_GATE.statusLabel
+  );
 
   const links = (linksResult.data ?? []) as ModelLinkRow[];
   const scenarioLinkIds = links.filter((link) => link.link_type === "scenario_set").map((link) => link.linked_id);
@@ -375,6 +394,22 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
           <ArrowLeft className="h-4 w-4" />
           Back to Models
         </Link>
+
+        {!hasWorkspacePassingCountyRun ? (
+          <StateBlock
+            tone="warning"
+            title="No validated screening run on file"
+            description="Modeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims."
+            action={
+              <Link
+                href="/county-runs"
+                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+              >
+                Review county runs
+              </Link>
+            }
+          />
+        ) : null}
 
         <header className="module-header-grid">
           <article className="module-intro-card">
