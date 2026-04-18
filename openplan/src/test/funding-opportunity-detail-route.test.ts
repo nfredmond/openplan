@@ -85,6 +85,11 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
             update: fundingOpportunitiesUpdateMock,
           };
         }
+        if (table === "assistant_action_executions") {
+          return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+          };
+        }
         throw new Error(`Unexpected table: ${table}`);
       }),
     });

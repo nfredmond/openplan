@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -122,183 +123,169 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    if (parsed.data.recordType === "milestone") {
+    const performInsert = async (): Promise<{ recordType: string; record: unknown }> => {
+      if (parsed.data.recordType === "milestone") {
+        const { data, error } = await supabase
+          .from("project_milestones")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            summary: parsed.data.summary?.trim() || null,
+            milestone_type: parsed.data.milestoneType ?? "schedule",
+            phase_code: parsed.data.phaseCode ?? "initiation",
+            status: parsed.data.status ?? "not_started",
+            owner_label: parsed.data.ownerLabel?.trim() || null,
+            target_date: parsed.data.targetDate?.trim() || null,
+            actual_date: parsed.data.actualDate?.trim() || null,
+            notes: parsed.data.notes?.trim() || null,
+            created_by: user.id,
+          })
+          .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "milestone", record: data };
+      }
+
+      if (parsed.data.recordType === "submittal") {
+        const { data, error } = await supabase
+          .from("project_submittals")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            submittal_type: parsed.data.submittalType ?? "other",
+            status: parsed.data.status ?? "draft",
+            agency_label: parsed.data.agencyLabel?.trim() || null,
+            reference_number: parsed.data.referenceNumber?.trim() || null,
+            due_date: parsed.data.dueDate?.trim() || null,
+            submitted_at: parsed.data.submittedAt?.trim() || null,
+            review_cycle: parsed.data.reviewCycle ?? 1,
+            notes: parsed.data.notes?.trim() || null,
+            created_by: user.id,
+          })
+          .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "submittal", record: data };
+      }
+
+      if (parsed.data.recordType === "deliverable") {
+        const { data, error } = await supabase
+          .from("project_deliverables")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            summary: parsed.data.summary?.trim() || null,
+            owner_label: parsed.data.ownerLabel?.trim() || null,
+            due_date: parsed.data.dueDate?.trim() || null,
+            status: parsed.data.status ?? "not_started",
+            created_by: user.id,
+          })
+          .select("id, title, summary, owner_label, due_date, status, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "deliverable", record: data };
+      }
+
+      if (parsed.data.recordType === "risk") {
+        const { data, error } = await supabase
+          .from("project_risks")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            description: parsed.data.description?.trim() || null,
+            severity: parsed.data.severity ?? "medium",
+            status: parsed.data.status ?? "open",
+            mitigation: parsed.data.mitigation?.trim() || null,
+            created_by: user.id,
+          })
+          .select("id, title, description, severity, status, mitigation, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "risk", record: data };
+      }
+
+      if (parsed.data.recordType === "issue") {
+        const { data, error } = await supabase
+          .from("project_issues")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            description: parsed.data.description?.trim() || null,
+            severity: parsed.data.severity ?? "medium",
+            status: parsed.data.status ?? "open",
+            owner_label: parsed.data.ownerLabel?.trim() || null,
+            created_by: user.id,
+          })
+          .select("id, title, description, severity, status, owner_label, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "issue", record: data };
+      }
+
+      if (parsed.data.recordType === "decision") {
+        const { data, error } = await supabase
+          .from("project_decisions")
+          .insert({
+            project_id: project.id,
+            title: parsed.data.title,
+            rationale: parsed.data.rationale,
+            status: parsed.data.status ?? "proposed",
+            impact_summary: parsed.data.impactSummary?.trim() || null,
+            decided_at: parsed.data.decidedAt?.trim() || null,
+            created_by: user.id,
+          })
+          .select("id, title, rationale, status, impact_summary, decided_at, created_at")
+          .single();
+        if (error) throw new Error(error.message);
+        return { recordType: "decision", record: data };
+      }
+
       const { data, error } = await supabase
-        .from("project_milestones")
+        .from("project_meetings")
         .insert({
           project_id: project.id,
           title: parsed.data.title,
-          summary: parsed.data.summary?.trim() || null,
-          milestone_type: parsed.data.milestoneType ?? "schedule",
-          phase_code: parsed.data.phaseCode ?? "initiation",
-          status: parsed.data.status ?? "not_started",
-          owner_label: parsed.data.ownerLabel?.trim() || null,
-          target_date: parsed.data.targetDate?.trim() || null,
-          actual_date: parsed.data.actualDate?.trim() || null,
           notes: parsed.data.notes?.trim() || null,
+          meeting_at: parsed.data.meetingAt?.trim() || null,
+          attendees_summary: parsed.data.attendeesSummary?.trim() || null,
           created_by: user.id,
         })
-        .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at")
+        .select("id, title, notes, meeting_at, attendees_summary, created_at")
         .single();
+      if (error) throw new Error(error.message);
+      return { recordType: "meeting", record: data };
+    };
 
-      if (error) {
-        audit.error("milestone_insert_failed", {
-          message: error.message,
-          code: error.code ?? null,
-          projectId: project.id,
-        });
-        return NextResponse.json({ error: "Failed to create milestone", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "milestone", record: data }, { status: 201 });
+    let result: { recordType: string; record: unknown };
+    try {
+      result = await withAssistantActionAudit(
+        supabase,
+        {
+          actionKind: "create_project_record",
+          workspaceId: project.workspace_id,
+          userId: user.id,
+          inputSummary: {
+            projectId: project.id,
+            recordType: parsed.data.recordType,
+            title: parsed.data.title,
+          },
+        },
+        performInsert
+      );
+    } catch (insertErr) {
+      const message = insertErr instanceof Error ? insertErr.message : String(insertErr);
+      audit.error("project_record_insert_failed", {
+        projectId: project.id,
+        recordType: parsed.data.recordType,
+        message,
+      });
+      return NextResponse.json(
+        { error: `Failed to create ${parsed.data.recordType}`, details: message },
+        { status: 500 }
+      );
     }
 
-    if (parsed.data.recordType === "submittal") {
-      const { data, error } = await supabase
-        .from("project_submittals")
-        .insert({
-          project_id: project.id,
-          title: parsed.data.title,
-          submittal_type: parsed.data.submittalType ?? "other",
-          status: parsed.data.status ?? "draft",
-          agency_label: parsed.data.agencyLabel?.trim() || null,
-          reference_number: parsed.data.referenceNumber?.trim() || null,
-          due_date: parsed.data.dueDate?.trim() || null,
-          submitted_at: parsed.data.submittedAt?.trim() || null,
-          review_cycle: parsed.data.reviewCycle ?? 1,
-          notes: parsed.data.notes?.trim() || null,
-          created_by: user.id,
-        })
-        .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
-        .single();
-
-      if (error) {
-        audit.error("submittal_insert_failed", {
-          message: error.message,
-          code: error.code ?? null,
-          projectId: project.id,
-        });
-        return NextResponse.json({ error: "Failed to create submittal", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "submittal", record: data }, { status: 201 });
-    }
-
-    if (parsed.data.recordType === "deliverable") {
-      const { data, error } = await supabase
-        .from("project_deliverables")
-        .insert({
-          project_id: project.id,
-          title: parsed.data.title,
-          summary: parsed.data.summary?.trim() || null,
-          owner_label: parsed.data.ownerLabel?.trim() || null,
-          due_date: parsed.data.dueDate?.trim() || null,
-          status: parsed.data.status ?? "not_started",
-          created_by: user.id,
-        })
-        .select("id, title, summary, owner_label, due_date, status, created_at")
-        .single();
-
-      if (error) {
-        audit.error("deliverable_insert_failed", {
-          message: error.message,
-          code: error.code ?? null,
-          projectId: project.id,
-        });
-        return NextResponse.json({ error: "Failed to create deliverable", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "deliverable", record: data }, { status: 201 });
-    }
-
-    if (parsed.data.recordType === "risk") {
-      const { data, error } = await supabase
-        .from("project_risks")
-        .insert({
-          project_id: project.id,
-          title: parsed.data.title,
-          description: parsed.data.description?.trim() || null,
-          severity: parsed.data.severity ?? "medium",
-          status: parsed.data.status ?? "open",
-          mitigation: parsed.data.mitigation?.trim() || null,
-          created_by: user.id,
-        })
-        .select("id, title, description, severity, status, mitigation, created_at")
-        .single();
-
-      if (error) {
-        audit.error("risk_insert_failed", { message: error.message, code: error.code ?? null, projectId: project.id });
-        return NextResponse.json({ error: "Failed to create risk", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "risk", record: data }, { status: 201 });
-    }
-
-    if (parsed.data.recordType === "issue") {
-      const { data, error } = await supabase
-        .from("project_issues")
-        .insert({
-          project_id: project.id,
-          title: parsed.data.title,
-          description: parsed.data.description?.trim() || null,
-          severity: parsed.data.severity ?? "medium",
-          status: parsed.data.status ?? "open",
-          owner_label: parsed.data.ownerLabel?.trim() || null,
-          created_by: user.id,
-        })
-        .select("id, title, description, severity, status, owner_label, created_at")
-        .single();
-
-      if (error) {
-        audit.error("issue_insert_failed", { message: error.message, code: error.code ?? null, projectId: project.id });
-        return NextResponse.json({ error: "Failed to create issue", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "issue", record: data }, { status: 201 });
-    }
-
-    if (parsed.data.recordType === "decision") {
-      const { data, error } = await supabase
-        .from("project_decisions")
-        .insert({
-          project_id: project.id,
-          title: parsed.data.title,
-          rationale: parsed.data.rationale,
-          status: parsed.data.status ?? "proposed",
-          impact_summary: parsed.data.impactSummary?.trim() || null,
-          decided_at: parsed.data.decidedAt?.trim() || null,
-          created_by: user.id,
-        })
-        .select("id, title, rationale, status, impact_summary, decided_at, created_at")
-        .single();
-
-      if (error) {
-        audit.error("decision_insert_failed", { message: error.message, code: error.code ?? null, projectId: project.id });
-        return NextResponse.json({ error: "Failed to create decision", details: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({ recordType: "decision", record: data }, { status: 201 });
-    }
-
-    const { data, error } = await supabase
-      .from("project_meetings")
-      .insert({
-        project_id: project.id,
-        title: parsed.data.title,
-        notes: parsed.data.notes?.trim() || null,
-        meeting_at: parsed.data.meetingAt?.trim() || null,
-        attendees_summary: parsed.data.attendeesSummary?.trim() || null,
-        created_by: user.id,
-      })
-      .select("id, title, notes, meeting_at, attendees_summary, created_at")
-      .single();
-
-    if (error) {
-      audit.error("meeting_insert_failed", { message: error.message, code: error.code ?? null, projectId: project.id });
-      return NextResponse.json({ error: "Failed to create meeting", details: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ recordType: "meeting", record: data }, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     audit.error("projects_records_create_unhandled_error", {
       durationMs: Date.now() - startedAt,

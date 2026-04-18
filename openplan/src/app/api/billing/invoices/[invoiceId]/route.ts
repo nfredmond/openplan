@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { createClient } from "@/lib/supabase/server";
 
 const paramsSchema = z.object({
@@ -120,26 +121,49 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       effectiveFundingAwardId = fundingAward.id;
     }
 
-    const { data: updatedInvoice, error: updateError } = await supabase
-      .from("billing_invoice_records")
-      .update({
-        project_id: effectiveProjectId,
-        funding_award_id: effectiveFundingAwardId,
-        status: parsed.data.status ?? undefined,
-      })
-      .eq("id", invoice.id)
-      .select(
-        "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
-      )
-      .single();
+    const runUpdate = async () => {
+      const { data, error } = await supabase
+        .from("billing_invoice_records")
+        .update({
+          project_id: effectiveProjectId,
+          funding_award_id: effectiveFundingAwardId,
+          status: parsed.data.status ?? undefined,
+        })
+        .eq("id", invoice.id)
+        .select(
+          "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
+        )
+        .single();
+      if (error || !data) {
+        throw new Error(error?.message ?? "billing_invoice_update_returned_no_row");
+      }
+      return data;
+    };
 
-    if (updateError || !updatedInvoice) {
+    const shouldAuditAsLink = parsed.data.fundingAwardId !== undefined;
+    let updatedInvoice;
+    try {
+      updatedInvoice = shouldAuditAsLink
+        ? await withAssistantActionAudit(
+            supabase,
+            {
+              actionKind: "link_billing_invoice_funding_award",
+              workspaceId: parsed.data.workspaceId,
+              userId: user.id,
+              inputSummary: {
+                invoiceId: invoice.id,
+                fundingAwardId: parsed.data.fundingAwardId,
+              },
+            },
+            runUpdate
+          )
+        : await runUpdate();
+    } catch (updateErr) {
       audit.error("billing_invoice_update_failed", {
         invoiceId: invoice.id,
         workspaceId: parsed.data.workspaceId,
         userId: user.id,
-        message: updateError?.message ?? "unknown",
-        code: updateError?.code ?? null,
+        message: updateErr instanceof Error ? updateErr.message : String(updateErr),
       });
       return NextResponse.json({ error: "Failed to update invoice record" }, { status: 500 });
     }

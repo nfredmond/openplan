@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
@@ -125,21 +126,45 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary?.trim() || null;
 
-    const { data: updatedOpportunity, error: updateError } = await supabase
-      .from("funding_opportunities")
-      .update(updates)
-      .eq("id", access.opportunity.id)
-      .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
-      )
-      .single();
+    const shouldAuditAsDecision = parsed.data.decisionState !== undefined;
+    const runUpdate = async () => {
+      const { data, error } = await supabase
+        .from("funding_opportunities")
+        .update(updates)
+        .eq("id", access.opportunity!.id)
+        .select(
+          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
+        )
+        .single();
 
-    if (updateError || !updatedOpportunity) {
+      if (error || !data) {
+        throw new Error(error?.message ?? "funding_opportunity_update_returned_no_row");
+      }
+      return data;
+    };
+
+    let updatedOpportunity;
+    try {
+      updatedOpportunity = shouldAuditAsDecision
+        ? await withAssistantActionAudit(
+            supabase,
+            {
+              actionKind: "update_funding_opportunity_decision",
+              workspaceId: access.opportunity.workspace_id,
+              userId: user.id,
+              inputSummary: {
+                opportunityId: access.opportunity.id,
+                decisionState: parsed.data.decisionState,
+              },
+            },
+            runUpdate
+          )
+        : await runUpdate();
+    } catch (updateErr) {
       audit.error("funding_opportunity_update_failed", {
         opportunityId: access.opportunity.id,
         userId: user.id,
-        message: updateError?.message ?? "unknown",
-        code: updateError?.code ?? null,
+        message: updateErr instanceof Error ? updateErr.message : String(updateErr),
       });
       return NextResponse.json({ error: "Failed to update funding opportunity" }, { status: 500 });
     }

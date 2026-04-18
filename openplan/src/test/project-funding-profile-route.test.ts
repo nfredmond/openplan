@@ -66,6 +66,11 @@ describe("/api/projects/[projectId]/funding-profile", () => {
             upsert: profileUpsertMock,
           };
         }
+        if (table === "assistant_action_executions") {
+          return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+          };
+        }
         throw new Error(`Unexpected table: ${table}`);
       }),
     });

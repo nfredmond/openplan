@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -352,40 +353,60 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { data: opportunity, error } = await supabase
-      .from("funding_opportunities")
-      .insert({
-        workspace_id: context.workspaceId,
-        program_id: parsed.data.programId ?? null,
-        project_id: parsed.data.projectId ?? null,
-        title: parsed.data.title.trim(),
-        opportunity_status: parsed.data.status ?? "upcoming",
-        decision_state: parsed.data.decisionState ?? "monitor",
-        agency_name: parsed.data.agencyName?.trim() || null,
-        owner_label: parsed.data.ownerLabel?.trim() || null,
-        cadence_label: parsed.data.cadenceLabel?.trim() || null,
-        expected_award_amount: parsed.data.expectedAwardAmount ?? null,
-        opens_at: parsed.data.opensAt ?? null,
-        closes_at: parsed.data.closesAt ?? null,
-        decision_due_at: parsed.data.decisionDueAt ?? null,
-        fit_notes: parsed.data.fitNotes?.trim() || null,
-        readiness_notes: parsed.data.readinessNotes?.trim() || null,
-        decision_rationale: parsed.data.decisionRationale?.trim() || null,
-        decided_at: parsed.data.decidedAt ?? null,
-        summary: parsed.data.summary?.trim() || null,
-        created_by: user.id,
-      })
-      .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
-      )
-      .single();
+    let opportunity;
+    try {
+      opportunity = await withAssistantActionAudit(
+        supabase,
+        {
+          actionKind: "create_funding_opportunity",
+          workspaceId: context.workspaceId,
+          userId: user.id,
+          inputSummary: {
+            title: parsed.data.title.trim(),
+            programId: parsed.data.programId ?? null,
+            projectId: parsed.data.projectId ?? null,
+          },
+        },
+        async () => {
+          const { data, error } = await supabase
+            .from("funding_opportunities")
+            .insert({
+              workspace_id: context.workspaceId,
+              program_id: parsed.data.programId ?? null,
+              project_id: parsed.data.projectId ?? null,
+              title: parsed.data.title.trim(),
+              opportunity_status: parsed.data.status ?? "upcoming",
+              decision_state: parsed.data.decisionState ?? "monitor",
+              agency_name: parsed.data.agencyName?.trim() || null,
+              owner_label: parsed.data.ownerLabel?.trim() || null,
+              cadence_label: parsed.data.cadenceLabel?.trim() || null,
+              expected_award_amount: parsed.data.expectedAwardAmount ?? null,
+              opens_at: parsed.data.opensAt ?? null,
+              closes_at: parsed.data.closesAt ?? null,
+              decision_due_at: parsed.data.decisionDueAt ?? null,
+              fit_notes: parsed.data.fitNotes?.trim() || null,
+              readiness_notes: parsed.data.readinessNotes?.trim() || null,
+              decision_rationale: parsed.data.decisionRationale?.trim() || null,
+              decided_at: parsed.data.decidedAt ?? null,
+              summary: parsed.data.summary?.trim() || null,
+              created_by: user.id,
+            })
+            .select(
+              "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
+            )
+            .single();
 
-    if (error || !opportunity) {
+          if (error || !data) {
+            throw new Error(error?.message ?? "funding_opportunity_insert_returned_no_row");
+          }
+          return data;
+        }
+      );
+    } catch (insertError) {
       audit.error("funding_opportunity_insert_failed", {
         userId: user.id,
         workspaceId: context.workspaceId,
-        message: error?.message ?? "unknown",
-        code: error?.code ?? null,
+        message: insertError instanceof Error ? insertError.message : String(insertError),
       });
       return NextResponse.json({ error: "Failed to create funding opportunity" }, { status: 500 });
     }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 
 const paramsSchema = z.object({
@@ -74,18 +75,38 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       created_by: user.id,
     };
 
-    const { data: profile, error } = await supabase
-      .from("project_funding_profiles")
-      .upsert(upsertPayload, { onConflict: "project_id" })
-      .select("id, workspace_id, project_id, funding_need_amount, local_match_need_amount, notes, created_at, updated_at")
-      .single();
+    let profile;
+    try {
+      profile = await withAssistantActionAudit(
+        supabase,
+        {
+          actionKind: "create_project_funding_profile",
+          workspaceId: access.project.workspace_id,
+          userId: user.id,
+          inputSummary: {
+            projectId: access.project.id,
+            hasFundingNeed: parsed.data.fundingNeedAmount !== undefined,
+            hasLocalMatchNeed: parsed.data.localMatchNeedAmount !== undefined,
+          },
+        },
+        async () => {
+          const { data, error } = await supabase
+            .from("project_funding_profiles")
+            .upsert(upsertPayload, { onConflict: "project_id" })
+            .select("id, workspace_id, project_id, funding_need_amount, local_match_need_amount, notes, created_at, updated_at")
+            .single();
 
-    if (error || !profile) {
+          if (error || !data) {
+            throw new Error(error?.message ?? "project_funding_profile_upsert_returned_no_row");
+          }
+          return data;
+        }
+      );
+    } catch (upsertErr) {
       audit.error("project_funding_profile_upsert_failed", {
         projectId: access.project.id,
         userId: user.id,
-        message: error?.message ?? "unknown",
-        code: error?.code ?? null,
+        message: upsertErr instanceof Error ? upsertErr.message : String(upsertErr),
       });
       return NextResponse.json({ error: "Failed to save project funding profile" }, { status: 500 });
     }

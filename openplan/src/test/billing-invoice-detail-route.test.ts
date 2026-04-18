@@ -36,6 +36,12 @@ const fromMock = vi.fn((table: string) => {
     return { select: billingInvoicesSelectMock, update: billingInvoicesUpdateMock };
   }
 
+  if (table === "assistant_action_executions") {
+    return {
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 
