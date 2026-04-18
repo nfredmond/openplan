@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListTree, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Form, FormActions, FormError, FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -56,11 +57,9 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
         </span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label htmlFor="engagement-category-label" className="text-[0.82rem] font-semibold">
-            Label
-          </label>
+      <Form className="mt-5" onSubmit={handleSubmit}>
+        <FormField>
+          <FormLabel htmlFor="engagement-category-label">Label</FormLabel>
           <Input
             id="engagement-category-label"
             placeholder="Safety"
@@ -68,13 +67,12 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
             onChange={(event) => setLabel(event.target.value)}
             required
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label htmlFor="engagement-category-description" className="text-[0.82rem] font-semibold">
+        <FormField>
+          <FormLabel htmlFor="engagement-category-description" optional>
             Description
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
+          </FormLabel>
           <Textarea
             id="engagement-category-description"
             rows={3}
@@ -82,19 +80,17 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
-        </div>
+        </FormField>
 
-        {error ? (
-          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </p>
-        ) : null}
+        {error ? <FormError>{error}</FormError> : null}
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Add category
-        </Button>
-      </form>
+        <FormActions>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Add category
+          </Button>
+        </FormActions>
+      </Form>
     </article>
   );
 }
