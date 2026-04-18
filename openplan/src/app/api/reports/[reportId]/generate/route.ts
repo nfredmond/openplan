@@ -464,6 +464,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
           latest_artifact_kind: "html",
           latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
+          rtp_basis_stale: false,
+          rtp_basis_stale_reason: null,
+          rtp_basis_stale_run_id: null,
+          rtp_basis_stale_marked_at: null,
         })
         .eq("id", report.id);
 
@@ -960,6 +964,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         latest_artifact_kind: "html",
         latest_artifact_url: latestArtifactUrl,
         metadata_json: nextMetadataJson,
+        rtp_basis_stale: false,
+        rtp_basis_stale_reason: null,
+        rtp_basis_stale_run_id: null,
+        rtp_basis_stale_marked_at: null,
       })
       .eq("id", report.id);
 

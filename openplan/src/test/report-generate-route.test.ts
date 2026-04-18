@@ -563,6 +563,10 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.objectContaining({
         status: "generated",
         latest_artifact_kind: "html",
+        rtp_basis_stale: false,
+        rtp_basis_stale_reason: null,
+        rtp_basis_stale_run_id: null,
+        rtp_basis_stale_marked_at: null,
       })
     );
   });
