@@ -1,59 +1,17 @@
 import Link from "next/link";
 import { AlertTriangle, FileSearch, MapPin, ShieldCheck } from "lucide-react";
+import {
+  NEVADA_COUNTY_CAVEATS_VERBATIM as caveatsVerbatim,
+  NEVADA_COUNTY_FACILITY_RANKING as facilityRanking,
+  NEVADA_COUNTY_RUN_CONTEXT as runContext,
+  NEVADA_COUNTY_SCREENING_GATE as screeningGate,
+  NEVADA_COUNTY_VALIDATION_METRICS as validationMetrics,
+} from "@/lib/examples/nevada-county-2026-03-24";
 
 export const metadata = {
   title: "Evidence catalog · OpenPlan",
   description:
     "Screening-grade OpenPlan evidence from a real Nevada County runtime, shown with its caveats, validation metrics, and prototype-only gate verbatim.",
-};
-
-const caveatsVerbatim = [
-  "screening-grade only",
-  "OSM default speeds/capacities",
-  "tract fragments are not calibrated TAZs",
-  "jobs are estimated from tract-scale demographic proxies",
-  "external gateways are inferred from major boundary-crossing roads",
-];
-
-const validationMetrics: Array<{ label: string; value: string; note?: string }> = [
-  { label: "Stations total", value: "5" },
-  { label: "Stations matched", value: "5 of 5" },
-  { label: "Median APE", value: "27.4%" },
-  { label: "Mean APE", value: "68.75%" },
-  { label: "Min APE", value: "4.10%" },
-  {
-    label: "Max APE",
-    value: "237.62%",
-    note: "Above the 50% critical-facility threshold — disqualifies this run from outward modeling claims.",
-  },
-  { label: "Spearman ρ (facility ranking)", value: "0.40" },
-];
-
-const facilityRanking: Array<{
-  station: string;
-  observed: string;
-  modeled: string;
-  obsRank: number;
-  modRank: number;
-}> = [
-  { station: "SR 20 at Jct Rte 49", observed: "45,500", modeled: "73,666", obsRank: 1, modRank: 1 },
-  { station: "SR 20 at Brunswick Rd", observed: "35,500", modeled: "30,975", obsRank: 2, modRank: 3 },
-  { station: "SR 49 at South Grass Valley", observed: "26,000", modeled: "27,067", obsRank: 3, modRank: 4 },
-  { station: "SR 20 at Penn Valley Dr", observed: "17,500", modeled: "12,705", obsRank: 4, modRank: 5 },
-  { station: "SR 174 at Brunswick Rd", observed: "10,300", modeled: "34,775", obsRank: 5, modRank: 2 },
-];
-
-const screeningGate = {
-  statusLabel: "internal prototype only",
-  reason:
-    "At least one core facility has 237.62% absolute percent error, above the 50.00% critical-facility threshold.",
-};
-
-const runContext = {
-  runId: "nevada-county-runtime-norenumber-freeze-20260324",
-  engine: "AequilibraE screening runtime",
-  createdAt: "2026-03-24T19:42:28Z",
-  countsSource: "Caltrans 2023 priority counts (five-station subset)",
 };
 
 export default function ExamplesEvidenceCatalogPage() {
