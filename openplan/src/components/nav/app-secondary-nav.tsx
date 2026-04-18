@@ -15,11 +15,12 @@ const sectionMap: Array<{
   section: SecondarySection;
 }> = [
   {
-    match: ["/dashboard"],
+    match: ["/dashboard", "/command-center"],
     section: {
       title: "Overview",
       items: [
         { href: "/dashboard", label: "Workspace Dashboard" },
+        { href: "/command-center", label: "Command Center" },
         { href: "/projects", label: "Projects" },
         { href: "/reports", label: "Reports" },
       ],

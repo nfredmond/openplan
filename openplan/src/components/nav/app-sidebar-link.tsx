@@ -16,6 +16,7 @@ import {
   Map,
   MessageSquareShare,
   PlaneTakeoff,
+  Radar,
   Route,
   Settings2,
   type LucideIcon,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 const icons = {
   overview: LayoutDashboard,
+  command: Radar,
   projects: FolderKanban,
   rtp: Route,
   plans: BookOpen,

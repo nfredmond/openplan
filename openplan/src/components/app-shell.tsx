@@ -16,6 +16,7 @@ const navGroups = [
     title: "Operate",
     items: [
       { href: "/dashboard", label: "Overview", icon: "overview" as const },
+      { href: "/command-center", label: "Command Center", icon: "command" as const },
       { href: "/projects", label: "Projects", icon: "projects" as const },
       { href: "/rtp", label: "RTP Cycles", icon: "rtp" as const },
       { href: "/plans", label: "Plans", icon: "plans" as const },
