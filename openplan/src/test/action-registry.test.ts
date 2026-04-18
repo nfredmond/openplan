@@ -200,4 +200,53 @@ describe("executeAction regrounding depth guard", () => {
       expect.objectContaining({ regroundingDepth: 1 })
     );
   });
+
+  it("terminates a recursive post-action chain at MAX_REGROUNDING_DEPTH", async () => {
+    const effectInvocations: number[] = [];
+    const skipEvents: Array<{ depth: number; maxDepth: number }> = [];
+
+    const onPostActionPromptSkipped = vi.fn((context: { depth: number; maxDepth: number }) => {
+      skipEvents.push({ depth: context.depth, maxDepth: context.maxDepth });
+    });
+
+    const submitPostActionPrompt = vi.fn(async (args: { regroundingDepth: number }) => {
+      await executeAction(
+        {
+          kind: "generate_report_artifact",
+          reportId: "report-1",
+          postActionPrompt: "Follow up again",
+        },
+        {
+          onCompleted: vi.fn(),
+          refreshAssistantPreview: vi.fn().mockResolvedValue({ quickLinks: [] }),
+          submitPostActionPrompt,
+          onPostActionPromptSkipped,
+        },
+        { regroundingDepth: args.regroundingDepth }
+      );
+    });
+
+    generateReportArtifactMock.mockImplementation(async () => {
+      effectInvocations.push(effectInvocations.length);
+      return {};
+    });
+
+    await executeAction(
+      {
+        kind: "generate_report_artifact",
+        reportId: "report-1",
+        postActionPrompt: "Follow up",
+      },
+      {
+        onCompleted: vi.fn(),
+        refreshAssistantPreview: vi.fn().mockResolvedValue({ quickLinks: [] }),
+        submitPostActionPrompt,
+        onPostActionPromptSkipped,
+      }
+    );
+
+    expect(effectInvocations.length).toBe(MAX_REGROUNDING_DEPTH + 1);
+    expect(submitPostActionPrompt).toHaveBeenCalledTimes(MAX_REGROUNDING_DEPTH);
+    expect(skipEvents).toEqual([{ depth: MAX_REGROUNDING_DEPTH, maxDepth: MAX_REGROUNDING_DEPTH }]);
+  });
 });
