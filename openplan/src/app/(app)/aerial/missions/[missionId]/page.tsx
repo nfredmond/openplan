@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, PlaneTakeoff } from "lucide-react";
+import { ArrowLeft, Download, Hexagon, PlaneTakeoff } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
 import { Inspector, InspectorField, InspectorGroup, InspectorEmpty } from "@/components/ui/inspector";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import {
   aerialMissionStatusTone,
   aerialPackageStatusTone,
@@ -80,7 +82,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   const { data: mission, error: missionErr } = await supabase
     .from("aerial_missions")
     .select(
-      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name)"
+      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, aoi_geojson, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name)"
     )
     .eq("id", missionId)
     .eq("workspace_id", workspaceId)
@@ -91,6 +93,10 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   }
 
   const project = Array.isArray(mission.projects) ? mission.projects[0] : mission.projects;
+  const hasAoi = isAoiPolygonGeoJson(mission.aoi_geojson);
+  const aoiVertexCount = hasAoi
+    ? Math.max(0, (mission.aoi_geojson as { coordinates: [number, number][][] }).coordinates[0].length - 1)
+    : 0;
 
   const { data: pkgRows } = await supabase
     .from("aerial_evidence_packages")
@@ -247,26 +253,63 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
       ariaLabel={`Aerial mission ${mission.title}`}
       header={header}
       worksurface={
-        <WorksurfaceSection
-          id="aerial-mission-packages"
-          label="Evidence"
-          title="Packages"
-          description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status and verification readiness."
-          trailing={<StatusBadge tone="neutral">{packages.length} total</StatusBadge>}
-        >
-          <DataTable<PackageRow>
-            columns={columns}
-            rows={packages}
-            getRowId={(row) => row.id}
-            density="compact"
-            emptyState={
-              <EmptyState
-                title="No evidence packages yet"
-                description="Once packages are recorded for this mission, they will appear here with status and verification state."
-              />
+        <>
+          <WorksurfaceSection
+            id="aerial-mission-authoring"
+            label="Authoring"
+            title="Mission AOI & export"
+            description="Draw the area of interest, export a DJI waypoint file for pilot handoff, or request ODM processing."
+            trailing={
+              <StatusBadge tone={hasAoi ? "success" : "neutral"}>
+                {hasAoi ? `${aoiVertexCount} vertex polygon` : "No AOI yet"}
+              </StatusBadge>
             }
-          />
-        </WorksurfaceSection>
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild>
+                <Link href={`/aerial/missions/${mission.id}/edit`}>
+                  <Hexagon className="h-4 w-4" />
+                  {hasAoi ? "Edit AOI" : "Draw AOI"}
+                </Link>
+              </Button>
+              {hasAoi ? (
+                <Button asChild variant="outline">
+                  <a href={`/api/aerial/missions/${mission.id}/export?format=dji-json`}>
+                    <Download className="h-4 w-4" />
+                    Export DJI JSON
+                  </a>
+                </Button>
+              ) : null}
+            </div>
+            <StateBlock
+              className="mt-3"
+              title="ODM processing is not implemented"
+              description="Imagery → ortho/DSM processing is explicitly out of scope for this prototype. The POST /api/aerial/missions/[id]/process endpoint returns HTTP 501 with an honest integration-boundary payload. No fake processing, no silent stubs."
+              tone="warning"
+              compact
+            />
+          </WorksurfaceSection>
+          <WorksurfaceSection
+            id="aerial-mission-packages"
+            label="Evidence"
+            title="Packages"
+            description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status and verification readiness."
+            trailing={<StatusBadge tone="neutral">{packages.length} total</StatusBadge>}
+          >
+            <DataTable<PackageRow>
+              columns={columns}
+              rows={packages}
+              getRowId={(row) => row.id}
+              density="compact"
+              emptyState={
+                <EmptyState
+                  title="No evidence packages yet"
+                  description="Once packages are recorded for this mission, they will appear here with status and verification state."
+                />
+              }
+            />
+          </WorksurfaceSection>
+        </>
       }
       inspector={evidenceChain}
     />
