@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Database, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Database, FileStack, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
+import { ModelLinkedRecordsBoard } from "@/components/models/model-linked-records";
 import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -332,7 +332,6 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       }
     : null;
 
-  const hasAnyLinkedRecords = linkedRecordSections.some((section) => section.count > 0);
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
   const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
   const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as unknown as Array<{
@@ -598,77 +597,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               </div>
             </article>
 
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Linked records</p>
-                  <h2 className="module-section-title">Explicit provenance and outputs</h2>
-                  <p className="module-section-description">
-                    Review the linked evidence chain without wading through repetitive empty-state blocks.
-                  </p>
-                </div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  <FolderKanban className="h-3.5 w-3.5" />
-                  {links.length} explicit links
-                </span>
-              </div>
-
-              {!hasAnyLinkedRecords ? (
-                <div className="mt-5">
-                  <EmptyState
-                    title="No explicit links yet"
-                    description="Use the Links tab in the control panel to attach supporting scenarios, plans, datasets, reports, recorded runs, or related projects."
-                  />
-                </div>
-              ) : (
-                <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                  {linkedRecordSections.map((section) => (
-                    <div key={section.title} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{section.title}</p>
-                          <p className="mt-2 text-base font-semibold text-foreground">{section.count} linked</p>
-                        </div>
-                        <StatusBadge tone={section.count > 0 ? "info" : "neutral"}>{section.count > 0 ? "Active" : "Empty"}</StatusBadge>
-                      </div>
-
-                      {section.records.length === 0 ? (
-                        <p className="mt-4 text-sm text-muted-foreground">{section.emptyCopy}</p>
-                      ) : (
-                        <div className="mt-4 space-y-3">
-                          {section.records.map((record) => (
-                            <div key={record.id} className="rounded-[0.5rem] border border-border/65 bg-background/85 p-3.5">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  {record.href ? (
-                                    <Link href={record.href} className="text-sm font-semibold text-foreground hover:text-primary">
-                                      {record.title}
-                                    </Link>
-                                  ) : (
-                                    <p className="text-sm font-semibold text-foreground">{record.title}</p>
-                                  )}
-                                  <div className="mt-2 space-y-2">
-                                    <StatusBadge tone="neutral">{record.statusLabel}</StatusBadge>
-                                    {record.meta.length > 0 ? (
-                                      <MetaList>
-                                        {record.meta.map((item) => (
-                                          <MetaItem key={`${record.id}-${item}`}>{item}</MetaItem>
-                                        ))}
-                                      </MetaList>
-                                    ) : null}
-                                  </div>
-                                </div>
-                                <p className="shrink-0 text-xs text-muted-foreground">{record.timestampLabel}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </article>
+            <ModelLinkedRecordsBoard sections={linkedRecordSections} totalLinkCount={links.length} />
           </div>
         </div>
       </div>
