@@ -1,5 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ActionApproval, RegroundingMode } from "@/lib/runtime/action-registry";
+import {
+  getActionRecord,
+  type ActionApproval,
+  type RegroundingMode,
+} from "@/lib/runtime/action-registry";
+import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 
 export type AssistantActionExecutionOutcome = "succeeded" | "failed";
 
@@ -42,4 +47,79 @@ export async function recordAssistantActionExecution(
       ? { message: error.message, code: error.code ?? null }
       : null,
   };
+}
+
+export type WithAssistantActionAuditMeta = {
+  actionKind: AssistantQuickLinkExecuteAction["kind"];
+  workspaceId: string | null;
+  userId: string | null;
+  inputSummary?: Record<string, unknown> | null;
+};
+
+/**
+ * Wraps a server-side action body with per-action audit persistence.
+ * Looks up the ActionRecord in the registry to attach auditEvent/approval/
+ * regrounding, then writes one assistant_action_executions row on success
+ * and one on failure (re-throwing the original error after logging).
+ *
+ * Audit insert failures never mask business-logic results. If the row write
+ * itself fails, a warning is logged via console.warn and the original body
+ * result / error is preserved.
+ */
+export async function withAssistantActionAudit<T>(
+  supabase: AssistantActionAuditSupabaseLike,
+  meta: WithAssistantActionAuditMeta,
+  body: () => Promise<T>
+): Promise<T> {
+  const record = getActionRecord(meta.actionKind);
+  const startedAt = new Date().toISOString();
+
+  try {
+    const result = await body();
+    const completedAt = new Date().toISOString();
+    const { error } = await recordAssistantActionExecution(supabase, {
+      workspaceId: meta.workspaceId,
+      userId: meta.userId,
+      actionKind: meta.actionKind,
+      auditEvent: record.auditEvent,
+      approval: record.approval,
+      regrounding: record.regrounding,
+      outcome: "succeeded",
+      inputSummary: meta.inputSummary ?? null,
+      startedAt,
+      completedAt,
+    });
+    if (error) {
+      console.warn("[action-audit] succeeded-row insert failed", {
+        actionKind: meta.actionKind,
+        message: error.message,
+        code: error.code,
+      });
+    }
+    return result;
+  } catch (err) {
+    const completedAt = new Date().toISOString();
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    const { error } = await recordAssistantActionExecution(supabase, {
+      workspaceId: meta.workspaceId,
+      userId: meta.userId,
+      actionKind: meta.actionKind,
+      auditEvent: record.auditEvent,
+      approval: record.approval,
+      regrounding: record.regrounding,
+      outcome: "failed",
+      errorMessage,
+      inputSummary: meta.inputSummary ?? null,
+      startedAt,
+      completedAt,
+    });
+    if (error) {
+      console.warn("[action-audit] failed-row insert failed", {
+        actionKind: meta.actionKind,
+        message: error.message,
+        code: error.code,
+      });
+    }
+    throw err;
+  }
 }
