@@ -7,11 +7,32 @@ const paramsSchema = z.object({
   missionId: z.string().uuid(),
 });
 
+const polygonGeoJsonSchema = z.object({
+  type: z.literal("Polygon"),
+  coordinates: z
+    .array(z.array(z.tuple([z.number(), z.number()])))
+    .min(1, "Polygon must have at least one ring")
+    .refine(
+      (coords) => coords.every((ring) => ring.length >= 4),
+      "Each polygon ring must have at least 4 positions (closed)"
+    )
+    .refine(
+      (coords) =>
+        coords.every((ring) => {
+          const first = ring[0];
+          const last = ring[ring.length - 1];
+          return first[0] === last[0] && first[1] === last[1];
+        }),
+      "Each polygon ring must close (first position === last position)"
+    ),
+});
+
 const patchAerialMissionSchema = z.object({
   status: z.enum(["planned", "active", "complete", "cancelled"]).optional(),
   title: z.string().trim().min(1).max(200).optional(),
   geographyLabel: z.string().trim().max(200).nullable().optional(),
   notes: z.string().trim().max(4000).nullable().optional(),
+  aoiGeojson: polygonGeoJsonSchema.nullable().optional(),
 }).refine((data) => Object.keys(data).length > 0, { message: "At least one field required" });
 
 type RouteContext = { params: Promise<{ missionId: string }> };
@@ -75,6 +96,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if ("geographyLabel" in parsed.data) updates.geography_label = parsed.data.geographyLabel ?? null;
     if ("notes" in parsed.data) updates.notes = parsed.data.notes ?? null;
+    if ("aoiGeojson" in parsed.data) updates.aoi_geojson = parsed.data.aoiGeojson ?? null;
 
     const { data: updated, error: updateError } = await supabase
       .from("aerial_missions")
