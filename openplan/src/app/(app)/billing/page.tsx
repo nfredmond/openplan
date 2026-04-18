@@ -23,6 +23,13 @@ import {
 import { resolveBillingSupportState } from "@/lib/billing/support";
 import { buildBillingHref, buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
+import {
+  checkMonthlyRunQuota,
+  isQuotaExceeded,
+  isQuotaLookupError,
+  type QuotaResult,
+} from "@/lib/billing/quota";
+import { normalizeWorkspacePlan } from "@/lib/billing/limits";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
@@ -152,6 +159,30 @@ function panelClass() {
 
 function insetClass() {
   return "border border-border/60 bg-background/70";
+}
+
+type QuotaRowDescriptor = {
+  label: string;
+  helper: string;
+  result: QuotaResult;
+};
+
+function quotaRowTone(result: QuotaResult): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (isQuotaLookupError(result)) return "warning";
+  if (isQuotaExceeded(result)) return "danger";
+  if (result.unlimited) return "neutral";
+  const { usedRuns, monthlyLimit } = result;
+  if (monthlyLimit === null) return "neutral";
+  const ratio = monthlyLimit === 0 ? 0 : usedRuns / monthlyLimit;
+  if (ratio >= 0.9) return "warning";
+  return "success";
+}
+
+function quotaRowStatusText(result: QuotaResult): string {
+  if (isQuotaLookupError(result)) return "Quota lookup unavailable";
+  if (isQuotaExceeded(result)) return `${result.usedRuns} of ${result.monthlyLimit} used (limit reached)`;
+  if (result.unlimited) return "Unlimited on current plan";
+  return `${result.usedRuns} of ${result.monthlyLimit} used`;
 }
 
 function noticeClass(tone: "info" | "success" | "warning") {
@@ -366,6 +397,20 @@ export default async function BillingPage({
     .select("subscription_current_period_end")
     .eq("id", workspaceId)
     .maybeSingle();
+
+  const normalizedPlan = normalizeWorkspacePlan(plan);
+  const [analysisQuota, modelRunQuota] = await Promise.all([
+    checkMonthlyRunQuota(supabase, {
+      workspaceId,
+      plan: normalizedPlan,
+      tableName: "runs",
+    }),
+    checkMonthlyRunQuota(supabase, {
+      workspaceId,
+      plan: normalizedPlan,
+      tableName: "model_runs",
+    }),
+  ]);
 
   const { data: workspaceProjectsData } = await supabase
     .from("projects")
@@ -681,6 +726,34 @@ export default async function BillingPage({
             </p>
           </div>
         </div>
+      </article>
+
+      <article className={panelClass()}>
+        <div className="border-b border-border/60 pb-4">
+          <h2 className="text-lg font-semibold tracking-tight">Monthly run usage</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Analysis and model runs are metered against the current plan on a UTC-month basis. Usage resets at the start of each month.
+          </p>
+        </div>
+        <ul className="mt-4 space-y-3">
+          {(
+            [
+              { label: "Analysis runs", helper: "Explore queries and saved analyses.", result: analysisQuota },
+              { label: "Model runs", helper: "Transportation modeling runs queued through the modeling lane.", result: modelRunQuota },
+            ] satisfies QuotaRowDescriptor[]
+          ).map((row) => (
+            <li key={row.label} className={`${insetClass()} flex flex-wrap items-center justify-between gap-3 px-4 py-3`}>
+              <div>
+                <p className="text-sm font-semibold tracking-tight text-foreground">{row.label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{row.helper}</p>
+              </div>
+              <StatusBadge tone={quotaRowTone(row.result)}>{quotaRowStatusText(row.result)}</StatusBadge>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs text-muted-foreground">
+          At the limit, OpenPlan returns a 429 on run launch with a friendly message. Upgrade the plan or contact operations to raise the monthly ceiling.
+        </p>
       </article>
 
       <BillingCheckoutLauncher
