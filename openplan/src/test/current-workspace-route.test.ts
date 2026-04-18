@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+
+function makeRequest(): NextRequest {
+  return new NextRequest("http://localhost/api/workspaces/current");
+}
 
 const createClientMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -58,14 +63,14 @@ describe("/api/workspaces/current", () => {
   it("returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
 
-    const response = await getCurrentWorkspace();
+    const response = await getCurrentWorkspace(makeRequest());
 
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({ error: "Unauthorized" });
   });
 
   it("returns the helper-selected current workspace", async () => {
-    const response = await getCurrentWorkspace();
+    const response = await getCurrentWorkspace(makeRequest());
 
     expect(response.status).toBe(200);
     expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalledWith(expect.anything(), USER_ID);
@@ -82,7 +87,7 @@ describe("/api/workspaces/current", () => {
       workspace: null,
     });
 
-    const response = await getCurrentWorkspace();
+    const response = await getCurrentWorkspace(makeRequest());
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: "No workspace membership found" });
@@ -91,7 +96,7 @@ describe("/api/workspaces/current", () => {
   it("returns 500 when helper-backed workspace resolution fails", async () => {
     loadCurrentWorkspaceMembershipMock.mockRejectedValueOnce(new Error("membership lookup failed"));
 
-    const response = await getCurrentWorkspace();
+    const response = await getCurrentWorkspace(makeRequest());
 
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({

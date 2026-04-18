@@ -7,6 +7,7 @@ import {
   type RecentPublicSubmissionRecord,
 } from "@/lib/engagement/public-submit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -28,6 +29,7 @@ type RouteContext = {
 };
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("engage.public_submit", request);
   try {
     const routeParams = await context.params;
     const parsedParams = paramsSchema.safeParse(routeParams);
@@ -58,6 +60,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .maybeSingle();
 
     if (campaignError) {
+      audit.error("engagement_campaign_submit_lookup_failed", {
+        message: campaignError.message,
+        code: campaignError.code ?? null,
+      });
       return NextResponse.json({ error: "Failed to verify campaign" }, { status: 500 });
     }
 
@@ -97,6 +103,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .limit(25);
 
     if (recentItemsError) {
+      audit.error("engagement_recent_items_lookup_failed", {
+        campaignId: campaign.id,
+        message: recentItemsError.message,
+        code: recentItemsError.code ?? null,
+      });
       return NextResponse.json({ error: "Failed to verify recent submission activity" }, { status: 500 });
     }
 
@@ -152,8 +163,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .single();
 
     if (insertError || !item) {
+      audit.error("engagement_item_insert_failed", {
+        campaignId: campaign.id,
+        message: insertError?.message ?? null,
+        code: insertError?.code ?? null,
+      });
       return NextResponse.json({ error: "Failed to submit feedback" }, { status: 500 });
     }
+
+    audit.info("engagement_public_submission_accepted", {
+      campaignId: campaign.id,
+      submissionId: item.id,
+      reviewStatus: safety.autoFlagReason ? "flagged" : "pending",
+    });
 
     return NextResponse.json(
       {
@@ -164,7 +186,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    audit.error("engage_public_submit_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error while submitting feedback" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -10,7 +11,8 @@ type RouteContext = {
   params: Promise<{ shareToken: string }>;
 };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("engage.public_view", request);
   try {
     const routeParams = await context.params;
     const parsed = paramsSchema.safeParse(routeParams);
@@ -29,6 +31,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       .maybeSingle();
 
     if (campaignError) {
+      audit.error("engagement_campaign_lookup_failed", {
+        message: campaignError.message,
+        code: campaignError.code ?? null,
+      });
       return NextResponse.json({ error: "Failed to load campaign" }, { status: 500 });
     }
 
@@ -79,7 +85,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         createdAt: item.created_at,
       })),
     });
-  } catch {
+  } catch (error) {
+    audit.error("engage_public_view_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

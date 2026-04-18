@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const audit = createApiAuditLogger("network_packages.list", request);
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const workspaceId = searchParams.get("workspace_id");
@@ -17,13 +19,19 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: false });
 
   if (error) {
+    audit.error("network_packages_list_failed", {
+      workspaceId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ data });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const audit = createApiAuditLogger("network_packages.create", request);
   const supabase = await createClient();
   let body;
   try {
@@ -51,8 +59,19 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    audit.error("network_package_insert_failed", {
+      workspaceId: workspace_id,
+      name,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  audit.info("network_package_created", {
+    workspaceId: workspace_id,
+    packageId: (data as { id?: string } | null)?.id ?? null,
+  });
 
   return NextResponse.json({ data });
 }

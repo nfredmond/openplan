@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ packageId: string }> }
 ) {
+  const audit = createApiAuditLogger("network_package_versions.list", request);
   const { packageId } = await params;
   const supabase = await createClient();
 
@@ -15,6 +17,11 @@ export async function GET(
     .order("created_at", { ascending: false });
 
   if (error) {
+    audit.error("network_package_versions_list_failed", {
+      packageId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -22,9 +29,10 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ packageId: string }> }
 ) {
+  const audit = createApiAuditLogger("network_package_versions.create", request);
   const { packageId } = await params;
   const supabase = await createClient();
   let body;
@@ -53,8 +61,20 @@ export async function POST(
     .single();
 
   if (error) {
+    audit.error("network_package_version_insert_failed", {
+      packageId,
+      versionName: version_name,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  audit.info("network_package_version_created", {
+    packageId,
+    versionId: (data as { id?: string } | null)?.id ?? null,
+    versionName: version_name,
+  });
 
   return NextResponse.json({ data });
 }

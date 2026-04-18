@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 // GET /api/network-packages/[packageId]/versions/[versionId]/zones
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ packageId: string; versionId: string }> }
 ) {
+  const audit = createApiAuditLogger("network_zones.list", req);
   const { versionId } = await params;
   const supabase = await createClient();
 
@@ -16,6 +18,11 @@ export async function GET(
     .order("zone_id_external", { ascending: true });
 
   if (error) {
+    audit.error("network_zones_list_failed", {
+      versionId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   return NextResponse.json(data ?? []);
@@ -26,6 +33,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ packageId: string; versionId: string }> }
 ) {
+  const audit = createApiAuditLogger("network_zones.create", req);
   const { versionId } = await params;
   const supabase = await createClient();
   const body = await req.json();
@@ -46,6 +54,11 @@ export async function POST(
     .single();
 
   if (error) {
+    audit.error("network_zone_insert_failed", {
+      versionId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   return NextResponse.json(data, { status: 201 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 
 type QaCheck = {
   name: string;
@@ -54,6 +55,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ packageId: string; versionId: string }> }
 ) {
+  const audit = createApiAuditLogger("network_package_versions.ingest", req);
   const { packageId, versionId } = await params;
   const supabase = await createClient();
 
@@ -148,8 +150,23 @@ export async function POST(
     .eq("package_id", packageId);
 
   if (updateError) {
+    audit.error("network_package_version_ingest_update_failed", {
+      packageId,
+      versionId,
+      message: updateError.message,
+      code: updateError.code ?? null,
+    });
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
+
+  audit.info("network_package_version_ingested", {
+    packageId,
+    versionId,
+    overallStatus,
+    totalChecks,
+    warnings,
+    failures,
+  });
 
   return NextResponse.json({
     status: overallStatus,

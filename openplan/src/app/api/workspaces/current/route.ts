@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const audit = createApiAuditLogger("workspaces.current", request);
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,6 +18,10 @@ export async function GET() {
   try {
     currentWorkspace = await loadCurrentWorkspaceMembership(supabase, user.id);
   } catch (error) {
+    audit.error("current_workspace_membership_lookup_failed", {
+      userId: user.id,
+      error,
+    });
     return NextResponse.json(
       {
         error: "Failed to fetch workspace membership",
