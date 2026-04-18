@@ -21,6 +21,13 @@ const operatingFlows = [
 
 const publicSurfaces = [
   {
+    href: "/examples",
+    label: "Evidence catalog",
+    title: "See a real screening run with its caveats",
+    description:
+      "Nevada County 2026-03-24 screening runtime vs. Caltrans counts, gated as internal prototype only — caveats and validation metrics shown verbatim.",
+  },
+  {
     href: "/explore",
     label: "Analysis Studio preview",
     title: "Explore maps and scenario work",
