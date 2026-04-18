@@ -260,7 +260,7 @@ export function FundingOpportunityDecisionControls({
               rows={3}
               value={decisionRationale}
               onChange={(event) => setDecisionRationale(event.target.value)}
-              placeholder="Record why the team chose pursue, monitor, or skip."
+              placeholder="Record why the team chose this decision state (monitor, pursue, under review, awarded, denied, or skip)."
             />
           </div>
         </div>

@@ -34,6 +34,9 @@ export const FUNDING_OPPORTUNITY_STATUS_OPTIONS = [
 export const FUNDING_OPPORTUNITY_DECISION_OPTIONS = [
   { value: "monitor", label: "Monitor" },
   { value: "pursue", label: "Pursue" },
+  { value: "under_review", label: "Under review" },
+  { value: "awarded", label: "Awarded" },
+  { value: "denied", label: "Denied" },
   { value: "skip", label: "Skip" },
 ] as const;
 
@@ -186,9 +189,12 @@ export function fundingOpportunityStatusTone(
 export function fundingOpportunityDecisionTone(
   decision: string | null | undefined
 ): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (decision === "awarded") return "success";
   if (decision === "pursue") return "success";
+  if (decision === "under_review") return "info";
   if (decision === "monitor") return "info";
   if (decision === "skip") return "warning";
+  if (decision === "denied") return "danger";
   return "neutral";
 }
 
