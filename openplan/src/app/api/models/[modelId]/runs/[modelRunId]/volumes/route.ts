@@ -6,6 +6,7 @@ import { parse } from "csv-parse/sync";
 import Database from "better-sqlite3";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 
 /**
@@ -70,6 +71,8 @@ function resolveRunWorkDir(modelRunId: string) {
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.volumes", request);
+  const startedAt = Date.now();
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -89,6 +92,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const access = await loadModelAccess(supabase, modelId, user.id, "models.read");
   if (access.error) {
+    audit.error("model_access_lookup_failed", { modelId });
     return NextResponse.json({ error: "Failed to load model" }, { status: 500 });
   }
   if (!access.model) {
@@ -106,6 +110,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     .maybeSingle();
 
   if (runError || !run) {
+    if (runError) {
+      audit.error("model_run_lookup_failed", {
+        modelRunId,
+        message: runError.message,
+        code: runError.code ?? null,
+      });
+    }
     return NextResponse.json({ error: "Model run not found" }, { status: 404 });
   }
 
@@ -130,6 +141,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .order("created_at", { ascending: true });
 
     if (artifactError) {
+      audit.error("model_run_artifacts_lookup_failed", {
+        modelRunId,
+        message: artifactError.message,
+        code: artifactError.code ?? null,
+      });
       return NextResponse.json(
         { error: "Failed to load model run artifacts" },
         { status: 500 }
@@ -358,7 +374,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error("Volumes endpoint error:", error);
+    audit.error("volumes_unhandled_error", {
+      modelRunId,
+      durationMs: Date.now() - startedAt,
+      error,
+    });
     return NextResponse.json(
       { error: "Failed to generate volume GeoJSON" },
       { status: 500 }

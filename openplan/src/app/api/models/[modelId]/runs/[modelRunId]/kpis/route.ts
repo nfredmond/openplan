@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   buildBehavioralDemandComparison,
@@ -118,6 +119,7 @@ async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof 
 
 // GET /api/models/[modelId]/runs/[modelRunId]/kpis
 export async function GET(req: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.kpis.read", req);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -144,6 +146,11 @@ export async function GET(req: NextRequest, context: RouteContext) {
     .order("kpi_name", { ascending: true });
 
   if (error) {
+    audit.error("model_run_kpis_lookup_failed", {
+      modelRunId: parsedParams.data.modelRunId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -278,6 +285,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 // POST /api/models/[modelId]/runs/[modelRunId]/kpis
 // Register KPI results for an authorized model run.
 export async function POST(req: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.kpis.write", req);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -320,8 +328,19 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .select();
 
   if (error) {
+    audit.error("model_run_kpis_insert_failed", {
+      modelRunId: parsedParams.data.modelRunId,
+      attemptedCount: inserts.length,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  audit.info("model_run_kpis_registered", {
+    modelRunId: parsedParams.data.modelRunId,
+    registeredCount: (data ?? []).length,
+  });
 
   return NextResponse.json(
     {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   normalizeEvidencePacket,
@@ -225,6 +226,7 @@ async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
 // GET /api/models/[modelId]/runs/[modelRunId]/evidence-packet
 // Return the worker-authored evidence packet when available, with a synthesized fallback.
 export async function GET(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.evidence_packet", request);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -249,6 +251,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   );
 
   if (access.error) {
+    audit.error("model_access_lookup_failed", { modelId: parsedParams.data.modelId });
     return NextResponse.json({ error: "Failed to load model" }, { status: 500 });
   }
   if (!access.model) {
@@ -266,6 +269,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     .maybeSingle();
 
   if (runError || !run) {
+    if (runError) {
+      audit.error("model_run_lookup_failed", {
+        modelRunId: parsedParams.data.modelRunId,
+        message: runError.message,
+        code: runError.code ?? null,
+      });
+    }
     return NextResponse.json({ error: "Model run not found." }, { status: 404 });
   }
 
@@ -351,7 +361,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     try {
       storedPacket = await loadJsonArtifact(evidenceArtifact.file_url);
     } catch (error) {
-      console.warn("Failed to load stored evidence packet artifact", {
+      audit.warn("evidence_packet_artifact_load_failed", {
         modelRunId: parsedParams.data.modelRunId,
         fileUrl: evidenceArtifact.file_url,
         error,

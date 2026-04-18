@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 
 const paramsSchema = z.object({
@@ -56,7 +57,8 @@ async function loadAuthorizedRun(
 
 // GET /api/models/[modelId]/runs/[modelRunId]/skims
 // List skim artifacts for a specific authorized model run.
-export async function GET(_req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.skims.read", req);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -81,6 +83,11 @@ export async function GET(_req: NextRequest, context: RouteContext) {
     .order("created_at", { ascending: true });
 
   if (error) {
+    audit.error("model_run_skims_lookup_failed", {
+      modelRunId: parsedParams.data.modelRunId,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -94,6 +101,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
 // POST /api/models/[modelId]/runs/[modelRunId]/skims
 // Register a generated skim artifact for an authorized model run.
 export async function POST(req: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.skims.write", req);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);
 
@@ -142,8 +150,21 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .single();
 
   if (error) {
+    audit.error("model_run_skim_insert_failed", {
+      modelRunId: parsedParams.data.modelRunId,
+      period,
+      mode,
+      message: error.message,
+      code: error.code ?? null,
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  audit.info("model_run_skim_registered", {
+    modelRunId: parsedParams.data.modelRunId,
+    period,
+    mode,
+  });
 
   return NextResponse.json(
     {
