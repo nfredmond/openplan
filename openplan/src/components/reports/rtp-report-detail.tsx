@@ -98,6 +98,10 @@ export function RtpReportDetail({
     latest_artifact_kind: string | null;
     generated_at: string | null;
     updated_at: string;
+    rtp_basis_stale: boolean;
+    rtp_basis_stale_reason: string | null;
+    rtp_basis_stale_run_id: string | null;
+    rtp_basis_stale_marked_at: string | null;
   };
   workspace: { id: string; name: string | null; slug: string | null } | null;
   cycle: {
@@ -457,6 +461,21 @@ export function RtpReportDetail({
           />
 
           <article id="packet-release-review" className="module-section-surface">
+            {report.rtp_basis_stale ? (
+              <div className="mb-4 rounded-[18px] border border-amber-400/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]">
+                  Basis stale
+                </p>
+                <p className="mt-1 font-semibold">
+                  {report.rtp_basis_stale_reason ?? "An upstream model run succeeded after this packet was last generated."}
+                </p>
+                <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/90">
+                  {report.rtp_basis_stale_marked_at
+                    ? `Marked stale on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Regenerate the packet to re-ground it on the new run.`
+                    : "Regenerate the packet to re-ground it on the new run."}
+                </p>
+              </div>
+            ) : null}
             <div className="module-section-header">
               <div className="module-section-heading">
                 <p className="module-section-label">Packet posture</p>

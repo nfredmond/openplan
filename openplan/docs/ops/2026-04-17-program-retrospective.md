@@ -125,6 +125,16 @@ them integrated.
 `rtp_basis_stale` banner in `/reports/[reportId]/page.tsx`). T16
 remains the only outstanding reader-dead case.
 
+**Update 2026-04-17 (correction):** the previous update was
+partially wrong. The stale-mark audit looked at `page.tsx` but missed
+that RTP-linked reports delegate to
+`src/components/reports/rtp-report-detail.tsx`, which had its own
+`#packet-release-review` article **without** the stale banner. So for
+every RTP packet (the common case), T4's writer was live but the
+reader was dead. See `2026-04-17-scenario-writeback-proof.md` for the
+live proof + fix that closed it. The "writer wired, reader dead"
+pattern is now 2-for-2 (T16 still open, T4-on-RTP closed).
+
 ### 2. TS type-drift is a leading indicator, not noise
 
 The 68-error tsc drift on 2026-04-17 looked like test hygiene. In

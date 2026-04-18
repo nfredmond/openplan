@@ -63,6 +63,10 @@ describe("RtpReportDetail", () => {
           latest_artifact_kind: "html",
           generated_at: null,
           updated_at: "2026-03-28T18:05:00.000Z",
+          rtp_basis_stale: false,
+          rtp_basis_stale_reason: null,
+          rtp_basis_stale_run_id: null,
+          rtp_basis_stale_marked_at: null,
         }}
         workspace={{ id: "workspace-1", name: "OpenPlan QA", slug: "openplan-qa" }}
         cycle={{
@@ -172,6 +176,10 @@ describe("RtpReportDetail", () => {
           latest_artifact_kind: "html",
           generated_at: "2026-03-28T18:00:00.000Z",
           updated_at: "2026-03-28T18:05:00.000Z",
+          rtp_basis_stale: false,
+          rtp_basis_stale_reason: null,
+          rtp_basis_stale_run_id: null,
+          rtp_basis_stale_marked_at: null,
         }}
         workspace={{ id: "workspace-1", name: "OpenPlan QA", slug: "openplan-qa" }}
         cycle={{
