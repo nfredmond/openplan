@@ -309,6 +309,13 @@ export default async function ModelsPage({
             <div className="module-operator-item">Keep related datasets, reports, and results connected in one place.</div>
             <div className="module-operator-item">Use filters to see which models are ready to review and which still need work.</div>
           </div>
+          <Link
+            href="/county-runs"
+            className="module-operator-inline-link mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-200 hover:text-emerald-100"
+          >
+            Stage a county-level onramp run
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </article>
       </header>
 

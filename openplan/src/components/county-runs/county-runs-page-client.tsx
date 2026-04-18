@@ -87,11 +87,14 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
             stay operational: launch a run, check stage truth, then open detail for artifacts, worker handoff, and caveats.
           </p>
         </div>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
+          <Link href="/models" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            Back to models
+          </Link>
         </div>
       </div>
 
