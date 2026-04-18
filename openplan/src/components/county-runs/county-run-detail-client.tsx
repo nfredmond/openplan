@@ -12,10 +12,12 @@ import {
 } from "@/lib/models/county-onramp";
 import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
+import { isValidatedNevadaCountyRun } from "@/lib/examples/nevada-county-2026-03-24";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { NevadaCountyValidatedEvidence } from "@/components/county-runs/nevada-county-validated-evidence";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
   const pathname = usePathname();
@@ -176,6 +178,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         tone="info"
         compact
       />
+
+      {isValidatedNevadaCountyRun(data.runName) ? <NevadaCountyValidatedEvidence /> : null}
 
       <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Card>
