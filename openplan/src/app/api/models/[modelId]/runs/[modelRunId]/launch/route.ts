@@ -3,6 +3,16 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import {
+  checkMonthlyRunQuota,
+  isQuotaExceeded,
+  isQuotaLookupError,
+} from "@/lib/billing/quota";
+import {
+  isWorkspaceSubscriptionActive,
+  resolveWorkspaceEntitlements,
+  subscriptionGateMessage,
+} from "@/lib/billing/subscription";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -36,6 +46,62 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     if (!access.membership || !access.allowed) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    const workspaceId = access.model.workspace_id;
+
+    const { data: workspaceBilling, error: billingError } = await supabase
+      .from("workspaces")
+      .select("plan, subscription_plan, subscription_status")
+      .eq("id", workspaceId)
+      .maybeSingle();
+
+    if (billingError) {
+      audit.error("workspace_billing_lookup_failed", {
+        workspaceId,
+        userId: user.id,
+        message: billingError.message,
+        code: billingError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
+    }
+
+    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
+      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
+      audit.warn("subscription_inactive", {
+        workspaceId,
+        userId: user.id,
+        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
+      });
+      return NextResponse.json({ error: gateMessage }, { status: 402 });
+    }
+
+    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
+    const quota = await checkMonthlyRunQuota(supabase, {
+      workspaceId,
+      plan,
+      tableName: "model_runs",
+    });
+
+    if (isQuotaLookupError(quota)) {
+      audit.error("run_limit_count_failed", {
+        workspaceId,
+        userId: user.id,
+        message: quota.message,
+        code: quota.code,
+      });
+      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+    }
+
+    if (isQuotaExceeded(quota)) {
+      audit.warn("run_limit_reached", {
+        workspaceId,
+        userId: user.id,
+        plan: quota.plan,
+        usedRuns: quota.usedRuns,
+        monthlyLimit: quota.monthlyLimit,
+      });
+      return NextResponse.json({ error: quota.message }, { status: 429 });
     }
 
     // Load the model run

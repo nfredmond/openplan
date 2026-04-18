@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { runLimitMessage } from "@/lib/billing/limits";
+import {
+  checkMonthlyRunQuota,
+  isQuotaExceeded,
+  isQuotaLookupError,
+} from "@/lib/billing/quota";
 import {
   isWorkspaceSubscriptionActive,
   resolveWorkspaceEntitlements,
@@ -244,43 +248,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: gateMessage }, { status: 402 });
     }
 
-    const { plan, entitlements } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-    const monthlyLimit = entitlements.monthlyRunLimit;
-    if (monthlyLimit !== null) {
-      const currentMonthStart = new Date();
-      currentMonthStart.setUTCDate(1);
-      currentMonthStart.setUTCHours(0, 0, 0, 0);
+    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
+    const quota = await checkMonthlyRunQuota(userSupabase, {
+      workspaceId,
+      plan,
+      tableName: "runs",
+    });
 
-      const { count: monthlyRuns, error: runCountError } = await userSupabase
-        .from("runs")
-        .select("id", { count: "exact", head: true })
-        .eq("workspace_id", workspaceId)
-        .gte("created_at", currentMonthStart.toISOString());
+    if (isQuotaLookupError(quota)) {
+      audit.error("run_limit_count_failed", {
+        workspaceId,
+        userId: user.id,
+        message: quota.message,
+        code: quota.code,
+      });
+      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+    }
 
-      if (runCountError) {
-        audit.error("run_limit_count_failed", {
-          workspaceId,
-          userId: user.id,
-          message: runCountError.message,
-          code: runCountError.code ?? null,
-        });
-
-        return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
-      }
-
-      const usedRuns = monthlyRuns ?? 0;
-      if (usedRuns >= monthlyLimit) {
-        const limitMessage = runLimitMessage(plan, usedRuns, monthlyLimit);
-        audit.warn("run_limit_reached", {
-          workspaceId,
-          userId: user.id,
-          plan,
-          usedRuns,
-          monthlyLimit,
-        });
-
-        return NextResponse.json({ error: limitMessage }, { status: 429 });
-      }
+    if (isQuotaExceeded(quota)) {
+      audit.warn("run_limit_reached", {
+        workspaceId,
+        userId: user.id,
+        plan: quota.plan,
+        usedRuns: quota.usedRuns,
+        monthlyLimit: quota.monthlyLimit,
+      });
+      return NextResponse.json({ error: quota.message }, { status: 429 });
     }
 
     runId = crypto.randomUUID();
