@@ -1,23 +1,9 @@
 import { redirect } from "next/navigation";
-import { ArrowRight, Compass, FolderKanban, Route as RouteIcon, ShieldCheck } from "lucide-react";
-import Link from "next/link";
-import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
-import { RtpRegistryPacketBulkGenerateActions } from "@/components/rtp/rtp-registry-packet-bulk-generate-actions";
-import { RtpRegistryPacketBulkRefreshActions } from "@/components/rtp/rtp-registry-packet-bulk-refresh-actions";
-import { RtpRegistryPacketBulkActions } from "@/components/rtp/rtp-registry-packet-bulk-actions";
-import { RtpRegistryPacketQueueCommandBoard } from "@/components/rtp/rtp-registry-packet-queue-command-board";
-import {
-  RtpRegistryNextActionShortcut,
-  type DominantActionKey,
-} from "@/components/rtp/rtp-registry-next-action-shortcut";
-import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { buildProjectFundingStackSummary, projectFundingReimbursementTone } from "@/lib/projects/funding";
+import { type DominantActionKey } from "@/components/rtp/rtp-registry-next-action-shortcut";
+import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import {
-  formatReportStatusLabel,
   getReportNavigationHref,
   getReportPacketFreshness,
   getReportPacketWorkStatus,
@@ -29,11 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
-  formatRtpDate,
   formatRtpDateTime,
-  formatRtpCycleStatusLabel,
-  rtpCycleStatusTone,
-  RTP_CYCLE_STATUS_OPTIONS,
 } from "@/lib/rtp/catalog";
 import {
   PACKET_FRESHNESS_DETAIL,
@@ -44,6 +26,11 @@ import {
 import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
+import { RtpRegistryOverview } from "./_components/rtp-registry-overview";
+import { RtpCycleRegistryTable } from "./_components/rtp-cycle-registry-table";
+import { RtpRegistryAdvisoryPanel } from "./_components/rtp-registry-advisory-panel";
+import { RtpQueueOperationsBoard } from "./_components/rtp-queue-operations-board";
+import { buildRtpRegistryHref, formatUsdWholeAmount } from "./_components/_helpers";
 
 type RtpPageSearchParams = Promise<{
   status?: string;
@@ -143,9 +130,11 @@ type ProjectReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
-type PacketAttentionFilter = "all" | "generate" | "refresh" | "missing" | "reset" | "current";
-type QueueActionFilter = "all" | "create_record" | "reset_layout" | "generate_first_artifact" | "refresh_artifact";
-type QueueTraceStateFilter = "all" | "outpaced" | "aligned" | "unrecorded";
+import type {
+  PacketAttentionFilter,
+  QueueActionFilter,
+  QueueTraceStateFilter,
+} from "./_components/_types";
 
 const RECENT_QUEUE_ACTION_WINDOW_MS = 1000 * 60 * 60 * 24;
 
@@ -164,33 +153,6 @@ function normalizePacketAttentionFilter(value: string | null | undefined): Packe
     default:
       return "all";
   }
-}
-
-function buildRtpRegistryHref(filters: {
-  status?: string | null;
-  packet?: PacketAttentionFilter | null;
-  recent?: boolean | null;
-  queueAction?: QueueActionFilter | null;
-  queueTraceState?: QueueTraceStateFilter | null;
-}) {
-  const params = new URLSearchParams();
-  if (filters.status) {
-    params.set("status", filters.status);
-  }
-  if (filters.packet && filters.packet !== "all") {
-    params.set("packet", filters.packet);
-  }
-  if (filters.recent) {
-    params.set("recent", "1");
-  }
-  if (filters.queueAction && filters.queueAction !== "all") {
-    params.set("queueAction", filters.queueAction);
-  }
-  if (filters.queueTraceState && filters.queueTraceState !== "all") {
-    params.set("queueTraceState", filters.queueTraceState);
-  }
-  const query = params.toString();
-  return query ? `/rtp?${query}` : "/rtp";
 }
 
 function normalizeRecentQueueFilter(value: string | null | undefined) {
@@ -267,14 +229,6 @@ function matchesPacketAttentionFilter(filter: PacketAttentionFilter, packetAtten
     return true;
   }
   return filter === packetAttention;
-}
-
-function formatUsdWholeAmount(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function buildPacketFundingReview(input: {
@@ -1179,1233 +1133,106 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
   return (
     <section className="module-page">
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <RouteIcon className="h-3.5 w-3.5" />
-            RTP cycle foundation live
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">RTP Cycles</h1>
-            <p className="module-intro-description">
-              Register each RTP update as one parent control object so portfolio, chapter, engagement, and funding work can hang off a shared spine.
-            </p>
-          </div>
-
-          <div className="module-summary-grid cols-6">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Cycles</p>
-              <p className="module-summary-value">{typedCycles.length}</p>
-              <p className="module-summary-detail">RTP update cycles tracked in the current workspace.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Draft / review</p>
-              <p className="module-summary-value">{draftCount + publicReviewCount}</p>
-              <p className="module-summary-detail">{publicReviewCount} currently marked in public review posture.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Adopted</p>
-              <p className="module-summary-value">{adoptedCount}</p>
-              <p className="module-summary-detail">Cycles already marked as adopted.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Foundation ready</p>
-              <p className="module-summary-value">{readyFoundationCount}</p>
-              <p className="module-summary-detail">Cycles with core metadata in place for portfolio build-out.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Linked projects</p>
-              <p className="module-summary-value">{linkedProjectCount}</p>
-              <p className="module-summary-detail">Project-to-cycle portfolio links now visible across the registry.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Portfolio funding</p>
-              <p className="module-summary-value">{fundedProjectCount}/{linkedProjectCount}</p>
-              <p className="module-summary-detail">
-                {likelyCoveredProjectCount} more look coverable from pursued funding, {unfundedProjectCount} still carry a gap, and linked award invoices show {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(paidReimbursementTotal)} paid, {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(outstandingReimbursementTotal)} outstanding, and {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(uninvoicedAwardTotal)} not yet invoiced.
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Regional planning control room</p>
-              <h2 className="module-operator-title">Make the RTP update a first-class operating object</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            This is the foundation for project portfolio, chapter narrative, public review, and financial traceability. Keep one cycle per update instead of scattering state across plans and engagement records.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">One cycle can later anchor project, chapter, and funding linkage.</div>
-            <div className="module-operator-item">Public review dates stay explicit instead of buried in a memo or draft PDF.</div>
-            <div className="module-operator-item">The next implementation slice will attach portfolio and chapter records to this parent.</div>
-          </div>
-        </article>
-      </header>
+      <RtpRegistryOverview
+        cycleCount={typedCycles.length}
+        draftCount={draftCount}
+        publicReviewCount={publicReviewCount}
+        adoptedCount={adoptedCount}
+        readyFoundationCount={readyFoundationCount}
+        linkedProjectCount={linkedProjectCount}
+        fundedProjectCount={fundedProjectCount}
+        likelyCoveredProjectCount={likelyCoveredProjectCount}
+        unfundedProjectCount={unfundedProjectCount}
+        paidReimbursementTotal={paidReimbursementTotal}
+        outstandingReimbursementTotal={outstandingReimbursementTotal}
+        uninvoicedAwardTotal={uninvoicedAwardTotal}
+      />
 
       <div className="module-grid-layout mt-6 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.9fr)]">
-        <section className="space-y-4">
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Registry</p>
-                <h2 className="module-section-title">Tracked RTP cycles</h2>
-                <p className="module-section-description">
-                  Keep the update cadence, public-review posture, and linked packet recommendation posture visible from the same registry.
-                </p>
-              </div>
-              <div className="space-y-3 text-right">
-                <div>
-                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Cycle status</p>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {RTP_CYCLE_STATUS_OPTIONS.map((option) => {
-                      const active = filters.status === option.value;
-                      return (
-                        <Link
-                          key={option.value}
-                          href={buildRtpRegistryHref({
-                            status: active ? null : option.value,
-                            packet: selectedPacketFilter,
-                            recent: recentOnly,
-                            queueAction: selectedQueueActionFilter,
-                            queueTraceState: selectedQueueTraceStateFilter,
-                          })}
-                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                        >
-                          {option.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet attention</p>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {[
-                      { value: "all" as const, label: "All", count: allCycles.length },
-                      { value: "reset" as const, label: PACKET_POSTURE_LABELS.NEEDS_RESET, count: packetAttentionCounts.reset },
-                      { value: "missing" as const, label: "Missing", count: packetAttentionCounts.missing },
-                      { value: "generate" as const, label: "Generate first", count: packetAttentionCounts.generate },
-                      { value: "refresh" as const, label: "Refresh", count: packetAttentionCounts.refresh },
-                      { value: "current" as const, label: "Current", count: packetAttentionCounts.current },
-                    ].map((option) => {
-                      const active = selectedPacketFilter === option.value;
-                      return (
-                        <Link
-                          key={option.value}
-                          href={buildRtpRegistryHref({
-                            status: filters.status ?? null,
-                            packet: active ? "all" : option.value,
-                            recent: recentOnly,
-                            queueAction: selectedQueueActionFilter,
-                            queueTraceState: selectedQueueTraceStateFilter,
-                          })}
-                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                        >
-                          {option.label} · {option.count}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent queue work</p>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Link
-                      href={buildRtpRegistryHref({
-                        status: filters.status ?? null,
-                        packet: selectedPacketFilter,
-                        recent: false,
-                        queueAction: selectedQueueActionFilter,
-                        queueTraceState: selectedQueueTraceStateFilter,
-                      })}
-                      className={!recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                    >
-                      All queue history
-                    </Link>
-                    <Link
-                      href={buildRtpRegistryHref({
-                        status: filters.status ?? null,
-                        packet: selectedPacketFilter,
-                        recent: true,
-                        queueAction: selectedQueueActionFilter,
-                        queueTraceState: selectedQueueTraceStateFilter,
-                      })}
-                      className={recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                    >
-                      Recent only · {allCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length}
-                    </Link>
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last queue action</p>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {[
-                      { value: "all" as const, label: "All actions", count: queueActionScopedCycles.length },
-                      { value: "create_record" as const, label: "Record created", count: queueActionCounts.createRecord },
-                      { value: "reset_layout" as const, label: "Preset reset", count: queueActionCounts.resetLayout },
-                      {
-                        value: "generate_first_artifact" as const,
-                        label: "First artifact",
-                        count: queueActionCounts.generateFirstArtifact,
-                      },
-                      { value: "refresh_artifact" as const, label: "Refresh", count: queueActionCounts.refreshArtifact },
-                    ].map((option) => {
-                      const active = selectedQueueActionFilter === option.value;
-                      return (
-                        <Link
-                          key={option.value}
-                          href={buildRtpRegistryHref({
-                            status: filters.status ?? null,
-                            packet: selectedPacketFilter,
-                            recent: recentOnly,
-                            queueAction: active ? "all" : option.value,
-                            queueTraceState: selectedQueueTraceStateFilter,
-                          })}
-                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                        >
-                          {option.label} · {option.count}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Queue trace freshness</p>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {[
-                      { value: "all" as const, label: "All trace states", count: queueTraceStateScopedCycles.length },
-                      { value: "outpaced" as const, label: "Outpaced", count: queueTraceStateCounts.outpaced },
-                      { value: "aligned" as const, label: "Aligned", count: queueTraceStateCounts.aligned },
-                      { value: "unrecorded" as const, label: "Unrecorded", count: queueTraceStateCounts.unrecorded },
-                    ].map((option) => {
-                      const active = selectedQueueTraceStateFilter === option.value;
-                      return (
-                        <Link
-                          key={option.value}
-                          href={buildRtpRegistryHref({
-                            status: filters.status ?? null,
-                            packet: selectedPacketFilter,
-                            recent: recentOnly,
-                            queueAction: selectedQueueActionFilter,
-                            queueTraceState: active ? "all" : option.value,
-                          })}
-                          className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
-                        >
-                          {option.label} · {option.count}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-8">
-              <div className="module-metric-card">
-                <p className="module-metric-label">Needs reset</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Stale packet plus phase-preset divergence.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Missing packet</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.missing}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Cycle still lacks a linked RTP board packet record.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Generate first</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.generate}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Packet record exists, but the first artifact has not been generated yet.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Refresh</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.refresh}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Packet artifact exists, but source cycle changed after generation.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Packet current</p>
-                <p className="module-metric-value text-sm">{packetAttentionCounts.current}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Packet is current with the cycle, whether preset-aligned or intentionally customized.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Funding review</p>
-                <p className="module-metric-value text-sm">{currentFundingReviewCount}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Current packets whose linked-project funding posture still needs release-review attention.
-                </p>
-                {currentFundingReviewCount > 0 ? (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {currentFundingGapReviewCount} gap{currentFundingGapReviewCount === 1 ? "" : "s"}, {currentReimbursementFollowThroughCount} reimbursement follow-through cue{currentReimbursementFollowThroughCount === 1 ? "" : "s"}.
-                  </p>
-                ) : null}
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Trace outpaced</p>
-                <p className="module-metric-value text-sm">{queueTraceStateCounts.outpaced}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Queue evidence exists, but the cycle has changed since it was recorded.</p>
-                {queueTraceStateCounts.outpaced > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: selectedPacketFilter,
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "outpaced",
-                    })}
-                    className="module-inline-action mt-3 w-fit"
-                  >
-                    Focus outpaced
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Trace gaps</p>
-                <p className="module-metric-value text-sm">{queueTraceStateCounts.unrecorded}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Cycles still missing durable queue-action coverage.</p>
-                {queueTraceStateCounts.unrecorded > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: selectedPacketFilter,
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "unrecorded",
-                    })}
-                    className="module-inline-action mt-3 w-fit"
-                  >
-                    Focus trace gaps
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              Showing {typedCycles.length} cycle{typedCycles.length === 1 ? "" : "s"}
-              {filters.status ? ` in ${formatRtpCycleStatusLabel(filters.status).toLowerCase()} posture` : " across all cycle phases"}
-              {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}
-              {recentOnly ? " limited to recent queue activity" : ""}
-              {selectedQueueActionFilter !== "all"
-                ? ` filtered to ${selectedQueueActionFilter.replaceAll("_", " ")}`
-                : ""}
-              {selectedQueueTraceStateFilter !== "all"
-                ? ` with trace freshness ${selectedQueueTraceStateFilter}`
-                : ""}
-              .
-            </p>
-
-            {typedCycles.length === 0 ? (
-              <EmptyState
-                title={allCycles.length > 0 ? "No cycles match the current filter" : "No RTP cycles yet"}
-                description={
-                  allCycles.length > 0
-                    ? "Try a different status, packet-attention, recent-work, queue-action, or trace-freshness filter to resume triage across the RTP registry."
-                    : "Create the first RTP cycle so the regional plan update has one shared parent object instead of fragmented records."
-                }
-              />
-            ) : (
-              <div className="space-y-3">
-                {typedCycles.map((cycle) => (
-                  <article key={cycle.id} className="module-row-card gap-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Link href={`/rtp/${cycle.id}`} className="text-base font-semibold tracking-tight transition hover:text-foreground/80">
-                            {cycle.title}
-                          </Link>
-                          <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
-                          <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {cycle.summary?.trim() || "No cycle summary yet. Add the planning scope, board/adoption posture, and intended review frame."}
-                        </p>
-                      </div>
-                      <div className="text-right text-xs text-muted-foreground">
-                        <div>Updated {formatRtpDateTime(cycle.updated_at)}</div>
-                        <div>Created {formatRtpDateTime(cycle.created_at)}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Geography</p>
-                        <p className="module-metric-value text-sm">{cycle.geography_label?.trim() || "Not set"}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Horizon</p>
-                        <p className="module-metric-value text-sm">
-                          {typeof cycle.horizon_start_year === "number" && typeof cycle.horizon_end_year === "number"
-                            ? `${cycle.horizon_start_year}–${cycle.horizon_end_year}`
-                            : "Not set"}
-                        </p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Adoption target</p>
-                        <p className="module-metric-value text-sm">{formatRtpDate(cycle.adoption_target_date)}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Public review</p>
-                        <p className="module-metric-value text-sm">
-                          {cycle.public_review_open_at && cycle.public_review_close_at
-                            ? `${formatRtpDate(cycle.public_review_open_at)} → ${formatRtpDate(cycle.public_review_close_at)}`
-                            : "Not set"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Linked projects</p>
-                        <p className="module-metric-value text-sm">{cycle.linkedProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Constrained</p>
-                        <p className="module-metric-value text-sm">{cycle.constrainedProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Illustrative</p>
-                        <p className="module-metric-value text-sm">{cycle.illustrativeProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Funded</p>
-                        <p className="module-metric-value text-sm">{cycle.fundedProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Likely</p>
-                        <p className="module-metric-value text-sm">{cycle.likelyCoveredProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Unfunded</p>
-                        <p className="module-metric-value text-sm">{cycle.unfundedProjectCount}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Paid reimbursements</p>
-                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.paidReimbursementAmount)}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Outstanding requests</p>
-                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.outstandingReimbursementAmount)}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Uninvoiced awards</p>
-                        <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(cycle.uninvoicedAwardAmount)}</p>
-                      </div>
-                    </div>
-
-                    {cycle.comparisonBackedProjectCount > 0 ? (
-                      <div className="module-note text-sm">
-                        <p className="font-medium text-foreground">Project modeling support</p>
-                        <p className="mt-1">
-                          {cycle.comparisonBackedProjectCount} linked project{cycle.comparisonBackedProjectCount === 1 ? "" : "s"} {cycle.comparisonBackedProjectCount === 1 ? "carries" : "carry"} comparison-backed planning support.
-                          {cycle.staleModelingProjectCount > 0
-                            ? ` ${cycle.staleModelingProjectCount} should refresh evidence packets before leaning on them for RTP prioritization language.`
-                            : " Evidence packets appear current."}
-                          {" "}Treat it as planning support only, not a substitute for board deliberation.
-                        </p>
-                      </div>
-                    ) : null}
-
-                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                            Reimbursement traceability
-                          </p>
-                          <p className="mt-2 text-sm font-medium">
-                            {cycle.reimbursementInFlightCount > 0
-                              ? `${cycle.reimbursementInFlightCount} linked project${cycle.reimbursementInFlightCount === 1 ? "" : "s"} currently have reimbursement requests in flight.`
-                              : "No linked project reimbursement requests are currently in flight."}
-                          </p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            Award-linked invoices now show how much of each RTP cycle’s committed funding has already been paid, is still awaiting payment, or has not yet been invoiced.
-                          </p>
-                        </div>
-                        <StatusBadge tone={projectFundingReimbursementTone(cycle.reimbursementInFlightCount > 0 ? "in_review" : "not_started")}>
-                          {cycle.reimbursementInFlightCount > 0 ? "Requests in flight" : "No requests in flight"}
-                        </StatusBadge>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Linked packet</p>
-                        <p className="module-metric-value text-sm">{cycle.packetReport?.title ?? "Not created"}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {cycle.packetReport
-                            ? `${formatReportStatusLabel(cycle.packetReport.status)} record updated ${formatRtpDateTime(cycle.packetReport.updated_at)}.`
-                            : "Create the first RTP board packet record to keep report posture visible from the registry."}
-                        </p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Packet freshness</p>
-                        <div className="mt-1">
-                          <StatusBadge tone={cycle.packetFreshness.tone}>{cycle.packetFreshness.label}</StatusBadge>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetFreshness.detail}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Packet preset</p>
-                        <div className="mt-1">
-                          <StatusBadge tone={cycle.packetPresetPosture.tone}>{cycle.packetPresetPosture.label}</StatusBadge>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetPresetPosture.detail}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Packet activity</p>
-                        <div className="mt-1">
-                          <StatusBadge tone={cycle.packetActivityTrace.tone}>{cycle.packetActivityTrace.label}</StatusBadge>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetActivityTrace.detail}</p>
-                      </div>
-                      <div className="module-metric-card">
-                        <p className="module-metric-label">Funding review</p>
-                        <div className="mt-1">
-                          <StatusBadge tone={cycle.packetFundingReview.tone}>{cycle.packetFundingReview.label}</StatusBadge>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">{cycle.packetFundingReview.detail}</p>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                            Operator status
-                          </p>
-                          <p className="mt-2 text-sm font-medium">{cycle.packetOperatorStatus.label}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{cycle.packetOperatorStatus.detail}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 text-right">
-                          <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
-                          <p className="text-xs text-muted-foreground">
-                            {cycle.packetReport?.generated_at
-                              ? `Last generated ${formatRtpDateTime(cycle.packetReport.generated_at)}`
-                              : cycle.packetReport
-                                ? "No generated artifact yet"
-                                : "No packet record yet"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          Last queue action
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium">{cycle.packetQueueTrace.label}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">{cycle.packetQueueTrace.detail}</p>
-                            {cycle.packetQueueTrace.actedAt ? (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                Recorded {formatRtpDateTime(cycle.packetQueueTrace.actedAt)}
-                              </p>
-                            ) : null}
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <StatusBadge tone={cycle.packetQueueTrace.tone}>{cycle.packetQueueTrace.label}</StatusBadge>
-                            {cycle.packetQueueTrace.isRecent ? <StatusBadge tone="info">Recent</StatusBadge> : null}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
-                          <div>
-                            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                              Queue trace freshness
-                            </p>
-                            <p className="mt-2 text-sm font-medium">{cycle.packetQueueTraceState.label}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">{cycle.packetQueueTraceState.detail}</p>
-                          </div>
-                          <StatusBadge tone={cycle.packetQueueTraceState.tone}>{cycle.packetQueueTraceState.label}</StatusBadge>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-                      <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          Workflow posture
-                        </p>
-                        <p className="mt-2 text-sm font-medium">{cycle.workflow.label}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{cycle.workflow.detail}</p>
-                      </div>
-
-                      <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          Next actions
-                        </p>
-                        <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                          {cycle.workflow.actionItems.length > 0 ? (
-                            cycle.workflow.actionItems.map((item) => <li key={item}>• {item}</li>)
-                          ) : (
-                            <li>• Keep the cycle linked to downstream portfolio and board outputs.</li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
-                        Open RTP cycle shell
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                      {cycle.packetReport ? (
-                        <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
-                          Open linked packet
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      ) : null}
-                      {cycle.grantsFollowThrough ? (
-                        <Link href={cycle.grantsFollowThrough.href} className="module-inline-action w-fit">
-                          {cycle.grantsFollowThrough.actionLabel}
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      ) : null}
-                      <RtpRegistryPacketRowAction
-                        cycleId={cycle.id}
-                        reportId={cycle.packetReport?.id ?? null}
-                        packetAttention={cycle.packetAttention}
-                        needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
-                      />
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </article>
-        </section>
+        <RtpCycleRegistryTable
+          typedCycles={typedCycles}
+          allCyclesCount={allCycles.length}
+          recentQueueCyclesCount={allCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length}
+          filtersStatus={filters.status ?? null}
+          selectedPacketFilter={selectedPacketFilter}
+          recentOnly={recentOnly}
+          selectedQueueActionFilter={selectedQueueActionFilter}
+          selectedQueueTraceStateFilter={selectedQueueTraceStateFilter}
+          packetAttentionCounts={packetAttentionCounts}
+          queueActionScopedCyclesCount={queueActionScopedCycles.length}
+          queueActionCounts={queueActionCounts}
+          queueTraceStateScopedCyclesCount={queueTraceStateScopedCycles.length}
+          queueTraceStateCounts={queueTraceStateCounts}
+          currentFundingReviewCount={currentFundingReviewCount}
+          currentFundingGapReviewCount={currentFundingGapReviewCount}
+          currentReimbursementFollowThroughCount={currentReimbursementFollowThroughCount}
+        />
 
         <aside className="space-y-4">
-          {typedCycles.length > 0 ? (
-            <article className="rounded-[0.75rem] border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Recommended next queue action
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-                    {dominantCurrentViewActionSelection.count}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {dominantCurrentViewActionSelection.count > 0
-                      ? `${dominantCurrentViewActionSelection.label} is the largest actionable lane in the current filtered view.`
-                      : "The current filtered view has no immediate queue actions beyond passive monitoring."}
-                  </p>
-                </div>
-                <StatusBadge tone={dominantCurrentViewActionSelection.count > 0 ? "info" : "success"}>
-                  {dominantCurrentViewActionSelection.count > 0 ? dominantCurrentViewActionSelection.label : "Queue clear"}
-                </StatusBadge>
-              </div>
+          <RtpRegistryAdvisoryPanel
+            typedCyclesLength={typedCycles.length}
+            dominantCurrentViewActionSelection={dominantCurrentViewActionSelection}
+            rankedCurrentViewActions={rankedCurrentViewActions}
+            actionHrefByKey={actionHrefByKey}
+            totalActionableCurrentViewCount={totalActionableCurrentViewCount}
+            dominantActionImpactPercent={dominantActionImpactPercent}
+            remainingActionableAfterDominantCount={remainingActionableAfterDominantCount}
+            runnerUpCurrentViewActionSelection={runnerUpCurrentViewActionSelection}
+            runnerUpActionHref={runnerUpActionHref}
+            dominantActionHref={dominantActionHref}
+            dominantActionCycleIds={dominantActionCycleIds}
+            dominantActionReportIds={dominantActionReportIds}
+            dominantActionCycles={dominantActionCycles}
+            dominantTraceFollowUpCounts={dominantTraceFollowUpCounts}
+            currentViewActionCounts={currentViewActionCounts}
+            unrecordedQueueCycles={unrecordedQueueCycles}
+            unrecordedQueueMix={unrecordedQueueMix}
+            outpacedQueueCycles={outpacedQueueCycles}
+            outpacedQueueMix={outpacedQueueMix}
+            recentQueueActivityCount={recentQueueActivityCount}
+            recentQueueActionBreakdown={recentQueueActionBreakdown}
+            outpacedQueueTraceCount={outpacedQueueTraceCount}
+            latestQueueActionAt={latestQueueActionAt}
+            filtersStatus={filters.status ?? null}
+            selectedPacketFilter={selectedPacketFilter}
+            recentOnly={recentOnly}
+            selectedQueueActionFilter={selectedQueueActionFilter}
+            selectedQueueTraceStateFilter={selectedQueueTraceStateFilter}
+          />
 
-              <div className="mt-4 space-y-2">
-                {rankedCurrentViewActions.length > 0 ? (
-                  rankedCurrentViewActions.map((action, index) => (
-                    <Link
-                      key={action.key}
-                      href={actionHrefByKey[action.key]}
-                      className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{action.label}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {index === 0 ? "Primary queue lane" : index === 1 ? "Next queue lane" : `Priority ${index + 1}`}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge tone={index === 0 ? "info" : "neutral"}>
-                          {index === 0 ? "Now" : index === 1 ? "Next" : `#${index + 1}`}
-                        </StatusBadge>
-                        <span className="text-sm font-semibold tracking-tight text-foreground">{action.count}</span>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-                    No queue buckets are currently actionable in this filtered view.
-                  </div>
-                )}
-              </div>
-
-              {dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Actionable now</p>
-                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{totalActionableCurrentViewCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">All queueable cycles in the current filtered view.</p>
-                  </div>
-                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Dominant share</p>
-                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{dominantActionImpactPercent}%</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Queue load removed if this first lane is cleared.</p>
-                  </div>
-                  <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Remaining after first pass</p>
-                    <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{remainingActionableAfterDominantCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Cycles still needing follow-up after the dominant lane.</p>
-                  </div>
-                </div>
-              ) : null}
-
-              {runnerUpCurrentViewActionSelection ? (
-                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Next after this lane
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">{runnerUpCurrentViewActionSelection.label}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {runnerUpCurrentViewActionSelection.count} cycle{runnerUpCurrentViewActionSelection.count === 1 ? "" : "s"} remain in the next-largest queue bucket.
-                      </p>
-                    </div>
-                    <StatusBadge tone="neutral">Second priority</StatusBadge>
-                  </div>
-                  {runnerUpActionHref ? (
-                    <div className="mt-3">
-                      <Link href={runnerUpActionHref} className="module-inline-action w-fit">
-                        Queue up the next lane
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <Link href={dominantActionHref} className="module-inline-action w-fit">
-                    Review {dominantCurrentViewActionSelection.count} cycle{dominantCurrentViewActionSelection.count === 1 ? "" : "s"} in this lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <RtpRegistryNextActionShortcut
-                    actionKey={dominantCurrentViewActionSelection.key}
-                    cycleIds={dominantActionCycleIds}
-                    reportIds={dominantActionReportIds}
-                  />
-                </div>
-              ) : null}
-
-              {dominantCurrentViewActionSelection.key === "traceFollowUp" && dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Trace follow-up mix
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Focus the current trace lane by separating cycles whose queue trace was overtaken by source changes from cycles that still have no durable trace record.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {dominantTraceFollowUpCounts.outpaced > 0 ? (
-                      <Link
-                        href={buildRtpRegistryHref({
-                          status: filters.status ?? null,
-                          packet: "current",
-                          recent: recentOnly,
-                          queueAction: selectedQueueActionFilter,
-                          queueTraceState: "outpaced",
-                        })}
-                        className="module-inline-action"
-                      >
-                        Review {dominantTraceFollowUpCounts.outpaced} outpaced trace{dominantTraceFollowUpCounts.outpaced === 1 ? "" : "s"}
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    ) : null}
-                    {dominantTraceFollowUpCounts.unrecorded > 0 ? (
-                      <Link
-                        href={buildRtpRegistryHref({
-                          status: filters.status ?? null,
-                          packet: "current",
-                          recent: recentOnly,
-                          queueAction: selectedQueueActionFilter,
-                          queueTraceState: "unrecorded",
-                        })}
-                        className="module-inline-action"
-                      >
-                        Review {dominantTraceFollowUpCounts.unrecorded} trace gap{dominantTraceFollowUpCounts.unrecorded === 1 ? "" : "s"}
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-
-              {dominantCurrentViewActionSelection.count > 0 ? (
-                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Top affected cycles
-                  </p>
-                  <div className="mt-3 space-y-2">
-                    {dominantActionCycles.slice(0, 3).map((cycle) => (
-                      <div key={cycle.id} className="rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
-                              {cycle.title}
-                            </Link>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {cycle.packetAttention === "missing"
-                                ? "No packet record yet."
-                                : cycle.packetAttention === "reset"
-                                  ? "Packet preset drift requires reset and regeneration."
-                                  : cycle.packetAttention === "generate"
-                                    ? "Packet record exists but first artifact is still missing."
-                                    : cycle.packetAttention === "refresh"
-                                      ? "Artifact is behind current cycle state."
-                                      : "Queue trace needs follow-up against current state."}
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <StatusBadge tone={cycle.packetFreshness.tone}>{cycle.packetFreshness.label}</StatusBadge>
-                              <StatusBadge tone={cycle.packetQueueTraceState.tone}>{cycle.packetQueueTraceState.label}</StatusBadge>
-                              <StatusBadge tone={cycle.packetFundingReview.tone}>{cycle.packetFundingReview.label}</StatusBadge>
-                            </div>
-                          </div>
-                          <StatusBadge tone={cycle.packetOperatorStatus.tone}>{cycle.packetOperatorStatus.label}</StatusBadge>
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-3">
-                          <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
-                            Open cycle
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                          {cycle.packetReport ? (
-                            <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
-                              Open packet
-                              <ArrowRight className="h-4 w-4" />
-                            </Link>
-                          ) : null}
-                          <RtpRegistryPacketRowAction
-                            cycleId={cycle.id}
-                            reportId={cycle.packetReport?.id ?? null}
-                            packetAttention={cycle.packetAttention}
-                            needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                {currentViewActionCounts.createPacket > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "missing",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: selectedQueueTraceStateFilter,
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open missing lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {currentViewActionCounts.resetAndRegenerate > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "reset",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: selectedQueueTraceStateFilter,
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open reset lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {currentViewActionCounts.generateFirstArtifact > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "generate",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: selectedQueueTraceStateFilter,
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open first-artifact lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {currentViewActionCounts.refreshArtifact > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "refresh",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: selectedQueueTraceStateFilter,
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open refresh lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {currentViewActionCounts.releaseReview > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "current",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "aligned",
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open release-review lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {currentViewActionCounts.traceFollowUp > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "current",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState:
-                        selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
-                    })}
-                    className="module-inline-action"
-                  >
-                    Open trace follow-up
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-              </div>
-            </article>
-          ) : null}
-
-          {unrecordedQueueCycles.length > 0 ? (
-            <article className="rounded-[0.75rem] border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Unrecorded queue traces
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{unrecordedQueueCycles.length}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    These cycles do not yet have a durable queue-action timestamp, so there is no persisted operator trace to compare against source changes.
-                  </p>
-                </div>
-                <StatusBadge tone="neutral">Trace gap</StatusBadge>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <div className="rounded-[0.5rem] border border-slate-500/20 bg-background/90 px-3 py-3">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Coverage mix
-                  </p>
-                  <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                    <li>• Missing packet lane: {unrecordedQueueMix.missing}</li>
-                    <li>• First artifact lane: {unrecordedQueueMix.generate}</li>
-                    <li>• Refresh lane: {unrecordedQueueMix.refresh}</li>
-                    <li>• Current-without-trace: {unrecordedQueueMix.current}</li>
-                  </ul>
-                </div>
-
-                {unrecordedQueueCycles.slice(0, 5).map((cycle) => (
-                  <div key={cycle.id} className="rounded-[0.5rem] border border-slate-500/20 bg-background/90 px-3 py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
-                          {cycle.title}
-                        </Link>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {cycle.packetReport
-                            ? "Packet record exists, but no durable queue-action trace has been recorded yet."
-                            : "No packet record exists yet, so trace coverage has not started."}
-                        </p>
-                      </div>
-                      <StatusBadge tone={cycle.packetAttention === "missing" ? "warning" : cycle.packetAttention === "generate" ? "info" : "neutral"}>
-                        {cycle.packetAttention === "missing"
-                          ? "Missing lane"
-                          : cycle.packetAttention === "generate"
-                            ? "Generate lane"
-                            : "Trace gap"}
-                      </StatusBadge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href={buildRtpRegistryHref({
-                    status: filters.status ?? null,
-                    packet: selectedPacketFilter,
-                    recent: recentOnly,
-                    queueAction: selectedQueueActionFilter,
-                    queueTraceState: "unrecorded",
-                  })}
-                  className="module-inline-action"
-                >
-                  Filter to unrecorded traces
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                {unrecordedQueueMix.missing > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "missing",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "unrecorded",
-                    })}
-                    className="module-inline-action"
-                  >
-                    Review missing lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {unrecordedQueueMix.generate > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "generate",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "unrecorded",
-                    })}
-                    className="module-inline-action"
-                  >
-                    Review first-artifact lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-              </div>
-            </article>
-          ) : null}
-
-          {outpacedQueueCycles.length > 0 ? (
-            <article className="rounded-[0.75rem] border border-amber-500/25 bg-amber-500/[0.06] p-5 shadow-[0_20px_60px_-48px_rgba(180,83,9,0.35)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Outpaced queue traces
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{outpacedQueueCycles.length}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    These cycles changed after their last recorded queue action, so the saved trace is no longer the newest truth by itself.
-                  </p>
-                </div>
-                <StatusBadge tone="warning">Needs review</StatusBadge>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <div className="rounded-[0.5rem] border border-amber-500/20 bg-background/90 px-3 py-3">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Cleanup mix
-                  </p>
-                  <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                    <li>• Reset lane: {outpacedQueueMix.reset}</li>
-                    <li>• Refresh lane: {outpacedQueueMix.refresh}</li>
-                    <li>• First artifact lane: {outpacedQueueMix.generate}</li>
-                    <li>• Current-but-overtaken: {outpacedQueueMix.current}</li>
-                  </ul>
-                </div>
-
-                {outpacedQueueCycles.slice(0, 5).map((cycle) => (
-                  <div key={cycle.id} className="rounded-[0.5rem] border border-amber-500/20 bg-background/90 px-3 py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <Link href={`/rtp/${cycle.id}`} className="text-sm font-medium tracking-tight transition hover:text-foreground/80">
-                          {cycle.title}
-                        </Link>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {cycle.packetQueueTrace.label} recorded {cycle.packetQueueTrace.actedAt ? formatRtpDateTime(cycle.packetQueueTrace.actedAt) : "previously"}.
-                        </p>
-                      </div>
-                      <StatusBadge tone={cycle.packetAttention === "reset" ? "warning" : cycle.packetAttention === "refresh" ? "info" : "neutral"}>
-                        {cycle.packetAttention === "reset"
-                          ? "Reset lane"
-                          : cycle.packetAttention === "refresh"
-                            ? "Refresh lane"
-                            : "Review"}
-                      </StatusBadge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href={buildRtpRegistryHref({
-                    status: filters.status ?? null,
-                    packet: selectedPacketFilter,
-                    recent: recentOnly,
-                    queueAction: selectedQueueActionFilter,
-                    queueTraceState: "outpaced",
-                  })}
-                  className="module-inline-action"
-                >
-                  Filter to outpaced traces
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                {outpacedQueueMix.reset > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "reset",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "outpaced",
-                    })}
-                    className="module-inline-action"
-                  >
-                    Review reset lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-                {outpacedQueueMix.refresh > 0 ? (
-                  <Link
-                    href={buildRtpRegistryHref({
-                      status: filters.status ?? null,
-                      packet: "refresh",
-                      recent: recentOnly,
-                      queueAction: selectedQueueActionFilter,
-                      queueTraceState: "outpaced",
-                    })}
-                    className="module-inline-action"
-                  >
-                    Review refresh lane
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : null}
-              </div>
-            </article>
-          ) : null}
-
-          {recentQueueActivityCount > 0 ? (
-            <article className="rounded-[0.75rem] border border-border/70 bg-background/95 p-5 shadow-[0_20px_60px_-48px_rgba(15,23,42,0.45)]">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Recent queue activity
-              </p>
-              <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{recentQueueActivityCount}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                RTP cycles recorded queue work in the last 24 hours and are now sorted to the top of their current attention lane.
-              </p>
-              <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-                <li>• Record creation: {recentQueueActionBreakdown.createRecord}</li>
-                <li>• Preset resets: {recentQueueActionBreakdown.resetLayout}</li>
-                <li>• First artifacts: {recentQueueActionBreakdown.generateFirstArtifact}</li>
-                <li>• Refreshes: {recentQueueActionBreakdown.refreshArtifact}</li>
-                <li>• Outpaced by newer source edits: {outpacedQueueTraceCount}</li>
-              </ul>
-              {latestQueueActionAt ? (
-                <p className="mt-2 text-xs text-muted-foreground">Latest action {formatRtpDateTime(latestQueueActionAt)}</p>
-              ) : null}
-            </article>
-          ) : null}
-
-          {packetAttentionCounts.reset > 0 || packetAttentionCounts.generate > 0 || packetAttentionCounts.refresh > 0 || packetAttentionCounts.missing > 0 ? (
-            <RtpRegistryPacketQueueCommandBoard
-              resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
-              missingCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "missing").map((cycle) => cycle.id)}
-              generateFirstReportIds={[
-                ...new Set(
-                  allCycles
-                    .filter((cycle) => cycle.packetAttention === "generate")
-                    .map((cycle) => cycle.packetReport?.id)
-                    .filter((reportId): reportId is string => Boolean(reportId))
-                ),
-              ]}
-              refreshReportIds={[
-                ...new Set(
-                  allCycles
-                    .filter(
-                      (cycle) =>
-                        cycle.packetAttention === "reset" ||
-                        cycle.packetAttention === "refresh"
-                    )
-                    .map((cycle) => cycle.packetReport?.id)
-                    .filter((reportId): reportId is string => Boolean(reportId))
-                ),
-              ]}
-              resetCount={packetAttentionCounts.reset}
-              missingCount={packetAttentionCounts.missing}
-            />
-          ) : null}
-
-          {packetAttentionCounts.reset > 0 ? (
-            <RtpRegistryPacketBulkActions
-              cycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
-              cycleCount={packetAttentionCounts.reset}
-            />
-          ) : null}
-
-          {packetAttentionCounts.generate > 0 ? (
-            <RtpRegistryPacketBulkGenerateActions
-              reportIds={allCycles
-                .filter((cycle) => cycle.packetAttention === "generate")
-                .map((cycle) => cycle.packetReport?.id)
-                .filter((reportId): reportId is string => Boolean(reportId))}
-              reportCount={packetAttentionCounts.generate}
-            />
-          ) : null}
-
-          {packetAttentionCounts.refresh > 0 ? (
-            <RtpRegistryPacketBulkRefreshActions
-              reportIds={allCycles
-                .filter((cycle) => cycle.packetAttention === "refresh")
-                .map((cycle) => cycle.packetReport?.id)
-                .filter((reportId): reportId is string => Boolean(reportId))}
-              reportCount={packetAttentionCounts.refresh}
-            />
-          ) : null}
-
-          <RtpCycleCreator />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Next slice</p>
-                <h2 className="module-section-title">What comes next</h2>
-                <p className="module-section-description">
-                  The cycle now carries portfolio links and a first chapter shell. The next slice can move from structure into editable RTP content.
-                </p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
-                <Compass className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="module-operator-list mt-1">
-              <div className="module-operator-item">Add chapter editing so policy, action, and financial sections can move from shell to working draft.</div>
-              <div className="module-operator-item">Keep constrained, illustrative, and candidate project posture visible from the same cycle.</div>
-              <div className="module-operator-item">Extend engagement campaigns so whole-plan, chapter, and project comments can point back to the same cycle.</div>
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <div className="module-metric-card">
-                <p className="module-metric-label">Next domain</p>
-                <p className="module-metric-value text-sm">Editable chapter workflow</p>
-                <p className="mt-1 text-xs text-muted-foreground">Section summaries, chapter status, and chapter-specific evidence posture.</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Next output</p>
-                <p className="module-metric-value text-sm">Comment-ready digital RTP</p>
-                <p className="mt-1 text-xs text-muted-foreground">A narrative surface that can carry chapter-level comments and board packet exports.</p>
-              </div>
-            </div>
-
-            <Link href="/projects" className="module-inline-action mt-4">
-              Review linked project control room posture
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href="/plans" className="module-inline-action mt-3">
-              Review existing plan records
-              <FolderKanban className="h-4 w-4" />
-            </Link>
-          </article>
+          <RtpQueueOperationsBoard
+            packetAttentionCounts={packetAttentionCounts}
+            resetCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "reset").map((cycle) => cycle.id)}
+            missingCycleIds={allCycles.filter((cycle) => cycle.packetAttention === "missing").map((cycle) => cycle.id)}
+            generateFirstReportIds={[
+              ...new Set(
+                allCycles
+                  .filter((cycle) => cycle.packetAttention === "generate")
+                  .map((cycle) => cycle.packetReport?.id)
+                  .filter((reportId): reportId is string => Boolean(reportId))
+              ),
+            ]}
+            refreshReportIds={[
+              ...new Set(
+                allCycles
+                  .filter(
+                    (cycle) =>
+                      cycle.packetAttention === "reset" ||
+                      cycle.packetAttention === "refresh"
+                  )
+                  .map((cycle) => cycle.packetReport?.id)
+                  .filter((reportId): reportId is string => Boolean(reportId))
+              ),
+            ]}
+            generateReportIds={allCycles
+              .filter((cycle) => cycle.packetAttention === "generate")
+              .map((cycle) => cycle.packetReport?.id)
+              .filter((reportId): reportId is string => Boolean(reportId))}
+            refreshOnlyReportIds={allCycles
+              .filter((cycle) => cycle.packetAttention === "refresh")
+              .map((cycle) => cycle.packetReport?.id)
+              .filter((reportId): reportId is string => Boolean(reportId))}
+          />
         </aside>
       </div>
     </section>
