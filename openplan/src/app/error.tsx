@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { StateBlock } from "@/components/ui/state-block";
+import { ErrorState } from "@/components/ui/state-block";
 
 export default function RootError({
   error,
@@ -20,8 +20,7 @@ export default function RootError({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <StateBlock
-        tone="danger"
+      <ErrorState
         title="Something went wrong while loading this page."
         description={
           error.digest

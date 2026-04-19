@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { StateBlock } from "@/components/ui/state-block";
+import { ErrorState } from "@/components/ui/state-block";
 
 export default function ScenariosError({
   error,
@@ -20,8 +20,7 @@ export default function ScenariosError({
 
   return (
     <div className="px-6 py-8">
-      <StateBlock
-        tone="danger"
+      <ErrorState
         title="The scenarios surface hit an error."
         description={
           error.digest

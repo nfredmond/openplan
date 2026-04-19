@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { StateBlock } from "@/components/ui/state-block";
+import { ErrorState } from "@/components/ui/state-block";
 
 export default function ModelsError({
   error,
@@ -20,8 +20,7 @@ export default function ModelsError({
 
   return (
     <div className="px-6 py-8">
-      <StateBlock
-        tone="danger"
+      <ErrorState
         title="The models surface hit an error."
         description={
           error.digest

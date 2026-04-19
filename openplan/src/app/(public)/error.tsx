@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { StateBlock } from "@/components/ui/state-block";
+import { ErrorState } from "@/components/ui/state-block";
 
 export default function PublicError({
   error,
@@ -20,8 +20,7 @@ export default function PublicError({
 
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col justify-center px-6 py-16">
-      <StateBlock
-        tone="danger"
+      <ErrorState
         title="This public page couldn't load."
         description={
           error.digest
