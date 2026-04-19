@@ -1,5 +1,5 @@
 ---
-title: 18-ticket ledger reconciliation — T2, T3, T10 bookkeeping close
+title: 18-ticket ledger reconciliation — T2, T3, T10, T18 bookkeeping close
 date: 2026-04-18
 program_doc: docs/ops/2026-04-16-openplan-integrated-deep-dive-review.md
 supersedes_ledger_in: docs/ops/2026-04-18-program-retrospective-update.md
@@ -89,23 +89,52 @@ $ wc -l 'src/app/(app)/grants/page.tsx'
 
 **Verdict:** T10 live. No further decomposition required at this ticket's scope. Future extractions (the retro suggests 2-3 more slices) are a separate, unbooked hygiene task, not a T10 reopening.
 
-## Revised ledger (15/18 live)
+## T18 — dashboard decomposition
+
+**Deep-dive acceptance (line 450-452):** "Extract 4-6 widget components: packet posture, funding pressure, scenario freshness, aerial verification, next action. `dashboard/page.tsx` uses widgets; each widget tests independently."
+
+**Evidence:**
+
+```
+$ wc -l 'src/app/(app)/dashboard/page.tsx'
+258
+
+$ ls src/components/dashboard/
+dashboard-kpi-grid.tsx
+dashboard-operator-guidance.tsx
+dashboard-quick-actions.tsx
+dashboard-workspace-intro.tsx
+```
+
+Five widget-role components compose the page: the four `components/dashboard/*` above plus `components/operations/workspace-command-board.tsx` (the cross-lane tile `dashboard/page.tsx` imports at line 7). Dashboard page is 258 LOC — trivially inside any size cap.
+
+Independent widget tests:
+
+- `src/test/dashboard-widgets.test.tsx` — 12 test cases
+- `src/test/dashboard-page.test.tsx` — 3 test cases
+- `src/test/workspace-command-board.test.tsx` — 3 test cases
+
+The deep-dive's five named logical areas (packet posture, funding pressure, scenario freshness, aerial verification, next action) don't map 1:1 to widget names but are covered across KPI grid + operator guidance + command board composition. The acceptance line's structural requirements ("dashboard/page.tsx uses widgets; each widget tests independently") are satisfied.
+
+**Verdict:** T18 live. No further widget extraction required at this ticket's scope.
+
+## Revised ledger (16/18 live)
 
 | Before (2026-04-18 retro update) | After (this doc, 2026-04-18 evening) |
 |---|---|
-| Live 10/18 | **Live 15/18:** T1, T2, T3, T4, T5, T6, T8, T9, T10, T11, T12, T13, T14, T15, T17 |
-| Unit-only 7/18 | **Unit-only 2/18:** T16 (writer wired, reader design-gated), T18 |
-| Deferred 1/18 | **Deferred 1/18:** T16 caveat-gate wiring (same item, now the sole design-blocker) |
+| Live 10/18 | **Live 16/18:** T1, T2, T3, T4, T5, T6, T8, T9, T10, T11, T12, T13, T14, T15, T17, T18 |
+| Unit-only 7/18 | **Unit-only 1/18:** T16 (writer wired, reader design-gated) |
+| Deferred 1/18 | **Deferred 1/18:** T16 caveat-gate wiring (same item, the sole design-blocker) |
 
 The T16 entry appears in both unit-only (T16 writer is implemented and unit-tested) and deferred (T16 reader surface is design-gated) columns because the ticket has two halves with different states. That's not new — the 2026-04-17 retro already flagged this.
 
 ## What this unlocks
 
-With T2, T3, T5, T6, T10 all live-closed today:
+With T2, T3, T5, T6, T10, T18 all live-closed today:
 
-- **Every T1–T17 ticket except T16's reader surface is live or integration-tested.** The "writer wired, reader dead" census's remaining open rows (`projects.rtp_posture` body, `projects.aerial_posture`, T16 caveat gate) are all design-gated.
-- **T18 remains the only non-design-blocked unit-only item** with no closure doc. Next recon step (not in this commit): re-read the deep-dive T18 spec and decide whether it's already done elsewhere or genuinely the next live-proof target.
-- **The binding constraint "commit-splitting + live-loop proof, not more breadth"** is substantially satisfied for the program's first ledger. The next productive phase is likely either the design calls on T16/posture bodies, or T18 scope recon.
+- **Every T1–T18 ticket except T16's reader surface is live or integration-tested.** The "writer wired, reader dead" census's remaining open rows (`projects.rtp_posture` body, `projects.aerial_posture`, T16 caveat gate) are all design-gated.
+- **The 18-ticket program's first ledger is structurally complete.** T16 is the sole open item, and it's blocked on a reader-surface design call, not on engineering effort. The binding constraint "commit-splitting + live-loop proof, not more breadth" has been satisfied end-to-end.
+- **Next productive work is design-gated, not build-gated.** Three design calls remain (T16 caveat-gate reader surface, `projects.rtp_posture` body presentation, `projects.aerial_posture` presentation). Until any of those are resolved, new engineering work should be scoped as either (a) pilot-readiness breadth (legal pages, quota asymmetry, nested error boundaries — explicitly deferred by the "what not to do next" guidance), or (b) hygiene (further page decompositions, ESLint max-lines rule enforcement per cross-cutting rule #4).
 
 ## Scope of this commit
 

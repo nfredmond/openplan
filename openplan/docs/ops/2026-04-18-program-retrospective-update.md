@@ -39,8 +39,8 @@ proof doesn't fit).
 reader-surface design call.
 
 > **Superseded 2026-04-18 evening** — Phase M (T5+T6) and the
-> T2/T3/T10 bookkeeping reconciliation move the ledger to
-> **Live 15/18** · **Unit-only 2/18 (T16 writer-half, T18)** ·
+> T2/T3/T10/T18 bookkeeping reconciliation move the ledger to
+> **Live 16/18** · **Unit-only 1/18 (T16 writer-half)** ·
 > **Deferred 1/18 (T16 reader surface)**. See
 > `docs/ops/2026-04-18-assistant-action-audit-live-proof.md` and
 > `docs/ops/2026-04-18-ledger-reconciliation-t2-t3-t10.md`.
