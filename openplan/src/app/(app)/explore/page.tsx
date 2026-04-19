@@ -38,545 +38,44 @@ import {
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { downloadGeojson, downloadMetricsCsv, downloadRecordsCsv, downloadText } from "@/lib/export/download";
-import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { resolveStatusTone, toneFromDelta, type StatusTone } from "@/lib/ui/status";
-
-type Position = [number, number] | [number, number, number];
-
-type Polygon = {
-  type: "Polygon";
-  coordinates: Position[][];
-};
-
-type MultiPolygon = {
-  type: "MultiPolygon";
-  coordinates: Position[][][];
-};
-
-type CorridorGeometry = Polygon | MultiPolygon;
-
-type AnalysisResult = {
-  runId: string;
-  title?: string;
-  createdAt?: string | null;
-  metrics: {
-    accessibilityScore: number;
-    safetyScore: number;
-    equityScore: number;
-    overallScore?: number;
-    confidence?: string;
-    totalTransitStops?: number;
-    transitAccessTier?: string;
-    totalPopulation?: number;
-    medianIncome?: number | null;
-    pctMinority?: number;
-    pctBelowPoverty?: number;
-    pctTransit?: number;
-    pctWalk?: number;
-    pctBike?: number;
-    pctZeroVehicle?: number;
-    totalFatalCrashes?: number;
-    totalFatalities?: number;
-    crashesPerSquareMile?: number;
-    crashPointCount?: number;
-    jobsPerResident?: number;
-    stopsPerSquareMile?: number;
-    walkBikeAccessTier?: string;
-    dataQuality?: {
-      censusAvailable?: boolean;
-      crashDataAvailable?: boolean;
-      lodesSource?: string;
-      equitySource?: string;
-      aiInterpretationSource?: string;
-    };
-    sourceSnapshots?: {
-      census?: {
-        source?: string;
-        dataset?: string;
-        vintage?: string;
-        geography?: string;
-        tractCount?: number;
-        retrievalUrl?: string;
-        fetchedAt?: string;
-      };
-      lodes?: { source?: string; note?: string; fetchedAt?: string };
-      transit?: { source?: string; note?: string; fetchedAt?: string };
-      crashes?: { source?: string; yearsQueried?: number[]; note?: string; fetchedAt?: string };
-      equity?: { source?: string; note?: string; fetchedAt?: string };
-    };
-    mapViewState?: Partial<MapViewState>;
-    aiInterpretationSource?: string;
-    [key: string]: unknown;
-  };
-  geojson: GeoJSON.FeatureCollection;
-  summary: string;
-  aiInterpretation?: string;
-  aiInterpretationSource?: string;
-};
-
-type CurrentWorkspaceResponse = {
-  workspaceId: string;
-  name: string | null;
-  role: string;
-};
-
-type WorkspaceBootstrapResponse = {
-  workspaceId: string;
-  slug: string;
-  plan: string;
-  onboardingChecklist: string[];
-};
-
-type AnalysisContextResponse = {
-  workspaceId: string;
-  project: {
-    id: string;
-    name: string;
-    summary: string | null;
-    status: string;
-    planType: string;
-    deliveryPhase: string;
-    updatedAt: string;
-  } | null;
-  linkedDatasets: Array<{
-    datasetId: string;
-    name: string;
-    status: string;
-    geographyScope: string;
-    geometryAttachment: string;
-    thematicMetricKey: string | null;
-    thematicMetricLabel: string | null;
-    relationshipType: string;
-    vintageLabel: string | null;
-    lastRefreshedAt: string | null;
-    connectorLabel: string | null;
-    overlayReady: boolean;
-    thematicReady: boolean;
-  }>;
-  migrationPending: boolean;
-  counts: {
-    deliverables: number;
-    risks: number;
-    issues: number;
-    decisions: number;
-    meetings: number;
-    linkedDatasets: number;
-    overlayReadyDatasets: number;
-    recentRuns: number;
-  };
-  recentRuns: Array<{
-    id: string;
-    title: string;
-    created_at: string;
-  }>;
-  operationsSummary: WorkspaceOperationsSummary;
-};
-
-type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
-type AnalysisContextLoadState = "idle" | "loading" | "loaded" | "error";
-type ReportTemplate = "atp" | "ss4a";
-
-type HoveredTract = {
-  name: string;
-  geoid: string;
-  population: number | null;
-  medianIncome: number | null;
-  pctMinority: number | null;
-  pctBelowPoverty: number | null;
-  zeroVehiclePct: number | null;
-  transitCommutePct: number | null;
-  isDisadvantaged: boolean;
-};
-
-type HoveredCrash = {
-  severityLabel: string;
-  collisionYear: number | null;
-  fatalCount: number;
-  injuryCount: number;
-  pedestrianInvolved: boolean;
-  bicyclistInvolved: boolean;
-};
-
-type TractLegendItem = {
-  label: string;
-  color: string;
-};
+import type {
+  AnalysisContextLoadState,
+  AnalysisContextResponse,
+  AnalysisResult,
+  CorridorGeometry,
+  CurrentWorkspaceResponse,
+  HoveredCrash,
+  HoveredTract,
+  ReportTemplate,
+  TractLegendItem,
+  WorkspaceBootstrapResponse,
+  WorkspaceLoadState,
+} from "./_components/_types";
+import {
+  buildCrashLayerFilter,
+  buildPointThematicOverlayColorExpression,
+  buildRunTitle,
+  buildThematicOverlayPaintExpression,
+  canRenderDatasetCoverageOverlay,
+  canRenderDatasetThematicOverlay,
+  coerceNumber,
+  formatCurrency,
+  formatPercent,
+  formatRunTimestamp,
+  formatSourceToken,
+  getBoundsFromGeometry,
+  getComparisonNarrativeLead,
+  prioritizeMapComparisonRows,
+  titleize,
+} from "./_components/_helpers";
+import { ExploreEmptyResultBoard } from "./_components/explore-empty-result-board";
+import { ExploreLayerVisibilityControls } from "./_components/explore-layer-visibility-controls";
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-function collectPositions(geometry: CorridorGeometry): Position[] {
-  if (geometry.type === "Polygon") {
-    return geometry.coordinates.flat();
-  }
-
-  return geometry.coordinates.flat(2);
-}
-
-function getBoundsFromGeometry(geometry: CorridorGeometry): LngLatBoundsLike | null {
-  const positions = collectPositions(geometry);
-
-  if (!positions.length) {
-    return null;
-  }
-
-  let minLng = positions[0][0];
-  let minLat = positions[0][1];
-  let maxLng = positions[0][0];
-  let maxLat = positions[0][1];
-
-  positions.forEach(([lng, lat]) => {
-    minLng = Math.min(minLng, lng);
-    minLat = Math.min(minLat, lat);
-    maxLng = Math.max(maxLng, lng);
-    maxLat = Math.max(maxLat, lat);
-  });
-
-  return [
-    [minLng, minLat],
-    [maxLng, maxLat],
-  ];
-}
-
-function formatRunTimestamp(value: string): string {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
-}
-
-function titleize(value: string | null | undefined): string {
-  return titleizeMapViewValue(value);
-}
-
-function formatSourceToken(value: string | undefined): string {
-  if (!value) return "Unknown";
-  return value
-    .replaceAll(/[-_]+/g, " ")
-    .replaceAll(/\s+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
 const COMPARISON_HEADLINE_KEYS = new Set(["overallScore", "accessibilityScore", "safetyScore", "equityScore"]);
-const MAP_CONTEXT_PRIORITY = [
-  "Project overlay",
-  "Crash filter",
-  "Tract theme",
-  "Overlay mode",
-  "Overlay geometry",
-  "Census tracts",
-  "SWITRS lane",
-] as const;
-
-function buildRunTitle(value: string): string {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return "Untitled corridor analysis";
-  }
-
-  return trimmed.length > 60 ? `${trimmed.slice(0, 57)}...` : trimmed;
-}
-
-function prioritizeMapComparisonRows(
-  rows: Array<{ label: string; current: string; baseline: string; changed: boolean }>
-): Array<{ label: string; current: string; baseline: string; changed: boolean }> {
-  const priority = new globalThis.Map<string, number>(MAP_CONTEXT_PRIORITY.map((label, index) => [label, index]));
-
-  return [...rows].sort((left, right) => {
-    if (left.changed !== right.changed) {
-      return left.changed ? -1 : 1;
-    }
-
-    const leftPriority = priority.get(left.label) ?? Number.MAX_SAFE_INTEGER;
-    const rightPriority = priority.get(right.label) ?? Number.MAX_SAFE_INTEGER;
-
-    return leftPriority - rightPriority || left.label.localeCompare(right.label);
-  });
-}
-
-function getComparisonNarrativeLead(
-  metricChangeCount: number,
-  viewDifferenceCount: number
-): { title: string; detail: string; tone: StatusTone } {
-  if (metricChangeCount > 0 && viewDifferenceCount === 0) {
-    return {
-      title: "Metric movement is supported by aligned map posture.",
-      detail: "Read the score shifts first — the current run and baseline were reviewed under the same tract, crash, and overlay context.",
-      tone: "success",
-    };
-  }
-
-  if (metricChangeCount > 0 && viewDifferenceCount > 0) {
-    return {
-      title: "Metric movement is present, but the evidence frame changed.",
-      detail: "Check the map context before assuming every score change is a direct apples-to-apples comparison.",
-      tone: "warning",
-    };
-  }
-
-  if (metricChangeCount === 0 && viewDifferenceCount > 0) {
-    return {
-      title: "Scores are flat, but the evidence frame is not.",
-      detail: "The score change looks small, but the underlying map layers differ between the current run and the baseline.",
-      tone: "warning",
-    };
-  }
-
-  return {
-    title: "Both score movement and map posture are stable.",
-    detail: "The current run and baseline are reading as materially aligned across both headline metrics and visible map context.",
-    tone: "neutral",
-  };
-}
-
-function formatCurrency(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "N/A";
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function coerceNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-}
-
-function formatPercent(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "N/A";
-  }
-
-  return `${value}%`;
-}
-
-function canRenderDatasetCoverageOverlay(
-  dataset: AnalysisContextResponse["linkedDatasets"][number] | null | undefined
-): boolean {
-  if (!dataset?.overlayReady) {
-    return false;
-  }
-
-  return ["tract", "corridor", "route"].includes(dataset.geographyScope);
-}
-
-function canRenderDatasetThematicOverlay(
-  dataset: AnalysisContextResponse["linkedDatasets"][number] | null | undefined
-): boolean {
-  return Boolean(
-    dataset?.thematicReady &&
-      (dataset.geographyScope === "tract" ||
-        dataset.geographyScope === "corridor" ||
-        dataset.geographyScope === "route" ||
-        dataset.geographyScope === "point")
-  );
-}
-
-function buildThematicOverlayPaintExpression(metricKey: string | null | undefined): ExpressionSpecification {
-  if (metricKey === "pctBelowPoverty") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "pctBelowPoverty"]], 0],
-      0,
-      "#0b3b2e",
-      10,
-      "#15803d",
-      20,
-      "#65a30d",
-      30,
-      "#ca8a04",
-      45,
-      "#b91c1c",
-    ];
-  }
-
-  if (metricKey === "medianIncome") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
-      0,
-      "#7f1d1d",
-      45000,
-      "#b45309",
-      70000,
-      "#0f766e",
-      100000,
-      "#0ea5e9",
-      150000,
-      "#e0f2fe",
-    ];
-  }
-
-  if (metricKey === "isDisadvantaged") {
-    return [
-      "case",
-      ["==", ["coalesce", ["to-number", ["get", "isDisadvantaged"]], 0], 1],
-      "#ef4444",
-      "#1f2937",
-    ];
-  }
-
-  if (metricKey === "zeroVehiclePct") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "zeroVehiclePct"]], 0],
-      0,
-      "#172554",
-      4,
-      "#1d4ed8",
-      8,
-      "#0f766e",
-      12,
-      "#f59e0b",
-      18,
-      "#dc2626",
-    ];
-  }
-
-  if (metricKey === "transitCommutePct") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "transitCommutePct"]], 0],
-      0,
-      "#1f2937",
-      2,
-      "#2563eb",
-      5,
-      "#0ea5e9",
-      8,
-      "#10b981",
-      12,
-      "#f59e0b",
-    ];
-  }
-
-  if (metricKey === "overallScore" || metricKey === "accessibilityScore" || metricKey === "safetyScore" || metricKey === "equityScore") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", metricKey]], 0],
-      0,
-      "#7f1d1d",
-      40,
-      "#b45309",
-      60,
-      "#f59e0b",
-      75,
-      "#10b981",
-      90,
-      "#0ea5e9",
-    ];
-  }
-
-  return [
-    "interpolate",
-    ["linear"],
-    ["coalesce", ["to-number", ["get", "pctMinority"]], 0],
-    0,
-    "#123047",
-    30,
-    "#1d4ed8",
-    55,
-    "#2563eb",
-    75,
-    "#0f766e",
-    100,
-    "#34d399",
-  ];
-}
-
-function buildPointThematicOverlayColorExpression(metricKey: string | null | undefined): ExpressionSpecification {
-  if (metricKey === "pedestrianInvolved") {
-    return ["case", ["==", ["get", "pedestrianInvolved"], true], "#ec4899", "#334155"];
-  }
-
-  if (metricKey === "bicyclistInvolved") {
-    return ["case", ["==", ["get", "bicyclistInvolved"], true], "#22c55e", "#334155"];
-  }
-
-  if (metricKey === "fatalCount") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "fatalCount"]], 0],
-      0,
-      "#fbbf24",
-      1,
-      "#f97316",
-      2,
-      "#dc2626",
-    ];
-  }
-
-  if (metricKey === "injuryCount") {
-    return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "injuryCount"]], 0],
-      0,
-      "#38bdf8",
-      1,
-      "#2563eb",
-      3,
-      "#1d4ed8",
-      5,
-      "#172554",
-    ];
-  }
-
-  return [
-    "match",
-    ["get", "severityBucket"],
-    "fatal",
-    "#ef4444",
-    "severe_injury",
-    "#fb923c",
-    "injury",
-    "#facc15",
-    "#94a3b8",
-  ];
-}
-
-function buildCrashLayerFilter(
-  crashSeverityFilter: CrashSeverityFilter,
-  crashUserFilter: CrashUserFilter
-): ExpressionSpecification {
-  const filter: ExpressionSpecification = ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "kind"], "crash_point"]];
-
-  if (crashSeverityFilter !== "all") {
-    (filter as unknown[]).push(["==", ["get", "severityBucket"], crashSeverityFilter]);
-  }
-
-  if (crashUserFilter === "pedestrian") {
-    (filter as unknown[]).push(["==", ["get", "pedestrianInvolved"], true]);
-  } else if (crashUserFilter === "bicycle") {
-    (filter as unknown[]).push(["==", ["get", "bicyclistInvolved"], true]);
-  } else if (crashUserFilter === "vru") {
-    (filter as unknown[]).push([
-      "any",
-      ["==", ["get", "pedestrianInvolved"], true],
-      ["==", ["get", "bicyclistInvolved"], true],
-    ]);
-  }
-
-  return filter;
-}
 
 export default function ExplorePage() {
   const pathname = usePathname();
@@ -2772,65 +2271,18 @@ export default function ExplorePage() {
               <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
             </div>
 
-            {/* Map layer controls — moved from dead floating panel */}
-            <section className="analysis-studio-surface">
-              <div className="analysis-studio-header">
-                <div className="analysis-studio-heading">
-                  <p className="analysis-studio-label">Map layers</p>
-                  <h3 className="analysis-studio-title">Layer visibility</h3>
-                </div>
-                <StatusBadge tone={mapReady ? "success" : "neutral"}>{mapReady ? "Ready" : "Init"}</StatusBadge>
-              </div>
-              <div className="analysis-studio-body">
-                <div className="analysis-sidepanel-stack">
-                  <button
-                    type="button"
-                    onClick={() => setShowPolygonFill((v) => !v)}
-                    className={["analysis-sidepanel-row is-interactive", showPolygonFill ? "is-active" : "is-muted"].join(" ")}
-                  >
-                    <div className="analysis-sidepanel-head">
-                      <p className="analysis-sidepanel-title">Corridor fill</p>
-                      <StatusBadge tone={showPolygonFill ? "success" : "neutral"}>{showPolygonFill ? "Visible" : "Hidden"}</StatusBadge>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowTracts((v) => !v)}
-                    className={["analysis-sidepanel-row is-interactive", showTracts ? "is-active" : "is-muted"].join(" ")}
-                  >
-                    <div className="analysis-sidepanel-head">
-                      <p className="analysis-sidepanel-title">Census tracts</p>
-                      <StatusBadge tone={showTracts ? "success" : "neutral"}>{showTracts ? "Visible" : "Hidden"}</StatusBadge>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCrashes((v) => !v)}
-                    className={["analysis-sidepanel-row is-interactive", showCrashes && switrsPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}
-                  >
-                    <div className="analysis-sidepanel-head">
-                      <p className="analysis-sidepanel-title">Crash data</p>
-                      <StatusBadge tone={showCrashes && switrsPointLayerAvailable ? "warning" : "neutral"}>
-                        {switrsPointLayerAvailable ? (showCrashes ? "Visible" : "Hidden") : "No data"}
-                      </StatusBadge>
-                    </div>
-                  </button>
-                </div>
-                <div className="mt-3 space-y-1.5">
-                  <p className="analysis-studio-inline-meta-label">Tract theme</p>
-                  <select
-                    value={tractMetric}
-                    onChange={(event) => setTractMetric(event.target.value as typeof tractMetric)}
-                    className="analysis-sidepanel-select"
-                  >
-                    <option value="minority">Minority share</option>
-                    <option value="poverty">Poverty share</option>
-                    <option value="income">Median income</option>
-                    <option value="disadvantaged">Disadvantaged flag</option>
-                  </select>
-                </div>
-              </div>
-            </section>
+            <ExploreLayerVisibilityControls
+              mapReady={mapReady}
+              showPolygonFill={showPolygonFill}
+              onTogglePolygonFill={() => setShowPolygonFill((v) => !v)}
+              showTracts={showTracts}
+              onToggleTracts={() => setShowTracts((v) => !v)}
+              showCrashes={showCrashes}
+              onToggleCrashes={() => setShowCrashes((v) => !v)}
+              switrsPointLayerAvailable={switrsPointLayerAvailable}
+              tractMetric={tractMetric}
+              onChangeTractMetric={(value) => setTractMetric(value)}
+            />
 
             {/* Map intelligence — tract legend + live hover inspectors */}
             {(showTracts || switrsPointLayerAvailable) ? (
@@ -3783,17 +3235,7 @@ export default function ExplorePage() {
             </Card>
           </>
         ) : (
-          <section className="analysis-studio-surface analysis-studio-surface--empty">
-            <div className="analysis-studio-heading">
-              <p className="analysis-studio-label">Result board</p>
-              <h3 className="analysis-studio-title">No analysis selected</h3>
-              <p className="analysis-studio-description">Run a corridor analysis or load a prior run to review metrics, narrative output, and comparisons.</p>
-            </div>
-            <div className="analysis-studio-inline-meta">
-              <p className="analysis-studio-inline-meta-label">Next step</p>
-              <p className="analysis-studio-inline-meta-value">Upload a corridor, enter the planning question, and run the study to populate this board.</p>
-            </div>
-          </section>
+          <ExploreEmptyResultBoard />
         )}
 
         <RunHistory
