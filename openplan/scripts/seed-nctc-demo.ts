@@ -45,6 +45,11 @@ export const DEMO_PROJECT_ID = "d0000001-0000-4000-8000-000000000003";
 export const DEMO_RTP_CYCLE_ID = "d0000001-0000-4000-8000-000000000004";
 export const DEMO_COUNTY_RUN_ID = "d0000001-0000-4000-8000-000000000005";
 export const DEMO_PROJECT_RTP_LINK_ID = "d0000001-0000-4000-8000-000000000006";
+export const DEMO_EXISTING_CONDITIONS_CHAPTER_ID = "d0000001-0000-4000-8000-000000000007";
+
+export const DEMO_EXISTING_CONDITIONS_CHAPTER_KEY = "existing_conditions_travel_patterns";
+export const DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE =
+  "Existing conditions and travel patterns (demo)";
 
 export const DEMO_USER_EMAIL = "nctc-demo@openplan-demo.natford.example";
 export const DEMO_WORKSPACE_NAME = "Nevada County Transportation Commission (demo)";
@@ -62,7 +67,189 @@ export type SeedRecords = {
   rtpCycle: Record<string, unknown>;
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
+  existingConditionsChapter: Record<string, unknown>;
 };
+
+function num(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function fmtInt(value: unknown): string {
+  const n = num(value);
+  return n === null ? "—" : Math.round(n).toLocaleString("en-US");
+}
+
+function fmtPct(value: unknown, digits = 1): string {
+  const n = num(value);
+  return n === null ? "—" : `${n.toFixed(digits)}%`;
+}
+
+type FacilityRow = {
+  station?: string;
+  observed_volume?: number;
+  modeled_daily_pce?: number;
+  obs_rank?: number;
+  mod_rank?: number;
+};
+
+export function buildExistingConditionsChapterMarkdown(
+  bundleManifest: Record<string, unknown>,
+  validationSummary: Record<string, unknown>
+): string {
+  const boundary = (bundleManifest.boundary ?? {}) as Record<string, unknown>;
+  const zones = (bundleManifest.zones ?? {}) as Record<string, unknown>;
+  const demand = (bundleManifest.demand ?? {}) as Record<string, unknown>;
+  const assignment = (bundleManifest.assignment ?? {}) as Record<string, unknown>;
+  const assignmentNetwork = (assignment.network ?? {}) as Record<string, unknown>;
+  const convergence = (assignment.convergence ?? {}) as Record<string, unknown>;
+  const network = (bundleManifest.network ?? {}) as Record<string, unknown>;
+  const metrics = (validationSummary.metrics ?? {}) as Record<string, unknown>;
+  const gate = (validationSummary.screening_gate ?? {}) as Record<string, unknown>;
+  const facilityRanking = Array.isArray(validationSummary.facility_ranking)
+    ? (validationSummary.facility_ranking as FacilityRow[])
+    : [];
+  const caveats = Array.isArray(validationSummary.model_caveats)
+    ? (validationSummary.model_caveats as string[])
+    : [];
+
+  const areaSqMi = num(boundary.area_sq_mi);
+  const bbox = Array.isArray(boundary.bbox) ? (boundary.bbox as number[]) : null;
+
+  const facilityTable = facilityRanking.length
+    ? [
+        "| Station | Observed | Modeled (PCE) | Obs rank | Mod rank |",
+        "|---|---:|---:|---:|---:|",
+        ...facilityRanking.map(
+          (row) =>
+            `| ${row.station ?? "—"} | ${fmtInt(row.observed_volume)} | ${fmtInt(
+              row.modeled_daily_pce
+            )} | ${row.obs_rank ?? "—"} | ${row.mod_rank ?? "—"} |`
+        ),
+      ].join("\n")
+    : "*Facility ranking not available in this validation summary.*";
+
+  const caveatList = caveats.length
+    ? caveats.map((c) => `- ${c}`).join("\n")
+    : "- (no caveats recorded in the validation summary)";
+
+  const gateReasons = Array.isArray(gate.reasons)
+    ? (gate.reasons as string[]).map((r) => `- ${r}`).join("\n")
+    : "";
+
+  return [
+    `> **Screening-grade prototype — not a calibrated planning model.**`,
+    `> The baseline numbers in this chapter come from an AequilibraE screening`,
+    `> run built from OSM default speeds/capacities, tract-fragment TAZs, and`,
+    `> tract-scale demographic proxies. A production RTP chapter would require`,
+    `> calibrated TAZs, surveyed trip rates, station counts beyond the five`,
+    `> Caltrans priority stations used here, and an equity-impact analysis the`,
+    `> screening model does not support.`,
+    ``,
+    `## Study area`,
+    ``,
+    `${boundary.label ?? "Nevada County"}, California (FIPS ${
+      boundary.source_path ?? "06057"
+    }), covering ${areaSqMi !== null ? `${areaSqMi.toLocaleString("en-US")} square miles` : "—"}${
+      bbox
+        ? ` bounded by (${bbox[0].toFixed(4)}, ${bbox[1].toFixed(4)}) to (${bbox[2].toFixed(
+            4
+          )}, ${bbox[3].toFixed(4)})`
+        : ""
+    }.`,
+    ``,
+    `## Baseline demographics`,
+    ``,
+    `| Metric | Value | Source |`,
+    `|---|---:|---|`,
+    `| Total population | ${fmtInt(zones.total_population)} | ACS 5-year tract attributes |`,
+    `| Households | ${fmtInt(zones.total_households)} | ACS 5-year tract attributes |`,
+    `| Worker residents | ${fmtInt(zones.total_worker_residents)} | LODES + ACS |`,
+    `| Estimated jobs | ${fmtInt(zones.total_jobs_est)} | Tract-scale demographic proxy |`,
+    `| Zones (TAZ surrogate) | ${fmtInt(zones.zones)} | ${zones.zone_type ?? "census-tract-fragments"} |`,
+    ``,
+    `## Travel demand (screening-grade)`,
+    ``,
+    `Estimated total daily person-trips: **${fmtInt(demand.total_trips)}**.`,
+    ``,
+    `- Home-based work (HBW): ${fmtInt(demand.hbw_trips)}`,
+    `- Home-based other (HBO): ${fmtInt(demand.hbo_trips)}`,
+    `- Non-home-based (NHB): ${fmtInt(demand.nhb_trips)}`,
+    `- External (through-county): ${fmtInt(demand.external_trips)}`,
+    ``,
+    `External gateways are inferred from major motorway boundary crossings.`,
+    ``,
+    `## Network and assignment`,
+    ``,
+    `OSM-default network: ${fmtInt(assignmentNetwork.links)} links, ${fmtInt(
+      assignmentNetwork.nodes
+    )} nodes, ${fmtInt(assignmentNetwork.zones)} tract-fragment zones. ${
+      fmtPct(network.largest_component_pct, 2)
+    } of the road network is in the largest connected component.`,
+    ``,
+    `Assignment converged at a final relative gap of ${
+      num(convergence.final_gap) !== null ? (num(convergence.final_gap) as number).toFixed(5) : "—"
+    } (target ${
+      num(convergence.target_gap) !== null ? (num(convergence.target_gap) as number).toFixed(5) : "—"
+    }) after ${fmtInt(convergence.iterations)} iterations, with ${fmtInt(
+      assignment.loaded_links
+    )} loaded links.`,
+    ``,
+    `## Validation against Caltrans priority counts`,
+    ``,
+    `Five Caltrans 2023 priority count stations were matched 1-for-1 against`,
+    `screening model outputs.`,
+    ``,
+    `| Metric | Value |`,
+    `|---|---:|`,
+    `| Stations matched | ${validationSummary.stations_matched ?? "—"} / ${validationSummary.stations_total ?? "—"} |`,
+    `| Median absolute percent error | ${fmtPct(metrics.median_absolute_percent_error)} |`,
+    `| Mean absolute percent error | ${fmtPct(metrics.mean_absolute_percent_error, 2)} |`,
+    `| Max absolute percent error | ${fmtPct(metrics.max_absolute_percent_error, 2)} |`,
+    `| Min absolute percent error | ${fmtPct(metrics.min_absolute_percent_error)} |`,
+    `| Spearman rank correlation | ${
+      num(metrics.spearman_rho_facility_ranking) !== null
+        ? (num(metrics.spearman_rho_facility_ranking) as number).toFixed(2)
+        : "—"
+    } |`,
+    ``,
+    `### Ranking comparison`,
+    ``,
+    facilityTable,
+    ``,
+    `### Screening gate`,
+    ``,
+    `**Status: ${gate.status_label ?? "internal prototype only"}.**`,
+    gateReasons,
+    ``,
+    `### Model caveats (verbatim)`,
+    ``,
+    caveatList,
+    ``,
+    `## What this chapter is not`,
+    ``,
+    `- Not a calibrated travel demand model. A production Nevada County RTP`,
+    `  would require local survey data (NHTS expansion, household travel`,
+    `  diary), calibrated TAZs instead of tract fragments, and capacity`,
+    `  calibration against observed LOS.`,
+    `- Not an equity impact analysis. The platform's equity lens (pct`,
+    `  minority, pct zero-vehicle, pct poverty from ACS) exists but has`,
+    `  not been scored against a project portfolio in this demo.`,
+    `- Not a transit or active-transportation accessibility analysis.`,
+    ``,
+    `## What this chapter demonstrates`,
+    ``,
+    `OpenPlan produced every table and figure above from a single frozen`,
+    `screening-grade AequilibraE run and one validation pass against`,
+    `Caltrans priority counts. Every number traces back to`,
+    `\`${validationSummary.model_run_id ?? "the frozen run artifact"}\`,`,
+    `so agency staff (or auditors) can verify any cell against the`,
+    `underlying source file. A production RTP chapter would replace the`,
+    `screening caveats with calibrated inputs and surveyed trip rates; the`,
+    `platform's chapter structure, evidence linkage, and adoption-packet`,
+    `flow remain the same.`,
+    ``,
+  ].join("\n");
+}
 
 export function buildSeedRecords(
   ownerUserId: string,
@@ -127,6 +314,23 @@ export function buildSeedRecords(
       mode: "existing-run",
       manifest_json: bundleManifest,
       validation_summary_json: validationSummary,
+      created_by: ownerUserId,
+    },
+    existingConditionsChapter: {
+      id: DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      rtp_cycle_id: DEMO_RTP_CYCLE_ID,
+      chapter_key: DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
+      title: DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE,
+      section_type: "performance",
+      status: "ready_for_review",
+      sort_order: 5,
+      required: true,
+      guidance:
+        "Describe the study area, baseline demographics, travel demand, network, and validation posture. This demo chapter is populated from the frozen NCTC screening run — every number traces back to the bundled manifest and validation summary.",
+      summary:
+        "Proof-of-capability baseline-conditions chapter for the NCTC demo RTP cycle, composed directly from the screening-grade AequilibraE run + Caltrans count validation.",
+      content_markdown: buildExistingConditionsChapterMarkdown(bundleManifest, validationSummary),
       created_by: ownerUserId,
     },
   };
@@ -393,12 +597,45 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted county_run ${DEMO_COUNTY_RUN_ID}`);
 
+  // 8. Existing Conditions / Travel Patterns chapter for the demo cycle.
+  //    The default trigger seeds 7 standard chapters; this adds an 8th
+  //    chapter specific to the NCTC demo, with content_markdown composed
+  //    directly from the bundle manifest + validation summary.
+  const chapterContent = buildExistingConditionsChapterMarkdown(bundleManifest, validationSummary);
+  const { error: chapterError } = await supabase.from("rtp_cycle_chapters").upsert(
+    {
+      id: DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      rtp_cycle_id: DEMO_RTP_CYCLE_ID,
+      chapter_key: DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
+      title: DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE,
+      section_type: "performance",
+      status: "ready_for_review",
+      sort_order: 5,
+      required: true,
+      guidance:
+        "Describe the study area, baseline demographics, travel demand, network, and validation posture. This demo chapter is populated from the frozen NCTC screening run — every number traces back to the bundled manifest and validation summary.",
+      summary:
+        "Proof-of-capability baseline-conditions chapter for the NCTC demo RTP cycle, composed directly from the screening-grade AequilibraE run + Caltrans count validation.",
+      content_markdown: chapterContent,
+      created_by: demoUserId,
+    },
+    { onConflict: "rtp_cycle_id,chapter_key" }
+  );
+  if (chapterError) {
+    throw new Error(`Failed to upsert existing-conditions chapter: ${chapterError.message}`);
+  }
+  console.log(
+    `[seed:nctc] upserted chapter ${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY} (${chapterContent.length} chars)`
+  );
+
   console.log("");
   console.log("[seed:nctc] done.");
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
   console.log(`  project:     ${DEMO_PROJECT_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
+  console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }
 
