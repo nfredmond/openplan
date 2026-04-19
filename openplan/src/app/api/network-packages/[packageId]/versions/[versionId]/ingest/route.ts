@@ -59,6 +59,61 @@ export async function POST(
   const { packageId, versionId } = await params;
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: pkg, error: pkgError } = await supabase
+    .from("network_packages")
+    .select("id, workspace_id")
+    .eq("id", packageId)
+    .maybeSingle();
+
+  if (pkgError) {
+    audit.error("network_package_lookup_failed", {
+      packageId,
+      userId: user.id,
+      message: pkgError.message,
+      code: pkgError.code ?? null,
+    });
+    return NextResponse.json({ error: "Failed to verify network package" }, { status: 500 });
+  }
+
+  if (!pkg) {
+    return NextResponse.json({ error: "Network package not found" }, { status: 404 });
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("workspace_members")
+    .select("role")
+    .eq("workspace_id", pkg.workspace_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (membershipError) {
+    audit.error("workspace_membership_lookup_failed", {
+      packageId,
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+      message: membershipError.message,
+      code: membershipError.code ?? null,
+    });
+    return NextResponse.json({ error: "Failed to verify workspace membership" }, { status: 500 });
+  }
+
+  if (!membership) {
+    audit.warn("workspace_access_denied", {
+      packageId,
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+    });
+    return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+  }
+
   // Accept JSON body with nodes and links GeoJSON inline for the v1 prototype
   let body: Record<string, unknown>;
   try {
@@ -153,6 +208,7 @@ export async function POST(
     audit.error("network_package_version_ingest_update_failed", {
       packageId,
       versionId,
+      userId: user.id,
       message: updateError.message,
       code: updateError.code ?? null,
     });
@@ -162,6 +218,8 @@ export async function POST(
   audit.info("network_package_version_ingested", {
     packageId,
     versionId,
+    userId: user.id,
+    workspaceId: pkg.workspace_id,
     overallStatus,
     totalChecks,
     warnings,
