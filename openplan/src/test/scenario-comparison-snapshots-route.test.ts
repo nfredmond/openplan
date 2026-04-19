@@ -15,6 +15,14 @@ const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMo
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+
+const runsCountGteMock = vi.fn().mockResolvedValue({ count: 0, error: null });
+const runsCountEqMock = vi.fn(() => ({ gte: runsCountGteMock }));
+const runsSelectMock = vi.fn(() => ({ eq: runsCountEqMock }));
+
 const entryMaybeSingleMock = vi.fn();
 const entryEqScenarioSetMock = vi.fn(() => ({ maybeSingle: entryMaybeSingleMock }));
 const entryEqIdMock = vi.fn(() => ({ eq: entryEqScenarioSetMock }));
@@ -44,6 +52,14 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
+  }
+
+  if (table === "workspaces") {
+    return { select: workspaceSelectMock };
+  }
+
+  if (table === "runs") {
+    return { select: runsSelectMock };
   }
 
   if (table === "scenario_entries") {
@@ -110,6 +126,17 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       },
       error: null,
     });
+
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: {
+        plan: "pilot",
+        subscription_plan: "pilot",
+        subscription_status: "active",
+      },
+      error: null,
+    });
+
+    runsCountGteMock.mockResolvedValue({ count: 0, error: null });
 
     entryMaybeSingleMock
       .mockResolvedValueOnce({
@@ -228,5 +255,52 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         packetWritebackReportCount: 1,
       })
     );
+  });
+
+  it("returns 402 when the workspace subscription is not active", async () => {
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        plan: "pilot",
+        subscription_plan: "pilot",
+        subscription_status: "past_due",
+      },
+      error: null,
+    });
+
+    const response = await postComparisonSnapshot(
+      new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555",
+          candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Protected bike package comparison",
+        }),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(402);
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 when the monthly run quota is exceeded", async () => {
+    runsCountGteMock.mockResolvedValueOnce({ count: 9999, error: null });
+
+    const response = await postComparisonSnapshot(
+      new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555",
+          candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Protected bike package comparison",
+        }),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(429);
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
   });
 });
