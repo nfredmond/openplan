@@ -11,6 +11,7 @@
     "test:workspace-selection-hardening": "vitest run src/test/workspace-membership-current.test.ts src/test/workspace-membership-query-guard.test.ts src/test/plans-route.test.ts src/test/programs-route.test.ts src/test/funding-opportunities-route.test.ts src/test/models-route.test.ts src/test/rtp-cycles-route.test.ts src/test/engagement-campaigns-route.test.ts src/test/current-workspace-route.test.ts src/test/assistant-context-route.test.ts src/test/assistant-route.test.ts",
     "test:watch": "vitest",
     "seed:gtfs": "tsx scripts/seed-gtfs.ts",
+    "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
     "ops:webhook-proof": "tsx scripts/verify-webhook-ingestion.ts",
     "qa:gate": "npm run lint && npm test && npm run build",
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log"

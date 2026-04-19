@@ -17,7 +17,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 
 **Paused state lifted.** Nathaniel delegated the five Phase P design decisions on 2026-04-19 with "You answer for me. Take this app to the next level." Decisions are locked in `docs/ops/2026-04-19-phase-p-decisions-locked.md`.
 
-**This session shipped Phase S.2 + S.3 + O + S.1 + S.3 follow-up + O.1 + O.2 in sequence:**
+**This session shipped Phase S.2 + S.3 + O + S.1 + S.3 follow-up + O.1 + O.2 + Q.1 in sequence:**
 
 - **Phase S.2 + S.3** — `project-posture-unified.tsx` surfaces the cached `rtp_posture` and `aerial_posture` bodies on `projects/[projectId]/page.tsx`.
 - **Phase O** — weighted quota (`QUOTA_WEIGHTS.MODEL_RUN_LAUNCH=5`) + gate on `reports/[reportId]/generate`. Proof: `docs/ops/2026-04-19-phase-o-quota-closure-proof.md`.
@@ -25,6 +25,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase S.3 follow-up** — mission detail page reads `projects.aerial_posture` from the cached column (new "Project aerial posture (cached)" inspector group; existing mission-scoped aggregate kept under a clarified label). Proof: `docs/ops/2026-04-19-phase-s3-followup-mission-rewire-proof.md`.
 - **Phase O.1** — subscription + quota gate added to `/api/scenarios/[scenarioSetId]/spine/comparison-snapshots` (default weight, `runs` bucket). Three other Phase O.1 candidates (aerial-process 501 stub, deterministic assistant, network-package ingest with pre-existing auth gap) documented as deferred with reasons. Proof: `docs/ops/2026-04-19-phase-o1-quota-tranche-proof.md`.
 - **Phase O.2** — network-package ingest hardened in two commits: (1) auth patch (401/404/403 for anonymous/unknown-package/non-member), (2) subscription + quota gate (402/500/429). New test file covers all 5 gate branches + happy path (6 tests). Proof: `docs/ops/2026-04-19-phase-o2-network-package-ingest-proof.md`.
+- **Phase Q.1** — NCTC demo seed. `workspaces.is_demo` marker migration + idempotent `scripts/seed-nctc-demo.ts` service-role script that upserts workspace/membership/project/rtp_cycle/project_rtp_cycle_link/county_run with manifest + validation summary preserved verbatim. Pure `buildSeedRecords` helper covered by 7 unit tests. Scope doc: `docs/ops/2026-04-19-phase-q-scope.md`. Proof: `docs/ops/2026-04-19-phase-q1-nctc-demo-seed-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -37,7 +38,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 | C.4 | `rtp/page.tsx` | 2413 → 1240 LOC | `docs/ops/2026-04-18-phase-c4-rtp-registry-decomposition-proof.md` |
 | C.2 slice 1 | `explore/page.tsx` | 3814 → 3256 LOC | `docs/ops/2026-04-18-phase-c2-explore-decomposition-proof.md` |
 
-All on main, all Vercel Ready, tests green (774/170 after Phase O.2 adds a new test file with 6 tests covering auth + gate).
+All on main, all Vercel Ready, tests green (781/171 after Phase Q.1 adds `src/test/seed-nctc-demo.test.ts` with 7 tests covering the seed-record shape).
 
 **Locked Phase P decisions (2026-04-19):**
 
@@ -45,11 +46,11 @@ All on main, all Vercel Ready, tests green (774/170 after Phase O.2 adds a new t
 2. `rtp_posture` body → **compact inline + warm-gradient on `remainingFundingGap > 0`**. Shipped.
 3. `aerial_posture` body → **unified section paired with #2**. Shipped; mission-page cached-column reader also shipped (Phase S.3 follow-up).
 4. Quota → **per-workspace scope + binary weight** (model-run launches = 5 units, default = 1). Mechanical foundation shipped + report-generate wired.
-5. 90% plan example → **Nevada County RTPA (NCTC)**. Not yet started.
+5. 90% plan example → **Nevada County RTPA (NCTC)**. Q.1 shipped (demo seed); Q.2 (Existing Conditions chapter) + Q.3 (PDF one-pager) queued.
 
 Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options analysis: `docs/ops/2026-04-19-phase-p-design-decision-pack.md`.
 
-**Queued next sessions:** Phase Q (NCTC 90% plan example, multi-session + commercial-lane). Billing-bucket semantics (strict consumption vs soft cap) is a design decision deferred to Stripe-metering work.
+**Queued next sessions:** Phase Q.2 (author the Existing Conditions / Travel Patterns chapter against the seeded NCTC workspace), Phase Q.3 (PDF one-pager for outbound — non-code lane). Billing-bucket semantics (strict consumption vs soft cap) is a design decision deferred to Stripe-metering work.
 
 **If you are a new agent asked to resume:** start with the decisions-locked doc, then the Phase O + Phase S.1 proof docs, then the `project-posture-unified.tsx` and `county-run-behavioral-kpis.tsx` components for pattern reference on the next reader work.
 
