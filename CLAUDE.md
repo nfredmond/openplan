@@ -23,6 +23,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase O** — weighted quota (`QUOTA_WEIGHTS.MODEL_RUN_LAUNCH=5`) + gate on `reports/[reportId]/generate`. Proof: `docs/ops/2026-04-19-phase-o-quota-closure-proof.md`.
 - **Phase S.1** — T16 behavioral-onramp KPI reader on `county-runs/[countyRunId]/page.tsx` with screening-grade refusal banner + `?includeScreening=1` consent toggle. Proof: `docs/ops/2026-04-19-phase-s1-t16-reader-proof.md`.
 - **Phase S.3 follow-up** — mission detail page reads `projects.aerial_posture` from the cached column (new "Project aerial posture (cached)" inspector group; existing mission-scoped aggregate kept under a clarified label). Proof: `docs/ops/2026-04-19-phase-s3-followup-mission-rewire-proof.md`.
+- **Phase O.1** — subscription + quota gate added to `/api/scenarios/[scenarioSetId]/spine/comparison-snapshots` (default weight, `runs` bucket). Three other Phase O.1 candidates (aerial-process 501 stub, deterministic assistant, network-package ingest with pre-existing auth gap) documented as deferred with reasons. Proof: `docs/ops/2026-04-19-phase-o1-quota-tranche-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -35,7 +36,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 | C.4 | `rtp/page.tsx` | 2413 → 1240 LOC | `docs/ops/2026-04-18-phase-c4-rtp-registry-decomposition-proof.md` |
 | C.2 slice 1 | `explore/page.tsx` | 3814 → 3256 LOC | `docs/ops/2026-04-18-phase-c2-explore-decomposition-proof.md` |
 
-All on main, all Vercel Ready, tests green (766/169 after Phase O adds 5 quota tests).
+All on main, all Vercel Ready, tests green (768/169 after Phase O adds 5 quota tests + Phase O.1 adds 2 gate tests).
 
 **Locked Phase P decisions (2026-04-19):**
 
@@ -47,7 +48,7 @@ All on main, all Vercel Ready, tests green (766/169 after Phase O adds 5 quota t
 
 Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options analysis: `docs/ops/2026-04-19-phase-p-design-decision-pack.md`.
 
-**Queued next sessions:** Phase O.1 (quota tranche across compute-heavy endpoints — aerial mission process, network-package ingest, scenario comparison snapshots, ~1 session), Phase Q (NCTC 90% plan example, multi-session + commercial-lane).
+**Queued next sessions:** Phase O.2 (network-package ingest: patch pre-existing auth gap, then add subscription+quota gate; ~1 session), Phase Q (NCTC 90% plan example, multi-session + commercial-lane). Billing-bucket semantics (strict consumption vs soft cap) is a design decision deferred to Stripe-metering work.
 
 **If you are a new agent asked to resume:** start with the decisions-locked doc, then the Phase O + Phase S.1 proof docs, then the `project-posture-unified.tsx` and `county-run-behavioral-kpis.tsx` components for pattern reference on the next reader work.
 
