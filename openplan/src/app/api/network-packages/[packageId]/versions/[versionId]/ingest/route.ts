@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  checkMonthlyRunQuota,
+  isQuotaExceeded,
+  isQuotaLookupError,
+  QUOTA_WEIGHTS,
+} from "@/lib/billing/quota";
+import {
+  isWorkspaceSubscriptionActive,
+  resolveWorkspaceEntitlements,
+  subscriptionGateMessage,
+} from "@/lib/billing/subscription";
 
 type QaCheck = {
   name: string;
@@ -112,6 +123,61 @@ export async function POST(
       userId: user.id,
     });
     return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+  }
+
+  const { data: workspaceBilling, error: workspaceBillingError } = await supabase
+    .from("workspaces")
+    .select("plan, subscription_plan, subscription_status")
+    .eq("id", pkg.workspace_id)
+    .maybeSingle();
+
+  if (workspaceBillingError) {
+    audit.error("workspace_billing_lookup_failed", {
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+      message: workspaceBillingError.message,
+      code: workspaceBillingError.code ?? null,
+    });
+    return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
+  }
+
+  if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
+    const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
+    audit.warn("subscription_inactive", {
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+      subscriptionStatus: workspaceBilling?.subscription_status ?? null,
+    });
+    return NextResponse.json({ error: gateMessage }, { status: 402 });
+  }
+
+  const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
+  const quota = await checkMonthlyRunQuota(supabase, {
+    workspaceId: pkg.workspace_id,
+    plan,
+    tableName: "runs",
+    weight: QUOTA_WEIGHTS.DEFAULT,
+  });
+
+  if (isQuotaLookupError(quota)) {
+    audit.error("run_limit_count_failed", {
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+      message: quota.message,
+      code: quota.code,
+    });
+    return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+  }
+
+  if (isQuotaExceeded(quota)) {
+    audit.warn("run_limit_reached", {
+      workspaceId: pkg.workspace_id,
+      userId: user.id,
+      plan: quota.plan,
+      usedRuns: quota.usedRuns,
+      monthlyLimit: quota.monthlyLimit,
+    });
+    return NextResponse.json({ error: quota.message }, { status: 429 });
   }
 
   // Accept JSON body with nodes and links GeoJSON inline for the v1 prototype

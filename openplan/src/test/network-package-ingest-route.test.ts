@@ -14,6 +14,14 @@ const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMo
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+
+const runsCountGteMock = vi.fn().mockResolvedValue({ count: 0, error: null });
+const runsCountEqMock = vi.fn(() => ({ gte: runsCountGteMock }));
+const runsSelectMock = vi.fn(() => ({ eq: runsCountEqMock }));
+
 const versionUpdateEqPackageMock = vi.fn().mockResolvedValue({ data: null, error: null });
 const versionUpdateEqIdMock = vi.fn(() => ({ eq: versionUpdateEqPackageMock }));
 const versionUpdateMock = vi.fn(() => ({ eq: versionUpdateEqIdMock }));
@@ -30,6 +38,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
+  }
+  if (table === "workspaces") {
+    return { select: workspaceSelectMock };
+  }
+  if (table === "runs") {
+    return { select: runsSelectMock };
   }
   if (table === "network_package_versions") {
     return { update: versionUpdateMock };
@@ -88,6 +102,17 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
       data: { role: "member" },
       error: null,
     });
+
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: {
+        plan: "pilot",
+        subscription_plan: "pilot",
+        subscription_status: "active",
+      },
+      error: null,
+    });
+
+    runsCountGteMock.mockResolvedValue({ count: 0, error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -174,5 +199,30 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
         workspaceId: WORKSPACE_ID,
       })
     );
+  });
+
+  it("returns 402 when the workspace subscription is not active", async () => {
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        plan: "pilot",
+        subscription_plan: "pilot",
+        subscription_status: "past_due",
+      },
+      error: null,
+    });
+
+    const response = await postIngest(buildRequest(), buildContext());
+
+    expect(response.status).toBe(402);
+    expect(versionUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 when the monthly run quota is exceeded", async () => {
+    runsCountGteMock.mockResolvedValueOnce({ count: 9999, error: null });
+
+    const response = await postIngest(buildRequest(), buildContext());
+
+    expect(response.status).toBe(429);
+    expect(versionUpdateMock).not.toHaveBeenCalled();
   });
 });
