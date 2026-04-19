@@ -7,6 +7,7 @@ import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
   isQuotaLookupError,
+  QUOTA_WEIGHTS,
 } from "@/lib/billing/quota";
 import {
   isWorkspaceSubscriptionActive,
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       workspaceId,
       plan,
       tableName: "model_runs",
+      weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
     });
 
     if (isQuotaLookupError(quota)) {

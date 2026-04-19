@@ -4,6 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import {
+  checkMonthlyRunQuota,
+  isQuotaExceeded,
+  isQuotaLookupError,
+  QUOTA_WEIGHTS,
+} from "@/lib/billing/quota";
+import {
+  isWorkspaceSubscriptionActive,
+  resolveWorkspaceEntitlements,
+  subscriptionGateMessage,
+} from "@/lib/billing/subscription";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
@@ -195,6 +206,61 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!membership || !canAccessWorkspaceAction("report.generate", membership.role)) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    const { data: workspaceBilling, error: workspaceBillingError } = await supabase
+      .from("workspaces")
+      .select("plan, subscription_plan, subscription_status")
+      .eq("id", report.workspace_id)
+      .maybeSingle();
+
+    if (workspaceBillingError) {
+      audit.error("workspace_billing_lookup_failed", {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        message: workspaceBillingError.message,
+        code: workspaceBillingError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
+    }
+
+    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
+      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
+      audit.warn("subscription_inactive", {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
+      });
+      return NextResponse.json({ error: gateMessage }, { status: 402 });
+    }
+
+    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
+    const quota = await checkMonthlyRunQuota(supabase, {
+      workspaceId: report.workspace_id,
+      plan,
+      tableName: "runs",
+      weight: QUOTA_WEIGHTS.DEFAULT,
+    });
+
+    if (isQuotaLookupError(quota)) {
+      audit.error("run_limit_count_failed", {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        message: quota.message,
+        code: quota.code,
+      });
+      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+    }
+
+    if (isQuotaExceeded(quota)) {
+      audit.warn("run_limit_reached", {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        plan: quota.plan,
+        usedRuns: quota.usedRuns,
+        monthlyLimit: quota.monthlyLimit,
+      });
+      return NextResponse.json({ error: quota.message }, { status: 429 });
     }
 
     if (report.rtp_cycle_id) {

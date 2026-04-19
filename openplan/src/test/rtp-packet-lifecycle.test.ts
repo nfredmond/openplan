@@ -134,7 +134,13 @@ function buildTableMock(table: string) {
       select: () => ({
         eq: () => ({
           maybeSingle: async () => ({
-            data: { id: WORKSPACE_ID, name: "Nevada County", plan: "pilot" },
+            data: {
+              id: WORKSPACE_ID,
+              name: "Nevada County",
+              plan: "pilot",
+              subscription_plan: "pilot",
+              subscription_status: "active",
+            },
             error: null,
           }),
         }),
@@ -189,6 +195,23 @@ function buildTableMock(table: string) {
   if (table === "assistant_action_executions") {
     return {
       insert: async () => ({ error: null }),
+    };
+  }
+
+  if (table === "runs") {
+    return {
+      select: (_cols: string, opts?: { count?: string; head?: boolean }) => {
+        if (opts?.count === "exact") {
+          return {
+            eq: () => ({
+              gte: async () => ({ count: 0, error: null }),
+            }),
+          };
+        }
+        return {
+          in: async () => ({ data: [], error: null }),
+        };
+      },
     };
   }
 

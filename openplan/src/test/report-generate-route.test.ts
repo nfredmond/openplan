@@ -69,7 +69,16 @@ const scenarioSetsInMock = vi.fn();
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 
 const runsInMock = vi.fn();
-const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
+const runsCountGteMock = vi.fn().mockResolvedValue({ count: 0, error: null });
+const runsCountEqMock = vi.fn(() => ({ gte: runsCountGteMock }));
+const runsSelectMock = vi.fn(
+  (_cols: string, opts?: { count?: string; head?: boolean }) => {
+    if (opts?.count === "exact") {
+      return { eq: runsCountEqMock };
+    }
+    return { in: runsInMock };
+  }
+);
 
 const engagementCampaignMaybeSingleMock = vi.fn();
 const engagementCampaignEqIdMock = vi.fn(() => ({ maybeSingle: engagementCampaignMaybeSingleMock }));
@@ -273,6 +282,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
         id: "33333333-3333-4333-8333-333333333333",
         name: "Nevada County Safety Action Program",
         plan: "pilot",
+        subscription_plan: "pilot",
+        subscription_status: "active",
       },
       error: null,
     });

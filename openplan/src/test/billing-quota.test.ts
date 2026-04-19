@@ -6,6 +6,7 @@ import {
   isDevUnlimitedQuotaEnabled,
   isQuotaExceeded,
   isQuotaLookupError,
+  QUOTA_WEIGHTS,
 } from "@/lib/billing/quota";
 
 type FakeSupabase = {
@@ -188,6 +189,58 @@ describe("checkMonthlyRunQuota", () => {
       workspaceId: "w1",
       gteIso: "2026-04-01T00:00:00.000Z",
     });
+  });
+
+  it("defaults weight to 1 when omitted (back-compat)", async () => {
+    const supabase = makeCountClient({ count: 99 });
+    const result = await checkMonthlyRunQuota(supabase as never, {
+      workspaceId: "w1",
+      plan: "starter",
+      tableName: "runs",
+    });
+    expect(result).toMatchObject({ ok: true, usedRuns: 99, remaining: 1 });
+  });
+
+  it("rejects when usedRuns + weight would exceed the limit (weight=5 at 96/100)", async () => {
+    const supabase = makeCountClient({ count: 96 });
+    const result = await checkMonthlyRunQuota(supabase as never, {
+      workspaceId: "w1",
+      plan: "starter",
+      tableName: "model_runs",
+      weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+    });
+    expect(isQuotaExceeded(result)).toBe(true);
+    if (isQuotaExceeded(result)) {
+      expect(result.usedRuns).toBe(96);
+      expect(result.monthlyLimit).toBe(100);
+    }
+  });
+
+  it("allows a weight=5 launch when there is exactly enough headroom (95/100)", async () => {
+    const supabase = makeCountClient({ count: 95 });
+    const result = await checkMonthlyRunQuota(supabase as never, {
+      workspaceId: "w1",
+      plan: "starter",
+      tableName: "model_runs",
+      weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+    });
+    expect(result).toMatchObject({ ok: true, usedRuns: 95, remaining: 5 });
+  });
+
+  it("treats weight < 1 as weight 1 (defensive clamp)", async () => {
+    const supabase = makeCountClient({ count: 99 });
+    const result = await checkMonthlyRunQuota(supabase as never, {
+      workspaceId: "w1",
+      plan: "starter",
+      tableName: "runs",
+      weight: 0,
+    });
+    expect(result).toMatchObject({ ok: true, usedRuns: 99, remaining: 1 });
+  });
+
+  it("exposes QUOTA_WEIGHTS constants with model-run-launch = 5, default = 1", () => {
+    expect(QUOTA_WEIGHTS.MODEL_RUN_LAUNCH).toBe(5);
+    expect(QUOTA_WEIGHTS.DEFAULT).toBe(1);
   });
 
   it("bypasses enforcement when DEV_UNLIMITED_QUOTA=1 outside production", async () => {

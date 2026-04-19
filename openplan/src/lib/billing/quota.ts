@@ -7,6 +7,17 @@ import {
 
 export type MonthlyRunTable = "runs" | "model_runs";
 
+/**
+ * Binary weight table for quota-gated actions. Model-run launches represent
+ * minutes of AequilibraE / ActivitySim compute and are weighted 5x; every
+ * other quota-gated action (analysis, report generation, scenario writes,
+ * engagement submit, funding-award creation, assistant) is the default 1x.
+ */
+export const QUOTA_WEIGHTS = {
+  MODEL_RUN_LAUNCH: 5,
+  DEFAULT: 1,
+} as const;
+
 export type QuotaOk = {
   ok: true;
   plan: WorkspacePlan;
@@ -74,10 +85,12 @@ export async function checkMonthlyRunQuota(
     workspaceId: string;
     plan: WorkspacePlan;
     tableName: MonthlyRunTable;
+    weight?: number;
     now?: Date;
   }
 ): Promise<QuotaResult> {
   const { workspaceId, plan, tableName, now } = params;
+  const weight = Math.max(1, params.weight ?? QUOTA_WEIGHTS.DEFAULT);
 
   if (isDevUnlimitedQuotaEnabled()) {
     return {
@@ -121,7 +134,7 @@ export async function checkMonthlyRunQuota(
   }
 
   const usedRuns = count ?? 0;
-  if (usedRuns >= monthlyLimit) {
+  if (usedRuns + weight > monthlyLimit) {
     return {
       ok: false,
       plan,
