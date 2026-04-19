@@ -82,6 +82,11 @@ export default function ExamplesEvidenceCatalogPage() {
             </div>
             <div className="public-rail-item">
               The screening gate is displayed as the run emitted it — internal prototype only.
+              See the{" "}
+              <Link href="/legal" className="underline underline-offset-4 hover:text-foreground">
+                legal notice
+              </Link>{" "}
+              for what that label authorizes and forbids.
             </div>
             <div className="public-rail-item">
               Coverage here is narrow by design. More runs enter the catalog only when their gate

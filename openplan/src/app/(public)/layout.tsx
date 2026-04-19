@@ -30,6 +30,17 @@ export default function PublicLayout({
                 Sign up
               </Link>
             </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground lg:justify-end">
+              <Link href="/terms" className="transition hover:text-foreground">
+                Terms
+              </Link>
+              <Link href="/privacy" className="transition hover:text-foreground">
+                Privacy
+              </Link>
+              <Link href="/legal" className="transition hover:text-foreground">
+                Legal notice
+              </Link>
+            </div>
             <p className="text-sm text-muted-foreground lg:text-right">
               Supervised early access for planning teams that need traceable work, not dashboard theater.
             </p>

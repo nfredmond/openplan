@@ -162,12 +162,29 @@ function SignUpForm() {
         </form>
       </div>
 
-      <footer className="border-t border-border/60 px-6 py-4 text-sm text-muted-foreground sm:px-7">
-        Already have an account?{" "}
-        <Link href={signInHref} className="font-semibold text-foreground underline underline-offset-4">
-          Sign in
-        </Link>
-        .
+      <footer className="flex flex-col gap-2 border-t border-border/60 px-6 py-4 text-sm text-muted-foreground sm:px-7">
+        <p>
+          Already have an account?{" "}
+          <Link href={signInHref} className="font-semibold text-foreground underline underline-offset-4">
+            Sign in
+          </Link>
+          .
+        </p>
+        <p className="text-xs text-muted-foreground">
+          By creating an account you agree to the{" "}
+          <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">
+            terms of use
+          </Link>
+          ,{" "}
+          <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+            privacy practices
+          </Link>
+          , and{" "}
+          <Link href="/legal" className="underline underline-offset-4 hover:text-foreground">
+            legal notice
+          </Link>{" "}
+          that govern supervised early access.
+        </p>
       </footer>
     </section>
   );
