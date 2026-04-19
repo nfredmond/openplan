@@ -38,6 +38,13 @@ proof doesn't fit).
 **Deferred (1/18):** T16 caveat-gate wiring — still blocked on a
 reader-surface design call.
 
+> **Superseded 2026-04-18 evening** — Phase M (T5+T6) and the
+> T2/T3/T10 bookkeeping reconciliation move the ledger to
+> **Live 15/18** · **Unit-only 2/18 (T16 writer-half, T18)** ·
+> **Deferred 1/18 (T16 reader surface)**. See
+> `docs/ops/2026-04-18-assistant-action-audit-live-proof.md` and
+> `docs/ops/2026-04-18-ledger-reconciliation-t2-t3-t10.md`.
+
 The 2026-04-17 retro flagged "don't open new product lanes until
 T4/T13/T17 have live proofs." That gate is now cleared. The first
 product lane (Grants application-states) opened today behind it.
