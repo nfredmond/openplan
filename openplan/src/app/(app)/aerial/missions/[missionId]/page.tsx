@@ -23,6 +23,7 @@ import {
   type AerialMissionStatus,
   type AerialMissionType,
   type AerialPackageStatus,
+  type AerialProjectPosture,
   type AerialVerificationReadiness,
 } from "@/lib/aerial/catalog";
 import { createClient } from "@/lib/supabase/server";
@@ -48,6 +49,31 @@ function formatDate(value: string | null): string {
     month: "short",
     day: "numeric",
   });
+}
+
+function formatDateTime(value: string | null): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function isAerialProjectPosture(value: unknown): value is AerialProjectPosture {
+  if (value === null || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.missionCount === "number" &&
+    typeof v.activeMissionCount === "number" &&
+    typeof v.completeMissionCount === "number" &&
+    typeof v.readyPackageCount === "number" &&
+    typeof v.verificationReadiness === "string"
+  );
 }
 
 type AerialMissionDetailPageProps = {
@@ -82,7 +108,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   const { data: mission, error: missionErr } = await supabase
     .from("aerial_missions")
     .select(
-      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, aoi_geojson, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name)"
+      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, aoi_geojson, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name, aerial_posture, aerial_posture_updated_at)"
     )
     .eq("id", missionId)
     .eq("workspace_id", workspaceId)
@@ -93,6 +119,12 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   }
 
   const project = Array.isArray(mission.projects) ? mission.projects[0] : mission.projects;
+  const projectAerialPosture = isAerialProjectPosture(project?.aerial_posture) ? project.aerial_posture : null;
+  const projectAerialPostureUpdatedAt =
+    typeof project?.aerial_posture_updated_at === "string" ? project.aerial_posture_updated_at : null;
+  const projectAerialPostureDetail = projectAerialPosture
+    ? describeAerialProjectPosture(projectAerialPosture)
+    : null;
   const hasAoi = isAoiPolygonGeoJson(mission.aoi_geojson);
   const aoiVertexCount = hasAoi
     ? Math.max(0, (mission.aoi_geojson as { coordinates: [number, number][][] }).coordinates[0].length - 1)
@@ -191,7 +223,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
         "Once packages are recorded and marked ready, their verification chain will summarize here."
       }
     >
-      <InspectorGroup label="Mission posture">
+      <InspectorGroup label="This mission only">
         <InspectorField
           label="Packages recorded"
           value={`${posture.readyPackageCount} ready · ${packages.length} total`}
@@ -233,6 +265,46 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
           />
         )}
       </InspectorGroup>
+
+      {project ? (
+        <InspectorGroup label="Project aerial posture (cached)">
+          {projectAerialPosture ? (
+            <>
+              <InspectorField
+                label="Roll-up"
+                value={`${projectAerialPosture.readyPackageCount} ready · ${projectAerialPosture.missionCount} mission${projectAerialPosture.missionCount === 1 ? "" : "s"}`}
+                hint={projectAerialPostureDetail ?? undefined}
+              />
+              <InspectorField
+                label="Verification"
+                value={
+                  <StatusBadge
+                    tone={aerialVerificationReadinessTone(
+                      projectAerialPosture.verificationReadiness === "none"
+                        ? "pending"
+                        : projectAerialPosture.verificationReadiness
+                    )}
+                  >
+                    {projectAerialPosture.verificationReadiness === "none"
+                      ? "No missions yet"
+                      : formatAerialVerificationReadinessLabel(projectAerialPosture.verificationReadiness)}
+                  </StatusBadge>
+                }
+              />
+              <InspectorField
+                label="Posture cached"
+                value={formatDateTime(projectAerialPostureUpdatedAt)}
+                hint="Read from projects.aerial_posture — refreshed after evidence-package mutations."
+              />
+            </>
+          ) : (
+            <InspectorEmpty
+              title="Posture not yet cached"
+              description="Will populate after the first evidence-package mutation on this project's missions."
+            />
+          )}
+        </InspectorGroup>
+      ) : null}
 
       <InspectorGroup label="Timing">
         <InspectorField label="Collected" value={formatDate(mission.collected_at)} />
