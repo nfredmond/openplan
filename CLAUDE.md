@@ -13,6 +13,25 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - `docs/ops/2026-04-13-openplan-canonical-architecture-status-and-build-plan.md` — architecture status snapshot
 - `docs/ops/2026-04-11-openplan-master-product-roadmap.md` — master product roadmap
 
+## Current continuity (as of 2026-04-19)
+
+**Active paused state — do not resume decomposition without Nathaniel's direction.**
+
+Phase C (mega-page decomposition) shipped in full on 2026-04-18 evening. Pattern: `src/app/(app)/<route>/page.tsx` → sibling `_components/_types.ts` + `_helpers.ts` + N extracted section components.
+
+| Slice | Target | Before → After | Completion doc |
+|---|---|---|---|
+| C.1 | `projects/[projectId]/page.tsx` | 2707 → 889 LOC | `docs/ops/2026-04-18-phase-c1-projects-detail-decomposition-proof.md` |
+| C.3 | `reports/[reportId]/page.tsx` | 2548 → 1675 LOC | `docs/ops/2026-04-18-phase-c3-reports-detail-decomposition-proof.md` |
+| C.4 | `rtp/page.tsx` | 2413 → 1240 LOC | `docs/ops/2026-04-18-phase-c4-rtp-registry-decomposition-proof.md` |
+| C.2 slice 1 | `explore/page.tsx` | 3814 → 3256 LOC | `docs/ops/2026-04-18-phase-c2-explore-decomposition-proof.md` |
+
+All on main, all Vercel Ready, tests green (761/169).
+
+**Binding blocker — Nathaniel-only decisions.** The four Phase P design asks gate Phase O (quota asymmetry closure), Phase Q (90% plan examples), Phase S (T16 reader + posture bodies), and Phase R.1 (drift cleanups). See the C.2 completion doc's "Phase P design asks" section for the list. No further C-phase slicing until these land — more decomposition is diminishing returns without design sign-off.
+
+**If you are a new agent asked to resume:** read the C.2 completion doc first; it names the deferred slices (C.2 slice 2 state-heavy sections, C.1.1/C.2.1/C.3.1/C.4.1 data-loader extractions) and explains why they were deferred. Do not force-extract state-heavy sections for LOC optics.
+
 ## Project Overview
 
 **OpenPlan** — a free, open-source transportation planning intelligence platform. Phase 1 is an AI transit analysis layer that democratizes what Replica and StreetLight Data charge $50K+/year for: natural-language queries over real GTFS, Census, and LODES data, answered with live maps.
