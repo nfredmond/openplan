@@ -30,6 +30,7 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createClient } from "@/lib/supabase/server";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
+import { ProjectPostureUnified } from "./_components/project-posture-unified";
 import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
@@ -113,7 +114,9 @@ export default async function ProjectDetailPage({
 
   const { data: projectData } = await supabase
     .from("projects")
-    .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+    .select(
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, aerial_posture, aerial_posture_updated_at"
+    )
     .eq("id", projectId)
     .single();
 
@@ -800,6 +803,13 @@ export default async function ProjectDetailPage({
         projectGrantModelingEvidence={projectGrantModelingEvidence}
         projectGrantModelingReadiness={projectGrantModelingReadiness}
         projectGrantModelingSupport={projectGrantModelingSupport}
+      />
+
+      <ProjectPostureUnified
+        rtpPosture={project.rtp_posture}
+        rtpPostureUpdatedAt={project.rtp_posture_updated_at}
+        aerialPosture={project.aerial_posture}
+        aerialPostureUpdatedAt={project.aerial_posture_updated_at}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

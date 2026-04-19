@@ -1,3 +1,6 @@
+import type { AerialProjectPosture } from "@/lib/aerial/catalog";
+import type { ProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
+
 export type ProjectRow = {
   id: string;
   workspace_id: string;
@@ -8,6 +11,10 @@ export type ProjectRow = {
   delivery_phase: string;
   created_at: string;
   updated_at: string;
+  rtp_posture: ProjectRtpPosture | null;
+  rtp_posture_updated_at: string | null;
+  aerial_posture: AerialProjectPosture | null;
+  aerial_posture_updated_at: string | null;
 };
 
 export type ProjectReportRow = {

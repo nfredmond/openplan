@@ -15,9 +15,11 @@ Secondary canonical references (read only if the deep-dive points you to them):
 
 ## Current continuity (as of 2026-04-19)
 
-**Active paused state — do not resume decomposition without Nathaniel's direction.**
+**Paused state lifted.** Nathaniel delegated the five Phase P design decisions on 2026-04-19 with "You answer for me. Take this app to the next level." Decisions are locked in `docs/ops/2026-04-19-phase-p-decisions-locked.md`.
 
-Phase C (mega-page decomposition) shipped in full on 2026-04-18 evening. Pattern: `src/app/(app)/<route>/page.tsx` → sibling `_components/_types.ts` + `_helpers.ts` + N extracted section components.
+Phase S.2 + S.3 shipped the same session: `project-posture-unified.tsx` surfaces the cached `rtp_posture` and `aerial_posture` bodies on `projects/[projectId]/page.tsx`. Writer/reader census is down to 1 open case (T16).
+
+**Phase C (mega-page decomposition)** shipped in full on 2026-04-18 evening. Pattern: `src/app/(app)/<route>/page.tsx` → sibling `_components/_types.ts` + `_helpers.ts` + N extracted section components.
 
 | Slice | Target | Before → After | Completion doc |
 |---|---|---|---|
@@ -28,9 +30,19 @@ Phase C (mega-page decomposition) shipped in full on 2026-04-18 evening. Pattern
 
 All on main, all Vercel Ready, tests green (761/169).
 
-**Binding blocker — Nathaniel-only decisions.** The four Phase P design asks gate Phase O (quota asymmetry closure), Phase Q (90% plan examples), Phase S (T16 reader + posture bodies), and Phase R.1 (drift cleanups). See the C.2 completion doc's "Phase P design asks" section for the list. No further C-phase slicing until these land — more decomposition is diminishing returns without design sign-off.
+**Locked Phase P decisions (2026-04-19):**
 
-**If you are a new agent asked to resume:** read the C.2 completion doc first; it names the deferred slices (C.2 slice 2 state-heavy sections, C.1.1/C.2.1/C.3.1/C.4.1 data-loader extractions) and explains why they were deferred. Do not force-extract state-heavy sections for LOC optics.
+1. T16 reader → **county-run detail page**.
+2. `rtp_posture` body → **compact inline + warm-gradient on `remainingFundingGap > 0`**. Shipped.
+3. `aerial_posture` body → **unified section paired with #2**. Shipped. Mission-page rewire deferred.
+4. Quota → **per-workspace scope + binary weight** (model-run launches = 5 units, default = 1).
+5. 90% plan example → **Nevada County RTPA (NCTC)**.
+
+Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options analysis: `docs/ops/2026-04-19-phase-p-design-decision-pack.md`.
+
+**Queued next sessions:** Phase O (quota wiring, ~1 session), Phase S.1 (T16 county-run reader, ~1 session), Phase S.3 follow-up (mission-page rewire, ~2h), Phase Q (NCTC 90% plan example, multi-session).
+
+**If you are a new agent asked to resume:** start with the decisions-locked doc, then the decision pack, then the `project-posture-unified.tsx` component for pattern reference on the next posture reader.
 
 ## Project Overview
 
