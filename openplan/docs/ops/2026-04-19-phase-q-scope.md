@@ -92,66 +92,68 @@ That import route is the natural Q.1 slice.
 
 | Gap | Shape | Session estimate |
 |---|---|---|
-| No way to land the existing NCTC screening artifact into `county_runs` for UI surfacing | Single POST route: read local artifact directory → write structured fields into `manifest_json` + `validation_summary_json` | 1 session (Q.1) |
-| No seeded NCTC workspace / project / RTP cycle bound to the county-run | Seed script + linked `projects.county_run_id` or equivalent; RTP cycle scaffolded with NCTC framing | 1 session (Q.2) |
-| No authored narrative — the example packet has no words, just numbers | One chapter authored as a static MDX or seeded report with honest "proof-of-capability" framing and screening-grade disclosures in every load-bearing claim | 1 session (Q.3) |
-| No outbound-ready one-pager / PDF that links the demo to a client-sendable summary | Commercial-lane work: copy, design, PDF build. Not code. | 1 session (Q.4) — non-code |
+| No seeded NCTC workspace / project / RTP cycle / county-run with imported screening artifact | Seed script (`scripts/seed-nctc-demo.ts`) + `workspaces.is_demo` migration; reads the artifact tree via Node `fs` and writes to Supabase via service-role | 1 session (Q.1) |
+| No authored narrative — the example packet has no words, just numbers | One chapter authored as a static MDX or seeded report with honest "proof-of-capability" framing and screening-grade disclosures in every load-bearing claim | 1 session (Q.2) |
+| No outbound-ready one-pager / PDF that links the demo to a client-sendable summary | Commercial-lane work: copy, design, PDF build. Not code. | 1 session (Q.3) — non-code |
 | No demo-mode toggle (if the example should be visible to unauthenticated visitors) | Optional route-group or read-only link-share. Open design question. | Decision, not session |
 
-## Session sequence (Q.1 – Q.4)
+## Session sequence (Q.1 – Q.3)
 
 Ordered smallest→largest, each session standalone and testable.
 
-### Q.1 — Import NCTC screening artifact into `county_runs`
+**Revision note (2026-04-19, same-session):** the original sequence had
+Q.1 as a POST `/api/county-runs/[countyRunId]/import-artifact` route
+that would read the screening artifact from the local filesystem. That
+shape fails in production because `data/screening-runs/...` sits at the
+repo workspace root, not inside the Next.js app bundle — Vercel's
+serverless runtime would not see it. Pushing the artifact contents
+inline over HTTP is also ugly (loaded_links.geojson alone is several MB).
+The honest reframe collapses the original Q.1 (artifact import) and
+Q.2 (seed workspace/project/RTP) into a single **server-side seed
+script** that runs at repo setup time and talks to Supabase directly
+via the service-role key. Q-chapter authoring becomes Q.2, outbound
+becomes Q.3. This is a 3-slice sequence, not 4.
+
+### Q.1 — Seed the NCTC demo (workspace + project + RTP + county-run + artifact)
 
 Scope:
 
-- New POST route `/api/county-runs/[countyRunId]/import-artifact` that
-  accepts a local artifact directory path, reads
-  `bundle_manifest.json` + `validation/validation_summary.json` +
-  `validation/validation_report.md`, and writes:
-  - `manifest_json` — bundle manifest verbatim
-  - `validation_summary_json` — validation summary verbatim
-  - stage → appropriate advance (bootstrap-complete /
-    runtime-complete / validation-scaffolded / validated-screening
-    based on what's present)
-  - audit events on success + lookup failures
-- Auth: same pattern as Phase O.2 ingest (401/404/403 on
-  user/county_run/membership).
-- Quota: same pattern (402/500/429).
-- Tests: 401/404/403/402/429 + 200 happy path ingesting a fixture
-  artifact.
+- New TypeScript script at `scripts/seed-nctc-demo.ts` (invoked via a
+  new `pnpm seed:nctc` target) that:
+  - Uses the Supabase service-role key (same pattern as `seed-gtfs.ts`).
+  - Reads the local screening artifact tree at
+    `data/screening-runs/nevada-county-runtime-norenumber-freeze-20260324/`
+    using Node `fs.readFile` (available in the seed script since it
+    runs locally, not on Vercel).
+  - Upserts, idempotently:
+    - One workspace "Nevada County Transportation Commission (demo)"
+      with `subscription_status='active'` and an explicit
+      `is_demo=true` marker (new column — separate migration).
+    - One demo user + `workspace_members` owner row for the demo
+      workspace (deterministic UUIDs).
+    - One project "NCTC 2045 RTP (proof-of-capability)" bound to the
+      workspace.
+    - One RTP cycle bound to the project.
+    - One `county_runs` row FIPS 06057 with `manifest_json` ←
+      `bundle_manifest.json` verbatim + `validation_summary_json` ←
+      `validation/validation_summary.json` verbatim, stage set to
+      `validated-screening`, project_id bound to the demo project.
+- Supabase migration: add `workspaces.is_demo BOOLEAN DEFAULT false`
+  so demo workspaces can be filtered out of observability / billing
+  / outbound paths by any surface that cares.
+- Tests: seed idempotence (run twice, one set of rows), is_demo
+  marker present, screening-grade validation fields preserved
+  verbatim.
 - Proof doc.
 
-Exit criteria: the existing NCTC artifact can be surfaced on
-`/county-runs/[countyRunId]` through a normal POST from a seeded
-workspace, and every disclosure in the manifest renders verbatim in the
-UI. No synthetic data introduced.
+Exit criteria: after `pnpm supabase db reset` + `pnpm seed:nctc`, the
+`/county-runs/[countyRunId]` page (for the seeded row) renders the
+real NCTC bundle manifest, real validation metrics, and the
+screening-grade caveat banner from Phase S.1 — without any code
+changes to the UI. The demo workspace is discoverable by its
+`is_demo=true` marker.
 
-### Q.2 — Seed an NCTC workspace + project + RTP cycle
-
-Scope:
-
-- New seed script under `scripts/` (or a supabase migration with fixed
-  UUIDs, per existing patterns) that creates:
-  - One workspace "Nevada County Transportation Commission (demo)" with
-    pilot subscription_status.
-  - One project "NCTC 2045 RTP (proof-of-capability)" linked to the
-    Q.1-imported `county_runs` row.
-  - One RTP cycle bound to that project.
-  - Explicit demo-marker field (e.g., `is_demo=true`) on the workspace
-    so it's never mistaken for real client data in observability /
-    billing paths.
-- Tests: seed idempotence + that the demo-marker is honored wherever
-  billing or outbound paths check for production workspaces.
-- Proof doc.
-
-Exit criteria: after a `supabase db reset` + `pnpm seed:nctc`, an
-operator can sign in (or an assistant can load the workspace by URL)
-and see a real NCTC-geography RTP cycle with screening-grade evidence
-attached.
-
-### Q.3 — Author one chapter with honest disclosures
+### Q.2 — Author one chapter with honest disclosures
 
 Scope:
 
@@ -172,7 +174,7 @@ Exit criteria: a reviewer reading only this one chapter can tell
 (i) what OpenPlan produces, (ii) what the data says, (iii) what
 caveats apply, without having to click anything outside the page.
 
-### Q.4 — Outbound one-pager / PDF (commercial lane, not code)
+### Q.3 — Outbound one-pager / PDF (commercial lane, not code)
 
 Scope:
 
@@ -189,6 +191,14 @@ outreach without any copy-edits.
 This session is **commercial-lane, not engineering**. It does not need
 a code diff, tests, or a build step. The proof doc is a short note
 linking the PDF + the demo URL.
+
+### Updated slice table
+
+| Slice | Shape | Size |
+|---|---|---|
+| Q.1 | Seed script (`scripts/seed-nctc-demo.ts`) + `is_demo` migration. Creates the demo workspace, project, RTP cycle, county-run, and imports the screening artifact into Supabase. | 1 session |
+| Q.2 | Author one chapter (Existing Conditions / Travel Patterns recommended) with inline screening-grade disclosures. | 1 session |
+| Q.3 | Outbound one-pager / PDF (commercial lane, not code). | 1 session — non-code |
 
 ## What Phase Q explicitly will NOT do
 
@@ -219,14 +229,14 @@ These do not block Q.1. They do block Q.2+.
    - Default recommendation: (b). Matches "send to prospects" intent
      without exposing workspace-level billing plumbing to arbitrary
      visitors.
-2. **Chapter pick for Q.3.** Existing Conditions / Travel Patterns is
+2. **Chapter pick for Q.2.** Existing Conditions / Travel Patterns is
    the recommended chapter (most data support). Confirm or pick a
    different one.
 3. **Outbound framing sign-off.** The one-line framing in this doc —
    *"what OpenPlan produces when a rural RTPA like Nevada County runs
    an RTP cycle through it"* — is the honest pitch. Confirm or rewrite.
-4. **Q.4 format.** PDF one-pager, marketing landing page, or both?
-   Affects whether Q.4 is design-only or design + frontend.
+4. **Q.3 format.** PDF one-pager, marketing landing page, or both?
+   Affects whether Q.3 is design-only or design + frontend.
 
 ## Writer/reader census + covenant check
 
