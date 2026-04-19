@@ -17,7 +17,13 @@ Secondary canonical references (read only if the deep-dive points you to them):
 
 **Paused state lifted.** Nathaniel delegated the five Phase P design decisions on 2026-04-19 with "You answer for me. Take this app to the next level." Decisions are locked in `docs/ops/2026-04-19-phase-p-decisions-locked.md`.
 
-Phase S.2 + S.3 shipped the same session: `project-posture-unified.tsx` surfaces the cached `rtp_posture` and `aerial_posture` bodies on `projects/[projectId]/page.tsx`. Writer/reader census is down to 1 open case (T16).
+**This session shipped Phase S.2 + S.3 + O + S.1 in sequence:**
+
+- **Phase S.2 + S.3** — `project-posture-unified.tsx` surfaces the cached `rtp_posture` and `aerial_posture` bodies on `projects/[projectId]/page.tsx`.
+- **Phase O** — weighted quota (`QUOTA_WEIGHTS.MODEL_RUN_LAUNCH=5`) + gate on `reports/[reportId]/generate`. Proof: `docs/ops/2026-04-19-phase-o-quota-closure-proof.md`.
+- **Phase S.1** — T16 behavioral-onramp KPI reader on `county-runs/[countyRunId]/page.tsx` with screening-grade refusal banner + `?includeScreening=1` consent toggle. Proof: `docs/ops/2026-04-19-phase-s1-t16-reader-proof.md`.
+
+**All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
 **Phase C (mega-page decomposition)** shipped in full on 2026-04-18 evening. Pattern: `src/app/(app)/<route>/page.tsx` → sibling `_components/_types.ts` + `_helpers.ts` + N extracted section components.
 
@@ -28,21 +34,21 @@ Phase S.2 + S.3 shipped the same session: `project-posture-unified.tsx` surfaces
 | C.4 | `rtp/page.tsx` | 2413 → 1240 LOC | `docs/ops/2026-04-18-phase-c4-rtp-registry-decomposition-proof.md` |
 | C.2 slice 1 | `explore/page.tsx` | 3814 → 3256 LOC | `docs/ops/2026-04-18-phase-c2-explore-decomposition-proof.md` |
 
-All on main, all Vercel Ready, tests green (761/169).
+All on main, all Vercel Ready, tests green (766/169 after Phase O adds 5 quota tests).
 
 **Locked Phase P decisions (2026-04-19):**
 
-1. T16 reader → **county-run detail page**.
+1. T16 reader → **county-run detail page**. Shipped.
 2. `rtp_posture` body → **compact inline + warm-gradient on `remainingFundingGap > 0`**. Shipped.
 3. `aerial_posture` body → **unified section paired with #2**. Shipped. Mission-page rewire deferred.
-4. Quota → **per-workspace scope + binary weight** (model-run launches = 5 units, default = 1).
-5. 90% plan example → **Nevada County RTPA (NCTC)**.
+4. Quota → **per-workspace scope + binary weight** (model-run launches = 5 units, default = 1). Mechanical foundation shipped + report-generate wired.
+5. 90% plan example → **Nevada County RTPA (NCTC)**. Not yet started.
 
 Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options analysis: `docs/ops/2026-04-19-phase-p-design-decision-pack.md`.
 
-**Queued next sessions:** Phase O (quota wiring, ~1 session), Phase S.1 (T16 county-run reader, ~1 session), Phase S.3 follow-up (mission-page rewire, ~2h), Phase Q (NCTC 90% plan example, multi-session).
+**Queued next sessions:** Phase S.3 follow-up (mission-page rewire, ~2h), Phase O.1 (quota tranche across compute-heavy endpoints, ~1 session), Phase Q (NCTC 90% plan example, multi-session).
 
-**If you are a new agent asked to resume:** start with the decisions-locked doc, then the decision pack, then the `project-posture-unified.tsx` component for pattern reference on the next posture reader.
+**If you are a new agent asked to resume:** start with the decisions-locked doc, then the Phase O + Phase S.1 proof docs, then the `project-posture-unified.tsx` and `county-run-behavioral-kpis.tsx` components for pattern reference on the next reader work.
 
 ## Project Overview
 
