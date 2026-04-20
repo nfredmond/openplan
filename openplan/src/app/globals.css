@@ -3258,6 +3258,16 @@
   background: transparent;
 }
 
+.chapter-markdown-table-wrap {
+  overflow-x: auto;
+  margin: 0.8em 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chapter-markdown-table-wrap table {
+  margin: 0;
+}
+
 .chapter-markdown table {
   margin: 0.8em 0;
   width: 100%;

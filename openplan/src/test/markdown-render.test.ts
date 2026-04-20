@@ -73,4 +73,44 @@ describe("renderChapterMarkdownToHtml", () => {
     expect(html).not.toMatch(/<link/i);
     expect(html).toContain("ok");
   });
+
+  it("strips unquoted event-handler attributes", () => {
+    const html = renderChapterMarkdownToHtml("<div onclick=alert(1)>hi</div>");
+    expect(html).not.toMatch(/onclick/i);
+    expect(html).toContain("hi");
+  });
+
+  it("strips onload handler on <svg>", () => {
+    const html = renderChapterMarkdownToHtml(
+      "<svg onload=\"alert('svg')\"><circle cx='5' cy='5' r='4'/></svg>",
+    );
+    expect(html).not.toMatch(/onload/i);
+  });
+
+  it("strips onerror handler on <img>", () => {
+    const html = renderChapterMarkdownToHtml(
+      "<img src='x' onerror='alert(1)'>",
+    );
+    expect(html).not.toMatch(/onerror/i);
+  });
+
+  it("strips <script> blocks nested inside <svg>", () => {
+    const html = renderChapterMarkdownToHtml(
+      "<svg><script>alert(1)</script><circle/></svg>",
+    );
+    expect(html).not.toMatch(/<script/i);
+    expect(html).not.toContain("alert(");
+  });
+
+  it("wraps GFM tables in a chapter-markdown-table-wrap div for horizontal overflow", () => {
+    const table = [
+      "| A | B |",
+      "| --- | --- |",
+      "| 1 | 2 |",
+    ].join("\n");
+    const html = renderChapterMarkdownToHtml(table);
+    expect(html).toContain('<div class="chapter-markdown-table-wrap">');
+    expect(html).toMatch(/<div class="chapter-markdown-table-wrap">\s*<table/);
+    expect(html).toMatch(/<\/table>\s*<\/div>/);
+  });
 });

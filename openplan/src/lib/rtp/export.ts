@@ -340,6 +340,47 @@ export function buildRtpExportHtml(input: {
     .section { margin-top: 28px; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8dee4; font-size: 12px; margin-right: 8px; }
     ul { padding-left: 20px; }
+    .chapter-markdown { line-height: 1.7; margin-top: 8px; }
+    .chapter-markdown > *:first-child { margin-top: 0; }
+    .chapter-markdown > *:last-child { margin-bottom: 0; }
+    .chapter-markdown h1, .chapter-markdown h2, .chapter-markdown h3, .chapter-markdown h4 {
+      font-weight: 600; color: #16202a; margin: 1.2em 0 0.5em; letter-spacing: -0.01em;
+    }
+    .chapter-markdown h1 { font-size: 1.25em; }
+    .chapter-markdown h2 { font-size: 1.12em; }
+    .chapter-markdown h3 { font-size: 1em; text-transform: uppercase; letter-spacing: 0.04em; color: #3e4a55; }
+    .chapter-markdown p { margin: 0.6em 0; }
+    .chapter-markdown ul, .chapter-markdown ol { margin: 0.6em 0; padding-left: 1.3em; }
+    .chapter-markdown li { margin: 0.25em 0; }
+    .chapter-markdown blockquote {
+      margin: 1em 0; padding: 0.6em 0.9em;
+      border-left: 3px solid #c9d1d9; background: #f4f4f5;
+      border-radius: 0 6px 6px 0; color: #34404a;
+    }
+    .chapter-markdown blockquote > :first-child { margin-top: 0; }
+    .chapter-markdown blockquote > :last-child { margin-bottom: 0; }
+    .chapter-markdown code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em; padding: 0.1em 0.35em; background: #eef0f2; border-radius: 4px;
+    }
+    .chapter-markdown pre {
+      margin: 0.8em 0; padding: 0.75em 1em; background: #eef0f2;
+      border-radius: 6px; overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em; line-height: 1.55;
+    }
+    .chapter-markdown pre code { padding: 0; background: transparent; }
+    .chapter-markdown-table-wrap { overflow-x: auto; margin: 0.8em 0; }
+    .chapter-markdown-table-wrap table { margin: 0; }
+    .chapter-markdown table { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+    .chapter-markdown th, .chapter-markdown td {
+      padding: 0.45em 0.65em; border-bottom: 1px solid #e2e6ea;
+      text-align: left; vertical-align: top;
+    }
+    .chapter-markdown th { background: #f4f4f5; font-weight: 600; border-bottom-width: 2px; }
+    .chapter-markdown a { color: #34404a; text-decoration: underline; text-underline-offset: 2px; }
+    .chapter-markdown strong { font-weight: 600; color: #16202a; }
+    .chapter-markdown hr { border: 0; border-top: 1px solid #dadfe4; margin: 1.2em 0; }
   </style>
 </head>
 <body>

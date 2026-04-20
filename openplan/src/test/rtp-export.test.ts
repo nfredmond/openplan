@@ -73,4 +73,54 @@ describe("buildRtpExportHtml", () => {
     expect(html).toContain("5 approved comments are ready for packet handoff");
     expect(html).toContain("1 cycle targets · 0 chapter targets · 5 ready comments · 0 pending comments");
   });
+
+  it("embeds .chapter-markdown styles and wraps tables in standalone exports", () => {
+    const chapterMarkdown = [
+      "## Existing conditions",
+      "",
+      "> Screening-grade only — not for regulatory use.",
+      "",
+      "| Facility | Observed | Modeled |",
+      "| --- | ---: | ---: |",
+      "| SR-174 | 73,666 | 34,775 |",
+    ].join("\n");
+
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-standalone",
+        workspace_id: "workspace-standalone",
+        title: "2027 RTP",
+        status: "draft",
+        geography_label: "Nevada County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: null,
+        public_review_open_at: null,
+        public_review_close_at: null,
+        summary: "Cycle summary",
+        updated_at: "2026-04-16T00:00:00.000Z",
+      },
+      chapters: [
+        {
+          id: "chapter-standalone",
+          title: "Existing conditions",
+          section_type: "performance",
+          status: "ready_for_review",
+          summary: "",
+          guidance: "",
+          content_markdown: chapterMarkdown,
+          sort_order: 10,
+        },
+      ],
+      linkedProjects: [],
+      campaigns: [],
+      options: { titleSuffix: "OpenPlan RTP Packet" },
+    });
+
+    expect(html).toMatch(/<style>[\s\S]*\.chapter-markdown\s*\{/);
+    expect(html).toMatch(/<style>[\s\S]*\.chapter-markdown-table-wrap\s*\{/);
+    expect(html).toContain('<div class="chapter-markdown-table-wrap">');
+    expect(html).toMatch(/<div class="chapter-markdown-table-wrap">\s*<table/);
+    expect(html).toMatch(/<td[^>]*>73,666<\/td>/);
+  });
 });

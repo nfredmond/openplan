@@ -15,12 +15,20 @@ function stripUnsafeHtml(html: string): string {
     .replace(/<link\b[^>]*>/gi, "")
     .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, "")
     .replace(/\s+on\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/\s+on\w+\s*=\s*[^"'\s>]+/gi, "")
     .replace(/javascript:/gi, "");
+}
+
+function wrapTablesForOverflow(html: string): string {
+  return html.replace(
+    /<table\b[\s\S]*?<\/table>/gi,
+    (match) => `<div class="chapter-markdown-table-wrap">${match}</div>`,
+  );
 }
 
 export function renderChapterMarkdownToHtml(markdown: string | null | undefined): string {
   const source = markdown?.trim();
   if (!source) return "";
   const parsed = marked.parse(source) as string;
-  return stripUnsafeHtml(parsed);
+  return wrapTablesForOverflow(stripUnsafeHtml(parsed));
 }
