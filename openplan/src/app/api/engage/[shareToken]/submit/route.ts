@@ -6,8 +6,11 @@ import {
   PUBLIC_SUBMISSION_RECENT_LOOKBACK_MINUTES,
   type RecentPublicSubmissionRecord,
 } from "@/lib/engagement/public-submit";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+
+const PUBLIC_SUBMISSION_MAX_BODY_BYTES = 16 * 1024;
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -38,7 +41,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid share token" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const bodyRead = await readJsonWithLimit(request, PUBLIC_SUBMISSION_MAX_BODY_BYTES);
+    if (!bodyRead.ok) {
+      audit.warn("engagement_public_submission_body_too_large", {
+        byteLength: bodyRead.byteLength,
+        maxBytes: PUBLIC_SUBMISSION_MAX_BODY_BYTES,
+      });
+      return bodyRead.response;
+    }
+
+    const payload = bodyRead.data;
     const parsed = submitSchema.safeParse(payload);
 
     if (!parsed.success) {

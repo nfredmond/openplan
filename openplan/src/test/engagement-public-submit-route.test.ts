@@ -261,4 +261,15 @@ describe("POST /api/engage/[shareToken]/submit", () => {
 
     expect(response.status).toBe(400);
   });
+
+  it("rejects oversized public submissions before campaign lookup", async () => {
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "x".repeat(17 * 1024) }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(413);
+    expect(campaignSelectMock).not.toHaveBeenCalled();
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
 });
