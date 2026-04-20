@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
@@ -810,6 +811,13 @@ export default async function ProjectDetailPage({
         rtpPostureUpdatedAt={project.rtp_posture_updated_at}
         aerialPosture={project.aerial_posture}
         aerialPostureUpdatedAt={project.aerial_posture_updated_at}
+      />
+
+      <PilotWorkflowHandoff
+        currentStep="context"
+        projectId={project.id}
+        title="Continue this pilot story"
+        description={`${project.name} is the context anchor. Move next into analysis evidence, engagement signal, packet assembly, and readiness proof without losing the project thread.`}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

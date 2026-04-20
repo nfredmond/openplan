@@ -286,6 +286,15 @@ async function renderPage() {
   );
 }
 
+function expectLinkByHref(name: RegExp, href: string) {
+  const link = screen
+    .getAllByRole("link", { name })
+    .find((element) => element.getAttribute("href") === href);
+
+  expect(link).toBeDefined();
+  expect(link).toHaveAttribute("href", href);
+}
+
 describe("ProjectDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -550,6 +559,16 @@ describe("ProjectDetailPage", () => {
       )
     ).toBeInTheDocument();
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
+    expect(screen.getByText("Continue this pilot story")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1"
+    );
+    expect(screen.getByRole("link", { name: /Engagement signal/i })).toHaveAttribute(
+      "href",
+      "/engagement?projectId=project-1"
+    );
+    expectLinkByHref(/Packet assembly/i, "/reports");
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
     expect(

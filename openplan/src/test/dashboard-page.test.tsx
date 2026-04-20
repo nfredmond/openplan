@@ -78,6 +78,15 @@ async function renderPage() {
   render(await DashboardPage());
 }
 
+function expectLinkByHref(name: RegExp, href: string) {
+  const link = screen
+    .getAllByRole("link", { name })
+    .find((element) => element.getAttribute("href") === href);
+
+  expect(link).toBeDefined();
+  expect(link).toHaveAttribute("href", href);
+}
+
 describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -197,7 +206,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
     expect(screen.getByText("Pilot workflow spine")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute("href", "/projects");
-    expect(screen.getByRole("link", { name: /Packet assembly/i })).toHaveAttribute("href", "/reports");
+    expectLinkByHref(/Packet assembly/i, "/reports");
   });
 
   it("surfaces comparison-backed report posture as planning support in dashboard copy", async () => {
