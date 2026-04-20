@@ -8,6 +8,7 @@ const notFoundMock = vi.fn(() => {
 const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
+const routerRefreshMock = vi.fn();
 
 const reportMaybeSingleMock = vi.fn();
 const reportEqMock = vi.fn(() => ({ maybeSingle: reportMaybeSingleMock }));
@@ -191,6 +192,9 @@ const fromMock = vi.fn((table: string) => {
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
+  useRouter: () => ({
+    refresh: routerRefreshMock,
+  }),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -713,6 +717,7 @@ describe("ReportDetailPage", () => {
       "/engagement/campaign-1"
     );
     expectLinkByHref(/Packet assembly/i, "/reports/report-1");
+    expect(screen.getByRole("button", { name: /Generate packet/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Current surface/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Grant planning posture")).toBeInTheDocument();
     expect(screen.getByText(/Refresh supporting packet before final pursue language/i)).toBeInTheDocument();

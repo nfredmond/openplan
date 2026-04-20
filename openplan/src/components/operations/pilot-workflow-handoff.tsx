@@ -9,6 +9,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
+import { PilotWorkflowActionButton } from "@/components/operations/pilot-workflow-action-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 type PilotWorkflowStepKey = "context" | "analysis" | "engagement" | "packet" | "readiness";
@@ -21,6 +23,12 @@ type PilotWorkflowStep = {
   href: string;
   cta: string;
   icon: LucideIcon;
+  action?: {
+    action: Extract<AssistantQuickLinkExecuteAction, { kind: "generate_report_artifact" }>;
+    label: string;
+    pendingLabel: string;
+    successLabel: string;
+  };
 };
 
 type PilotWorkflowHandoffProps = {
@@ -83,6 +91,17 @@ function buildPilotWorkflowSteps(input: {
       href: packetHref,
       cta: input.reportId ? "Review this packet" : "Open reports",
       icon: FileText,
+      action: input.reportId
+        ? {
+            action: {
+              kind: "generate_report_artifact",
+              reportId: input.reportId,
+            },
+            label: "Generate packet",
+            pendingLabel: "Generating packet",
+            successLabel: "Packet refreshed",
+          }
+        : undefined,
     },
     {
       key: "readiness",
@@ -130,42 +149,69 @@ export function PilotWorkflowHandoff({
           const isCurrent = step.key === currentStep;
           const isComplete = currentIndex > -1 && index < currentIndex;
           const statusLabel = isCurrent ? "Current surface" : isComplete ? "Context carried" : "Next handoff";
+          const rowClassName = [
+            "module-record-row transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/30",
+            isCurrent ? "border-emerald-600/35 bg-emerald-50/35" : "",
+          ].join(" ");
+          const stepContent = (
+            <>
+              <div className="module-record-kicker">
+                <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-[0.72rem] font-bold text-emerald-800">
+                  {step.label}
+                </span>
+                {isComplete ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                ) : (
+                  <Icon className="h-3.5 w-3.5 text-emerald-700" />
+                )}
+                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {statusLabel}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <h3 className="module-record-title">{step.title}</h3>
+                  <span className="inline-flex items-center gap-1 text-[0.74rem] font-semibold text-emerald-800">
+                    {step.cta}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+                <p className="module-record-summary">{step.detail}</p>
+              </div>
+            </>
+          );
+
+          if (step.action) {
+            return (
+              <div key={step.key} className={rowClassName}>
+                <div className="module-record-head">
+                  <Link
+                    href={step.href}
+                    className="module-record-main rounded-[0.25rem] outline-none focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+                  >
+                    {stepContent}
+                  </Link>
+                  <div className="module-record-actions">
+                    <PilotWorkflowActionButton
+                      action={step.action.action}
+                      label={step.action.label}
+                      pendingLabel={step.action.pendingLabel}
+                      successLabel={step.action.successLabel}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <Link
               key={step.key}
               href={step.href}
-              className={[
-                "module-record-row transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/30",
-                isCurrent ? "border-emerald-600/35 bg-emerald-50/35" : "",
-              ].join(" ")}
+              className={rowClassName}
             >
               <div className="module-record-head">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-[0.72rem] font-bold text-emerald-800">
-                      {step.label}
-                    </span>
-                    {isComplete ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
-                    ) : (
-                      <Icon className="h-3.5 w-3.5 text-emerald-700" />
-                    )}
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      {statusLabel}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h3 className="module-record-title">{step.title}</h3>
-                      <span className="inline-flex items-center gap-1 text-[0.74rem] font-semibold text-emerald-800">
-                        {step.cta}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                    <p className="module-record-summary">{step.detail}</p>
-                  </div>
-                </div>
+                <div className="module-record-main">{stepContent}</div>
               </div>
             </Link>
           );
