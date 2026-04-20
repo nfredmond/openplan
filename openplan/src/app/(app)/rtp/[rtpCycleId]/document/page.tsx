@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import {
   buildRtpCycleReadiness,
   formatRtpChapterStatusLabel,
@@ -401,9 +402,18 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
 
                   <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft section text</p>
-                    <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                      {chapter.content_markdown?.trim() || "No draft section content yet."}
-                    </div>
+                    {chapter.content_markdown?.trim() ? (
+                      <div
+                        className="chapter-markdown mt-3 text-sm leading-7 text-foreground/90"
+                        dangerouslySetInnerHTML={{
+                          __html: renderChapterMarkdownToHtml(chapter.content_markdown),
+                        }}
+                      />
+                    ) : (
+                      <div className="mt-3 text-sm leading-7 text-foreground/90">
+                        No draft section content yet.
+                      </div>
+                    )}
                   </div>
 
                   <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">

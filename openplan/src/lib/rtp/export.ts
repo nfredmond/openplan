@@ -1,3 +1,4 @@
+import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -237,7 +238,11 @@ export function buildRtpExportHtml(input: {
           <h3>${esc(chapter.title)}</h3>
           <p class="muted">${esc(titleizeRtpValue(chapter.section_type))} · ${esc(formatRtpChapterStatusLabel(chapter.status))}</p>
           <p>${esc(chapter.summary?.trim() || "No working summary yet.")}</p>
-          <p>${esc(chapter.content_markdown?.trim() || "No draft chapter content yet.")}</p>
+          <div class="chapter-markdown">${
+            chapter.content_markdown?.trim()
+              ? renderChapterMarkdownToHtml(chapter.content_markdown)
+              : esc("No draft chapter content yet.")
+          }</div>
           <p class="muted">${esc(chapter.guidance?.trim() || "No editorial guidance yet.")}</p>
           <p><strong>Chapter campaigns:</strong> ${campaignsByChapter.get(chapter.id)?.length ?? 0}</p>
         </div>`

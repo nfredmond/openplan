@@ -3164,3 +3164,134 @@
 .dark .public-form-rail {
   background: color-mix(in srgb, #0f1720 82%, var(--fog) 18%);
 }
+
+.chapter-markdown {
+  line-height: 1.7;
+}
+
+.chapter-markdown > *:first-child {
+  margin-top: 0;
+}
+
+.chapter-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.chapter-markdown h1,
+.chapter-markdown h2,
+.chapter-markdown h3,
+.chapter-markdown h4 {
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 1.4em;
+  margin-bottom: 0.6em;
+  letter-spacing: -0.01em;
+}
+
+.chapter-markdown h1 {
+  font-size: 1.3em;
+}
+
+.chapter-markdown h2 {
+  font-size: 1.15em;
+}
+
+.chapter-markdown h3 {
+  font-size: 1.0em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--foreground) 75%, transparent 25%);
+}
+
+.chapter-markdown p {
+  margin: 0.6em 0;
+}
+
+.chapter-markdown ul,
+.chapter-markdown ol {
+  margin: 0.6em 0;
+  padding-left: 1.3em;
+}
+
+.chapter-markdown li {
+  margin: 0.25em 0;
+}
+
+.chapter-markdown blockquote {
+  margin: 1em 0;
+  padding: 0.6em 0.9em;
+  border-left: 3px solid color-mix(in srgb, var(--foreground) 22%, transparent);
+  background: color-mix(in srgb, var(--muted, #f4f4f5) 60%, transparent);
+  border-radius: 0 0.375rem 0.375rem 0;
+  color: color-mix(in srgb, var(--foreground) 85%, transparent);
+}
+
+.chapter-markdown blockquote > :first-child {
+  margin-top: 0;
+}
+
+.chapter-markdown blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.chapter-markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  background: color-mix(in srgb, var(--muted, #f4f4f5) 70%, transparent);
+  border-radius: 0.25rem;
+}
+
+.chapter-markdown pre {
+  margin: 0.8em 0;
+  padding: 0.75em 1em;
+  background: color-mix(in srgb, var(--muted, #f4f4f5) 70%, transparent);
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  line-height: 1.55;
+}
+
+.chapter-markdown pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.chapter-markdown table {
+  margin: 0.8em 0;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.chapter-markdown th,
+.chapter-markdown td {
+  padding: 0.45em 0.65em;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+.chapter-markdown th {
+  background: color-mix(in srgb, var(--muted, #f4f4f5) 65%, transparent);
+  font-weight: 600;
+  border-bottom-width: 2px;
+}
+
+.chapter-markdown a {
+  color: color-mix(in srgb, var(--foreground) 85%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chapter-markdown strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.chapter-markdown hr {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+  margin: 1.2em 0;
+}

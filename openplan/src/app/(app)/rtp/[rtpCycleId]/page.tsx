@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   buildProjectFundingStackSummary,
@@ -615,9 +616,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
                       <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
-                        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
-                          {chapter.content_markdown?.trim() || "No draft chapter content yet. Start writing the actual RTP section text here."}
-                        </p>
+                        {chapter.content_markdown?.trim() ? (
+                          <div
+                            className="chapter-markdown mt-2 text-sm text-muted-foreground"
+                            dangerouslySetInnerHTML={{
+                              __html: renderChapterMarkdownToHtml(chapter.content_markdown),
+                            }}
+                          />
+                        ) : (
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            No draft chapter content yet. Start writing the actual RTP section text here.
+                          </p>
+                        )}
                       </div>
 
                       {chapterCampaigns.length > 0 ? (

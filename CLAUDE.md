@@ -28,6 +28,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase Q.1** — NCTC demo seed. `workspaces.is_demo` marker migration + idempotent `scripts/seed-nctc-demo.ts` service-role script that upserts workspace/membership/project/rtp_cycle/project_rtp_cycle_link/county_run with manifest + validation summary preserved verbatim. Pure `buildSeedRecords` helper covered by 7 unit tests. Scope doc: `docs/ops/2026-04-19-phase-q-scope.md`. Proof: `docs/ops/2026-04-19-phase-q1-nctc-demo-seed-proof.md`.
 - **Phase Q.2** — NCTC demo Existing Conditions chapter. Extends the seed script with an 8th `rtp_cycle_chapters` row (`chapter_key = existing_conditions_travel_patterns`) whose `content_markdown` is composed from the manifest + validation summary — every number traces back to the frozen run, not hand-typed. New pure `buildExistingConditionsChapterMarkdown` helper covered by 8 additional unit tests. No UI shipped — the chapter renders via existing `rtp/[rtpCycleId]/{page,document}` surfaces. Proof: `docs/ops/2026-04-19-phase-q2-existing-conditions-chapter-proof.md`.
 - **Phase Q.3** — Outbound one-pager draft. Non-code commercial lane per the scope doc. Drafted at `docs/sales/2026-04-19-nctc-demo-one-pager.md` with concrete numbers from Q.1+Q.2 and a caveat posture that mirrors the chapter. Handoff doc flags pricing, tone, demo-access posture, contact line, and PDF build as human decisions still outstanding. Handoff: `docs/ops/2026-04-19-phase-q3-outbound-one-pager-handoff.md`.
+- **Phase Q polish** — chapter `content_markdown` rendering fix. All three read sites (`rtp/[rtpCycleId]/page.tsx`, `rtp/[rtpCycleId]/document/page.tsx`, `src/lib/rtp/export.ts`) now parse markdown via a new `src/lib/markdown/render.ts` helper (`marked@^14` + defensive XSS strip for `<script>`, `<iframe>`, `<object>`, `<embed>`, `<link>`, `on*=`, `javascript:`). `.txt` export path left as raw markdown by design. New `.chapter-markdown` CSS block in `globals.css` uses `color-mix()` + `var(--muted)` for theme adaptivity. 8 unit tests in `src/test/markdown-render.test.ts`. Proof: `docs/ops/2026-04-19-phase-q-polish-chapter-markdown-rendering-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -40,7 +41,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 | C.4 | `rtp/page.tsx` | 2413 → 1240 LOC | `docs/ops/2026-04-18-phase-c4-rtp-registry-decomposition-proof.md` |
 | C.2 slice 1 | `explore/page.tsx` | 3814 → 3256 LOC | `docs/ops/2026-04-18-phase-c2-explore-decomposition-proof.md` |
 
-All on main, all Vercel Ready, tests green (789/171 after Phase Q.2 expands `src/test/seed-nctc-demo.test.ts` to 15 tests covering both the seed-record shape and the chapter-markdown composer).
+All on main, all Vercel Ready, tests green (797/172 after Phase Q polish adds `src/test/markdown-render.test.ts` with 8 tests on the shared `renderChapterMarkdownToHtml` helper).
 
 **Locked Phase P decisions (2026-04-19):**
 
