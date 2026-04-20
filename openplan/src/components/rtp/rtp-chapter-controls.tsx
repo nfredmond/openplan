@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, Settings2 } from "lucide-react";
+import { Eye, Loader2, Pencil, Save, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RTP_CHAPTER_STATUS_OPTIONS } from "@/lib/rtp/catalog";
+import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 
 type Chapter = {
   id: string;
@@ -29,6 +30,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
   const [guidance, setGuidance] = useState(chapter.guidance ?? "");
   const [summary, setSummary] = useState(chapter.summary ?? "");
   const [contentMarkdown, setContentMarkdown] = useState(chapter.contentMarkdown ?? "");
+  const [contentMode, setContentMode] = useState<"edit" | "preview">("edit");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,16 +120,57 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-chapter-content-${chapter.id}`} className="text-[0.82rem] font-semibold">
-            Draft section content
-          </label>
-          <Textarea
-            id={`rtp-chapter-content-${chapter.id}`}
-            rows={10}
-            value={contentMarkdown}
-            onChange={(event) => setContentMarkdown(event.target.value)}
-            placeholder="Write the actual draft narrative for this RTP section here. Plain text or markdown-style structure is fine for now."
-          />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor={`rtp-chapter-content-${chapter.id}`} className="text-[0.82rem] font-semibold">
+              Draft section content
+            </label>
+            <div className="inline-flex overflow-hidden rounded-[0.5rem] border border-border/70 text-[0.72rem] font-medium">
+              <button
+                type="button"
+                aria-pressed={contentMode === "edit"}
+                onClick={() => setContentMode("edit")}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                  contentMode === "edit"
+                    ? "bg-foreground text-background"
+                    : "bg-background text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Pencil className="h-3 w-3" />
+                Edit
+              </button>
+              <button
+                type="button"
+                aria-pressed={contentMode === "preview"}
+                onClick={() => setContentMode("preview")}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 transition-colors ${
+                  contentMode === "preview"
+                    ? "bg-foreground text-background"
+                    : "bg-background text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Eye className="h-3 w-3" />
+                Preview
+              </button>
+            </div>
+          </div>
+          {contentMode === "edit" ? (
+            <Textarea
+              id={`rtp-chapter-content-${chapter.id}`}
+              rows={10}
+              value={contentMarkdown}
+              onChange={(event) => setContentMarkdown(event.target.value)}
+              placeholder="Write the draft narrative in GitHub-flavored markdown. Headings, lists, blockquotes, tables, and emphasis render on save."
+            />
+          ) : contentMarkdown.trim() ? (
+            <div
+              className="chapter-markdown rounded-xl border border-border/70 bg-background px-4 py-4 text-sm leading-7 text-foreground/90"
+              dangerouslySetInnerHTML={{ __html: renderChapterMarkdownToHtml(contentMarkdown) }}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-border/70 bg-background px-4 py-6 text-center text-sm text-muted-foreground">
+              Nothing to preview yet — switch back to Edit and start drafting.
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">
