@@ -215,6 +215,15 @@ vi.mock("@/components/reports/report-detail-controls", () => ({
 
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
 
+function expectLinkByHref(name: RegExp, href: string) {
+  const link = screen
+    .getAllByRole("link", { name })
+    .find((element) => element.getAttribute("href") === href);
+
+  expect(link).toBeDefined();
+  expect(link).toHaveAttribute("href", href);
+}
+
 describe("ReportDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -694,6 +703,17 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
     expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
     expect(screen.getByText("Packet release review")).toBeInTheDocument();
+    expect(screen.getByText("Carry this packet through readiness")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
+      "href",
+      "/projects/project-1"
+    );
+    expect(screen.getByRole("link", { name: /Engagement signal/i })).toHaveAttribute(
+      "href",
+      "/engagement/campaign-1"
+    );
+    expectLinkByHref(/Packet assembly/i, "/reports/report-1");
+    expect(screen.getAllByText(/Current surface/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Grant planning posture")).toBeInTheDocument();
     expect(screen.getByText(/Refresh supporting packet before final pursue language/i)).toBeInTheDocument();
     expect(

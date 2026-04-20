@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { ScrollText } from "lucide-react";
+import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
@@ -1616,6 +1617,16 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         label="Workspace command board"
         title="What should move around this report"
         description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
+      />
+
+      <PilotWorkflowHandoff
+        currentStep="packet"
+        projectId={project?.id ?? null}
+        reportId={report.id}
+        engagementCampaignId={engagementCampaign?.id ?? null}
+        publicEngagementHref={engagementPublicHref}
+        title="Carry this packet through readiness"
+        description="This report is the packet-assembly step. Review the source context, refresh any drift, then move to readiness proof before using the packet externally."
       />
 
       <ReportPacketReview
