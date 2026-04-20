@@ -1,8 +1,7 @@
 "use client";
 
 import { StatusBadge } from "@/components/ui/status-badge";
-
-type TractMetric = "minority" | "poverty" | "income" | "disadvantaged";
+import type { TractMetric } from "./_types";
 
 type Props = {
   mapReady: boolean;

@@ -135,6 +135,7 @@ export type AnalysisContextResponse = {
 export type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
 export type AnalysisContextLoadState = "idle" | "loading" | "loaded" | "error";
 export type ReportTemplate = "atp" | "ss4a";
+export type TractMetric = "minority" | "poverty" | "income" | "disadvantaged";
 
 export type HoveredTract = {
   name: string;
