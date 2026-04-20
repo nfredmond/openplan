@@ -101,6 +101,10 @@ type ArtifactInsertPayload = {
 } & Record<string, unknown>;
 const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
 
+const storageUploadMock = vi.fn();
+const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
+const renderHtmlToPdfMock = vi.fn();
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -238,6 +242,10 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+}));
+
+vi.mock("@/lib/reports/pdf", () => ({
+  renderHtmlToPdf: (...args: unknown[]) => renderHtmlToPdfMock(...args),
 }));
 
 import { POST as postGenerate } from "@/app/api/reports/[reportId]/generate/route";
@@ -490,13 +498,17 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
+    storageUploadMock.mockResolvedValue({ error: null });
+    renderHtmlToPdfMock.mockResolvedValue(Buffer.from("fake-pdf-bytes"));
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      storage: { from: storageFromMock },
     });
   });
 
-  it("returns 501 for pdf generation requests", async () => {
+  it("persists a pdf artifact with storage_path + sets latest_artifact_kind to pdf", async () => {
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
         method: "POST",
@@ -508,7 +520,68 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }
     );
 
-    expect(response.status).toBe(501);
+    expect(response.status).toBe(200);
+    expect(renderHtmlToPdfMock).toHaveBeenCalledTimes(1);
+    expect(storageFromMock).toHaveBeenCalledWith("report-artifacts");
+    expect(storageUploadMock).toHaveBeenCalledTimes(1);
+    const uploadArgs = storageUploadMock.mock.calls[0];
+    const uploadPath: string = uploadArgs[0];
+    expect(uploadPath.startsWith("33333333-3333-4333-8333-333333333333/11111111-1111-4111-8111-111111111111/")).toBe(
+      true
+    );
+    expect(uploadPath.endsWith(".pdf")).toBe(true);
+    expect(uploadArgs[2]).toMatchObject({ contentType: "application/pdf", upsert: false });
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifact_kind: "pdf",
+        storage_path: uploadPath,
+      })
+    );
+    expect(reportUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ latest_artifact_kind: "pdf" })
+    );
+    expect(await response.json()).toMatchObject({
+      format: "pdf",
+      storagePath: uploadPath,
+    });
+  });
+
+  it("returns 500 when PDF rendering throws", async () => {
+    renderHtmlToPdfMock.mockRejectedValueOnce(new Error("chromium boom"));
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "pdf" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(storageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when PDF storage upload fails", async () => {
+    storageUploadMock.mockResolvedValueOnce({ error: { message: "bucket unavailable" } });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "pdf" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(renderHtmlToPdfMock).toHaveBeenCalledTimes(1);
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
   it("returns 403 when workspace role is unsupported", async () => {

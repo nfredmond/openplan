@@ -466,23 +466,40 @@ async function main(): Promise<void> {
   });
 
   // 1. Demo user (auth.admin) — create if missing, reuse otherwise.
-  let demoUserId = DEMO_USER_ID;
-  const { data: existingUser } = await supabase.auth.admin.getUserById(DEMO_USER_ID);
-  if (!existingUser?.user) {
+  // Lookup is by email, not by sentinel DEMO_USER_ID: the service-role admin
+  // API assigns its own uid on create, so the real demo user's id won't
+  // match DEMO_USER_ID on re-runs. Paginated listUsers + email match is the
+  // idempotent path until supabase-js exposes a native email lookup.
+  let demoUserId: string | null = null;
+  {
+    const perPage = 200;
+    for (let page = 1; page <= 50 && !demoUserId; page += 1) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+      if (error) {
+        throw new Error(`Failed to list auth users: ${error.message}`);
+      }
+      const match = (data?.users ?? []).find((u) => u.email === DEMO_USER_EMAIL);
+      if (match) {
+        demoUserId = match.id;
+        break;
+      }
+      if ((data?.users?.length ?? 0) < perPage) break;
+    }
+  }
+
+  if (demoUserId) {
+    console.log(`[seed:nctc] reusing existing demo user: ${demoUserId}`);
+  } else {
     const { data: created, error: createUserError } = await supabase.auth.admin.createUser({
       email: DEMO_USER_EMAIL,
       email_confirm: true,
       user_metadata: { name: "NCTC Demo Operator", is_demo: true },
-      // Service-role admin API does not let us set an explicit id directly.
-      // We record whatever id gets assigned and use it for membership.
     });
-    if (createUserError) {
-      throw new Error(`Failed to create demo user: ${createUserError.message}`);
+    if (createUserError || !created?.user?.id) {
+      throw new Error(`Failed to create demo user: ${createUserError?.message ?? "no user returned"}`);
     }
-    demoUserId = created.user?.id ?? DEMO_USER_ID;
+    demoUserId = created.user.id;
     console.log(`[seed:nctc] created demo user: ${demoUserId}`);
-  } else {
-    console.log(`[seed:nctc] reusing existing demo user: ${DEMO_USER_ID}`);
   }
 
   // 2. Workspace (is_demo=true, pilot subscription so billing gates pass).

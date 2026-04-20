@@ -21,7 +21,6 @@ import {
   formatAerialPackageStatusLabel,
   formatAerialVerificationReadinessLabel,
   type AerialMissionStatus,
-  type AerialMissionType,
   type AerialPackageStatus,
   type AerialProjectPosture,
   type AerialVerificationReadiness,

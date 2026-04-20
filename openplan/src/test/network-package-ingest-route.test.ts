@@ -22,7 +22,10 @@ const runsCountGteMock = vi.fn().mockResolvedValue({ count: 0, error: null });
 const runsCountEqMock = vi.fn(() => ({ gte: runsCountGteMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsCountEqMock }));
 
-const versionUpdateEqPackageMock = vi.fn().mockResolvedValue({ data: null, error: null });
+const versionUpdateSelectMock = vi
+  .fn()
+  .mockResolvedValue({ data: [{ id: "22222222-2222-4222-8222-222222222222" }], error: null });
+const versionUpdateEqPackageMock = vi.fn(() => ({ select: versionUpdateSelectMock }));
 const versionUpdateEqIdMock = vi.fn(() => ({ eq: versionUpdateEqPackageMock }));
 const versionUpdateMock = vi.fn(() => ({ eq: versionUpdateEqIdMock }));
 
@@ -197,6 +200,36 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
         versionId: VERSION_ID,
         userId: USER_ID,
         workspaceId: WORKSPACE_ID,
+      })
+    );
+  });
+
+  it("returns 404 when versionId does not belong to packageId", async () => {
+    versionUpdateSelectMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postIngest(
+      buildRequest({
+        nodes: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [0, 0] },
+              properties: { id: "n1" },
+            },
+          ],
+        },
+        links: { type: "FeatureCollection", features: [] },
+      }),
+      buildContext()
+    );
+
+    expect(response.status).toBe(404);
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "network_package_version_not_found",
+      expect.objectContaining({
+        packageId: PACKAGE_ID,
+        versionId: VERSION_ID,
       })
     );
   });

@@ -193,11 +193,6 @@ export default async function PlanDetailPage({
     projectScenariosResult,
     projectCampaignsResult,
     projectReportsResult,
-    workspaceProgramsResult,
-    workspacePlansResult,
-    workspaceReportsResult,
-    workspaceFundingOpportunitiesResult,
-    workspaceProjectFundingProfilesResult,
   ] = await Promise.all([
       supabase
         .from("projects")
@@ -236,32 +231,6 @@ export default async function PlanDetailPage({
             .eq("project_id", plan.project_id)
             .order("updated_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
-      supabase
-        .from("programs")
-        .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-        .eq("workspace_id", plan.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("plans")
-        .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
-        .eq("workspace_id", plan.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("reports")
-        .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-        .eq("workspace_id", plan.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("funding_opportunities")
-        .select(
-          "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
-        )
-        .eq("workspace_id", plan.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("project_funding_profiles")
-        .select("project_id, funding_need_amount, local_match_need_amount")
-        .eq("workspace_id", plan.workspace_id),
     ]);
 
   const planLinks = planLinksResult.data ?? [];

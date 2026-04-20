@@ -2,7 +2,6 @@ import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
   PACKET_FRESHNESS_DETAIL,
   PACKET_FRESHNESS_LABELS,
-  type PacketFreshnessLabel,
 } from "@/lib/reports/packet-labels";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 

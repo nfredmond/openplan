@@ -78,4 +78,51 @@ describe('proxy auth/session guard', () => {
 
     expect(response.status).toBe(200)
   })
+
+  it('echoes an incoming x-request-id header on the response', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: { id: 'user-1' },
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/dashboard', {
+      headers: { 'x-request-id': 'upstream-fixed-id' },
+    })
+    const response = await proxy(request)
+
+    expect(response.headers.get('x-request-id')).toBe('upstream-fixed-id')
+  })
+
+  it('generates a UUID x-request-id on the response when none is set', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: { id: 'user-1' },
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/dashboard')
+    const response = await proxy(request)
+
+    const generated = response.headers.get('x-request-id')
+    expect(generated).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    )
+  })
+
+  it('sets x-request-id on sign-in redirects too', async () => {
+    updateSessionMock.mockResolvedValueOnce({
+      response: NextResponse.next(),
+      user: null,
+    })
+
+    const { proxy } = await import('@/proxy')
+    const request = new NextRequest('http://localhost/dashboard', {
+      headers: { 'x-request-id': 'redirect-correlation-id' },
+    })
+    const response = await proxy(request)
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('x-request-id')).toBe('redirect-correlation-id')
+  })
 })

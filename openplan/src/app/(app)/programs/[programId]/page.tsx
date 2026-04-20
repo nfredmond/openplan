@@ -258,9 +258,6 @@ export default async function ProgramDetailPage({
     explicitReportsResult,
     explicitCampaignsResult,
     explicitProjectsResult,
-    workspaceProgramsResult,
-    workspaceFundingOpportunitiesResult,
-    workspaceProjectFundingProfilesResult,
   ] = await Promise.all([
       supabase
         .from("plans")
@@ -301,22 +298,6 @@ export default async function ProgramDetailPage({
             .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
             .in("id", projectLinkIds)
         : Promise.resolve({ data: [], error: null }),
-      supabase
-        .from("programs")
-        .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-        .eq("workspace_id", program.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("funding_opportunities")
-        .select(
-          "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
-        )
-        .eq("workspace_id", program.workspace_id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("project_funding_profiles")
-        .select("project_id, funding_need_amount, local_match_need_amount")
-        .eq("workspace_id", program.workspace_id),
     ]);
 
   const campaignIds = Array.from(

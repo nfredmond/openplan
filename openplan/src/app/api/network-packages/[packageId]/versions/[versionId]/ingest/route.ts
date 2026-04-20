@@ -259,8 +259,11 @@ export async function POST(
   if (linksGeojson) manifest.links_file = "links.geojson";
   if (body.crs) manifest.crs = body.crs;
 
-  // Update the version record with QA report and manifest
-  const { error: updateError } = await supabase
+  // Update the version record with QA report and manifest. Scoped by both
+  // version id and package id so a versionId that doesn't belong to this
+  // package can't be silently ingested. .select("id") + length check turns
+  // the zero-rows case into an explicit 404.
+  const { data: updated, error: updateError } = await supabase
     .from("network_package_versions")
     .update({
       qa_report_json: qaReport,
@@ -268,7 +271,8 @@ export async function POST(
       status: overallStatus === "fail" ? "draft" : "active",
     })
     .eq("id", versionId)
-    .eq("package_id", packageId);
+    .eq("package_id", packageId)
+    .select("id");
 
   if (updateError) {
     audit.error("network_package_version_ingest_update_failed", {
@@ -279,6 +283,18 @@ export async function POST(
       code: updateError.code ?? null,
     });
     return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  if (!updated || updated.length === 0) {
+    audit.warn("network_package_version_not_found", {
+      packageId,
+      versionId,
+      userId: user.id,
+    });
+    return NextResponse.json(
+      { error: "Network package version not found" },
+      { status: 404 }
+    );
   }
 
   audit.info("network_package_version_ingested", {
