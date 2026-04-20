@@ -15,10 +15,8 @@ import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
-import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   type CrashSeverityFilter,
   type CrashUserFilter,
@@ -55,6 +53,7 @@ import { ExploreHoverInspector } from "./_components/explore-hover-inspector";
 import { ExploreLayerVisibilityControls } from "./_components/explore-layer-visibility-controls";
 import { ExploreResultsBoard } from "./_components/explore-results-board";
 import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel";
+import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
 const MAPBOX_ACCESS_TOKEN =
@@ -921,7 +920,6 @@ export default function ExplorePage() {
   }, [mapReady]);
 
   const trimmedQueryText = queryText.trim();
-  const queryCharacterCount = queryText.length;
   const isQueryTooLong = trimmedQueryText.length > ANALYSIS_QUERY_MAX_CHARS;
 
   const canSubmit = useMemo(() => {
@@ -1588,100 +1586,22 @@ export default function ExplorePage() {
               crashUserFilter={crashUserFilter}
             />
 
-            <section className="analysis-studio-surface">
-              <div className="analysis-studio-header">
-                <div className="analysis-studio-heading">
-                  <p className="analysis-studio-label">Study brief</p>
-                  <h3 className="analysis-studio-title">Question and outputs</h3>
-                  <p className="analysis-studio-description">Frame the planning question, choose the reporting lane, then run or export the analysis from the same rail.</p>
-                </div>
-              </div>
-
-              <div className="analysis-studio-body">
-                <div className="analysis-studio-input-stack">
-                  <Textarea
-                    value={queryText}
-                    onChange={(event) => setQueryText(event.target.value)}
-                    placeholder="Example: Evaluate transit accessibility, safety risk, and equity implications for this corridor."
-                    rows={4}
-                    maxLength={ANALYSIS_QUERY_MAX_CHARS}
-                  />
-                  <p className="analysis-studio-note">
-                    Query length: {queryCharacterCount}/{ANALYSIS_QUERY_MAX_CHARS} characters.
-                  </p>
-                  {isQueryTooLong ? (
-                    <p className="text-[0.72rem] text-destructive">
-                      Trim the prompt before running analysis.
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="analysis-sidepanel-row is-muted">
-                  <div className="analysis-sidepanel-head">
-                    <div className="analysis-sidepanel-main">
-                      <p className="analysis-sidepanel-title">Report template</p>
-                      <p className="analysis-sidepanel-body">Keep the current grant or program framing visible while you generate HTML or PDF outputs.</p>
-                    </div>
-                    <div className="analysis-sidepanel-actions">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={reportTemplate === "atp" ? "secondary" : "outline"}
-                        onClick={() => setReportTemplate("atp")}
-                      >
-                        ATP
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={reportTemplate === "ss4a" ? "secondary" : "outline"}
-                        onClick={() => setReportTemplate("ss4a")}
-                      >
-                        SS4A
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="analysis-studio-note">Current template: {reportTemplate.toUpperCase()}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    className="w-full"
-                    onClick={() => void runAnalysis()}
-                    disabled={!canSubmit || isSubmitting}
-                  >
-                    {isSubmitting ? "Running analysis…" : "Run Analysis"}
-                  </Button>
-                  {analysisResult?.runId ? (
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => void generateReport()}
-                        disabled={isGeneratingReport}
-                      >
-                        {isGeneratingReport ? "Generating…" : `${reportTemplate.toUpperCase()} Report`}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="flex-1"
-                        onClick={() => void downloadPdfReport()}
-                        disabled={isDownloadingPdf}
-                      >
-                        {isDownloadingPdf ? "Preparing…" : "PDF"}
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-
-                {error ? <ErrorState compact title="Please review" description={error} /> : null}
-              </div>
-            </section>
+            <ExploreStudyBriefControls
+              queryText={queryText}
+              isQueryTooLong={isQueryTooLong}
+              reportTemplate={reportTemplate}
+              canSubmit={canSubmit}
+              isSubmitting={isSubmitting}
+              analysisRunId={analysisResult?.runId ?? null}
+              isGeneratingReport={isGeneratingReport}
+              isDownloadingPdf={isDownloadingPdf}
+              error={error}
+              onQueryTextChange={setQueryText}
+              onReportTemplateChange={setReportTemplate}
+              onRunAnalysis={runAnalysis}
+              onGenerateReport={generateReport}
+              onDownloadPdfReport={downloadPdfReport}
+            />
           </div>
         </div>
 
