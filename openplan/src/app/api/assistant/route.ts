@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { loadAssistantContext } from "@/lib/assistant/context";
 import { assistantLocalConsoleStateSchema } from "@/lib/assistant/local-console-state";
 import { buildAssistantResponse } from "@/lib/assistant/respond";
 import { resolveAssistantWorkflowId } from "@/lib/assistant/catalog";
+
+const ASSISTANT_REQUEST_MAX_BODY_BYTES = 64 * 1024;
 
 const requestSchema = z.object({
   kind: z.enum([
@@ -36,7 +39,16 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const body = await request.json().catch(() => null);
+    const bodyRead = await readJsonWithLimit(request, ASSISTANT_REQUEST_MAX_BODY_BYTES);
+    if (!bodyRead.ok) {
+      audit.warn("request_body_too_large", {
+        byteLength: bodyRead.byteLength,
+        maxBytes: ASSISTANT_REQUEST_MAX_BODY_BYTES,
+      });
+      return bodyRead.response;
+    }
+
+    const body = bodyRead.data;
     const parsed = requestSchema.safeParse(body);
 
     if (!parsed.success) {

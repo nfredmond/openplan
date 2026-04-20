@@ -133,6 +133,34 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
     expect(versionUpdateMock).not.toHaveBeenCalled();
   });
 
+  it("rejects oversized ingest payloads before auth lookup", async () => {
+    const response = await postIngest(
+      buildRequest({
+        nodes: {
+          type: "FeatureCollection",
+          features: [],
+        },
+        links: {
+          type: "FeatureCollection",
+          features: [],
+        },
+        oversized: "x".repeat(2 * 1024 * 1024 + 1),
+      }),
+      buildContext()
+    );
+
+    expect(response.status).toBe(413);
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "request_body_too_large",
+      expect.objectContaining({
+        packageId: PACKAGE_ID,
+        versionId: VERSION_ID,
+        maxBytes: 2 * 1024 * 1024,
+      })
+    );
+  });
+
   it("returns 404 when the network package does not exist", async () => {
     packageMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 

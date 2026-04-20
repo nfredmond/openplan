@@ -546,6 +546,29 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
   });
 
+  it("rejects oversized generation requests before auth lookup", async () => {
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html", oversized: "x".repeat(33 * 1024) }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(413);
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "request_body_too_large",
+      expect.objectContaining({
+        reportId: "11111111-1111-4111-8111-111111111111",
+        maxBytes: 32 * 1024,
+      })
+    );
+  });
+
   it("returns 500 when PDF rendering throws", async () => {
     renderHtmlToPdfMock.mockRejectedValueOnce(new Error("chromium boom"));
 

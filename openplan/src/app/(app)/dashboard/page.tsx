@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
 import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
+import { DashboardPilotWorkflowSpine } from "@/components/dashboard/dashboard-pilot-workflow-spine";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
@@ -239,6 +240,8 @@ export default async function DashboardPage() {
           timeToFirstResultFormatted={formatTimeToFirstResult(kpis.timeToFirstResultHours)}
         />
       </header>
+
+      <DashboardPilotWorkflowSpine />
 
       <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
         <DashboardQuickActions actions={actions} />

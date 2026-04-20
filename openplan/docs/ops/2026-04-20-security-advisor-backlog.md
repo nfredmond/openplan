@@ -208,3 +208,19 @@ After steps 1–5, re-run `mcp__supabase__get_advisors(type=security)`. Expected
 - New migration lands that touches RLS or creates a function → check advisor, update this doc if new items appear.
 - First external customer engagement starts → close all Wave 1 items first.
 - Supabase publishes a new lint type → re-triage here before shipping.
+
+## 2026-04-20 live follow-up
+
+After the GTFS child-policy repair, leaked-password protection toggle, and public-data policy wave, the live advisor set was re-run with:
+
+```bash
+pnpm supabase db advisors --linked --type security
+```
+
+Current residue is now limited to:
+
+- `ERROR rls_disabled_in_public` on `public.spatial_ref_sys` — SQL repair is blocked because the linked role is not the table owner. This remains a Supabase dashboard/support-owned action or a larger PostGIS relocation project.
+- `WARN extension_in_public` for `postgis` — accepted risk for this phase.
+- `WARN extension_in_public` for `pg_trgm` — accepted risk for this phase.
+
+The leaked-password-protection advisor is closed. The original Wave 1 snapshot above is retained for history; use this section and the latest advisor command output for current state.

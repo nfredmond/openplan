@@ -110,6 +110,26 @@ describe("/api/assistant", () => {
     expect(await response.json()).toMatchObject({ error: "Invalid assistant request" });
   });
 
+  it("rejects oversized assistant requests before auth lookup", async () => {
+    const response = await postAssistant(
+      jsonRequest({
+        kind: "workspace",
+        localConsoleState: {
+          oversized: "x".repeat(65 * 1024),
+        },
+      })
+    );
+
+    expect(response.status).toBe(413);
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "request_body_too_large",
+      expect.objectContaining({
+        maxBytes: 64 * 1024,
+      })
+    );
+  });
+
   it("returns 404 when no assistant context is found", async () => {
     loadAssistantContextMock.mockResolvedValueOnce(null);
 

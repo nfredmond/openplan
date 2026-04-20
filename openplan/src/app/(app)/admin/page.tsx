@@ -47,15 +47,14 @@ const adminModules: AdminModule[] = [
     disabled: true,
   },
   {
-    title: "Security & audit",
-    description: "Audit trails, access review, and deeper governance controls for later operational maturity.",
-    href: "#",
+    title: "Operational warnings",
+    description: "Review body-limit events, CSP report-only telemetry, and observation-only AI cost warnings.",
+    href: "/admin/operations",
     icon: ShieldCheck,
-    status: "Staged",
-    tone: "neutral",
-    availabilityNote: "Visibility remains deliberate and limited while the pilot is supervised.",
-    cta: "Staged for pilot follow-up",
-    disabled: true,
+    status: "Telemetry map",
+    tone: "info",
+    availabilityNote: "Available now as a log-backed operations watchboard.",
+    cta: "Open warning watchboard",
   },
 ];
 
@@ -88,7 +87,7 @@ export default function AdminPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Staged next</p>
               <p className="module-summary-value">{stagedCount}</p>
-              <p className="module-summary-detail">Team administration and deep audit controls remain intentionally staged.</p>
+              <p className="module-summary-detail">Team administration remains staged while warning telemetry is visible now.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Pilot posture</p>

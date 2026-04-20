@@ -3,8 +3,11 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+
+const REPORT_REQUEST_MAX_BODY_BYTES = 64 * 1024;
 
 const mapViewStateSchema = z.object({
   tractMetric: z.enum(["minority", "poverty", "income", "disadvantaged"]).optional(),
@@ -574,7 +577,16 @@ export async function POST(request: NextRequest) {
   let requestedMapViewState: Record<string, unknown> | null = null;
 
   try {
-    const body = await request.json().catch(() => null);
+    const bodyRead = await readJsonWithLimit(request, REPORT_REQUEST_MAX_BODY_BYTES);
+    if (!bodyRead.ok) {
+      audit.warn("request_body_too_large", {
+        byteLength: bodyRead.byteLength,
+        maxBytes: REPORT_REQUEST_MAX_BODY_BYTES,
+      });
+      return bodyRead.response;
+    }
+
+    const body = bodyRead.data;
     const parsed = reportRequestSchema.safeParse(body);
 
     if (!parsed.success) {
