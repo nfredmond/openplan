@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
@@ -73,6 +74,8 @@ const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
 
+const REPORT_GENERATE_MAX_BODY_BYTES = 32 * 1024;
+
 const generateSchema = z.object({
   format: z.enum(["html", "pdf"]).default("html"),
 });
@@ -136,7 +139,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid report id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => ({}));
+    const bodyRead = await readJsonWithLimit(request, REPORT_GENERATE_MAX_BODY_BYTES);
+    if (!bodyRead.ok) {
+      audit.warn("request_body_too_large", {
+        reportId: parsedParams.data.reportId,
+        byteLength: bodyRead.byteLength,
+        maxBytes: REPORT_GENERATE_MAX_BODY_BYTES,
+      });
+      return bodyRead.response;
+    }
+
+    const payload = bodyRead.data ?? {};
     const parsed = generateSchema.safeParse(payload);
 
     if (!parsed.success) {

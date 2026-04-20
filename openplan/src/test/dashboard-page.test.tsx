@@ -195,6 +195,9 @@ describe("DashboardPage", () => {
     expect(quickAction).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
     expect(screen.getAllByText(/Grants OS follow-through/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
+    expect(screen.getByText("Pilot workflow spine")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute("href", "/projects");
+    expect(screen.getByRole("link", { name: /Packet assembly/i })).toHaveAttribute("href", "/reports");
   });
 
   it("surfaces comparison-backed report posture as planning support in dashboard copy", async () => {

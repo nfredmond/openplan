@@ -132,6 +132,27 @@ describe("POST /api/report", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects oversized report requests before auth lookup", async () => {
+    const response = await postReport(
+      jsonRequest({
+        runId,
+        format: "html",
+        mapViewState: {
+          oversized: "x".repeat(65 * 1024),
+        },
+      })
+    );
+
+    expect(response.status).toBe(413);
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "request_body_too_large",
+      expect.objectContaining({
+        maxBytes: 64 * 1024,
+      })
+    );
+  });
+
   it("returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
 

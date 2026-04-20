@@ -19,11 +19,16 @@ describe("AdminPage", () => {
     expect(screen.getByText("Admin control room")).toBeInTheDocument();
     expect(screen.getByText("Billing & subscription")).toBeInTheDocument();
     expect(screen.getByText("Pilot readiness")).toBeInTheDocument();
+    expect(screen.getByText("Operational warnings")).toBeInTheDocument();
     expect(screen.getAllByText("Staged").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Billing & subscription/i })).toHaveAttribute("href", "/billing");
     expect(screen.getByRole("link", { name: /Pilot readiness/i })).toHaveAttribute(
       "href",
       "/admin/pilot-readiness"
+    );
+    expect(screen.getByRole("link", { name: /Operational warnings/i })).toHaveAttribute(
+      "href",
+      "/admin/operations"
     );
     expect(screen.getByText(/Standard governance profile/i)).toBeInTheDocument();
   });

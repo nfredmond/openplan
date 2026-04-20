@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
@@ -19,6 +20,8 @@ type QaCheck = {
   message: string;
   count?: number;
 };
+
+const NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES = 2 * 1024 * 1024;
 
 function validateGeoJsonFeatures(geojson: unknown, label: string): QaCheck[] {
   const checks: QaCheck[] = [];
@@ -68,6 +71,27 @@ export async function POST(
 ) {
   const audit = createApiAuditLogger("network_package_versions.ingest", req);
   const { packageId, versionId } = await params;
+
+  const bodyRead = await readJsonWithLimit<Record<string, unknown>>(req, NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES);
+  if (!bodyRead.ok) {
+    audit.warn("request_body_too_large", {
+      packageId,
+      versionId,
+      byteLength: bodyRead.byteLength,
+      maxBytes: NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES,
+    });
+    return bodyRead.response;
+  }
+
+  if (bodyRead.parseError) {
+    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
+  }
+
+  const body = bodyRead.data;
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -178,14 +202,6 @@ export async function POST(
       monthlyLimit: quota.monthlyLimit,
     });
     return NextResponse.json({ error: quota.message }, { status: 429 });
-  }
-
-  // Accept JSON body with nodes and links GeoJSON inline for the v1 prototype
-  let body: Record<string, unknown>;
-  try {
-    body = (await req.json()) as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
   }
 
   const nodesGeojson = body.nodes ?? null;
