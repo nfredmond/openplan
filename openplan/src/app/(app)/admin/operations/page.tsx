@@ -1,13 +1,35 @@
-import { Activity, Search, ShieldAlert } from "lucide-react";
+import { redirect } from "next/navigation";
+import {
+  Activity,
+  CheckCircle2,
+  Search,
+  ShieldAlert,
+  TriangleAlert,
+} from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   operationalWarningEvents,
   summarizeOperationalWarnings,
   type OperationalWarningEvent,
 } from "@/lib/observability/operational-events";
+import { createClient } from "@/lib/supabase/server";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 export const metadata = {
   title: "Operational Warnings | OpenPlan Admin",
+};
+
+type RecentActionExecution = {
+  id: string;
+  action_kind: string;
+  audit_event: string;
+  approval: "safe" | "review" | "approval_required";
+  regrounding: "refresh_preview" | "none";
+  outcome: "succeeded" | "failed";
+  error_message: string | null;
+  input_summary: Record<string, unknown> | null;
+  started_at: string;
+  completed_at: string;
 };
 
 function getSeverityTone(severity: OperationalWarningEvent["severity"]) {
@@ -16,8 +38,73 @@ function getSeverityTone(severity: OperationalWarningEvent["severity"]) {
   return "info" as const;
 }
 
-export default function AdminOperationsPage() {
+function getOutcomeTone(outcome: RecentActionExecution["outcome"]) {
+  return outcome === "succeeded" ? "success" as const : "danger" as const;
+}
+
+function formatActionKind(actionKind: string) {
+  return actionKind
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatActionTimestamp(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown time";
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function summarizeInputSummary(input: RecentActionExecution["input_summary"]) {
+  if (!input) return null;
+
+  const labels: string[] = [];
+  const reportId = typeof input.reportId === "string" ? input.reportId : null;
+  const artifactId = typeof input.artifactId === "string" ? input.artifactId : null;
+  const linkedRunCount = typeof input.linkedRunCount === "number" ? input.linkedRunCount : null;
+  const projectId = typeof input.projectId === "string" ? input.projectId : null;
+
+  if (reportId) labels.push(`report ${reportId.slice(0, 8)}`);
+  if (artifactId) labels.push(`artifact ${artifactId.slice(0, 8)}`);
+  if (linkedRunCount !== null) labels.push(`${linkedRunCount} linked run${linkedRunCount === 1 ? "" : "s"}`);
+  if (projectId) labels.push(`project ${projectId.slice(0, 8)}`);
+
+  return labels.length > 0 ? labels.join(" · ") : null;
+}
+
+export default async function AdminOperationsPage() {
   const summary = summarizeOperationalWarnings();
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in?next=/admin/operations");
+  }
+
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
+  const workspaceId = membership?.workspace_id ?? null;
+  const actionExecutionsResult = workspaceId
+    ? await supabase
+        .from("assistant_action_executions")
+        .select(
+          "id, action_kind, audit_event, approval, regrounding, outcome, error_message, input_summary, started_at, completed_at"
+        )
+        .eq("workspace_id", workspaceId)
+        .order("completed_at", { ascending: false })
+        .limit(8)
+    : { data: [], error: null };
+
+  const actionExecutions = (actionExecutionsResult.data ?? []) as RecentActionExecution[];
+  const actionExecutionsError = actionExecutionsResult.error;
 
   return (
     <section className="module-page">
@@ -31,10 +118,12 @@ export default function AdminOperationsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge tone="info">Observation live</StatusBadge>
               <StatusBadge tone="neutral">Log-backed</StatusBadge>
+              {workspace ? <StatusBadge tone="neutral">{workspace.name}</StatusBadge> : null}
             </div>
             <h1 className="module-intro-title">Warning watchboard</h1>
             <p className="module-intro-description">
-              Use these warning events to review request pressure, CSP report-only noise, and AI cost outliers while the pilot remains supervised.
+              Use these warning events and action-audit rows to review request pressure, CSP report-only noise, AI
+              cost outliers, and operator-fired actions while the pilot remains supervised.
             </p>
           </div>
 
@@ -80,6 +169,82 @@ export default function AdminOperationsPage() {
           </div>
         </article>
       </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Assistant action activity</p>
+            <h2 className="module-section-title">Recent audited operator actions</h2>
+            <p className="module-section-description">
+              These rows come from `assistant_action_executions`, the same audit table used by report generation and
+              other action-backed planner operations.
+            </p>
+          </div>
+          <StatusBadge tone={actionExecutionsError ? "warning" : "info"}>
+            {actionExecutionsError ? "Audit read warning" : `${actionExecutions.length} recent`}
+          </StatusBadge>
+        </div>
+
+        {actionExecutionsError ? (
+          <div className="module-note mt-4 border-amber-300/70 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <div className="flex items-start gap-3">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-sm leading-relaxed">
+                Action activity could not be loaded. Check `assistant_action_executions` RLS and workspace membership
+                before treating the activity lane as complete.
+              </p>
+            </div>
+          </div>
+        ) : actionExecutions.length > 0 ? (
+          <div className="mt-5 module-record-list">
+            {actionExecutions.map((execution) => {
+              const inputSummary = summarizeInputSummary(execution.input_summary);
+              const OutcomeIcon = execution.outcome === "succeeded" ? CheckCircle2 : TriangleAlert;
+              return (
+                <div key={execution.id} className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone={getOutcomeTone(execution.outcome)}>{execution.outcome}</StatusBadge>
+                        <StatusBadge tone="neutral">{execution.approval}</StatusBadge>
+                        <span className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                          {formatActionTimestamp(execution.completed_at)}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title">{formatActionKind(execution.action_kind)}</h3>
+                          <code className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[0.72rem] text-slate-700">
+                            {execution.audit_event}
+                          </code>
+                        </div>
+                        <p className="module-record-summary">
+                          {execution.error_message
+                            ? `Failed with: ${execution.error_message}`
+                            : inputSummary ?? "Action completed without additional input summary."}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="module-record-actions">
+                      <OutcomeIcon
+                        className={[
+                          "h-4 w-4",
+                          execution.outcome === "succeeded" ? "text-emerald-700" : "text-red-700",
+                        ].join(" ")}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="module-note mt-4 text-sm leading-relaxed text-muted-foreground">
+            No assistant actions have been recorded for this workspace yet. The first packet generation, funding
+            decision update, or project-record action will appear here after it writes an audit row.
+          </div>
+        )}
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">
