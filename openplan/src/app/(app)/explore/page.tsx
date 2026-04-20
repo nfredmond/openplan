@@ -2,9 +2,8 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import mapboxgl, {
   FullscreenControl,
   Map,
@@ -15,15 +14,12 @@ import mapboxgl, {
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
-import type { Run } from "@/components/runs/RunHistory";
-import { RunHistory } from "@/components/runs/RunHistory";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  normalizeMapViewState,
   type CrashSeverityFilter,
   type CrashUserFilter,
   type MapViewState,
@@ -58,23 +54,20 @@ import {
 import { ExploreHoverInspector } from "./_components/explore-hover-inspector";
 import { ExploreLayerVisibilityControls } from "./_components/explore-layer-visibility-controls";
 import { ExploreResultsBoard } from "./_components/explore-results-board";
+import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel";
+import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
 export default function ExplorePage() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
-  const scenarioDeepLinkAppliedRef = useRef(false);
 
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
   const [corridorGeojson, setCorridorGeojson] = useState<CorridorGeometry | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [comparisonRun, setComparisonRun] = useState<Run | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
@@ -1021,103 +1014,20 @@ export default function ExplorePage() {
     }
   };
 
-  const loadRun = useCallback(
-    (run: Run) => {
-      setQueryText(run.query_text);
-
-      if (run.corridor_geojson) {
-        setCorridorGeojson(run.corridor_geojson as CorridorGeometry);
-      }
-
-      if (!run.metrics || !run.result_geojson || !run.summary_text) {
-        setError("Selected run is missing result data and cannot be loaded.");
-        return;
-      }
-
-      if (comparisonRun?.id === run.id) {
-        setComparisonRun(null);
-      }
-
-      setError("");
-      const runMetrics = run.metrics as AnalysisResult["metrics"];
-      const persistedMapViewState = normalizeMapViewState(runMetrics?.mapViewState);
-
-      if (persistedMapViewState?.tractMetric) setTractMetric(persistedMapViewState.tractMetric);
-      if (typeof persistedMapViewState?.showTracts === "boolean") setShowTracts(persistedMapViewState.showTracts);
-      if (typeof persistedMapViewState?.showCrashes === "boolean") setShowCrashes(persistedMapViewState.showCrashes);
-      if (persistedMapViewState?.crashSeverityFilter) setCrashSeverityFilter(persistedMapViewState.crashSeverityFilter);
-      if (persistedMapViewState?.crashUserFilter) setCrashUserFilter(persistedMapViewState.crashUserFilter);
-      if (persistedMapViewState?.activeDatasetOverlayId !== undefined) {
-        setActiveDatasetOverlayId(persistedMapViewState.activeDatasetOverlayId ?? null);
-      }
-
-      setAnalysisResult({
-        runId: run.id,
-        title: run.title,
-        createdAt: run.created_at,
-        metrics: runMetrics,
-        geojson: run.result_geojson,
-        summary: run.summary_text,
-        aiInterpretation: run.ai_interpretation ?? undefined,
-        aiInterpretationSource:
-          (typeof runMetrics.aiInterpretationSource === "string" && runMetrics.aiInterpretationSource) ||
-          (typeof runMetrics.dataQuality?.aiInterpretationSource === "string" && runMetrics.dataQuality?.aiInterpretationSource) ||
-          (run.ai_interpretation ? "ai" : "fallback"),
-      });
-    },
-    [comparisonRun?.id]
-  );
-
-  useEffect(() => {
-    if (!workspaceId || scenarioDeepLinkAppliedRef.current) {
-      return;
-    }
-
-    const requestedRunId = searchParams.get("runId");
-    const requestedBaselineRunId = searchParams.get("baselineRunId");
-
-    if (!requestedRunId && !requestedBaselineRunId) {
-      scenarioDeepLinkAppliedRef.current = true;
-      return;
-    }
-
-    scenarioDeepLinkAppliedRef.current = true;
-
-    const applyScenarioDeepLink = async () => {
-      try {
-        const response = await fetch(
-          `/api/runs?workspaceId=${encodeURIComponent(workspaceId)}&limit=200`,
-          { method: "GET" }
-        );
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => ({}))) as { error?: string };
-          throw new Error(payload.error ?? "Failed to load linked scenario runs.");
-        }
-
-        const payload = (await response.json()) as { runs?: Run[] };
-        const runs = payload.runs ?? [];
-        const currentRun = requestedRunId ? runs.find((run) => run.id === requestedRunId) ?? null : null;
-        const baseline = requestedBaselineRunId ? runs.find((run) => run.id === requestedBaselineRunId) ?? null : null;
-
-        if (requestedRunId) {
-          if (!currentRun) {
-            throw new Error("Linked scenario run was not found in this workspace.");
-          }
-
-          loadRun(currentRun);
-        }
-
-        if (baseline && baseline.id !== requestedRunId) {
-          setComparisonRun(baseline);
-        }
-      } catch (deepLinkError) {
-        setError(deepLinkError instanceof Error ? deepLinkError.message : "Failed to open the scenario-linked review.");
-      }
-    };
-
-    void applyScenarioDeepLink();
-  }, [loadRun, searchParams, workspaceId]);
+  const { comparisonRun, loadRun, compareRun, clearComparison } = useExploreRunHistory({
+    workspaceId,
+    analysisResult,
+    setAnalysisResult,
+    setQueryText,
+    setCorridorGeojson,
+    setError,
+    setTractMetric,
+    setShowTracts,
+    setShowCrashes,
+    setCrashSeverityFilter,
+    setCrashUserFilter,
+    setActiveDatasetOverlayId,
+  });
 
   const generateReport = async () => {
     if (!analysisResult?.runId) {
@@ -1210,62 +1120,6 @@ export default function ExplorePage() {
       setIsDownloadingPdf(false);
     }
   };
-
-  const compareRun = useCallback(
-    (run: Run) => {
-      if (!analysisResult) {
-        setError("Load or run an analysis first, then choose a comparison run.");
-        return;
-      }
-
-      if (run.id === analysisResult.runId) {
-        setError("Choose a different run to compare.");
-        return;
-      }
-
-      if (!run.metrics) {
-        setError("Selected run has no metrics available for comparison.");
-        return;
-      }
-
-      setError("");
-      setComparisonRun(run);
-    },
-    [analysisResult]
-  );
-
-  const clearComparison = useCallback(() => {
-    setError("");
-    setComparisonRun(null);
-  }, []);
-
-  useEffect(() => {
-    const nextParams = new URLSearchParams(searchParams.toString());
-    const currentRunId = analysisResult?.runId ?? null;
-    const baselineRunId = comparisonRun?.id ?? null;
-
-    if (currentRunId) {
-      nextParams.set("runId", currentRunId);
-    } else {
-      nextParams.delete("runId");
-    }
-
-    if (baselineRunId) {
-      nextParams.set("baselineRunId", baselineRunId);
-    } else {
-      nextParams.delete("baselineRunId");
-    }
-
-    const currentRunParam = searchParams.get("runId");
-    const currentBaselineParam = searchParams.get("baselineRunId");
-
-    if (currentRunParam === currentRunId && currentBaselineParam === baselineRunId) {
-      return;
-    }
-
-    const nextQuery = nextParams.toString();
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [analysisResult?.runId, comparisonRun?.id, pathname, router, searchParams]);
 
   const activeDatasetOverlay = useMemo(
     () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
@@ -1840,17 +1694,14 @@ export default function ExplorePage() {
           onError={setError}
         />
 
-        <RunHistory
+        <ExploreRunHistoryPanel
           workspaceId={workspaceId}
+          analysisResult={analysisResult}
+          comparisonRun={comparisonRun}
+          queryText={queryText}
           onLoadRun={loadRun}
           onCompareRun={compareRun}
           onClearComparison={clearComparison}
-          currentRunId={analysisResult?.runId}
-          currentRunTitle={analysisResult?.title ?? buildRunTitle(queryText)}
-          currentRunCreatedAt={analysisResult?.createdAt ?? null}
-          comparisonRunId={comparisonRun?.id}
-          comparisonRunTitle={comparisonRun?.title ?? null}
-          comparisonRunCreatedAt={comparisonRun?.created_at ?? null}
         />
       </aside>
     </section>
