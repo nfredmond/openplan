@@ -178,9 +178,6 @@ export default async function ProgramsPage({
     { data: programsData },
     { data: projectsData },
     { data: fundingOpportunitiesData },
-    { data: workspacePlansData },
-    { data: workspaceReportsData },
-    { data: projectFundingProfilesData },
   ] = await Promise.all([
     supabase
       .from("programs")
@@ -195,20 +192,6 @@ export default async function ProgramsPage({
         "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
       .order("updated_at", { ascending: false }),
-    supabase
-      .from("plans")
-      .select("id, title, status, geography_label, horizon_year, project_id, updated_at")
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("reports")
-      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("project_funding_profiles")
-      .select("project_id, funding_need_amount, local_match_need_amount")
-      .eq("workspace_id", membership.workspace_id),
   ]);
 
   const programs = (programsData ?? []) as ProgramRow[];

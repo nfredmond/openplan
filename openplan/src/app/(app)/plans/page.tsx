@@ -95,7 +95,7 @@ export default async function PlansPage({
     );
   }
 
-  const [{ data: plansData }, { data: projectsData }, { data: programsData }, { data: fundingOpportunitiesData }, { data: workspaceReportsData }, { data: projectFundingProfilesData }] = await Promise.all([
+  const [{ data: plansData }, { data: projectsData }] = await Promise.all([
     supabase
       .from("plans")
       .select(
@@ -103,27 +103,6 @@ export default async function PlansPage({
       )
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, workspace_id, name, status, delivery_phase, updated_at").order("updated_at", { ascending: false }),
-    supabase
-      .from("programs")
-      .select("id, title, status, nomination_due_at, adoption_target_at, updated_at")
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("funding_opportunities")
-      .select(
-        "id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at"
-      )
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("reports")
-      .select("id, title, status, latest_artifact_kind, generated_at, updated_at, metadata_json")
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("project_funding_profiles")
-      .select("project_id, funding_need_amount, local_match_need_amount")
-      .eq("workspace_id", membership.workspace_id),
   ]);
 
   const plans = (plansData ?? []) as PlanRow[];

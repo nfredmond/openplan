@@ -13,7 +13,6 @@ import {
   formatModelDateTime,
   formatModelFamilyLabel,
   formatModelStatusLabel,
-  MODEL_FAMILY_OPTIONS,
   MODEL_STATUS_OPTIONS,
   modelStatusTone,
 } from "@/lib/models/catalog";

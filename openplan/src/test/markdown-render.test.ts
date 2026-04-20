@@ -57,6 +57,16 @@ describe("renderChapterMarkdownToHtml", () => {
     expect(html.toLowerCase()).not.toContain("javascript:");
   });
 
+  it("keeps safe markdown links while removing unsafe URL attributes", () => {
+    const safe = renderChapterMarkdownToHtml("[OpenPlan](https://openplan.city)");
+    expect(safe).toContain('<a href="https://openplan.city">OpenPlan</a>');
+
+    const unsafe = renderChapterMarkdownToHtml("[click](&#106;avascript:alert(1))");
+    expect(unsafe).toContain("click");
+    expect(unsafe).not.toMatch(/href=/i);
+    expect(unsafe).not.toMatch(/javascript/i);
+  });
+
   it("strips <iframe>, <object>, <embed>, and <link> tags", () => {
     const html = renderChapterMarkdownToHtml(
       [
@@ -100,6 +110,31 @@ describe("renderChapterMarkdownToHtml", () => {
     );
     expect(html).not.toMatch(/<script/i);
     expect(html).not.toContain("alert(");
+  });
+
+  it("strips entity-encoded javascript: URIs that the legacy regex missed", () => {
+    const html = renderChapterMarkdownToHtml(
+      '<a href="&#106;avascript:alert(1)">click</a>',
+    );
+    expect(html).not.toMatch(/javascript/i);
+    expect(html).not.toContain("alert(");
+  });
+
+  it("strips data:text/html URIs that the legacy regex missed", () => {
+    const html = renderChapterMarkdownToHtml(
+      '<a href="data:text/html,<script>alert(1)</script>">click</a>',
+    );
+    expect(html).not.toMatch(/data:text\/html/i);
+    expect(html).not.toContain("alert(");
+  });
+
+  it("strips <style> tags and inline style attributes", () => {
+    const html = renderChapterMarkdownToHtml(
+      "<style>body{display:none}</style><p style=\"color:red\">hi</p>",
+    );
+    expect(html).not.toMatch(/<style/i);
+    expect(html).not.toMatch(/style\s*=/i);
+    expect(html).toContain("hi");
   });
 
   it("wraps GFM tables in a chapter-markdown-table-wrap div for horizontal overflow", () => {

@@ -65,6 +65,7 @@ export default function GlobalError({
               >
                 Retry
               </button>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error renders its own <html>; Link/router may itself be broken */}
               <a
                 href="/"
                 style={{

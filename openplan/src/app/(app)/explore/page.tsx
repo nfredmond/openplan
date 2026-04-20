@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import mapboxgl, {
   FullscreenControl,
-  LngLatBoundsLike,
   Map,
   NavigationControl,
   ScaleControl,
@@ -24,13 +23,11 @@ import { ErrorState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles } from "lucide-react";
 import { buildMetricDeltas, deltaTone, formatDelta, type MetricDelta } from "@/lib/analysis/compare";
 import {
   formatCrashUserFilterLabel,
   normalizeMapViewState,
   summarizeMapViewState,
-  titleizeMapViewValue,
   type CrashSeverityFilter,
   type CrashUserFilter,
   type MapViewState,
@@ -106,10 +103,10 @@ export default function ExplorePage() {
   const [activeDatasetOverlayId, setActiveDatasetOverlayId] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [showPolygonFill, setShowPolygonFill] = useState(true);
-  const [showPoints, setShowPoints] = useState(true);
+  const [showPoints, _setShowPoints] = useState(true);
   const [showTracts, setShowTracts] = useState(true);
   const [showCrashes, setShowCrashes] = useState(true);
-  const [cameraMode, setCameraMode] = useState<"regional" | "cinematic">("regional");
+  const [cameraMode, _setCameraMode] = useState<"regional" | "cinematic">("regional");
   const [tractMetric, setTractMetric] = useState<"minority" | "poverty" | "income" | "disadvantaged">("minority");
   const [crashSeverityFilter, setCrashSeverityFilter] = useState<CrashSeverityFilter>("all");
   const [crashUserFilter, setCrashUserFilter] = useState<CrashUserFilter>("all");
@@ -1714,29 +1711,6 @@ export default function ExplorePage() {
 
   const crashPointCount = crashPointFeatures.length;
 
-  const filteredCrashPointCount = useMemo(
-    () =>
-      crashPointFeatures.filter((feature) => {
-        const properties = (feature.properties ?? {}) as Record<string, unknown>;
-        const severityBucket = String(properties.severityBucket ?? "");
-        const pedestrianInvolved = properties.pedestrianInvolved === true || properties.pedestrianInvolved === "true";
-        const bicyclistInvolved = properties.bicyclistInvolved === true || properties.bicyclistInvolved === "true";
-
-        const severityMatches = crashSeverityFilter === "all" || severityBucket === crashSeverityFilter;
-        const userMatches =
-          crashUserFilter === "all"
-            ? true
-            : crashUserFilter === "pedestrian"
-              ? pedestrianInvolved
-              : crashUserFilter === "bicycle"
-                ? bicyclistInvolved
-                : pedestrianInvolved || bicyclistInvolved;
-
-        return severityMatches && userMatches;
-      }).length,
-    [crashPointFeatures, crashSeverityFilter, crashUserFilter]
-  );
-
   const switrsPointLayerAvailable = analysisResult?.metrics.sourceSnapshots?.crashes?.source === "switrs-local" && crashPointCount > 0;
 
   useEffect(() => {
@@ -1792,97 +1766,6 @@ export default function ExplorePage() {
       setActiveDatasetOverlayId(null);
     }
   }, [analysisContext, activeDatasetOverlayId]);
-
-  const activeOverlayLegend = useMemo<{
-    label: string;
-    note: string;
-    items: TractLegendItem[];
-  } | null>(() => {
-    if (!activeDatasetOverlay?.thematicReady) {
-      return null;
-    }
-
-    if (activeDatasetOverlay.geometryAttachment === "analysis_crash_points") {
-      if (activeDatasetOverlay.thematicMetricKey === "pedestrianInvolved") {
-        return {
-          label: "Pedestrian involvement",
-          note: "Crash-point overlay colored by whether the collision involved a pedestrian.",
-          items: [
-            { label: "Pedestrian involved", color: "#ec4899" },
-            { label: "No pedestrian flag", color: "#334155" },
-          ],
-        };
-      }
-
-      if (activeDatasetOverlay.thematicMetricKey === "bicyclistInvolved") {
-        return {
-          label: "Bicyclist involvement",
-          note: "Crash-point overlay colored by whether the collision involved a bicyclist.",
-          items: [
-            { label: "Bicyclist involved", color: "#22c55e" },
-            { label: "No bicyclist flag", color: "#334155" },
-          ],
-        };
-      }
-
-      if (activeDatasetOverlay.thematicMetricKey === "fatalCount") {
-        return {
-          label: "Fatality count",
-          note: "Crash-point overlay scaled and colored by fatality count on the collision record.",
-          items: [
-            { label: "0", color: "#fbbf24" },
-            { label: "1", color: "#f97316" },
-            { label: "2+", color: "#dc2626" },
-          ],
-        };
-      }
-
-      if (activeDatasetOverlay.thematicMetricKey === "injuryCount") {
-        return {
-          label: "Injury count",
-          note: "Crash-point overlay scaled and colored by injury count on the collision record.",
-          items: [
-            { label: "0", color: "#38bdf8" },
-            { label: "1–2", color: "#2563eb" },
-            { label: "3+", color: "#172554" },
-          ],
-        };
-      }
-
-      return {
-        label: "Crash severity bucket",
-        note: "Crash-point overlay colored by SWITRS severity bucket.",
-        items: [
-          { label: "Fatal", color: "#ef4444" },
-          { label: "Severe injury", color: "#fb923c" },
-          { label: "Injury", color: "#facc15" },
-        ],
-      };
-    }
-
-    if (activeDatasetOverlay.geometryAttachment === "analysis_corridor") {
-      return {
-        label: activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey),
-        note: "Corridor overlay colored by real run-level corridor scoring already present in the current analysis.",
-        items: [
-          { label: "Low", color: "#7f1d1d" },
-          { label: "Moderate", color: "#f59e0b" },
-          { label: "High", color: "#10b981" },
-          { label: "Very high", color: "#0ea5e9" },
-        ],
-      };
-    }
-
-    return {
-      label: activeDatasetOverlay.thematicMetricLabel ?? titleize(activeDatasetOverlay.thematicMetricKey),
-      note: "Tract overlay colored by the bound thematic metric on real census tract geometry.",
-      items: [
-        { label: "Low", color: "#123047" },
-        { label: "Mid", color: "#2563eb" },
-        { label: "High", color: "#34d399" },
-      ],
-    };
-  }, [activeDatasetOverlay]);
 
   const tractLegend = useMemo<{
     label: string;
@@ -1961,17 +1844,7 @@ export default function ExplorePage() {
     return formatPercent(hoveredTract.pctMinority);
   }, [hoveredTract, tractMetric]);
 
-  const mapExperienceReady = MAPBOX_ACCESS_TOKEN.length > 0;
-  const analysisSummary = activeDatasetOverlay
-    ? `Current overlay: ${activeDatasetOverlay.name}`
-    : "Choose a corridor and add an overlay to begin comparing conditions.";
-
   const linkedDatasetPreview = analysisContext?.linkedDatasets.slice(0, 4) ?? [];
-  const activeOverlayGeometryLabel = activeDatasetOverlay?.geometryAttachment === "analysis_corridor"
-    ? "corridor"
-    : activeDatasetOverlay?.geometryAttachment === "analysis_crash_points"
-      ? "crash-point"
-      : "tract";
 
   return (
     <section className="analysis-explore-shell grid min-h-[calc(100dvh-3rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">

@@ -31,6 +31,7 @@ import {
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
+import { renderHtmlToPdf } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -140,13 +141,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid generation request" }, { status: 400 });
-    }
-
-    if (parsed.data.format === "pdf") {
-      return NextResponse.json(
-        { error: "PDF export is not available for Reports yet" },
-        { status: 501 }
-      );
     }
 
     const supabase = await createClient();
@@ -434,6 +428,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         approvedCommentCount: engagementCounts.moderationQueue.approvedCount,
         readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
       });
+      const format = parsed.data.format;
       const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
       const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
       const html = buildRtpExportHtml({
@@ -454,6 +449,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       });
       const generatedAt = new Date().toISOString();
+      const artifactId = crypto.randomUUID();
+      let rtpPdfStoragePath: string | null = null;
+      if (format === "pdf") {
+        let pdfBuffer: Buffer;
+        try {
+          pdfBuffer = await renderHtmlToPdf(html);
+        } catch (pdfError) {
+          audit.error("report_pdf_render_failed", {
+            reportId: report.id,
+            message: pdfError instanceof Error ? pdfError.message : String(pdfError),
+          });
+          return NextResponse.json({ error: "Failed to render PDF" }, { status: 500 });
+        }
+        const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from("report-artifacts")
+          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
+        if (uploadError) {
+          audit.error("report_pdf_upload_failed", {
+            reportId: report.id,
+            message: uploadError.message,
+          });
+          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
+        }
+        rtpPdfStoragePath = storagePath;
+      }
       const artifactMetadata = {
         htmlContent: html,
         generatedAt,
@@ -485,15 +506,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
           enabledSectionKeys,
           packetPresetAlignment,
         },
-        generationMode: "rtp_html_packet",
+        generationMode: format === "pdf" ? "rtp_pdf_packet" : "rtp_html_packet",
       };
 
       const { data: artifact, error: artifactError } = await supabase
         .from("report_artifacts")
         .insert({
+          id: artifactId,
           report_id: report.id,
-          artifact_kind: "html",
-          storage_path: null,
+          artifact_kind: format,
+          storage_path: rtpPdfStoragePath,
           generated_by: user.id,
           generated_at: generatedAt,
           metadata_json: artifactMetadata,
@@ -527,7 +549,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .update({
           status: "generated",
           generated_at: generatedAt,
-          latest_artifact_kind: "html",
+          latest_artifact_kind: format,
           latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
           rtp_basis_stale: false,
@@ -543,7 +565,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .update({
             status: "generated",
             generated_at: generatedAt,
-            latest_artifact_kind: "html",
+            latest_artifact_kind: format,
             latest_artifact_url: latestArtifactUrl,
           })
           .eq("id", report.id);
@@ -563,6 +585,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.info("rtp_report_generated", {
         reportId: report.id,
         artifactId: artifact.id,
+        format,
+        storagePath: rtpPdfStoragePath,
         userId: user.id,
         linkedProjectCount: linkedProjects.length,
         durationMs: Date.now() - startedAt,
@@ -572,8 +596,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         {
           reportId: report.id,
           artifactId: artifact.id,
-          format: "html",
+          format,
           latestArtifactUrl,
+          storagePath: rtpPdfStoragePath,
           warnings: [],
         },
         { status: 200 }
@@ -934,7 +959,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       stageGateSnapshot,
     });
 
+    const format = parsed.data.format;
     const generatedAt = new Date().toISOString();
+    const artifactId = crypto.randomUUID();
+    let projectPdfStoragePath: string | null = null;
+    if (format === "pdf") {
+      let pdfBuffer: Buffer;
+      try {
+        pdfBuffer = await renderHtmlToPdf(html);
+      } catch (pdfError) {
+        audit.error("report_pdf_render_failed", {
+          reportId: report.id,
+          message: pdfError instanceof Error ? pdfError.message : String(pdfError),
+        });
+        return NextResponse.json({ error: "Failed to render PDF" }, { status: 500 });
+      }
+      const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from("report-artifacts")
+        .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
+      if (uploadError) {
+        audit.error("report_pdf_upload_failed", {
+          reportId: report.id,
+          message: uploadError.message,
+        });
+        return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
+      }
+      projectPdfStoragePath = storagePath;
+    }
     const artifactMetadata = {
       metadata_schema_version: "2026-04",
       htmlContent: html,
@@ -985,15 +1037,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ),
       },
       runAudit,
-      generationMode: "structured_html_packet",
+      generationMode: format === "pdf" ? "structured_pdf_packet" : "structured_html_packet",
     };
 
     const { data: artifact, error: artifactError } = await supabase
       .from("report_artifacts")
       .insert({
+        id: artifactId,
         report_id: report.id,
-        artifact_kind: "html",
-        storage_path: null,
+        artifact_kind: format,
+        storage_path: projectPdfStoragePath,
         generated_by: user.id,
         generated_at: generatedAt,
         metadata_json: artifactMetadata,
@@ -1027,7 +1080,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .update({
         status: "generated",
         generated_at: generatedAt,
-        latest_artifact_kind: "html",
+        latest_artifact_kind: format,
         latest_artifact_url: latestArtifactUrl,
         metadata_json: nextMetadataJson,
         rtp_basis_stale: false,
@@ -1043,7 +1096,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .update({
           status: "generated",
           generated_at: generatedAt,
-          latest_artifact_kind: "html",
+          latest_artifact_kind: format,
           latest_artifact_url: latestArtifactUrl,
         })
         .eq("id", report.id);
@@ -1063,6 +1116,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("report_generated", {
       reportId: report.id,
       artifactId: artifact.id,
+      format,
+      storagePath: projectPdfStoragePath,
       userId: user.id,
       linkedRunCount: linkedRuns.length,
       durationMs: Date.now() - startedAt,
@@ -1100,8 +1155,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       {
         reportId: report.id,
         artifactId: artifact.id,
-        format: "html",
+        format,
         latestArtifactUrl,
+        storagePath: projectPdfStoragePath,
         warnings: runAudit.flatMap((item) =>
           item.gate.missingArtifacts.map((missingArtifact) => ({
             runId: item.runId,

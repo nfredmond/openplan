@@ -8,7 +8,7 @@ on:
 
 jobs:
   verify:
-    name: verify (tsc + test + build)
+    name: verify (qa gate)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -31,14 +31,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm tsc --noEmit
-
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+      - name: QA gate
+        run: pnpm qa:gate
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key

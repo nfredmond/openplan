@@ -13,7 +13,6 @@ import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   buildProjectFundingStackSummary,
-  projectFundingReimbursementTone,
   projectFundingStackTone,
 } from "@/lib/projects/funding";
 import {
@@ -173,14 +172,6 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
 
 function formatProjectStatusLabel(value: string | null | undefined): string {
   return titleizeRtpValue(value);
-}
-
-function projectStatusTone(status: string | null | undefined): "info" | "success" | "warning" | "danger" | "neutral" {
-  if (status === "active") return "success";
-  if (status === "on_hold") return "warning";
-  if (status === "complete") return "info";
-  if (status === "draft") return "neutral";
-  return "neutral";
 }
 
 export default async function RtpCycleDetailPage({ params }: RouteContext) {

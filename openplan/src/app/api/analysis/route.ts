@@ -19,11 +19,15 @@ import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
 import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
+import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
+import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
+
+const ANALYSIS_BODY_MAX_BYTES = 64 * 1024;
 
 type Position = [number, number] | [number, number, number];
 
@@ -156,8 +160,16 @@ export async function POST(request: NextRequest) {
   let runId: string | undefined;
 
   try {
-    const body = await request.json().catch(() => null);
-    const parsed = analysisRequestSchema.safeParse(body);
+    const body = await readJsonWithLimit(request, ANALYSIS_BODY_MAX_BYTES);
+    if (!body.ok) {
+      audit.warn("request_body_too_large", {
+        byteLength: body.byteLength,
+        maxBytes: ANALYSIS_BODY_MAX_BYTES,
+      });
+      return body.response;
+    }
+
+    const parsed = analysisRequestSchema.safeParse(body.data);
 
     if (!parsed.success) {
       audit.warn("validation_failed", {
@@ -506,13 +518,42 @@ export async function POST(request: NextRequest) {
     }
 
     const durationMs = Date.now() - startedAt;
+
+    if (aiInterpretationResult.fallbackReason) {
+      audit.warn("analysis_ai_fallback", {
+        runId,
+        workspaceId,
+        reason: aiInterpretationResult.fallbackReason,
+      });
+    }
+
     audit.info("analysis_completed", {
       runId,
       workspaceId,
       durationMs,
       confidence: scores.confidence,
       aiSource: aiInterpretationResult.source,
+      aiModel: aiInterpretationResult.model,
+      aiInputTokens: aiInterpretationResult.inputTokens,
+      aiOutputTokens: aiInterpretationResult.outputTokens,
+      aiTotalTokens: aiInterpretationResult.totalTokens,
+      aiEstimatedCostUsd: aiInterpretationResult.estimatedCostUsd,
     });
+
+    const costWarning = buildAnalysisCostThresholdWarning(
+      aiInterpretationResult.estimatedCostUsd,
+    );
+    if (costWarning) {
+      audit.warn("analysis_cost_threshold_exceeded", {
+        runId,
+        workspaceId,
+        aiModel: aiInterpretationResult.model,
+        aiInputTokens: aiInterpretationResult.inputTokens,
+        aiOutputTokens: aiInterpretationResult.outputTokens,
+        aiTotalTokens: aiInterpretationResult.totalTokens,
+        ...costWarning,
+      });
+    }
 
     return NextResponse.json(
       {

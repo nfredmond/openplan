@@ -1,9 +1,59 @@
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 
+const HAIKU_MODEL_ID = "claude-3-5-haiku-latest";
+const HAIKU_INPUT_USD_PER_MTOKEN = 1.0;
+const HAIKU_OUTPUT_USD_PER_MTOKEN = 5.0;
+
+export type InterpretationSource = "ai" | "summary-fallback";
+export type InterpretationFallbackReason =
+  | "missing_api_key"
+  | "generation_error"
+  | "empty_output"
+  | null;
+
 export interface InterpretationResult {
   text: string;
-  source: "ai" | "summary-fallback";
+  source: InterpretationSource;
+  model: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+  estimatedCostUsd: number | null;
+  fallbackReason: InterpretationFallbackReason;
+}
+
+function nullIfUndefined(value: number | undefined): number | null {
+  return typeof value === "number" ? value : null;
+}
+
+function estimateHaikuCostUsd(
+  inputTokens: number | null,
+  outputTokens: number | null
+): number | null {
+  if (inputTokens === null && outputTokens === null) return null;
+  const input = inputTokens ?? 0;
+  const output = outputTokens ?? 0;
+  const raw =
+    (input / 1_000_000) * HAIKU_INPUT_USD_PER_MTOKEN +
+    (output / 1_000_000) * HAIKU_OUTPUT_USD_PER_MTOKEN;
+  return Math.round(raw * 1_000_000) / 1_000_000;
+}
+
+function fallback(
+  summaryText: string,
+  reason: InterpretationFallbackReason
+): InterpretationResult {
+  return {
+    text: summaryText,
+    source: "summary-fallback",
+    model: null,
+    inputTokens: null,
+    outputTokens: null,
+    totalTokens: null,
+    estimatedCostUsd: null,
+    fallbackReason: reason,
+  };
 }
 
 export async function generateGrantInterpretation(
@@ -13,12 +63,12 @@ export async function generateGrantInterpretation(
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    return { text: summaryText, source: "summary-fallback" };
+    return fallback(summaryText, "missing_api_key");
   }
 
   try {
-    const { text } = await generateText({
-      model: anthropic("claude-3-5-haiku-latest"),
+    const { text, usage } = await generateText({
+      model: anthropic(HAIKU_MODEL_ID),
       temperature: 0.2,
       maxOutputTokens: 500,
       system:
@@ -39,11 +89,24 @@ export async function generateGrantInterpretation(
 
     const cleaned = text.trim();
     if (!cleaned) {
-      return { text: summaryText, source: "summary-fallback" };
+      return fallback(summaryText, "empty_output");
     }
 
-    return { text: cleaned, source: "ai" };
+    const inputTokens = nullIfUndefined(usage?.inputTokens);
+    const outputTokens = nullIfUndefined(usage?.outputTokens);
+    const totalTokens = nullIfUndefined(usage?.totalTokens);
+
+    return {
+      text: cleaned,
+      source: "ai",
+      model: HAIKU_MODEL_ID,
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      estimatedCostUsd: estimateHaikuCostUsd(inputTokens, outputTokens),
+      fallbackReason: null,
+    };
   } catch {
-    return { text: summaryText, source: "summary-fallback" };
+    return fallback(summaryText, "generation_error");
   }
 }

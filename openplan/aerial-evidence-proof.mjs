@@ -12,7 +12,7 @@ const ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const PROOF_EMAIL = "proof+2026-04-16@natford.dev";
 const PROOF_PASSWORD = "openplan-proof-2026-04-16!";
 const PROOF_USER_ID = "44e09473-6680-46b9-8664-a2054590f2e6";
-const WORKSPACE_ID = "dd68626b-3462-4aa4-94ea-4840b2dae019";
+const _WORKSPACE_ID = "dd68626b-3462-4aa4-94ea-4840b2dae019";
 const PROJECT_ID = "73f7375b-a8b0-4a4a-9dfe-67f3a1066515";
 const MISSION_ID = "bbbbbbbb-2222-4222-8222-222222222222";
 

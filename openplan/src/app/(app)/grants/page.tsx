@@ -13,7 +13,6 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceCommandQueueItem,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import {
@@ -34,7 +33,6 @@ import {
 } from "@/lib/projects/funding";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
-  compareProjectGrantModelingEvidenceForQueue,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
 import {
@@ -48,7 +46,6 @@ import {
 
 import {
   type BillingInvoiceRow,
-  type DecisionFilter,
   type FundingAwardRow,
   type FundingOpportunityRow,
   type GrantsModelingTriageProject,
@@ -58,20 +55,10 @@ import {
   type ProjectGrantModelingReportRow,
   type ProjectOption,
   type ReportArtifactRow,
-  type StatusFilter,
-  buildFocusedGrantsAwardConversionHref,
-  buildFocusedGrantsFundingNeedHref,
-  buildFocusedGrantsGapResolutionHref,
-  buildFocusedGrantsOpportunityCreationHref,
-  buildFocusedGrantsOpportunityHref,
-  buildFocusedGrantsReimbursementHref,
   compareFundingOpportunitiesForGrantsQueue,
   compareGrantModelingTriageProjects,
-  formatCurrency,
-  getOpportunityPriority,
   getReimbursementPriority,
   isClosingSoon,
-  isDecisionSoon,
   isInvoiceOverdue,
   normalizeDecisionFilter,
   normalizeFocusedInvoiceId,

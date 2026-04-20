@@ -19,11 +19,22 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/admin',
 ] as const
 
+const REQUEST_ID_HEADER = 'x-request-id'
+
 function isProtectedRoute(pathname: string) {
   return PROTECTED_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
+function resolveRequestId(request: NextRequest): string {
+  const incoming = request.headers.get(REQUEST_ID_HEADER)
+  if (incoming && incoming.trim().length > 0) return incoming.trim()
+  return crypto.randomUUID()
+}
+
 export async function proxy(request: NextRequest) {
+  const requestId = resolveRequestId(request)
+  request.headers.set(REQUEST_ID_HEADER, requestId)
+
   const { response, user } = await updateSession(request)
 
   const pathname = request.nextUrl.pathname
@@ -31,9 +42,12 @@ export async function proxy(request: NextRequest) {
     const signInUrl = request.nextUrl.clone()
     signInUrl.pathname = '/sign-in'
     signInUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`)
-    return NextResponse.redirect(signInUrl)
+    const redirect = NextResponse.redirect(signInUrl)
+    redirect.headers.set(REQUEST_ID_HEADER, requestId)
+    return redirect
   }
 
+  response.headers.set(REQUEST_ID_HEADER, requestId)
   return response
 }
 

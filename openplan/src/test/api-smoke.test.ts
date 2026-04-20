@@ -50,6 +50,32 @@ describe('API smoke tests (validation + guard rails)', () => {
     expect(payload.error).toBe('Invalid input')
   })
 
+  it('POST /api/analysis rejects oversized request bodies with HTTP 413', async () => {
+    const request = jsonRequest('http://localhost/api/analysis', {
+      workspaceId: '00000000-0000-0000-0000-000000000000',
+      queryText: 'test corridor',
+      padding: 'x'.repeat(65 * 1024),
+      corridorGeojson: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-121.0, 39.0],
+            [-121.0, 39.01],
+            [-120.99, 39.01],
+            [-120.99, 39.0],
+            [-121.0, 39.0],
+          ],
+        ],
+      },
+    })
+
+    const response = await postAnalysis(request)
+    expect(response.status).toBe(413)
+
+    const payload = (await response.json()) as { error?: string }
+    expect(payload.error).toBe('Request body too large')
+  })
+
   it('POST /api/analysis rejects corridor geometries outside WGS84 bounds with HTTP 400', async () => {
     const request = jsonRequest('http://localhost/api/analysis', {
       workspaceId: '00000000-0000-0000-0000-000000000000',
