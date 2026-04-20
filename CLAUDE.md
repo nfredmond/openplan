@@ -47,6 +47,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase C.2 slice 3 - Explore results board (2026-04-20).** Extracted the Explore result board, comparison board, export controls, source briefing, and disclosure surfaces into `src/app/(app)/explore/_components/explore-results-board.tsx`. Parent `explore/page.tsx` still owns analysis execution, current/comparison run state, report generation, map state, map-view persistence, and Run History callbacks, but drops 2,921 -> 1,858 LOC. Added `src/test/explore-results-board.test.tsx` for empty, current-result, and comparison states. Tests now 849/182 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-3-results-board-proof.md`.
 - **Phase C.2 slice 4 - Explore results board subcomponents (2026-04-20).** Split `ExploreResultsBoard` into `explore-current-result-card.tsx`, `explore-run-comparison-card.tsx`, `explore-geospatial-briefing.tsx`, `explore-disclosure-card.tsx`, and shared `explore-results-types.ts`. `ExploreResultsBoard` now orchestrates memoized view models and export handlers only, dropping 1,099 -> 445 LOC. Tests remain 849/182 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-4-results-board-subcomponents-proof.md`.
 - **Phase C.2 slice 5 - Explore run history handoff (2026-04-20).** Extracted the state-bearing Run History boundary into `use-explore-run-history.ts` and `explore-run-history-panel.tsx`. The hook now owns pinned baseline state, saved-run loading, compare validation, `runId`/`baselineRunId` deep-link hydration, and URL sync; the page keeps live analysis, map, report, and persistence ownership. `explore/page.tsx` drops 1,858 -> 1,709 LOC. Added `src/test/explore-run-history.test.tsx`; tests now 854/183 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-5-run-history-handoff-proof.md`.
+- **Phase C.2 slice 6 - Explore study brief controls (2026-04-20).** Extracted the Study brief form/control surface into `explore-study-brief-controls.tsx`: query textarea, character count, prompt-length warning, report template selector, run button, HTML/PDF export buttons, and validation error display. The page still owns analysis requests, report generation, map state, map lifecycle, and project/Data Hub context. `explore/page.tsx` drops 1,709 -> 1,629 LOC. Added `src/test/explore-study-brief-controls.test.tsx`; tests now 858/184 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-6-study-brief-controls-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -62,8 +63,9 @@ Secondary canonical references (read only if the deep-dive points you to them):
 | C.2 slice 3 | `explore/page.tsx` | 2921 → 1858 LOC | `docs/ops/2026-04-20-phase-c2-slice-3-results-board-proof.md` |
 | C.2 slice 4 | `explore-results-board.tsx` | 1099 → 445 LOC | `docs/ops/2026-04-20-phase-c2-slice-4-results-board-subcomponents-proof.md` |
 | C.2 slice 5 | `explore/page.tsx` | 1858 → 1709 LOC | `docs/ops/2026-04-20-phase-c2-slice-5-run-history-handoff-proof.md` |
+| C.2 slice 6 | `explore/page.tsx` | 1709 → 1629 LOC | `docs/ops/2026-04-20-phase-c2-slice-6-study-brief-controls-proof.md` |
 
-All on main, all Vercel Ready, tests green (latest local gate: 854 tests / 183 files).
+All on main, all Vercel Ready, tests green (latest local gate: 858 tests / 184 files).
 
 **Locked Phase P decisions (2026-04-19):**
 
