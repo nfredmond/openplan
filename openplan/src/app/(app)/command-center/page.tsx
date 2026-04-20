@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, Compass, FileText, FolderKanban, Landmark, PlaneTakeoff, Radar } from "lucide-react";
 
+import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StateBlock } from "@/components/ui/state-block";
@@ -11,6 +12,10 @@ import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import {
+  loadRecentActionExecutionsForWorkspace,
+  type RecentActionActivitySupabaseLike,
+} from "@/lib/operations/action-activity";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -48,6 +53,10 @@ export default async function CommandCenterPage() {
   const workspaceId = membership.workspace_id;
   const summary = await loadWorkspaceOperationsSummaryForWorkspace(
     supabase as unknown as WorkspaceOperationsSupabaseLike,
+    workspaceId
+  );
+  const actionActivity = await loadRecentActionExecutionsForWorkspace(
+    supabase as unknown as RecentActionActivitySupabaseLike,
     workspaceId
   );
 
@@ -124,11 +133,19 @@ export default async function CommandCenterPage() {
       <div className="mt-4">
         <WorkspaceCommandBoard summary={summary}>
           <p className="text-[0.8rem] text-muted-foreground">
-            Command Center composes the workspace operations summary — the same source of truth the Dashboard uses.
-            Counts and cues update whenever underlying RTP, grants, aerial, project, or report state changes.
+            Counts and cues come from the shared workspace operations summary. The action activity lane reads completed
+            operator actions from the same workspace audit log.
           </p>
         </WorkspaceCommandBoard>
       </div>
+
+      <RecentActionActivity
+        className="mt-6"
+        executions={actionActivity.executions}
+        error={actionActivity.error}
+        description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
+        emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
+      />
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">
@@ -167,8 +184,8 @@ export default async function CommandCenterPage() {
 
       <StateBlock
         className="mt-6"
-        title="What this view does NOT do"
-        description="Command Center composes existing widgets; it does not introduce new data sources or derivations. RTP, grants, aerial, and modeling truth-state locks still apply to their upstream surfaces."
+        title="Operational scope"
+        description="Command Center observes workspace summary counts and recent action audit rows. RTP, grants, aerial, and modeling truth-state locks still apply to their upstream surfaces."
         tone="info"
         compact
       />
