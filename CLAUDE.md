@@ -46,6 +46,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase C.2 slice 2 - Explore hover inspector (2026-04-20).** Confirmed the initially proposed Grants -> RTP posture write-back was already live (`projects.rtp_posture`, `rebuildProjectRtpPosture`, and award-route rebuild tests exist), then shipped the next concrete code-only gap: extracted the Explore map-intelligence hover inspector into `src/app/(app)/explore/_components/explore-hover-inspector.tsx`, moved `TractMetric` into `_types.ts`, and added `src/test/explore-hover-inspector.test.tsx` for hidden, tract, and crash states. `src/app/(app)/explore/page.tsx` drops 3,129 -> 2,921 LOC. Tests now 846/181 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-2-hover-inspector-proof.md`.
 - **Phase C.2 slice 3 - Explore results board (2026-04-20).** Extracted the Explore result board, comparison board, export controls, source briefing, and disclosure surfaces into `src/app/(app)/explore/_components/explore-results-board.tsx`. Parent `explore/page.tsx` still owns analysis execution, current/comparison run state, report generation, map state, map-view persistence, and Run History callbacks, but drops 2,921 -> 1,858 LOC. Added `src/test/explore-results-board.test.tsx` for empty, current-result, and comparison states. Tests now 849/182 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-3-results-board-proof.md`.
 - **Phase C.2 slice 4 - Explore results board subcomponents (2026-04-20).** Split `ExploreResultsBoard` into `explore-current-result-card.tsx`, `explore-run-comparison-card.tsx`, `explore-geospatial-briefing.tsx`, `explore-disclosure-card.tsx`, and shared `explore-results-types.ts`. `ExploreResultsBoard` now orchestrates memoized view models and export handlers only, dropping 1,099 -> 445 LOC. Tests remain 849/182 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-4-results-board-subcomponents-proof.md`.
+- **Phase C.2 slice 5 - Explore run history handoff (2026-04-20).** Extracted the state-bearing Run History boundary into `use-explore-run-history.ts` and `explore-run-history-panel.tsx`. The hook now owns pinned baseline state, saved-run loading, compare validation, `runId`/`baselineRunId` deep-link hydration, and URL sync; the page keeps live analysis, map, report, and persistence ownership. `explore/page.tsx` drops 1,858 -> 1,709 LOC. Added `src/test/explore-run-history.test.tsx`; tests now 854/183 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-5-run-history-handoff-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -60,8 +61,9 @@ Secondary canonical references (read only if the deep-dive points you to them):
 | C.2 slice 2 | `explore/page.tsx` | 3129 → 2921 LOC | `docs/ops/2026-04-20-phase-c2-slice-2-hover-inspector-proof.md` |
 | C.2 slice 3 | `explore/page.tsx` | 2921 → 1858 LOC | `docs/ops/2026-04-20-phase-c2-slice-3-results-board-proof.md` |
 | C.2 slice 4 | `explore-results-board.tsx` | 1099 → 445 LOC | `docs/ops/2026-04-20-phase-c2-slice-4-results-board-subcomponents-proof.md` |
+| C.2 slice 5 | `explore/page.tsx` | 1858 → 1709 LOC | `docs/ops/2026-04-20-phase-c2-slice-5-run-history-handoff-proof.md` |
 
-All on main, all Vercel Ready, tests green (latest local gate: 849 tests / 182 files).
+All on main, all Vercel Ready, tests green (latest local gate: 854 tests / 183 files).
 
 **Locked Phase P decisions (2026-04-19):**
 
