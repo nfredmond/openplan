@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import { useTheme } from "next-themes";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { useCartographicLayers } from "./cartographic-context";
+import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
+
+import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
@@ -45,6 +47,12 @@ export function CartographicMapBackdrop() {
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
+  const { setSelection } = useCartographicSelection();
+  const router = useRouter();
+  const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
+  useEffect(() => {
+    navigateRef.current = (path: string) => router.push(path);
+  }, [router]);
 
   const suppressed = routeOwnsMap(pathname);
 
@@ -216,6 +224,39 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.aerial, ready, aois]);
+
+  // Click + hover handlers on the AOI fill layer. Handlers are registered on
+  // the map once ready and torn down on unmount. They survive style swaps
+  // because the registration is layer-id-scoped, not source-scoped.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+
+    const onClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const selection = aerialMissionFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+      });
+      if (selection) setSelection(selection);
+    };
+    const onMouseEnter = () => {
+      map.getCanvas().style.cursor = "pointer";
+    };
+    const onMouseLeave = () => {
+      map.getCanvas().style.cursor = "";
+    };
+
+    map.on("click", AOI_FILL_LAYER_ID, onClick);
+    map.on("mouseenter", AOI_FILL_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
+
+    return () => {
+      map.off("click", AOI_FILL_LAYER_ID, onClick);
+      map.off("mouseenter", AOI_FILL_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
+    };
+  }, [ready, setSelection]);
 
   if (suppressed) return null;
 
