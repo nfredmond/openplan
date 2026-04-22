@@ -7,7 +7,7 @@ import type { MapFeatureCounts } from "@/app/api/map-features/counts/route";
 
 const LAYER_LABELS: Record<LayerKey, string> = {
   projects: "Projects",
-  rtp: "RTP corridors",
+  rtp: "RTP cycles",
   corridors: "Study corridors",
   engagement: "Engagement pins",
   aerial: "Aerial missions",
@@ -85,5 +85,6 @@ function chipForLayer(key: LayerKey, counts: MapFeatureCounts | null): string | 
   if (key === "projects") return formatChip(counts.projects);
   if (key === "aerial") return formatChip(counts.aerial);
   if (key === "corridors") return formatChip(counts.corridors);
+  if (key === "rtp") return formatChip(counts.rtp);
   return undefined;
 }

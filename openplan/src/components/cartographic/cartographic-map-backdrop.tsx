@@ -9,6 +9,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
+import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
@@ -33,6 +34,9 @@ const PROJECTS_CIRCLE_LAYER_ID = "cartographic-projects-circle";
 
 const CORRIDORS_SOURCE_ID = "cartographic-corridors";
 const CORRIDORS_LINE_LAYER_ID = "cartographic-corridors-line";
+
+const RTP_CYCLES_SOURCE_ID = "cartographic-rtp-cycles";
+const RTP_CYCLES_CIRCLE_LAYER_ID = "cartographic-rtp-cycles-circle";
 
 // LOS-driven color ramp. Lower grades degrade from calm blue-slate toward
 // congestion red, matching planning convention. `null` falls through to the
@@ -68,6 +72,7 @@ type MissionAoiFeatureCollection = {
 
 type ProjectFeatureCollection = MissionAoiFeatureCollection;
 type CorridorFeatureCollection = MissionAoiFeatureCollection;
+type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -82,6 +87,7 @@ export function CartographicMapBackdrop() {
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
   const [corridors, setCorridors] = useState<CorridorFeatureCollection | null>(null);
+  const [rtpCycles, setRtpCycles] = useState<RtpCycleFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
@@ -252,6 +258,38 @@ export function CartographicMapBackdrop() {
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] corridors fetch failed", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [suppressed]);
+
+  // Same pattern for RTP cycle pins — separate source + circle layer.
+  useEffect(() => {
+    if (suppressed) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/rtp-cycles", {
+          method: "GET",
+          credentials: "same-origin",
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] rtp-cycles fetch returned ${response.status}`,
+            );
+          }
+          return;
+        }
+        const payload = (await response.json()) as RtpCycleFeatureCollection;
+        if (cancelled) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setRtpCycles(payload);
+        }
+      } catch (error) {
+        console.warn("[cartographic-backdrop] rtp-cycles fetch failed", error);
       }
     })();
     return () => {
@@ -437,6 +475,59 @@ export function CartographicMapBackdrop() {
     }
   }, [ready, corridors, resolvedTheme]);
 
+  // Paint RTP cycle pins onto the map once both the map and the data are
+  // ready. Distinct muted-plum color separates the single-cycle pin from
+  // project markers (green) and AOIs (orange). Larger base radius because
+  // RTP cycles are typically 1-2 per workspace — the pin should read as a
+  // prominent anchor, not a minor dot.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !rtpCycles) return;
+
+    const paint = () => {
+      if (!map.getSource(RTP_CYCLES_SOURCE_ID)) {
+        map.addSource(RTP_CYCLES_SOURCE_ID, {
+          type: "geojson",
+          data: rtpCycles as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(RTP_CYCLES_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(rtpCycles as unknown as GeoJSON.FeatureCollection);
+      }
+
+      if (!map.getLayer(RTP_CYCLES_CIRCLE_LAYER_ID)) {
+        map.addLayer({
+          id: RTP_CYCLES_CIRCLE_LAYER_ID,
+          type: "circle",
+          source: RTP_CYCLES_SOURCE_ID,
+          paint: {
+            "circle-color": "#6b4a9e",
+            "circle-radius": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              12,
+              8,
+            ],
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              3,
+              2,
+            ],
+            "circle-opacity": 0.92,
+          },
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, rtpCycles, resolvedTheme]);
+
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
     const map = mapRef.current;
@@ -480,6 +571,20 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.corridors, ready, corridors]);
+
+  // Honor the layers.rtp toggle.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.rtp ? "visible" : "none";
+    if (map.getLayer(RTP_CYCLES_CIRCLE_LAYER_ID)) {
+      try {
+        map.setLayoutProperty(RTP_CYCLES_CIRCLE_LAYER_ID, "visibility", visibility);
+      } catch {
+        // no-op: layers.rtp toggle is best-effort
+      }
+    }
+  }, [layers.rtp, ready, rtpCycles]);
 
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
@@ -563,10 +668,24 @@ export function CartographicMapBackdrop() {
       }
     };
 
+    const onRtpClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = rtpCycleFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: RTP_CYCLES_SOURCE_ID,
+      });
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
+    };
+
     const FEATURE_LAYERS = [
       AOI_FILL_LAYER_ID,
       PROJECTS_CIRCLE_LAYER_ID,
       CORRIDORS_LINE_LAYER_ID,
+      RTP_CYCLES_CIRCLE_LAYER_ID,
     ];
 
     const onBackgroundClick = (e: mapboxgl.MapMouseEvent) => {
@@ -591,6 +710,9 @@ export function CartographicMapBackdrop() {
     map.on("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
     map.on("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
+    map.on("click", RTP_CYCLES_CIRCLE_LAYER_ID, onRtpClick);
+    map.on("mouseenter", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseLeave);
     map.on("click", onBackgroundClick);
 
     return () => {
@@ -603,6 +725,9 @@ export function CartographicMapBackdrop() {
       map.off("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
       map.off("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
+      map.off("click", RTP_CYCLES_CIRCLE_LAYER_ID, onRtpClick);
+      map.off("mouseenter", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseLeave);
       map.off("click", onBackgroundClick);
     };
   }, [ready, setSelection, clearSelection]);
@@ -617,7 +742,12 @@ export function CartographicMapBackdrop() {
     const map = mapRef.current;
     if (!map || !ready) return;
 
-    const KNOWN_SOURCES = [AOI_SOURCE_ID, PROJECTS_SOURCE_ID, CORRIDORS_SOURCE_ID] as const;
+    const KNOWN_SOURCES = [
+      AOI_SOURCE_ID,
+      PROJECTS_SOURCE_ID,
+      CORRIDORS_SOURCE_ID,
+      RTP_CYCLES_SOURCE_ID,
+    ] as const;
 
     const apply = () => {
       for (const sourceId of KNOWN_SOURCES) {
@@ -646,7 +776,7 @@ export function CartographicMapBackdrop() {
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois, projectMarkers, corridors]);
+  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles]);
 
   if (suppressed) return null;
 

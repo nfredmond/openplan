@@ -25,10 +25,12 @@ function buildQueryChain(result: CountResult) {
 let projectsChain: ReturnType<typeof buildQueryChain>;
 let aerialChain: ReturnType<typeof buildQueryChain>;
 let corridorsChain: ReturnType<typeof buildQueryChain>;
+let rtpChain: ReturnType<typeof buildQueryChain>;
 
 const projectsSelectMock = vi.fn(() => projectsChain);
 const aerialSelectMock = vi.fn(() => aerialChain);
 const corridorsSelectMock = vi.fn(() => corridorsChain);
+const rtpSelectMock = vi.fn(() => rtpChain);
 
 const mockAudit = {
   info: vi.fn(),
@@ -40,6 +42,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "projects") return { select: projectsSelectMock };
   if (table === "aerial_missions") return { select: aerialSelectMock };
   if (table === "project_corridors") return { select: corridorsSelectMock };
+  if (table === "rtp_cycles") return { select: rtpSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -79,6 +82,7 @@ describe("GET /api/map-features/counts", () => {
     projectsChain = buildQueryChain({ count: 0, error: null });
     aerialChain = buildQueryChain({ count: 0, error: null });
     corridorsChain = buildQueryChain({ count: 0, error: null });
+    rtpChain = buildQueryChain({ count: 0, error: null });
   });
 
   it("returns 401 when the request is anonymous", async () => {
@@ -98,13 +102,14 @@ describe("GET /api/map-features/counts", () => {
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0 });
+    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0, rtp: 0 });
     expect(projectsSelectMock).not.toHaveBeenCalled();
     expect(aerialSelectMock).not.toHaveBeenCalled();
     expect(corridorsSelectMock).not.toHaveBeenCalled();
+    expect(rtpSelectMock).not.toHaveBeenCalled();
   });
 
-  it("returns live counts across all three layers when queries succeed", async () => {
+  it("returns live counts across all four layers when queries succeed", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "editor" },
@@ -113,20 +118,22 @@ describe("GET /api/map-features/counts", () => {
     projectsChain = buildQueryChain({ count: 1, error: null });
     aerialChain = buildQueryChain({ count: 3, error: null });
     corridorsChain = buildQueryChain({ count: 2, error: null });
+    rtpChain = buildQueryChain({ count: 1, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2 });
+    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2, rtp: 1 });
     expect(projectsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(aerialSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(corridorsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
+    expect(rtpSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(mockAudit.info).toHaveBeenCalledWith(
       "map_feature_counts_loaded",
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
-        counts: { projects: 1, aerial: 3, corridors: 2 },
+        counts: { projects: 1, aerial: 3, corridors: 2, rtp: 1 },
       })
     );
   });
@@ -140,17 +147,47 @@ describe("GET /api/map-features/counts", () => {
     projectsChain = buildQueryChain({ count: 1, error: null });
     aerialChain = buildQueryChain({ count: null, error: { message: "boom", code: "42P01" } });
     corridorsChain = buildQueryChain({ count: 2, error: null });
+    rtpChain = buildQueryChain({ count: 1, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: null, corridors: 2 });
+    expect(payload).toEqual({ projects: 1, aerial: null, corridors: 2, rtp: 1 });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         aerialError: "boom",
+        projectsError: null,
+        corridorsError: null,
+        rtpError: null,
+      })
+    );
+  });
+
+  it("returns null for the rtp layer and logs a partial-failure warning when rtp_cycles fails", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "editor" },
+      workspace: { id: WORKSPACE_ID, name: "NCTC demo" },
+    });
+    projectsChain = buildQueryChain({ count: 1, error: null });
+    aerialChain = buildQueryChain({ count: 3, error: null });
+    corridorsChain = buildQueryChain({ count: 2, error: null });
+    rtpChain = buildQueryChain({ count: null, error: { message: "no anchor column", code: "42703" } });
+
+    const response = await getCounts(bareRequest());
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2, rtp: null });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "map_feature_counts_partial_failure",
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        rtpError: "no anchor column",
+        aerialError: null,
         projectsError: null,
         corridorsError: null,
       })
@@ -166,12 +203,13 @@ describe("GET /api/map-features/counts", () => {
     projectsChain = buildQueryChain({ count: null, error: null });
     aerialChain = buildQueryChain({ count: null, error: null });
     corridorsChain = buildQueryChain({ count: null, error: null });
+    rtpChain = buildQueryChain({ count: null, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0 });
+    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0, rtp: 0 });
     expect(mockAudit.warn).not.toHaveBeenCalled();
   });
 });

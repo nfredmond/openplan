@@ -74,6 +74,11 @@ export const DEMO_PROJECT_SUMMARY =
 // the shell's initial viewport.
 export const DEMO_PROJECT_LATITUDE = 39.239137;
 export const DEMO_PROJECT_LONGITUDE = -121.033982;
+// Nevada City is the Nevada County seat — offset slightly from the Grass
+// Valley project anchor so the RTP pin and project marker don't overlap
+// when both sit inside the same initial viewport.
+export const DEMO_RTP_ANCHOR_LATITUDE = 39.2616;
+export const DEMO_RTP_ANCHOR_LONGITUDE = -121.0161;
 export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 
@@ -400,6 +405,8 @@ export function buildSeedRecords(
       horizon_end_year: 2045,
       summary:
         "Proof-of-capability RTP cycle anchored to the NCTC screening-grade model run. Internal prototype only.",
+      anchor_latitude: DEMO_RTP_ANCHOR_LATITUDE,
+      anchor_longitude: DEMO_RTP_ANCHOR_LONGITUDE,
       created_by: ownerUserId,
     },
     projectRtpLink: {
@@ -676,6 +683,8 @@ async function main(): Promise<void> {
       horizon_end_year: 2045,
       summary:
         "Proof-of-capability RTP cycle anchored to the NCTC screening-grade model run. Internal prototype only.",
+      anchor_latitude: DEMO_RTP_ANCHOR_LATITUDE,
+      anchor_longitude: DEMO_RTP_ANCHOR_LONGITUDE,
       created_by: demoUserId,
     },
     { onConflict: "id" }

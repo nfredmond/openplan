@@ -7,9 +7,10 @@ export type MapFeatureCounts = {
   projects: number | null;
   aerial: number | null;
   corridors: number | null;
+  rtp: number | null;
 };
 
-const EMPTY_COUNTS: MapFeatureCounts = { projects: 0, aerial: 0, corridors: 0 };
+const EMPTY_COUNTS: MapFeatureCounts = { projects: 0, aerial: 0, corridors: 0, rtp: 0 };
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("map-features.counts", request);
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     const workspaceId = membership.workspace_id;
 
-    const [projectsResult, aerialResult, corridorsResult] = await Promise.all([
+    const [projectsResult, aerialResult, corridorsResult, rtpResult] = await Promise.all([
       supabase
         .from("projects")
         .select("id", { count: "exact", head: true })
@@ -49,20 +50,33 @@ export async function GET(request: NextRequest) {
         .from("project_corridors")
         .select("id", { count: "exact", head: true })
         .eq("workspace_id", workspaceId),
+      supabase
+        .from("rtp_cycles")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", workspaceId)
+        .not("anchor_latitude", "is", null)
+        .not("anchor_longitude", "is", null),
     ]);
 
     const counts: MapFeatureCounts = {
       projects: projectsResult.error ? null : projectsResult.count ?? 0,
       aerial: aerialResult.error ? null : aerialResult.count ?? 0,
       corridors: corridorsResult.error ? null : corridorsResult.count ?? 0,
+      rtp: rtpResult.error ? null : rtpResult.count ?? 0,
     };
 
-    if (projectsResult.error || aerialResult.error || corridorsResult.error) {
+    if (
+      projectsResult.error ||
+      aerialResult.error ||
+      corridorsResult.error ||
+      rtpResult.error
+    ) {
       audit.warn("map_feature_counts_partial_failure", {
         workspaceId,
         projectsError: projectsResult.error?.message ?? null,
         aerialError: aerialResult.error?.message ?? null,
         corridorsError: corridorsResult.error?.message ?? null,
+        rtpError: rtpResult.error?.message ?? null,
       });
     }
 

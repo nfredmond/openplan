@@ -8,6 +8,8 @@ import {
   DEMO_PROJECT_LATITUDE,
   DEMO_PROJECT_LONGITUDE,
   DEMO_PROJECT_RTP_LINK_ID,
+  DEMO_RTP_ANCHOR_LATITUDE,
+  DEMO_RTP_ANCHOR_LONGITUDE,
   DEMO_RTP_CYCLE_ID,
   DEMO_WORKSPACE_ID,
   buildExistingConditionsChapterMarkdown,
@@ -157,6 +159,18 @@ describe("buildSeedRecords", () => {
     expect(records.project.longitude).toBe(DEMO_PROJECT_LONGITUDE);
     expect(DEMO_PROJECT_LATITUDE).toBe(39.239137);
     expect(DEMO_PROJECT_LONGITUDE).toBe(-121.033982);
+  });
+
+  it("anchors the RTP cycle pin to Nevada City so it sits beside (not on top of) the Grass Valley project marker", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.rtpCycle.anchor_latitude).toBe(DEMO_RTP_ANCHOR_LATITUDE);
+    expect(records.rtpCycle.anchor_longitude).toBe(DEMO_RTP_ANCHOR_LONGITUDE);
+    expect(DEMO_RTP_ANCHOR_LATITUDE).toBe(39.2616);
+    expect(DEMO_RTP_ANCHOR_LONGITUDE).toBe(-121.0161);
+    // Must not collide with the project marker exactly.
+    expect(DEMO_RTP_ANCHOR_LATITUDE).not.toBe(DEMO_PROJECT_LATITUDE);
+    expect(DEMO_RTP_ANCHOR_LONGITUDE).not.toBe(DEMO_PROJECT_LONGITUDE);
   });
 
   it("produces the existing-conditions chapter attached to the demo RTP cycle", () => {
