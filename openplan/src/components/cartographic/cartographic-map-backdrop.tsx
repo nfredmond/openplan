@@ -9,6 +9,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
+import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
@@ -46,6 +47,15 @@ const CORRIDOR_LOS_COLOR: Record<string, string> = {
 };
 const CORRIDOR_BASE_COLOR = "#4a7a9e";
 
+// Fit-to-selection viewport targets. maxZoom keeps a tiny feature (single
+// small polygon, short corridor) from punching past neighborhood scale on
+// fitBounds; padding leaves room for UI chrome on the sides. POINT_ZOOM
+// lands projects at neighborhood scale so the marker has spatial context.
+const FIT_PADDING = 64;
+const FIT_MAX_ZOOM = 15;
+const FIT_DURATION_MS = 400;
+const POINT_FIT_ZOOM = 14;
+
 type MissionAoiFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
@@ -73,7 +83,7 @@ export function CartographicMapBackdrop() {
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
   const [corridors, setCorridors] = useState<CorridorFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
-  const { selection, setSelection } = useCartographicSelection();
+  const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
   const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
   useEffect(() => {
@@ -474,9 +484,39 @@ export function CartographicMapBackdrop() {
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
   // because the registration is layer-id-scoped, not source-scoped.
+  //
+  // Fit-on-click uses the feature geometry directly from the click event
+  // rather than reading it back from the source — avoids any round-trip
+  // through `queryRenderedFeatures` and stays decoupled from the selection
+  // state (so fitting fires on user-initiated clicks only, never from list
+  // row hovers that `setSelection` without touching the map).
+  //
+  // Background click-to-clear fires on the map-level click. Mapbox dispatches
+  // layer clicks before the map click, but the map click still fires for
+  // every click, so the handler uses `queryRenderedFeatures` against the
+  // three known feature layers to distinguish feature hits from background
+  // hits.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
+
+    const fitToFeatureGeometry = (geometry: unknown) => {
+      const instruction = fitInstructionFromGeometry(geometry);
+      if (!instruction) return;
+      if (instruction.kind === "center") {
+        map.easeTo({
+          center: instruction.center,
+          zoom: POINT_FIT_ZOOM,
+          duration: FIT_DURATION_MS,
+        });
+        return;
+      }
+      map.fitBounds(instruction.bbox, {
+        padding: FIT_PADDING,
+        maxZoom: FIT_MAX_ZOOM,
+        duration: FIT_DURATION_MS,
+      });
+    };
 
     const onClick = (e: mapboxgl.MapLayerMouseEvent) => {
       const feature = e.features?.[0];
@@ -485,7 +525,10 @@ export function CartographicMapBackdrop() {
         navigate: (path) => navigateRef.current(path),
         sourceId: AOI_SOURCE_ID,
       });
-      if (nextSelection) setSelection(nextSelection);
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
     };
     const onMouseEnter = () => {
       map.getCanvas().style.cursor = "pointer";
@@ -501,7 +544,10 @@ export function CartographicMapBackdrop() {
         navigate: (path) => navigateRef.current(path),
         sourceId: PROJECTS_SOURCE_ID,
       });
-      if (nextSelection) setSelection(nextSelection);
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
     };
 
     const onCorridorClick = (e: mapboxgl.MapLayerMouseEvent) => {
@@ -511,7 +557,29 @@ export function CartographicMapBackdrop() {
         navigate: (path) => navigateRef.current(path),
         sourceId: CORRIDORS_SOURCE_ID,
       });
-      if (nextSelection) setSelection(nextSelection);
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
+    };
+
+    const FEATURE_LAYERS = [
+      AOI_FILL_LAYER_ID,
+      PROJECTS_CIRCLE_LAYER_ID,
+      CORRIDORS_LINE_LAYER_ID,
+    ];
+
+    const onBackgroundClick = (e: mapboxgl.MapMouseEvent) => {
+      const renderedLayers = FEATURE_LAYERS.filter((layerId) => map.getLayer(layerId));
+      if (renderedLayers.length === 0) {
+        // No feature layers mounted yet — any click is background.
+        clearSelection();
+        return;
+      }
+      const hits = map.queryRenderedFeatures(e.point, { layers: renderedLayers });
+      if (hits.length === 0) {
+        clearSelection();
+      }
     };
 
     map.on("click", AOI_FILL_LAYER_ID, onClick);
@@ -523,6 +591,7 @@ export function CartographicMapBackdrop() {
     map.on("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
     map.on("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
+    map.on("click", onBackgroundClick);
 
     return () => {
       map.off("click", AOI_FILL_LAYER_ID, onClick);
@@ -534,8 +603,9 @@ export function CartographicMapBackdrop() {
       map.off("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
       map.off("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
+      map.off("click", onBackgroundClick);
     };
-  }, [ready, setSelection]);
+  }, [ready, setSelection, clearSelection]);
 
   // Highlight the selected feature by writing feature-state.selected = true.
   // Paint expressions on every source-backed layer read from feature-state,
