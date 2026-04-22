@@ -11,6 +11,9 @@ export type AerialMissionFeatureProperties = {
 
 type NavigateOptions = {
   navigate: (path: string) => void;
+  // Optional Mapbox source id so the resulting selection carries a
+  // round-trip reference the backdrop can highlight via feature-state.
+  sourceId?: string;
 };
 
 export function isAerialMissionFeatureProperties(
@@ -31,7 +34,7 @@ export function isAerialMissionFeatureProperties(
 
 export function aerialMissionFeatureToSelection(
   properties: unknown,
-  { navigate }: NavigateOptions,
+  { navigate, sourceId }: NavigateOptions,
 ): CartographicInspectorSelection | null {
   if (!isAerialMissionFeatureProperties(properties)) return null;
 
@@ -57,6 +60,10 @@ export function aerialMissionFeatureToSelection(
       label: "Open project",
       onClick: () => navigate(`/projects/${properties.projectId}`),
     };
+  }
+
+  if (sourceId) {
+    selection.featureRef = { sourceId, featureId: properties.missionId };
   }
 
   return selection;

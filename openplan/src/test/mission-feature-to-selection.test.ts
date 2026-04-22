@@ -101,4 +101,22 @@ describe("aerialMissionFeatureToSelection", () => {
     );
     expect(selection!.title).toBe("Untitled mission");
   });
+
+  it("omits featureRef when no sourceId is supplied", () => {
+    const navigate = vi.fn();
+    const selection = aerialMissionFeatureToSelection(validProps, { navigate });
+    expect(selection!.featureRef).toBeUndefined();
+  });
+
+  it("populates featureRef with the injected sourceId and missionId", () => {
+    const navigate = vi.fn();
+    const selection = aerialMissionFeatureToSelection(validProps, {
+      navigate,
+      sourceId: "cartographic-aerial-mission-aois",
+    });
+    expect(selection!.featureRef).toEqual({
+      sourceId: "cartographic-aerial-mission-aois",
+      featureId: validProps.missionId,
+    });
+  });
 });

@@ -10,6 +10,9 @@ export type CartographicInspectorSelection = {
   meta?: Array<{ label: string; value: string; tone?: "default" | "urgent" | "ok" | "warn" }>;
   primaryAction?: { label: string; onClick: () => void };
   secondaryAction?: { label: string; onClick: () => void };
+  // Optional round-trip reference so Mapbox can highlight the selected feature.
+  // Backdrop-agnostic; consumers that don't know about the map layer omit it.
+  featureRef?: { sourceId: string; featureId: string | number };
 };
 
 type CartographicInspectorDockProps = {

@@ -47,7 +47,7 @@ export function CartographicMapBackdrop() {
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
-  const { setSelection } = useCartographicSelection();
+  const { selection, setSelection } = useCartographicSelection();
   const router = useRouter();
   const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
   useEffect(() => {
@@ -183,7 +183,12 @@ export function CartographicMapBackdrop() {
           source: AOI_SOURCE_ID,
           paint: {
             "fill-color": "#e45635",
-            "fill-opacity": 0.18,
+            "fill-opacity": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              0.36,
+              0.18,
+            ],
           },
         });
       }
@@ -195,7 +200,12 @@ export function CartographicMapBackdrop() {
           source: AOI_SOURCE_ID,
           paint: {
             "line-color": "#e45635",
-            "line-width": 1.75,
+            "line-width": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              2.75,
+              1.75,
+            ],
             "line-opacity": 0.85,
           },
         });
@@ -235,10 +245,11 @@ export function CartographicMapBackdrop() {
     const onClick = (e: mapboxgl.MapLayerMouseEvent) => {
       const feature = e.features?.[0];
       if (!feature) return;
-      const selection = aerialMissionFeatureToSelection(feature.properties, {
+      const nextSelection = aerialMissionFeatureToSelection(feature.properties, {
         navigate: (path) => navigateRef.current(path),
+        sourceId: AOI_SOURCE_ID,
       });
-      if (selection) setSelection(selection);
+      if (nextSelection) setSelection(nextSelection);
     };
     const onMouseEnter = () => {
       map.getCanvas().style.cursor = "pointer";
@@ -257,6 +268,41 @@ export function CartographicMapBackdrop() {
       map.off("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
     };
   }, [ready, setSelection]);
+
+  // Highlight the selected feature by writing feature-state.selected = true.
+  // Paint expressions on both layers read from feature-state, so the visual
+  // lift happens without re-adding layers. Re-runs on aois + selection change
+  // because setStyle() wipes feature-state along with sources/layers.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+
+    const apply = () => {
+      if (!map.getSource(AOI_SOURCE_ID)) return;
+      try {
+        map.removeFeatureState({ source: AOI_SOURCE_ID });
+      } catch {
+        // no-op: nothing to clear
+      }
+      const ref = selection?.featureRef;
+      if (ref && ref.sourceId === AOI_SOURCE_ID) {
+        try {
+          map.setFeatureState(
+            { source: ref.sourceId, id: ref.featureId },
+            { selected: true },
+          );
+        } catch {
+          // no-op: feature may not yet be loaded on this source
+        }
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      apply();
+    } else {
+      map.once("style.load", apply);
+    }
+  }, [selection, ready, aois]);
 
   if (suppressed) return null;
 
