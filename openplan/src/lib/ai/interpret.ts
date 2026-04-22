@@ -1,7 +1,7 @@
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 
-const HAIKU_MODEL_ID = "claude-3-5-haiku-latest";
+const HAIKU_MODEL_ID = "claude-haiku-4-5-20251001";
 const HAIKU_INPUT_USD_PER_MTOKEN = 1.0;
 const HAIKU_OUTPUT_USD_PER_MTOKEN = 5.0;
 

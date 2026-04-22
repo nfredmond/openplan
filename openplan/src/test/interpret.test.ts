@@ -87,7 +87,7 @@ describe("generateGrantInterpretation", () => {
     expect(result).toEqual({
       text: "Interpreted narrative for the corridor.",
       source: "ai",
-      model: "claude-3-5-haiku-latest",
+      model: "claude-haiku-4-5-20251001",
       inputTokens: 500,
       outputTokens: 200,
       totalTokens: 700,
