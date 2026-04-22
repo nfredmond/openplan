@@ -5,6 +5,8 @@ import {
   DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
   DEMO_PROJECT_ID,
+  DEMO_PROJECT_LATITUDE,
+  DEMO_PROJECT_LONGITUDE,
   DEMO_PROJECT_RTP_LINK_ID,
   DEMO_RTP_CYCLE_ID,
   DEMO_WORKSPACE_ID,
@@ -146,6 +148,15 @@ describe("buildSeedRecords", () => {
     expect(records.rtpCycle.status).toBe("draft");
     expect(records.project.plan_type).toBe("regional_transportation_plan");
     expect(records.project.delivery_phase).toBe("analysis");
+  });
+
+  it("anchors the demo project to the Grass Valley map center so the marker renders under the shell viewport", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.project.latitude).toBe(DEMO_PROJECT_LATITUDE);
+    expect(records.project.longitude).toBe(DEMO_PROJECT_LONGITUDE);
+    expect(DEMO_PROJECT_LATITUDE).toBe(39.239137);
+    expect(DEMO_PROJECT_LONGITUDE).toBe(-121.033982);
   });
 
   it("produces the existing-conditions chapter attached to the demo RTP cycle", () => {

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
+import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
@@ -25,6 +26,9 @@ const AOI_SOURCE_ID = "cartographic-aerial-mission-aois";
 const AOI_FILL_LAYER_ID = "cartographic-aerial-mission-aois-fill";
 const AOI_OUTLINE_LAYER_ID = "cartographic-aerial-mission-aois-outline";
 
+const PROJECTS_SOURCE_ID = "cartographic-projects";
+const PROJECTS_CIRCLE_LAYER_ID = "cartographic-projects-circle";
+
 type MissionAoiFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
@@ -34,6 +38,8 @@ type MissionAoiFeatureCollection = {
     properties: Record<string, unknown>;
   }>;
 };
+
+type ProjectFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -46,6 +52,7 @@ export function CartographicMapBackdrop() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
+  const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { selection, setSelection } = useCartographicSelection();
   const router = useRouter();
@@ -159,6 +166,38 @@ export function CartographicMapBackdrop() {
     };
   }, [suppressed]);
 
+  // Same pattern for project markers — separate source + circle layer.
+  useEffect(() => {
+    if (suppressed) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/projects", {
+          method: "GET",
+          credentials: "same-origin",
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] projects fetch returned ${response.status}`,
+            );
+          }
+          return;
+        }
+        const payload = (await response.json()) as ProjectFeatureCollection;
+        if (cancelled) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setProjectMarkers(payload);
+        }
+      } catch (error) {
+        console.warn("[cartographic-backdrop] projects fetch failed", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [suppressed]);
+
   // Paint AOIs onto the map once both the map and the data are ready.
   // Runs again on style swaps because setStyle() wipes the source/layer registry.
   useEffect(() => {
@@ -219,6 +258,58 @@ export function CartographicMapBackdrop() {
     }
   }, [ready, aois, resolvedTheme]);
 
+  // Paint project markers onto the map once both the map and the data are
+  // ready. Separate source from AOIs so feature-state highlight never
+  // cross-contaminates between the two layers. Accent-2 green (#1f6b5e)
+  // keeps projects visually distinct from AOI orange.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !projectMarkers) return;
+
+    const paint = () => {
+      if (!map.getSource(PROJECTS_SOURCE_ID)) {
+        map.addSource(PROJECTS_SOURCE_ID, {
+          type: "geojson",
+          data: projectMarkers as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(PROJECTS_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(projectMarkers as unknown as GeoJSON.FeatureCollection);
+      }
+
+      if (!map.getLayer(PROJECTS_CIRCLE_LAYER_ID)) {
+        map.addLayer({
+          id: PROJECTS_CIRCLE_LAYER_ID,
+          type: "circle",
+          source: PROJECTS_SOURCE_ID,
+          paint: {
+            "circle-color": "#1f6b5e",
+            "circle-radius": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              9,
+              6,
+            ],
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              2.5,
+              1.5,
+            ],
+            "circle-opacity": 0.92,
+          },
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, projectMarkers, resolvedTheme]);
+
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
     const map = mapRef.current;
@@ -234,6 +325,20 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.aerial, ready, aois]);
+
+  // Honor the layers.projects toggle.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.projects ? "visible" : "none";
+    if (map.getLayer(PROJECTS_CIRCLE_LAYER_ID)) {
+      try {
+        map.setLayoutProperty(PROJECTS_CIRCLE_LAYER_ID, "visibility", visibility);
+      } catch {
+        // no-op: layers.projects toggle is best-effort
+      }
+    }
+  }, [layers.projects, ready, projectMarkers]);
 
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
@@ -258,34 +363,56 @@ export function CartographicMapBackdrop() {
       map.getCanvas().style.cursor = "";
     };
 
+    const onProjectClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = projectFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: PROJECTS_SOURCE_ID,
+      });
+      if (nextSelection) setSelection(nextSelection);
+    };
+
     map.on("click", AOI_FILL_LAYER_ID, onClick);
     map.on("mouseenter", AOI_FILL_LAYER_ID, onMouseEnter);
     map.on("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
+    map.on("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
+    map.on("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
 
     return () => {
       map.off("click", AOI_FILL_LAYER_ID, onClick);
       map.off("mouseenter", AOI_FILL_LAYER_ID, onMouseEnter);
       map.off("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
+      map.off("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
+      map.off("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
     };
   }, [ready, setSelection]);
 
   // Highlight the selected feature by writing feature-state.selected = true.
-  // Paint expressions on both layers read from feature-state, so the visual
-  // lift happens without re-adding layers. Re-runs on aois + selection change
-  // because setStyle() wipes feature-state along with sources/layers.
+  // Paint expressions on every source-backed layer read from feature-state,
+  // so the visual lift happens without re-adding layers. Re-runs on data
+  // + selection change because setStyle() wipes feature-state along with
+  // sources/layers. Dispatch on sourceId so a project selection never
+  // lights up an AOI and vice-versa.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
 
+    const KNOWN_SOURCES = [AOI_SOURCE_ID, PROJECTS_SOURCE_ID] as const;
+
     const apply = () => {
-      if (!map.getSource(AOI_SOURCE_ID)) return;
-      try {
-        map.removeFeatureState({ source: AOI_SOURCE_ID });
-      } catch {
-        // no-op: nothing to clear
+      for (const sourceId of KNOWN_SOURCES) {
+        if (!map.getSource(sourceId)) continue;
+        try {
+          map.removeFeatureState({ source: sourceId });
+        } catch {
+          // no-op: nothing to clear
+        }
       }
       const ref = selection?.featureRef;
-      if (ref && ref.sourceId === AOI_SOURCE_ID) {
+      if (ref && (KNOWN_SOURCES as readonly string[]).includes(ref.sourceId)) {
         try {
           map.setFeatureState(
             { source: ref.sourceId, id: ref.featureId },
@@ -302,7 +429,7 @@ export function CartographicMapBackdrop() {
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois]);
+  }, [selection, ready, aois, projectMarkers]);
 
   if (suppressed) return null;
 

@@ -65,6 +65,12 @@ export const DEMO_WORKSPACE_SLUG = "nctc-demo";
 export const DEMO_PROJECT_NAME = "NCTC 2045 RTP (proof-of-capability)";
 export const DEMO_PROJECT_SUMMARY =
   "Proof-of-capability demo: what OpenPlan produces when a rural RTPA like Nevada County runs an RTP cycle through it, grounded in real NCTC geography and a real screening-grade AequilibraE assignment. Internal prototype only — not a calibrated planning-grade model.";
+
+// Grass Valley anchor — matches DEFAULT_CENTER in the cartographic backdrop
+// and the map fallback components, so the demo project marker lands under
+// the shell's initial viewport.
+export const DEMO_PROJECT_LATITUDE = 39.239137;
+export const DEMO_PROJECT_LONGITUDE = -121.033982;
 export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 
@@ -348,6 +354,8 @@ export function buildSeedRecords(
       status: "active",
       plan_type: "regional_transportation_plan",
       delivery_phase: "analysis",
+      latitude: DEMO_PROJECT_LATITUDE,
+      longitude: DEMO_PROJECT_LONGITUDE,
       created_by: ownerUserId,
     },
     rtpCycle: {
@@ -613,6 +621,8 @@ async function main(): Promise<void> {
       status: "active",
       plan_type: "regional_transportation_plan",
       delivery_phase: "analysis",
+      latitude: DEMO_PROJECT_LATITUDE,
+      longitude: DEMO_PROJECT_LONGITUDE,
       created_by: demoUserId,
     },
     { onConflict: "id" }
