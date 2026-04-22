@@ -122,11 +122,11 @@ pnpm qa:gate
 - `src/test/map-features-projects-route.test.ts` (4 cases)
 - `docs/ops/2026-04-21-phase-3-slice-d-project-markers-proof.md` (this file)
 
-## User-owned follow-ups
+## Close-out (2026-04-21)
 
-1. **Apply migration to prod.** `supabase/migrations/20260421000065_projects_location.sql` is idempotent (`ADD COLUMN IF NOT EXISTS`, constraint-existence guards), safe to apply via MCP `apply_migration` or `supabase db push`. No backfill required — existing rows stay NULL and are filtered out by the route.
-2. **Re-seed NCTC demo.** Re-run `pnpm seed:nctc -- --env-file .env.production.local` so the demo project picks up the Grass Valley coords. Upsert is idempotent on `id`.
-3. **Smoke test against prod.** After seeding, hit `/` signed in as the demo owner — expect one green circle at Grass Valley, hover shows pointer cursor, click opens the project inspector with lifted stroke.
+1. **Migration applied to prod** via `pnpm supabase db push` against `aggphdqkanxsfzzoxlbk`. First required a surgical `supabase migration repair` pass to reconcile the 16 local-only + 16 remote-only entries left over from the 2026-04-19 MCP batch (marked the UTC-now remote entries `reverted` and the corresponding local entries `applied`); registry now fully aligned and a dry-run narrowed the pending set to this one migration before push. Schema verified via service-role `SELECT` — `projects.latitude` / `projects.longitude` NUMERIC columns present.
+2. **NCTC demo re-seeded** via `pnpm seed:nctc -- --env-file .env.production.local` — the upsert path is idempotent on `id`, and the demo project row now carries `latitude=39.239137`, `longitude=-121.033982` (Grass Valley anchor). Confirmed via service-role `SELECT`.
+3. **Smoke test** against the signed-in demo browser is user-owned (shouldn't be automated from this environment — browser session cookies + demo-owner credentials aren't handled by agent). Checklist in the approved plan at `~/.claude/plans/joyful-gliding-quilt.md` → Step 3.
 
 ## Pointers
 
