@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import {
   ArrowLeft,
   CalendarClock,
@@ -618,6 +619,7 @@ export default async function ProgramDetailPage({
 
   return (
     <section className="space-y-6">
+      <CartographicSurfaceWide />
       <Link
         href="/programs"
         className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"

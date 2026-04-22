@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ModelCreator } from "@/components/models/model-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -366,7 +367,20 @@ export default async function ModelsPage({
           ) : (
             <div className="mt-5 module-record-list">
               {models.map((model) => (
-                <Link key={model.id} href={`/models/${model.id}`} className="module-record-row is-interactive group block">
+                <CartographicSelectionLink
+                  key={model.id}
+                  href={`/models/${model.id}`}
+                  className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "run",
+                    title: model.title,
+                    kicker: `${formatModelFamilyLabel(model.model_family)} · ${formatModelStatusLabel(model.status)}`,
+                    avatarChar: model.title[0],
+                    meta: model.readiness.missingCheckLabels.length > 0
+                      ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
+                      : [{ label: "status", value: "ready", tone: "ok" as const }],
+                  }}
+                >
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
@@ -394,7 +408,7 @@ export default async function ModelsPage({
                   {model.readiness.missingCheckLabels.length > 0 ? (
                     <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
                   ) : null}
-                </Link>
+                </CartographicSelectionLink>
               ))}
             </div>
           )}

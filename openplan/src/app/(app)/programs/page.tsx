@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
@@ -672,10 +672,17 @@ export default async function ProgramsPage({
 
               <div className="module-record-list">
               {typedPrograms.map((program) => (
-                <Link
+                <CartographicSelectionLink
                   key={program.id}
                   href={`/programs/${program.id}`}
                   className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "report",
+                    title: program.title,
+                    kicker: `${formatProgramTypeLabel(program.program_type)} · ${formatProgramStatusLabel(program.status)}`,
+                    avatarChar: program.title[0],
+                    meta: [{ label: "readiness", value: program.readiness.label }],
+                  }}
                 >
                   <div className="module-record-head">
                     <div className="module-record-main">
@@ -745,7 +752,7 @@ export default async function ProgramsPage({
                         : "No linked report packets yet. Open the program to attach or create the first packet record."}
                     </p>
                   </div>
-                </Link>
+                </CartographicSelectionLink>
               ))}
               </div>
             </div>

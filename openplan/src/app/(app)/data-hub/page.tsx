@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import {
   ArrowRight,
   Database,
@@ -304,6 +305,7 @@ export default async function DataHubPage() {
 
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">

@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { ScrollText } from "lucide-react";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
@@ -1512,6 +1513,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
 
   return (
     <section className="module-page space-y-6">
+      <CartographicSurfaceWide />
       {/* ── Hero row ─────────────────────────────────────────── */}
       <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         {/* Left: report identity */}

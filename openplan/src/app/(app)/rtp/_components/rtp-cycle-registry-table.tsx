@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RtpRegistryPacketRowAction } from "@/components/rtp/rtp-registry-packet-row-action";
@@ -332,9 +333,21 @@ export function RtpCycleRegistryTable({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/rtp/${cycle.id}`} className="text-base font-semibold tracking-tight transition hover:text-foreground/80">
+                      <CartographicSelectionLink
+                        href={`/rtp/${cycle.id}`}
+                        className="text-base font-semibold tracking-tight transition hover:text-foreground/80"
+                        selection={{
+                          kind: "project",
+                          title: cycle.title,
+                          kicker: `RTP · ${formatRtpCycleStatusLabel(cycle.status)}`,
+                          avatarChar: cycle.title[0],
+                          meta: [
+                            { label: "readiness", value: cycle.readiness.label },
+                          ],
+                        }}
+                      >
                         {cycle.title}
-                      </Link>
+                      </CartographicSelectionLink>
                       <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                       <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
                     </div>

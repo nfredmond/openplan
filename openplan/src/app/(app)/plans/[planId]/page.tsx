@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import {
   ArrowLeft,
   Database,
@@ -607,6 +608,7 @@ export default async function PlanDetailPage({
 
   return (
     <section className="module-page space-y-6">
+      <CartographicSurfaceWide />
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <Link href="/plans" className="inline-flex items-center gap-2 transition hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />

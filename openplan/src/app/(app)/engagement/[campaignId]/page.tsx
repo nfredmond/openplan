@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowRight, FileStack, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
 import { EngagementCampaignControls } from "@/components/engagement/engagement-campaign-controls";
 import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
@@ -214,6 +215,7 @@ export default async function EngagementCampaignDetailPage({
 
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/engagement" className="transition hover:text-foreground">
           Engagement

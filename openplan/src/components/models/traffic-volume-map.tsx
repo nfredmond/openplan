@@ -50,7 +50,7 @@ export function TrafficVolumeMap({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.025, 39.22],
+      center: [-121.033982, 39.239137],
       zoom: 12,
       attributionControl: false,
     });

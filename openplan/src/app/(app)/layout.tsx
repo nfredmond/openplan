@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { CartographicShell } from "@/components/cartographic/cartographic-shell";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({
@@ -16,5 +16,5 @@ export default async function AppLayout({
     redirect("/sign-in");
   }
 
-  return <AppShell>{children}</AppShell>;
+  return <CartographicShell>{children}</CartographicShell>;
 }

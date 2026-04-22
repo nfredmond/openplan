@@ -47,6 +47,14 @@ export const DEMO_COUNTY_RUN_ID = "d0000001-0000-4000-8000-000000000005";
 export const DEMO_PROJECT_RTP_LINK_ID = "d0000001-0000-4000-8000-000000000006";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_ID = "d0000001-0000-4000-8000-000000000007";
 
+export const DEMO_MISSION_DOWNTOWN_ID = "d0000001-0000-4000-8000-000000000008";
+export const DEMO_MISSION_SR49_ID = "d0000001-0000-4000-8000-000000000009";
+export const DEMO_MISSION_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000a";
+
+export const DEMO_PACKAGE_DOWNTOWN_ID = "d0000001-0000-4000-8000-00000000000b";
+export const DEMO_PACKAGE_SR49_ID = "d0000001-0000-4000-8000-00000000000c";
+export const DEMO_PACKAGE_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000d";
+
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_KEY = "existing_conditions_travel_patterns";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE =
   "Existing conditions and travel patterns (demo)";
@@ -68,6 +76,67 @@ export type SeedRecords = {
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
   existingConditionsChapter: Record<string, unknown>;
+};
+
+// Realistic AOI polygons near Grass Valley, CA (Nevada County seat,
+// anchor 39.239137, -121.033982). Each polygon has 9+ vertices so the
+// mission map does not look sparse and so DJI waypoint export produces
+// a usable perimeter. Coordinates are [lng, lat] and rings are closed.
+
+export const DEMO_AOI_DOWNTOWN = {
+  type: "Polygon" as const,
+  coordinates: [
+    [
+      [-121.039982, 39.243137],
+      [-121.035982, 39.243537],
+      [-121.031982, 39.243337],
+      [-121.027982, 39.242937],
+      [-121.026582, 39.239137],
+      [-121.027982, 39.235337],
+      [-121.033982, 39.234737],
+      [-121.039982, 39.235337],
+      [-121.041282, 39.239137],
+      [-121.039982, 39.243137],
+    ],
+  ],
+};
+
+export const DEMO_AOI_SR49_ALTA_SIERRA = {
+  type: "Polygon" as const,
+  coordinates: [
+    [
+      [-121.072, 39.201],
+      [-121.060, 39.195],
+      [-121.050, 39.189],
+      [-121.040, 39.180],
+      [-121.034, 39.170],
+      [-121.038, 39.164],
+      [-121.048, 39.168],
+      [-121.058, 39.176],
+      [-121.068, 39.184],
+      [-121.076, 39.192],
+      [-121.072, 39.201],
+    ],
+  ],
+};
+
+export const DEMO_AOI_EMPIRE_MINE = {
+  type: "Polygon" as const,
+  coordinates: [
+    [
+      [-121.028, 39.213],
+      [-121.022, 39.215],
+      [-121.016, 39.213],
+      [-121.012, 39.209],
+      [-121.011, 39.205],
+      [-121.014, 39.201],
+      [-121.020, 39.199],
+      [-121.026, 39.201],
+      [-121.030, 39.205],
+      [-121.031, 39.209],
+      [-121.028, 39.213],
+    ],
+  ],
 };
 
 function num(value: unknown): number | null {
@@ -646,6 +715,110 @@ async function main(): Promise<void> {
     `[seed:nctc] upserted chapter ${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY} (${chapterContent.length} chars)`
   );
 
+  // 9. Aerial missions with authored AOI polygons. Three missions
+  //    cover distinct NCTC geographies (downtown Grass Valley, the
+  //    SR-49 / Alta Sierra corridor south of town, and the Empire
+  //    Mine State Historic Park area). Each polygon carries 9+
+  //    vertices so the mission map inspector and DJI waypoint export
+  //    render meaningfully.
+  const missions = [
+    {
+      id: DEMO_MISSION_DOWNTOWN_ID,
+      title: "Downtown Grass Valley aerial survey",
+      mission_type: "aoi_capture",
+      status: "complete",
+      geography_label: "Downtown Grass Valley — Mill/Main/South Auburn",
+      notes:
+        "Repeat-capture baseline of the downtown core to anchor corridor-condition deltas for the 2045 RTP existing-conditions chapter.",
+      aoi_geojson: DEMO_AOI_DOWNTOWN,
+      collected_at: "2026-03-12T17:30:00Z",
+    },
+    {
+      id: DEMO_MISSION_SR49_ID,
+      title: "SR-49 Alta Sierra corridor survey",
+      mission_type: "corridor_survey",
+      status: "complete",
+      geography_label: "SR-49 corridor — Grass Valley south to Alta Sierra",
+      notes:
+        "Corridor mission south of Grass Valley covering the SR-49 signalized intersections flagged in the screening-grade validation summary.",
+      aoi_geojson: DEMO_AOI_SR49_ALTA_SIERRA,
+      collected_at: "2026-03-19T18:05:00Z",
+    },
+    {
+      id: DEMO_MISSION_EMPIRE_ID,
+      title: "Empire Mine State Historic Park site inspection",
+      mission_type: "site_inspection",
+      status: "active",
+      geography_label: "Empire Mine State Historic Park — Empire St access",
+      notes:
+        "Site inspection supporting the recreation-access element of the 2045 RTP. Authored AOI, pending evidence package QA.",
+      aoi_geojson: DEMO_AOI_EMPIRE_MINE,
+      collected_at: "2026-04-02T16:15:00Z",
+    },
+  ];
+  for (const mission of missions) {
+    const { error } = await supabase.from("aerial_missions").upsert(
+      {
+        ...mission,
+        workspace_id: DEMO_WORKSPACE_ID,
+        project_id: DEMO_PROJECT_ID,
+      },
+      { onConflict: "id" }
+    );
+    if (error) {
+      throw new Error(`Failed to upsert aerial mission ${mission.id}: ${error.message}`);
+    }
+    const ringLen = mission.aoi_geojson.coordinates[0].length;
+    console.log(`[seed:nctc] upserted aerial mission ${mission.id} (${ringLen} vertices, status=${mission.status})`);
+  }
+
+  const evidencePackages = [
+    {
+      id: DEMO_PACKAGE_DOWNTOWN_ID,
+      mission_id: DEMO_MISSION_DOWNTOWN_ID,
+      title: "Downtown Grass Valley ortho + DSM bundle",
+      package_type: "measurable_output",
+      status: "ready",
+      verification_readiness: "ready",
+      notes:
+        "2.5 cm GSD ortho, DSM, and tie-point report. Ground control recovered; residuals within Part 107 tolerance.",
+    },
+    {
+      id: DEMO_PACKAGE_SR49_ID,
+      mission_id: DEMO_MISSION_SR49_ID,
+      title: "SR-49 corridor share packet",
+      package_type: "share_package",
+      status: "shared",
+      verification_readiness: "ready",
+      notes:
+        "PDF share packet with annotated signal spacings, shoulder widths, and observed queuing hotspots from the AequilibraE screening run.",
+    },
+    {
+      id: DEMO_PACKAGE_EMPIRE_ID,
+      mission_id: DEMO_MISSION_EMPIRE_ID,
+      title: "Empire Mine QA bundle (pending)",
+      package_type: "qa_bundle",
+      status: "qa_pending",
+      verification_readiness: "partial",
+      notes:
+        "QA bundle awaiting tie-point re-solve after two control panels were obscured by canopy; photographer notes attached.",
+    },
+  ];
+  for (const evidence of evidencePackages) {
+    const { error } = await supabase.from("aerial_evidence_packages").upsert(
+      {
+        ...evidence,
+        workspace_id: DEMO_WORKSPACE_ID,
+        project_id: DEMO_PROJECT_ID,
+      },
+      { onConflict: "id" }
+    );
+    if (error) {
+      throw new Error(`Failed to upsert aerial evidence package ${evidence.id}: ${error.message}`);
+    }
+    console.log(`[seed:nctc] upserted evidence package ${evidence.id} (${evidence.status})`);
+  }
+
   console.log("");
   console.log("[seed:nctc] done.");
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
@@ -653,6 +826,8 @@ async function main(): Promise<void> {
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);
+  console.log(`  missions:    ${missions.length} (downtown / SR-49 / Empire Mine)`);
+  console.log(`  packages:    ${evidencePackages.length}`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 
 const ENGAGEMENT_STATUS_FILTER_OPTIONS = [
   { value: "draft", label: "Draft" },
@@ -258,10 +259,20 @@ export default async function EngagementPage({
           ) : (
             <div className="mt-5 module-record-list">
               {campaigns.map((campaign) => (
-                <Link
+                <CartographicSelectionLink
                   key={campaign.id}
                   href={`/engagement/${campaign.id}`}
                   className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "mission",
+                    title: campaign.title,
+                    kicker: `${titleizeEngagementValue(campaign.engagement_type)} · ${titleizeEngagementValue(campaign.status)}`,
+                    avatarChar: campaign.title[0],
+                    meta: [
+                      ...(campaign.project?.name ? [{ label: "project", value: campaign.project.name }] : []),
+                      ...(campaign.categoryCount > 0 ? [{ label: "categories", value: String(campaign.categoryCount) }] : []),
+                    ],
+                  }}
                 >
                   <div className="module-record-head">
                     <div className="module-record-main">
@@ -294,7 +305,7 @@ export default async function EngagementPage({
 
                     <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
-                </Link>
+                </CartographicSelectionLink>
               ))}
             </div>
           )}

@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
@@ -881,10 +882,20 @@ export default async function ReportsPage({
                   : getReportPacketActionLabel(report.packetFreshness.label);
 
                 return (
-                <Link
+                <CartographicSelectionLink
                   key={report.id}
                   href={getReportNavigationHref(report.id, report.packetFreshness.label)}
                   className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "report",
+                    title: report.title,
+                    kicker: `${formatReportStatusLabel(report.status)} · ${report.packetFreshness.label}`,
+                    avatarChar: report.title[0],
+                    meta: [
+                      ...(report.project?.name ? [{ label: "project", value: report.project.name }] : []),
+                      { label: "next", value: actionLabel },
+                    ],
+                  }}
                 >
                   <div className="module-record-head">
                     <div className="module-record-main">
@@ -1053,7 +1064,7 @@ export default async function ReportsPage({
                       )}
                     </div>
                   </div>
-                </Link>
+                </CartographicSelectionLink>
                 );
               })}
             </div>

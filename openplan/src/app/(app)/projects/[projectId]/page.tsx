@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
@@ -770,6 +771,7 @@ export default async function ProjectDetailPage({
 
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <div className="module-breadcrumb">
         <Link href="/projects" className="transition hover:text-foreground">
           Projects

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileStack, FolderKanban, ShieldCheck } from "lucide-react";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { cn } from "@/lib/utils";
 
 function buildFilterHref(params: { projectId?: string; planType?: string; status?: string }) {
@@ -353,7 +354,22 @@ export default async function PlansPage({
           ) : (
             <div className="mt-5 module-record-list">
               {typedPlans.map((plan) => (
-                <Link key={plan.id} href={`/plans/${plan.id}`} className="module-record-row is-interactive group block">
+                <CartographicSelectionLink
+                  key={plan.id}
+                  href={`/plans/${plan.id}`}
+                  className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "project",
+                    title: plan.title,
+                    kicker: `${formatPlanTypeLabel(plan.plan_type)} · ${formatPlanStatusLabel(plan.status)}`,
+                    avatarChar: plan.title[0],
+                    meta: [
+                      ...(plan.project?.name ? [{ label: "project", value: plan.project.name }] : []),
+                      ...(plan.geography_label ? [{ label: "area", value: plan.geography_label }] : []),
+                      ...(plan.horizon_year ? [{ label: "horizon", value: String(plan.horizon_year) }] : []),
+                    ],
+                  }}
+                >
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
@@ -394,7 +410,7 @@ export default async function PlansPage({
                   ) : (
                     <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">{plan.workflow.reason}</p>
                   )}
-                </Link>
+                </CartographicSelectionLink>
               ))}
             </div>
           )}

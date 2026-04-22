@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "mapbox-gl/dist/mapbox-gl.css";
+@import "./cartographic.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,7 +12,7 @@
 
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  --font-mono: var(--font-mono-sys), "SFMono-Regular", "Menlo", monospace;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -55,97 +56,163 @@
 :root {
   --radius: 0.875rem;
 
-  /* Nat Ford core tokens */
-  --background: #f7f8f4;
-  --foreground: #14212b;
-  --ink: #14212b;
-  --pine: #1f4e2e;
-  --pine-deep: #12301f;
-  --copper: #be8e2f;
-  --sand: #efe4cf;
-  --fog: #edf1f4;
-  --line: #c7d2dc;
-  --font-display: "Cormorant Garamond", serif;
-  --font-body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  /* D2 Cartographic palette — light / civic parchment */
+  --bg: #f4f1ec;
+  --map-1: #e8e3d8;
+  --map-2: #dfd9cc;
+  --map-road: #c9bfae;
+  --map-major: #8a7e68;
+  --map-water: #b4c9d6;
+  --map-park: #cfd9b9;
+  --ink: #1a1a1a;
+  --ink-2: #4a4a4a;
+  --muted: #8a8379;
+  --line: rgba(0, 0, 0, 0.1);
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-solid: #ffffff;
+  --accent: #e45635;
+  --accent-2: #1f6b5e;
+  --urgent: #c4391f;
+  --warn: #b78018;
+  --ok: #2e7d32;
 
-  /* App semantic tokens */
-  --card: #ffffff;
-  --card-foreground: var(--foreground);
-  --popover: #ffffff;
-  --popover-foreground: var(--foreground);
-  --primary: var(--pine);
-  --primary-foreground: #f7fbf7;
-  --secondary: var(--sand);
+  /* Legacy Nat Ford aliases — remapped to cartographic equivalents so existing CSS still themes. */
+  --pine: var(--accent-2);
+  --pine-deep: #154940;
+  --copper: var(--accent);
+  --sand: var(--map-1);
+  --fog: var(--map-2);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+
+  /* App semantic tokens (shadcn/tailwind) — mapped onto cartographic tokens */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--panel-solid);
+  --card-foreground: var(--ink);
+  --popover: var(--panel-solid);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--map-1);
   --secondary-foreground: var(--ink);
-  --muted: var(--fog);
-  --muted-foreground: #3f5161;
-  --accent: #3f7fb8;
-  --accent-foreground: #f5fbff;
-  --destructive: #b54747;
+  --muted-foreground: var(--muted);
+  --accent-foreground: #ffffff;
+  --destructive: var(--urgent);
   --border: var(--line);
   --input: var(--line);
-  --focus-ring-light: #0b6b60;
-  --focus-ring-dark: #8dddc3;
-  --ring: color-mix(in srgb, var(--focus-ring-light) 78%, white 22%);
+  --focus-ring-light: var(--accent-2);
+  --focus-ring-dark: #6dc6b5;
+  --ring: color-mix(in srgb, var(--accent) 78%, white 22%);
 
-  --chart-1: #1f4e2e;
-  --chart-2: #3f7fb8;
-  --chart-3: #be8e2f;
-  --chart-4: #4d7a92;
+  --chart-1: var(--accent-2);
+  --chart-2: var(--accent);
+  --chart-3: var(--warn);
+  --chart-4: var(--map-major);
   --chart-5: #6f5f3a;
 
-  --sidebar: #f3f5f1;
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--pine);
-  --sidebar-primary-foreground: #f7fbf7;
-  --sidebar-accent: #e8eef3;
-  --sidebar-accent-foreground: var(--foreground);
+  --sidebar: var(--panel-solid);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--map-1);
+  --sidebar-accent-foreground: var(--ink);
   --sidebar-border: var(--line);
   --sidebar-ring: var(--ring);
+
+  /* Copilot rail tokens — adopt cartographic palette so the shared rail themes correctly */
+  --cp-bg-override: var(--panel-solid);
+  --cp-panel-override: var(--map-1);
+  --cp-ink-override: var(--ink);
+  --cp-ink2-override: var(--ink-2);
+  --cp-muted-override: var(--muted);
+  --cp-dim-override: var(--muted);
+  --cp-line-override: var(--line);
+  --cp-line2-override: var(--line);
+  --cp-accent-override: var(--accent);
+  --cp-accent-soft-override: color-mix(in oklch, var(--accent) 18%, transparent);
+  --cp-ok-override: var(--ok);
+  --cp-warn-override: var(--warn);
+  --cp-urgent-override: var(--urgent);
+  --cp-accent-ink-override: #ffffff;
 }
 
 .dark {
-  --background: #0a1118;
-  --foreground: #e7edf2;
-  --ink: #e7edf2;
-  --pine: #56a271;
+  /* D2 Cartographic palette — dark / night parchment */
+  --bg: #111618;
+  --map-1: #1a2226;
+  --map-2: #131a1e;
+  --map-road: #2f3b42;
+  --map-major: #6b7f8a;
+  --map-water: #1b3142;
+  --map-park: #1f2d23;
+  --ink: #f0ede6;
+  --ink-2: #c4beb1;
+  --muted: #7a8089;
+  --line: rgba(255, 255, 255, 0.1);
+  --panel: rgba(22, 28, 31, 0.92);
+  --panel-solid: #1c2225;
+  --accent: #ff7a58;
+  --accent-2: #6dc6b5;
+  --urgent: #ff7166;
+  --warn: #e0b350;
+  --ok: #6fc27a;
+
+  /* Legacy aliases (dark) */
+  --pine: var(--accent-2);
   --pine-deep: #a8d9b8;
-  --copper: #d9b264;
-  --sand: #1a232d;
-  --fog: #0f1720;
-  --line: #30404d;
+  --copper: var(--accent);
+  --sand: var(--map-1);
+  --fog: var(--map-2);
 
-  --card: #111b25;
-  --card-foreground: var(--foreground);
-  --popover: #111b25;
-  --popover-foreground: var(--foreground);
-  --primary: var(--pine);
-  --primary-foreground: #08120c;
-  --secondary: #1a2632;
-  --secondary-foreground: var(--foreground);
-  --muted: #17232f;
-  --muted-foreground: #9bb0c0;
-  --accent: #63a0d4;
-  --accent-foreground: #07111a;
-  --destructive: #c15b5b;
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--panel-solid);
+  --card-foreground: var(--ink);
+  --popover: var(--panel-solid);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: #1a1a1a;
+  --secondary: var(--map-1);
+  --secondary-foreground: var(--ink);
+  --muted-foreground: var(--muted);
+  --accent-foreground: #1a1a1a;
+  --destructive: var(--urgent);
   --border: var(--line);
-  --input: #344656;
-  --ring: color-mix(in srgb, var(--focus-ring-dark) 72%, white 28%);
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: color-mix(in srgb, var(--accent) 72%, white 28%);
 
-  --chart-1: #63a0d4;
-  --chart-2: #56a271;
-  --chart-3: #d9b264;
-  --chart-4: #87c1e3;
+  --chart-1: var(--accent-2);
+  --chart-2: var(--accent);
+  --chart-3: var(--warn);
+  --chart-4: var(--map-major);
   --chart-5: #a4d8b5;
 
-  --sidebar: #0f1720;
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--pine);
-  --sidebar-primary-foreground: #08120c;
-  --sidebar-accent: #1a2632;
-  --sidebar-accent-foreground: var(--foreground);
+  --sidebar: var(--panel-solid);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: var(--map-1);
+  --sidebar-accent-foreground: var(--ink);
   --sidebar-border: var(--line);
   --sidebar-ring: var(--ring);
+
+  /* Copilot rail tokens (dark) */
+  --cp-bg-override: var(--panel-solid);
+  --cp-panel-override: var(--map-1);
+  --cp-ink-override: var(--ink);
+  --cp-ink2-override: var(--ink-2);
+  --cp-muted-override: var(--muted);
+  --cp-dim-override: var(--muted);
+  --cp-line-override: var(--line);
+  --cp-line2-override: var(--line);
+  --cp-accent-override: var(--accent);
+  --cp-accent-soft-override: color-mix(in oklch, var(--accent) 18%, transparent);
+  --cp-ok-override: var(--ok);
+  --cp-warn-override: var(--warn);
+  --cp-urgent-override: var(--urgent);
+  --cp-accent-ink-override: #1a1a1a;
 }
 
 @layer base {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowLeft, Download, Hexagon, PlaneTakeoff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -320,7 +321,9 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   );
 
   return (
-    <Worksurface
+    <>
+      <CartographicSurfaceWide />
+      <Worksurface
       ariaLabel={`Aerial mission ${mission.title}`}
       header={header}
       worksurface={
@@ -384,5 +387,6 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
       }
       inspector={evidenceChain}
     />
+    </>
   );
 }

@@ -48,6 +48,8 @@ Secondary canonical references (read only if the deep-dive points you to them):
 - **Phase C.2 slice 4 - Explore results board subcomponents (2026-04-20).** Split `ExploreResultsBoard` into `explore-current-result-card.tsx`, `explore-run-comparison-card.tsx`, `explore-geospatial-briefing.tsx`, `explore-disclosure-card.tsx`, and shared `explore-results-types.ts`. `ExploreResultsBoard` now orchestrates memoized view models and export handlers only, dropping 1,099 -> 445 LOC. Tests remain 849/182 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-4-results-board-subcomponents-proof.md`.
 - **Phase C.2 slice 5 - Explore run history handoff (2026-04-20).** Extracted the state-bearing Run History boundary into `use-explore-run-history.ts` and `explore-run-history-panel.tsx`. The hook now owns pinned baseline state, saved-run loading, compare validation, `runId`/`baselineRunId` deep-link hydration, and URL sync; the page keeps live analysis, map, report, and persistence ownership. `explore/page.tsx` drops 1,858 -> 1,709 LOC. Added `src/test/explore-run-history.test.tsx`; tests now 854/183 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-5-run-history-handoff-proof.md`.
 - **Phase C.2 slice 6 - Explore study brief controls (2026-04-20).** Extracted the Study brief form/control surface into `explore-study-brief-controls.tsx`: query textarea, character count, prompt-length warning, report template selector, run button, HTML/PDF export buttons, and validation error display. The page still owns analysis requests, report generation, map state, map lifecycle, and project/Data Hub context. `explore/page.tsx` drops 1,709 -> 1,629 LOC. Added `src/test/explore-study-brief-controls.test.tsx`; tests now 858/184 and `pnpm qa:gate` passes. Proof: `docs/ops/2026-04-20-phase-c2-slice-6-study-brief-controls-proof.md`.
+- **Phase 2 - Cartographic selection wiring + AOI enrichment (2026-04-21).** Mounted the D2 cartographic shell end-to-end. New `src/components/cartographic/` tree (11 components + 769-LOC `cartographic.css`): context with tolerant `useCartographicSelection`/`useCartographicLayers` hooks, `<CartographicSelectionLink>` row wrapper (hover/focus/click previews the inspector dock), `<CartographicSurfaceWide />` body-attr opt-in for wide detail surfaces, Mapbox GL JS v3.20 backdrop with theme-reactive style swap. Swept selection-link across 9 list pages + wide-surface across 11 detail pages. `DEFAULT_CENTER = [-121.033982, 39.239137]` (Grass Valley / NCTC anchor) now the single source of truth in the backdrop + `engagement/location-{display,picker}-map.tsx` + `models/traffic-volume-map.tsx`. `scripts/seed-nctc-demo.ts` (+175 LOC) gains three hand-authored AOI polygons (downtown / SR-49 Alta Sierra / Empire Mine, 10-11 vertices each, verified against `isAoiPolygonGeoJson`) plus mission + evidence-package upsert loops. New `src/test/nctc-demo-aoi-polygons.test.ts` (6 tests). Tests 858/184 -> 864/185; `pnpm qa:gate` clean. Proof: `docs/ops/2026-04-21-phase-2-cartographic-selection-aoi-proof.md`.
+- **Phase 3 Slice A - Live mission AOIs on cartographic backdrop (2026-04-21).** First data-driven layer on the shell backdrop. New `GET /api/map-features/aerial-missions` route (~100 LOC): auth-gated (401 anon), workspace-scoped via `loadCurrentWorkspaceMembership`, `.limit(500)` stopgap, `isAoiPolygonGeoJson` filter, structured audit logs (`aerial_mission_aois_loaded` / `aerial_mission_aoi_query_failed` / `aerial_mission_aoi_unhandled_error`). `cartographic-map-backdrop.tsx` (153 -> 264 LOC) gains fetch-on-mount with cancel guard + non-401 `console.warn`, paint effect for `#e45635 @ 0.18` fill + `0.85 / 1.75px` outline layers (re-registered on `style.load` after theme swap wipes the source/layer registry), visibility effect honoring `layers.aerial`. Post-review hardening bundled: `Object.freeze(DEFAULT_LAYERS)` in `cartographic-context.tsx`, `.limit(500)` + TODO-pagination on the route, TODO-live-counts on `cartographic-layers-panel.tsx` chip placeholders. 4 route tests (anon / no-membership / valid+malformed mix / DB error). Also adds `.mcp.json` for Supabase MCP HTTP transport. Tests 864/185 -> 868/186; `pnpm qa:gate` clean; `pnpm seed:nctc -- --env-file .env.production.local` landed 3 missions + 3 packages on prod. Proof: `docs/ops/2026-04-21-phase-3-slice-a-live-aoi-proof.md`.
 
 **All 5 writer/reader census cases are now closed.** The 18-ticket integration program has no remaining reader-dead gaps.
 
@@ -87,7 +89,7 @@ Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options 
 
 **OpenPlan** — a free, open-source transportation planning intelligence platform. Phase 1 is an AI transit analysis layer that democratizes what Replica and StreetLight Data charge $50K+/year for: natural-language queries over real GTFS, Census, and LODES data, answered with live maps.
 
-**Stack:** Next.js 15 (App Router) · Supabase (Postgres + PostGIS + Auth + Storage) · MapLibre GL JS v5 · deck.gl v9.2 · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS · shadcn/ui · pnpm · Vercel
+**Stack:** Next.js 16 (App Router) · Supabase (Postgres + PostGIS + Auth + Storage) · Mapbox GL JS v3.20 · deck.gl v9.2 · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS v4 · shadcn/ui · pnpm · Vercel
 
 **Source code lives in:** `openplan/` subdirectory (run all commands from there)
 
@@ -121,7 +123,7 @@ Claude API (claude-sonnet-4-6) — given full DB schema + PostGIS reference
 Supabase Postgres + PostGIS — execute_safe_query() RPC (SELECT-only, RLS enforced)
      │  returns GeoJSON FeatureCollection
      ▼
-Streamed back to client → MapLibre GL renders geometry + deck.gl layers
+Streamed back to client → Mapbox GL renders geometry + deck.gl layers
 ```
 
 **App Router structure:**
@@ -134,7 +136,7 @@ src/app/
   api/chat/                — Vercel AI SDK streaming endpoint
   auth/callback/           — Supabase OAuth/email callback
 src/components/
-  map/BaseMap.tsx           — MapLibre GL wrapper (forwardRef)
+  map/BaseMap.tsx           — Mapbox GL wrapper (forwardRef)
   map/GeoJSONLayer.tsx      — Renders query results on map
   chat/ChatPanel.tsx        — Streaming AI chat UI
   chat/ExampleQueries.tsx   — Starter prompts
@@ -172,7 +174,7 @@ The AI layer uses Vercel AI SDK's `streamText` with a single tool `run_spatial_q
 - **Public feeds**: `workspace_id IS NULL` in `gtfs_feeds` — preloaded agencies readable without auth
 - **GeoJSON extraction**: `buildGeoJSON()` in `query-tool.ts` looks for string columns starting with `{"type"` — Claude must include `ST_AsGeoJSON(geom)` in SELECT
 - **Workspace auto-creation**: DB trigger `on_auth_user_created` on `auth.users` creates workspace + owner membership on signup
-- **MapLibre** (not react-map-gl): Direct maplibre-gl usage with a custom `BaseMap` forwardRef component for full control
+- **Mapbox GL JS v3** (not react-map-gl): Direct `mapbox-gl` usage with a custom `BaseMap` forwardRef component for full control. The cartographic shell backdrop (`src/components/cartographic/cartographic-map-backdrop.tsx`) loads `mapbox://styles/mapbox/{light,dark}-v11` with `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`. Default map center is Grass Valley, CA — `[-121.033982, 39.239137]` — the NCTC demo anchor.
 
 ## Frontend Redesign Guardrails (Current OpenPlan direction)
 

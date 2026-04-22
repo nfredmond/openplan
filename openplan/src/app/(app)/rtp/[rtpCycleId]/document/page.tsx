@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, BookOpenText, FolderKanban, MessageSquare, Route as RouteIcon } from "lucide-react";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { EmptyState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -181,6 +182,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
 
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="flex flex-wrap gap-3">

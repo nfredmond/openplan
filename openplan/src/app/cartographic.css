@@ -1,0 +1,769 @@
+/* =========================================================================
+   Cartographic shell (D2) — map-first, floating overlay panels.
+   Classes prefixed with .op-cart-* to avoid collisions with legacy shell CSS.
+   ========================================================================= */
+
+.op-cart-shell {
+  min-height: 100vh;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  position: relative;
+}
+
+/* ---------- Reusable pill, button, kbd primitives ---------- */
+
+.op-cart-pill {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.op-cart-btn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.op-cart-btn:hover {
+  border-color: var(--muted);
+}
+.op-cart-btn--primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.op-cart-btn--primary:hover {
+  filter: brightness(0.96);
+}
+html.dark .op-cart-btn--primary {
+  color: #1a1a1a;
+}
+.op-cart-btn--icon {
+  width: 30px;
+  padding: 0;
+  justify-content: center;
+}
+
+.op-cart-kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ---------- LEFT RAIL ---------- */
+
+.op-cart-rail {
+  position: fixed;
+  top: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 40;
+  width: 60px;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: width 0.22s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.22s;
+}
+.op-cart-rail:hover,
+.op-cart-rail:focus-within {
+  width: 220px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+}
+.op-cart-rail__inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+}
+.op-cart-rail__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  margin: 12px 12px 4px;
+  background: var(--ink);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.op-cart-rail__sep {
+  width: 28px;
+  height: 1px;
+  background: var(--line);
+  margin: 6px 12px;
+}
+.op-cart-rail__nav {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.op-cart-rail__nav::-webkit-scrollbar {
+  width: 4px;
+}
+.op-cart-rail__nav::-webkit-scrollbar-thumb {
+  background: var(--line);
+}
+
+.op-cart-rail__group {
+  display: flex;
+  flex-direction: column;
+}
+.op-cart-rail__group-title {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 8px 18px 4px;
+  opacity: 0;
+  transition: opacity 0.16s;
+  height: 14px;
+}
+.op-cart-rail:hover .op-cart-rail__group-title,
+.op-cart-rail:focus-within .op-cart-rail__group-title {
+  opacity: 1;
+  transition-delay: 0.05s;
+}
+
+.op-cart-rail__btn {
+  height: 40px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 10px;
+  padding: 0 10px;
+  color: var(--ink-2);
+  position: relative;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.op-cart-rail__btn > svg {
+  flex-shrink: 0;
+}
+.op-cart-rail__btn:hover {
+  background: var(--map-1);
+  color: var(--ink);
+}
+html.dark .op-cart-rail__btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.op-cart-rail__btn.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+html.dark .op-cart-rail__btn.is-active {
+  color: #1a1a1a;
+}
+.op-cart-rail__btn--ghost {
+  cursor: default;
+}
+.op-cart-rail__btn--ghost:hover {
+  background: transparent;
+}
+
+.op-cart-rail__badge {
+  position: absolute;
+  top: 5px;
+  left: 28px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  transition: left 0.2s, top 0.2s, right 0.2s;
+}
+.op-cart-rail:hover .op-cart-rail__badge,
+.op-cart-rail:focus-within .op-cart-rail__badge {
+  top: 10px;
+  left: auto;
+  right: 14px;
+}
+.op-cart-rail__btn.is-active .op-cart-rail__badge {
+  background: #fff;
+  color: var(--accent);
+}
+
+.op-cart-rail__tip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s;
+  font-size: 13px;
+  color: inherit;
+}
+.op-cart-rail:hover .op-cart-rail__tip,
+.op-cart-rail:focus-within .op-cart-rail__tip {
+  opacity: 1;
+  transition-delay: 0.05s;
+}
+
+.op-cart-rail__flex {
+  flex: 1;
+}
+.op-cart-rail__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ---------- HEADER ---------- */
+
+.op-cart-hdr {
+  position: fixed;
+  top: 16px;
+  left: 92px;
+  right: calc(272px + var(--cp-reserved, 0px));
+  z-index: 30;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.op-cart-rail:hover ~ .op-cart-hdr,
+.op-cart-rail:focus-within ~ .op-cart-hdr {
+  left: 252px;
+}
+.op-cart-ws-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  flex-shrink: 0;
+}
+.op-cart-ws-body {
+  min-width: 0;
+}
+.op-cart-ws-name {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.op-cart-ws-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.op-cart-search {
+  flex: 1;
+  max-width: 480px;
+  padding-right: 6px;
+}
+.op-cart-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  min-width: 0;
+}
+.op-cart-search input::placeholder {
+  color: var(--muted);
+}
+
+/* ---------- OVERVIEW SURFACE (route content) ---------- */
+
+.op-cart-surface {
+  position: fixed;
+  top: 84px;
+  bottom: 80px;
+  left: 92px;
+  right: calc(272px + var(--cp-reserved, 0px));
+  z-index: 20;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.op-cart-rail:hover ~ .op-cart-surface,
+.op-cart-rail:focus-within ~ .op-cart-surface {
+  left: 252px;
+}
+
+.op-cart-surface__hd {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.op-cart-surface__kicker {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.op-cart-surface__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 2px 0 4px;
+  color: var(--ink);
+}
+.op-cart-surface__sub {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.op-cart-surface__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+}
+.op-cart-surface__body::-webkit-scrollbar {
+  width: 6px;
+}
+.op-cart-surface__body::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+  opacity: 0.3;
+}
+
+/* Pages render the existing secondary nav at the top of the surface */
+.op-cart-surface > nav[aria-label*="secondary"],
+.op-cart-surface > nav[aria-label*="Secondary"] {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+/* ---------- LAYERS PANEL ---------- */
+
+.op-cart-layers {
+  position: fixed;
+  top: 16px;
+  right: calc(16px + var(--cp-reserved, 0px));
+  z-index: 25;
+  width: 240px;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+}
+.op-cart-layers__hd {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.op-cart-layers__list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+.op-cart-layer-item {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.op-cart-layer-item:hover {
+  background: var(--map-1);
+}
+html.dark .op-cart-layer-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.op-cart-layer-item input {
+  accent-color: var(--accent);
+}
+.op-cart-layer-item__label {
+  flex: 1;
+  min-width: 0;
+}
+.op-cart-layer-item__chip {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.op-cart-layers__ft {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+.op-cart-layers__ft strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ---------- INSPECTOR DOCK ---------- */
+
+.op-cart-inspector {
+  position: fixed;
+  bottom: 16px;
+  left: 492px;
+  right: calc(272px + var(--cp-reserved, 0px));
+  z-index: 25;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.08);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: transform 220ms ease, left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.op-cart-rail:hover ~ .op-cart-inspector,
+.op-cart-rail:focus-within ~ .op-cart-inspector {
+  left: 652px;
+}
+.op-cart-inspector.is-hidden {
+  transform: translateY(calc(100% + 32px));
+  pointer-events: none;
+}
+.op-cart-inspector__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+.op-cart-inspector__body {
+  flex: 1;
+  min-width: 0;
+}
+.op-cart-inspector__kicker {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.op-cart-inspector__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 1px 0 4px;
+}
+.op-cart-inspector__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.op-cart-inspector__meta-item strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+.op-cart-inspector__meta-item.tone-urgent strong {
+  color: var(--urgent);
+}
+.op-cart-inspector__meta-item.tone-ok strong {
+  color: var(--ok);
+}
+.op-cart-inspector__meta-item.tone-warn strong {
+  color: var(--warn);
+}
+.op-cart-inspector__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ---------- ZOOM CONTROL ---------- */
+
+.op-cart-zoom {
+  position: fixed;
+  bottom: 80px;
+  right: calc(16px + var(--cp-reserved, 0px));
+  z-index: 25;
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+.op-cart-zoom button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.op-cart-zoom button:hover {
+  background: var(--map-1);
+}
+html.dark .op-cart-zoom button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.op-cart-zoom button + button {
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- COPILOT SLOT ---------- */
+
+.op-cart-copilot-slot {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 35;
+  pointer-events: none;
+}
+.op-cart-copilot-slot > * {
+  pointer-events: auto;
+}
+
+/* ---------- ACCOUNT BADGE ---------- */
+
+.op-cart-account {
+  position: fixed;
+  bottom: 16px;
+  left: 92px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  max-width: 380px;
+  transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.op-cart-rail:hover ~ .op-cart-account,
+.op-cart-rail:focus-within ~ .op-cart-account {
+  left: 252px;
+}
+.op-cart-account__who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.op-cart-account__email {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 220px;
+}
+.op-cart-account__role {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.op-cart-account__signout {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  text-decoration: none;
+}
+.op-cart-account__signout:hover {
+  color: var(--ink);
+}
+
+/* ---------- WORKSPACE PENDING ALERT ---------- */
+
+.op-cart-alert {
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  background: color-mix(in srgb, var(--warn) 12%, var(--panel-solid));
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.op-cart-alert__hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--warn);
+}
+.op-cart-alert__body {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.op-cart-alert__cta {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--warn);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------- Route override: map-owning routes hide layers + inspector ---------- */
+
+/* The CartographicMapBackdrop handles its own route suppression; we still
+   need to hide layers + inspector + zoom on /explore so the studio doesn't
+   fight for the right rail. That's applied via body-level class. */
+body[data-map-owner="true"] .op-cart-layers,
+body[data-map-owner="true"] .op-cart-inspector,
+body[data-map-owner="true"] .op-cart-zoom {
+  display: none;
+}
+
+/* ---------- Wide-content override ---------- */
+
+/* Content-heavy routes (reports detail, RTP document, admin tables) can
+   reclaim the layers-panel gap by setting body[data-surface-wide="true"].
+   The surface + header stretch to the right edge; the layers panel floats
+   compactly over the top-right corner so users can still toggle layers. */
+body[data-surface-wide="true"] .op-cart-surface,
+body[data-surface-wide="true"] .op-cart-hdr,
+body[data-surface-wide="true"] .op-cart-inspector {
+  right: calc(16px + var(--cp-reserved, 0px));
+}
+body[data-surface-wide="true"] .op-cart-layers {
+  top: 92px;
+  right: calc(32px + var(--cp-reserved, 0px));
+  width: 200px;
+  opacity: 0.88;
+}
+body[data-surface-wide="true"] .op-cart-layers:hover,
+body[data-surface-wide="true"] .op-cart-layers:focus-within {
+  opacity: 1;
+}
+
+/* ---------- Responsive: keep shell usable below 1024px ---------- */
+
+@media (max-width: 1100px) {
+  .op-cart-layers,
+  .op-cart-zoom {
+    display: none;
+  }
+  .op-cart-surface {
+    right: calc(16px + var(--cp-reserved, 0px));
+  }
+  .op-cart-hdr {
+    right: calc(16px + var(--cp-reserved, 0px));
+  }
+  .op-cart-inspector {
+    right: calc(16px + var(--cp-reserved, 0px));
+  }
+}
+
+@media (max-width: 720px) {
+  .op-cart-rail {
+    bottom: auto;
+    height: auto;
+  }
+  .op-cart-surface {
+    left: 16px;
+    top: 160px;
+  }
+  .op-cart-rail:hover ~ .op-cart-surface,
+  .op-cart-rail:focus-within ~ .op-cart-surface {
+    left: 16px;
+  }
+  .op-cart-hdr {
+    flex-wrap: wrap;
+    left: 92px;
+  }
+  .op-cart-rail:hover ~ .op-cart-hdr,
+  .op-cart-rail:focus-within ~ .op-cart-hdr {
+    left: 92px;
+  }
+  .op-cart-account {
+    display: none;
+  }
+}
+
+/* ---------- Ensure legacy shell chrome doesn't double up inside cartographic ---------- */
+
+.op-cart-shell .openplan-left-rail,
+.op-cart-shell .openplan-topbar {
+  display: none;
+}

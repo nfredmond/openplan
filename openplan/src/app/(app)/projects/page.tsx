@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
@@ -596,7 +597,30 @@ export default async function ProjectsPage({
                     </Link>
                   </div>
                 ) : filteredProjects.map((project) => (
-                  <Link key={project.id} href={`/projects/${project.id}`} className="module-record-row is-interactive group block">
+                  <CartographicSelectionLink
+                    key={project.id}
+                    href={`/projects/${project.id}`}
+                    className="module-record-row is-interactive group block"
+                    selection={{
+                      kind: "project",
+                      title: project.name,
+                      kicker: `${titleize(project.plan_type)} · ${titleize(project.delivery_phase)}`,
+                      avatarChar: project.name[0],
+                      meta: [
+                        { label: "status", value: titleize(project.status) },
+                        { label: "reports", value: String(project.reportSummary.totalCount) },
+                        ...(project.reportSummary.attentionCount > 0
+                          ? [{ label: "need attention", value: String(project.reportSummary.attentionCount), tone: "warn" as const }]
+                          : []),
+                        ...(project.rtpSummary.totalCount > 0
+                          ? [{ label: "RTP cycles", value: String(project.rtpSummary.totalCount) }]
+                          : []),
+                        ...(project.aerialPosture && project.aerialPosture.missionCount > 0
+                          ? [{ label: "missions", value: String(project.aerialPosture.missionCount) }]
+                          : []),
+                      ],
+                    }}
+                  >
                     <div className="module-record-head">
                       <div className="module-record-main">
                         <div className="module-record-kicker">
@@ -719,7 +743,7 @@ export default async function ProjectsPage({
                         </p>
                       )}
                     </div>
-                  </Link>
+                  </CartographicSelectionLink>
                 ))}
               </div>
             </>

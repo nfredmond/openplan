@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowLeft, Database, FileStack, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
 import { ModelLinkedRecordsBoard } from "@/components/models/model-linked-records";
@@ -387,6 +388,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
   return (
     <section className="module-page relative">
+      <CartographicSurfaceWide />
       <div className="module-page-backdrop" />
 
       <div className="space-y-6">

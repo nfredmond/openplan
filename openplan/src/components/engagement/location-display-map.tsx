@@ -26,8 +26,8 @@ export function LocationDisplayMap({ items }: { items: MapItem[] }) {
 
     const validItems = items.filter((i) => i.latitude !== null && i.longitude !== null) as (MapItem & { latitude: number; longitude: number })[];
 
-    let center: [number, number] = [-121.0, 39.2];
-    let zoom = 8;
+    let center: [number, number] = [-121.033982, 39.239137];
+    let zoom = 9.5;
     if (validItems.length > 0) {
       center = [validItems[0].longitude, validItems[0].latitude];
       zoom = 11;

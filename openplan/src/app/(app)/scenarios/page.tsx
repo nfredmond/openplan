@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -205,10 +206,22 @@ export default async function ScenariosPage({
           ) : (
             <div className="mt-5 module-record-list">
               {scenarioSets.map((scenarioSet) => (
-                <Link
+                <CartographicSelectionLink
                   key={scenarioSet.id}
                   href={`/scenarios/${scenarioSet.id}`}
                   className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "run",
+                    title: scenarioSet.title,
+                    kicker: `${titleizeScenarioValue(scenarioSet.status)} · ${scenarioSet.counts.alternativeCount} alternatives`,
+                    avatarChar: scenarioSet.title[0],
+                    meta: [
+                      ...(scenarioSet.project?.name ? [{ label: "project", value: scenarioSet.project.name }] : []),
+                      scenarioSet.counts.baselineCount > 0
+                        ? { label: "baseline", value: "set", tone: "ok" as const }
+                        : { label: "baseline", value: "missing", tone: "warn" as const },
+                    ],
+                  }}
                 >
                   <div className="module-record-head">
                     <div className="module-record-main">
@@ -241,7 +254,7 @@ export default async function ScenariosPage({
                   <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
                     {scenarioSet.project?.name ?? "No project"} · {scenarioSet.counts.alternativeCount} alternatives · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
                   </p>
-                </Link>
+                </CartographicSelectionLink>
               ))}
             </div>
           )}

@@ -103,8 +103,8 @@ export default function ExplorePage() {
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.5, 39.2],
-      zoom: 5.1,
+      center: [-121.033982, 39.239137],
+      zoom: 7,
       pitch: 36,
       bearing: -10,
       antialias: true,

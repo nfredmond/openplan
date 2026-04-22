@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
@@ -272,6 +273,7 @@ export default async function ScenarioSetDetailPage({
 
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/scenarios" className="transition hover:text-foreground">
           Scenarios

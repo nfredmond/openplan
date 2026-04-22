@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpCyclePhaseControls } from "@/components/rtp/rtp-cycle-phase-controls";
@@ -443,6 +444,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
   return (
     <section className="module-page">
+      <CartographicSurfaceWide />
       <header className="module-header-grid">
         <article className="module-intro-card">
           <Link href="/rtp" className="module-inline-action w-fit">

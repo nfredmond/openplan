@@ -27,8 +27,8 @@ export function LocationPickerMap({
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.0, 39.2], // rough fallback center (e.g. Nevada County ish)
-      zoom: 8,
+      center: [-121.033982, 39.239137], // Grass Valley, CA — Nevada County seat (NCTC default)
+      zoom: 9.5,
       attributionControl: false,
     });
 
