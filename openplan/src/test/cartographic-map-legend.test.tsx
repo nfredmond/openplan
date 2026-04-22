@@ -8,13 +8,19 @@ import {
   type LayerKey,
 } from "@/components/cartographic/cartographic-context";
 
-function LayerToggles({ toggleKeys }: { toggleKeys: LayerKey[] }) {
+function LayerToggles({
+  toggleOffKeys,
+  toggleOnKeys,
+}: {
+  toggleOffKeys: LayerKey[];
+  toggleOnKeys: LayerKey[];
+}) {
   const { setLayer } = useCartographicLayers();
   return (
     <div>
-      {toggleKeys.map((key) => (
+      {toggleOffKeys.map((key) => (
         <button
-          key={key}
+          key={`off-${key}`}
           type="button"
           data-testid={`toggle-off-${key}`}
           onClick={() => setLayer(key, false)}
@@ -22,21 +28,34 @@ function LayerToggles({ toggleKeys }: { toggleKeys: LayerKey[] }) {
           off-{key}
         </button>
       ))}
+      {toggleOnKeys.map((key) => (
+        <button
+          key={`on-${key}`}
+          type="button"
+          data-testid={`toggle-on-${key}`}
+          onClick={() => setLayer(key, true)}
+        >
+          on-{key}
+        </button>
+      ))}
     </div>
   );
 }
 
-function renderLegend(toggleOff: LayerKey[] = []) {
+function renderLegend(
+  toggleOff: LayerKey[] = [],
+  toggleOn: LayerKey[] = [],
+) {
   return render(
     <CartographicProvider>
-      <LayerToggles toggleKeys={toggleOff} />
+      <LayerToggles toggleOffKeys={toggleOff} toggleOnKeys={toggleOn} />
       <CartographicMapLegend />
     </CartographicProvider>,
   );
 }
 
 describe("CartographicMapLegend", () => {
-  it("renders the four data-driven entries when all layers are on (default)", () => {
+  it("renders the four default-on data-driven entries — equity stays hidden until toggled on", () => {
     renderLegend();
 
     expect(screen.getByRole("complementary", { name: "Map legend" })).toBeInTheDocument();
@@ -44,17 +63,37 @@ describe("CartographicMapLegend", () => {
     expect(screen.getByText("Aerial AOIs")).toBeInTheDocument();
     expect(screen.getByText("Corridors by LOS")).toBeInTheDocument();
     expect(screen.getByText("RTP cycles")).toBeInTheDocument();
+    expect(screen.queryByText("Zero-vehicle households")).not.toBeInTheDocument();
   });
 
-  it("renders the LOS ramp with four stops labeled A/B, C/D, E, F", () => {
+  it("renders the corridor LOS ramp with four stops labeled A/B, C/D, E, F", () => {
     renderLegend();
 
-    const ramp = document.querySelector(".op-cart-legend__ramp");
-    expect(ramp).not.toBeNull();
-    expect(ramp?.children).toHaveLength(4);
+    const corridorRampLabels = Array.from(
+      document.querySelectorAll(".op-cart-legend__ramp-labels"),
+    ).find((node) => node.textContent === "A/BC/DEF");
+    expect(corridorRampLabels).toBeDefined();
 
-    const labelRow = document.querySelector(".op-cart-legend__ramp-labels");
-    expect(labelRow?.textContent).toBe("A/BC/DEF");
+    const corridorRamp = corridorRampLabels?.previousElementSibling;
+    expect(corridorRamp?.classList.contains("op-cart-legend__ramp")).toBe(true);
+    expect(corridorRamp?.children).toHaveLength(4);
+  });
+
+  it("renders the equity ramp with four stops labeled <5%, 5–10%, 10–15%, >15% when enabled", () => {
+    renderLegend([], ["equity"]);
+
+    fireEvent.click(screen.getByTestId("toggle-on-equity"));
+
+    expect(screen.getByText("Zero-vehicle households")).toBeInTheDocument();
+
+    const equityLabels = Array.from(
+      document.querySelectorAll(".op-cart-legend__ramp-labels"),
+    ).find((node) => node.textContent === "<5%5–10%10–15%>15%");
+    expect(equityLabels).toBeDefined();
+
+    const equityRamp = equityLabels?.previousElementSibling;
+    expect(equityRamp?.classList.contains("op-cart-legend__ramp")).toBe(true);
+    expect(equityRamp?.children).toHaveLength(4);
   });
 
   it("hides an entry when its layer is toggled off", () => {
@@ -69,7 +108,7 @@ describe("CartographicMapLegend", () => {
     expect(screen.getByText("RTP cycles")).toBeInTheDocument();
   });
 
-  it("returns null when every data-driven layer is toggled off", () => {
+  it("returns null when every data-driven layer is toggled off (equity stays off by default)", () => {
     const { container } = renderLegend(["projects", "aerial", "corridors", "rtp"]);
 
     fireEvent.click(screen.getByTestId("toggle-off-projects"));

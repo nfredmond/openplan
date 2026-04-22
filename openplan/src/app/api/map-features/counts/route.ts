@@ -8,9 +8,16 @@ export type MapFeatureCounts = {
   aerial: number | null;
   corridors: number | null;
   rtp: number | null;
+  equity: number | null;
 };
 
-const EMPTY_COUNTS: MapFeatureCounts = { projects: 0, aerial: 0, corridors: 0, rtp: 0 };
+const EMPTY_COUNTS: MapFeatureCounts = {
+  projects: 0,
+  aerial: 0,
+  corridors: 0,
+  rtp: 0,
+  equity: 0,
+};
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("map-features.counts", request);
@@ -34,42 +41,49 @@ export async function GET(request: NextRequest) {
 
     const workspaceId = membership.workspace_id;
 
-    const [projectsResult, aerialResult, corridorsResult, rtpResult] = await Promise.all([
-      supabase
-        .from("projects")
-        .select("id", { count: "exact", head: true })
-        .eq("workspace_id", workspaceId)
-        .not("latitude", "is", null)
-        .not("longitude", "is", null),
-      supabase
-        .from("aerial_missions")
-        .select("id", { count: "exact", head: true })
-        .eq("workspace_id", workspaceId)
-        .not("aoi_geojson", "is", null),
-      supabase
-        .from("project_corridors")
-        .select("id", { count: "exact", head: true })
-        .eq("workspace_id", workspaceId),
-      supabase
-        .from("rtp_cycles")
-        .select("id", { count: "exact", head: true })
-        .eq("workspace_id", workspaceId)
-        .not("anchor_latitude", "is", null)
-        .not("anchor_longitude", "is", null),
-    ]);
+    const [projectsResult, aerialResult, corridorsResult, rtpResult, equityResult] =
+      await Promise.all([
+        supabase
+          .from("projects")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId)
+          .not("latitude", "is", null)
+          .not("longitude", "is", null),
+        supabase
+          .from("aerial_missions")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId)
+          .not("aoi_geojson", "is", null),
+        supabase
+          .from("project_corridors")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId),
+        supabase
+          .from("rtp_cycles")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId)
+          .not("anchor_latitude", "is", null)
+          .not("anchor_longitude", "is", null),
+        // Census tracts are public data — no workspace scoping. Count from
+        // the `census_tracts_map` view so the count mirrors what the
+        // /api/map-features/census-tracts route returns.
+        supabase.from("census_tracts_map").select("geoid", { count: "exact", head: true }),
+      ]);
 
     const counts: MapFeatureCounts = {
       projects: projectsResult.error ? null : projectsResult.count ?? 0,
       aerial: aerialResult.error ? null : aerialResult.count ?? 0,
       corridors: corridorsResult.error ? null : corridorsResult.count ?? 0,
       rtp: rtpResult.error ? null : rtpResult.count ?? 0,
+      equity: equityResult.error ? null : equityResult.count ?? 0,
     };
 
     if (
       projectsResult.error ||
       aerialResult.error ||
       corridorsResult.error ||
-      rtpResult.error
+      rtpResult.error ||
+      equityResult.error
     ) {
       audit.warn("map_feature_counts_partial_failure", {
         workspaceId,
@@ -77,6 +91,7 @@ export async function GET(request: NextRequest) {
         aerialError: aerialResult.error?.message ?? null,
         corridorsError: corridorsResult.error?.message ?? null,
         rtpError: rtpResult.error?.message ?? null,
+        equityError: equityResult.error?.message ?? null,
       });
     }
 

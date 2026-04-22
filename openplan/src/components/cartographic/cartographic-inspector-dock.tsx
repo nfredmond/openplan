@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 
 export type CartographicInspectorSelection = {
-  kind: "project" | "run" | "mission" | "report" | "corridor" | "rtp";
+  kind: "project" | "run" | "mission" | "report" | "corridor" | "rtp" | "census_tract";
   title: string;
   kicker?: string;
   avatarChar?: string;

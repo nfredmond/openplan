@@ -9,9 +9,9 @@ type RampStop = { color: string; label: string };
 type RampEntry = { kind: "ramp"; label: string; stops: RampStop[] };
 type LegendEntry = SwatchEntry | RampEntry;
 
-type LegendLayerKey = Extract<LayerKey, "projects" | "aerial" | "corridors" | "rtp">;
+type LegendLayerKey = Extract<LayerKey, "projects" | "aerial" | "corridors" | "rtp" | "equity">;
 
-const LEGEND_ORDER: LegendLayerKey[] = ["projects", "aerial", "corridors", "rtp"];
+const LEGEND_ORDER: LegendLayerKey[] = ["projects", "aerial", "corridors", "rtp", "equity"];
 
 const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
   projects: { kind: "swatch", color: "#1f6b5e", label: "Projects" },
@@ -27,6 +27,19 @@ const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
     ],
   },
   rtp: { kind: "swatch", color: "#6b4a9e", label: "RTP cycles" },
+  // Zero-vehicle-household share by tract. Sequential teal ramp, rising
+  // saturation on higher-need bins. Bins match the Mapbox step expression
+  // in the backdrop paint for `pctZeroVehicle`.
+  equity: {
+    kind: "ramp",
+    label: "Zero-vehicle households",
+    stops: [
+      { color: "#d4e8e5", label: "<5%" },
+      { color: "#8fb5b0", label: "5–10%" },
+      { color: "#4d847c", label: "10–15%" },
+      { color: "#1f544c", label: ">15%" },
+    ],
+  },
 };
 
 export function CartographicMapLegend() {

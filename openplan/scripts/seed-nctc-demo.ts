@@ -58,6 +58,16 @@ export const DEMO_PACKAGE_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000d";
 export const DEMO_CORRIDOR_SR49_ID = "d0000001-0000-4000-8000-00000000000e";
 export const DEMO_CORRIDOR_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000f";
 
+// Census tract GEOIDs — synthetic but realistic (state FIPS 06 + county FIPS 057
+// for Nevada County + 6-digit tract suffix). These are hand-authored demo
+// polygons; a future slice swaps to real TIGER + ACS ingestion. Each tract
+// is a single-ring MultiPolygon so the choropleth can exercise the
+// MultiPolygon bbox helper that shipped in Slice K1.
+export const DEMO_TRACT_GRASS_VALLEY_CORE_GEOID = "06057010100";
+export const DEMO_TRACT_GRASS_VALLEY_SOUTH_GEOID = "06057010200";
+export const DEMO_TRACT_NEVADA_CITY_GEOID = "06057010300";
+export const DEMO_TRACT_RURAL_EAST_GEOID = "06057010400";
+
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_KEY = "existing_conditions_travel_patterns";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE =
   "Existing conditions and travel patterns (demo)";
@@ -161,6 +171,81 @@ export const DEMO_CORRIDOR_EMPIRE_ST = {
     [-121.016, 39.213],
     [-121.012, 39.209],
   ] as [number, number][],
+};
+
+// Hand-authored Nevada County census tracts. Single-ring MultiPolygons tiled
+// around Grass Valley and Nevada City. Boundaries are illustrative and do
+// NOT match real TIGER tract boundaries — a future slice replaces these
+// with live Census ingestion. Coordinates are [lng, lat]. Each tract sits
+// adjacent to but not overlapping its neighbors so the choropleth renders
+// as a contiguous surface.
+//
+// The pct_zero_vehicle values (derived from households_zero_vehicle /
+// households in the census_tracts_computed view) are selected to exercise
+// all four bins of the equity choropleth: <5%, 5–10%, 10–15%, >15%.
+// - Grass Valley core: ~12% (urban density, more zero-vehicle households)
+// - Grass Valley south: ~7% (suburban)
+// - Nevada City:       ~8% (small-town walkable)
+// - Rural east:        ~3% (car-dependent rural)
+
+export const DEMO_TRACT_GRASS_VALLEY_CORE = {
+  type: "MultiPolygon" as const,
+  coordinates: [
+    [
+      [
+        [-121.045, 39.250],
+        [-121.020, 39.250],
+        [-121.020, 39.230],
+        [-121.045, 39.230],
+        [-121.045, 39.250],
+      ],
+    ],
+  ],
+};
+
+export const DEMO_TRACT_GRASS_VALLEY_SOUTH = {
+  type: "MultiPolygon" as const,
+  coordinates: [
+    [
+      [
+        [-121.045, 39.230],
+        [-121.020, 39.230],
+        [-121.020, 39.210],
+        [-121.045, 39.210],
+        [-121.045, 39.230],
+      ],
+    ],
+  ],
+};
+
+export const DEMO_TRACT_NEVADA_CITY = {
+  type: "MultiPolygon" as const,
+  coordinates: [
+    [
+      [
+        [-121.020, 39.270],
+        [-120.985, 39.270],
+        [-120.985, 39.245],
+        [-121.020, 39.245],
+        [-121.020, 39.270],
+      ],
+    ],
+  ],
+};
+
+export const DEMO_TRACT_RURAL_EAST = {
+  type: "MultiPolygon" as const,
+  coordinates: [
+    [
+      [
+        [-121.020, 39.245],
+        [-120.985, 39.245],
+        [-120.985, 39.215],
+        [-121.020, 39.215],
+        [-121.020, 39.245],
+      ],
+    ],
+  ],
 };
 
 export const DEMO_AOI_EMPIRE_MINE = {
@@ -908,6 +993,83 @@ async function main(): Promise<void> {
     );
   }
 
+  // 11. Public census tracts (equity choropleth demo data).
+  //     `census_tracts` is public data (no workspace scoping) and has a
+  //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
+  //     client can't send PostGIS geometry directly, so we upsert through
+  //     the `seed_public_census_tract` RPC (service_role only) added in
+  //     migration 20260422000068. pct_zero_vehicle / pct_poverty /
+  //     pct_nonwhite are derived in the `census_tracts_computed` view, so
+  //     we only write the raw counts.
+  const tracts = [
+    {
+      geoid: DEMO_TRACT_GRASS_VALLEY_CORE_GEOID,
+      name: "Grass Valley — downtown (demo)",
+      geometry: DEMO_TRACT_GRASS_VALLEY_CORE,
+      pop_total: 3800,
+      pop_white: 3040, // ~20% nonwhite
+      households: 1600,
+      households_zero_vehicle: 192, // 12% (urban bin: 10–15%)
+      median_household_income: 52000,
+      pop_below_poverty: 532, // 14% poverty
+    },
+    {
+      geoid: DEMO_TRACT_GRASS_VALLEY_SOUTH_GEOID,
+      name: "Grass Valley — south / Alta Sierra (demo)",
+      geometry: DEMO_TRACT_GRASS_VALLEY_SOUTH,
+      pop_total: 4200,
+      pop_white: 3570, // ~15% nonwhite
+      households: 1750,
+      households_zero_vehicle: 123, // 7% (suburban bin: 5–10%)
+      median_household_income: 68000,
+      pop_below_poverty: 378, // 9% poverty
+    },
+    {
+      geoid: DEMO_TRACT_NEVADA_CITY_GEOID,
+      name: "Nevada City (demo)",
+      geometry: DEMO_TRACT_NEVADA_CITY,
+      pop_total: 3100,
+      pop_white: 2635, // ~15% nonwhite
+      households: 1400,
+      households_zero_vehicle: 112, // 8% (small-town bin: 5–10%)
+      median_household_income: 61000,
+      pop_below_poverty: 310, // 10% poverty
+    },
+    {
+      geoid: DEMO_TRACT_RURAL_EAST_GEOID,
+      name: "Nevada County — rural east (demo)",
+      geometry: DEMO_TRACT_RURAL_EAST,
+      pop_total: 5200,
+      pop_white: 4680, // ~10% nonwhite
+      households: 2100,
+      households_zero_vehicle: 63, // 3% (rural bin: <5%)
+      median_household_income: 74000,
+      pop_below_poverty: 312, // 6% poverty
+    },
+  ];
+  for (const tract of tracts) {
+    const { error } = await supabase.rpc("seed_public_census_tract", {
+      p_geoid: tract.geoid,
+      p_state_fips: "06",
+      p_county_fips: "057",
+      p_name: tract.name,
+      p_geometry_geojson: tract.geometry,
+      p_pop_total: tract.pop_total,
+      p_pop_white: tract.pop_white,
+      p_households: tract.households,
+      p_households_zero_vehicle: tract.households_zero_vehicle,
+      p_median_household_income: tract.median_household_income,
+      p_pop_below_poverty: tract.pop_below_poverty,
+    });
+    if (error) {
+      throw new Error(`Failed to upsert census tract ${tract.geoid}: ${error.message}`);
+    }
+    const pctZv = ((tract.households_zero_vehicle / tract.households) * 100).toFixed(1);
+    console.log(
+      `[seed:nctc] upserted census tract ${tract.geoid} (pct_zero_vehicle=${pctZv}%)`
+    );
+  }
+
   console.log("");
   console.log("[seed:nctc] done.");
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
@@ -918,6 +1080,7 @@ async function main(): Promise<void> {
   console.log(`  missions:    ${missions.length} (downtown / SR-49 / Empire Mine)`);
   console.log(`  packages:    ${evidencePackages.length}`);
   console.log(`  corridors:   ${corridors.length} (SR-49 / Empire St)`);
+  console.log(`  tracts:      ${tracts.length} (Nevada County public demo)`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }
 

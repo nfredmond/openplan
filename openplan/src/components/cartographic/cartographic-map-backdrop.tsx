@@ -10,6 +10,7 @@ import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feat
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
 import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature-to-selection";
+import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
@@ -37,6 +38,23 @@ const CORRIDORS_LINE_LAYER_ID = "cartographic-corridors-line";
 
 const RTP_CYCLES_SOURCE_ID = "cartographic-rtp-cycles";
 const RTP_CYCLES_CIRCLE_LAYER_ID = "cartographic-rtp-cycles-circle";
+
+const CENSUS_TRACTS_SOURCE_ID = "cartographic-census-tracts";
+const CENSUS_TRACTS_FILL_LAYER_ID = "cartographic-census-tracts-fill";
+const CENSUS_TRACTS_OUTLINE_LAYER_ID = "cartographic-census-tracts-outline";
+
+// Sequential teal ramp for the equity choropleth, painted on
+// `pctZeroVehicle`. Bins mirror the legend entry so the visual key lines
+// up with what the backdrop draws. The `null` fallthrough renders tracts
+// with missing data in a neutral mid-gray rather than the lightest bin,
+// so viewers can distinguish "no data" from "<5% zero-vehicle".
+const EQUITY_RAMP_NULL = "#cccccc";
+const EQUITY_RAMP_COLORS = {
+  lowest: "#d4e8e5", // <5%
+  low: "#8fb5b0", //   5–10%
+  mid: "#4d847c", //   10–15%
+  high: "#1f544c", // >15%
+} as const;
 
 // LOS-driven color ramp. Lower grades degrade from calm blue-slate toward
 // congestion red, matching planning convention. `null` falls through to the
@@ -73,6 +91,7 @@ type MissionAoiFeatureCollection = {
 type ProjectFeatureCollection = MissionAoiFeatureCollection;
 type CorridorFeatureCollection = MissionAoiFeatureCollection;
 type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
+type CensusTractFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -88,6 +107,8 @@ export function CartographicMapBackdrop() {
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
   const [corridors, setCorridors] = useState<CorridorFeatureCollection | null>(null);
   const [rtpCycles, setRtpCycles] = useState<RtpCycleFeatureCollection | null>(null);
+  const [censusTracts, setCensusTracts] =
+    useState<CensusTractFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
@@ -290,6 +311,40 @@ export function CartographicMapBackdrop() {
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] rtp-cycles fetch failed", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [suppressed]);
+
+  // Same pattern for the equity census-tract choropleth. Public data, but the
+  // route still auth-gates so public landing pages don't pull a large GeoJSON
+  // payload for no reason. Payload is workspace-agnostic.
+  useEffect(() => {
+    if (suppressed) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/census-tracts", {
+          method: "GET",
+          credentials: "same-origin",
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] census-tracts fetch returned ${response.status}`,
+            );
+          }
+          return;
+        }
+        const payload = (await response.json()) as CensusTractFeatureCollection;
+        if (cancelled) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setCensusTracts(payload);
+        }
+      } catch (error) {
+        console.warn("[cartographic-backdrop] census-tracts fetch failed", error);
       }
     })();
     return () => {
@@ -528,6 +583,103 @@ export function CartographicMapBackdrop() {
     }
   }, [ready, rtpCycles, resolvedTheme]);
 
+  // Paint census tracts as an equity choropleth once both the map and the
+  // data are ready. Separate source so feature-state highlight never
+  // cross-contaminates. Step expression bins `pctZeroVehicle` into 4 teal
+  // shades; null values render in neutral gray so "no data" reads as
+  // distinct from "<5% zero-vehicle". Tracts paint beneath all other
+  // data-driven layers so point/line features remain picker-friendly —
+  // `beforeId` wiring uses the first existing feature layer it finds to
+  // force z-order regardless of source add-order.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !censusTracts) return;
+
+    const paint = () => {
+      if (!map.getSource(CENSUS_TRACTS_SOURCE_ID)) {
+        map.addSource(CENSUS_TRACTS_SOURCE_ID, {
+          type: "geojson",
+          data: censusTracts as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(CENSUS_TRACTS_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(censusTracts as unknown as GeoJSON.FeatureCollection);
+      }
+
+      // Force tracts beneath point/line layers so a clicked AOI, project,
+      // corridor, or RTP pin still picks up first. Pick the first rendered
+      // feature-layer id that currently exists on the style.
+      const beforeId = [
+        AOI_FILL_LAYER_ID,
+        PROJECTS_CIRCLE_LAYER_ID,
+        CORRIDORS_LINE_LAYER_ID,
+        RTP_CYCLES_CIRCLE_LAYER_ID,
+      ].find((id) => map.getLayer(id));
+
+      if (!map.getLayer(CENSUS_TRACTS_FILL_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: CENSUS_TRACTS_FILL_LAYER_ID,
+            type: "fill",
+            source: CENSUS_TRACTS_SOURCE_ID,
+            paint: {
+              "fill-color": [
+                "case",
+                ["==", ["get", "pctZeroVehicle"], null],
+                EQUITY_RAMP_NULL,
+                [
+                  "step",
+                  ["get", "pctZeroVehicle"],
+                  EQUITY_RAMP_COLORS.lowest,
+                  5,
+                  EQUITY_RAMP_COLORS.low,
+                  10,
+                  EQUITY_RAMP_COLORS.mid,
+                  15,
+                  EQUITY_RAMP_COLORS.high,
+                ],
+              ],
+              "fill-opacity": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                0.7,
+                0.45,
+              ],
+            },
+          },
+          beforeId,
+        );
+      }
+
+      if (!map.getLayer(CENSUS_TRACTS_OUTLINE_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: CENSUS_TRACTS_OUTLINE_LAYER_ID,
+            type: "line",
+            source: CENSUS_TRACTS_SOURCE_ID,
+            paint: {
+              "line-color": "#1f544c",
+              "line-width": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                1.75,
+                0.75,
+              ],
+              "line-opacity": 0.55,
+            },
+          },
+          beforeId,
+        );
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, censusTracts, resolvedTheme]);
+
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
     const map = mapRef.current;
@@ -585,6 +737,23 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.rtp, ready, rtpCycles]);
+
+  // Honor the layers.equity toggle. Fill + outline toggled together so the
+  // choropleth reads as a single layer from the user's perspective.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.equity ? "visible" : "none";
+    for (const layerId of [CENSUS_TRACTS_FILL_LAYER_ID, CENSUS_TRACTS_OUTLINE_LAYER_ID]) {
+      if (map.getLayer(layerId)) {
+        try {
+          map.setLayoutProperty(layerId, "visibility", visibility);
+        } catch {
+          // no-op: layers.equity toggle is best-effort
+        }
+      }
+    }
+  }, [layers.equity, ready, censusTracts]);
 
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
@@ -681,11 +850,24 @@ export function CartographicMapBackdrop() {
       }
     };
 
+    const onTractClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = tractFeatureToSelection(feature.properties, {
+        sourceId: CENSUS_TRACTS_SOURCE_ID,
+      });
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
+    };
+
     const FEATURE_LAYERS = [
       AOI_FILL_LAYER_ID,
       PROJECTS_CIRCLE_LAYER_ID,
       CORRIDORS_LINE_LAYER_ID,
       RTP_CYCLES_CIRCLE_LAYER_ID,
+      CENSUS_TRACTS_FILL_LAYER_ID,
     ];
 
     const onBackgroundClick = (e: mapboxgl.MapMouseEvent) => {
@@ -713,6 +895,9 @@ export function CartographicMapBackdrop() {
     map.on("click", RTP_CYCLES_CIRCLE_LAYER_ID, onRtpClick);
     map.on("mouseenter", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseLeave);
+    map.on("click", CENSUS_TRACTS_FILL_LAYER_ID, onTractClick);
+    map.on("mouseenter", CENSUS_TRACTS_FILL_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", CENSUS_TRACTS_FILL_LAYER_ID, onMouseLeave);
     map.on("click", onBackgroundClick);
 
     return () => {
@@ -728,6 +913,9 @@ export function CartographicMapBackdrop() {
       map.off("click", RTP_CYCLES_CIRCLE_LAYER_ID, onRtpClick);
       map.off("mouseenter", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", RTP_CYCLES_CIRCLE_LAYER_ID, onMouseLeave);
+      map.off("click", CENSUS_TRACTS_FILL_LAYER_ID, onTractClick);
+      map.off("mouseenter", CENSUS_TRACTS_FILL_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", CENSUS_TRACTS_FILL_LAYER_ID, onMouseLeave);
       map.off("click", onBackgroundClick);
     };
   }, [ready, setSelection, clearSelection]);
@@ -747,6 +935,7 @@ export function CartographicMapBackdrop() {
       PROJECTS_SOURCE_ID,
       CORRIDORS_SOURCE_ID,
       RTP_CYCLES_SOURCE_ID,
+      CENSUS_TRACTS_SOURCE_ID,
     ] as const;
 
     const apply = () => {
@@ -776,7 +965,7 @@ export function CartographicMapBackdrop() {
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles]);
+  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles, censusTracts]);
 
   if (suppressed) return null;
 
