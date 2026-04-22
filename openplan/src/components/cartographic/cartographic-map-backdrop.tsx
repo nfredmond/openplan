@@ -504,12 +504,25 @@ export function CartographicMapBackdrop() {
       if (nextSelection) setSelection(nextSelection);
     };
 
+    const onCorridorClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = corridorFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: CORRIDORS_SOURCE_ID,
+      });
+      if (nextSelection) setSelection(nextSelection);
+    };
+
     map.on("click", AOI_FILL_LAYER_ID, onClick);
     map.on("mouseenter", AOI_FILL_LAYER_ID, onMouseEnter);
     map.on("mouseleave", AOI_FILL_LAYER_ID, onMouseLeave);
     map.on("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
     map.on("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
+    map.on("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
+    map.on("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
 
     return () => {
       map.off("click", AOI_FILL_LAYER_ID, onClick);
@@ -518,6 +531,9 @@ export function CartographicMapBackdrop() {
       map.off("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
       map.off("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
+      map.off("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
+      map.off("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
     };
   }, [ready, setSelection]);
 
@@ -531,7 +547,7 @@ export function CartographicMapBackdrop() {
     const map = mapRef.current;
     if (!map || !ready) return;
 
-    const KNOWN_SOURCES = [AOI_SOURCE_ID, PROJECTS_SOURCE_ID] as const;
+    const KNOWN_SOURCES = [AOI_SOURCE_ID, PROJECTS_SOURCE_ID, CORRIDORS_SOURCE_ID] as const;
 
     const apply = () => {
       for (const sourceId of KNOWN_SOURCES) {
@@ -560,7 +576,7 @@ export function CartographicMapBackdrop() {
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois, projectMarkers]);
+  }, [selection, ready, aois, projectMarkers, corridors]);
 
   if (suppressed) return null;
 
