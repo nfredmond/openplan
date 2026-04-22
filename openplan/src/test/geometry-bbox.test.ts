@@ -59,10 +59,86 @@ describe("fitInstructionFromGeometry", () => {
     });
   });
 
-  it("returns null for unsupported geometry types", () => {
+  it("returns a bbox union across every polygon in a MultiPolygon", () => {
+    expect(
+      fitInstructionFromGeometry({
+        type: "MultiPolygon",
+        coordinates: [
+          [
+            // Polygon A — outer ring only.
+            [
+              [-121.1, 39.0],
+              [-121.0, 39.0],
+              [-121.0, 39.1],
+              [-121.1, 39.1],
+              [-121.1, 39.0],
+            ],
+          ],
+          [
+            // Polygon B — outer + interior hole; hole is ignored.
+            [
+              [-120.9, 39.2],
+              [-120.8, 39.2],
+              [-120.8, 39.3],
+              [-120.9, 39.3],
+              [-120.9, 39.2],
+            ],
+            [
+              [-120.87, 39.22],
+              [-120.82, 39.22],
+              [-120.82, 39.27],
+              [-120.87, 39.27],
+              [-120.87, 39.22],
+            ],
+          ],
+        ],
+      })
+    ).toEqual({
+      kind: "bbox",
+      bbox: [
+        [-121.1, 39.0],
+        [-120.8, 39.3],
+      ],
+    });
+  });
+
+  it("returns null for an empty MultiPolygon", () => {
     expect(fitInstructionFromGeometry({ type: "MultiPolygon", coordinates: [] })).toBeNull();
+  });
+
+  it("skips malformed polygons inside a MultiPolygon without throwing", () => {
+    expect(
+      fitInstructionFromGeometry({
+        type: "MultiPolygon",
+        coordinates: [
+          "garbage",
+          [
+            [
+              [-121.0, 39.0],
+              [-120.9, 39.0],
+              [-120.9, 39.1],
+              [-121.0, 39.1],
+              [-121.0, 39.0],
+            ],
+          ],
+          [[[1]]],
+        ],
+      })
+    ).toEqual({
+      kind: "bbox",
+      bbox: [
+        [-121.0, 39.0],
+        [-120.9, 39.1],
+      ],
+    });
+  });
+
+  it("returns null for unsupported geometry types", () => {
     expect(
       fitInstructionFromGeometry({ type: "GeometryCollection", geometries: [] })
+    ).toBeNull();
+    expect(
+      fitInstructionFromGeometry({ type: "MultiLineString", coordinates: [] })
     ).toBeNull();
   });
 

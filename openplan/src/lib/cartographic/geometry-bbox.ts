@@ -1,9 +1,8 @@
 // Pure geometry-to-bbox helpers used by the cartographic backdrop's
-// fit-to-selection effect. Covers the three GeoJSON primitive shapes we
-// actually render on the backdrop today (Point / Polygon / LineString).
-// No MultiPolygon / MultiLineString support — the writer-side validators
-// already reject those upstream, so adding them here would just be dead
-// paint code.
+// fit-to-selection effect. Covers the four GeoJSON primitive shapes we
+// actually render on the backdrop today (Point / LineString / Polygon /
+// MultiPolygon). MultiLineString + GeometryCollection are still rejected
+// because no current layer emits them.
 
 type Position = [number, number];
 type Bbox = [[number, number], [number, number]];
@@ -70,6 +69,25 @@ export function fitInstructionFromGeometry(geometry: unknown): FitInstruction | 
     const outerRing = coordinates[0];
     if (!Array.isArray(outerRing)) return null;
     const bbox = bboxFromPositions(outerRing);
+    if (!bbox) return null;
+    return { kind: "bbox", bbox };
+  }
+
+  if (type === "MultiPolygon") {
+    if (!Array.isArray(coordinates)) return null;
+    let bbox: Bbox | null = null;
+    for (const polygon of coordinates) {
+      if (!Array.isArray(polygon)) continue;
+      const outerRing = polygon[0];
+      if (!Array.isArray(outerRing)) continue;
+      const polyBbox = bboxFromPositions(outerRing);
+      if (!polyBbox) continue;
+      if (!bbox) {
+        bbox = polyBbox;
+      } else {
+        bbox = expand(expand(bbox, polyBbox[0]), polyBbox[1]);
+      }
+    }
     if (!bbox) return null;
     return { kind: "bbox", bbox };
   }
