@@ -3,6 +3,19 @@
 **Shipped:** 2026-04-22
 **Scope:** Fifth data-driven layer on the cartographic backdrop. Closes the last placeholder chip (`equity`) and the last "coming soon" entry from the `directions/02-cartographic.html` Anthropic design file that prompted Phase 3.
 
+## Close-out (same day)
+
+Migration `20260422000068_census_tracts_map_view.sql` applied to prod `aggphdqkanxsfzzoxlbk` via `pnpm supabase db push` (single pending migration, no drift). `pnpm seed:nctc -- --env-file .env.production.local` landed all four demo tracts. Service-role REST verification against `census_tracts_map`:
+
+```
+06057010100  Grass Valley — downtown (demo)            pct_zero_vehicle=12.0  pop=3800
+06057010200  Grass Valley — south / Alta Sierra (demo) pct_zero_vehicle=7.0   pop=4200
+06057010300  Nevada City (demo)                        pct_zero_vehicle=8.0   pop=3100
+06057010400  Nevada County — rural east (demo)         pct_zero_vehicle=3.0   pop=5200
+```
+
+All four bins of the choropleth are now populated on prod (>15%, 10–15%, 5–10%, <5%). Only remaining user-owned item is the combined Slice D + E + G + H + I + J + K2 browser smoke test against the demo-owner session.
+
 ## What shipped
 
 The cartographic backdrop now paints census-tract polygons with a 4-bin teal choropleth keyed to `pct_zero_vehicle`. Tracts render beneath the point / line / AOI layers (z-order via `beforeId`), click to select into the inspector dock, and lift on selection via feature-state. The layers panel, legend, counts route, and inspector dock are all wired through.
