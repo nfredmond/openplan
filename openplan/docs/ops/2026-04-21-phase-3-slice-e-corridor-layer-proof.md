@@ -114,7 +114,7 @@ The corridor-specific LOS color ramp also seeds the pattern for per-feature pain
 
 ## Known minor issues (non-blocking)
 
-- **Prod close-out pending.** Migration `20260421000066_project_corridors.sql` + re-seed are the two user-owned follow-ups; Slice E is not "live" until both land. Mirrors the Slice D close-out shape — same `supabase migration list` → `db push` → service-role `SELECT` verification flow.
+- ~~**Prod close-out pending.**~~ Closed 2026-04-21 — migration `20260421000066` applied and NCTC re-seed landed both corridors on prod. Browser smoke test is the only remaining user-owned follow-up.
 - **No clustering or segment-level styling.** 500 individual lines is fine today; corridors with per-segment LOS (different grades along different stretches) would need segmented LineStrings — deferred.
 - **No line-label paint.** Corridor name doesn't appear on the map without a click. If labels become necessary, `symbol` layer on the same source + `text-field` off `properties.name` is the natural upgrade.
 - **Pan/fit-to-selection.** Same carryover as Slices B–D.
@@ -160,12 +160,11 @@ pnpm qa:gate
 
 ## User-owned follow-ups
 
-1. **Apply migration `20260421000066_project_corridors.sql` to prod.** Same shape as the Slice D close-out:
-   - `pnpm supabase migration list` — confirm the migration is the only one pending.
-   - `pnpm supabase db push` — single migration, idempotent (`CREATE TABLE IF NOT EXISTS` + `DROP POLICY IF EXISTS`).
-   - Post-apply: `SELECT table_name FROM information_schema.tables WHERE table_name = 'project_corridors'` should return the row.
-2. **Re-seed the NCTC demo** via `pnpm seed:nctc -- --env-file .env.production.local`. Idempotent on `id` — existing workspace/project/mission/package rows are no-ops; new corridor rows land. Expected output includes two new `upserted project corridor d0000001-…-000000000[0ef]` lines + a `corridors: 2 (SR-49 / Empire St)` summary.
-3. **Smoke test** against the signed-in demo browser — expect two blue-slate and/or amber lines running south through downtown Grass Valley. Click → inspector dock shows `kind: "corridor"`, kicker "Corridor", meta rows for type/LOS, "Open project" primary action. Line visually thickens `3 → 5px` on select. Can ride along with the still-pending Slice D smoke test.
+**Close-out status (2026-04-21 late evening):** migration + re-seed done, browser smoke test still open.
+
+1. ~~**Apply migration `20260421000066_project_corridors.sql` to prod.**~~ Closed 2026-04-21 — `pnpm supabase db push` applied it against `aggphdqkanxsfzzoxlbk`; `pnpm supabase migration list` shows `20260421000066` local/remote aligned.
+2. ~~**Re-seed the NCTC demo**~~ Closed 2026-04-21 — `pnpm seed:nctc -- --env-file .env.production.local` completed; service-role `SELECT` confirms both rows (`Empire St to Empire Mine` 5 positions LOS C + `SR-49 through Grass Valley` 7 positions LOS D) live under workspace `d0000001-…-000000000001`.
+3. **Smoke test** against the signed-in demo browser — still user-owned. Expect two blue-slate and/or amber lines running south through downtown Grass Valley. Click → inspector dock shows `kind: "corridor"`, kicker "Corridor", meta rows for type/LOS, "Open project" primary action. Line visually thickens `3 → 5px` on select. Can ride along with the still-pending Slice D smoke test.
 
 ## Pointers
 
