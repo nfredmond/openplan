@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
+import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
@@ -29,6 +30,22 @@ const AOI_OUTLINE_LAYER_ID = "cartographic-aerial-mission-aois-outline";
 const PROJECTS_SOURCE_ID = "cartographic-projects";
 const PROJECTS_CIRCLE_LAYER_ID = "cartographic-projects-circle";
 
+const CORRIDORS_SOURCE_ID = "cartographic-corridors";
+const CORRIDORS_LINE_LAYER_ID = "cartographic-corridors-line";
+
+// LOS-driven color ramp. Lower grades degrade from calm blue-slate toward
+// congestion red, matching planning convention. `null` falls through to the
+// neutral base, keeping the ramp layer-agnostic for corridors without LOS.
+const CORRIDOR_LOS_COLOR: Record<string, string> = {
+  A: "#4a7a9e",
+  B: "#4a7a9e",
+  C: "#c8962f",
+  D: "#c8962f",
+  E: "#b45239",
+  F: "#8a2e24",
+};
+const CORRIDOR_BASE_COLOR = "#4a7a9e";
+
 type MissionAoiFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
@@ -40,6 +57,7 @@ type MissionAoiFeatureCollection = {
 };
 
 type ProjectFeatureCollection = MissionAoiFeatureCollection;
+type CorridorFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -53,6 +71,7 @@ export function CartographicMapBackdrop() {
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
+  const [corridors, setCorridors] = useState<CorridorFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { selection, setSelection } = useCartographicSelection();
   const router = useRouter();
@@ -198,6 +217,38 @@ export function CartographicMapBackdrop() {
     };
   }, [suppressed]);
 
+  // Same pattern for project corridors — separate source + line layer.
+  useEffect(() => {
+    if (suppressed) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/corridors", {
+          method: "GET",
+          credentials: "same-origin",
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] corridors fetch returned ${response.status}`,
+            );
+          }
+          return;
+        }
+        const payload = (await response.json()) as CorridorFeatureCollection;
+        if (cancelled) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setCorridors(payload);
+        }
+      } catch (error) {
+        console.warn("[cartographic-backdrop] corridors fetch failed", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [suppressed]);
+
   // Paint AOIs onto the map once both the map and the data are ready.
   // Runs again on style swaps because setStyle() wipes the source/layer registry.
   useEffect(() => {
@@ -310,6 +361,72 @@ export function CartographicMapBackdrop() {
     }
   }, [ready, projectMarkers, resolvedTheme]);
 
+  // Paint corridor LineStrings onto the map once both the map and the data
+  // are ready. Separate source from AOIs + projects so feature-state
+  // highlight never cross-contaminates. LOS-driven color via a match
+  // expression on feature properties — lines without LOS fall back to the
+  // calm base color so un-graded corridors still render legibly.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !corridors) return;
+
+    const paint = () => {
+      if (!map.getSource(CORRIDORS_SOURCE_ID)) {
+        map.addSource(CORRIDORS_SOURCE_ID, {
+          type: "geojson",
+          data: corridors as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(CORRIDORS_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(corridors as unknown as GeoJSON.FeatureCollection);
+      }
+
+      if (!map.getLayer(CORRIDORS_LINE_LAYER_ID)) {
+        map.addLayer({
+          id: CORRIDORS_LINE_LAYER_ID,
+          type: "line",
+          source: CORRIDORS_SOURCE_ID,
+          paint: {
+            "line-color": [
+              "match",
+              ["get", "losGrade"],
+              "A",
+              CORRIDOR_LOS_COLOR.A,
+              "B",
+              CORRIDOR_LOS_COLOR.B,
+              "C",
+              CORRIDOR_LOS_COLOR.C,
+              "D",
+              CORRIDOR_LOS_COLOR.D,
+              "E",
+              CORRIDOR_LOS_COLOR.E,
+              "F",
+              CORRIDOR_LOS_COLOR.F,
+              CORRIDOR_BASE_COLOR,
+            ],
+            "line-width": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              5,
+              3,
+            ],
+            "line-opacity": 0.9,
+          },
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+        });
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, corridors, resolvedTheme]);
+
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
     const map = mapRef.current;
@@ -339,6 +456,20 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.projects, ready, projectMarkers]);
+
+  // Honor the layers.corridors toggle.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.corridors ? "visible" : "none";
+    if (map.getLayer(CORRIDORS_LINE_LAYER_ID)) {
+      try {
+        map.setLayoutProperty(CORRIDORS_LINE_LAYER_ID, "visibility", visibility);
+      } catch {
+        // no-op: layers.corridors toggle is best-effort
+      }
+    }
+  }, [layers.corridors, ready, corridors]);
 
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
