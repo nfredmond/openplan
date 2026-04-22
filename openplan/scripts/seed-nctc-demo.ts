@@ -55,6 +55,9 @@ export const DEMO_PACKAGE_DOWNTOWN_ID = "d0000001-0000-4000-8000-00000000000b";
 export const DEMO_PACKAGE_SR49_ID = "d0000001-0000-4000-8000-00000000000c";
 export const DEMO_PACKAGE_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000d";
 
+export const DEMO_CORRIDOR_SR49_ID = "d0000001-0000-4000-8000-00000000000e";
+export const DEMO_CORRIDOR_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000f";
+
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_KEY = "existing_conditions_travel_patterns";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE =
   "Existing conditions and travel patterns (demo)";
@@ -124,6 +127,35 @@ export const DEMO_AOI_SR49_ALTA_SIERRA = {
       [-121.072, 39.201],
     ],
   ],
+};
+
+// Display-only corridor LineStrings anchored to real Grass Valley roads,
+// used to prove the third cartographic geometry kind on the shell backdrop.
+// Coordinates are [lng, lat]. Not transportation-modeling network corridors
+// — those live in the network_packages chain, unrelated to these rows.
+
+export const DEMO_CORRIDOR_SR49 = {
+  type: "LineString" as const,
+  coordinates: [
+    [-121.039, 39.224],
+    [-121.040, 39.215],
+    [-121.040, 39.205],
+    [-121.038, 39.195],
+    [-121.035, 39.185],
+    [-121.033, 39.175],
+    [-121.034, 39.170],
+  ] as [number, number][],
+};
+
+export const DEMO_CORRIDOR_EMPIRE_ST = {
+  type: "LineString" as const,
+  coordinates: [
+    [-121.034, 39.219],
+    [-121.028, 39.217],
+    [-121.022, 39.215],
+    [-121.016, 39.213],
+    [-121.012, 39.209],
+  ] as [number, number][],
 };
 
 export const DEMO_AOI_EMPIRE_MINE = {
@@ -829,6 +861,44 @@ async function main(): Promise<void> {
     console.log(`[seed:nctc] upserted evidence package ${evidence.id} (${evidence.status})`);
   }
 
+  // 10. Project corridors — display-only LineStrings on the backdrop.
+  //     Two authored roads anchored on Grass Valley geography: SR-49
+  //     through downtown heading south, and Empire St heading east
+  //     toward Empire Mine State Historic Park.
+  const corridors = [
+    {
+      id: DEMO_CORRIDOR_SR49_ID,
+      name: "SR-49 through Grass Valley",
+      corridor_type: "arterial",
+      los_grade: "D",
+      geometry_geojson: DEMO_CORRIDOR_SR49,
+    },
+    {
+      id: DEMO_CORRIDOR_EMPIRE_ID,
+      name: "Empire St to Empire Mine",
+      corridor_type: "arterial",
+      los_grade: "C",
+      geometry_geojson: DEMO_CORRIDOR_EMPIRE_ST,
+    },
+  ];
+  for (const corridor of corridors) {
+    const { error } = await supabase.from("project_corridors").upsert(
+      {
+        ...corridor,
+        workspace_id: DEMO_WORKSPACE_ID,
+        project_id: DEMO_PROJECT_ID,
+      },
+      { onConflict: "id" }
+    );
+    if (error) {
+      throw new Error(`Failed to upsert project corridor ${corridor.id}: ${error.message}`);
+    }
+    const ringLen = corridor.geometry_geojson.coordinates.length;
+    console.log(
+      `[seed:nctc] upserted project corridor ${corridor.id} (${ringLen} positions, los=${corridor.los_grade})`
+    );
+  }
+
   console.log("");
   console.log("[seed:nctc] done.");
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
@@ -838,6 +908,7 @@ async function main(): Promise<void> {
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);
   console.log(`  missions:    ${missions.length} (downtown / SR-49 / Empire Mine)`);
   console.log(`  packages:    ${evidencePackages.length}`);
+  console.log(`  corridors:   ${corridors.length} (SR-49 / Empire St)`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }
 
