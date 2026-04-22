@@ -14,6 +14,7 @@ import { CartographicHeader } from "./cartographic-header";
 import { CartographicInspectorDockConnected } from "./cartographic-inspector-dock-connected";
 import { CartographicLayersPanel } from "./cartographic-layers-panel";
 import { CartographicMapBackdrop } from "./cartographic-map-backdrop";
+import { CartographicMapLegend } from "./cartographic-map-legend";
 import { CartographicOverviewSurface } from "./cartographic-overview-surface";
 import {
   CartographicRail,
@@ -127,6 +128,8 @@ export async function CartographicShell({ children }: { children: React.ReactNod
         </CartographicOverviewSurface>
 
         <CartographicLayersPanel />
+
+        <CartographicMapLegend />
 
         <CartographicInspectorDockConnected />
 
