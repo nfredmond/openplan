@@ -5,7 +5,13 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
+import { RecentAccessRequests } from "@/components/operations/recent-access-requests";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  canReviewAccessRequests,
+  loadRecentAccessRequestsForReview,
+  type AccessRequestReviewClient,
+} from "@/lib/access-requests";
 import {
   operationalWarningEvents,
   summarizeOperationalWarnings,
@@ -15,7 +21,7 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 export const metadata = {
@@ -42,12 +48,30 @@ export default async function AdminOperationsPage() {
 
   const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
   const workspaceId = membership?.workspace_id ?? null;
+  const canReviewIntake = canReviewAccessRequests(user.email);
   const actionActivity = workspaceId
     ? await loadRecentActionExecutionsForWorkspace(
         supabase as unknown as RecentActionActivitySupabaseLike,
         workspaceId
       )
     : { executions: [], error: null };
+  let accessRequestActivity: Awaited<ReturnType<typeof loadRecentAccessRequestsForReview>> = {
+    requests: [],
+    error: null,
+  };
+
+  if (canReviewIntake) {
+    try {
+      accessRequestActivity = await loadRecentAccessRequestsForReview(
+        createServiceRoleClient() as unknown as AccessRequestReviewClient
+      );
+    } catch (error) {
+      accessRequestActivity = {
+        requests: [],
+        error: { message: error instanceof Error ? error.message : "Access request review failed" },
+      };
+    }
+  }
 
   return (
     <section className="module-page">
@@ -65,8 +89,8 @@ export default async function AdminOperationsPage() {
             </div>
             <h1 className="module-intro-title">Warning watchboard</h1>
             <p className="module-intro-description">
-              Use these warning events and action-audit rows to review request pressure, CSP report-only noise, AI
-              cost outliers, and operator-fired actions while the pilot remains supervised.
+              Use these warning events, access-request intake rows, and action-audit rows to review request pressure, CSP
+              report-only noise, AI cost outliers, and operator-fired actions while the pilot remains supervised.
             </p>
           </div>
 
@@ -112,6 +136,12 @@ export default async function AdminOperationsPage() {
           </div>
         </article>
       </header>
+
+      <RecentAccessRequests
+        enabled={canReviewIntake}
+        requests={accessRequestActivity.requests}
+        error={accessRequestActivity.error}
+      />
 
       <RecentActionActivity executions={actionActivity.executions} error={actionActivity.error} />
 

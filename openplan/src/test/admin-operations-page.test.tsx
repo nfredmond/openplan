@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 
@@ -10,12 +11,24 @@ const actionOrderMock = vi.fn(() => ({ limit: actionLimitMock }));
 const actionEqMock = vi.fn(() => ({ order: actionOrderMock }));
 const actionSelectMock = vi.fn(() => ({ eq: actionEqMock }));
 
+const accessLimitMock = vi.fn();
+const accessOrderMock = vi.fn(() => ({ limit: accessLimitMock }));
+const accessSelectMock = vi.fn(() => ({ order: accessOrderMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "assistant_action_executions") {
     return { select: actionSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
+});
+
+const serviceFromMock = vi.fn((table: string) => {
+  if (table === "access_requests") {
+    return { select: accessSelectMock };
+  }
+
+  throw new Error(`Unexpected service table: ${table}`);
 });
 
 vi.mock("next/navigation", () => ({
@@ -26,6 +39,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/workspaces/current", () => ({
@@ -36,6 +50,10 @@ import AdminOperationsPage from "@/app/(app)/admin/operations/page";
 import { summarizeOperationalWarnings } from "@/lib/observability/operational-events";
 
 describe("AdminOperationsPage", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -43,6 +61,7 @@ describe("AdminOperationsPage", () => {
       data: {
         user: {
           id: "user-1",
+          email: "operator@openplan.test",
         },
       },
     });
@@ -51,6 +70,7 @@ describe("AdminOperationsPage", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
 
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: {
@@ -83,6 +103,11 @@ describe("AdminOperationsPage", () => {
       ],
       error: null,
     });
+
+    accessLimitMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
   });
 
   it("surfaces operational warning events and log queries", async () => {
@@ -108,6 +133,47 @@ describe("AdminOperationsPage", () => {
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });
     expect(actionLimitMock).toHaveBeenCalledWith(8);
+  });
+
+  it("keeps access request PII locked when the operator is not allowlisted", async () => {
+    render(await AdminOperationsPage());
+
+    expect(screen.getByText("Recent supervised onboarding requests")).toBeInTheDocument();
+    expect(screen.getByText(/Access request review is locked/i)).toBeInTheDocument();
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+  });
+
+  it("surfaces access request rows only for allowlisted operators", async () => {
+    vi.stubEnv("OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS", "operator@openplan.test");
+    accessLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          agency_name: "Nevada County Transportation Commission",
+          contact_name: "Nat Ford",
+          contact_email: "nat@example.gov",
+          role_title: "Planning lead",
+          region: "Nevada County",
+          use_case: "Screen rural transit corridors for a supervised early-access workflow.",
+          expected_workspace_name: "NCTC Pilot",
+          status: "new",
+          source_path: "/request-access",
+          created_at: "2026-04-24T12:00:00.000Z",
+          provisioned_workspace_id: null,
+        },
+      ],
+      error: null,
+    });
+
+    render(await AdminOperationsPage());
+
+    expect(screen.getByText("Nevada County Transportation Commission")).toBeInTheDocument();
+    expect(screen.getByText(/Nat Ford, Planning lead/i)).toBeInTheDocument();
+    expect(screen.getByText(/nat@example.gov/i)).toBeInTheDocument();
+    expect(screen.getByText(/Screen rural transit corridors/i)).toBeInTheDocument();
+    expect(serviceFromMock).toHaveBeenCalledWith("access_requests");
+    expect(accessOrderMock).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(accessLimitMock).toHaveBeenCalledWith(8);
   });
 
   it("keeps the activity lane explicit when no action executions exist", async () => {

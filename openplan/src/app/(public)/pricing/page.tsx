@@ -83,6 +83,9 @@ export default function PricingPage() {
             <Link href="/sign-in" className="public-secondary-link">
               Sign in to an existing workspace
             </Link>
+            <Link href="/request-access" className="public-secondary-link">
+              Request supervised access
+            </Link>
           </div>
 
           <div className="public-fact-grid public-fact-grid--three">
@@ -151,6 +154,9 @@ export default function PricingPage() {
                 <p className="public-price">{plan.price}</p>
                 <Link href={`/sign-up?plan=${plan.slug}`} className="public-primary-link public-primary-link--full">
                   {plan.cta}
+                </Link>
+                <Link href="/request-access" className="public-secondary-link">
+                  Request review first
                 </Link>
               </aside>
             </article>

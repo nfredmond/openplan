@@ -40,6 +40,12 @@ const publicSurfaces = [
     description: "See supervised-pilot plans, activation guardrails, and billing posture currently available in production.",
   },
   {
+    href: "/request-access",
+    label: "Access intake",
+    title: "Request a supervised workspace review",
+    description: "Submit agency context and a first workflow without triggering automatic provisioning or outbound messages.",
+  },
+  {
     href: "/engagement",
     label: "Engagement workspace",
     title: "Track public input as planning evidence",
@@ -115,6 +121,9 @@ export default function PublicLandingPage() {
             </Link>
             <Link href="/pricing" className="public-secondary-link">
               Review pricing
+            </Link>
+            <Link href="/request-access" className="public-secondary-link">
+              Request access
             </Link>
           </div>
 
