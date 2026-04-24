@@ -5,6 +5,7 @@ import {
   isQuotaExceeded,
   isQuotaLookupError,
 } from "@/lib/billing/quota";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
   isWorkspaceSubscriptionActive,
   resolveWorkspaceEntitlements,
@@ -539,6 +540,19 @@ export async function POST(request: NextRequest) {
       aiTotalTokens: aiInterpretationResult.totalTokens,
       aiEstimatedCostUsd: aiInterpretationResult.estimatedCostUsd,
     });
+
+    await recordUsageEventBestEffort(
+      {
+        workspaceId,
+        eventKey: "analysis.run",
+        bucketKey: "runs",
+        weight: 1,
+        sourceRoute: "/api/analysis",
+        idempotencyKey: `analysis:${runId}`,
+        metadata: { runId },
+      },
+      audit
+    );
 
     const costWarning = buildAnalysisCostThresholdWarning(
       aiInterpretationResult.estimatedCostUsd,

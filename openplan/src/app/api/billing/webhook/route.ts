@@ -10,6 +10,7 @@ import {
 } from "@/lib/billing/webhook";
 import { claimWebhookEvent, completeWebhookEvent } from "@/lib/billing/webhook-idempotency";
 import { logBillingEvent } from "@/lib/billing/events";
+import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
 import {
   createServiceRoleClient,
   isMissingEnvironmentVariableError,
@@ -61,18 +62,7 @@ function getStripeVerificationStatus(reason: string): number {
 
 async function applyBillingMutation(mutation: BillingWebhookMutation) {
   const serviceSupabase = createServiceRoleClient();
-  return serviceSupabase
-    .from("workspaces")
-    .update({
-      plan: mutation.subscriptionPlan,
-      subscription_plan: mutation.subscriptionPlan,
-      subscription_status: mutation.subscriptionStatus,
-      stripe_customer_id: mutation.stripeCustomerId,
-      stripe_subscription_id: mutation.stripeSubscriptionId,
-      subscription_current_period_end: mutation.currentPeriodEnd,
-      billing_updated_at: new Date().toISOString(),
-    })
-    .eq("id", mutation.workspaceId);
+  return applyBillingSubscriptionMutation(serviceSupabase, mutation);
 }
 
 async function workspaceSubscriptionStatus(workspaceId: string): Promise<string | null> {
@@ -506,6 +496,14 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ error: "Failed to apply billing update" }, { status: 500 });
+  }
+
+  if (mutationResult.ledgerMissing) {
+    audit.warn("billing_ledger_schema_missing", {
+      workspaceId: envelope.mutation.workspaceId,
+      providerEventId: envelope.eventId,
+      providerEventType: envelope.eventType,
+    });
   }
 
   try {

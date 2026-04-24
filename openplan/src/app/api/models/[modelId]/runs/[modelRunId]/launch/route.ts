@@ -14,6 +14,7 @@ import {
   resolveWorkspaceEntitlements,
   subscriptionGateMessage,
 } from "@/lib/billing/subscription";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -205,6 +206,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelRunId: modelRun.id,
       durationMs: Date.now() - startedAt,
     });
+
+    await recordUsageEventBestEffort(
+      {
+        workspaceId,
+        eventKey: "model_run.launch",
+        bucketKey: "runs",
+        weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+        sourceRoute: "/api/models/[modelId]/runs/[modelRunId]/launch",
+        idempotencyKey: `model_run:${modelRun.id}:launch`,
+        metadata: { modelId: access.model.id, modelRunId: modelRun.id },
+      },
+      audit
+    );
 
     return NextResponse.json({ success: true, status: "queued" }, { status: 200 });
   } catch (error) {

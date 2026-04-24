@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createStripeCheckoutSession } from "@/lib/billing/checkout";
 import { logBillingEvent } from "@/lib/billing/events";
+import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
 import {
   createClient,
   createServiceRoleClient,
@@ -16,6 +17,12 @@ const billingCheckoutSchema = z.object({
 });
 
 type Plan = z.infer<typeof billingCheckoutSchema>["plan"];
+
+type WorkspaceBillingContext = {
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  currentPeriodEnd?: string | null;
+};
 
 async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
   const supabase = await createClient();
@@ -37,11 +44,11 @@ async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
   return data;
 }
 
-async function getWorkspaceBillingContext(workspaceId: string): Promise<{ stripeCustomerId?: string | null }> {
+async function getWorkspaceBillingContext(workspaceId: string): Promise<WorkspaceBillingContext> {
   const serviceSupabase = createServiceRoleClient();
   const { data, error } = await serviceSupabase
     .from("workspaces")
-    .select("stripe_customer_id")
+    .select("stripe_customer_id, stripe_subscription_id, subscription_current_period_end")
     .eq("id", workspaceId)
     .maybeSingle();
 
@@ -51,24 +58,28 @@ async function getWorkspaceBillingContext(workspaceId: string): Promise<{ stripe
 
   return {
     stripeCustomerId: data?.stripe_customer_id ?? null,
+    stripeSubscriptionId: data?.stripe_subscription_id ?? null,
+    currentPeriodEnd: data?.subscription_current_period_end ?? null,
   };
 }
 
-async function markCheckoutPending(workspaceId: string, plan: Plan) {
+async function markCheckoutPending(workspaceId: string, plan: Plan, billingContext: WorkspaceBillingContext) {
   const serviceSupabase = createServiceRoleClient();
-  const { error } = await serviceSupabase
-    .from("workspaces")
-    .update({
-      plan,
-      subscription_plan: plan,
-      subscription_status: "checkout_pending",
-      billing_updated_at: new Date().toISOString(),
-    })
-    .eq("id", workspaceId);
+  const { error, ledgerMissing } = await applyBillingSubscriptionMutation(serviceSupabase, {
+    workspaceId,
+    subscriptionPlan: plan,
+    subscriptionStatus: "checkout_pending",
+    stripeCustomerId: billingContext.stripeCustomerId ?? undefined,
+    stripeSubscriptionId: billingContext.stripeSubscriptionId ?? undefined,
+    currentPeriodEnd: billingContext.currentPeriodEnd ?? undefined,
+    metadata: { source: "checkout_initialized" },
+  });
 
   if (error) {
     throw new Error(error.message);
   }
+
+  return { ledgerMissing };
 }
 
 async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequest) {
@@ -103,7 +114,7 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
     return NextResponse.json({ error: "Owner/admin access is required" }, { status: 403 });
   }
 
-  let billingContext: { stripeCustomerId?: string | null };
+  let billingContext: WorkspaceBillingContext;
   try {
     billingContext = await getWorkspaceBillingContext(workspaceId);
   } catch (error) {
@@ -145,7 +156,14 @@ async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequ
   }
 
   try {
-    await markCheckoutPending(workspaceId, plan);
+    const pendingResult = await markCheckoutPending(workspaceId, plan, billingContext);
+    if (pendingResult.ledgerMissing) {
+      audit.warn("billing_ledger_schema_missing", {
+        workspaceId,
+        userId: user.id,
+        plan,
+      });
+    }
   } catch (error) {
     audit.error("workspace_billing_update_failed", {
       workspaceId,

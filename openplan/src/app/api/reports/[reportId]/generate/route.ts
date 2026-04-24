@@ -16,6 +16,7 @@ import {
   resolveWorkspaceEntitlements,
   subscriptionGateMessage,
 } from "@/lib/billing/subscription";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
@@ -741,6 +742,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         durationMs: Date.now() - startedAt,
       });
 
+      await recordUsageEventBestEffort(
+        {
+          workspaceId: report.workspace_id,
+          eventKey: "report.generate",
+          bucketKey: "runs",
+          weight: QUOTA_WEIGHTS.DEFAULT,
+          sourceRoute: "/api/reports/[reportId]/generate",
+          idempotencyKey: `report:${report.id}:generate:${artifact.id}`,
+          metadata: { reportId: report.id, artifactId: artifact.id, format, reportType: "rtp_packet" },
+        },
+        audit
+      );
+
       return NextResponse.json(
         {
           reportId: report.id,
@@ -1319,6 +1333,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: executionAuditError.code ?? null,
       });
     }
+
+    await recordUsageEventBestEffort(
+      {
+        workspaceId: report.workspace_id,
+        eventKey: "report.generate",
+        bucketKey: "runs",
+        weight: QUOTA_WEIGHTS.DEFAULT,
+        sourceRoute: "/api/reports/[reportId]/generate",
+        idempotencyKey: `report:${report.id}:generate:${artifact.id}`,
+        metadata: { reportId: report.id, artifactId: artifact.id, format, reportType: report.report_type },
+      },
+      audit
+    );
 
     return NextResponse.json(
       {

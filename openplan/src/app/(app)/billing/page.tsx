@@ -21,8 +21,10 @@ import {
   summarizeBillingInvoiceRecords,
 } from "@/lib/billing/invoice-records";
 import { resolveBillingSupportState } from "@/lib/billing/support";
+import { loadWorkspaceSubscriptionSnapshot } from "@/lib/billing/subscriptions";
 import { buildBillingHref, buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
 import { normalizeSubscriptionStatus } from "@/lib/billing/subscription";
+import { loadUsageForCurrentPeriod, type UsageBucketSummary } from "@/lib/billing/usage-events";
 import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
@@ -149,6 +151,20 @@ function formatCurrency(value: number): string {
   return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
+function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "N/A";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "N/A";
+  return parsed.toLocaleString();
+}
+
+function maskExternalId(value: string | null | undefined): string {
+  if (!value) return "Not linked";
+  const trimmed = value.trim();
+  if (trimmed.length <= 12) return trimmed;
+  return `${trimmed.slice(0, 7)}...${trimmed.slice(-4)}`;
+}
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
@@ -183,6 +199,18 @@ function quotaRowStatusText(result: QuotaResult): string {
   if (isQuotaExceeded(result)) return `${result.usedRuns} of ${result.monthlyLimit} used (limit reached)`;
   if (result.unlimited) return "Unlimited on current plan";
   return `${result.usedRuns} of ${result.monthlyLimit} used`;
+}
+
+function usageBucketStatusText(bucket: UsageBucketSummary): string {
+  if (bucket.reportedWeight > 0 && bucket.unreportedWeight === 0) {
+    return `${bucket.totalWeight} reported`;
+  }
+
+  if (bucket.reportedWeight > 0) {
+    return `${bucket.unreportedWeight} unreported / ${bucket.totalWeight} total`;
+  }
+
+  return `${bucket.totalWeight} unreported`;
 }
 
 function noticeClass(tone: "info" | "success" | "warning") {
@@ -380,23 +408,47 @@ export default async function BillingPage({
   const membership = selection.membership;
   const workspace = selection.workspace;
   const workspaceId = membership.workspace_id;
-  const status = normalizeSubscriptionStatus(workspace.subscription_status ?? null);
-  const plan = workspace.subscription_plan ?? workspace.plan ?? "starter";
   const canStartCheckout = canAccessWorkspaceAction("billing.checkout", membership.role);
   const canWriteInvoices = canAccessWorkspaceAction("billing.invoices.write", membership.role);
 
-  const { data: billingEvents } = await supabase
-    .from("billing_events")
-    .select("id, event_type, source, created_at, payload")
-    .eq("workspace_id", workspaceId)
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const [billingEventsResult, workspaceBillingDetailResult, subscriptionSnapshotResult] = await Promise.all([
+    supabase
+      .from("billing_events")
+      .select("id, event_type, source, created_at, payload")
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("workspaces")
+      .select("stripe_customer_id, stripe_subscription_id, subscription_current_period_end")
+      .eq("id", workspaceId)
+      .maybeSingle(),
+    loadWorkspaceSubscriptionSnapshot(supabase, workspaceId),
+  ]);
 
-  const { data: workspaceBillingDetail } = await supabase
-    .from("workspaces")
-    .select("subscription_current_period_end")
-    .eq("id", workspaceId)
-    .maybeSingle();
+  const billingEvents = billingEventsResult.data;
+  const workspaceBillingDetail = workspaceBillingDetailResult.data as
+    | {
+        stripe_customer_id: string | null;
+        stripe_subscription_id: string | null;
+        subscription_current_period_end: string | null;
+      }
+    | null
+    | undefined;
+  const subscriptionSnapshot = subscriptionSnapshotResult.subscription;
+  const status = normalizeSubscriptionStatus(subscriptionSnapshot?.status ?? workspace.subscription_status ?? null);
+  const plan = subscriptionSnapshot?.plan ?? workspace.subscription_plan ?? workspace.plan ?? "starter";
+  const currentPeriodStart = subscriptionSnapshot?.currentPeriodStart ?? null;
+  const currentPeriodEnd =
+    subscriptionSnapshot?.currentPeriodEnd ?? workspaceBillingDetail?.subscription_current_period_end ?? null;
+  const ledgerUpdatedAt = subscriptionSnapshot?.updatedAt ?? workspace.billing_updated_at ?? null;
+  const stripeCustomerId = subscriptionSnapshot?.stripeCustomerId ?? workspaceBillingDetail?.stripe_customer_id ?? null;
+  const stripeSubscriptionId =
+    subscriptionSnapshot?.stripeSubscriptionId ?? workspaceBillingDetail?.stripe_subscription_id ?? null;
+  const usageSummary = await loadUsageForCurrentPeriod(supabase, workspaceId, {
+    periodStart: currentPeriodStart,
+    periodEnd: currentPeriodEnd,
+  });
 
   const normalizedPlan = normalizeWorkspacePlan(plan);
   const [analysisQuota, modelRunQuota] = await Promise.all([
@@ -596,7 +648,7 @@ export default async function BillingPage({
   const billingSupportState = resolveBillingSupportState({
     status,
     checkoutState,
-    billingUpdatedAt: workspace.billing_updated_at ?? null,
+    billingUpdatedAt: ledgerUpdatedAt,
     events: (billingEvents ?? []).map((event) => ({
       eventType: event.event_type,
       createdAt: event.created_at,
@@ -629,7 +681,7 @@ export default async function BillingPage({
           </div>
           <div className="bg-background/70 px-4 py-3 text-sm">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last billing update</p>
-            <p className="mt-1 font-semibold text-foreground">{workspace.billing_updated_at ? new Date(workspace.billing_updated_at).toLocaleString() : "N/A"}</p>
+            <p className="mt-1 font-semibold text-foreground">{formatDateTime(ledgerUpdatedAt)}</p>
           </div>
         </div>
       </header>
@@ -714,10 +766,18 @@ export default async function BillingPage({
               <StatusBadge tone={toneForStatus(status)}>{titleCase(status)}</StatusBadge>
               <StatusBadge tone="info">Plan: {titleCase(plan)}</StatusBadge>
               <StatusBadge tone="neutral">Role: {titleCase(membership.role)}</StatusBadge>
+              <StatusBadge tone={subscriptionSnapshot ? "success" : "warning"}>
+                Ledger: {subscriptionSnapshot ? "Normalized" : "Workspace fallback"}
+              </StatusBadge>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
               Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records the selected plan on this exact workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
             </p>
+            {subscriptionSnapshotResult.error?.missingSchema ? (
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">
+                Subscription ledger tables are not available in this environment yet; this page is reading the workspace billing snapshot.
+              </p>
+            ) : null}
           </div>
           <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em]">Operating rule</p>
@@ -726,6 +786,24 @@ export default async function BillingPage({
             </p>
           </div>
         </div>
+        <dl className="mt-4 grid gap-px overflow-hidden border border-border/60 bg-border/60 text-sm md:grid-cols-2 xl:grid-cols-4">
+          <div className="bg-background/80 px-4 py-3">
+            <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Period start</dt>
+            <dd className="mt-1 font-medium text-foreground">{formatDateTime(currentPeriodStart ?? usageSummary.periodStart)}</dd>
+          </div>
+          <div className="bg-background/80 px-4 py-3">
+            <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Period end</dt>
+            <dd className="mt-1 font-medium text-foreground">{formatDateTime(currentPeriodEnd)}</dd>
+          </div>
+          <div className="bg-background/80 px-4 py-3">
+            <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Stripe customer</dt>
+            <dd className="mt-1 font-medium text-foreground">{maskExternalId(stripeCustomerId)}</dd>
+          </div>
+          <div className="bg-background/80 px-4 py-3">
+            <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Stripe subscription</dt>
+            <dd className="mt-1 font-medium text-foreground">{maskExternalId(stripeSubscriptionId)}</dd>
+          </div>
+        </dl>
       </article>
 
       <article className={panelClass()}>
@@ -754,6 +832,43 @@ export default async function BillingPage({
         <p className="mt-4 text-xs text-muted-foreground">
           At the limit, OpenPlan returns a 429 on run launch with a friendly message. Upgrade the plan or contact operations to raise the monthly ceiling.
         </p>
+        <div className="mt-5 border-t border-border/60 pt-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-foreground">Internal usage ledger</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Service-recorded usage events for the current subscription period. Stripe reporting is intentionally deferred until period-close reporting ships.
+              </p>
+            </div>
+            <StatusBadge tone={usageSummary.error ? "warning" : "info"}>
+              {usageSummary.error ? "Ledger unavailable" : `${usageSummary.buckets.length} bucket${usageSummary.buckets.length === 1 ? "" : "s"}`}
+            </StatusBadge>
+          </div>
+          {usageSummary.error ? (
+            <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">
+              Usage event rows are not readable yet: {usageSummary.error.missingSchema ? "billing ledger schema is pending" : usageSummary.error.message}
+            </p>
+          ) : usageSummary.buckets.length > 0 ? (
+            <ul className="mt-3 grid gap-2 md:grid-cols-2">
+              {usageSummary.buckets.map((bucket) => (
+                <li key={bucket.bucketKey} className={`${insetClass()} flex items-center justify-between gap-3 px-3 py-2`}>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{titleCase(bucket.bucketKey)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {bucket.eventCount} event{bucket.eventCount === 1 ? "" : "s"}
+                      {bucket.lastOccurredAt ? ` · Last ${formatDateTime(bucket.lastOccurredAt)}` : ""}
+                    </p>
+                  </div>
+                  <StatusBadge tone={bucket.unreportedWeight > 0 ? "warning" : "success"}>
+                    {usageBucketStatusText(bucket)}
+                  </StatusBadge>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground">No usage events are recorded for this period yet.</p>
+          )}
+        </div>
       </article>
 
       <BillingCheckoutLauncher
@@ -761,7 +876,7 @@ export default async function BillingPage({
         workspaceName={workspace.name ?? "Workspace"}
         currentPlan={plan}
         currentStatus={status}
-        currentPeriodEnd={workspaceBillingDetail?.subscription_current_period_end ?? null}
+        currentPeriodEnd={currentPeriodEnd}
         canStartCheckout={canStartCheckout}
       />
 

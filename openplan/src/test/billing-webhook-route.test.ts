@@ -18,6 +18,7 @@ const workspaceUpdateMock = vi.fn();
 const workspacesMaybeSingleMock = vi.fn();
 const workspacesSelectEqMock = vi.fn();
 const workspacesSelectMock = vi.fn();
+const subscriptionsUpsertMock = vi.fn();
 const billingEventsLimitMock = vi.fn();
 const billingEventsOrderMock = vi.fn();
 const billingEventsEqEventTypeMock = vi.fn();
@@ -110,6 +111,7 @@ describe("POST /api/billing/webhook", () => {
 
     workspaceUpdateEqMock.mockResolvedValue({ error: null });
     workspaceUpdateMock.mockReturnValue({ eq: workspaceUpdateEqMock });
+    subscriptionsUpsertMock.mockResolvedValue({ error: null });
     workspacesMaybeSingleMock.mockResolvedValue({
       data: { subscription_status: "active" },
       error: null,
@@ -135,6 +137,12 @@ describe("POST /api/billing/webhook", () => {
         if (table === "billing_events") {
           return {
             select: billingEventsSelectMock,
+          };
+        }
+
+        if (table === "subscriptions") {
+          return {
+            upsert: subscriptionsUpsertMock,
           };
         }
 
@@ -237,6 +245,16 @@ describe("POST /api/billing/webhook", () => {
         eventId: "evt_123",
         eventType: "checkout.session.completed",
       })
+    );
+    expect(subscriptionsUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "11111111-1111-4111-8111-111111111111",
+        plan: "starter",
+        status: "active",
+        stripe_customer_id: "cus_123",
+        stripe_subscription_id: "sub_123",
+      }),
+      { onConflict: "workspace_id" }
     );
     expect(workspaceUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({

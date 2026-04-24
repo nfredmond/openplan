@@ -19,6 +19,7 @@ const workspacesSelectMock = vi.fn(() => ({ eq: workspacesEqForSelectMock }));
 
 const workspacesEqForUpdateMock = vi.fn();
 const workspacesUpdateMock = vi.fn(() => ({ eq: workspacesEqForUpdateMock }));
+const subscriptionsUpsertMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -89,22 +90,33 @@ describe("/api/billing/checkout safe messaging", () => {
     });
 
     workspacesMaybeSingleMock.mockResolvedValue({
-      data: { stripe_customer_id: "cus_existing_123" },
+      data: {
+        stripe_customer_id: "cus_existing_123",
+        stripe_subscription_id: "sub_existing_123",
+        subscription_current_period_end: "2026-05-01T00:00:00.000Z",
+      },
       error: null,
     });
 
     workspacesEqForUpdateMock.mockResolvedValue({ error: null });
+    subscriptionsUpsertMock.mockResolvedValue({ error: null });
 
     createServiceRoleClientMock.mockImplementation(() => ({
       from: (table: string) => {
-        if (table !== "workspaces") {
-          throw new Error(`Unexpected table: ${table}`);
+        if (table === "workspaces") {
+          return {
+            select: workspacesSelectMock,
+            update: workspacesUpdateMock,
+          };
         }
 
-        return {
-          select: workspacesSelectMock,
-          update: workspacesUpdateMock,
-        };
+        if (table === "subscriptions") {
+          return {
+            upsert: subscriptionsUpsertMock,
+          };
+        }
+
+        throw new Error(`Unexpected table: ${table}`);
       },
     }));
 
@@ -190,5 +202,44 @@ describe("/api/billing/checkout safe messaging", () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ error: "Failed to initialize checkout" });
+  });
+
+  it("initializes checkout and preserves existing Stripe references while marking pending", async () => {
+    const response = await postCheckout(
+      jsonRequest({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        plan: "professional",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(createStripeCheckoutSessionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        plan: "professional",
+        existingStripeCustomerId: "cus_existing_123",
+      })
+    );
+    expect(subscriptionsUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspace_id: "11111111-1111-4111-8111-111111111111",
+        plan: "professional",
+        status: "checkout_pending",
+        stripe_customer_id: "cus_existing_123",
+        stripe_subscription_id: "sub_existing_123",
+        current_period_end: "2026-05-01T00:00:00.000Z",
+      }),
+      { onConflict: "workspace_id" }
+    );
+    expect(workspacesUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        plan: "professional",
+        subscription_plan: "professional",
+        subscription_status: "checkout_pending",
+        stripe_customer_id: "cus_existing_123",
+        stripe_subscription_id: "sub_existing_123",
+        subscription_current_period_end: "2026-05-01T00:00:00.000Z",
+      })
+    );
   });
 });

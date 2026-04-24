@@ -156,6 +156,13 @@ function extractWorkspaceId(metadata: unknown): string | undefined {
   return asNonEmptyString(metadataRecord.workspaceId) ?? asNonEmptyString(metadataRecord.workspace_id);
 }
 
+function extractWorkspaceIdFromStripeObject(object: Record<string, unknown>): string | undefined {
+  return (
+    extractWorkspaceId(object.metadata) ??
+    extractWorkspaceId(asRecord(object.subscription_details).metadata)
+  );
+}
+
 function normalizeEmail(value: unknown): string | undefined {
   const normalized = asNonEmptyString(value)?.toLowerCase();
   return normalized && normalized.length > 0 ? normalized : undefined;
@@ -293,7 +300,7 @@ export function mapStripeEventToBillingMutation(
   const object = asRecord(event.data.object);
 
   if (event.type === "checkout.session.completed") {
-    const workspaceId = extractWorkspaceId(object.metadata);
+    const workspaceId = extractWorkspaceIdFromStripeObject(object);
     if (!workspaceId) {
       return { handled: false, reason: "missing_workspace_id" };
     }
@@ -316,7 +323,7 @@ export function mapStripeEventToBillingMutation(
     event.type === "customer.subscription.updated" ||
     event.type === "customer.subscription.deleted"
   ) {
-    const workspaceId = extractWorkspaceId(object.metadata);
+    const workspaceId = extractWorkspaceIdFromStripeObject(object);
     if (!workspaceId) {
       return { handled: false, reason: "missing_workspace_id" };
     }
@@ -334,6 +341,26 @@ export function mapStripeEventToBillingMutation(
         stripeSubscriptionId: asNonEmptyString(object.id),
         currentPeriodEnd: asIsoDatetime(object.current_period_end),
         source: `stripe.${event.type}`,
+      },
+    };
+  }
+
+  if (event.type === "invoice.payment_failed") {
+    const workspaceId = extractWorkspaceIdFromStripeObject(object);
+    if (!workspaceId) {
+      return { handled: false, reason: "missing_workspace_id" };
+    }
+
+    return {
+      handled: true,
+      mutation: {
+        workspaceId,
+        subscriptionStatus: "past_due",
+        subscriptionPlan: normalizePlan(asNonEmptyString(asRecord(object.metadata).plan)),
+        stripeCustomerId: asNonEmptyString(object.customer),
+        stripeSubscriptionId: asNonEmptyString(object.subscription),
+        currentPeriodEnd: asIsoDatetime(object.period_end),
+        source: "stripe.invoice.payment_failed",
       },
     };
   }

@@ -13,6 +13,7 @@ import {
   resolveWorkspaceEntitlements,
   subscriptionGateMessage,
 } from "@/lib/billing/subscription";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
   touchScenarioLinkedReportPackets,
   type ScenarioReportWritebackSupabaseLike,
@@ -426,6 +427,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
       packetWritebackReportCount: packetWriteback.touchedReportIds.length,
       durationMs: Date.now() - startedAt,
     });
+
+    await recordUsageEventBestEffort(
+      {
+        workspaceId: access.scenarioSet.workspace_id,
+        eventKey: "scenario.comparison_snapshot",
+        bucketKey: "runs",
+        weight: QUOTA_WEIGHTS.DEFAULT,
+        sourceRoute: "/api/scenarios/[scenarioSetId]/spine/comparison-snapshots",
+        idempotencyKey: `scenario:${access.scenarioSet.id}:comparison:${comparisonSnapshot.id}`,
+        metadata: {
+          scenarioSetId: access.scenarioSet.id,
+          comparisonSnapshotId: comparisonSnapshot.id,
+        },
+      },
+      audit
+    );
 
     return NextResponse.json(
       {

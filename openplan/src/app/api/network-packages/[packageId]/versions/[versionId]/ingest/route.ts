@@ -13,6 +13,7 @@ import {
   resolveWorkspaceEntitlements,
   subscriptionGateMessage,
 } from "@/lib/billing/subscription";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 
 type QaCheck = {
   name: string;
@@ -323,6 +324,21 @@ export async function POST(
     warnings,
     failures,
   });
+
+  if (overallStatus !== "fail") {
+    await recordUsageEventBestEffort(
+      {
+        workspaceId: pkg.workspace_id,
+        eventKey: "network_package.ingest",
+        bucketKey: "runs",
+        weight: QUOTA_WEIGHTS.DEFAULT,
+        sourceRoute: "/api/network-packages/[packageId]/versions/[versionId]/ingest",
+        idempotencyKey: `network_package:${packageId}:${versionId}:ingest`,
+        metadata: { packageId, versionId, overallStatus, totalChecks, warnings, failures },
+      },
+      audit
+    );
+  }
 
   return NextResponse.json({
     status: overallStatus,

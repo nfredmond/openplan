@@ -127,4 +127,34 @@ describe("billing webhook helpers", () => {
 
     expect(mapped).toMatchObject({ handled: false, reason: "unsupported_event_type" });
   });
+
+  it("maps invoice.payment_failed into a past-due billing mutation", () => {
+    const mapped = mapStripeEventToBillingMutation({
+      id: "evt_failed_invoice",
+      type: "invoice.payment_failed",
+      data: {
+        object: {
+          customer: "cus_123",
+          subscription: "sub_123",
+          period_end: 1767225600,
+          metadata: {
+            workspaceId: "11111111-1111-4111-8111-111111111111",
+            plan: "professional",
+          },
+        },
+      },
+    });
+
+    expect(mapped.handled).toBe(true);
+    if (mapped.handled) {
+      expect(mapped.mutation).toMatchObject({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        subscriptionStatus: "past_due",
+        subscriptionPlan: "professional",
+        stripeCustomerId: "cus_123",
+        stripeSubscriptionId: "sub_123",
+        currentPeriodEnd: "2026-01-01T00:00:00.000Z",
+      });
+    }
+  });
 });

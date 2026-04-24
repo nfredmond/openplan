@@ -346,6 +346,12 @@ describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
           };
         }
 
+        if (table === "subscriptions") {
+          return {
+            upsert: async () => ({ error: null }),
+          };
+        }
+
         throw new Error(`Unexpected table: ${table}`);
       },
     }));
