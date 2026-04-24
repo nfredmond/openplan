@@ -224,7 +224,12 @@ STRIPE_KEY="${OPENPLAN_STRIPE_SECRET_KEY:-${STRIPE_SECRET_KEY:-}}"
 SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-}"
 SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
 STARTER_PRICE_ID="${OPENPLAN_STRIPE_PRICE_ID_STARTER:-}"
+STRIPE_WEBHOOK_SECRET="${OPENPLAN_STRIPE_WEBHOOK_SECRET:-}"
+READINESS_SECRET="${OPENPLAN_BILLING_READINESS_SECRET:-${OPENPLAN_BILLING_USAGE_FLUSH_SECRET:-}}"
+USAGE_FLUSH_SECRET="${OPENPLAN_BILLING_USAGE_FLUSH_SECRET:-}"
+RUNS_METER_EVENT_NAME="${OPENPLAN_STRIPE_METER_EVENT_NAME_RUNS:-${OPENPLAN_STRIPE_METER_EVENT_NAME:-}}"
 WEBHOOK_URL="$ALIAS_URL/api/billing/webhook"
+READINESS_URL="$ALIAS_URL/api/billing/readiness"
 VERCEL_PROTECTION_BYPASS_SECRET="${VERCEL_PROTECTION_BYPASS_SECRET:-${OPENPLAN_VERCEL_PROTECTION_BYPASS_SECRET:-${VERCEL_AUTOMATION_BYPASS_SECRET:-}}}"
 MONITOR_EMAIL_ARG=""
 if [[ -n "$BILLING_EMAIL" ]]; then
@@ -235,6 +240,8 @@ BLOCKERS=()
 ENV_FILE_PRESENT_OK=1
 ENV_CORE_OK=1
 ENV_SERVICE_ROLE_OK=1
+ENV_STRIPE_WEBHOOK_SECRET_OK=1
+ENV_USAGE_METERING_OK=1
 ALIAS_CHECK_OK=0
 PRICE_CHECK_OK=0
 WEBHOOK_CHECK_OK=0
@@ -253,6 +260,22 @@ fi
 if [[ -z "$STARTER_PRICE_ID" ]]; then
   ENV_CORE_OK=0
   BLOCKERS+=("Missing OPENPLAN_STRIPE_PRICE_ID_STARTER in $ENV_FILE")
+fi
+if [[ -z "$STRIPE_WEBHOOK_SECRET" ]]; then
+  ENV_STRIPE_WEBHOOK_SECRET_OK=0
+  BLOCKERS+=("Missing OPENPLAN_STRIPE_WEBHOOK_SECRET in $ENV_FILE")
+fi
+if [[ -z "$READINESS_SECRET" ]]; then
+  ENV_USAGE_METERING_OK=0
+  BLOCKERS+=("Missing OPENPLAN_BILLING_READINESS_SECRET or OPENPLAN_BILLING_USAGE_FLUSH_SECRET in $ENV_FILE")
+fi
+if [[ -z "$USAGE_FLUSH_SECRET" ]]; then
+  ENV_USAGE_METERING_OK=0
+  BLOCKERS+=("Missing OPENPLAN_BILLING_USAGE_FLUSH_SECRET in $ENV_FILE")
+fi
+if [[ -z "$RUNS_METER_EVENT_NAME" ]]; then
+  ENV_USAGE_METERING_OK=0
+  BLOCKERS+=("Missing OPENPLAN_STRIPE_METER_EVENT_NAME_RUNS or OPENPLAN_STRIPE_METER_EVENT_NAME in $ENV_FILE")
 fi
 if [[ -z "$SUPABASE_URL" ]]; then
   ENV_CORE_OK=0
@@ -448,6 +471,7 @@ cat > "$SUMMARY_MD" <<SUMMARY
 - Status: $READY_STATE
 - Public alias: $ALIAS_URL
 - Canonical webhook URL: $WEBHOOK_URL
+- Billing readiness URL: $READINESS_URL
 - Alias protection state: $ALIAS_PROTECTION_STATE
 - Alias protection detail: $ALIAS_PROTECTION_DETAIL
 - Alias effective proof mode: $ALIAS_EFFECTIVE_MODE
@@ -464,16 +488,20 @@ cat > "$SUMMARY_MD" <<SUMMARY
 1. Production env snapshot file loaded: $( [[ "$ENV_FILE_PRESENT_OK" -eq 1 ]] && echo YES || echo NO )
 2. Required core env posture present (Stripe key, Starter price id, public Supabase URL): $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo YES || echo NO )
 3. Supabase service-role proof posture present: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo YES || echo NO )
-4. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-5. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-6. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-7. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
-8. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+4. Stripe webhook signing secret present: $( [[ "$ENV_STRIPE_WEBHOOK_SECRET_OK" -eq 1 ]] && echo YES || echo NO )
+5. Usage flush + readiness + runs meter env present: $( [[ "$ENV_USAGE_METERING_OK" -eq 1 ]] && echo YES || echo NO )
+6. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+7. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+8. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+9. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
+10. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
 
 ## Env posture details
 - Env file present: $( [[ "$ENV_FILE_PRESENT_OK" -eq 1 ]] && echo YES || echo NO )
 - Core env posture: $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo READY || echo BLOCKED )
 - Service-role proof posture: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo READY || echo BLOCKED )
+- Stripe webhook signing secret posture: $( [[ "$ENV_STRIPE_WEBHOOK_SECRET_OK" -eq 1 ]] && echo READY || echo BLOCKED )
+- Usage metering env posture: $( [[ "$ENV_USAGE_METERING_OK" -eq 1 ]] && echo READY || echo BLOCKED )
 - Current env blocker note: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo "None" || echo "Missing SUPABASE_SERVICE_ROLE_KEY prevents service-role-backed workspace and monitor proof." )
 
 ## Alias proof details
@@ -485,6 +513,14 @@ cat > "$SUMMARY_MD" <<SUMMARY
 
 ## Exact operator route
 - $ALIAS_URL/billing?workspaceId=$WORKSPACE_ID
+
+## Exact billing readiness dry-run command
+\`\`\`bash
+curl -sS -X POST "$READINESS_URL" \\
+  -H "authorization: Bearer \$OPENPLAN_BILLING_USAGE_FLUSH_SECRET" \\
+  -H "content-type: application/json" \\
+  -d '{"workspaceId":"$WORKSPACE_ID","includeUsageDryRun":true,"bucketKey":"runs","limit":250}'
+\`\`\`
 
 ## Exact monitor command to run during the supervised canary
 \`\`\`bash
