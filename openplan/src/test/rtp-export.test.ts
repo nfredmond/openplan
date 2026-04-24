@@ -123,4 +123,104 @@ describe("buildRtpExportHtml", () => {
     expect(html).toMatch(/<div class="chapter-markdown-table-wrap">\s*<table/);
     expect(html).toMatch(/<td[^>]*>73,666<\/td>/);
   });
+
+  it("renders assignment modeling evidence beside model-backed RTP language", () => {
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-modeling",
+        workspace_id: "workspace-modeling",
+        title: "2027 RTP",
+        status: "draft",
+        geography_label: "Nevada County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: null,
+        public_review_open_at: null,
+        public_review_close_at: null,
+        summary: "Cycle summary",
+        updated_at: "2026-04-24T00:00:00.000Z",
+      },
+      chapters: [
+        {
+          id: "chapter-modeling",
+          title: "Existing conditions",
+          section_type: "performance",
+          status: "ready_for_review",
+          summary: "Model-backed existing conditions.",
+          guidance: "",
+          content_markdown: "The screening run identifies capacity stress on SR-174.",
+          sort_order: 10,
+        },
+      ],
+      linkedProjects: [],
+      campaigns: [],
+      options: {
+        titleSuffix: "OpenPlan RTP Packet",
+        modelingEvidence: [
+          {
+            countyRunId: "county-run-1",
+            runName: "Nevada County assignment screening",
+            geographyLabel: "Nevada County, CA",
+            stage: "validated-screening",
+            updatedAt: "2026-04-24T01:00:00.000Z",
+            evidence: {
+              claimDecision: {
+                track: "assignment",
+                claimStatus: "screening_grade",
+                statusReason: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+                reasons: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+                validationSummary: {
+                  passed: 3,
+                  warned: 1,
+                  failed: 1,
+                  missingRequiredMetricKeys: [],
+                  requiredMetricKeys: ["assignment_final_gap", "critical_absolute_percent_error"],
+                },
+                decidedAt: "2026-04-24T01:00:00.000Z",
+              },
+              reportLanguage:
+                "Screening-grade modeling result. Use for planning context only, and include the validation caveats before making any outward claim.",
+              sourceManifests: [
+                {
+                  id: "source-1",
+                  sourceKey: "observed_count_validation",
+                  sourceKind: "local_public_counts",
+                  sourceLabel: "Observed count validation",
+                  sourceUrl: null,
+                  sourceVintage: "2026",
+                  geographyId: "06057",
+                  geographyLabel: "Nevada County, CA",
+                  licenseNote: "Public agency count data.",
+                  citationText: "Observed public count validation for Nevada County.",
+                },
+              ],
+              validationResults: [
+                {
+                  id: "validation-1",
+                  track: "assignment",
+                  metricKey: "critical_absolute_percent_error",
+                  metricLabel: "Critical facility absolute percent error",
+                  observedValue: 237.62,
+                  thresholdValue: 50,
+                  thresholdMaxValue: null,
+                  thresholdComparator: "lte",
+                  status: "fail",
+                  blocksClaimGrade: true,
+                  detail: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+                  sourceManifestId: "source-1",
+                  evaluatedAt: "2026-04-24T01:00:00.000Z",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
+
+    expect(html).toContain("Assignment modeling claim posture");
+    expect(html).toContain("Screening-grade modeling result");
+    expect(html).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
+    expect(html).toContain("3 pass · 1 warning · 1 fail");
+    expect(html).toContain("Observed count validation");
+  });
 });

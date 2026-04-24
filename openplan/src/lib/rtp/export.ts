@@ -1,4 +1,5 @@
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
+import type { ModelingEvidenceSnapshot, ModelingClaimStatus, ModelingValidationStatus } from "@/lib/models/evidence-backbone";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -66,6 +67,15 @@ export type RtpExportCampaign = {
   rtp_cycle_chapter_id: string | null;
 };
 
+export type RtpExportModelingEvidence = {
+  countyRunId: string;
+  runName: string | null;
+  geographyLabel: string | null;
+  stage: string | null;
+  updatedAt: string | null;
+  evidence: ModelingEvidenceSnapshot | null;
+};
+
 export type RtpExportNormalizedLinkedProject = RtpExportLinkedProject & {
   project: {
     id: string;
@@ -117,6 +127,24 @@ export function formatRtpExportDate(value: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
 }
 
+function formatRtpExportDateTime(value: string | null | undefined): string {
+  if (!value) return "Not set";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function formatModelingClaimStatusLabel(status: ModelingClaimStatus): string {
+  if (status === "claim_grade_passed") return "Claim-grade passed";
+  if (status === "screening_grade") return "Screening-grade";
+  return "Prototype-only";
+}
+
+function formatValidationStatusLabel(status: ModelingValidationStatus): string {
+  if (status === "pass") return "Pass";
+  if (status === "warn") return "Warning";
+  return "Fail";
+}
+
 function resolveEnabledSectionKeys(sectionKeys?: string[]): RtpExportSectionKey[] {
   const allowed = new Set<RtpExportSectionKey>(DEFAULT_RTP_EXPORT_SECTION_KEYS);
   const resolved = (sectionKeys ?? []).filter((key): key is RtpExportSectionKey => allowed.has(key as RtpExportSectionKey));
@@ -162,6 +190,75 @@ function buildRtpExportStats(input: {
   };
 }
 
+function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): string {
+  if (modelingEvidence.length === 0) return "";
+
+  return `
+  <section class="section modeling-evidence">
+    <h2>Assignment modeling claim posture</h2>
+    <p class="muted">Structured source and validation evidence for any assignment-model language carried into this RTP packet.</p>
+    ${modelingEvidence
+      .map((item) => {
+        const evidence = item.evidence;
+        const claim = evidence?.claimDecision ?? null;
+        const validationSummary = claim?.validationSummary ?? null;
+        const validationRows = evidence?.validationResults ?? [];
+        const sourceRows = evidence?.sourceManifests ?? [];
+        const validationSummaryText = validationSummary
+          ? `${validationSummary.passed} pass · ${validationSummary.warned} warning · ${validationSummary.failed} fail`
+          : `${validationRows.length} validation checks`;
+
+        return `<div class="card modeling-evidence-card">
+          <h3>${esc(item.geographyLabel?.trim() || item.runName?.trim() || "County model run")}</h3>
+          <p class="muted">${esc(item.runName?.trim() || "County run")} · ${esc(
+            titleizeRtpValue(item.stage || "unknown")
+          )} · updated ${esc(formatRtpExportDateTime(item.updatedAt))}</p>
+          ${
+            claim
+              ? `<p><strong>${esc(formatModelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
+                  evidence?.reportLanguage ??
+                    "Structured modeling evidence exists, but no report-language rule was recorded."
+                )}</p>
+          <p>${esc(claim.statusReason)}</p>
+          ${
+            claim.reasons.length > 0
+              ? `<ul>${claim.reasons.slice(0, 4).map((reason) => `<li>${esc(reason)}</li>`).join("")}</ul>`
+              : ""
+          }`
+              : `<p><strong>Prototype-only:</strong> No structured claim decision is recorded for this county run, so model-backed language should not be used as an outward planning claim.</p>`
+          }
+          <div class="grid">
+            <div class="card"><strong>Source manifests</strong><br/>${sourceRows.length}</div>
+            <div class="card"><strong>Validation checks</strong><br/>${esc(validationSummaryText)}</div>
+          </div>
+          ${
+            validationRows.length > 0
+              ? `<ul class="compact-list">${validationRows
+                  .map(
+                    (result) =>
+                      `<li><strong>${esc(result.metricLabel)}</strong> · ${esc(
+                        formatValidationStatusLabel(result.status)
+                      )}<br/><span class="muted">${esc(result.detail)}</span></li>`
+                  )
+                  .join("")}</ul>`
+              : '<p class="muted">No validation checks recorded.</p>'
+          }
+          ${
+            sourceRows.length > 0
+              ? `<p class="muted"><strong>Sources:</strong> ${esc(
+                  sourceRows
+                    .map((source) => source.sourceLabel)
+                    .filter(Boolean)
+                    .join("; ")
+                )}</p>`
+              : '<p class="muted">No source manifests recorded.</p>'
+          }
+        </div>`;
+      })
+      .join("")}
+  </section>`;
+}
+
 export function buildRtpExportHtml(input: {
   cycle: RtpExportCycle;
   chapters: RtpExportChapter[];
@@ -176,6 +273,7 @@ export function buildRtpExportHtml(input: {
       pendingCommentCount?: number;
       readyCommentCount?: number;
     }) | null;
+    modelingEvidence?: RtpExportModelingEvidence[];
   };
 }): string {
   const { cycle, chapters, linkedProjects, campaigns, options } = input;
@@ -195,6 +293,7 @@ export function buildRtpExportHtml(input: {
   const stats = buildRtpExportStats({ cycle, chapters, linkedProjects, campaigns });
   const titleSuffix = options?.titleSuffix ?? "OpenPlan RTP Export";
   const publicReviewSummary = options?.publicReviewSummary ?? null;
+  const modelingEvidence = options?.modelingEvidence ?? [];
 
   const sections: string[] = [];
 
@@ -311,6 +410,10 @@ export function buildRtpExportHtml(input: {
   </section>`);
   }
 
+  if (modelingEvidence.length > 0) {
+    sections.push(modelingEvidenceMarkup(modelingEvidence));
+  }
+
   if (enabledSectionKeys.includes("appendix_references")) {
     sections.push(`
   <section class="section">
@@ -340,6 +443,8 @@ export function buildRtpExportHtml(input: {
     .section { margin-top: 28px; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8dee4; font-size: 12px; margin-right: 8px; }
     ul { padding-left: 20px; }
+    .compact-list li { margin-bottom: 10px; }
+    .modeling-evidence-card { margin-bottom: 12px; border-left: 4px solid #7a3d5f; }
     .chapter-markdown { line-height: 1.7; margin-top: 8px; }
     .chapter-markdown > *:first-child { margin-top: 0; }
     .chapter-markdown > *:last-child { margin-bottom: 0; }

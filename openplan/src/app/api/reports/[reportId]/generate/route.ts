@@ -18,7 +18,8 @@ import {
 } from "@/lib/billing/subscription";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
-import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
+import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
+import { buildRtpExportHtml, normalizeRtpLinkedProjects, type RtpExportModelingEvidence } from "@/lib/rtp/export";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
@@ -90,6 +91,14 @@ type ProjectRecordSnapshotEntry = {
   latestAt: string | null;
 };
 
+type RtpCountyRunEvidenceRow = {
+  id: string;
+  run_name: string | null;
+  geography_label: string | null;
+  stage: string | null;
+  updated_at: string | null;
+};
+
 function maxTimestamp(values: Array<string | null | undefined>) {
   const timestamps = values
     .map((value) => (value ? new Date(value).getTime() : Number.NaN))
@@ -125,6 +134,22 @@ function buildProjectRecordSnapshot(entries: {
     decisions: buildEntry(entries.decisions, (item) => item.decided_at ?? item.created_at),
     meetings: buildEntry(entries.meetings, (item) => item.meeting_at ?? item.created_at),
   };
+}
+
+function summarizeRtpModelingEvidenceForMetadata(modelingEvidence: RtpExportModelingEvidence[]) {
+  return modelingEvidence.map((item) => ({
+    countyRunId: item.countyRunId,
+    runName: item.runName,
+    geographyLabel: item.geographyLabel,
+    stage: item.stage,
+    updatedAt: item.updatedAt,
+    claimStatus: item.evidence?.claimDecision?.claimStatus ?? null,
+    statusReason: item.evidence?.claimDecision?.statusReason ?? null,
+    reportLanguage: item.evidence?.reportLanguage ?? null,
+    sourceManifestCount: item.evidence?.sourceManifests.length ?? 0,
+    validationResultCount: item.evidence?.validationResults.length ?? 0,
+    validationSummary: item.evidence?.claimDecision?.validationSummary ?? null,
+  }));
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -271,7 +296,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (report.rtp_cycle_id) {
-      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult] = await Promise.all([
+      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult, countyRunsResult] = await Promise.all([
         supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
         supabase
           .from("rtp_cycles")
@@ -300,6 +325,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .select("id, title, status, engagement_type, summary, rtp_cycle_chapter_id")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
           .order("updated_at", { ascending: false }),
+        safeOptionalQuery(
+          () =>
+            supabase
+              .from("county_runs")
+              .select("id, run_name, geography_label, stage, updated_at")
+              .eq("workspace_id", report.workspace_id)
+              .order("updated_at", { ascending: false })
+              .limit(5),
+          [] as RtpCountyRunEvidenceRow[]
+        ),
       ]);
 
       const loadErrors = [
@@ -310,6 +345,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         linksResult.error,
         campaignsResult.error,
       ].filter(Boolean);
+
+      if (countyRunsResult.error) {
+        audit.warn("rtp_modeling_county_runs_lookup_failed", {
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          message: countyRunsResult.error.message,
+          code: countyRunsResult.error.code ?? null,
+        });
+      }
 
       if (loadErrors.length > 0 || !cycleResult.data) {
         const firstError = loadErrors[0];
@@ -326,6 +370,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapters = chaptersResult.data ?? [];
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
+      const countyRuns = countyRunsResult.error ? [] : (countyRunsResult.data ?? []);
+      const modelingEvidence: RtpExportModelingEvidence[] = await Promise.all(
+        countyRuns.map(async (countyRun) => {
+          const evidenceResult = await loadCountyRunModelingEvidence({
+            supabase,
+            countyRunId: countyRun.id,
+            track: "assignment",
+          });
+
+          if (evidenceResult.error) {
+            audit.warn("rtp_modeling_evidence_lookup_failed", {
+              reportId: report.id,
+              workspaceId: report.workspace_id,
+              countyRunId: countyRun.id,
+              message: evidenceResult.error.message,
+              code: evidenceResult.error.code ?? null,
+              missingSchema: evidenceResult.error.missingSchema ?? false,
+            });
+          }
+
+          return {
+            countyRunId: countyRun.id,
+            runName: countyRun.run_name,
+            geographyLabel: countyRun.geography_label,
+            stage: countyRun.stage,
+            updatedAt: countyRun.updated_at,
+            evidence: evidenceResult.evidence,
+          };
+        })
+      );
+      const modelingEvidenceMetadata = summarizeRtpModelingEvidenceForMetadata(modelingEvidence);
       const linkedProjectIds = linkedProjects
         .map((link) => link.project?.id ?? null)
         .filter((value): value is string => Boolean(value));
@@ -459,6 +534,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             pendingCommentCount: engagementCounts.moderationQueue.pendingCount,
             readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
           },
+          modelingEvidence,
         },
       });
       const generatedAt = new Date().toISOString();
@@ -515,6 +591,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
           rtpFundingSnapshot: portfolioFundingSnapshot,
           readiness,
           workflow,
+          modelingEvidence: modelingEvidenceMetadata,
+          modelingEvidenceCount: modelingEvidenceMetadata.length,
+          modelingEvidenceClaimStatuses: modelingEvidenceMetadata
+            .map((item) => item.claimStatus)
+            .filter((status): status is NonNullable<typeof status> => Boolean(status)),
           enabledSectionCount: sections.filter((section) => section.enabled).length,
           enabledSectionKeys,
           packetPresetAlignment,
@@ -602,6 +683,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         storagePath: rtpPdfStoragePath,
         userId: user.id,
         linkedProjectCount: linkedProjects.length,
+        modelingEvidenceCount: modelingEvidenceMetadata.length,
+        modelingEvidenceClaimStatuses: modelingEvidenceMetadata
+          .map((item) => item.claimStatus)
+          .filter((status): status is NonNullable<typeof status> => Boolean(status)),
         durationMs: Date.now() - startedAt,
       });
 

@@ -20,6 +20,10 @@ const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
 const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
 
+const rtpCycleMaybeSingleMock = vi.fn();
+const rtpCycleEqMock = vi.fn(() => ({ maybeSingle: rtpCycleMaybeSingleMock }));
+const rtpCycleSelectMock = vi.fn(() => ({ eq: rtpCycleEqMock }));
+
 const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
 const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
@@ -80,9 +84,43 @@ const runsSelectMock = vi.fn(
   }
 );
 
+const rtpChaptersOrderMock = vi.fn();
+const rtpChaptersEqMock = vi.fn(() => ({ order: rtpChaptersOrderMock }));
+const rtpChaptersSelectMock = vi.fn(() => ({ eq: rtpChaptersEqMock }));
+
+const projectRtpLinksOrderMock = vi.fn();
+const projectRtpLinksEqMock = vi.fn(() => ({ order: projectRtpLinksOrderMock }));
+const projectRtpLinksSelectMock = vi.fn(() => ({ eq: projectRtpLinksEqMock }));
+
+const countyRunsLimitMock = vi.fn();
+const countyRunsOrderMock = vi.fn(() => ({ limit: countyRunsLimitMock }));
+const countyRunsEqMock = vi.fn(() => ({ order: countyRunsOrderMock }));
+const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock }));
+
+const modelingClaimMaybeSingleMock = vi.fn();
+const modelingClaimEqTrackMock = vi.fn(() => ({ maybeSingle: modelingClaimMaybeSingleMock }));
+const modelingClaimEqCountyRunMock = vi.fn(() => ({ eq: modelingClaimEqTrackMock }));
+const modelingClaimSelectMock = vi.fn(() => ({ eq: modelingClaimEqCountyRunMock }));
+
+const modelingSourcesOrderMock = vi.fn();
+const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
+const modelingSourcesSelectMock = vi.fn(() => ({ eq: modelingSourcesEqMock }));
+
+const modelingValidationsOrderMock = vi.fn();
+const modelingValidationsEqTrackMock = vi.fn(() => ({ order: modelingValidationsOrderMock }));
+const modelingValidationsEqCountyRunMock = vi.fn(() => ({ eq: modelingValidationsEqTrackMock }));
+const modelingValidationsSelectMock = vi.fn(() => ({ eq: modelingValidationsEqCountyRunMock }));
+
 const engagementCampaignMaybeSingleMock = vi.fn();
 const engagementCampaignEqIdMock = vi.fn(() => ({ maybeSingle: engagementCampaignMaybeSingleMock }));
-const engagementCampaignEqWorkspaceMock = vi.fn(() => ({ eq: engagementCampaignEqIdMock }));
+const rtpEngagementCampaignsOrderMock = vi.fn();
+const engagementCampaignEqWorkspaceMock = vi.fn((column?: string) => {
+  if (column === "rtp_cycle_id") {
+    return { order: rtpEngagementCampaignsOrderMock };
+  }
+
+  return { eq: engagementCampaignEqIdMock };
+});
 const engagementCampaignSelectMock = vi.fn(() => ({ eq: engagementCampaignEqWorkspaceMock }));
 
 const engagementCategoriesOrderCreatedMock = vi.fn();
@@ -128,6 +166,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "workspaces") {
     return {
       select: workspaceSelectMock,
+    };
+  }
+
+  if (table === "rtp_cycles") {
+    return {
+      select: rtpCycleSelectMock,
     };
   }
 
@@ -200,6 +244,42 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "rtp_cycle_chapters") {
+    return {
+      select: rtpChaptersSelectMock,
+    };
+  }
+
+  if (table === "project_rtp_cycle_links") {
+    return {
+      select: projectRtpLinksSelectMock,
+    };
+  }
+
+  if (table === "county_runs") {
+    return {
+      select: countyRunsSelectMock,
+    };
+  }
+
+  if (table === "modeling_claim_decisions") {
+    return {
+      select: modelingClaimSelectMock,
+    };
+  }
+
+  if (table === "modeling_source_manifests") {
+    return {
+      select: modelingSourcesSelectMock,
+    };
+  }
+
+  if (table === "modeling_validation_results") {
+    return {
+      select: modelingValidationsSelectMock,
     };
   }
 
@@ -296,6 +376,24 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
+    rtpCycleMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "77777777-7777-4777-8777-777777777777",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "2027 Nevada County RTP",
+        status: "draft",
+        geography_label: "Nevada County, CA",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: null,
+        public_review_open_at: null,
+        public_review_close_at: null,
+        summary: "RTP cycle summary",
+        updated_at: "2026-04-24T00:00:00.000Z",
+      },
+      error: null,
+    });
+
     projectMaybeSingleMock.mockResolvedValue({
       data: {
         id: "44444444-4444-4444-8444-444444444444",
@@ -320,6 +418,27 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [{ id: "report-run-1", run_id: "55555555-5555-4555-8555-555555555555", sort_order: 0 }],
       error: null,
     });
+    rtpChaptersOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "rtp-chapter-1",
+          title: "Existing conditions",
+          section_type: "performance",
+          status: "ready_for_review",
+          summary: "Model-backed existing conditions.",
+          guidance: "Include validation caveats.",
+          content_markdown: "The screening run identifies capacity stress on SR-174.",
+          sort_order: 10,
+        },
+      ],
+      error: null,
+    });
+    projectRtpLinksOrderMock.mockResolvedValue({ data: [], error: null });
+    rtpEngagementCampaignsOrderMock.mockResolvedValue({ data: [], error: null });
+    countyRunsLimitMock.mockResolvedValue({ data: [], error: null });
+    modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
+    modelingValidationsOrderMock.mockResolvedValue({ data: [], error: null });
     stageGateDecisionsLimitMock.mockResolvedValue({ data: [], error: null });
 
     deliverablesLimitMock.mockResolvedValue({ data: [], error: null });
@@ -801,6 +920,138 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Operations review");
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-deliverables');
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-risks');
+  });
+
+  it("adds modeling evidence claim posture to RTP packet artifacts", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "cycle_overview", title: "Cycle overview", enabled: true, sort_order: 0, config_json: {} },
+        { id: "section-2", section_key: "chapter_digest", title: "Chapter digest", enabled: true, sort_order: 1, config_json: {} },
+        { id: "section-3", section_key: "appendix_references", title: "Appendix", enabled: true, sort_order: 2, config_json: {} },
+      ],
+      error: null,
+    });
+    countyRunsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    modelingClaimMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        track: "assignment",
+        claim_status: "screening_grade",
+        status_reason: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+        reasons_json: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+        validation_summary_json: {
+          passed: 3,
+          warned: 1,
+          failed: 1,
+          missingRequiredMetricKeys: [],
+          requiredMetricKeys: ["assignment_final_gap", "critical_absolute_percent_error"],
+        },
+        decided_at: "2026-04-24T01:00:00.000Z",
+      },
+      error: null,
+    });
+    modelingSourcesOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "source-1",
+          source_key: "observed_count_validation",
+          source_kind: "local_public_counts",
+          source_label: "Observed count validation",
+          source_url: null,
+          source_vintage: "2026",
+          geography_id: "06057",
+          geography_label: "Nevada County, CA",
+          license_note: "Public agency count data.",
+          citation_text: "Observed public count validation for Nevada County.",
+        },
+      ],
+      error: null,
+    });
+    modelingValidationsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "validation-1",
+          track: "assignment",
+          metric_key: "critical_absolute_percent_error",
+          metric_label: "Critical facility absolute percent error",
+          observed_value: 237.62,
+          threshold_value: 50,
+          threshold_max_value: null,
+          threshold_comparator: "lte",
+          status: "fail",
+          blocks_claim_grade: true,
+          detail: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+          source_manifest_id: "source-1",
+          evaluated_at: "2026-04-24T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const metadata = generatedArtifact?.metadata_json;
+
+    expect(metadata).toEqual(
+      expect.objectContaining({
+        generationMode: "rtp_html_packet",
+        htmlContent: expect.stringContaining("Assignment modeling claim posture"),
+        sourceContext: expect.objectContaining({
+          reportOrigin: "rtp_cycle_packet",
+          modelingEvidenceCount: 1,
+          modelingEvidenceClaimStatuses: ["screening_grade"],
+          modelingEvidence: [
+            expect.objectContaining({
+              countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              claimStatus: "screening_grade",
+              sourceManifestCount: 1,
+              validationResultCount: 1,
+              reportLanguage:
+                "Screening-grade modeling result. Use for planning context only, and include the validation caveats before making any outward claim.",
+            }),
+          ],
+        }),
+      })
+    );
+    expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
+    expect(metadata?.htmlContent).toContain("Observed count validation");
   });
 
   it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {
