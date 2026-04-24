@@ -1,0 +1,27 @@
+name: Production Health
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: health check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./openplan
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check production health
+        run: node scripts/ops/check-prod-health.mjs

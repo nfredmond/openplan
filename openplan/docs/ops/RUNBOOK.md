@@ -20,6 +20,27 @@ pnpm supabase db advisors --linked --type security --level info -o json
 
 `GET /api/health` only proves the deployed Next.js route can execute. It does not check Supabase, Stripe, Mapbox, Anthropic, report storage, or billing meters.
 
+## Scheduled Health Check
+
+The repo has a no-vendor production health workflow:
+
+```bash
+gh workflow run production-health.yml --ref main
+gh run list --workflow production-health.yml --limit 5
+gh run view <run-id> --log-failed
+```
+
+It runs every 15 minutes from `.github/workflows/production-health.yml` and calls:
+
+```bash
+cd openplan
+pnpm ops:check-prod-health
+```
+
+The workflow validates `GET` and `HEAD` on `/api/health`. It intentionally fails if the shallow route starts claiming dependency readiness for database or billing, because that endpoint is only the public uptime probe.
+
+GitHub scheduled workflows can be delayed or dropped during platform load. Treat this as the first no-spend alarm, not a formal uptime SLA. If the workflow fails, capture the run URL and continue with the app-down path below.
+
 ## First Five Minutes
 
 1. Identify the affected surface: public site, sign-in, workspace pages, map, reports/PDF, billing, invites, or model runs.
