@@ -112,7 +112,7 @@ The workspace assistant (`/api/assistant`) is a **synchronous** endpoint: it val
 - **Public feeds**: `workspace_id IS NULL` in `gtfs_feeds` — preloaded agencies readable without auth
 - **Workspace auto-creation**: DB trigger `on_auth_user_created` on `auth.users` creates workspace + owner membership on signup
 - **Mapbox GL JS** (not react-map-gl): Direct `mapbox-gl` usage for full control over map instances; deck.gl layers composed on top
-- **CSP in report-only mode**: `next.config.ts` ships HSTS, X-Frame DENY, Permissions-Policy, and CSP-Report-Only with a `/api/csp-report` sink. Enforce-mode migration is tracked separately.
+- **CSP in enforce mode**: `next.config.ts` ships HSTS, X-Frame DENY, Permissions-Policy, and enforcing CSP with a `/api/csp-report` sink. The policy intentionally still allows Next/Mapbox-required inline/eval/style/blob/data surfaces until a nonce-based tightening slice is justified by logs and browser smoke tests.
 - **Body-size limits on write endpoints**: `lib/http/body-limit.ts` caps request bodies per-route (assistant = 64 KB)
 - **Service-role-only billing receipts**: `billing_webhook_receipts` has RLS enabled with no policy by design; all access goes through the Stripe webhook handler using the service-role key
 

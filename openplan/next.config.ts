@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const CSP_REPORT_ONLY_POLICY = [
+const CSP_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
@@ -28,8 +28,8 @@ const SECURITY_HEADERS = [
     value: "max-age=63072000; includeSubDomains; preload",
   },
   {
-    key: "Content-Security-Policy-Report-Only",
-    value: CSP_REPORT_ONLY_POLICY,
+    key: "Content-Security-Policy",
+    value: CSP_POLICY,
   },
 ];
 

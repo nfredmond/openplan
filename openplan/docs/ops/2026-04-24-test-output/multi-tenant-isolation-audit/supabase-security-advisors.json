@@ -1,0 +1,74 @@
+[
+  {
+    "name": "rls_enabled_no_policy",
+    "title": "RLS Enabled No Policy",
+    "level": "INFO",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+    "detail": "Table \\`public.billing_webhook_receipts\\` has RLS enabled, but no policies exist",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+    "metadata": {
+      "name": "billing_webhook_receipts",
+      "schema": "public",
+      "type": "table"
+    },
+    "cache_key": "rls_enabled_no_policy_public_billing_webhook_receipts"
+  },
+  {
+    "name": "rls_disabled_in_public",
+    "title": "RLS Disabled in Public",
+    "level": "ERROR",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects cases where row level security (RLS) has not been enabled on tables in schemas exposed to PostgREST",
+    "detail": "Table \\`public.spatial_ref_sys\\` is public, but RLS has not been enabled.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0013_rls_disabled_in_public",
+    "metadata": {
+      "name": "spatial_ref_sys",
+      "schema": "public",
+      "type": "table"
+    },
+    "cache_key": "rls_disabled_in_public_public_spatial_ref_sys"
+  },
+  {
+    "name": "extension_in_public",
+    "title": "Extension in Public",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects extensions installed in the \\`public\\` schema.",
+    "detail": "Extension \\`postgis\\` is installed in the public schema. Move it to another schema.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public",
+    "metadata": {
+      "name": "postgis",
+      "schema": "public",
+      "type": "extension"
+    },
+    "cache_key": "extension_in_public_postgis"
+  },
+  {
+    "name": "extension_in_public",
+    "title": "Extension in Public",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects extensions installed in the \\`public\\` schema.",
+    "detail": "Extension \\`pg_trgm\\` is installed in the public schema. Move it to another schema.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public",
+    "metadata": {
+      "name": "pg_trgm",
+      "schema": "public",
+      "type": "extension"
+    },
+    "cache_key": "extension_in_public_pg_trgm"
+  }
+]
