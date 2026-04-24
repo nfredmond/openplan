@@ -200,6 +200,7 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByRole("button", { name: /Mark reviewing/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Defer/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Decline/i })).toBeInTheDocument();
+    expect(screen.getByText(/no outbound email or workspace is created/i)).toBeInTheDocument();
     expect(screen.getByText("Review trail")).toBeInTheDocument();
     expect(screen.getByText("Reviewing")).toBeInTheDocument();
     expect(serviceFromMock).toHaveBeenCalledWith("access_requests");

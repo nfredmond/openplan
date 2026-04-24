@@ -20,6 +20,12 @@ export const ACCESS_REQUEST_TRIAGE_STATUSES = [
 
 export type AccessRequestTriageStatus = (typeof ACCESS_REQUEST_TRIAGE_STATUSES)[number];
 
+export const ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS = {
+  reviewEventRecorded: true,
+  outboundEmailSent: false,
+  workspaceProvisioned: false,
+} as const;
+
 const ACCESS_REQUEST_TRIAGE_TRANSITIONS: Record<AccessRequestStatus, AccessRequestTriageStatus[]> = {
   new: ["reviewing", "deferred", "declined"],
   reviewing: ["contacted", "deferred", "declined"],
@@ -69,4 +75,8 @@ export function accessRequestTriageActionLabel(status: AccessRequestTriageStatus
   };
 
   return labels[status];
+}
+
+export function accessRequestTriageSideEffectLabel(): string {
+  return "Records review status only; no outbound email or workspace is created.";
 }

@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const authGetUserMock = vi.fn();
+const auditInfoMock = vi.fn();
+const auditWarnMock = vi.fn();
+const auditErrorMock = vi.fn();
 
 const lookupMaybeSingleMock = vi.fn();
 const lookupEqMock = vi.fn(() => ({ maybeSingle: lookupMaybeSingleMock }));
@@ -27,9 +30,9 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+    info: auditInfoMock,
+    warn: auditWarnMock,
+    error: auditErrorMock,
   }),
 }));
 
@@ -95,6 +98,11 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
     const json = await response.json();
     expect(json).toEqual({
       success: true,
+      sideEffects: {
+        reviewEventRecorded: true,
+        outboundEmailSent: false,
+        workspaceProvisioned: false,
+      },
       request: {
         id: "44444444-4444-4444-8444-444444444444",
         status: "reviewing",
@@ -109,6 +117,17 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
       p_status: "reviewing",
       p_reviewer_user_id: "user-1",
     });
+    expect(auditInfoMock).toHaveBeenCalledWith(
+      "access_request_triaged",
+      expect.objectContaining({
+        reviewEventId: "55555555-5555-4555-8555-555555555555",
+        sideEffects: {
+          reviewEventRecorded: true,
+          outboundEmailSent: false,
+          workspaceProvisioned: false,
+        },
+      }),
+    );
     expect(JSON.stringify(json)).not.toContain("nat@example.gov");
   });
 

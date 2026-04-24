@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ACCESS_REQUEST_MAX_PER_WINDOW,
   ACCESS_REQUEST_REVIEW_EMAILS_ENV,
+  ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   buildAccessRequestBodyFingerprint,
   buildAccessRequestClientFingerprint,
   buildAccessRequestMetadata,
@@ -11,6 +12,7 @@ import {
   canTransitionAccessRequestStatus,
   canReviewAccessRequests,
   evaluateAccessRequestSafety,
+  accessRequestTriageSideEffectLabel,
   getAccessRequestTransitionOptions,
   loadRecentAccessRequestsForReview,
   normalizeAccessRequestEmail,
@@ -132,6 +134,15 @@ describe("access request helpers", () => {
     expect(getAccessRequestTransitionOptions("invited")).toEqual(["deferred", "declined"]);
     expect(getAccessRequestTransitionOptions("declined")).toEqual([]);
     expect(getAccessRequestTransitionOptions("provisioned")).toEqual([]);
+  });
+
+  it("keeps reviewer triage side effects explicit and audit-only", () => {
+    expect(ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS).toEqual({
+      reviewEventRecorded: true,
+      outboundEmailSent: false,
+      workspaceProvisioned: false,
+    });
+    expect(accessRequestTriageSideEffectLabel()).toMatch(/no outbound email or workspace/i);
   });
 
   it("attaches compact review events to recent access request rows", async () => {

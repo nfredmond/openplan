@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   canReviewAccessRequests,
   canTransitionAccessRequestStatus,
   getAccessRequestTransitionOptions,
@@ -177,10 +178,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     status: updatedRequest.status,
     reviewedByUserId: user.id,
     reviewEventId: updatedRequest.review_event_id,
+    sideEffects: ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   });
 
   return NextResponse.json({
     success: true,
+    sideEffects: ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
     request: {
       id: updatedRequest.id,
       status: updatedRequest.status,

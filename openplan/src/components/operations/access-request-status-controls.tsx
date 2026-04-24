@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import {
   accessRequestStatusLabel,
   accessRequestTriageActionLabel,
+  accessRequestTriageSideEffectLabel,
   getAccessRequestTransitionOptions,
   type AccessRequestStatus,
   type AccessRequestTriageStatus,
@@ -48,7 +49,7 @@ export function AccessRequestStatusControls({ requestId, status }: AccessRequest
       }
 
       setCurrentStatus(payload.request.status);
-      setMessage(`Updated to ${accessRequestStatusLabel(payload.request.status)}.`);
+      setMessage(`Updated to ${accessRequestStatusLabel(payload.request.status)}. Review event recorded.`);
       router.refresh();
     } catch {
       setError("Status update failed.");
@@ -83,6 +84,7 @@ export function AccessRequestStatusControls({ requestId, status }: AccessRequest
       ) : (
         <p className="mt-2 text-sm text-muted-foreground">No further triage transition is available for this request.</p>
       )}
+      <p className="mt-2 text-xs text-muted-foreground">{accessRequestTriageSideEffectLabel()}</p>
 
       {message ? <p className="mt-3 text-xs text-emerald-700">{message}</p> : null}
       {error ? <p className="mt-3 text-xs text-red-700">{error}</p> : null}

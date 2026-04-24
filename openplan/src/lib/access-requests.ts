@@ -2,10 +2,12 @@ import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import type { AccessRequestStatus } from "@/lib/access-request-status";
 export {
+  ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   accessRequestStatusLabel,
   canTransitionAccessRequestStatus,
   getAccessRequestTransitionOptions,
   isAccessRequestTriageStatus,
+  accessRequestTriageSideEffectLabel,
   type AccessRequestStatus,
   type AccessRequestTriageStatus,
 } from "@/lib/access-request-status";

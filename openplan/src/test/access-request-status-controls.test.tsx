@@ -23,6 +23,11 @@ describe("AccessRequestStatusControls", () => {
           status: "reviewing",
           reviewedAt: "2026-04-24T12:00:00.000Z",
         },
+        sideEffects: {
+          reviewEventRecorded: true,
+          outboundEmailSent: false,
+          workspaceProvisioned: false,
+        },
       }),
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -51,7 +56,8 @@ describe("AccessRequestStatusControls", () => {
         body: JSON.stringify({ status: "reviewing" }),
       }),
     );
-    expect(await screen.findByText("Updated to Reviewing.")).toBeInTheDocument();
+    expect(await screen.findByText("Updated to Reviewing. Review event recorded.")).toBeInTheDocument();
+    expect(screen.getByText(/no outbound email or workspace is created/i)).toBeInTheDocument();
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
@@ -64,6 +70,7 @@ describe("AccessRequestStatusControls", () => {
     );
 
     expect(screen.getByText(/No further triage transition/i)).toBeInTheDocument();
+    expect(screen.getByText(/no outbound email or workspace is created/i)).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });
