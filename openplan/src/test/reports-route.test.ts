@@ -24,6 +24,10 @@ const runsInMock = vi.fn();
 const runsEqMock = vi.fn(() => ({ in: runsInMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
+const countyRunMaybeSingleMock = vi.fn();
+const countyRunEqMock = vi.fn(() => ({ maybeSingle: countyRunMaybeSingleMock }));
+const countyRunSelectMock = vi.fn(() => ({ eq: countyRunEqMock }));
+
 const reportSectionsInsertMock = vi.fn();
 const reportRunsInsertMock = vi.fn();
 
@@ -56,6 +60,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "county_runs") {
+    return {
+      select: countyRunSelectMock,
     };
   }
 
@@ -140,6 +150,13 @@ describe("/api/reports", () => {
 
     runsInMock.mockResolvedValue({
       data: [{ id: "55555555-5555-4555-8555-555555555555" }],
+      error: null,
+    });
+    countyRunMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "77777777-7777-4777-8777-777777777777",
+        workspace_id: "44444444-4444-4444-8444-444444444444",
+      },
       error: null,
     });
 
@@ -237,6 +254,45 @@ describe("/api/reports", () => {
         sort_order: 0,
       },
     ]);
+  });
+
+  it("POST attaches an explicit modeling county run when it belongs to the target workspace", async () => {
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        modelingCountyRunId: "77777777-7777-4777-8777-777777777777",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(reportsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modeling_county_run_id: "77777777-7777-4777-8777-777777777777",
+      })
+    );
+  });
+
+  it("POST rejects a modeling county run outside the target workspace", async () => {
+    countyRunMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "77777777-7777-4777-8777-777777777777",
+        workspace_id: "99999999-9999-4999-8999-999999999999",
+      },
+      error: null,
+    });
+
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        modelingCountyRunId: "77777777-7777-4777-8777-777777777777",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Modeling county run not found" });
+    expect(reportsInsertMock).not.toHaveBeenCalled();
   });
 
   it("POST preserves engagement handoff provenance in seeded section config", async () => {

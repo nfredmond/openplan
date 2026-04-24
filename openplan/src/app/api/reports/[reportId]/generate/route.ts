@@ -98,11 +98,15 @@ type ProjectRecordSnapshotEntry = {
 
 type ReportCountyRunEvidenceRow = {
   id: string;
+  workspace_id: string;
   run_name: string | null;
   geography_label: string | null;
   stage: string | null;
   updated_at: string | null;
 };
+
+type ReportsGenerateSupabase = Awaited<ReturnType<typeof createClient>>;
+type ReportsGenerateAudit = Pick<ReturnType<typeof createApiAuditLogger>, "warn">;
 
 function maxTimestamp(values: Array<string | null | undefined>) {
   const timestamps = values
@@ -139,6 +143,107 @@ function buildProjectRecordSnapshot(entries: {
     decisions: buildEntry(entries.decisions, (item) => item.decided_at ?? item.created_at),
     meetings: buildEntry(entries.meetings, (item) => item.meeting_at ?? item.created_at),
   };
+}
+
+async function loadReportModelingEvidence(input: {
+  supabase: ReportsGenerateSupabase;
+  audit: ReportsGenerateAudit;
+  reportId: string;
+  workspaceId: string;
+  modelingCountyRunId?: string | null;
+  auditEventPrefix: "rtp_modeling" | "report_modeling";
+}): Promise<ReportModelingEvidence[]> {
+  const { supabase, audit, reportId, workspaceId, modelingCountyRunId, auditEventPrefix } = input;
+  let countyRuns: ReportCountyRunEvidenceRow[] = [];
+
+  if (modelingCountyRunId) {
+    const countyRunResult = await safeOptionalQuery(
+      () =>
+        supabase
+          .from("county_runs")
+          .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+          .eq("id", modelingCountyRunId)
+          .maybeSingle(),
+      null as ReportCountyRunEvidenceRow | null
+    );
+
+    if (countyRunResult.error) {
+      audit.warn(`${auditEventPrefix}_county_run_lookup_failed`, {
+        reportId,
+        workspaceId,
+        countyRunId: modelingCountyRunId,
+        message: countyRunResult.error.message,
+        code: countyRunResult.error.code ?? null,
+      });
+    } else if (!countyRunResult.data) {
+      audit.warn(`${auditEventPrefix}_county_run_missing`, {
+        reportId,
+        workspaceId,
+        countyRunId: modelingCountyRunId,
+      });
+    } else if (countyRunResult.data.workspace_id !== workspaceId) {
+      audit.warn(`${auditEventPrefix}_county_run_workspace_mismatch`, {
+        reportId,
+        workspaceId,
+        countyRunId: modelingCountyRunId,
+        countyRunWorkspaceId: countyRunResult.data.workspace_id,
+      });
+    } else {
+      countyRuns = [countyRunResult.data];
+    }
+  } else {
+    const countyRunsResult = await safeOptionalQuery(
+      () =>
+        supabase
+          .from("county_runs")
+          .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(5),
+      [] as ReportCountyRunEvidenceRow[]
+    );
+
+    if (countyRunsResult.error) {
+      audit.warn(`${auditEventPrefix}_county_runs_lookup_failed`, {
+        reportId,
+        workspaceId,
+        message: countyRunsResult.error.message,
+        code: countyRunsResult.error.code ?? null,
+      });
+    } else {
+      countyRuns = countyRunsResult.data ?? [];
+    }
+  }
+
+  return Promise.all(
+    countyRuns.map(async (countyRun) => {
+      const evidenceResult = await loadCountyRunModelingEvidence({
+        supabase,
+        countyRunId: countyRun.id,
+        track: "assignment",
+      });
+
+      if (evidenceResult.error) {
+        audit.warn(`${auditEventPrefix}_evidence_lookup_failed`, {
+          reportId,
+          workspaceId,
+          countyRunId: countyRun.id,
+          message: evidenceResult.error.message,
+          code: evidenceResult.error.code ?? null,
+          missingSchema: evidenceResult.error.missingSchema ?? false,
+        });
+      }
+
+      return {
+        countyRunId: countyRun.id,
+        runName: countyRun.run_name,
+        geographyLabel: countyRun.geography_label,
+        stage: countyRun.stage,
+        updatedAt: countyRun.updated_at,
+        evidence: evidenceResult.evidence,
+      };
+    })
+  );
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -181,7 +286,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let reportLookupResult = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+      .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
 
@@ -285,7 +390,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (report.rtp_cycle_id) {
-      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult, countyRunsResult] = await Promise.all([
+      const modelingEvidencePromise = loadReportModelingEvidence({
+        supabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        modelingCountyRunId: report.modeling_county_run_id,
+        auditEventPrefix: "rtp_modeling",
+      });
+      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult] = await Promise.all([
         supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
         supabase
           .from("rtp_cycles")
@@ -314,16 +427,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .select("id, title, status, engagement_type, summary, rtp_cycle_chapter_id")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
           .order("updated_at", { ascending: false }),
-        safeOptionalQuery(
-          () =>
-            supabase
-              .from("county_runs")
-              .select("id, run_name, geography_label, stage, updated_at")
-              .eq("workspace_id", report.workspace_id)
-              .order("updated_at", { ascending: false })
-              .limit(5),
-          [] as ReportCountyRunEvidenceRow[]
-        ),
       ]);
 
       const loadErrors = [
@@ -334,15 +437,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         linksResult.error,
         campaignsResult.error,
       ].filter(Boolean);
-
-      if (countyRunsResult.error) {
-        audit.warn("rtp_modeling_county_runs_lookup_failed", {
-          reportId: report.id,
-          workspaceId: report.workspace_id,
-          message: countyRunsResult.error.message,
-          code: countyRunsResult.error.code ?? null,
-        });
-      }
 
       if (loadErrors.length > 0 || !cycleResult.data) {
         const firstError = loadErrors[0];
@@ -359,36 +453,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapters = chaptersResult.data ?? [];
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
-      const countyRuns = countyRunsResult.error ? [] : (countyRunsResult.data ?? []);
-      const modelingEvidence: ReportModelingEvidence[] = await Promise.all(
-        countyRuns.map(async (countyRun) => {
-          const evidenceResult = await loadCountyRunModelingEvidence({
-            supabase,
-            countyRunId: countyRun.id,
-            track: "assignment",
-          });
-
-          if (evidenceResult.error) {
-            audit.warn("rtp_modeling_evidence_lookup_failed", {
-              reportId: report.id,
-              workspaceId: report.workspace_id,
-              countyRunId: countyRun.id,
-              message: evidenceResult.error.message,
-              code: evidenceResult.error.code ?? null,
-              missingSchema: evidenceResult.error.missingSchema ?? false,
-            });
-          }
-
-          return {
-            countyRunId: countyRun.id,
-            runName: countyRun.run_name,
-            geographyLabel: countyRun.geography_label,
-            stage: countyRun.stage,
-            updatedAt: countyRun.updated_at,
-            evidence: evidenceResult.evidence,
-          };
-        })
-      );
+      const modelingEvidence = await modelingEvidencePromise;
       const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
       const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
       const linkedProjectIds = linkedProjects
@@ -689,6 +754,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const projectModelingEvidencePromise = loadReportModelingEvidence({
+      supabase,
+      audit,
+      reportId: report.id,
+      workspaceId: report.workspace_id,
+      modelingCountyRunId: report.modeling_county_run_id,
+      auditEventPrefix: "report_modeling",
+    });
+
     const [
       workspaceResult,
       projectResult,
@@ -704,7 +778,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingAwardsResult,
       fundingOpportunitiesResult,
       billingInvoicesResult,
-      countyRunsResult,
     ] = await Promise.all([
       supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
       supabase
@@ -794,16 +867,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
             .order("created_at", { ascending: false }),
         [] as Array<Record<string, unknown>>
       ),
-      safeOptionalQuery(
-        () =>
-          supabase
-            .from("county_runs")
-            .select("id, run_name, geography_label, stage, updated_at")
-            .eq("workspace_id", report.workspace_id)
-            .order("updated_at", { ascending: false })
-            .limit(5),
-        [] as ReportCountyRunEvidenceRow[]
-      ),
     ]);
 
     const loadErrors = [
@@ -823,15 +886,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       billingInvoicesResult.error,
     ].filter(Boolean);
 
-    if (countyRunsResult.error) {
-      audit.warn("report_modeling_county_runs_lookup_failed", {
-        reportId: report.id,
-        workspaceId: report.workspace_id,
-        message: countyRunsResult.error.message,
-        code: countyRunsResult.error.code ?? null,
-      });
-    }
-
     if (loadErrors.length > 0 || !projectResult.data) {
       const firstError = loadErrors[0];
       audit.error("report_generation_load_failed", {
@@ -841,37 +895,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
     }
-
-    const projectCountyRuns = countyRunsResult.error ? [] : (countyRunsResult.data ?? []);
-    const projectModelingEvidencePromise: Promise<ReportModelingEvidence[]> = Promise.all(
-      projectCountyRuns.map(async (countyRun) => {
-        const evidenceResult = await loadCountyRunModelingEvidence({
-          supabase,
-          countyRunId: countyRun.id,
-          track: "assignment",
-        });
-
-        if (evidenceResult.error) {
-          audit.warn("report_modeling_evidence_lookup_failed", {
-            reportId: report.id,
-            workspaceId: report.workspace_id,
-            countyRunId: countyRun.id,
-            message: evidenceResult.error.message,
-            code: evidenceResult.error.code ?? null,
-            missingSchema: evidenceResult.error.missingSchema ?? false,
-          });
-        }
-
-        return {
-          countyRunId: countyRun.id,
-          runName: countyRun.run_name,
-          geographyLabel: countyRun.geography_label,
-          stage: countyRun.stage,
-          updatedAt: countyRun.updated_at,
-          evidence: evidenceResult.evidence,
-        };
-      })
-    );
 
     const engagementCampaignId = extractEngagementCampaignId(sectionsResult.data ?? []);
     const engagementProvenance = extractEngagementHandoffProvenance(sectionsResult.data ?? []);

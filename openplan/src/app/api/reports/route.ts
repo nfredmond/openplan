@@ -27,6 +27,7 @@ const createReportSchema = z
     title: z.string().trim().min(1).max(160).optional(),
     reportType: z.enum(["project_status", "analysis_summary", "board_packet"]),
     summary: z.string().trim().max(2000).optional(),
+    modelingCountyRunId: z.string().uuid().optional(),
     runIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
       .array(
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("reports")
       .select(
-        "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), workspaces(name)"
+        "id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), workspaces(name)"
       )
       .order("updated_at", { ascending: false });
 
@@ -265,12 +266,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (parsed.data.modelingCountyRunId) {
+      const { data: countyRun, error: countyRunError } = await supabase
+        .from("county_runs")
+        .select("id, workspace_id")
+        .eq("id", parsed.data.modelingCountyRunId)
+        .maybeSingle();
+
+      if (countyRunError) {
+        audit.error("modeling_county_run_lookup_failed", {
+          workspaceId: target.workspaceId,
+          countyRunId: parsed.data.modelingCountyRunId,
+          message: countyRunError.message,
+          code: countyRunError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify modeling county run" }, { status: 500 });
+      }
+
+      if (!countyRun || countyRun.workspace_id !== target.workspaceId) {
+        return NextResponse.json({ error: "Modeling county run not found" }, { status: 400 });
+      }
+    }
+
     const reportTitle = parsed.data.title?.trim() || defaultTargetedReportTitle(target.title, parsed.data.reportType as ReportType);
 
     const reportInsertPayload = {
       workspace_id: target.workspaceId,
       project_id: target.kind === "project" ? target.id : null,
       rtp_cycle_id: target.kind === "rtp_cycle" ? target.id : null,
+      modeling_county_run_id: parsed.data.modelingCountyRunId ?? null,
       title: reportTitle,
       report_type: parsed.data.reportType,
       summary: parsed.data.summary?.trim() || null,
@@ -292,7 +316,7 @@ export async function POST(request: NextRequest) {
     let reportInsertResult = await supabase
       .from("reports")
       .insert(reportInsertPayload)
-      .select("id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, metadata_json, created_at, updated_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, report_type, status, summary, metadata_json, created_at, updated_at")
       .single();
 
     if (reportInsertResult.error && looksLikePendingSchema(reportInsertResult.error.message)) {

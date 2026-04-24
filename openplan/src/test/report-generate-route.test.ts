@@ -94,7 +94,14 @@ const projectRtpLinksSelectMock = vi.fn(() => ({ eq: projectRtpLinksEqMock }));
 
 const countyRunsLimitMock = vi.fn();
 const countyRunsOrderMock = vi.fn(() => ({ limit: countyRunsLimitMock }));
-const countyRunsEqMock = vi.fn(() => ({ order: countyRunsOrderMock }));
+const countyRunsMaybeSingleMock = vi.fn();
+const countyRunsEqMock = vi.fn((column?: string) => {
+  if (column === "id") {
+    return { maybeSingle: countyRunsMaybeSingleMock };
+  }
+
+  return { order: countyRunsOrderMock };
+});
 const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock }));
 
 const modelingClaimMaybeSingleMock = vi.fn();
@@ -436,6 +443,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     projectRtpLinksOrderMock.mockResolvedValue({ data: [], error: null });
     rtpEngagementCampaignsOrderMock.mockResolvedValue({ data: [], error: null });
     countyRunsLimitMock.mockResolvedValue({ data: [], error: null });
+    countyRunsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
     modelingValidationsOrderMock.mockResolvedValue({ data: [], error: null });
@@ -802,6 +810,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [
         {
           id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
           run_name: "Nevada County assignment screening",
           geography_label: "Nevada County, CA",
           stage: "validated-screening",
@@ -907,6 +916,85 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
     expect(metadata?.htmlContent).toContain("Observed count validation");
     expect(metadata?.htmlContent).toContain("Modeling claim posture");
+  });
+
+  it("uses a report-linked modeling county run before recent workspace runs", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: "44444444-4444-4444-8444-444444444444",
+        rtp_cycle_id: null,
+        modeling_county_run_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        title: "Project Status Packet",
+        summary: "Packet summary",
+        report_type: "project_status",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        run_name: "Explicit assignment run",
+        geography_label: "Nevada County explicit run",
+        stage: "validated-screening",
+        updated_at: "2026-04-24T02:00:00.000Z",
+      },
+      error: null,
+    });
+    modelingClaimMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        track: "assignment",
+        claim_status: "claim_grade_passed",
+        status_reason: "All required public-data validation checks passed.",
+        reasons_json: [],
+        validation_summary_json: {
+          passed: 5,
+          warned: 0,
+          failed: 0,
+          missingRequiredMetricKeys: [],
+          requiredMetricKeys: ["assignment_final_gap"],
+        },
+        decided_at: "2026-04-24T02:00:00.000Z",
+      },
+      error: null,
+    });
+    modelingSourcesOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelingValidationsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(countyRunsEqMock).toHaveBeenCalledWith("id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    expect(countyRunsLimitMock).not.toHaveBeenCalled();
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    expect(generatedArtifact?.metadata_json?.sourceContext).toEqual(
+      expect.objectContaining({
+        modelingEvidenceCount: 1,
+        modelingEvidenceClaimStatuses: ["claim_grade_passed"],
+        modelingEvidence: [
+          expect.objectContaining({
+            countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            geographyLabel: "Nevada County explicit run",
+            claimStatus: "claim_grade_passed",
+          }),
+        ],
+      })
+    );
   });
 
   it("persists compact project-record provenance in artifact metadata and html", async () => {
@@ -1063,6 +1151,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [
         {
           id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
           run_name: "Nevada County assignment screening",
           geography_label: "Nevada County, CA",
           stage: "validated-screening",
