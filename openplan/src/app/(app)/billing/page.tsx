@@ -837,7 +837,7 @@ export default async function BillingPage({
             <div>
               <h3 className="text-sm font-semibold tracking-tight text-foreground">Internal usage ledger</h3>
               <p className="mt-1 text-xs text-muted-foreground">
-                Service-recorded usage events for the current subscription period. Stripe reporting is intentionally deferred until period-close reporting ships.
+                Service-recorded usage events for the current subscription period. Stripe reporting is handled by the service-only period-close flush path.
               </p>
             </div>
             <StatusBadge tone={usageSummary.error ? "warning" : "info"}>
