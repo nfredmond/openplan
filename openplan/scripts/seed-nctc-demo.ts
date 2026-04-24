@@ -57,6 +57,11 @@ export const DEMO_PACKAGE_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000d";
 
 export const DEMO_CORRIDOR_SR49_ID = "d0000001-0000-4000-8000-00000000000e";
 export const DEMO_CORRIDOR_EMPIRE_ID = "d0000001-0000-4000-8000-00000000000f";
+export const DEMO_ENGAGEMENT_CAMPAIGN_ID = "d0000001-0000-4000-8000-000000000010";
+export const DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID = "d0000001-0000-4000-8000-000000000011";
+export const DEMO_ENGAGEMENT_ITEM_LIBRARY_BIKE_ID = "d0000001-0000-4000-8000-000000000012";
+export const DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID = "d0000001-0000-4000-8000-000000000013";
+export const DEMO_ENGAGEMENT_ITEM_RURAL_BUS_ID = "d0000001-0000-4000-8000-000000000014";
 
 // Census tract GEOIDs — synthetic but realistic (state FIPS 06 + county FIPS 057
 // for Nevada County + 6-digit tract suffix). These are hand-authored demo
@@ -91,6 +96,7 @@ export const DEMO_RTP_ANCHOR_LATITUDE = 39.2616;
 export const DEMO_RTP_ANCHOR_LONGITUDE = -121.0161;
 export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
+export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
 
 export type SeedRecords = {
   workspace: Record<string, unknown>;
@@ -172,6 +178,57 @@ export const DEMO_CORRIDOR_EMPIRE_ST = {
     [-121.012, 39.209],
   ] as [number, number][],
 };
+
+export const DEMO_ENGAGEMENT_ITEMS = [
+  {
+    id: DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Unsafe crossing at Neal + Mill",
+    body:
+      "The Neal and Mill crossing feels unsafe during school pickup. Families need a marked crosswalk, better lighting, and slower turns into downtown.",
+    submitted_by: "Public map comment",
+    status: "approved",
+    source_type: "public",
+    latitude: 39.2178,
+    longitude: -121.0614,
+  },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_LIBRARY_BIKE_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Needs better bike parking at library",
+    body:
+      "The Grass Valley library is a daily destination, but the bike rack is small and hard to see from the entrance. Covered parking would help students and seniors.",
+    submitted_by: "Workshop participant",
+    status: "approved",
+    source_type: "meeting",
+    latitude: 39.2196,
+    longitude: -121.0641,
+  },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Speeding on SR-20 near Alta Sierra",
+    body:
+      "Traffic on SR-20 near Alta Sierra is moving too fast for people turning in and out of neighborhoods. Speed feedback signs or enforcement would help.",
+    submitted_by: "Email intake",
+    status: "approved",
+    source_type: "email",
+    latitude: 39.1965,
+    longitude: -121.0356,
+  },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_RURAL_BUS_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Later bus service for evening shifts",
+    body:
+      "Evening workers in Grass Valley and Nevada City need one later bus trip so service works for restaurant and health-care shifts.",
+    submitted_by: "Public map comment",
+    status: "approved",
+    source_type: "public",
+    latitude: 39.2579,
+    longitude: -121.0174,
+  },
+] as const;
 
 // Hand-authored Nevada County census tracts. Single-ring MultiPolygons tiled
 // around Grass Valley and Nevada City. Boundaries are illustrative and do
@@ -993,7 +1050,49 @@ async function main(): Promise<void> {
     );
   }
 
-  // 11. Public census tracts (equity choropleth demo data).
+  // 11. Community engagement input — approved map comments that render as
+  //     low-weight point features on the cartographic shell.
+  const { error: engagementCampaignError } = await supabase.from("engagement_campaigns").upsert(
+    {
+      id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      rtp_cycle_id: DEMO_RTP_CYCLE_ID,
+      title: DEMO_ENGAGEMENT_CAMPAIGN_TITLE,
+      summary:
+        "Demo public-input map for the NCTC 2045 RTP proof-of-capability workspace. Items are hand-authored but representative of the comments a small RTPA would triage.",
+      status: "active",
+      engagement_type: "map_feedback",
+      public_description:
+        "Shareable map comments collected during the demo RTP outreach window.",
+      allow_public_submissions: false,
+      created_by: demoUserId,
+    },
+    { onConflict: "id" }
+  );
+  if (engagementCampaignError) {
+    throw new Error(`Failed to upsert engagement campaign: ${engagementCampaignError.message}`);
+  }
+  console.log(`[seed:nctc] upserted engagement campaign ${DEMO_ENGAGEMENT_CAMPAIGN_ID}`);
+
+  for (const item of DEMO_ENGAGEMENT_ITEMS) {
+    const { error } = await supabase.from("engagement_items").upsert(
+      {
+        ...item,
+        metadata_json: { seed: "nctc_demo", cartographic_layer: true },
+        created_by: demoUserId,
+      },
+      { onConflict: "id" }
+    );
+    if (error) {
+      throw new Error(`Failed to upsert engagement item ${item.id}: ${error.message}`);
+    }
+    console.log(
+      `[seed:nctc] upserted engagement item ${item.id} (${item.status}, ${item.latitude}, ${item.longitude})`
+    );
+  }
+
+  // 12. Public census tracts (equity choropleth demo data).
   //     `census_tracts` is public data (no workspace scoping) and has a
   //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
   //     client can't send PostGIS geometry directly, so we upsert through
@@ -1080,6 +1179,7 @@ async function main(): Promise<void> {
   console.log(`  missions:    ${missions.length} (downtown / SR-49 / Empire Mine)`);
   console.log(`  packages:    ${evidencePackages.length}`);
   console.log(`  corridors:   ${corridors.length} (SR-49 / Empire St)`);
+  console.log(`  engagement:  ${DEMO_ENGAGEMENT_ITEMS.length} approved items`);
   console.log(`  tracts:      ${tracts.length} (Nevada County public demo)`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }

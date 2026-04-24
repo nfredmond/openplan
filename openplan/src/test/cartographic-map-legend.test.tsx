@@ -55,11 +55,12 @@ function renderLegend(
 }
 
 describe("CartographicMapLegend", () => {
-  it("renders the four default-on data-driven entries — equity stays hidden until toggled on", () => {
+  it("renders the five default-on data-driven entries — equity stays hidden until toggled on", () => {
     renderLegend();
 
     expect(screen.getByRole("complementary", { name: "Map legend" })).toBeInTheDocument();
     expect(screen.getByText("Projects")).toBeInTheDocument();
+    expect(screen.getByText("Community input")).toBeInTheDocument();
     expect(screen.getByText("Aerial AOIs")).toBeInTheDocument();
     expect(screen.getByText("Corridors by LOS")).toBeInTheDocument();
     expect(screen.getByText("RTP cycles")).toBeInTheDocument();
@@ -104,17 +105,19 @@ describe("CartographicMapLegend", () => {
 
     expect(screen.queryByText("Projects")).not.toBeInTheDocument();
     expect(screen.queryByText("Corridors by LOS")).not.toBeInTheDocument();
+    expect(screen.getByText("Community input")).toBeInTheDocument();
     expect(screen.getByText("Aerial AOIs")).toBeInTheDocument();
     expect(screen.getByText("RTP cycles")).toBeInTheDocument();
   });
 
   it("returns null when every data-driven layer is toggled off (equity stays off by default)", () => {
-    const { container } = renderLegend(["projects", "aerial", "corridors", "rtp"]);
+    const { container } = renderLegend(["projects", "aerial", "corridors", "rtp", "engagement"]);
 
     fireEvent.click(screen.getByTestId("toggle-off-projects"));
     fireEvent.click(screen.getByTestId("toggle-off-aerial"));
     fireEvent.click(screen.getByTestId("toggle-off-corridors"));
     fireEvent.click(screen.getByTestId("toggle-off-rtp"));
+    fireEvent.click(screen.getByTestId("toggle-off-engagement"));
 
     expect(container.querySelector(".op-cart-legend")).toBeNull();
   });

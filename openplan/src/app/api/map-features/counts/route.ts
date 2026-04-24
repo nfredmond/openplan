@@ -9,6 +9,7 @@ export type MapFeatureCounts = {
   corridors: number | null;
   rtp: number | null;
   equity: number | null;
+  engagement: number | null;
 };
 
 const EMPTY_COUNTS: MapFeatureCounts = {
@@ -17,6 +18,7 @@ const EMPTY_COUNTS: MapFeatureCounts = {
   corridors: 0,
   rtp: 0,
   equity: 0,
+  engagement: 0,
 };
 
 export async function GET(request: NextRequest) {
@@ -41,7 +43,14 @@ export async function GET(request: NextRequest) {
 
     const workspaceId = membership.workspace_id;
 
-    const [projectsResult, aerialResult, corridorsResult, rtpResult, equityResult] =
+    const [
+      projectsResult,
+      aerialResult,
+      corridorsResult,
+      rtpResult,
+      equityResult,
+      engagementResult,
+    ] =
       await Promise.all([
         supabase
           .from("projects")
@@ -68,6 +77,13 @@ export async function GET(request: NextRequest) {
         // the `census_tracts_map` view so the count mirrors what the
         // /api/map-features/census-tracts route returns.
         supabase.from("census_tracts_map").select("geoid", { count: "exact", head: true }),
+        supabase
+          .from("engagement_items")
+          .select("id, engagement_campaigns!inner(id)", { count: "exact", head: true })
+          .eq("engagement_campaigns.workspace_id", workspaceId)
+          .eq("status", "approved")
+          .not("latitude", "is", null)
+          .not("longitude", "is", null),
       ]);
 
     const counts: MapFeatureCounts = {
@@ -76,6 +92,7 @@ export async function GET(request: NextRequest) {
       corridors: corridorsResult.error ? null : corridorsResult.count ?? 0,
       rtp: rtpResult.error ? null : rtpResult.count ?? 0,
       equity: equityResult.error ? null : equityResult.count ?? 0,
+      engagement: engagementResult.error ? null : engagementResult.count ?? 0,
     };
 
     if (
@@ -83,7 +100,8 @@ export async function GET(request: NextRequest) {
       aerialResult.error ||
       corridorsResult.error ||
       rtpResult.error ||
-      equityResult.error
+      equityResult.error ||
+      engagementResult.error
     ) {
       audit.warn("map_feature_counts_partial_failure", {
         workspaceId,
@@ -92,6 +110,7 @@ export async function GET(request: NextRequest) {
         corridorsError: corridorsResult.error?.message ?? null,
         rtpError: rtpResult.error?.message ?? null,
         equityError: equityResult.error?.message ?? null,
+        engagementError: engagementResult.error?.message ?? null,
       });
     }
 

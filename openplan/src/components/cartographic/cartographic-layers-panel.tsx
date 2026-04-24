@@ -87,5 +87,6 @@ function chipForLayer(key: LayerKey, counts: MapFeatureCounts | null): string | 
   if (key === "corridors") return formatChip(counts.corridors);
   if (key === "rtp") return formatChip(counts.rtp);
   if (key === "equity") return formatChip(counts.equity);
+  if (key === "engagement") return formatChip(counts.engagement);
   return undefined;
 }

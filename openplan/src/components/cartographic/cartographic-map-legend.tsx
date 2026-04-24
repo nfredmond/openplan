@@ -9,12 +9,23 @@ type RampStop = { color: string; label: string };
 type RampEntry = { kind: "ramp"; label: string; stops: RampStop[] };
 type LegendEntry = SwatchEntry | RampEntry;
 
-type LegendLayerKey = Extract<LayerKey, "projects" | "aerial" | "corridors" | "rtp" | "equity">;
+type LegendLayerKey = Extract<
+  LayerKey,
+  "projects" | "aerial" | "corridors" | "rtp" | "equity" | "engagement"
+>;
 
-const LEGEND_ORDER: LegendLayerKey[] = ["projects", "aerial", "corridors", "rtp", "equity"];
+const LEGEND_ORDER: LegendLayerKey[] = [
+  "projects",
+  "engagement",
+  "aerial",
+  "corridors",
+  "rtp",
+  "equity",
+];
 
 const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
   projects: { kind: "swatch", color: "#1f6b5e", label: "Projects" },
+  engagement: { kind: "swatch", color: "#c24a7f", label: "Community input" },
   aerial: { kind: "swatch", color: "#e45635", label: "Aerial AOIs" },
   corridors: {
     kind: "ramp",

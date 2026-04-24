@@ -27,12 +27,14 @@ let aerialChain: ReturnType<typeof buildQueryChain>;
 let corridorsChain: ReturnType<typeof buildQueryChain>;
 let rtpChain: ReturnType<typeof buildQueryChain>;
 let equityChain: ReturnType<typeof buildQueryChain>;
+let engagementChain: ReturnType<typeof buildQueryChain>;
 
 const projectsSelectMock = vi.fn(() => projectsChain);
 const aerialSelectMock = vi.fn(() => aerialChain);
 const corridorsSelectMock = vi.fn(() => corridorsChain);
 const rtpSelectMock = vi.fn(() => rtpChain);
 const equitySelectMock = vi.fn(() => equityChain);
+const engagementSelectMock = vi.fn(() => engagementChain);
 
 const mockAudit = {
   info: vi.fn(),
@@ -46,6 +48,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_corridors") return { select: corridorsSelectMock };
   if (table === "rtp_cycles") return { select: rtpSelectMock };
   if (table === "census_tracts_map") return { select: equitySelectMock };
+  if (table === "engagement_items") return { select: engagementSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -87,6 +90,7 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: 0, error: null });
     rtpChain = buildQueryChain({ count: 0, error: null });
     equityChain = buildQueryChain({ count: 0, error: null });
+    engagementChain = buildQueryChain({ count: 0, error: null });
   });
 
   it("returns 401 when the request is anonymous", async () => {
@@ -106,15 +110,23 @@ describe("GET /api/map-features/counts", () => {
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 0 });
+    expect(payload).toEqual({
+      projects: 0,
+      aerial: 0,
+      corridors: 0,
+      rtp: 0,
+      equity: 0,
+      engagement: 0,
+    });
     expect(projectsSelectMock).not.toHaveBeenCalled();
     expect(aerialSelectMock).not.toHaveBeenCalled();
     expect(corridorsSelectMock).not.toHaveBeenCalled();
     expect(rtpSelectMock).not.toHaveBeenCalled();
     expect(equitySelectMock).not.toHaveBeenCalled();
+    expect(engagementSelectMock).not.toHaveBeenCalled();
   });
 
-  it("returns live counts across all five layers when queries succeed", async () => {
+  it("returns live counts across all six layers when queries succeed", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "editor" },
@@ -125,22 +137,41 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: 2, error: null });
     rtpChain = buildQueryChain({ count: 1, error: null });
     equityChain = buildQueryChain({ count: 4, error: null });
+    engagementChain = buildQueryChain({ count: 5, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2, rtp: 1, equity: 4 });
+    expect(payload).toEqual({
+      projects: 1,
+      aerial: 3,
+      corridors: 2,
+      rtp: 1,
+      equity: 4,
+      engagement: 5,
+    });
     expect(projectsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(aerialSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(corridorsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(rtpSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(equitySelectMock).toHaveBeenCalledWith("geoid", { count: "exact", head: true });
+    expect(engagementSelectMock).toHaveBeenCalledWith(
+      "id, engagement_campaigns!inner(id)",
+      { count: "exact", head: true }
+    );
+    expect(engagementChain.eq).toHaveBeenCalledWith(
+      "engagement_campaigns.workspace_id",
+      WORKSPACE_ID
+    );
+    expect(engagementChain.eq).toHaveBeenCalledWith("status", "approved");
+    expect(engagementChain.not).toHaveBeenCalledWith("latitude", "is", null);
+    expect(engagementChain.not).toHaveBeenCalledWith("longitude", "is", null);
     expect(mockAudit.info).toHaveBeenCalledWith(
       "map_feature_counts_loaded",
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
-        counts: { projects: 1, aerial: 3, corridors: 2, rtp: 1, equity: 4 },
+        counts: { projects: 1, aerial: 3, corridors: 2, rtp: 1, equity: 4, engagement: 5 },
       })
     );
   });
@@ -156,12 +187,20 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: 2, error: null });
     rtpChain = buildQueryChain({ count: 1, error: null });
     equityChain = buildQueryChain({ count: 4, error: null });
+    engagementChain = buildQueryChain({ count: 5, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: null, corridors: 2, rtp: 1, equity: 4 });
+    expect(payload).toEqual({
+      projects: 1,
+      aerial: null,
+      corridors: 2,
+      rtp: 1,
+      equity: 4,
+      engagement: 5,
+    });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
       expect.objectContaining({
@@ -171,6 +210,7 @@ describe("GET /api/map-features/counts", () => {
         corridorsError: null,
         rtpError: null,
         equityError: null,
+        engagementError: null,
       })
     );
   });
@@ -186,12 +226,20 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: 2, error: null });
     rtpChain = buildQueryChain({ count: null, error: { message: "no anchor column", code: "42703" } });
     equityChain = buildQueryChain({ count: 4, error: null });
+    engagementChain = buildQueryChain({ count: 5, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2, rtp: null, equity: 4 });
+    expect(payload).toEqual({
+      projects: 1,
+      aerial: 3,
+      corridors: 2,
+      rtp: null,
+      equity: 4,
+      engagement: 5,
+    });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
       expect.objectContaining({
@@ -201,6 +249,7 @@ describe("GET /api/map-features/counts", () => {
         projectsError: null,
         corridorsError: null,
         equityError: null,
+        engagementError: null,
       })
     );
   });
@@ -216,12 +265,20 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: 2, error: null });
     rtpChain = buildQueryChain({ count: 1, error: null });
     equityChain = buildQueryChain({ count: null, error: { message: "view missing", code: "42P01" } });
+    engagementChain = buildQueryChain({ count: 5, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 1, aerial: 3, corridors: 2, rtp: 1, equity: null });
+    expect(payload).toEqual({
+      projects: 1,
+      aerial: 3,
+      corridors: 2,
+      rtp: 1,
+      equity: null,
+      engagement: 5,
+    });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
       expect.objectContaining({
@@ -231,6 +288,49 @@ describe("GET /api/map-features/counts", () => {
         aerialError: null,
         corridorsError: null,
         rtpError: null,
+        engagementError: null,
+      })
+    );
+  });
+
+  it("returns null for engagement and logs a partial-failure warning when engagement count fails", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "editor" },
+      workspace: { id: WORKSPACE_ID, name: "NCTC demo" },
+    });
+    projectsChain = buildQueryChain({ count: 1, error: null });
+    aerialChain = buildQueryChain({ count: 3, error: null });
+    corridorsChain = buildQueryChain({ count: 2, error: null });
+    rtpChain = buildQueryChain({ count: 1, error: null });
+    equityChain = buildQueryChain({ count: 4, error: null });
+    engagementChain = buildQueryChain({
+      count: null,
+      error: { message: "engagement join failed", code: "42703" },
+    });
+
+    const response = await getCounts(bareRequest());
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload).toEqual({
+      projects: 1,
+      aerial: 3,
+      corridors: 2,
+      rtp: 1,
+      equity: 4,
+      engagement: null,
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "map_feature_counts_partial_failure",
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        engagementError: "engagement join failed",
+        projectsError: null,
+        aerialError: null,
+        corridorsError: null,
+        rtpError: null,
+        equityError: null,
       })
     );
   });
@@ -246,12 +346,20 @@ describe("GET /api/map-features/counts", () => {
     corridorsChain = buildQueryChain({ count: null, error: null });
     rtpChain = buildQueryChain({ count: null, error: null });
     equityChain = buildQueryChain({ count: null, error: null });
+    engagementChain = buildQueryChain({ count: null, error: null });
 
     const response = await getCounts(bareRequest());
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 0 });
+    expect(payload).toEqual({
+      projects: 0,
+      aerial: 0,
+      corridors: 0,
+      rtp: 0,
+      equity: 0,
+      engagement: 0,
+    });
     expect(mockAudit.warn).not.toHaveBeenCalled();
   });
 });

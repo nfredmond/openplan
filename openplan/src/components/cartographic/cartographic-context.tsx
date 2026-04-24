@@ -29,7 +29,7 @@ const DEFAULT_LAYERS: Readonly<Record<LayerKey, boolean>> = Object.freeze({
   projects: true,
   rtp: true,
   corridors: true,
-  engagement: false,
+  engagement: true,
   aerial: true,
   transit: false,
   crashes: false,

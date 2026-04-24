@@ -11,6 +11,7 @@ import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
 import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature-to-selection";
 import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
+import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-item-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
@@ -42,6 +43,27 @@ const RTP_CYCLES_CIRCLE_LAYER_ID = "cartographic-rtp-cycles-circle";
 const CENSUS_TRACTS_SOURCE_ID = "cartographic-census-tracts";
 const CENSUS_TRACTS_FILL_LAYER_ID = "cartographic-census-tracts-fill";
 const CENSUS_TRACTS_OUTLINE_LAYER_ID = "cartographic-census-tracts-outline";
+
+const ENGAGEMENT_SOURCE_ID = "cartographic-engagement-items";
+const ENGAGEMENT_CIRCLE_LAYER_ID = "cartographic-engagement-items-layer";
+
+const KNOWN_SOURCES = [
+  AOI_SOURCE_ID,
+  PROJECTS_SOURCE_ID,
+  CORRIDORS_SOURCE_ID,
+  RTP_CYCLES_SOURCE_ID,
+  CENSUS_TRACTS_SOURCE_ID,
+  ENGAGEMENT_SOURCE_ID,
+] as const;
+
+const FEATURE_LAYERS = [
+  AOI_FILL_LAYER_ID,
+  PROJECTS_CIRCLE_LAYER_ID,
+  CORRIDORS_LINE_LAYER_ID,
+  RTP_CYCLES_CIRCLE_LAYER_ID,
+  CENSUS_TRACTS_FILL_LAYER_ID,
+  ENGAGEMENT_CIRCLE_LAYER_ID,
+] as const;
 
 // Sequential teal ramp for the equity choropleth, painted on
 // `pctZeroVehicle`. Bins mirror the legend entry so the visual key lines
@@ -92,6 +114,7 @@ type ProjectFeatureCollection = MissionAoiFeatureCollection;
 type CorridorFeatureCollection = MissionAoiFeatureCollection;
 type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
 type CensusTractFeatureCollection = MissionAoiFeatureCollection;
+type EngagementFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -109,6 +132,8 @@ export function CartographicMapBackdrop() {
   const [rtpCycles, setRtpCycles] = useState<RtpCycleFeatureCollection | null>(null);
   const [censusTracts, setCensusTracts] =
     useState<CensusTractFeatureCollection | null>(null);
+  const [engagementItems, setEngagementItems] =
+    useState<EngagementFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
@@ -350,6 +375,39 @@ export function CartographicMapBackdrop() {
     return () => {
       cancelled = true;
     };
+  }, [suppressed]);
+
+  // Same pattern for approved engagement items — low-weight point features
+  // that keep community input visible without overwhelming heavier geometry.
+  useEffect(() => {
+    if (suppressed) return;
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/engagement", {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] engagement fetch returned ${response.status}`,
+            );
+          }
+          return;
+        }
+        const payload = (await response.json()) as EngagementFeatureCollection;
+        if (controller.signal.aborted) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setEngagementItems(payload);
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") return;
+        console.warn("[cartographic-backdrop] engagement fetch failed", error);
+      }
+    })();
+    return () => controller.abort();
   }, [suppressed]);
 
   // Paint AOIs onto the map once both the map and the data are ready.
@@ -614,6 +672,7 @@ export function CartographicMapBackdrop() {
         PROJECTS_CIRCLE_LAYER_ID,
         CORRIDORS_LINE_LAYER_ID,
         RTP_CYCLES_CIRCLE_LAYER_ID,
+        ENGAGEMENT_CIRCLE_LAYER_ID,
       ].find((id) => map.getLayer(id));
 
       if (!map.getLayer(CENSUS_TRACTS_FILL_LAYER_ID)) {
@@ -679,6 +738,64 @@ export function CartographicMapBackdrop() {
       map.once("style.load", paint);
     }
   }, [ready, censusTracts, resolvedTheme]);
+
+  // Paint approved engagement points above the equity choropleth but below
+  // primary project/RTP pins when those layers are present.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !engagementItems) return;
+
+    const paint = () => {
+      if (!map.getSource(ENGAGEMENT_SOURCE_ID)) {
+        map.addSource(ENGAGEMENT_SOURCE_ID, {
+          type: "geojson",
+          data: engagementItems as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(ENGAGEMENT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(engagementItems as unknown as GeoJSON.FeatureCollection);
+      }
+
+      const beforeId = [
+        PROJECTS_CIRCLE_LAYER_ID,
+        RTP_CYCLES_CIRCLE_LAYER_ID,
+      ].find((id) => map.getLayer(id));
+
+      if (!map.getLayer(ENGAGEMENT_CIRCLE_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: ENGAGEMENT_CIRCLE_LAYER_ID,
+            type: "circle",
+            source: ENGAGEMENT_SOURCE_ID,
+            paint: {
+              "circle-color": "#c24a7f",
+              "circle-radius": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                8,
+                5,
+              ],
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                2.25,
+                1.25,
+              ],
+              "circle-opacity": 0.9,
+            },
+          },
+          beforeId,
+        );
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, engagementItems, resolvedTheme]);
 
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
@@ -754,6 +871,20 @@ export function CartographicMapBackdrop() {
       }
     }
   }, [layers.equity, ready, censusTracts]);
+
+  // Honor the layers.engagement toggle.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.engagement ? "visible" : "none";
+    if (map.getLayer(ENGAGEMENT_CIRCLE_LAYER_ID)) {
+      try {
+        map.setLayoutProperty(ENGAGEMENT_CIRCLE_LAYER_ID, "visibility", visibility);
+      } catch {
+        // no-op: layers.engagement toggle is best-effort
+      }
+    }
+  }, [layers.engagement, ready, engagementItems]);
 
   // Click + hover handlers on the AOI fill layer. Handlers are registered on
   // the map once ready and torn down on unmount. They survive style swaps
@@ -862,13 +993,18 @@ export function CartographicMapBackdrop() {
       }
     };
 
-    const FEATURE_LAYERS = [
-      AOI_FILL_LAYER_ID,
-      PROJECTS_CIRCLE_LAYER_ID,
-      CORRIDORS_LINE_LAYER_ID,
-      RTP_CYCLES_CIRCLE_LAYER_ID,
-      CENSUS_TRACTS_FILL_LAYER_ID,
-    ];
+    const onEngagementClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = engagementItemFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: ENGAGEMENT_SOURCE_ID,
+      });
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
+    };
 
     const onBackgroundClick = (e: mapboxgl.MapMouseEvent) => {
       const renderedLayers = FEATURE_LAYERS.filter((layerId) => map.getLayer(layerId));
@@ -898,6 +1034,9 @@ export function CartographicMapBackdrop() {
     map.on("click", CENSUS_TRACTS_FILL_LAYER_ID, onTractClick);
     map.on("mouseenter", CENSUS_TRACTS_FILL_LAYER_ID, onMouseEnter);
     map.on("mouseleave", CENSUS_TRACTS_FILL_LAYER_ID, onMouseLeave);
+    map.on("click", ENGAGEMENT_CIRCLE_LAYER_ID, onEngagementClick);
+    map.on("mouseenter", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseLeave);
     map.on("click", onBackgroundClick);
 
     return () => {
@@ -916,6 +1055,9 @@ export function CartographicMapBackdrop() {
       map.off("click", CENSUS_TRACTS_FILL_LAYER_ID, onTractClick);
       map.off("mouseenter", CENSUS_TRACTS_FILL_LAYER_ID, onMouseEnter);
       map.off("mouseleave", CENSUS_TRACTS_FILL_LAYER_ID, onMouseLeave);
+      map.off("click", ENGAGEMENT_CIRCLE_LAYER_ID, onEngagementClick);
+      map.off("mouseenter", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseLeave);
       map.off("click", onBackgroundClick);
     };
   }, [ready, setSelection, clearSelection]);
@@ -929,14 +1071,6 @@ export function CartographicMapBackdrop() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-
-    const KNOWN_SOURCES = [
-      AOI_SOURCE_ID,
-      PROJECTS_SOURCE_ID,
-      CORRIDORS_SOURCE_ID,
-      RTP_CYCLES_SOURCE_ID,
-      CENSUS_TRACTS_SOURCE_ID,
-    ] as const;
 
     const apply = () => {
       for (const sourceId of KNOWN_SOURCES) {
@@ -965,7 +1099,7 @@ export function CartographicMapBackdrop() {
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles, censusTracts]);
+  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles, censusTracts, engagementItems]);
 
   if (suppressed) return null;
 
