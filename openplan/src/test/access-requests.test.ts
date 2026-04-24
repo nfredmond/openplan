@@ -12,8 +12,10 @@ import {
   canReviewAccessRequests,
   evaluateAccessRequestSafety,
   getAccessRequestTransitionOptions,
+  loadRecentAccessRequestsForReview,
   normalizeAccessRequestEmail,
   parseAccessRequestReviewerEmails,
+  type AccessRequestReviewClient,
 } from "@/lib/access-requests";
 
 describe("access request helpers", () => {
@@ -130,5 +132,69 @@ describe("access request helpers", () => {
     expect(getAccessRequestTransitionOptions("invited")).toEqual(["deferred", "declined"]);
     expect(getAccessRequestTransitionOptions("declined")).toEqual([]);
     expect(getAccessRequestTransitionOptions("provisioned")).toEqual([]);
+  });
+
+  it("attaches compact review events to recent access request rows", async () => {
+    const requestLimitMock = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          agency_name: "Nevada County Transportation Commission",
+          contact_name: "Nat Ford",
+          contact_email: "nat@example.gov",
+          role_title: "Planning lead",
+          region: "Nevada County",
+          use_case: "Screen rural transit corridors.",
+          expected_workspace_name: "NCTC Pilot",
+          status: "contacted",
+          source_path: "/request-access",
+          created_at: "2026-04-24T12:00:00.000Z",
+          reviewed_at: "2026-04-24T12:05:00.000Z",
+          provisioned_workspace_id: null,
+        },
+      ],
+      error: null,
+    });
+    const requestOrderMock = vi.fn(() => ({ limit: requestLimitMock }));
+    const requestSelectMock = vi.fn(() => ({ order: requestOrderMock }));
+
+    const eventLimitMock = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          access_request_id: "44444444-4444-4444-8444-444444444444",
+          previous_status: "reviewing",
+          status: "contacted",
+          created_at: "2026-04-24T12:05:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    const eventOrderMock = vi.fn(() => ({ limit: eventLimitMock }));
+    const eventInMock = vi.fn(() => ({ order: eventOrderMock }));
+    const eventSelectMock = vi.fn(() => ({ in: eventInMock }));
+
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table === "access_requests") return { select: requestSelectMock };
+        if (table === "access_request_review_events") return { select: eventSelectMock };
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    };
+
+    const result = await loadRecentAccessRequestsForReview(client as unknown as AccessRequestReviewClient, 1);
+
+    expect(result.error).toBeNull();
+    expect(result.requests[0]?.review_events).toEqual([
+      {
+        id: "55555555-5555-4555-8555-555555555555",
+        access_request_id: "44444444-4444-4444-8444-444444444444",
+        previous_status: "reviewing",
+        status: "contacted",
+        created_at: "2026-04-24T12:05:00.000Z",
+      },
+    ]);
+    expect(eventInMock).toHaveBeenCalledWith("access_request_id", ["44444444-4444-4444-8444-444444444444"]);
+    expect(eventLimitMock).toHaveBeenCalledWith(8);
   });
 });

@@ -10,6 +10,10 @@ const hardeningMigrationSql = readFileSync(
   join(process.cwd(), "supabase/migrations/20260424000075_access_request_intake_hardening.sql"),
   "utf8",
 );
+const reviewEventsMigrationSql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260424000076_access_request_review_events.sql"),
+  "utf8",
+);
 
 describe("access requests migration", () => {
   it("creates a service-role-only intake table with contact fields", () => {
@@ -45,5 +49,23 @@ describe("access requests migration", () => {
     expect(hardeningMigrationSql).not.toMatch(/CREATE POLICY/i);
     expect(hardeningMigrationSql).not.toMatch(/GRANT/i);
     expect(hardeningMigrationSql).not.toMatch(/DROP TABLE/i);
+  });
+
+  it("adds a service-role-only review event trail and atomic triage recorder", () => {
+    expect(reviewEventsMigrationSql).toMatch(/CREATE TABLE IF NOT EXISTS public\.access_request_review_events/i);
+    expect(reviewEventsMigrationSql).toMatch(/access_request_id UUID NOT NULL REFERENCES public\.access_requests\(id\)/i);
+    expect(reviewEventsMigrationSql).toMatch(/previous_status TEXT NOT NULL/i);
+    expect(reviewEventsMigrationSql).toMatch(/status TEXT NOT NULL/i);
+    expect(reviewEventsMigrationSql).toMatch(/ALTER TABLE public\.access_request_review_events ENABLE ROW LEVEL SECURITY/i);
+    expect(reviewEventsMigrationSql).toMatch(
+      /REVOKE ALL ON TABLE public\.access_request_review_events FROM PUBLIC, anon, authenticated/i,
+    );
+    expect(reviewEventsMigrationSql).toMatch(/GRANT ALL ON TABLE public\.access_request_review_events TO service_role/i);
+    expect(reviewEventsMigrationSql).not.toMatch(/CREATE POLICY .*access_request_review_events/i);
+    expect(reviewEventsMigrationSql).toMatch(/CREATE OR REPLACE FUNCTION public\.record_access_request_triage/i);
+    expect(reviewEventsMigrationSql).toMatch(/SECURITY INVOKER/i);
+    expect(reviewEventsMigrationSql).toMatch(/GRANT EXECUTE ON FUNCTION public\.record_access_request_triage/i);
+    expect(reviewEventsMigrationSql).not.toMatch(/SECURITY DEFINER/i);
+    expect(reviewEventsMigrationSql).not.toMatch(/DROP TABLE/i);
   });
 });

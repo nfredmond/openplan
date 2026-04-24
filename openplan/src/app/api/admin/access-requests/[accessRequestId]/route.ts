@@ -30,6 +30,30 @@ type RouteContext = {
   params: Promise<{ accessRequestId: string }>;
 };
 
+type AccessRequestTriageRpcRow = {
+  id: string;
+  status: AccessRequestStatus;
+  reviewed_at: string;
+  review_event_id: string;
+};
+
+type AccessRequestTriageRpcClient = {
+  rpc: (
+    functionName: "record_access_request_triage",
+    args: {
+      p_access_request_id: string;
+      p_previous_status: AccessRequestStatus;
+      p_status: AccessRequestStatus;
+      p_reviewer_user_id: string;
+    },
+  ) => {
+    single: () => Promise<{
+      data: AccessRequestTriageRpcRow | null;
+      error: { message?: string; code?: string | null } | null;
+    }>;
+  };
+};
+
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("admin.access_requests.triage", request);
   const routeParams = await context.params;
@@ -113,17 +137,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const reviewedAt = new Date().toISOString();
-  const { data: updatedRequest, error: updateError } = await serviceSupabase
-    .from("access_requests")
-    .update({
-      status: targetStatus,
-      reviewed_by_user_id: user.id,
-      reviewed_at: reviewedAt,
+  const { data: updatedRequest, error: updateError } = await (
+    serviceSupabase as unknown as AccessRequestTriageRpcClient
+  )
+    .rpc("record_access_request_triage", {
+      p_access_request_id: currentRequest.id,
+      p_previous_status: currentStatus,
+      p_status: targetStatus,
+      p_reviewer_user_id: user.id,
     })
-    .eq("id", currentRequest.id)
-    .select("id, status, reviewed_at")
     .single();
+
+  if (updateError?.code === "40001") {
+    audit.warn("access_request_triage_concurrent_status_change", {
+      accessRequestId: currentRequest.id,
+      currentStatus,
+      targetStatus,
+    });
+    return NextResponse.json(
+      {
+        error: "Access request status changed before the review event could be recorded",
+      },
+      { status: 409 },
+    );
+  }
 
   if (updateError || !updatedRequest) {
     audit.error("access_request_triage_update_failed", {
@@ -139,6 +176,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     previousStatus: currentStatus,
     status: updatedRequest.status,
     reviewedByUserId: user.id,
+    reviewEventId: updatedRequest.review_event_id,
   });
 
   return NextResponse.json({
@@ -147,6 +185,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       id: updatedRequest.id,
       status: updatedRequest.status,
       reviewedAt: updatedRequest.reviewed_at,
+      reviewEventId: updatedRequest.review_event_id,
     },
   });
 }

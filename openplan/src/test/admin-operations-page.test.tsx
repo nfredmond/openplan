@@ -15,6 +15,10 @@ const actionSelectMock = vi.fn(() => ({ eq: actionEqMock }));
 const accessLimitMock = vi.fn();
 const accessOrderMock = vi.fn(() => ({ limit: accessLimitMock }));
 const accessSelectMock = vi.fn(() => ({ order: accessOrderMock }));
+const accessEventLimitMock = vi.fn();
+const accessEventOrderMock = vi.fn(() => ({ limit: accessEventLimitMock }));
+const accessEventInMock = vi.fn(() => ({ order: accessEventOrderMock }));
+const accessEventSelectMock = vi.fn(() => ({ in: accessEventInMock }));
 
 const fromMock = vi.fn((table: string) => {
   if (table === "assistant_action_executions") {
@@ -27,6 +31,9 @@ const fromMock = vi.fn((table: string) => {
 const serviceFromMock = vi.fn((table: string) => {
   if (table === "access_requests") {
     return { select: accessSelectMock };
+  }
+  if (table === "access_request_review_events") {
+    return { select: accessEventSelectMock };
   }
 
   throw new Error(`Unexpected service table: ${table}`);
@@ -110,6 +117,10 @@ describe("AdminOperationsPage", () => {
       data: [],
       error: null,
     });
+    accessEventLimitMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
   });
 
   it("surfaces operational warning events and log queries", async () => {
@@ -161,7 +172,20 @@ describe("AdminOperationsPage", () => {
           status: "new",
           source_path: "/request-access",
           created_at: "2026-04-24T12:00:00.000Z",
+          reviewed_at: null,
           provisioned_workspace_id: null,
+        },
+      ],
+      error: null,
+    });
+    accessEventLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          access_request_id: "44444444-4444-4444-8444-444444444444",
+          previous_status: "new",
+          status: "reviewing",
+          created_at: "2026-04-24T12:05:00.000Z",
         },
       ],
       error: null,
@@ -176,9 +200,15 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByRole("button", { name: /Mark reviewing/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Defer/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Decline/i })).toBeInTheDocument();
+    expect(screen.getByText("Review trail")).toBeInTheDocument();
+    expect(screen.getByText("Reviewing")).toBeInTheDocument();
     expect(serviceFromMock).toHaveBeenCalledWith("access_requests");
+    expect(serviceFromMock).toHaveBeenCalledWith("access_request_review_events");
     expect(accessOrderMock).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(accessLimitMock).toHaveBeenCalledWith(8);
+    expect(accessEventInMock).toHaveBeenCalledWith("access_request_id", [
+      "44444444-4444-4444-8444-444444444444",
+    ]);
   });
 
   it("keeps the activity lane explicit when no action executions exist", async () => {

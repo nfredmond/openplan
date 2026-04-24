@@ -9,14 +9,12 @@ const lookupMaybeSingleMock = vi.fn();
 const lookupEqMock = vi.fn(() => ({ maybeSingle: lookupMaybeSingleMock }));
 const lookupSelectMock = vi.fn(() => ({ eq: lookupEqMock }));
 
-const updateSingleMock = vi.fn();
-const updateSelectMock = vi.fn(() => ({ single: updateSingleMock }));
-const updateEqMock = vi.fn(() => ({ select: updateSelectMock }));
-const updateMock = vi.fn(() => ({ eq: updateEqMock }));
+const rpcSingleMock = vi.fn();
+const rpcMock = vi.fn(() => ({ single: rpcSingleMock }));
 
 const serviceFromMock = vi.fn((table: string) => {
   if (table === "access_requests") {
-    return { select: lookupSelectMock, update: updateMock };
+    return { select: lookupSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -71,7 +69,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
       },
     });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock } });
-    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
+    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock, rpc: rpcMock });
     lookupMaybeSingleMock.mockResolvedValue({
       data: {
         id: "44444444-4444-4444-8444-444444444444",
@@ -79,11 +77,12 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
       },
       error: null,
     });
-    updateSingleMock.mockResolvedValue({
+    rpcSingleMock.mockResolvedValue({
       data: {
         id: "44444444-4444-4444-8444-444444444444",
         status: "reviewing",
         reviewed_at: "2026-04-24T12:00:00.000Z",
+        review_event_id: "55555555-5555-4555-8555-555555555555",
       },
       error: null,
     });
@@ -100,16 +99,16 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
         id: "44444444-4444-4444-8444-444444444444",
         status: "reviewing",
         reviewedAt: "2026-04-24T12:00:00.000Z",
+        reviewEventId: "55555555-5555-4555-8555-555555555555",
       },
     });
     expect(lookupSelectMock).toHaveBeenCalledWith("id, status");
-    expect(updateMock).toHaveBeenCalledWith({
-      status: "reviewing",
-      reviewed_by_user_id: "user-1",
-      reviewed_at: expect.any(String),
+    expect(rpcMock).toHaveBeenCalledWith("record_access_request_triage", {
+      p_access_request_id: "44444444-4444-4444-8444-444444444444",
+      p_previous_status: "new",
+      p_status: "reviewing",
+      p_reviewer_user_id: "user-1",
     });
-    expect(updateEqMock).toHaveBeenCalledWith("id", "44444444-4444-4444-8444-444444444444");
-    expect(updateSelectMock).toHaveBeenCalledWith("id, status, reviewed_at");
     expect(JSON.stringify(json)).not.toContain("nat@example.gov");
   });
 
@@ -120,7 +119,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
 
     expect(response.status).toBe(401);
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("rejects non-allowlisted users before service-role access", async () => {
@@ -132,7 +131,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
 
     expect(response.status).toBe(403);
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("rejects invalid ids and unsupported statuses", async () => {
@@ -141,7 +140,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
 
     const invalidStatusResponse = await POST(triageRequest({ status: "provisioned" }), routeContext());
     expect(invalidStatusResponse.status).toBe(400);
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("returns 404 for missing access request rows", async () => {
@@ -150,7 +149,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
     const response = await POST(triageRequest({ status: "reviewing" }), routeContext());
 
     expect(response.status).toBe(404);
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("rejects invalid status transitions", async () => {
@@ -173,11 +172,11 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
         allowedStatuses: ["invited", "deferred", "declined"],
       }),
     );
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("returns a server error when the update fails", async () => {
-    updateSingleMock.mockResolvedValueOnce({
+    rpcSingleMock.mockResolvedValueOnce({
       data: null,
       error: {
         code: "XX000",
@@ -190,5 +189,21 @@ describe("POST /api/admin/access-requests/[accessRequestId]", () => {
     expect(response.status).toBe(500);
     const json = await response.json();
     expect(json.error).toBe("Failed to update access request status");
+  });
+
+  it("returns a conflict when the status changes before the review event is recorded", async () => {
+    rpcSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: "40001",
+        message: "Access request status changed before triage could be recorded",
+      },
+    });
+
+    const response = await POST(triageRequest({ status: "reviewing" }), routeContext());
+
+    expect(response.status).toBe(409);
+    const json = await response.json();
+    expect(json.error).toBe("Access request status changed before the review event could be recorded");
   });
 });

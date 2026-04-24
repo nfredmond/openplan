@@ -31,7 +31,19 @@ export type AccessRequestReviewRow = {
   status: AccessRequestStatus;
   source_path: string | null;
   created_at: string | null;
+  reviewed_at: string | null;
   provisioned_workspace_id: string | null;
+  review_events: AccessRequestReviewEventRow[];
+};
+
+export type AccessRequestReviewRequestRow = Omit<AccessRequestReviewRow, "review_events">;
+
+export type AccessRequestReviewEventRow = {
+  id: string;
+  access_request_id: string;
+  previous_status: AccessRequestStatus;
+  status: AccessRequestStatus;
+  created_at: string | null;
 };
 
 export type AccessRequestSafetyInput = {
@@ -48,16 +60,34 @@ export type RecentAccessRequestSafetyRecord = {
 };
 
 export type AccessRequestReviewClient = {
-  from: (table: "access_requests") => {
+  from(table: "access_requests"): {
     select: (columns: string) => {
       order: (
         column: string,
         options: { ascending: boolean },
       ) => {
         limit: (count: number) => Promise<{
-          data: AccessRequestReviewRow[] | null;
+          data: AccessRequestReviewRequestRow[] | null;
           error: { message?: string; code?: string | null } | null;
         }>;
+      };
+    };
+  };
+  from(table: "access_request_review_events"): {
+    select: (columns: string) => {
+      in: (
+        column: string,
+        values: string[],
+      ) => {
+        order: (
+          column: string,
+          options: { ascending: boolean },
+        ) => {
+          limit: (count: number) => Promise<{
+            data: AccessRequestReviewEventRow[] | null;
+            error: { message?: string; code?: string | null } | null;
+          }>;
+        };
       };
     };
   };
@@ -96,10 +126,18 @@ export const ACCESS_REQUEST_REVIEW_SELECT = [
   "status",
   "source_path",
   "created_at",
+  "reviewed_at",
   "provisioned_workspace_id",
 ].join(", ");
 
 export const ACCESS_REQUEST_SAFETY_SELECT = ["id", "created_at", "metadata_json"].join(", ");
+export const ACCESS_REQUEST_REVIEW_EVENTS_SELECT = [
+  "id",
+  "access_request_id",
+  "previous_status",
+  "status",
+  "created_at",
+].join(", ");
 
 function firstHeader(request: NextRequest, keys: string[]): string | null {
   for (const key of keys) {
@@ -237,16 +275,51 @@ export function evaluateAccessRequestSafety(input: {
   };
 }
 
-export async function loadRecentAccessRequestsForReview(client: AccessRequestReviewClient) {
+function attachReviewEvents(
+  requests: AccessRequestReviewRequestRow[],
+  events: AccessRequestReviewEventRow[],
+): AccessRequestReviewRow[] {
+  const eventsByRequest = new Map<string, AccessRequestReviewEventRow[]>();
+  for (const event of events) {
+    const existing = eventsByRequest.get(event.access_request_id) ?? [];
+    existing.push(event);
+    eventsByRequest.set(event.access_request_id, existing);
+  }
+
+  return requests.map((request) => ({
+    ...request,
+    review_events: eventsByRequest.get(request.id) ?? [],
+  }));
+}
+
+export async function loadRecentAccessRequestsForReview(client: AccessRequestReviewClient, limit = 8) {
   const { data, error } = await client
     .from("access_requests")
     .select(ACCESS_REQUEST_REVIEW_SELECT)
     .order("created_at", { ascending: false })
-    .limit(8);
+    .limit(limit);
+
+  const requests = data ?? [];
+  if (error || requests.length === 0) {
+    return {
+      requests: attachReviewEvents(requests, []),
+      error,
+    };
+  }
+
+  const { data: reviewEvents, error: reviewEventsError } = await client
+    .from("access_request_review_events")
+    .select(ACCESS_REQUEST_REVIEW_EVENTS_SELECT)
+    .in(
+      "access_request_id",
+      requests.map((request) => request.id),
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit * 8);
 
   return {
-    requests: data ?? [],
-    error,
+    requests: attachReviewEvents(requests, reviewEvents ?? []),
+    error: reviewEventsError,
   };
 }
 
