@@ -18,11 +18,13 @@ export function RtpRegistryPacketRowAction({
   reportId,
   packetAttention,
   needsFirstArtifact = false,
+  modelingCountyRunId,
 }: {
   cycleId: string;
   reportId: string | null;
   packetAttention: RtpPacketAttention;
   needsFirstArtifact?: boolean;
+  modelingCountyRunId?: string | null;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +58,7 @@ export function RtpRegistryPacketRowAction({
       if (packetAttention === "missing") {
         const createResult = await createRtpPacketRecord({
           rtpCycleId: cycleId,
+          modelingCountyRunId,
           generateAfterCreate: true,
         });
 

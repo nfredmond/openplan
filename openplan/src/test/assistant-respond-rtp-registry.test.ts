@@ -11,6 +11,7 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
       plan: "pilot",
       role: "owner",
     },
+    defaultModelingCountyRunId: null,
     counts: {
       cycles: 2,
       draftCycles: 1,

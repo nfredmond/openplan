@@ -25,6 +25,25 @@ vi.mock("@/lib/operations/workspace-summary", () => ({
 import { loadAssistantContext } from "@/lib/assistant/context";
 import { buildAssistantPreview } from "@/lib/assistant/respond";
 
+type ModelingClaimDecisionQueryStub = {
+  eq: () => ModelingClaimDecisionQueryStub;
+  not: () => ModelingClaimDecisionQueryStub;
+  order: () => { limit: () => Promise<{ data: Array<{ county_run_id: string }>; error: null }> };
+};
+
+function createModelingClaimDecisionsStub(countyRunId = "county-run-1") {
+  const limit = async () => ({ data: [{ county_run_id: countyRunId }], error: null });
+  const chain: ModelingClaimDecisionQueryStub = {
+    eq: () => chain,
+    not: () => chain,
+    order: () => ({ limit }),
+  };
+
+  return {
+    select: () => chain,
+  };
+}
+
 function createSupabaseStub() {
   const reportMaybeSingle = async () => ({
     data: {
@@ -272,6 +291,10 @@ function createRtpRegistrySupabaseStub() {
         };
       }
 
+      if (table === "modeling_claim_decisions") {
+        return createModelingClaimDecisionsStub();
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     },
   };
@@ -415,6 +438,10 @@ function createRtpCycleSupabaseStub() {
             };
           },
         };
+      }
+
+      if (table === "modeling_claim_decisions") {
+        return createModelingClaimDecisionsStub();
       }
 
       throw new Error(`Unexpected table: ${table}`);
@@ -612,6 +639,7 @@ describe("loadAssistantContext", () => {
 
     expect(context.counts.noPacketCount).toBe(0);
     expect(context.recommendedCycle?.packetFreshnessLabel).toBe("Packet current");
+    expect(context.defaultModelingCountyRunId).toBe("county-run-1");
 
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(
@@ -637,6 +665,7 @@ describe("loadAssistantContext", () => {
 
     expect(context.packetSummary.noPacketCount).toBe(0);
     expect(context.packetSummary.recommendedReport?.packetFreshness.label).toBe("Packet current");
+    expect(context.defaultModelingCountyRunId).toBe("county-run-1");
 
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(

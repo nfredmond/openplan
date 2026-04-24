@@ -35,6 +35,15 @@ const billingInvoicesSelectMock = vi.fn(() => ({ in: billingInvoicesInMock }));
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
 
+const modelingClaimLimitMock = vi.fn();
+const modelingClaimOrderMock = vi.fn(() => ({ limit: modelingClaimLimitMock }));
+const modelingClaimNotMock = vi.fn(() => ({ order: modelingClaimOrderMock }));
+const modelingClaimEqMock = vi.fn(() => ({
+  eq: modelingClaimEqMock,
+  not: modelingClaimNotMock,
+}));
+const modelingClaimSelectMock = vi.fn(() => ({ eq: modelingClaimEqMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "rtp_cycles") {
     return { select: rtpCyclesSelectMock };
@@ -59,6 +68,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_sections") {
     return { select: reportSectionsSelectMock };
+  }
+  if (table === "modeling_claim_decisions") {
+    return { select: modelingClaimSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -221,6 +233,11 @@ describe("RtpPage", () => {
 
     reportSectionsInMock.mockResolvedValue({
       data: [],
+      error: null,
+    });
+
+    modelingClaimLimitMock.mockResolvedValue({
+      data: [{ county_run_id: "county-run-1" }],
       error: null,
     });
 

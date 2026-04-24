@@ -598,6 +598,7 @@ export function RtpCycleRegistryTable({
                     reportId={cycle.packetReport?.id ?? null}
                     packetAttention={cycle.packetAttention}
                     needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
+                    modelingCountyRunId={cycle.modelingCountyRunId}
                   />
                 </div>
               </article>

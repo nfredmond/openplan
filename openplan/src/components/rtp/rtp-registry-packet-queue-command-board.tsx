@@ -13,6 +13,7 @@ export function RtpRegistryPacketQueueCommandBoard({
   refreshReportIds,
   resetCount,
   missingCount,
+  modelingCountyRunId,
 }: {
   resetCycleIds: string[];
   missingCycleIds: string[];
@@ -20,6 +21,7 @@ export function RtpRegistryPacketQueueCommandBoard({
   refreshReportIds: string[];
   resetCount: number;
   missingCount: number;
+  modelingCountyRunId?: string | null;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +50,7 @@ export function RtpRegistryPacketQueueCommandBoard({
       for (const cycleId of missingCycleIds) {
         const createResult = await createRtpPacketRecord({
           rtpCycleId: cycleId,
+          modelingCountyRunId,
         });
 
         createdReportCount += 1;
@@ -167,6 +170,11 @@ export function RtpRegistryPacketQueueCommandBoard({
             <li>3. Generate first artifacts for packet records that exist but have never rendered yet.</li>
             <li>4. Refresh packet artifacts whose source cycle changed after generation.</li>
           </ol>
+          {modelingCountyRunId ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              New packet records created from this queue will attach the current workspace assignment modeling evidence.
+            </p>
+          ) : null}
         </div>
 
         <Button type="button" onClick={handleClearQueue} disabled={isSubmitting || !hasActionableQueue}>

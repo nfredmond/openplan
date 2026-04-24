@@ -28,6 +28,7 @@ export async function generateReportArtifact(reportId: string): Promise<Generate
 export type CreateRtpPacketRecordOptions = {
   rtpCycleId: string;
   title?: string;
+  modelingCountyRunId?: string | null;
   generateAfterCreate?: boolean;
 };
 
@@ -39,6 +40,7 @@ export type CreateRtpPacketRecordResult = {
 export async function createRtpPacketRecord({
   rtpCycleId,
   title,
+  modelingCountyRunId,
   generateAfterCreate = false,
 }: CreateRtpPacketRecordOptions): Promise<CreateRtpPacketRecordResult> {
   const createResponse = await fetch("/api/reports", {
@@ -48,6 +50,7 @@ export async function createRtpPacketRecord({
       rtpCycleId,
       reportType: "board_packet",
       ...(title ? { title } : {}),
+      ...(modelingCountyRunId ? { modelingCountyRunId } : {}),
     }),
   });
 

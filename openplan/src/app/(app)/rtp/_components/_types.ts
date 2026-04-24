@@ -124,6 +124,7 @@ export type RtpRegistryCycle = {
   grantsFollowThrough: GrantsFollowThrough;
   readiness: RtpReadiness;
   workflow: RtpWorkflowSummary;
+  modelingCountyRunId: string | null;
   comparisonBackedProjectCount: number;
   staleModelingProjectCount: number;
 };

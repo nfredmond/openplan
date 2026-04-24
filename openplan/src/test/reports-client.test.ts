@@ -37,6 +37,7 @@ describe("reports client helpers", () => {
       createRtpPacketRecord({
         rtpCycleId: "cycle-1",
         title: "Nevada County Draft Packet",
+        modelingCountyRunId: "county-run-1",
         generateAfterCreate: true,
       })
     ).resolves.toEqual({ reportId: "report-1", warningCount: 1 });
@@ -48,6 +49,12 @@ describe("reports client helpers", () => {
         method: "POST",
       })
     );
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      rtpCycleId: "cycle-1",
+      reportType: "board_packet",
+      title: "Nevada County Draft Packet",
+      modelingCountyRunId: "county-run-1",
+    });
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/reports/report-1/generate",

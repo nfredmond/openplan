@@ -187,6 +187,7 @@ export type RtpRegistryAssistantContext = {
     plan: string | null;
     role: string | null;
   };
+  defaultModelingCountyRunId: string | null;
   counts: {
     cycles: number;
     draftCycles: number;
@@ -250,6 +251,7 @@ export type RtpAssistantContext = {
     plan: string | null;
     role: string | null;
   };
+  defaultModelingCountyRunId: string | null;
   rtpCycle: {
     id: string;
     title: string;
@@ -598,6 +600,26 @@ type WorkspaceEnvelope = {
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+}
+
+async function loadDefaultAssignmentModelingCountyRunId(
+  supabase: SupabaseLike,
+  workspaceId: string
+): Promise<string | null> {
+  const result = await supabase
+    .from("modeling_claim_decisions")
+    .select("county_run_id")
+    .eq("workspace_id", workspaceId)
+    .eq("track", "assignment")
+    .not("county_run_id", "is", null)
+    .order("decided_at", { ascending: false })
+    .limit(1);
+
+  if (looksLikePendingSchema(result.error?.message)) {
+    return null;
+  }
+
+  return ((result.data ?? []) as Array<{ county_run_id: string | null }>)[0]?.county_run_id ?? null;
 }
 
 async function requireWorkspaceEnvelope(
@@ -1246,12 +1268,15 @@ async function loadRtpRegistryContext(
     return null;
   }
 
-  const { data: cyclesData } = await supabase
-    .from("rtp_cycles")
-    .select("id, title, status, updated_at")
-    .eq("workspace_id", workspace.id)
-    .order("updated_at", { ascending: false })
-    .limit(200);
+  const [{ data: cyclesData }, defaultModelingCountyRunId] = await Promise.all([
+    supabase
+      .from("rtp_cycles")
+      .select("id, title, status, updated_at")
+      .eq("workspace_id", workspace.id)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id),
+  ]);
 
   const cycles = (cyclesData ?? []) as Array<{
     id: string;
@@ -1326,6 +1351,7 @@ async function loadRtpRegistryContext(
   return {
     kind: "rtp_registry",
     workspace,
+    defaultModelingCountyRunId,
     counts: {
       cycles: cycles.length,
       draftCycles: cycles.filter((cycle) => cycle.status === "draft").length,
@@ -1480,7 +1506,7 @@ async function loadRtpContext(
     return null;
   }
 
-  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult] = await Promise.all([
+  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult, defaultModelingCountyRunId] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
       .select("id, status")
@@ -1499,6 +1525,7 @@ async function loadRtpContext(
       .eq("rtp_cycle_id", cycle.id)
       .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
+    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id),
   ]);
 
   const chapters = looksLikePendingSchema(chaptersResult.error?.message)
@@ -1561,6 +1588,7 @@ async function loadRtpContext(
   return {
     kind: "rtp_cycle",
     workspace,
+    defaultModelingCountyRunId,
     rtpCycle: {
       id: cycle.id,
       title: cycle.title,

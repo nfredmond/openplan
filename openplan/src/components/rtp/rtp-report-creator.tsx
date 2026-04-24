@@ -11,10 +11,12 @@ export function RtpReportCreator({
   rtpCycleId,
   defaultTitle,
   cycleStatus,
+  modelingCountyRunId,
 }: {
   rtpCycleId: string;
   defaultTitle: string;
   cycleStatus: string | null;
+  modelingCountyRunId?: string | null;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +48,7 @@ export function RtpReportCreator({
       const result = await createRtpPacketRecord({
         rtpCycleId,
         title: defaultTitle,
+        modelingCountyRunId,
         generateAfterCreate: true,
       });
 
@@ -64,7 +67,10 @@ export function RtpReportCreator({
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
         {buttonLabel}
       </Button>
-      <p className="text-xs text-muted-foreground">{describeRtpPacketPresetStage(presetStage)} will be applied automatically based on the current RTP cycle phase, then the first packet artifact will be generated immediately.</p>
+      <p className="text-xs text-muted-foreground">
+        {describeRtpPacketPresetStage(presetStage)} will be applied automatically based on the current RTP cycle phase, then the first packet artifact will be generated immediately.
+        {modelingCountyRunId ? " Assignment modeling evidence will be attached to the packet record." : ""}
+      </p>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );

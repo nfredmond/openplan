@@ -167,6 +167,10 @@ type ReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
+type ModelingClaimDecisionDefaultRow = {
+  county_run_id: string | null;
+};
+
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
@@ -212,7 +216,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     notFound();
   }
 
-  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult] = await Promise.all([
+  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult, defaultModelingClaimResult] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
       .select("id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, content_markdown, updated_at")
@@ -235,7 +239,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .eq("rtp_cycle_id", cycle.id)
       .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
+    supabase
+      .from("modeling_claim_decisions")
+      .select("county_run_id")
+      .eq("workspace_id", membership.workspace_id)
+      .eq("track", "assignment")
+      .not("county_run_id", "is", null)
+      .order("decided_at", { ascending: false })
+      .limit(1),
   ]);
+  const defaultModelingCountyRunId = looksLikePendingSchema(defaultModelingClaimResult.error?.message)
+    ? null
+    : (((defaultModelingClaimResult.data ?? []) as ModelingClaimDecisionDefaultRow[])[0]?.county_run_id ?? null);
 
   const chapters = looksLikePendingSchema(chaptersResult.error?.message)
     ? RTP_CHAPTER_TEMPLATES.map((template) => ({
@@ -685,7 +700,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <RtpReportCreator rtpCycleId={cycle.id} defaultTitle={`${cycle.title} Board / Binder`} cycleStatus={cycle.status} />
+              <RtpReportCreator
+                rtpCycleId={cycle.id}
+                defaultTitle={`${cycle.title} Board / Binder`}
+                cycleStatus={cycle.status}
+                modelingCountyRunId={defaultModelingCountyRunId}
+              />
               <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
                 Open digital RTP document
               </Link>

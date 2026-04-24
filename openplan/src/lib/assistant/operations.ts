@@ -932,6 +932,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           executeAction: {
             kind: "create_rtp_packet_record",
             rtpCycleId: context.recommendedCycle.id,
+            modelingCountyRunId: context.defaultModelingCountyRunId,
             generateAfterCreate: true,
             postActionWorkflowId: "rtp-registry-release",
             postActionPrompt: "Which RTP packet is most ready for release review right now, and what should I verify before release?",
@@ -1046,6 +1047,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           executeAction: {
             kind: "create_rtp_packet_record",
             rtpCycleId: context.rtpCycle.id,
+            modelingCountyRunId: context.defaultModelingCountyRunId,
             generateAfterCreate: true,
             postActionWorkflowId: "rtp-packet-release",
             postActionPrompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",

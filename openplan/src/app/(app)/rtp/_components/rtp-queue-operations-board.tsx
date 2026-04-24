@@ -15,6 +15,7 @@ type Props = {
   refreshReportIds: string[];
   generateReportIds: string[];
   refreshOnlyReportIds: string[];
+  modelingCountyRunId: string | null;
 };
 
 export function RtpQueueOperationsBoard({
@@ -25,6 +26,7 @@ export function RtpQueueOperationsBoard({
   refreshReportIds,
   generateReportIds,
   refreshOnlyReportIds,
+  modelingCountyRunId,
 }: Props) {
   const showCommandBoard =
     packetAttentionCounts.reset > 0 ||
@@ -42,6 +44,7 @@ export function RtpQueueOperationsBoard({
           refreshReportIds={refreshReportIds}
           resetCount={packetAttentionCounts.reset}
           missingCount={packetAttentionCounts.missing}
+          modelingCountyRunId={modelingCountyRunId}
         />
       ) : null}
 

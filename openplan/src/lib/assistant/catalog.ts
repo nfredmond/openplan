@@ -43,6 +43,7 @@ export type AssistantQuickLinkExecuteAction =
   | {
       kind: "create_rtp_packet_record";
       rtpCycleId: string;
+      modelingCountyRunId?: string | null;
       generateAfterCreate?: boolean;
       postActionWorkflowId?: string;
       postActionPrompt?: string;

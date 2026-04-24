@@ -80,6 +80,7 @@ type Props = {
   recentOnly: boolean;
   selectedQueueActionFilter: QueueActionFilter;
   selectedQueueTraceStateFilter: QueueTraceStateFilter;
+  modelingCountyRunId: string | null;
 };
 
 export function RtpRegistryAdvisoryPanel({
@@ -111,6 +112,7 @@ export function RtpRegistryAdvisoryPanel({
   recentOnly,
   selectedQueueActionFilter,
   selectedQueueTraceStateFilter,
+  modelingCountyRunId,
 }: Props) {
   return (
     <>
@@ -219,6 +221,7 @@ export function RtpRegistryAdvisoryPanel({
                 actionKey={dominantCurrentViewActionSelection.key}
                 cycleIds={dominantActionCycleIds}
                 reportIds={dominantActionReportIds}
+                modelingCountyRunId={modelingCountyRunId}
               />
             </div>
           ) : null}
@@ -314,6 +317,7 @@ export function RtpRegistryAdvisoryPanel({
                         reportId={cycle.packetReport?.id ?? null}
                         packetAttention={cycle.packetAttention}
                         needsFirstArtifact={cycle.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET}
+                        modelingCountyRunId={cycle.modelingCountyRunId}
                       />
                     </div>
                   </div>

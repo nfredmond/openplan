@@ -11,6 +11,7 @@ function buildRtpCycleContext(): RtpAssistantContext {
       plan: "pilot",
       role: "owner",
     },
+    defaultModelingCountyRunId: null,
     rtpCycle: {
       id: "rtp-1",
       title: "Nevada County RTP 2050",

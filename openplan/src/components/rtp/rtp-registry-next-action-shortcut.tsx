@@ -13,10 +13,12 @@ export function RtpRegistryNextActionShortcut({
   actionKey,
   cycleIds,
   reportIds,
+  modelingCountyRunId,
 }: {
   actionKey: DominantActionKey;
   cycleIds: string[];
   reportIds: string[];
+  modelingCountyRunId?: string | null;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +43,7 @@ export function RtpRegistryNextActionShortcut({
         for (const cycleId of cycleIds) {
           const createResult = await createRtpPacketRecord({
             rtpCycleId: cycleId,
+            modelingCountyRunId,
             generateAfterCreate: true,
           });
 

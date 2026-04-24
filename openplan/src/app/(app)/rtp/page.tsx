@@ -130,6 +130,10 @@ type ProjectReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
+type ModelingClaimDecisionDefaultRow = {
+  county_run_id: string | null;
+};
+
 import type {
   PacketAttentionFilter,
   QueueActionFilter,
@@ -568,13 +572,27 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     );
   }
 
-  const { data: rtpCyclesData } = await supabase
-    .from("rtp_cycles")
-    .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
-    )
-    .order("updated_at", { ascending: false });
+  const [rtpCyclesResult, defaultModelingClaimResult] = await Promise.all([
+    supabase
+      .from("rtp_cycles")
+      .select(
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
+      )
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("modeling_claim_decisions")
+      .select("county_run_id")
+      .eq("workspace_id", membership.workspace_id)
+      .eq("track", "assignment")
+      .not("county_run_id", "is", null)
+      .order("decided_at", { ascending: false })
+      .limit(1),
+  ]);
 
+  const rtpCyclesData = rtpCyclesResult.data ?? [];
+  const defaultModelingCountyRunId = looksLikePendingSchema(defaultModelingClaimResult.error?.message)
+    ? null
+    : (((defaultModelingClaimResult.data ?? []) as ModelingClaimDecisionDefaultRow[])[0]?.county_run_id ?? null);
   const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
   const [projectRtpLinksResult, initialPacketReportsResult] = await Promise.all([
     rtpCycleIds.length
@@ -898,6 +916,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         grantsFollowThrough,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: cycle.status, readiness }),
+        modelingCountyRunId: defaultModelingCountyRunId,
         comparisonBackedProjectCount: cycleLinks.filter(
           (link) => Boolean(projectGrantModelingEvidenceByProjectId.get(link.project_id))
         ).length,
@@ -1198,6 +1217,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             recentOnly={recentOnly}
             selectedQueueActionFilter={selectedQueueActionFilter}
             selectedQueueTraceStateFilter={selectedQueueTraceStateFilter}
+            modelingCountyRunId={defaultModelingCountyRunId}
           />
 
           <RtpQueueOperationsBoard
@@ -1232,6 +1252,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               .filter((cycle) => cycle.packetAttention === "refresh")
               .map((cycle) => cycle.packetReport?.id)
               .filter((reportId): reportId is string => Boolean(reportId))}
+            modelingCountyRunId={defaultModelingCountyRunId}
           />
         </aside>
       </div>

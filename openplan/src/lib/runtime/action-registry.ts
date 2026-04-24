@@ -61,6 +61,7 @@ const CREATE_RTP_PACKET_RECORD: ActionRecord<"create_rtp_packet_record"> = {
   effect: async (action) => {
     await createRtpPacketRecord({
       rtpCycleId: action.rtpCycleId,
+      modelingCountyRunId: action.modelingCountyRunId,
       generateAfterCreate: action.generateAfterCreate,
     });
   },
