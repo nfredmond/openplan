@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "seed:gtfs": "tsx scripts/seed-gtfs.ts",
     "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
+    "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:webhook-proof": "tsx scripts/verify-webhook-ingestion.ts",
     "qa:gate": "npm run lint && npm test && pnpm audit --prod --audit-level=moderate && npm run build",
