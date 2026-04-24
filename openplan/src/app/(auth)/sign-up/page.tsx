@@ -38,13 +38,15 @@ function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
+  const inviteToken = searchParams.get("invite");
   const selectedPlan = useMemo(() => normalizeSelectedPlan(searchParams.get("plan")), [searchParams]);
   const signInHref = useMemo(() => {
     const params = new URLSearchParams();
     if (selectedPlan) params.set("plan", selectedPlan);
     if (redirectTarget) params.set("redirect", redirectTarget);
+    if (inviteToken) params.set("invite", inviteToken);
     return `/sign-in?${params.toString()}`;
-  }, [redirectTarget, selectedPlan]);
+  }, [inviteToken, redirectTarget, selectedPlan]);
   const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,6 +77,9 @@ function SignUpForm() {
     if (selectedPlan) {
       params.set("plan", selectedPlan);
     }
+    if (inviteToken) {
+      params.set("invite", inviteToken);
+    }
 
     router.push(`/sign-in?${params.toString()}`);
     router.refresh();
@@ -96,6 +101,15 @@ function SignUpForm() {
             <p className="font-semibold">Selected early-access plan: {labelForPlan(selectedPlan)}</p>
             <p className="mt-1.5">
               This step creates your account only. After sign-in, create or open the correct workspace, then launch billing from the in-app billing surface.
+            </p>
+          </article>
+        ) : null}
+
+        {inviteToken ? (
+          <article className={noticeClass("info")}>
+            <p className="font-semibold">Workspace invitation link detected.</p>
+            <p className="mt-1.5">
+              Create the account with the invited work email, then sign in from this flow to join the workspace.
             </p>
           </article>
         ) : null}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -30,7 +30,14 @@ function SignInForm() {
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const createdState = searchParams.get("created");
   const selectedPlan = searchParams.get("plan") ?? "starter";
-  const signUpHref = `/sign-up?plan=${encodeURIComponent(selectedPlan)}&redirect=${encodeURIComponent(redirectTarget)}`;
+  const inviteToken = searchParams.get("invite");
+  const signUpHref = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("plan", selectedPlan);
+    params.set("redirect", redirectTarget);
+    if (inviteToken) params.set("invite", inviteToken);
+    return `/sign-up?${params.toString()}`;
+  }, [inviteToken, redirectTarget, selectedPlan]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +60,21 @@ function SignInForm() {
       return;
     }
 
+    if (inviteToken) {
+      const invitationResponse = await fetch("/api/workspaces/invitations/accept", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: inviteToken }),
+      });
+
+      if (!invitationResponse.ok) {
+        const result = await invitationResponse.json().catch(() => null);
+        setError(result?.error ?? "Could not accept this workspace invitation");
+        setLoading(false);
+        return;
+      }
+    }
+
     const nextPath = redirectTarget && redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
     router.push(nextPath);
     router.refresh();
@@ -71,15 +93,30 @@ function SignInForm() {
       <div className="space-y-4 px-6 py-5 sm:px-7">
         {createdState === "1" ? (
           <article className={noticeClass("info")}>
-            <p className="font-semibold">Account created — next step is your first workspace.</p>
+            <p className="font-semibold">
+              {inviteToken ? "Account created — next step is invitation acceptance." : "Account created — next step is your first workspace."}
+            </p>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5">
               <li>Sign in with the email and password you just created.</li>
-              <li>Create or open the correct workspace from Projects.</li>
-              <li>
-                If you selected {selectedPlan === "starter" ? "Starter" : selectedPlan === "professional" ? "Professional" : "an early-access"} pricing,
-                launch billing only after you are inside the correct workspace context.
-              </li>
+              {inviteToken ? (
+                <li>OpenPlan will accept the workspace invitation before loading the dashboard.</li>
+              ) : (
+                <>
+                  <li>Create or open the correct workspace from Projects.</li>
+                  <li>
+                    If you selected {selectedPlan === "starter" ? "Starter" : selectedPlan === "professional" ? "Professional" : "an early-access"} pricing,
+                    launch billing only after you are inside the correct workspace context.
+                  </li>
+                </>
+              )}
             </ol>
+          </article>
+        ) : null}
+
+        {inviteToken && createdState !== "1" ? (
+          <article className={noticeClass("info")}>
+            <p className="font-semibold">Workspace invitation link detected.</p>
+            <p className="mt-1.5">Sign in with the invited work email to join the workspace.</p>
           </article>
         ) : null}
 

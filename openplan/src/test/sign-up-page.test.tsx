@@ -42,21 +42,24 @@ describe("SignUpPage", () => {
   it("preserves plan and redirect context on the sign-in link", async () => {
     searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");
+    searchParamsValue.set("invite", "invite-token-123");
 
     render(<SignUpPage />);
 
     expect(await screen.findByRole("link", { name: /Sign in/i })).toHaveAttribute(
       "href",
-      "/sign-in?plan=starter&redirect=%2Freports",
+      "/sign-in?plan=starter&redirect=%2Freports&invite=invite-token-123",
     );
   });
 
   it("returns new users to sign-in with the intended redirect preserved", async () => {
     searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");
+    searchParamsValue.set("invite", "invite-token-123");
 
     render(<SignUpPage />);
 
+    expect(await screen.findByText(/Workspace invitation link detected/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
     fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
     fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
@@ -67,7 +70,7 @@ describe("SignUpPage", () => {
     });
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&plan=starter");
+      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&plan=starter&invite=invite-token-123");
     });
   });
 });
