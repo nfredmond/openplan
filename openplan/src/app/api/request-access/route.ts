@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  buildAccessRequestMetadata,
+  ACCESS_REQUEST_RECENT_LOOKBACK_MINUTES,
+  buildAccessRequestSupportMetadata,
+  evaluateAccessRequestSafety,
+  loadRecentAccessRequestsForSafety,
   normalizeAccessRequestEmail,
+  type AccessRequestSafetyClient,
 } from "@/lib/access-requests";
 import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -72,6 +76,50 @@ export async function POST(request: NextRequest) {
 
   const serviceSupabase = createServiceRoleClient();
   const emailNormalized = normalizeAccessRequestEmail(parsed.data.contactEmail);
+  const lookbackStart = new Date(Date.now() - ACCESS_REQUEST_RECENT_LOOKBACK_MINUTES * 60 * 1000).toISOString();
+  const recentActivity = await loadRecentAccessRequestsForSafety(
+    serviceSupabase as unknown as AccessRequestSafetyClient,
+    lookbackStart,
+  );
+
+  if (recentActivity.error) {
+    audit.error("request_access_recent_lookup_failed", {
+      message: recentActivity.error.message ?? null,
+      code: recentActivity.error.code ?? null,
+    });
+    return NextResponse.json({ error: "Failed to verify recent access request activity" }, { status: 500 });
+  }
+
+  const safety = evaluateAccessRequestSafety({
+    request,
+    accessRequest: parsed.data,
+    recentRequests: recentActivity.requests,
+  });
+
+  if (safety.isRateLimited) {
+    audit.warn("request_access_rate_limited", {
+      recentFromClientCount: safety.recentFromClientCount,
+    });
+    return NextResponse.json(
+      { error: "Too many recent access requests from this connection. Please wait a few minutes and try again." },
+      { status: 429 },
+    );
+  }
+
+  if (safety.isDuplicate) {
+    audit.info("request_access_duplicate_recent_content", {
+      duplicateRequestId: safety.duplicateRecentRequestId,
+      emailDomain: emailNormalized.split("@")[1] ?? null,
+    });
+    return NextResponse.json(
+      {
+        success: true,
+        duplicate: true,
+        message: "Request already received. The OpenPlan team will review it before any workspace is provisioned.",
+      },
+      { status: 200 },
+    );
+  }
 
   const { data, error } = await serviceSupabase
     .from("access_requests")
@@ -85,7 +133,7 @@ export async function POST(request: NextRequest) {
       use_case: parsed.data.useCase.trim(),
       expected_workspace_name: cleanOptional(parsed.data.expectedWorkspaceName),
       source_path: cleanOptional(parsed.data.sourcePath) ?? request.nextUrl.pathname,
-      metadata_json: buildAccessRequestMetadata(request),
+      metadata_json: buildAccessRequestSupportMetadata(request, parsed.data),
     })
     .select("id, status, created_at")
     .single();

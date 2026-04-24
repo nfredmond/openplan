@@ -6,6 +6,10 @@ const migrationSql = readFileSync(
   join(process.cwd(), "supabase/migrations/20260424000074_access_requests.sql"),
   "utf8",
 );
+const hardeningMigrationSql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260424000075_access_request_intake_hardening.sql"),
+  "utf8",
+);
 
 describe("access requests migration", () => {
   it("creates a service-role-only intake table with contact fields", () => {
@@ -31,5 +35,15 @@ describe("access requests migration", () => {
     expect(migrationSql).toMatch(/SET search_path = public, pg_catalog/i);
     expect(migrationSql).toMatch(/DROP TRIGGER IF EXISTS trg_set_access_requests_updated_at/i);
     expect(migrationSql).not.toMatch(/DROP TABLE/i);
+  });
+
+  it("adds metadata indexes for service-role abuse checks without changing access posture", () => {
+    expect(hardeningMigrationSql).toMatch(/CREATE INDEX IF NOT EXISTS access_requests_source_fingerprint_created_idx/i);
+    expect(hardeningMigrationSql).toMatch(/metadata_json->>'source_fingerprint'/i);
+    expect(hardeningMigrationSql).toMatch(/CREATE INDEX IF NOT EXISTS access_requests_body_fingerprint_created_idx/i);
+    expect(hardeningMigrationSql).toMatch(/metadata_json->>'body_fingerprint'/i);
+    expect(hardeningMigrationSql).not.toMatch(/CREATE POLICY/i);
+    expect(hardeningMigrationSql).not.toMatch(/GRANT/i);
+    expect(hardeningMigrationSql).not.toMatch(/DROP TABLE/i);
   });
 });

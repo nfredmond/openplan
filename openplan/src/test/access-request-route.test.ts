@@ -2,12 +2,16 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const createServiceRoleClientMock = vi.fn();
+const recentLimitMock = vi.fn();
+const recentOrderMock = vi.fn(() => ({ limit: recentLimitMock }));
+const recentGteMock = vi.fn(() => ({ order: recentOrderMock }));
+const recentSelectMock = vi.fn(() => ({ gte: recentGteMock }));
 const singleMock = vi.fn();
 const selectAfterInsertMock = vi.fn(() => ({ single: singleMock }));
 const insertMock = vi.fn(() => ({ select: selectAfterInsertMock }));
 const fromMock = vi.fn((table: string) => {
   if (table === "access_requests") {
-    return { insert: insertMock };
+    return { select: recentSelectMock, insert: insertMock };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -26,6 +30,10 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { POST } from "@/app/api/request-access/route";
+import {
+  buildAccessRequestBodyFingerprint,
+  buildAccessRequestClientFingerprint,
+} from "@/lib/access-requests";
 
 function jsonRequest(payload: unknown, headers?: Record<string, string>) {
   return new NextRequest("http://localhost/api/request-access", {
@@ -55,6 +63,10 @@ describe("POST /api/request-access", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     createServiceRoleClientMock.mockReturnValue({ from: fromMock });
+    recentLimitMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
     singleMock.mockResolvedValue({
       data: {
         id: "33333333-3333-4333-8333-333333333333",
@@ -89,10 +101,15 @@ describe("POST /api/request-access", () => {
         source_path: "/request-access",
         metadata_json: expect.objectContaining({
           submitted_via: "request_access_form",
+          body_fingerprint: expect.any(String),
           source_fingerprint: expect.any(String),
         }),
       }),
     );
+    expect(recentSelectMock).toHaveBeenCalledWith("id, created_at, metadata_json");
+    expect(recentGteMock).toHaveBeenCalledWith("created_at", expect.any(String));
+    expect(recentOrderMock).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(recentLimitMock).toHaveBeenCalledWith(25);
     expect(selectAfterInsertMock).toHaveBeenCalledWith("id, status, created_at");
   });
 
@@ -149,6 +166,62 @@ describe("POST /api/request-access", () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json).toEqual(expect.objectContaining({ success: true, duplicate: true }));
+  });
+
+  it("rate limits repeated recent requests from the same connection", async () => {
+    const request = jsonRequest(validPayload);
+    const sourceFingerprint = buildAccessRequestClientFingerprint(request);
+    recentLimitMock.mockResolvedValueOnce({
+      data: [
+        { id: "recent-1", created_at: new Date().toISOString(), metadata_json: { source_fingerprint: sourceFingerprint } },
+        { id: "recent-2", created_at: new Date().toISOString(), metadata_json: { source_fingerprint: sourceFingerprint } },
+        { id: "recent-3", created_at: new Date().toISOString(), metadata_json: { source_fingerprint: sourceFingerprint } },
+      ],
+      error: null,
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(429);
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it("treats matching recent request content as already received before inserting", async () => {
+    const bodyFingerprint = buildAccessRequestBodyFingerprint(validPayload);
+    recentLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "recent-duplicate",
+          created_at: new Date().toISOString(),
+          metadata_json: { body_fingerprint: bodyFingerprint },
+        },
+      ],
+      error: null,
+    });
+
+    const response = await POST(jsonRequest(validPayload));
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toEqual(expect.objectContaining({ success: true, duplicate: true }));
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it("returns a server error when recent activity cannot be checked", async () => {
+    recentLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: "XX000",
+        message: "recent lookup failed",
+      },
+    });
+
+    const response = await POST(jsonRequest(validPayload));
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.error).toBe("Failed to verify recent access request activity");
+    expect(insertMock).not.toHaveBeenCalled();
   });
 
   it("returns a server error when the intake row cannot be stored", async () => {
