@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/county-onramp-persistence";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { persistBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
+import { refreshCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -202,6 +203,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
         countyRunId: existingRow.id,
         kpiCount: kpiResult.inserted.length,
         stage: manifest.stage,
+      });
+    }
+
+    const evidenceResult = await refreshCountyRunModelingEvidence({
+      supabase,
+      workspaceId: existingRow.workspace_id,
+      countyRunId: existingRow.id,
+      manifest,
+      geographyLabel: existingRow.geography_label,
+    });
+
+    if (evidenceResult.error) {
+      audit.warn("county_run_modeling_evidence_backbone_failed", {
+        countyRunId: existingRow.id,
+        message: evidenceResult.error.message,
+        code: evidenceResult.error.code ?? null,
+        missingSchema: evidenceResult.error.missingSchema ?? false,
+        claimStatus: evidenceResult.bundle.claimDecision.claimStatus,
+      });
+    } else {
+      audit.info("county_run_modeling_evidence_backbone_written", {
+        countyRunId: existingRow.id,
+        sourceManifestCount: evidenceResult.insertedSourceManifestCount,
+        validationResultCount: evidenceResult.insertedValidationResultCount,
+        claimStatus: evidenceResult.bundle.claimDecision.claimStatus,
       });
     }
 

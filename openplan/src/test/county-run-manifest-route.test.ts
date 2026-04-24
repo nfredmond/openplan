@@ -20,6 +20,13 @@ const kpiDeleteEqKpiCategoryMock = vi.fn();
 const kpiDeleteEqCountyRunIdMock = vi.fn(() => ({ eq: kpiDeleteEqKpiCategoryMock }));
 const kpiDeleteMock = vi.fn(() => ({ eq: kpiDeleteEqCountyRunIdMock }));
 const kpiInsertMock = vi.fn();
+const evidenceDeleteEqTrackMock = vi.fn();
+const evidenceDeleteEqCountyRunIdMock = vi.fn(() => ({ eq: evidenceDeleteEqTrackMock }));
+const evidenceDeleteMock = vi.fn(() => ({ eq: evidenceDeleteEqCountyRunIdMock }));
+const sourceManifestUpsertMock = vi.fn();
+const sourceManifestUpsertSelectMock = vi.fn();
+const validationResultInsertMock = vi.fn();
+const claimDecisionInsertMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -194,6 +201,18 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
 
     kpiDeleteEqKpiCategoryMock.mockResolvedValue({ error: null });
     kpiInsertMock.mockResolvedValue({ error: null });
+    evidenceDeleteEqTrackMock.mockResolvedValue({ error: null });
+    sourceManifestUpsertSelectMock.mockResolvedValue({
+      data: [
+        { id: "source-1", source_key: "census_tiger_boundary" },
+        { id: "source-2", source_key: "census_acs_zone_attributes" },
+        { id: "source-3", source_key: "osm_road_network" },
+      ],
+      error: null,
+    });
+    sourceManifestUpsertMock.mockReturnValue({ select: sourceManifestUpsertSelectMock });
+    validationResultInsertMock.mockResolvedValue({ error: null });
+    claimDecisionInsertMock.mockResolvedValue({ error: null });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
@@ -212,6 +231,23 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         return {
           delete: kpiDeleteMock,
           insert: kpiInsertMock,
+        };
+      }
+      if (table === "modeling_source_manifests") {
+        return {
+          upsert: sourceManifestUpsertMock,
+        };
+      }
+      if (table === "modeling_validation_results") {
+        return {
+          delete: evidenceDeleteMock,
+          insert: validationResultInsertMock,
+        };
+      }
+      if (table === "modeling_claim_decisions") {
+        return {
+          delete: evidenceDeleteMock,
+          insert: claimDecisionInsertMock,
         };
       }
       throw new Error(`Unexpected table: ${table}`);
@@ -255,6 +291,26 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     expect(mockAudit.info).toHaveBeenCalledWith(
       "county_run_behavioral_kpis_written",
       expect.objectContaining({ kpiCount: 6, stage: "validated-screening" })
+    );
+    expect(evidenceDeleteEqCountyRunIdMock).toHaveBeenCalledWith(
+      "county_run_id",
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    );
+    expect(evidenceDeleteEqTrackMock).toHaveBeenCalledWith("track", "assignment");
+    expect(sourceManifestUpsertMock).toHaveBeenCalledWith(expect.any(Array), {
+      onConflict: "county_run_id,source_key",
+    });
+    expect(validationResultInsertMock).toHaveBeenCalledTimes(1);
+    expect(claimDecisionInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        county_run_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        track: "assignment",
+        claim_status: "prototype_only",
+      })
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "county_run_modeling_evidence_backbone_written",
+      expect.objectContaining({ sourceManifestCount: 3, validationResultCount: 3, claimStatus: "prototype_only" })
     );
   });
 
