@@ -40,12 +40,47 @@ Modified:
   - `pnpm audit --prod --audit-level=moderate`: 0 known vulnerabilities.
   - `pnpm build`: production build clean.
 
-## Production steps
+## Production rollout
 
-Approved production rollout follows this source commit:
+Applied after Nathaniel's approval on 2026-04-24:
 
-1. Apply `20260424000069_modeling_evidence_backbone.sql` to Supabase project `aggphdqkanxsfzzoxlbk`.
-2. Run `pnpm seed:nctc -- --env-file .env.production.local`.
-3. Verify `modeling_claim_decisions`, `modeling_validation_results`, and `modeling_source_manifests` for county run `d0000001-0000-4000-8000-000000000005`.
+1. `pnpm supabase migration list --linked` showed exactly one pending migration: `20260424000069`.
+2. `pnpm supabase db push --linked --dry-run` confirmed only `20260424000069_modeling_evidence_backbone.sql` would be pushed.
+3. `pnpm supabase db push --linked --yes` applied `20260424000069_modeling_evidence_backbone.sql` to Supabase project `aggphdqkanxsfzzoxlbk`.
+4. `pnpm seed:nctc -- --env-file .env.production.local` reseeded the NCTC demo and wrote the modeling evidence rows.
+5. `pnpm supabase migration list --linked` confirmed local and remote both include `20260424000069`.
 
-This proof doc will be updated with live verification after the production steps complete.
+The seed output confirmed:
+
+- `refreshed modeling evidence (4 sources, 5 checks, claim=screening_grade)`
+- demo workspace `d0000001-0000-4000-8000-000000000001`
+- demo county run `d0000001-0000-4000-8000-000000000005`
+
+Service-role verification against prod returned:
+
+```json
+{
+  "claim": {
+    "track": "assignment",
+    "claim_status": "screening_grade",
+    "status_reason": "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."
+  },
+  "sourceCount": 4,
+  "sourceKeys": [
+    "census_acs_zone_attributes",
+    "census_tiger_boundary",
+    "observed_count_validation",
+    "osm_road_network"
+  ],
+  "checkCount": 5,
+  "checkStatuses": [
+    "assignment_final_gap:pass",
+    "count_station_matches:pass",
+    "critical_absolute_percent_error:fail",
+    "facility_ranking_spearman_rho:warn",
+    "median_absolute_percent_error:pass"
+  ]
+}
+```
+
+The live county-run detail page can now render the modeling evidence reader once the pushed Next.js main deployment is serving this code.
