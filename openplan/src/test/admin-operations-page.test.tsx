@@ -5,6 +5,7 @@ const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
+const refreshMock = vi.fn();
 
 const actionLimitMock = vi.fn();
 const actionOrderMock = vi.fn(() => ({ limit: actionLimitMock }));
@@ -35,6 +36,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((..._args: unknown[]) => {
     throw new Error("redirect");
   }),
+  useRouter: () => ({ refresh: refreshMock }),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -171,6 +173,9 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText(/Nat Ford, Planning lead/i)).toBeInTheDocument();
     expect(screen.getByText(/nat@example.gov/i)).toBeInTheDocument();
     expect(screen.getByText(/Screen rural transit corridors/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Mark reviewing/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Defer/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Decline/i })).toBeInTheDocument();
     expect(serviceFromMock).toHaveBeenCalledWith("access_requests");
     expect(accessOrderMock).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(accessLimitMock).toHaveBeenCalledWith(8);

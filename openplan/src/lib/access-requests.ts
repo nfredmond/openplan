@@ -1,5 +1,14 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
+import type { AccessRequestStatus } from "@/lib/access-request-status";
+export {
+  accessRequestStatusLabel,
+  canTransitionAccessRequestStatus,
+  getAccessRequestTransitionOptions,
+  isAccessRequestTriageStatus,
+  type AccessRequestStatus,
+  type AccessRequestTriageStatus,
+} from "@/lib/access-request-status";
 
 export const ACCESS_REQUEST_REVIEW_EMAILS_ENV = "OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS";
 export const ACCESS_REQUEST_RATE_WINDOW_MINUTES = 10;
@@ -9,15 +18,6 @@ export const ACCESS_REQUEST_RECENT_LOOKBACK_MINUTES = Math.max(
   ACCESS_REQUEST_RATE_WINDOW_MINUTES,
   ACCESS_REQUEST_DUPLICATE_WINDOW_MINUTES,
 );
-
-export type AccessRequestStatus =
-  | "new"
-  | "reviewing"
-  | "contacted"
-  | "invited"
-  | "provisioned"
-  | "deferred"
-  | "declined";
 
 export type AccessRequestReviewRow = {
   id: string;
@@ -235,20 +235,6 @@ export function evaluateAccessRequestSafety(input: {
     isRateLimited: recentFromClient.length >= ACCESS_REQUEST_MAX_PER_WINDOW,
     isDuplicate: Boolean(duplicateRecentRequest),
   };
-}
-
-export function accessRequestStatusLabel(status: AccessRequestStatus): string {
-  const labels: Record<AccessRequestStatus, string> = {
-    new: "New",
-    reviewing: "Reviewing",
-    contacted: "Contacted",
-    invited: "Invited",
-    provisioned: "Provisioned",
-    deferred: "Deferred",
-    declined: "Declined",
-  };
-
-  return labels[status] ?? status;
 }
 
 export async function loadRecentAccessRequestsForReview(client: AccessRequestReviewClient) {

@@ -8,8 +8,10 @@ import {
   buildAccessRequestClientFingerprint,
   buildAccessRequestMetadata,
   buildAccessRequestSupportMetadata,
+  canTransitionAccessRequestStatus,
   canReviewAccessRequests,
   evaluateAccessRequestSafety,
+  getAccessRequestTransitionOptions,
   normalizeAccessRequestEmail,
   parseAccessRequestReviewerEmails,
 } from "@/lib/access-requests";
@@ -119,5 +121,14 @@ describe("access request helpers", () => {
         duplicateRecentRequestId: "recent-0",
       }),
     );
+  });
+
+  it("keeps triage transitions explicit and terminal statuses closed", () => {
+    expect(getAccessRequestTransitionOptions("new")).toEqual(["reviewing", "deferred", "declined"]);
+    expect(canTransitionAccessRequestStatus("reviewing", "contacted")).toBe(true);
+    expect(canTransitionAccessRequestStatus("contacted", "reviewing")).toBe(false);
+    expect(getAccessRequestTransitionOptions("invited")).toEqual(["deferred", "declined"]);
+    expect(getAccessRequestTransitionOptions("declined")).toEqual([]);
+    expect(getAccessRequestTransitionOptions("provisioned")).toEqual([]);
   });
 });

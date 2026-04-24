@@ -1,5 +1,6 @@
 import { Inbox, LockKeyhole, TriangleAlert } from "lucide-react";
 
+import { AccessRequestStatusControls } from "@/components/operations/access-request-status-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   accessRequestStatusLabel,
@@ -106,7 +107,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1.4fr)]">
                 <div className="module-subpanel">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Region
@@ -119,6 +120,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                   </p>
                   <p className="mt-2 text-sm text-foreground">{request.expected_workspace_name ?? "Not specified"}</p>
                 </div>
+                <AccessRequestStatusControls requestId={request.id} status={request.status} />
               </div>
             </div>
           ))}
