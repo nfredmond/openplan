@@ -1,0 +1,94 @@
+{
+  "ok": true,
+  "generatedAt": "2026-04-24T06:49:23.544Z",
+  "status": "ready",
+  "readyForPaidCanary": true,
+  "blockers": [],
+  "warnings": [],
+  "checks": [
+    {
+      "key": "stripe_secret_key",
+      "label": "Stripe API key",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_STRIPE_SECRET_KEY."
+    },
+    {
+      "key": "stripe_starter_price",
+      "label": "Starter checkout price",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_STRIPE_PRICE_ID_STARTER."
+    },
+    {
+      "key": "stripe_professional_price",
+      "label": "Professional checkout price",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_STRIPE_PRICE_ID_PROFESSIONAL."
+    },
+    {
+      "key": "stripe_webhook_secret",
+      "label": "Stripe webhook signing secret",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_STRIPE_WEBHOOK_SECRET."
+    },
+    {
+      "key": "billing_readiness_secret",
+      "label": "Billing readiness ops secret",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_BILLING_READINESS_SECRET."
+    },
+    {
+      "key": "usage_flush_secret",
+      "label": "Usage flush ops secret",
+      "status": "pass",
+      "detail": "Configured via OPENPLAN_BILLING_USAGE_FLUSH_SECRET."
+    },
+    {
+      "key": "supabase_public_url",
+      "label": "Supabase project URL",
+      "status": "pass",
+      "detail": "Configured via NEXT_PUBLIC_SUPABASE_URL."
+    },
+    {
+      "key": "supabase_anon_key",
+      "label": "Supabase anon key",
+      "status": "pass",
+      "detail": "Configured via NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    },
+    {
+      "key": "supabase_service_role_key",
+      "label": "Supabase service-role key",
+      "status": "pass",
+      "detail": "Configured via SUPABASE_SERVICE_ROLE_KEY."
+    },
+    {
+      "key": "stripe_runs_meter",
+      "label": "Stripe runs meter event",
+      "status": "pass",
+      "detail": "Configured for the runs usage bucket."
+    },
+    {
+      "key": "subscription_ledger",
+      "label": "Subscription ledger",
+      "status": "pass",
+      "detail": "101 subscription row(s), 92 active-like row(s)."
+    },
+    {
+      "key": "usage_ledger",
+      "label": "Usage-event ledger",
+      "status": "pass",
+      "detail": "0 unreported event(s), 0 unreported weighted unit(s)."
+    },
+    {
+      "key": "workspace_billing_snapshot",
+      "label": "Workspace billing snapshot",
+      "status": "pass",
+      "detail": "Nevada County Transportation Commission (demo) status=pilot plan=pilot; no Stripe customer yet; no Stripe subscription yet."
+    },
+    {
+      "key": "usage_flush_dry_run",
+      "label": "Usage flush dry run",
+      "status": "pass",
+      "detail": "0 subscription(s), 0 event(s), 0 dry-run group(s), 0 skipped group(s)."
+    }
+  ]
+}
