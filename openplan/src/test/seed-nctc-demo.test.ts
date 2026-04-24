@@ -13,6 +13,8 @@ import {
   DEMO_RTP_CYCLE_ID,
   DEMO_WORKSPACE_ID,
   buildExistingConditionsChapterMarkdown,
+  buildNctcCountyOnrampManifest,
+  buildNctcModelingEvidenceBundle,
   buildSeedRecords,
 } from "../../scripts/seed-nctc-demo";
 
@@ -60,6 +62,7 @@ const validationSummary: Record<string, unknown> = {
     "OSM default speeds/capacities",
     "tract fragments are not calibrated TAZs",
   ],
+  counts_source_csv: "/data/pilot-nevada-county/validation/caltrans_2023_priority_counts.csv",
   stations_total: 5,
   stations_matched: 5,
   screening_gate: {
@@ -185,6 +188,46 @@ describe("buildSeedRecords", () => {
     expect(records.existingConditionsChapter.sort_order).toBe(5);
     expect(records.existingConditionsChapter.required).toBe(true);
     expect(records.existingConditionsChapter.created_by).toBe(ownerUserId);
+  });
+});
+
+describe("buildNctcCountyOnrampManifest", () => {
+  it("adapts the frozen legacy NCTC bundle into the county-onramp manifest shape", () => {
+    const manifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary);
+
+    expect(manifest.schema_version).toBe("openplan.county_onramp_manifest.v1");
+    expect(manifest.name).toBe("nevada-county-runtime-norenumber-freeze-20260324");
+    expect(manifest.county_fips).toBe("06057");
+    expect(manifest.summary.run.zone_count).toBe(26);
+    expect(manifest.summary.run.population_total).toBeCloseTo(102322);
+    expect(manifest.summary.run.jobs_total).toBe(48252);
+    expect(manifest.summary.run.loaded_links).toBe(54944);
+    expect(manifest.summary.run.final_gap).toBeCloseTo(0.009548);
+    expect(manifest.summary.run.total_trips).toBe(628262.2);
+    expect(manifest.summary.validation?.counts_source_csv).toContain("caltrans_2023_priority_counts.csv");
+    expect(manifest.artifacts.validation_summary_json).toBe("validation/validation_summary.json");
+  });
+});
+
+describe("buildNctcModelingEvidenceBundle", () => {
+  it("produces deterministic screening-grade evidence for the NCTC demo seed", () => {
+    const bundle = buildNctcModelingEvidenceBundle(bundleManifest, validationSummary);
+
+    expect(bundle.sourceManifests.map((source) => source.sourceKey)).toEqual([
+      "census_tiger_boundary",
+      "census_acs_zone_attributes",
+      "osm_road_network",
+      "observed_count_validation",
+    ]);
+    expect(bundle.validationResults.map((result) => result.metricKey)).toEqual([
+      "assignment_final_gap",
+      "count_station_matches",
+      "median_absolute_percent_error",
+      "critical_absolute_percent_error",
+      "facility_ranking_spearman_rho",
+    ]);
+    expect(bundle.claimDecision.claimStatus).toBe("screening_grade");
+    expect(bundle.claimDecision.statusReason).toContain("237.62%");
   });
 });
 

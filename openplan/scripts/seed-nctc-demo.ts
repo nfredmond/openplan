@@ -24,6 +24,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import {
+  buildCountyRunModelingEvidenceBundle,
+  refreshCountyRunModelingEvidence,
+} from "../src/lib/models/evidence-backbone";
+import type { CountyOnrampManifest } from "../src/lib/models/county-onramp";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -338,6 +343,14 @@ function fmtPct(value: unknown, digits = 1): string {
   return n === null ? "—" : `${n.toFixed(digits)}%`;
 }
 
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
 type FacilityRow = {
   station?: string;
   observed_volume?: number;
@@ -503,6 +516,75 @@ export function buildExistingConditionsChapterMarkdown(
     `flow remain the same.`,
     ``,
   ].join("\n");
+}
+
+export function buildNctcCountyOnrampManifest(
+  bundleManifest: Record<string, unknown>,
+  validationSummary: Record<string, unknown>
+): CountyOnrampManifest {
+  const artifacts = record(bundleManifest.artifacts);
+  const zones = record(bundleManifest.zones);
+  const demand = record(bundleManifest.demand);
+  const assignment = record(bundleManifest.assignment);
+  const assignmentNetwork = record(assignment.network);
+  const convergence = record(assignment.convergence);
+  const runtime = record(bundleManifest.runtime);
+  const validationCreatedAt = text(validationSummary.created_at);
+  const runName = text(bundleManifest.run_name) ?? DEMO_COUNTY_RUN_NAME;
+
+  return {
+    schema_version: "openplan.county_onramp_manifest.v1",
+    generated_at: validationCreatedAt ?? "2026-03-24T19:42:28.445852+00:00",
+    name: runName,
+    county_fips: "06057",
+    county_prefix: "NEVADA",
+    run_dir: ARTIFACT_ROOT,
+    mode: "existing-run",
+    stage: "validated-screening",
+    artifacts: {
+      scaffold_csv: text(artifacts.validation_candidate_audit_csv) ?? "validation/validation_candidate_audit.csv",
+      review_packet_md: text(artifacts.validation_report) ?? "validation/validation_report.md",
+      run_summary_json: text(artifacts.run_summary_json) ?? "run_summary.json",
+      bundle_manifest_json: text(artifacts.bundle_manifest_json) ?? "bundle_manifest.json",
+      validation_summary_json: text(artifacts.validation_summary) ?? "validation/validation_summary.json",
+    },
+    runtime: {
+      keep_project: true,
+      force: false,
+      overall_demand_scalar: num(runtime.overall_demand_scalar),
+      external_demand_scalar: num(runtime.external_demand_scalar),
+      hbw_scalar: num(runtime.hbw_scalar),
+      hbo_scalar: num(runtime.hbo_scalar),
+      nhb_scalar: num(runtime.nhb_scalar),
+    },
+    summary: {
+      run: {
+        zone_count: num(zones.zones),
+        population_total: num(zones.total_population),
+        jobs_total: num(zones.total_jobs_est),
+        loaded_links: num(assignmentNetwork.links) ?? num(assignment.loaded_links),
+        final_gap: num(convergence.final_gap),
+        total_trips: num(demand.total_trips),
+      },
+      validation: validationSummary,
+      bundle_validation: {
+        status_label: text(validationSummary.status_label) ?? "internal prototype only",
+        legacy_bundle_manifest: true,
+      },
+    },
+  };
+}
+
+export function buildNctcModelingEvidenceBundle(
+  bundleManifest: Record<string, unknown>,
+  validationSummary: Record<string, unknown>
+) {
+  return buildCountyRunModelingEvidenceBundle({
+    workspaceId: DEMO_WORKSPACE_ID,
+    countyRunId: DEMO_COUNTY_RUN_ID,
+    geographyLabel: "Nevada County, CA",
+    manifest: buildNctcCountyOnrampManifest(bundleManifest, validationSummary),
+  });
 }
 
 export function buildSeedRecords(
@@ -707,11 +789,18 @@ async function main(): Promise<void> {
 
   const bundleManifest = readJson("bundle_manifest.json");
   const validationSummary = readJson(path.join("validation", "validation_summary.json"));
+  const countyRunOnrampManifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary);
+  const modelingEvidenceBundle = buildNctcModelingEvidenceBundle(bundleManifest, validationSummary);
 
   console.log(
     `[seed:nctc] manifest: screening_grade=${bundleManifest.screening_grade}, ` +
       `zones=${(bundleManifest as { zones?: { zones?: number } }).zones?.zones ?? "?"}, ` +
       `loaded_links=${(bundleManifest as { assignment?: { loaded_links?: number } }).assignment?.loaded_links ?? "?"}`
+  );
+  console.log(
+    `[seed:nctc] modeling evidence: claim=${modelingEvidenceBundle.claimDecision.claimStatus}, ` +
+      `sources=${modelingEvidenceBundle.sourceManifests.length}, ` +
+      `checks=${modelingEvidenceBundle.validationResults.length}`
   );
 
   if (args.dryRun) {
@@ -876,7 +965,32 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted county_run ${DEMO_COUNTY_RUN_ID}`);
 
-  // 8. Existing Conditions / Travel Patterns chapter for the demo cycle.
+  // 8. Assignment modeling evidence backbone rows for the demo county run.
+  const evidenceResult = await refreshCountyRunModelingEvidence({
+    supabase,
+    workspaceId: DEMO_WORKSPACE_ID,
+    countyRunId: DEMO_COUNTY_RUN_ID,
+    manifest: countyRunOnrampManifest,
+    geographyLabel: "Nevada County, CA",
+  });
+  if (evidenceResult.error) {
+    if (evidenceResult.error.missingSchema) {
+      console.warn(
+        `[seed:nctc] skipped modeling evidence; migration not applied (${evidenceResult.error.message})`
+      );
+    } else {
+      throw new Error(`Failed to refresh modeling evidence: ${evidenceResult.error.message}`);
+    }
+  } else {
+    console.log(
+      `[seed:nctc] refreshed modeling evidence ` +
+        `(${evidenceResult.insertedSourceManifestCount} sources, ` +
+        `${evidenceResult.insertedValidationResultCount} checks, ` +
+        `claim=${evidenceResult.bundle.claimDecision.claimStatus})`
+    );
+  }
+
+  // 9. Existing Conditions / Travel Patterns chapter for the demo cycle.
   //    The default trigger seeds 7 standard chapters; this adds an 8th
   //    chapter specific to the NCTC demo, with content_markdown composed
   //    directly from the bundle manifest + validation summary.
@@ -908,7 +1022,7 @@ async function main(): Promise<void> {
     `[seed:nctc] upserted chapter ${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY} (${chapterContent.length} chars)`
   );
 
-  // 9. Aerial missions with authored AOI polygons. Three missions
+  // 10. Aerial missions with authored AOI polygons. Three missions
   //    cover distinct NCTC geographies (downtown Grass Valley, the
   //    SR-49 / Alta Sierra corridor south of town, and the Empire
   //    Mine State Historic Park area). Each polygon carries 9+
@@ -1012,7 +1126,7 @@ async function main(): Promise<void> {
     console.log(`[seed:nctc] upserted evidence package ${evidence.id} (${evidence.status})`);
   }
 
-  // 10. Project corridors — display-only LineStrings on the backdrop.
+  // 11. Project corridors — display-only LineStrings on the backdrop.
   //     Two authored roads anchored on Grass Valley geography: SR-49
   //     through downtown heading south, and Empire St heading east
   //     toward Empire Mine State Historic Park.
@@ -1050,7 +1164,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 11. Community engagement input — approved map comments that render as
+  // 12. Community engagement input — approved map comments that render as
   //     low-weight point features on the cartographic shell.
   const { error: engagementCampaignError } = await supabase.from("engagement_campaigns").upsert(
     {
@@ -1092,7 +1206,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 12. Public census tracts (equity choropleth demo data).
+  // 13. Public census tracts (equity choropleth demo data).
   //     `census_tracts` is public data (no workspace scoping) and has a
   //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
   //     client can't send PostGIS geometry directly, so we upsert through
@@ -1180,6 +1294,7 @@ async function main(): Promise<void> {
   console.log(`  packages:    ${evidencePackages.length}`);
   console.log(`  corridors:   ${corridors.length} (SR-49 / Empire St)`);
   console.log(`  engagement:  ${DEMO_ENGAGEMENT_ITEMS.length} approved items`);
+  console.log(`  evidence:    ${modelingEvidenceBundle.claimDecision.claimStatus}`);
   console.log(`  tracts:      ${tracts.length} (Nevada County public demo)`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);
 }
