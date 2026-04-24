@@ -9,6 +9,7 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
+const reportCreatorMock = vi.hoisted(() => vi.fn());
 
 const reportsOrderMock = vi.fn();
 const reportsSelectMock = vi.fn(() => ({ order: reportsOrderMock }));
@@ -19,6 +20,20 @@ const projectsSelectMock = vi.fn(() => ({ order: projectsOrderMock }));
 const runsLimitMock = vi.fn();
 const runsOrderMock = vi.fn(() => ({ limit: runsLimitMock }));
 const runsSelectMock = vi.fn(() => ({ order: runsOrderMock }));
+
+const countyRunsLimitMock = vi.fn();
+const countyRunsOrderMock = vi.fn(() => ({ limit: countyRunsLimitMock }));
+const countyRunsEqMock = vi.fn(() => ({ order: countyRunsOrderMock }));
+const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock }));
+
+const modelingClaimDecisionsLimitMock = vi.fn();
+const modelingClaimDecisionsOrderMock = vi.fn(() => ({ limit: modelingClaimDecisionsLimitMock }));
+const modelingClaimDecisionsNotMock = vi.fn(() => ({ order: modelingClaimDecisionsOrderMock }));
+const modelingClaimDecisionsEqMock = vi.fn(() => ({
+  eq: modelingClaimDecisionsEqMock,
+  not: modelingClaimDecisionsNotMock,
+}));
+const modelingClaimDecisionsSelectMock = vi.fn(() => ({ eq: modelingClaimDecisionsEqMock }));
 
 const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
@@ -33,6 +48,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "runs") {
     return { select: runsSelectMock };
+  }
+  if (table === "county_runs") {
+    return { select: countyRunsSelectMock };
+  }
+  if (table === "modeling_claim_decisions") {
+    return { select: modelingClaimDecisionsSelectMock };
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
@@ -74,7 +95,10 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 });
 
 vi.mock("@/components/reports/report-creator", () => ({
-  ReportCreator: () => <div data-testid="report-creator" />,
+  ReportCreator: (props: unknown) => {
+    reportCreatorMock(props);
+    return <div data-testid="report-creator" />;
+  },
 }));
 
 vi.mock("@/components/operations/workspace-runtime-cue", () => ({
@@ -94,6 +118,7 @@ async function renderPage() {
 describe("ReportsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    reportCreatorMock.mockReset();
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -155,6 +180,33 @@ describe("ReportsPage", () => {
     });
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
+
+    countyRunsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "county-run-1",
+          workspace_id: "workspace-1",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T17:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    modelingClaimDecisionsLimitMock.mockResolvedValue({
+      data: [
+        {
+          county_run_id: "county-run-1",
+          claim_status: "screening_grade",
+          status_reason: "Critical APE remains screening-grade.",
+          validation_summary_json: { passed: 4, warned: 1, failed: 0 },
+          decided_at: "2026-04-24T17:10:00.000Z",
+        },
+      ],
+      error: null,
+    });
 
     reportArtifactsOrderMock.mockResolvedValue({
       data: [
@@ -273,6 +325,18 @@ describe("ReportsPage", () => {
     expect(
       screen.getAllByText(/planning support only, not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
+    expect(reportCreatorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelingCountyRuns: [
+          expect.objectContaining({
+            id: "county-run-1",
+            runName: "Nevada County assignment screening",
+            claimStatus: "screening_grade",
+            statusReason: "Critical APE remains screening-grade.",
+          }),
+        ],
+      })
+    );
   });
 
   it("routes current report queue actions into Grants OS when funding follow-through is the real next move", async () => {

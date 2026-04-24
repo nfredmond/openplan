@@ -12,7 +12,7 @@ import { CartographicSelectionLink } from "@/components/cartographic/cartographi
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
-import { ReportCreator } from "@/components/reports/report-creator";
+import { ReportCreator, type ModelingCountyRunOption } from "@/components/reports/report-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -61,6 +61,7 @@ import {
   PACKET_FRESHNESS_LABELS,
 } from "@/lib/reports/packet-labels";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
@@ -108,6 +109,23 @@ type ReportArtifactRow = {
   report_id: string;
   generated_at: string;
   metadata_json: Record<string, unknown> | null;
+};
+
+type CountyRunModelingOptionRow = {
+  id: string;
+  workspace_id: string;
+  run_name: string;
+  geography_label: string | null;
+  stage: string | null;
+  updated_at: string | null;
+};
+
+type ModelingClaimDecisionOptionRow = {
+  county_run_id: string | null;
+  claim_status: ModelingClaimStatus;
+  status_reason: string | null;
+  validation_summary_json: Record<string, unknown> | null;
+  decided_at: string | null;
 };
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -210,7 +228,14 @@ export default async function ReportsPage({
     );
   }
 
-  const [{ data: reportsData }, { data: projectsData }, { data: runsData }, operationsSummary] =
+  const [
+    { data: reportsData },
+    { data: projectsData },
+    { data: runsData },
+    { data: countyRunsData },
+    { data: modelingClaimDecisionsData },
+    operationsSummary,
+  ] =
     await Promise.all([
       supabase
         .from("reports")
@@ -227,6 +252,20 @@ export default async function ReportsPage({
         .select("id, workspace_id, title, created_at")
         .order("created_at", { ascending: false })
         .limit(30),
+      supabase
+        .from("county_runs")
+        .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+        .eq("workspace_id", membership.workspace_id)
+        .order("updated_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("modeling_claim_decisions")
+        .select("county_run_id, claim_status, status_reason, validation_summary_json, decided_at")
+        .eq("workspace_id", membership.workspace_id)
+        .eq("track", "assignment")
+        .not("county_run_id", "is", null)
+        .order("decided_at", { ascending: false })
+        .limit(100),
       loadWorkspaceOperationsSummaryForWorkspace(
         supabase as unknown as WorkspaceOperationsSupabaseLike,
         membership.workspace_id
@@ -248,6 +287,30 @@ export default async function ReportsPage({
       latestArtifactByReportId.set(artifact.report_id, artifact);
     }
   }
+  const modelingClaimByCountyRunId = new Map<string, ModelingClaimDecisionOptionRow>();
+  for (const decision of (modelingClaimDecisionsData ?? []) as ModelingClaimDecisionOptionRow[]) {
+    if (decision.county_run_id && !modelingClaimByCountyRunId.has(decision.county_run_id)) {
+      modelingClaimByCountyRunId.set(decision.county_run_id, decision);
+    }
+  }
+  const modelingCountyRuns: ModelingCountyRunOption[] = ((countyRunsData ?? []) as CountyRunModelingOptionRow[]).map(
+    (run) => {
+      const claimDecision = modelingClaimByCountyRunId.get(run.id) ?? null;
+
+      return {
+        id: run.id,
+        workspace_id: run.workspace_id,
+        runName: run.run_name,
+        geographyLabel: run.geography_label,
+        stage: run.stage,
+        updatedAt: run.updated_at,
+        claimStatus: claimDecision?.claim_status ?? null,
+        statusReason: claimDecision?.status_reason ?? null,
+        validationSummary: claimDecision?.validation_summary_json ?? null,
+        decidedAt: claimDecision?.decided_at ?? null,
+      };
+    }
+  );
 
   const reports = ((reportsData ?? []) as ReportRow[])
     .map((report) => {
@@ -756,6 +819,7 @@ export default async function ReportsPage({
           <ReportCreator
             projects={projectsData ?? []}
             runs={runsData ?? []}
+            modelingCountyRuns={modelingCountyRuns}
             reportGuidanceByProject={reportGuidanceByProject}
           />
           <WorkspaceCommandBoard

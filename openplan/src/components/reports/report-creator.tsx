@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, FilePlus2, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, FilePlus2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ import {
   defaultReportTitle,
   type ReportType,
 } from "@/lib/reports/catalog";
+import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type ProjectOption = {
   id: string;
@@ -25,6 +27,19 @@ type RunOption = {
   workspace_id: string;
   title: string;
   created_at: string;
+};
+
+export type ModelingCountyRunOption = {
+  id: string;
+  workspace_id: string;
+  runName: string;
+  geographyLabel: string | null;
+  stage: string | null;
+  updatedAt: string | null;
+  claimStatus: ModelingClaimStatus | null;
+  statusReason: string | null;
+  validationSummary: Record<string, unknown> | null;
+  decidedAt: string | null;
 };
 
 type CreateResponse = {
@@ -77,13 +92,55 @@ function formatGuidanceCounts({
   return `${parts[0]} and ${parts[1]}.`;
 }
 
+function pickDefaultModelingCountyRunId(
+  workspaceId: string | null,
+  modelingCountyRuns: ModelingCountyRunOption[]
+) {
+  if (!workspaceId) {
+    return "";
+  }
+
+  return (
+    modelingCountyRuns.find(
+      (run) => run.workspace_id === workspaceId && run.claimStatus
+    )?.id ?? ""
+  );
+}
+
+function formatModelingRunOptionText(option: ModelingCountyRunOption) {
+  const posture = option.claimStatus
+    ? formatModelingClaimStatusLabel(option.claimStatus)
+    : "No claim decision";
+  const geography = option.geographyLabel ? `, ${option.geographyLabel}` : "";
+  return `${option.runName} — ${posture}${geography}`;
+}
+
+function formatValidationSummary(value: Record<string, unknown> | null) {
+  if (!value) {
+    return null;
+  }
+
+  const passed = typeof value.passed === "number" ? value.passed : null;
+  const warned = typeof value.warned === "number" ? value.warned : null;
+  const failed = typeof value.failed === "number" ? value.failed : null;
+  const parts: string[] = [];
+
+  if (passed !== null) parts.push(`${passed} pass`);
+  if (warned !== null) parts.push(`${warned} warn`);
+  if (failed !== null) parts.push(`${failed} fail`);
+
+  return parts.length > 0 ? parts.join(" / ") : null;
+}
+
 export function ReportCreator({
   projects,
   runs,
+  modelingCountyRuns = [],
   reportGuidanceByProject = {},
 }: {
   projects: ProjectOption[];
   runs: RunOption[];
+  modelingCountyRuns?: ModelingCountyRunOption[];
   reportGuidanceByProject?: Record<string, ProjectReportGuidance>;
 }) {
   const router = useRouter();
@@ -92,15 +149,34 @@ export function ReportCreator({
   const [summary, setSummary] = useState("");
   const [reportType, setReportType] = useState<ReportType>("project_status");
   const [selectedRunIds, setSelectedRunIds] = useState<string[]>([]);
+  const [modelingCountyRunId, setModelingCountyRunId] = useState(() =>
+    pickDefaultModelingCountyRunId(projects[0]?.workspace_id ?? null, modelingCountyRuns)
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedProject =
     projects.find((project) => project.id === projectId) ?? null;
   const selectedWorkspaceId = selectedProject?.workspace_id ?? null;
-  const availableRuns = selectedProject
-    ? runs.filter((run) => run.workspace_id === selectedProject.workspace_id)
-    : [];
+  const availableRuns = useMemo(
+    () =>
+      selectedProject
+        ? runs.filter((run) => run.workspace_id === selectedProject.workspace_id)
+        : [],
+    [runs, selectedProject]
+  );
+  const availableModelingCountyRuns = useMemo(
+    () =>
+      selectedWorkspaceId
+        ? modelingCountyRuns.filter((run) => run.workspace_id === selectedWorkspaceId)
+        : [],
+    [modelingCountyRuns, selectedWorkspaceId]
+  );
+  const selectedModelingCountyRun =
+    availableModelingCountyRuns.find((run) => run.id === modelingCountyRunId) ?? null;
+  const selectedModelingValidationSummary = formatValidationSummary(
+    selectedModelingCountyRun?.validationSummary ?? null
+  );
   const selectedProjectGuidance = projectId
     ? reportGuidanceByProject[projectId] ?? null
     : null;
@@ -121,6 +197,19 @@ export function ReportCreator({
     );
   }, [selectedWorkspaceId, runs]);
 
+  useEffect(() => {
+    setModelingCountyRunId((current) => {
+      if (
+        current &&
+        availableModelingCountyRuns.some((run) => run.id === current)
+      ) {
+        return current;
+      }
+
+      return pickDefaultModelingCountyRunId(selectedWorkspaceId, modelingCountyRuns);
+    });
+  }, [availableModelingCountyRuns, modelingCountyRuns, selectedWorkspaceId]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -138,6 +227,7 @@ export function ReportCreator({
           summary,
           reportType,
           runIds: selectedRunIds,
+          ...(modelingCountyRunId ? { modelingCountyRunId } : {}),
         }),
       });
 
@@ -325,6 +415,62 @@ export function ReportCreator({
             onChange={(event) => setSummary(event.target.value)}
             rows={3}
           />
+        </div>
+
+        {/* Modeling evidence selector */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <label
+              htmlFor="report-modeling-county-run"
+              className="text-[0.82rem] font-semibold"
+            >
+              Modeling evidence
+            </label>
+            {selectedModelingCountyRun?.claimStatus ? (
+              <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {formatModelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
+              </span>
+            ) : (
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Optional
+              </span>
+            )}
+          </div>
+          <select
+            id="report-modeling-county-run"
+            className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={modelingCountyRunId}
+            onChange={(event) => setModelingCountyRunId(event.target.value)}
+          >
+            <option value="">Do not attach modeling evidence</option>
+            {availableModelingCountyRuns.map((run) => (
+              <option key={run.id} value={run.id}>
+                {formatModelingRunOptionText(run)}
+              </option>
+            ))}
+          </select>
+          {selectedModelingCountyRun ? (
+            <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
+              <p className="font-medium text-foreground">
+                {selectedModelingCountyRun.geographyLabel ?? "County run"} ·{" "}
+                {selectedModelingCountyRun.stage ?? "stage not recorded"}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {selectedModelingCountyRun.statusReason ??
+                  "No structured assignment claim decision is recorded for this run yet."}
+                {selectedModelingValidationSummary
+                  ? ` Validation: ${selectedModelingValidationSummary}.`
+                  : ""}
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {availableModelingCountyRuns.length > 0
+                ? "Choose the county-run evidence this packet should cite, or leave it unattached when the report should not make assignment-model claims."
+                : "No county-run modeling evidence is available for this project workspace yet."}
+            </p>
+          )}
         </div>
 
         {/* Run selector */}
