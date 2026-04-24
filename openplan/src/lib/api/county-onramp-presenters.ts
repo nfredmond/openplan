@@ -11,6 +11,7 @@ import type {
   CountyRunArtifact,
   CountyRunDetailResponse,
   CountyRunListItem,
+  CountyRunModelingEvidence,
 } from "@/lib/api/county-onramp";
 
 export type CountyRunRowLike = {
@@ -63,9 +64,10 @@ export function presentCountyRunArtifact(row: CountyRunArtifactRowLike): CountyR
 export function presentCountyRunDetail(params: {
   row: CountyRunRowLike;
   artifacts: CountyRunArtifactRowLike[];
+  modelingEvidence?: CountyRunModelingEvidence | null;
   origin?: string;
 }): CountyRunDetailResponse {
-  const { row, artifacts, origin } = params;
+  const { row, artifacts, modelingEvidence, origin } = params;
   const manifest = parseCountyOnrampManifest(row.manifest_json);
   const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
   const workerPayload =
@@ -93,5 +95,6 @@ export function presentCountyRunDetail(params: {
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),
     validationSummary: row.validation_summary_json ?? null,
+    modelingEvidence: modelingEvidence ?? null,
   };
 }

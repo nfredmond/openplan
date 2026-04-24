@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
+import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -67,15 +68,32 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load county run artifacts" }, { status: 500 });
     }
 
+    const evidenceResult = await loadCountyRunModelingEvidence({
+      supabase,
+      countyRunId: parsedParams.data.countyRunId,
+      track: "assignment",
+    });
+
+    if (evidenceResult.error) {
+      audit.warn("county_run_modeling_evidence_lookup_failed", {
+        countyRunId: parsedParams.data.countyRunId,
+        message: evidenceResult.error.message,
+        code: evidenceResult.error.code ?? null,
+        missingSchema: evidenceResult.error.missingSchema ?? false,
+      });
+    }
+
     const response = presentCountyRunDetail({
       row: countyRun,
       artifacts: (artifacts ?? []) as { artifact_type: string; path: string }[],
+      modelingEvidence: evidenceResult.evidence,
       origin: new URL(request.url).origin,
     });
 
     audit.info("county_run_loaded", {
       countyRunId: parsedParams.data.countyRunId,
       stage: response.stage,
+      modelingEvidenceClaimStatus: response.modelingEvidence?.claimDecision?.claimStatus ?? null,
       durationMs: Date.now() - startedAt,
     });
 

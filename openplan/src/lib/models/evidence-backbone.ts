@@ -86,6 +86,38 @@ export type CountyRunModelingEvidenceBundle = {
 
 export type ModelingEvidenceSupabaseLike = Pick<SupabaseClient, "from">;
 
+export type ModelingEvidenceSnapshot = {
+  claimDecision: (ModelingClaimDecision & { decidedAt: string | null }) | null;
+  reportLanguage: string | null;
+  sourceManifests: Array<{
+    id: string;
+    sourceKey: string;
+    sourceKind: ModelingSourceManifestInput["sourceKind"];
+    sourceLabel: string;
+    sourceUrl: string | null;
+    sourceVintage: string | null;
+    geographyId: string | null;
+    geographyLabel: string | null;
+    licenseNote: string | null;
+    citationText: string;
+  }>;
+  validationResults: Array<{
+    id: string;
+    track: ModelingEvidenceTrack;
+    metricKey: string;
+    metricLabel: string;
+    observedValue: number | null;
+    thresholdValue: number | null;
+    thresholdMaxValue: number | null;
+    thresholdComparator: ModelingValidationComparator;
+    status: ModelingValidationStatus;
+    blocksClaimGrade: boolean;
+    detail: string;
+    sourceManifestId: string | null;
+    evaluatedAt: string | null;
+  }>;
+};
+
 function asNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
@@ -423,7 +455,7 @@ export function buildCountyRunModelingEvidenceBundle({
   return { sourceManifests, validationResults, claimDecision };
 }
 
-function tableMissing(message: string | null | undefined): boolean {
+export function isModelingEvidenceSchemaMissing(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|PGRST205/i.test(message ?? "");
 }
 
@@ -482,7 +514,7 @@ export async function refreshCountyRunModelingEvidence({
         error: {
           message: deleteResult.error.message,
           code: deleteResult.error.code ?? null,
-          missingSchema: tableMissing(deleteResult.error.message),
+          missingSchema: isModelingEvidenceSchemaMissing(deleteResult.error.message),
         },
       };
     }
@@ -504,7 +536,7 @@ export async function refreshCountyRunModelingEvidence({
       error: {
         message: sourceInsertResult.error.message,
         code: sourceInsertResult.error.code ?? null,
-        missingSchema: tableMissing(sourceInsertResult.error.message),
+        missingSchema: isModelingEvidenceSchemaMissing(sourceInsertResult.error.message),
       },
     };
   }
@@ -542,7 +574,7 @@ export async function refreshCountyRunModelingEvidence({
         error: {
           message: validationInsertResult.error.message,
           code: validationInsertResult.error.code ?? null,
-          missingSchema: tableMissing(validationInsertResult.error.message),
+          missingSchema: isModelingEvidenceSchemaMissing(validationInsertResult.error.message),
         },
       };
     }
@@ -568,7 +600,7 @@ export async function refreshCountyRunModelingEvidence({
       error: {
         message: claimInsertResult.error.message,
         code: claimInsertResult.error.code ?? null,
-        missingSchema: tableMissing(claimInsertResult.error.message),
+        missingSchema: isModelingEvidenceSchemaMissing(claimInsertResult.error.message),
       },
     };
   }
@@ -577,6 +609,150 @@ export async function refreshCountyRunModelingEvidence({
     bundle,
     insertedSourceManifestCount: sourceIdsByKey.size,
     insertedValidationResultCount: validationRows.length,
+    error: null,
+  };
+}
+
+function evidenceLoadError(error: { message: string; code?: string | null }) {
+  return {
+    message: error.message,
+    code: error.code ?? null,
+    missingSchema: isModelingEvidenceSchemaMissing(error.message),
+  };
+}
+
+export async function loadCountyRunModelingEvidence({
+  supabase,
+  countyRunId,
+  track = "assignment",
+}: {
+  supabase: ModelingEvidenceSupabaseLike;
+  countyRunId: string;
+  track?: ModelingEvidenceTrack;
+}): Promise<{
+  evidence: ModelingEvidenceSnapshot | null;
+  error: { message: string; code?: string | null; missingSchema?: boolean } | null;
+}> {
+  const claimResult = await supabase
+    .from("modeling_claim_decisions")
+    .select("track, claim_status, status_reason, reasons_json, validation_summary_json, decided_at")
+    .eq("county_run_id", countyRunId)
+    .eq("track", track)
+    .maybeSingle();
+
+  if (claimResult.error) {
+    return { evidence: null, error: evidenceLoadError(claimResult.error) };
+  }
+
+  const sourcesResult = await supabase
+    .from("modeling_source_manifests")
+    .select(
+      "id, source_key, source_kind, source_label, source_url, source_vintage, geography_id, geography_label, license_note, citation_text"
+    )
+    .eq("county_run_id", countyRunId)
+    .order("created_at", { ascending: true });
+
+  if (sourcesResult.error) {
+    return { evidence: null, error: evidenceLoadError(sourcesResult.error) };
+  }
+
+  const validationsResult = await supabase
+    .from("modeling_validation_results")
+    .select(
+      "id, track, metric_key, metric_label, observed_value, threshold_value, threshold_max_value, threshold_comparator, status, blocks_claim_grade, detail, source_manifest_id, evaluated_at"
+    )
+    .eq("county_run_id", countyRunId)
+    .eq("track", track)
+    .order("created_at", { ascending: true });
+
+  if (validationsResult.error) {
+    return { evidence: null, error: evidenceLoadError(validationsResult.error) };
+  }
+
+  const claimRow = claimResult.data as
+    | {
+        track: ModelingEvidenceTrack;
+        claim_status: ModelingClaimStatus;
+        status_reason: string;
+        reasons_json: unknown;
+        validation_summary_json: ModelingClaimDecision["validationSummary"];
+        decided_at: string | null;
+      }
+    | null;
+  const claimDecision: ModelingEvidenceSnapshot["claimDecision"] = claimRow
+    ? {
+        track: claimRow.track,
+        claimStatus: claimRow.claim_status,
+        statusReason: claimRow.status_reason,
+        reasons: Array.isArray(claimRow.reasons_json)
+          ? claimRow.reasons_json.filter((reason): reason is string => typeof reason === "string")
+          : [],
+        validationSummary: claimRow.validation_summary_json,
+        decidedAt: claimRow.decided_at,
+      }
+    : null;
+
+  const sourceManifests = ((sourcesResult.data ?? []) as Array<{
+    id: string;
+    source_key: string;
+    source_kind: ModelingSourceManifestInput["sourceKind"];
+    source_label: string;
+    source_url: string | null;
+    source_vintage: string | null;
+    geography_id: string | null;
+    geography_label: string | null;
+    license_note: string | null;
+    citation_text: string;
+  }>).map((source) => ({
+    id: source.id,
+    sourceKey: source.source_key,
+    sourceKind: source.source_kind,
+    sourceLabel: source.source_label,
+    sourceUrl: source.source_url,
+    sourceVintage: source.source_vintage,
+    geographyId: source.geography_id,
+    geographyLabel: source.geography_label,
+    licenseNote: source.license_note,
+    citationText: source.citation_text,
+  }));
+
+  const validationResults = ((validationsResult.data ?? []) as Array<{
+    id: string;
+    track: ModelingEvidenceTrack;
+    metric_key: string;
+    metric_label: string;
+    observed_value: number | null;
+    threshold_value: number | null;
+    threshold_max_value: number | null;
+    threshold_comparator: ModelingValidationComparator;
+    status: ModelingValidationStatus;
+    blocks_claim_grade: boolean;
+    detail: string;
+    source_manifest_id: string | null;
+    evaluated_at: string | null;
+  }>).map((result) => ({
+    id: result.id,
+    track: result.track,
+    metricKey: result.metric_key,
+    metricLabel: result.metric_label,
+    observedValue: result.observed_value,
+    thresholdValue: result.threshold_value,
+    thresholdMaxValue: result.threshold_max_value,
+    thresholdComparator: result.threshold_comparator,
+    status: result.status,
+    blocksClaimGrade: result.blocks_claim_grade,
+    detail: result.detail,
+    sourceManifestId: result.source_manifest_id,
+    evaluatedAt: result.evaluated_at,
+  }));
+
+  return {
+    evidence: {
+      claimDecision,
+      reportLanguage: claimDecision ? modelingClaimReportLanguage(claimDecision) : null,
+      sourceManifests,
+      validationResults,
+    },
     error: null,
   };
 }

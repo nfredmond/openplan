@@ -11,6 +11,17 @@ const countyRunMaybeSingleMock = vi.fn();
 const artifactSelectMock = vi.fn();
 const artifactEqMock = vi.fn();
 const artifactOrderMock = vi.fn();
+const claimDecisionSelectMock = vi.fn();
+const claimDecisionEqCountyRunIdMock = vi.fn();
+const claimDecisionEqTrackMock = vi.fn();
+const claimDecisionMaybeSingleMock = vi.fn();
+const sourceManifestSelectMock = vi.fn();
+const sourceManifestEqMock = vi.fn();
+const sourceManifestOrderMock = vi.fn();
+const validationResultSelectMock = vi.fn();
+const validationResultEqCountyRunIdMock = vi.fn();
+const validationResultEqTrackMock = vi.fn();
+const validationResultOrderMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -143,12 +154,86 @@ describe("GET /api/county-runs/[countyRunId]", () => {
     artifactEqMock.mockReturnValue({ order: artifactOrderMock });
     artifactSelectMock.mockReturnValue({ eq: artifactEqMock });
 
+    claimDecisionMaybeSingleMock.mockResolvedValue({
+      data: {
+        track: "assignment",
+        claim_status: "screening_grade",
+        status_reason: "Worst matched facility APE exceeds the claim-grade threshold.",
+        reasons_json: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+        validation_summary_json: {
+          passed: 3,
+          warned: 0,
+          failed: 1,
+          missingRequiredMetricKeys: [],
+          requiredMetricKeys: ["assignment_final_gap", "count_station_matches"],
+        },
+        decided_at: "2026-03-24T23:00:00Z",
+      },
+      error: null,
+    });
+    claimDecisionEqTrackMock.mockReturnValue({ maybeSingle: claimDecisionMaybeSingleMock });
+    claimDecisionEqCountyRunIdMock.mockReturnValue({ eq: claimDecisionEqTrackMock });
+    claimDecisionSelectMock.mockReturnValue({ eq: claimDecisionEqCountyRunIdMock });
+
+    sourceManifestOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          source_key: "census_tiger_boundary",
+          source_kind: "census_tiger",
+          source_label: "County boundary and tract geography",
+          source_url: "https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_restmapservice.html",
+          source_vintage: "2026",
+          geography_id: "06057",
+          geography_label: "Nevada County, CA",
+          license_note: "U.S. Census public data.",
+          citation_text: "U.S. Census TIGER/Line geography for Nevada County, CA.",
+        },
+      ],
+      error: null,
+    });
+    sourceManifestEqMock.mockReturnValue({ order: sourceManifestOrderMock });
+    sourceManifestSelectMock.mockReturnValue({ eq: sourceManifestEqMock });
+
+    validationResultOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          track: "assignment",
+          metric_key: "critical_absolute_percent_error",
+          metric_label: "Critical facility absolute percent error",
+          observed_value: 237.62,
+          threshold_value: 50,
+          threshold_max_value: null,
+          threshold_comparator: "lte",
+          status: "fail",
+          blocks_claim_grade: true,
+          detail: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+          source_manifest_id: null,
+          evaluated_at: "2026-03-24T23:00:00Z",
+        },
+      ],
+      error: null,
+    });
+    validationResultEqTrackMock.mockReturnValue({ order: validationResultOrderMock });
+    validationResultEqCountyRunIdMock.mockReturnValue({ eq: validationResultEqTrackMock });
+    validationResultSelectMock.mockReturnValue({ eq: validationResultEqCountyRunIdMock });
+
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
         return { select: countyRunSelectMock };
       }
       if (table === "county_run_artifacts") {
         return { select: artifactSelectMock };
+      }
+      if (table === "modeling_claim_decisions") {
+        return { select: claimDecisionSelectMock };
+      }
+      if (table === "modeling_source_manifests") {
+        return { select: sourceManifestSelectMock };
+      }
+      if (table === "modeling_validation_results") {
+        return { select: validationResultSelectMock };
       }
       throw new Error(`Unexpected table: ${table}`);
     });
@@ -175,6 +260,28 @@ describe("GET /api/county-runs/[countyRunId]", () => {
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
       { artifactType: "validation_review_packet_md", path: "/tmp/review.md" },
     ]);
+    expect(payload.modelingEvidence.claimDecision.claimStatus).toBe("screening_grade");
+    expect(payload.modelingEvidence.validationResults).toHaveLength(1);
+    expect(payload.modelingEvidence.sourceManifests).toHaveLength(1);
+  });
+
+  it("keeps county-run detail available when modeling evidence tables are not migrated yet", async () => {
+    claimDecisionMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: 'relation "modeling_claim_decisions" does not exist', code: "42P01" },
+    });
+
+    const response = await getCountyRunDetail(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.modelingEvidence).toBeNull();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "county_run_modeling_evidence_lookup_failed",
+      expect.objectContaining({ missingSchema: true })
+    );
   });
 
   it("returns 404 when county run is missing", async () => {

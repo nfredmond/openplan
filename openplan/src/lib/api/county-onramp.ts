@@ -53,6 +53,51 @@ export const countyRunArtifactSchema = z.object({
   path: z.string().min(1),
 });
 
+export const countyRunModelingEvidenceSchema = z.object({
+  claimDecision: z
+    .object({
+      track: z.enum(["assignment", "behavioral_demand", "multimodal_accessibility", "shared"]),
+      claimStatus: z.enum(["claim_grade_passed", "screening_grade", "prototype_only"]),
+      statusReason: z.string().min(1),
+      reasons: z.array(z.string()),
+      validationSummary: z.record(z.string(), z.unknown()),
+      decidedAt: z.string().nullable(),
+    })
+    .nullable(),
+  reportLanguage: z.string().nullable(),
+  sourceManifests: z.array(
+    z.object({
+      id: z.string().uuid(),
+      sourceKey: z.string().min(1),
+      sourceKind: z.string().min(1),
+      sourceLabel: z.string().min(1),
+      sourceUrl: z.string().nullable(),
+      sourceVintage: z.string().nullable(),
+      geographyId: z.string().nullable(),
+      geographyLabel: z.string().nullable(),
+      licenseNote: z.string().nullable(),
+      citationText: z.string().min(1),
+    })
+  ),
+  validationResults: z.array(
+    z.object({
+      id: z.string().uuid(),
+      track: z.enum(["assignment", "behavioral_demand", "multimodal_accessibility", "shared"]),
+      metricKey: z.string().min(1),
+      metricLabel: z.string().min(1),
+      observedValue: z.number().nullable(),
+      thresholdValue: z.number().nullable(),
+      thresholdMaxValue: z.number().nullable(),
+      thresholdComparator: z.enum(["lte", "gte", "between", "eq", "exists", "manual"]),
+      status: z.enum(["pass", "warn", "fail"]),
+      blocksClaimGrade: z.boolean(),
+      detail: z.string().min(1),
+      sourceManifestId: z.string().uuid().nullable(),
+      evaluatedAt: z.string().nullable(),
+    })
+  ),
+});
+
 export const countyRunDetailResponseSchema = z.object({
   id: z.string().uuid(),
   workspaceId: z.string().uuid().optional(),
@@ -68,6 +113,7 @@ export const countyRunDetailResponseSchema = z.object({
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),
   validationSummary: z.record(z.string(), z.unknown()).nullable().optional(),
+  modelingEvidence: countyRunModelingEvidenceSchema.nullable().optional(),
 });
 
 export const enqueueCountyRunResponseSchema = z.object({
@@ -134,6 +180,7 @@ export type CreateCountyRunResponse = z.infer<typeof createCountyRunResponseSche
 export type CountyRunListItem = z.infer<typeof countyRunListItemSchema>;
 export type CountyRunListResponse = z.infer<typeof countyRunListResponseSchema>;
 export type CountyRunArtifact = z.infer<typeof countyRunArtifactSchema>;
+export type CountyRunModelingEvidence = z.infer<typeof countyRunModelingEvidenceSchema>;
 export type CountyRunDetailResponse = z.infer<typeof countyRunDetailResponseSchema>;
 export type EnqueueCountyRunResponse = z.infer<typeof enqueueCountyRunResponseSchema>;
 export type CountyRunScaffoldResponse = z.infer<typeof countyRunScaffoldResponseSchema>;

@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { NevadaCountyValidatedEvidence } from "@/components/county-runs/nevada-county-validated-evidence";
+import { CountyRunModelingEvidence } from "@/components/county-runs/county-run-modeling-evidence";
 
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
   const pathname = usePathname();
@@ -180,6 +181,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       />
 
       {isValidatedNevadaCountyRun(data.runName) ? <NevadaCountyValidatedEvidence /> : null}
+      <CountyRunModelingEvidence evidence={data.modelingEvidence} />
 
       <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Card>

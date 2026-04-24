@@ -72,6 +72,55 @@ describe("CountyRunDetailClient", () => {
             relativePath: "validation/validation_summary.json",
           },
         ],
+        modelingEvidence: {
+          claimDecision: {
+            track: "assignment",
+            claimStatus: "screening_grade",
+            statusReason: "Worst matched facility APE exceeds the claim-grade threshold.",
+            reasons: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+            validationSummary: {
+              passed: 3,
+              warned: 0,
+              failed: 1,
+              missingRequiredMetricKeys: [],
+              requiredMetricKeys: ["assignment_final_gap", "count_station_matches"],
+            },
+            decidedAt: "2026-03-24T23:00:00Z",
+          },
+          reportLanguage:
+            "Screening-grade modeling result. Use for planning context only, and include the validation caveats before making any outward claim.",
+          sourceManifests: [
+            {
+              id: "11111111-1111-4111-8111-111111111111",
+              sourceKey: "census_tiger_boundary",
+              sourceKind: "census_tiger",
+              sourceLabel: "County boundary and tract geography",
+              sourceUrl: "https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_restmapservice.html",
+              sourceVintage: "2026",
+              geographyId: "06057",
+              geographyLabel: "Nevada County, CA",
+              licenseNote: "U.S. Census public data.",
+              citationText: "U.S. Census TIGER/Line geography for Nevada County, CA.",
+            },
+          ],
+          validationResults: [
+            {
+              id: "22222222-2222-4222-8222-222222222222",
+              track: "assignment",
+              metricKey: "critical_absolute_percent_error",
+              metricLabel: "Critical facility absolute percent error",
+              observedValue: 237.62,
+              thresholdValue: 50,
+              thresholdMaxValue: null,
+              thresholdComparator: "lte",
+              status: "fail",
+              blocksClaimGrade: true,
+              detail: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+              sourceManifestId: null,
+              evaluatedAt: "2026-03-24T23:00:00Z",
+            },
+          ],
+        },
         workerPayload: null,
       },
       loading: false,
@@ -96,6 +145,16 @@ describe("CountyRunDetailClient", () => {
     expect(screen.getByText(/this page is the operational truth surface/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /prepare run handoff/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /copy page link/i })).toBeInTheDocument();
+  });
+
+  it("renders structured modeling evidence and claim posture", () => {
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    expect(screen.getByText("Modeling evidence")).toBeInTheDocument();
+    expect(screen.getByText("Screening-grade")).toBeInTheDocument();
+    expect(screen.getByText(/Screening-grade modeling result/i)).toBeInTheDocument();
+    expect(screen.getByText("Critical facility absolute percent error")).toBeInTheDocument();
+    expect(screen.getByText("County boundary and tract geography")).toBeInTheDocument();
   });
 
   it("copies the detail link", async () => {
