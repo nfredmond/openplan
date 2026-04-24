@@ -276,4 +276,31 @@ describe("getReportPacketFreshness", () => {
       detail: "Partially funded · Gap remains · Reimbursement in flight · 2 pursued opportunities · 1 closing soon · 1 award risk flag",
     });
   });
+
+  it("includes modeling evidence posture when report artifacts have claim decisions", () => {
+    expect(
+      describeEvidenceChainSummary({
+        linkedRunCount: 1,
+        scenarioSetLinkCount: 0,
+        scenarioAssumptionSetCount: 0,
+        scenarioDataPackageCount: 0,
+        scenarioIndicatorSnapshotCount: 0,
+        scenarioSharedSpinePendingCount: 0,
+        projectRecordGroupCount: 2,
+        totalProjectRecordCount: 4,
+        engagementLabel: "Not linked",
+        engagementItemCount: 0,
+        engagementReadyForHandoffCount: 0,
+        stageGateLabel: "In progress",
+        stageGatePassCount: 1,
+        stageGateHoldCount: 0,
+        stageGateBlockedGateLabel: null,
+        modelingEvidenceCount: 1,
+        modelingEvidenceClaimLabel: "Screening-grade",
+      })
+    ).toMatchObject({
+      detail:
+        "0 assumptions · 0 packages · 0 indicators · 1 modeling evidence · Screening-grade · Not linked engagement · 0/0 handoff-ready · In progress governance",
+    });
+  });
 });

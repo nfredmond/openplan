@@ -1,6 +1,8 @@
 import { titleize } from "@/lib/reports/catalog";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
+import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
+import { type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 export type EvidenceChainSummary = {
   linkedRunCount: number;
@@ -18,6 +20,8 @@ export type EvidenceChainSummary = {
   stageGatePassCount: number;
   stageGateHoldCount: number;
   stageGateBlockedGateLabel: string | null;
+  modelingEvidenceCount?: number;
+  modelingEvidenceClaimLabel?: string;
 };
 
 export function buildEvidenceChainSummary(input: {
@@ -36,6 +40,8 @@ export function buildEvidenceChainSummary(input: {
   engagementItemCount?: number | null;
   engagementReadyForHandoffCount?: number | null;
   stageGateSnapshot: ProjectStageGateSnapshot;
+  modelingEvidenceCount?: number | null;
+  modelingEvidenceClaimStatuses?: ModelingClaimStatus[] | null;
 }): EvidenceChainSummary {
   const projectRecordCounts = [
     input.projectRecordsSnapshot.deliverables.count,
@@ -68,6 +74,18 @@ export function buildEvidenceChainSummary(input: {
   const scenarioSharedSpinePendingCount = input.scenarioSetLinks.filter(
     (link) => link.sharedSpine?.schemaPending
   ).length;
+  const modelingEvidenceCount = input.modelingEvidenceCount ?? 0;
+  const modelingEvidenceClaimStatuses = input.modelingEvidenceClaimStatuses ?? [];
+  const modelingEvidenceClaimLabel =
+    modelingEvidenceCount === 0
+      ? "Not linked"
+      : modelingEvidenceClaimStatuses.includes("prototype_only")
+        ? formatModelingClaimStatusLabel("prototype_only")
+        : modelingEvidenceClaimStatuses.includes("screening_grade")
+          ? formatModelingClaimStatusLabel("screening_grade")
+          : modelingEvidenceClaimStatuses.includes("claim_grade_passed")
+            ? formatModelingClaimStatusLabel("claim_grade_passed")
+            : "No claim decision";
 
   return {
     linkedRunCount: input.linkedRunCount,
@@ -92,5 +110,7 @@ export function buildEvidenceChainSummary(input: {
     stageGateBlockedGateLabel: blockedGate
       ? `${blockedGate.gateId} · ${blockedGate.name}`
       : null,
+    modelingEvidenceCount,
+    modelingEvidenceClaimLabel,
   };
 }

@@ -12,6 +12,11 @@ import {
 } from "@/lib/reports/evidence-chain";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
+import {
+  formatModelingClaimStatusLabel,
+  formatModelingValidationStatusLabel,
+  type ReportModelingEvidence,
+} from "@/lib/reports/modeling-evidence";
 
 type ProjectRecord = {
   id: string;
@@ -89,6 +94,7 @@ export type ReportGenerationData = {
     meetings: ProjectRecordSnapshotEntry;
   };
   stageGateSnapshot: ProjectStageGateSnapshot;
+  modelingEvidence: ReportModelingEvidence[];
 };
 
 function esc(value: string): string {
@@ -390,6 +396,8 @@ function evidenceChainMarkup(summary: EvidenceChainSummary): string {
       <div><span class="metric-label">Handoff-ready input</span><strong>${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount}</strong></div>
       <div><span class="metric-label">Stage-gate posture</span><strong>${esc(summary.stageGateLabel)}</strong></div>
       <div><span class="metric-label">Governance counts</span><strong>${summary.stageGatePassCount} pass • ${summary.stageGateHoldCount} hold</strong></div>
+      <div><span class="metric-label">Modeling evidence</span><strong>${summary.modelingEvidenceCount ?? 0}</strong></div>
+      <div><span class="metric-label">Modeling claim posture</span><strong>${esc(summary.modelingEvidenceClaimLabel ?? "Not linked")}</strong></div>
     </div>
     ${
       summary.scenarioSharedSpinePendingCount > 0
@@ -401,6 +409,79 @@ function evidenceChainMarkup(summary: EvidenceChainSummary): string {
         ? `<p class="meta" style="margin-top: 14px;">Blocked gate at generation: ${esc(summary.stageGateBlockedGateLabel)}</p>`
         : ""
     }
+  </section>`;
+}
+
+function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): string {
+  if (modelingEvidence.length === 0) {
+    return "";
+  }
+
+  return `<section>
+    <h2 class="section-title">Modeling evidence and claim posture</h2>
+    <p>This packet includes structured assignment-model evidence captured from county-run records so model-backed project claims carry explicit source and validation context.</p>
+    <div class="metrics-stack">
+      ${modelingEvidence
+        .map((item) => {
+          const evidence = item.evidence;
+          const claim = evidence?.claimDecision ?? null;
+          const validationSummary = claim?.validationSummary ?? null;
+          const validationRows = evidence?.validationResults ?? [];
+          const sourceRows = evidence?.sourceManifests ?? [];
+          const validationSummaryText = validationSummary
+            ? `${validationSummary.passed} pass • ${validationSummary.warned} warning • ${validationSummary.failed} fail`
+            : `${validationRows.length} validation checks`;
+
+          return `<article class="metric-card modeling-evidence-card">
+            <h3>${esc(item.geographyLabel?.trim() || item.runName?.trim() || "County model run")}</h3>
+            <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(titleize(item.stage || "unknown"))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
+            ${
+              claim
+                ? `<p><strong>${esc(formatModelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
+                    evidence?.reportLanguage ??
+                      "Structured modeling evidence exists, but no report-language rule was recorded."
+                  )}</p>
+            <p>${esc(claim.statusReason)}</p>
+            ${
+              claim.reasons.length > 0
+                ? `<ul class="record-list">${claim.reasons
+                    .slice(0, 4)
+                    .map((reason) => `<li>${esc(reason)}</li>`)
+                    .join("")}</ul>`
+                : ""
+            }`
+                : `<p><strong>Prototype-only:</strong> No structured claim decision is recorded for this county run, so model-backed language should not be used as an outward planning claim.</p>`
+            }
+            <div class="metrics-grid" style="margin-top: 14px;">
+              <div><span class="metric-label">Source manifests</span><strong>${sourceRows.length}</strong></div>
+              <div><span class="metric-label">Validation checks</span><strong>${esc(validationSummaryText)}</strong></div>
+            </div>
+            ${
+              validationRows.length > 0
+                ? `<ul class="record-list" style="margin-top: 14px;">${validationRows
+                    .map(
+                      (result) =>
+                        `<li><strong>${esc(result.metricLabel)}</strong><p>${esc(
+                          formatModelingValidationStatusLabel(result.status)
+                        )} • ${esc(result.detail)}</p></li>`
+                    )
+                    .join("")}</ul>`
+                : `<p class="empty">No validation checks recorded.</p>`
+            }
+            ${
+              sourceRows.length > 0
+                ? `<p class="meta" style="margin-top: 14px;">Sources: ${esc(
+                    sourceRows
+                      .map((source) => source.sourceLabel)
+                      .filter(Boolean)
+                      .join("; ")
+                  )}</p>`
+                : `<p class="empty">No source manifests recorded.</p>`
+            }
+          </article>`;
+        })
+        .join("")}
+    </div>
   </section>`;
 }
 
@@ -699,6 +780,10 @@ export function buildReportHtml(data: ReportGenerationData): string {
     engagementReadyForHandoffCount:
       data.engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
     stageGateSnapshot: data.stageGateSnapshot,
+    modelingEvidenceCount: data.modelingEvidence.length,
+    modelingEvidenceClaimStatuses: data.modelingEvidence
+      .map((item) => item.evidence?.claimDecision?.claimStatus ?? null)
+      .filter((status): status is NonNullable<typeof status> => Boolean(status)),
   });
 
   return `<!doctype html>
@@ -751,6 +836,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
         </div>
       </header>
       ${evidenceChainMarkup(evidenceChainSummary)}
+      ${modelingEvidenceMarkup(data.modelingEvidence)}
       ${stageGateProvenanceMarkup(data)}
       ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}

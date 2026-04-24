@@ -1,5 +1,9 @@
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
-import type { ModelingEvidenceSnapshot, ModelingClaimStatus, ModelingValidationStatus } from "@/lib/models/evidence-backbone";
+import {
+  formatModelingClaimStatusLabel,
+  formatModelingValidationStatusLabel,
+  type ReportModelingEvidence,
+} from "@/lib/reports/modeling-evidence";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -67,14 +71,7 @@ export type RtpExportCampaign = {
   rtp_cycle_chapter_id: string | null;
 };
 
-export type RtpExportModelingEvidence = {
-  countyRunId: string;
-  runName: string | null;
-  geographyLabel: string | null;
-  stage: string | null;
-  updatedAt: string | null;
-  evidence: ModelingEvidenceSnapshot | null;
-};
+export type RtpExportModelingEvidence = ReportModelingEvidence;
 
 export type RtpExportNormalizedLinkedProject = RtpExportLinkedProject & {
   project: {
@@ -131,18 +128,6 @@ function formatRtpExportDateTime(value: string | null | undefined): string {
   if (!value) return "Not set";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
-}
-
-function formatModelingClaimStatusLabel(status: ModelingClaimStatus): string {
-  if (status === "claim_grade_passed") return "Claim-grade passed";
-  if (status === "screening_grade") return "Screening-grade";
-  return "Prototype-only";
-}
-
-function formatValidationStatusLabel(status: ModelingValidationStatus): string {
-  if (status === "pass") return "Pass";
-  if (status === "warn") return "Warning";
-  return "Fail";
 }
 
 function resolveEnabledSectionKeys(sectionKeys?: string[]): RtpExportSectionKey[] {
@@ -237,7 +222,7 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
                   .map(
                     (result) =>
                       `<li><strong>${esc(result.metricLabel)}</strong> · ${esc(
-                        formatValidationStatusLabel(result.status)
+                        formatModelingValidationStatusLabel(result.status)
                       )}<br/><span class="muted">${esc(result.detail)}</span></li>`
                   )
                   .join("")}</ul>`

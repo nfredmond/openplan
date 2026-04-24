@@ -19,7 +19,7 @@ import {
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
-import { buildRtpExportHtml, normalizeRtpLinkedProjects, type RtpExportModelingEvidence } from "@/lib/rtp/export";
+import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
@@ -41,6 +41,11 @@ import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
 } from "@/lib/reports/scenario-provenance";
+import {
+  extractReportModelingEvidenceClaimStatuses,
+  summarizeReportModelingEvidenceForMetadata,
+  type ReportModelingEvidence,
+} from "@/lib/reports/modeling-evidence";
 
 function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
@@ -91,7 +96,7 @@ type ProjectRecordSnapshotEntry = {
   latestAt: string | null;
 };
 
-type RtpCountyRunEvidenceRow = {
+type ReportCountyRunEvidenceRow = {
   id: string;
   run_name: string | null;
   geography_label: string | null;
@@ -134,22 +139,6 @@ function buildProjectRecordSnapshot(entries: {
     decisions: buildEntry(entries.decisions, (item) => item.decided_at ?? item.created_at),
     meetings: buildEntry(entries.meetings, (item) => item.meeting_at ?? item.created_at),
   };
-}
-
-function summarizeRtpModelingEvidenceForMetadata(modelingEvidence: RtpExportModelingEvidence[]) {
-  return modelingEvidence.map((item) => ({
-    countyRunId: item.countyRunId,
-    runName: item.runName,
-    geographyLabel: item.geographyLabel,
-    stage: item.stage,
-    updatedAt: item.updatedAt,
-    claimStatus: item.evidence?.claimDecision?.claimStatus ?? null,
-    statusReason: item.evidence?.claimDecision?.statusReason ?? null,
-    reportLanguage: item.evidence?.reportLanguage ?? null,
-    sourceManifestCount: item.evidence?.sourceManifests.length ?? 0,
-    validationResultCount: item.evidence?.validationResults.length ?? 0,
-    validationSummary: item.evidence?.claimDecision?.validationSummary ?? null,
-  }));
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -333,7 +322,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               .eq("workspace_id", report.workspace_id)
               .order("updated_at", { ascending: false })
               .limit(5),
-          [] as RtpCountyRunEvidenceRow[]
+          [] as ReportCountyRunEvidenceRow[]
         ),
       ]);
 
@@ -371,7 +360,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
       const countyRuns = countyRunsResult.error ? [] : (countyRunsResult.data ?? []);
-      const modelingEvidence: RtpExportModelingEvidence[] = await Promise.all(
+      const modelingEvidence: ReportModelingEvidence[] = await Promise.all(
         countyRuns.map(async (countyRun) => {
           const evidenceResult = await loadCountyRunModelingEvidence({
             supabase,
@@ -400,7 +389,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
           };
         })
       );
-      const modelingEvidenceMetadata = summarizeRtpModelingEvidenceForMetadata(modelingEvidence);
+      const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
+      const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
       const linkedProjectIds = linkedProjects
         .map((link) => link.project?.id ?? null)
         .filter((value): value is string => Boolean(value));
@@ -593,9 +583,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           workflow,
           modelingEvidence: modelingEvidenceMetadata,
           modelingEvidenceCount: modelingEvidenceMetadata.length,
-          modelingEvidenceClaimStatuses: modelingEvidenceMetadata
-            .map((item) => item.claimStatus)
-            .filter((status): status is NonNullable<typeof status> => Boolean(status)),
+          modelingEvidenceClaimStatuses,
           enabledSectionCount: sections.filter((section) => section.enabled).length,
           enabledSectionKeys,
           packetPresetAlignment,
@@ -684,9 +672,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         userId: user.id,
         linkedProjectCount: linkedProjects.length,
         modelingEvidenceCount: modelingEvidenceMetadata.length,
-        modelingEvidenceClaimStatuses: modelingEvidenceMetadata
-          .map((item) => item.claimStatus)
-          .filter((status): status is NonNullable<typeof status> => Boolean(status)),
+        modelingEvidenceClaimStatuses,
         durationMs: Date.now() - startedAt,
       });
 
@@ -718,6 +704,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingAwardsResult,
       fundingOpportunitiesResult,
       billingInvoicesResult,
+      countyRunsResult,
     ] = await Promise.all([
       supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
       supabase
@@ -807,6 +794,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
             .order("created_at", { ascending: false }),
         [] as Array<Record<string, unknown>>
       ),
+      safeOptionalQuery(
+        () =>
+          supabase
+            .from("county_runs")
+            .select("id, run_name, geography_label, stage, updated_at")
+            .eq("workspace_id", report.workspace_id)
+            .order("updated_at", { ascending: false })
+            .limit(5),
+        [] as ReportCountyRunEvidenceRow[]
+      ),
     ]);
 
     const loadErrors = [
@@ -826,6 +823,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       billingInvoicesResult.error,
     ].filter(Boolean);
 
+    if (countyRunsResult.error) {
+      audit.warn("report_modeling_county_runs_lookup_failed", {
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        message: countyRunsResult.error.message,
+        code: countyRunsResult.error.code ?? null,
+      });
+    }
+
     if (loadErrors.length > 0 || !projectResult.data) {
       const firstError = loadErrors[0];
       audit.error("report_generation_load_failed", {
@@ -835,6 +841,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
     }
+
+    const projectCountyRuns = countyRunsResult.error ? [] : (countyRunsResult.data ?? []);
+    const projectModelingEvidencePromise: Promise<ReportModelingEvidence[]> = Promise.all(
+      projectCountyRuns.map(async (countyRun) => {
+        const evidenceResult = await loadCountyRunModelingEvidence({
+          supabase,
+          countyRunId: countyRun.id,
+          track: "assignment",
+        });
+
+        if (evidenceResult.error) {
+          audit.warn("report_modeling_evidence_lookup_failed", {
+            reportId: report.id,
+            workspaceId: report.workspace_id,
+            countyRunId: countyRun.id,
+            message: evidenceResult.error.message,
+            code: evidenceResult.error.code ?? null,
+            missingSchema: evidenceResult.error.missingSchema ?? false,
+          });
+        }
+
+        return {
+          countyRunId: countyRun.id,
+          runName: countyRun.run_name,
+          geographyLabel: countyRun.geography_label,
+          stage: countyRun.stage,
+          updatedAt: countyRun.updated_at,
+          evidence: evidenceResult.evidence,
+        };
+      })
+    );
 
     const engagementCampaignId = extractEngagementCampaignId(sectionsResult.data ?? []);
     const engagementProvenance = extractEngagementHandoffProvenance(sectionsResult.data ?? []);
@@ -942,6 +979,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const scenarioSetLinks = scenarioSetLinksResult.data;
+    const modelingEvidence = await projectModelingEvidencePromise;
+    const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
+    const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
 
     const projectRecordsSnapshot = buildProjectRecordSnapshot({
       deliverables: deliverablesResult.data ?? [],
@@ -983,6 +1023,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       engagementReadyForHandoffCount:
         engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
       stageGateSnapshot,
+      modelingEvidenceCount: modelingEvidence.length,
+      modelingEvidenceClaimStatuses,
     });
 
     const scenarioSpineSummary = {
@@ -1055,6 +1097,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectFundingSnapshot,
       projectRecordsSnapshot,
       stageGateSnapshot,
+      modelingEvidence,
     });
 
     const format = parsed.data.format;
@@ -1110,6 +1153,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         projectRecordsSnapshot,
         projectFundingSnapshot,
         evidenceChainSummary,
+        modelingEvidence: modelingEvidenceMetadata,
+        modelingEvidenceCount: modelingEvidenceMetadata.length,
+        modelingEvidenceClaimStatuses,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
         engagementCampaignSnapshot: engagementProvenance?.campaign ?? null,
@@ -1218,6 +1264,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       storagePath: projectPdfStoragePath,
       userId: user.id,
       linkedRunCount: linkedRuns.length,
+      modelingEvidenceCount: modelingEvidenceMetadata.length,
+      modelingEvidenceClaimStatuses,
       durationMs: Date.now() - startedAt,
     });
 

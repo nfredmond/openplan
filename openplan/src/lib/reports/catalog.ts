@@ -899,11 +899,16 @@ export function describeEvidenceChainSummary(
       : null;
   const projectRecordLabel = `${summary.totalProjectRecordCount} project record${summary.totalProjectRecordCount === 1 ? "" : "s"}`;
   const linkedRunLabel = `${summary.linkedRunCount} linked run${summary.linkedRunCount === 1 ? "" : "s"}`;
+  const modelingEvidenceLabel =
+    typeof summary.modelingEvidenceCount === "number" && summary.modelingEvidenceCount > 0
+      ? `${summary.modelingEvidenceCount} modeling evidence · ${summary.modelingEvidenceClaimLabel ?? "No claim decision"}`
+      : null;
 
   return {
     headline: `${linkedRunLabel} · ${scenarioLabel} · ${projectRecordLabel}`,
     detail: [
       scenarioSpineLabel,
+      modelingEvidenceLabel,
       `${summary.engagementLabel} engagement`,
       `${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready`,
       `${summary.stageGateLabel} governance`,

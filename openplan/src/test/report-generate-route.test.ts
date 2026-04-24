@@ -797,6 +797,118 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
+  it("adds modeling evidence claim posture to project report artifacts", async () => {
+    countyRunsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    modelingClaimMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        track: "assignment",
+        claim_status: "screening_grade",
+        status_reason: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+        reasons_json: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+        validation_summary_json: {
+          passed: 3,
+          warned: 1,
+          failed: 1,
+          missingRequiredMetricKeys: [],
+          requiredMetricKeys: ["assignment_final_gap", "critical_absolute_percent_error"],
+        },
+        decided_at: "2026-04-24T01:00:00.000Z",
+      },
+      error: null,
+    });
+    modelingSourcesOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "source-1",
+          source_key: "observed_count_validation",
+          source_kind: "local_public_counts",
+          source_label: "Observed count validation",
+          source_url: null,
+          source_vintage: "2026",
+          geography_id: "06057",
+          geography_label: "Nevada County, CA",
+          license_note: "Public agency count data.",
+          citation_text: "Observed public count validation for Nevada County.",
+        },
+      ],
+      error: null,
+    });
+    modelingValidationsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "validation-1",
+          track: "assignment",
+          metric_key: "critical_absolute_percent_error",
+          metric_label: "Critical facility absolute percent error",
+          observed_value: 237.62,
+          threshold_value: 50,
+          threshold_max_value: null,
+          threshold_comparator: "lte",
+          status: "fail",
+          blocks_claim_grade: true,
+          detail: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+          source_manifest_id: "source-1",
+          evaluated_at: "2026-04-24T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const metadata = generatedArtifact?.metadata_json;
+
+    expect(metadata).toEqual(
+      expect.objectContaining({
+        generationMode: "structured_html_packet",
+        htmlContent: expect.stringContaining("Modeling evidence and claim posture"),
+        sourceContext: expect.objectContaining({
+          modelingEvidenceCount: 1,
+          modelingEvidenceClaimStatuses: ["screening_grade"],
+          modelingEvidence: [
+            expect.objectContaining({
+              countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              claimStatus: "screening_grade",
+              sourceManifestCount: 1,
+              validationResultCount: 1,
+              reportLanguage:
+                "Screening-grade modeling result. Use for planning context only, and include the validation caveats before making any outward claim.",
+            }),
+          ],
+          evidenceChainSummary: expect.objectContaining({
+            modelingEvidenceCount: 1,
+            modelingEvidenceClaimLabel: "Screening-grade",
+          }),
+        }),
+      })
+    );
+    expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
+    expect(metadata?.htmlContent).toContain("Observed count validation");
+    expect(metadata?.htmlContent).toContain("Modeling claim posture");
+  });
+
   it("persists compact project-record provenance in artifact metadata and html", async () => {
     deliverablesLimitMock.mockResolvedValueOnce({
       data: [
