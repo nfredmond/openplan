@@ -180,7 +180,7 @@ describe("access request helpers", () => {
           source_path: "/request-access",
           created_at: "2026-04-24T12:00:00.000Z",
           reviewed_at: "2026-04-24T12:05:00.000Z",
-          provisioned_workspace_id: null,
+          provisioned_workspace_id: "22222222-2222-4222-8222-222222222222",
         },
       ],
       error: null,
@@ -204,10 +204,31 @@ describe("access request helpers", () => {
     const eventInMock = vi.fn(() => ({ order: eventOrderMock }));
     const eventSelectMock = vi.fn(() => ({ in: eventInMock }));
 
+    const invitationLimitMock = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: "66666666-6666-4666-8666-666666666666",
+          workspace_id: "22222222-2222-4222-8222-222222222222",
+          email_normalized: "nat@example.gov",
+          role: "owner",
+          status: "pending",
+          expires_at: "2026-05-01T12:00:00.000Z",
+          accepted_at: null,
+          created_at: "2026-04-24T12:06:00.000Z",
+          updated_at: "2026-04-24T12:06:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    const invitationOrderMock = vi.fn(() => ({ limit: invitationLimitMock }));
+    const invitationInMock = vi.fn(() => ({ order: invitationOrderMock }));
+    const invitationSelectMock = vi.fn(() => ({ in: invitationInMock }));
+
     const client = {
       from: vi.fn((table: string) => {
         if (table === "access_requests") return { select: requestSelectMock };
         if (table === "access_request_review_events") return { select: eventSelectMock };
+        if (table === "workspace_invitations") return { select: invitationSelectMock };
         throw new Error(`Unexpected table: ${table}`);
       }),
     };
@@ -224,7 +245,18 @@ describe("access request helpers", () => {
         created_at: "2026-04-24T12:05:00.000Z",
       },
     ]);
+    expect(result.requests[0]?.owner_invitation).toEqual({
+      id: "66666666-6666-4666-8666-666666666666",
+      workspace_id: "22222222-2222-4222-8222-222222222222",
+      status: "pending",
+      expires_at: "2026-05-01T12:00:00.000Z",
+      accepted_at: null,
+      created_at: "2026-04-24T12:06:00.000Z",
+      updated_at: "2026-04-24T12:06:00.000Z",
+    });
     expect(eventInMock).toHaveBeenCalledWith("access_request_id", ["44444444-4444-4444-8444-444444444444"]);
     expect(eventLimitMock).toHaveBeenCalledWith(8);
+    expect(invitationInMock).toHaveBeenCalledWith("workspace_id", ["22222222-2222-4222-8222-222222222222"]);
+    expect(invitationLimitMock).toHaveBeenCalledWith(4);
   });
 });

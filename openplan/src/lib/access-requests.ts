@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import type { AccessRequestStatus } from "@/lib/access-request-status";
+import type { WorkspaceInvitationStatus } from "@/lib/workspaces/invitations";
 export {
   ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS,
@@ -40,9 +41,10 @@ export type AccessRequestReviewRow = {
   reviewed_at: string | null;
   provisioned_workspace_id: string | null;
   review_events: AccessRequestReviewEventRow[];
+  owner_invitation: AccessRequestOwnerInvitationSummary | null;
 };
 
-export type AccessRequestReviewRequestRow = Omit<AccessRequestReviewRow, "review_events">;
+export type AccessRequestReviewRequestRow = Omit<AccessRequestReviewRow, "review_events" | "owner_invitation">;
 
 export type AccessRequestReviewEventRow = {
   id: string;
@@ -50,6 +52,28 @@ export type AccessRequestReviewEventRow = {
   previous_status: AccessRequestStatus;
   status: AccessRequestStatus;
   created_at: string | null;
+};
+
+export type AccessRequestOwnerInvitationRow = {
+  id: string;
+  workspace_id: string;
+  email_normalized: string;
+  role: "owner" | "admin" | "member";
+  status: WorkspaceInvitationStatus;
+  expires_at: string | null;
+  accepted_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type AccessRequestOwnerInvitationSummary = {
+  id: string;
+  workspace_id: string;
+  status: WorkspaceInvitationStatus;
+  expires_at: string | null;
+  accepted_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 export type AccessRequestSafetyInput = {
@@ -91,6 +115,24 @@ export type AccessRequestReviewClient = {
         ) => {
           limit: (count: number) => Promise<{
             data: AccessRequestReviewEventRow[] | null;
+            error: { message?: string; code?: string | null } | null;
+          }>;
+        };
+      };
+    };
+  };
+  from(table: "workspace_invitations"): {
+    select: (columns: string) => {
+      in: (
+        column: string,
+        values: string[],
+      ) => {
+        order: (
+          column: string,
+          options: { ascending: boolean },
+        ) => {
+          limit: (count: number) => Promise<{
+            data: AccessRequestOwnerInvitationRow[] | null;
             error: { message?: string; code?: string | null } | null;
           }>;
         };
@@ -143,6 +185,17 @@ export const ACCESS_REQUEST_REVIEW_EVENTS_SELECT = [
   "previous_status",
   "status",
   "created_at",
+].join(", ");
+export const ACCESS_REQUEST_OWNER_INVITATION_SELECT = [
+  "id",
+  "workspace_id",
+  "email_normalized",
+  "role",
+  "status",
+  "expires_at",
+  "accepted_at",
+  "created_at",
+  "updated_at",
 ].join(", ");
 
 function firstHeader(request: NextRequest, keys: string[]): string | null {
@@ -284,6 +337,7 @@ export function evaluateAccessRequestSafety(input: {
 function attachReviewEvents(
   requests: AccessRequestReviewRequestRow[],
   events: AccessRequestReviewEventRow[],
+  ownerInvitations: AccessRequestOwnerInvitationRow[] = [],
 ): AccessRequestReviewRow[] {
   const eventsByRequest = new Map<string, AccessRequestReviewEventRow[]>();
   for (const event of events) {
@@ -292,9 +346,30 @@ function attachReviewEvents(
     eventsByRequest.set(event.access_request_id, existing);
   }
 
+  const ownerInvitationByWorkspaceAndEmail = new Map<string, AccessRequestOwnerInvitationSummary>();
+  for (const invitation of ownerInvitations) {
+    if (invitation.role !== "owner") continue;
+    const key = `${invitation.workspace_id}:${invitation.email_normalized}`;
+    if (ownerInvitationByWorkspaceAndEmail.has(key)) continue;
+    ownerInvitationByWorkspaceAndEmail.set(key, {
+      id: invitation.id,
+      workspace_id: invitation.workspace_id,
+      status: invitation.status,
+      expires_at: invitation.expires_at,
+      accepted_at: invitation.accepted_at,
+      created_at: invitation.created_at,
+      updated_at: invitation.updated_at,
+    });
+  }
+
   return requests.map((request) => ({
     ...request,
     review_events: eventsByRequest.get(request.id) ?? [],
+    owner_invitation: request.provisioned_workspace_id
+      ? ownerInvitationByWorkspaceAndEmail.get(
+          `${request.provisioned_workspace_id}:${normalizeAccessRequestEmail(request.contact_email)}`,
+        ) ?? null
+      : null,
   }));
 }
 
@@ -313,7 +388,10 @@ export async function loadRecentAccessRequestsForReview(client: AccessRequestRev
     };
   }
 
-  const { data: reviewEvents, error: reviewEventsError } = await client
+  const workspaceIds = Array.from(
+    new Set(requests.map((request) => request.provisioned_workspace_id).filter((id): id is string => Boolean(id))),
+  );
+  const reviewEventsPromise = client
     .from("access_request_review_events")
     .select(ACCESS_REQUEST_REVIEW_EVENTS_SELECT)
     .in(
@@ -322,10 +400,24 @@ export async function loadRecentAccessRequestsForReview(client: AccessRequestRev
     )
     .order("created_at", { ascending: false })
     .limit(limit * 8);
+  const ownerInvitationsPromise =
+    workspaceIds.length > 0
+      ? client
+          .from("workspace_invitations")
+          .select(ACCESS_REQUEST_OWNER_INVITATION_SELECT)
+          .in("workspace_id", workspaceIds)
+          .order("created_at", { ascending: false })
+          .limit(limit * 4)
+      : Promise.resolve({ data: [] as AccessRequestOwnerInvitationRow[], error: null });
+
+  const [
+    { data: reviewEvents, error: reviewEventsError },
+    { data: ownerInvitations, error: ownerInvitationsError },
+  ] = await Promise.all([reviewEventsPromise, ownerInvitationsPromise]);
 
   return {
-    requests: attachReviewEvents(requests, reviewEvents ?? []),
-    error: reviewEventsError,
+    requests: attachReviewEvents(requests, reviewEvents ?? [], ownerInvitations ?? []),
+    error: reviewEventsError ?? ownerInvitationsError,
   };
 }
 
