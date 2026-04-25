@@ -1,5 +1,6 @@
 import { ArrowRight, History, Inbox, LockKeyhole, TriangleAlert } from "lucide-react";
 
+import { AccessRequestProvisionControls } from "@/components/operations/access-request-provision-controls";
 import { AccessRequestStatusControls } from "@/components/operations/access-request-status-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -107,7 +108,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1.4fr)]">
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,0.75fr)_minmax(0,0.8fr)_minmax(0,1.25fr)_minmax(0,1.55fr)]">
                 <div className="module-subpanel">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Region
@@ -121,6 +122,12 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                   <p className="mt-2 text-sm text-foreground">{request.expected_workspace_name ?? "Not specified"}</p>
                 </div>
                 <AccessRequestStatusControls requestId={request.id} status={request.status} />
+                <AccessRequestProvisionControls
+                  requestId={request.id}
+                  status={request.status}
+                  provisionedWorkspaceId={request.provisioned_workspace_id}
+                  workspaceName={request.expected_workspace_name ?? request.agency_name}
+                />
               </div>
 
               {request.review_events.length > 0 ? (

@@ -14,6 +14,10 @@ const reviewEventsMigrationSql = readFileSync(
   join(process.cwd(), "supabase/migrations/20260424000076_access_request_review_events.sql"),
   "utf8",
 );
+const provisioningLinkMigrationSql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260424000077_access_request_provisioning_link.sql"),
+  "utf8",
+);
 
 describe("access requests migration", () => {
   it("creates a service-role-only intake table with contact fields", () => {
@@ -67,5 +71,21 @@ describe("access requests migration", () => {
     expect(reviewEventsMigrationSql).toMatch(/GRANT EXECUTE ON FUNCTION public\.record_access_request_triage/i);
     expect(reviewEventsMigrationSql).not.toMatch(/SECURITY DEFINER/i);
     expect(reviewEventsMigrationSql).not.toMatch(/DROP TABLE/i);
+  });
+
+  it("adds an atomic service-role provisioning linker without broadening RLS", () => {
+    expect(provisioningLinkMigrationSql).toMatch(
+      /CREATE OR REPLACE FUNCTION public\.record_access_request_provisioning/i,
+    );
+    expect(provisioningLinkMigrationSql).toMatch(/SECURITY INVOKER/i);
+    expect(provisioningLinkMigrationSql).toMatch(/provisioned_workspace_id = p_workspace_id/i);
+    expect(provisioningLinkMigrationSql).toMatch(/access_requests\.status IN \('contacted', 'invited'\)/i);
+    expect(provisioningLinkMigrationSql).toMatch(/owner_invitation_id/i);
+    expect(provisioningLinkMigrationSql).toMatch(
+      /GRANT EXECUTE ON FUNCTION public\.record_access_request_provisioning/i,
+    );
+    expect(provisioningLinkMigrationSql).not.toMatch(/CREATE POLICY/i);
+    expect(provisioningLinkMigrationSql).not.toMatch(/SECURITY DEFINER/i);
+    expect(provisioningLinkMigrationSql).not.toMatch(/DROP TABLE/i);
   });
 });

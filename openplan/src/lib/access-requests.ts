@@ -3,12 +3,16 @@ import type { NextRequest } from "next/server";
 import type { AccessRequestStatus } from "@/lib/access-request-status";
 export {
   ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
+  ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS,
   accessRequestStatusLabel,
+  canProvisionAccessRequestStatus,
   canTransitionAccessRequestStatus,
   getAccessRequestTransitionOptions,
   isAccessRequestTriageStatus,
+  accessRequestProvisioningSideEffectLabel,
   accessRequestTriageSideEffectLabel,
   type AccessRequestStatus,
+  type AccessRequestProvisionableStatus,
   type AccessRequestTriageStatus,
 } from "@/lib/access-request-status";
 

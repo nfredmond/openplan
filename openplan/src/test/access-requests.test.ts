@@ -3,12 +3,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ACCESS_REQUEST_MAX_PER_WINDOW,
+  ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS,
   ACCESS_REQUEST_REVIEW_EMAILS_ENV,
   ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
+  accessRequestProvisioningSideEffectLabel,
   buildAccessRequestBodyFingerprint,
   buildAccessRequestClientFingerprint,
   buildAccessRequestMetadata,
   buildAccessRequestSupportMetadata,
+  canProvisionAccessRequestStatus,
   canTransitionAccessRequestStatus,
   canReviewAccessRequests,
   evaluateAccessRequestSafety,
@@ -143,6 +146,22 @@ describe("access request helpers", () => {
       workspaceProvisioned: false,
     });
     expect(accessRequestTriageSideEffectLabel()).toMatch(/no outbound email or workspace/i);
+  });
+
+  it("allows workspace provisioning only after contacted or invited review", () => {
+    expect(canProvisionAccessRequestStatus("new")).toBe(false);
+    expect(canProvisionAccessRequestStatus("reviewing")).toBe(false);
+    expect(canProvisionAccessRequestStatus("contacted")).toBe(true);
+    expect(canProvisionAccessRequestStatus("invited")).toBe(true);
+    expect(canProvisionAccessRequestStatus("provisioned")).toBe(false);
+    expect(ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS).toEqual({
+      reviewEventRecorded: true,
+      outboundEmailSent: false,
+      workspaceProvisioned: true,
+      ownerInvitationCreated: true,
+    });
+    expect(accessRequestProvisioningSideEffectLabel()).toMatch(/pilot workspace and owner invite/i);
+    expect(accessRequestProvisioningSideEffectLabel()).toMatch(/no outbound email/i);
   });
 
   it("attaches compact review events to recent access request rows", async () => {

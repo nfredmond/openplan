@@ -20,10 +20,21 @@ export const ACCESS_REQUEST_TRIAGE_STATUSES = [
 
 export type AccessRequestTriageStatus = (typeof ACCESS_REQUEST_TRIAGE_STATUSES)[number];
 
+export const ACCESS_REQUEST_PROVISIONABLE_STATUSES = ["contacted", "invited"] as const;
+
+export type AccessRequestProvisionableStatus = (typeof ACCESS_REQUEST_PROVISIONABLE_STATUSES)[number];
+
 export const ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS = {
   reviewEventRecorded: true,
   outboundEmailSent: false,
   workspaceProvisioned: false,
+} as const;
+
+export const ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS = {
+  reviewEventRecorded: true,
+  outboundEmailSent: false,
+  workspaceProvisioned: true,
+  ownerInvitationCreated: true,
 } as const;
 
 const ACCESS_REQUEST_TRIAGE_TRANSITIONS: Record<AccessRequestStatus, AccessRequestTriageStatus[]> = {
@@ -49,6 +60,12 @@ export function canTransitionAccessRequestStatus(
   nextStatus: AccessRequestTriageStatus,
 ): boolean {
   return getAccessRequestTransitionOptions(currentStatus).includes(nextStatus);
+}
+
+export function canProvisionAccessRequestStatus(
+  status: AccessRequestStatus,
+): status is AccessRequestProvisionableStatus {
+  return ACCESS_REQUEST_PROVISIONABLE_STATUSES.includes(status as AccessRequestProvisionableStatus);
 }
 
 export function accessRequestStatusLabel(status: AccessRequestStatus): string {
@@ -79,4 +96,8 @@ export function accessRequestTriageActionLabel(status: AccessRequestTriageStatus
 
 export function accessRequestTriageSideEffectLabel(): string {
   return "Records review status only; no outbound email or workspace is created.";
+}
+
+export function accessRequestProvisioningSideEffectLabel(): string {
+  return "Creates a pilot workspace and owner invite; no outbound email is sent.";
 }
