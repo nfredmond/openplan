@@ -20,6 +20,8 @@ The command performs only public or unauthenticated checks:
 
 It also checks the local shell's `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS` value if present, without printing it. If the env var is absent locally, the command warns and leaves production env verification as an operator checklist item.
 
+The authenticated admin page now also surfaces linked owner-invitation status for provisioned request-access rows. That panel displays only the workspace id prefix, invitation id prefix, status, and expiration or acceptance timing. It does not query, print, or render invitation tokens, token prefixes, manual-delivery URLs, cookies, auth headers, or service-role credentials.
+
 ## Guardrails
 
 The preflight does not accept cookies, auth headers, service-role keys, Vercel tokens, Supabase tokens, or browser storage files.
@@ -40,8 +42,9 @@ Do not click triage buttons, mark statuses, create workspaces, send email, alter
    - `Recent supervised onboarding requests`,
    - `Assistant action activity`.
 7. Confirm the access-request lane is not showing the locked reviewer message.
-8. If rows are present, record only non-PII evidence: timestamp, deployment URL, row count, and whether the review controls are visible. Crop or blur screenshots before sharing outside the operator environment.
-9. Leave all request rows unchanged unless a disposable test row and mutation have been explicitly approved.
+8. If a provisioned row is present, confirm the owner-invitation status is visible without any invitation URL or token value.
+9. If rows are present, record only non-PII evidence: timestamp, deployment URL, row count, whether the review controls are visible, and whether linked owner-invitation status is visible. Crop or blur screenshots before sharing outside the operator environment.
+10. Leave all request rows unchanged unless a disposable test row and mutation have been explicitly approved.
 
 ## Evidence template
 
@@ -54,6 +57,7 @@ reviewer email allowlisted in Vercel Production: yes/no
 manual browser sign-in completed by reviewer: yes/no
 /admin/operations rendered for allowlisted reviewer: yes/no
 access-request lane locked: yes/no
+linked owner-invitation status visible without token/url: yes/no/not applicable
 rows changed: no
 emails sent: no
 workspaces created: no

@@ -1,13 +1,13 @@
-import { execFile } from "node:child_process";
-import { once } from "node:events";
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { spawnSync } from "node:child_process";
+import { readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
-import { promisify } from "node:util";
+import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
-const execFileAsync = promisify(execFile);
 const scriptPath = path.join(process.cwd(), "scripts/ops/check-prod-health.mjs");
-const servers: ReturnType<typeof createServer>[] = [];
+const mockFetchPath = path.join(process.cwd(), "src/test/fixtures/prod-health-mock-fetch.mjs");
+const callFiles: string[] = [];
 
 type HealthServerOptions = {
   status?: number;
@@ -27,116 +27,131 @@ const healthyPayload = {
   },
 };
 
-function writeJson(response: ServerResponse, status: number, cacheControl: string, payload: unknown) {
-  response.writeHead(status, {
-    "Cache-Control": cacheControl,
-    "Content-Type": "application/json",
-  });
-  response.end(JSON.stringify(payload));
+async function readCalls(callsPath: string) {
+  const text = await readFile(callsPath, "utf8").catch(() => "");
+  return text
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => line.split(" ")[0]);
 }
 
-async function startHealthServer(options: HealthServerOptions = {}) {
-  const {
-    status = 200,
-    headStatus = status,
-    cacheControl = "no-store, max-age=0",
-    payload = healthyPayload,
-  } = options;
-  const requests: string[] = [];
-  const server = createServer((request: IncomingMessage, response: ServerResponse) => {
-    requests.push(request.method ?? "<unknown>");
-    if (request.method === "HEAD") {
-      response.writeHead(headStatus, { "Cache-Control": cacheControl });
-      response.end();
-      return;
-    }
+async function runHealthCheck(options: HealthServerOptions = {}) {
+  const callsPath = path.join(
+    tmpdir(),
+    `openplan-prod-health-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.log`,
+  );
+  const url = "https://openplan.example/api/health";
+  callFiles.push(callsPath);
 
-    writeJson(response, status, cacheControl, payload);
-  });
+  const env = {
+    ...process.env,
+    OPENPLAN_HEALTH_URL: url,
+    OPENPLAN_HEALTH_MOCK_CALLS_PATH: callsPath,
+    OPENPLAN_HEALTH_MOCK_STATUS: String(options.status ?? 200),
+    OPENPLAN_HEALTH_MOCK_HEAD_STATUS: String(options.headStatus ?? options.status ?? 200),
+    OPENPLAN_HEALTH_MOCK_CACHE_CONTROL: options.cacheControl ?? "no-store, max-age=0",
+    OPENPLAN_HEALTH_MOCK_PAYLOAD: JSON.stringify(options.payload ?? healthyPayload),
+  };
 
-  servers.push(server);
-  server.listen(0, "127.0.0.1");
-  await once(server, "listening");
-  const address = server.address();
-  if (!address || typeof address === "string") {
-    throw new Error("Expected TCP server address");
+  const result = spawnSync(
+    process.execPath,
+    [
+      "-e",
+      [
+        `await import(${JSON.stringify(pathToFileURL(mockFetchPath).href)});`,
+        `await import(${JSON.stringify(pathToFileURL(scriptPath).href)});`,
+      ].join(" "),
+    ],
+    {
+      cwd: process.cwd(),
+      env,
+      encoding: "utf8",
+      stdio: "pipe",
+    },
+  );
+
+  const output = {
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
+    status: result.status,
+    calls: await readCalls(callsPath),
+    url,
+  };
+
+  if (!output.stdout && !output.stderr && output.calls.length === 0) {
+    throw Object.assign(new Error("Health check child process produced no observable output"), {
+      ...output,
+      status: result.status,
+      signal: result.signal,
+      spawnError: result.error?.message,
+    });
   }
 
-  return {
-    requests,
-    url: `http://127.0.0.1:${address.port}/api/health`,
-  };
-}
+  if (result.status !== 0) {
+    const error = new Error(`Command failed: ${process.execPath} scripts/ops/check-prod-health.mjs`);
+    Object.assign(error, output);
+    throw error;
+  }
 
-async function runHealthCheck(url: string) {
-  return execFileAsync(process.execPath, [scriptPath], {
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      OPENPLAN_HEALTH_URL: url,
-    },
-  });
+  return output;
 }
 
 afterEach(async () => {
-  await Promise.all(
-    servers.splice(0).map(
-      (server) =>
-        new Promise<void>((resolve, reject) => {
-          server.close((error) => (error ? reject(error) : resolve()));
-        }),
-    ),
-  );
+  await Promise.all(callFiles.splice(0).map((file) => rm(file, { force: true })));
 });
 
 describe("production health check script", () => {
   it("passes against the expected public health contract", async () => {
-    const server = await startHealthServer();
+    const result = await runHealthCheck();
 
-    const result = await runHealthCheck(server.url);
-
+    expect(result.status).toBe(0);
     expect(result.stdout).toContain("OpenPlan health check passed");
-    expect(result.stdout).toContain(server.url);
+    expect(result.stdout).toContain(result.url);
     expect(result.stderr).toBe("");
-    expect(server.requests).toEqual(["GET", "HEAD"]);
+    expect(result.calls).toEqual(["GET", "HEAD"]);
   });
 
   it("fails when the endpoint returns a non-200 response", async () => {
-    const server = await startHealthServer({ status: 503 });
-
-    await expect(runHealthCheck(server.url)).rejects.toMatchObject({
+    await expect(runHealthCheck({ status: 503 })).rejects.toMatchObject({
+      status: 1,
       stderr: expect.stringContaining("GET /api/health returned non-200 status"),
+      calls: ["GET"],
     });
   });
 
   it("fails when required payload fields are missing or invalid", async () => {
-    const server = await startHealthServer({
-      payload: {
-        status: "ok",
-        service: "wrong-service",
-        checks: { app: "ok", database: "not_checked" },
-      },
-    });
-
-    await expect(runHealthCheck(server.url)).rejects.toMatchObject({
+    await expect(
+      runHealthCheck({
+        payload: {
+          status: "ok",
+          service: "wrong-service",
+          checks: { app: "ok", database: "not_checked" },
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 1,
       stderr: expect.stringContaining("GET /api/health returned an unexpected payload"),
+      calls: ["GET"],
     });
   });
 
   it("fails if the shallow health endpoint starts claiming dependency readiness", async () => {
-    const server = await startHealthServer({
-      payload: {
-        ...healthyPayload,
-        checks: {
-          app: "ok",
-          database: "ok",
-          billing: "not_checked",
+    await expect(
+      runHealthCheck({
+        payload: {
+          ...healthyPayload,
+          checks: {
+            app: "ok",
+            database: "ok",
+            billing: "not_checked",
+          },
         },
-      },
-    });
-
-    await expect(runHealthCheck(server.url)).rejects.toMatchObject({
+      }),
+    ).rejects.toMatchObject({
+      status: 1,
       stderr: expect.stringContaining('checks.database must stay "not_checked"'),
+      calls: ["GET"],
     });
   });
 });

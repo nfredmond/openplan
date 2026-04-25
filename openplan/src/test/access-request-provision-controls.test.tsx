@@ -109,4 +109,30 @@ describe("AccessRequestProvisionControls", () => {
     expect(screen.getByText("Workspace 11111111 linked.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Create invite/i })).not.toBeInTheDocument();
   });
+
+  it("surfaces linked owner invite status without exposing an invitation URL or token", () => {
+    render(
+      <AccessRequestProvisionControls
+        requestId="44444444-4444-4444-8444-444444444444"
+        status="provisioned"
+        provisionedWorkspaceId="11111111-1111-4111-8111-111111111111"
+        ownerInvitation={{
+          id: "33333333-3333-4333-8333-333333333333",
+          workspace_id: "11111111-1111-4111-8111-111111111111",
+          status: "pending",
+          expires_at: "2026-05-08T12:00:00.000Z",
+          accepted_at: null,
+          created_at: "2026-04-24T12:00:00.000Z",
+          updated_at: "2026-04-24T12:00:00.000Z",
+        }}
+        workspaceName="NCTC Pilot"
+      />,
+    );
+
+    expect(screen.getByText("Owner invite Pending")).toBeInTheDocument();
+    expect(screen.getByText("33333333")).toBeInTheDocument();
+    expect(screen.getByText(/Token and manual-delivery URL are not loaded here/i)).toBeInTheDocument();
+    expect(screen.queryByDisplayValue(/invite=/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/test-token/i)).not.toBeInTheDocument();
+  });
 });

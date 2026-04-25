@@ -19,6 +19,10 @@ const accessEventLimitMock = vi.fn();
 const accessEventOrderMock = vi.fn(() => ({ limit: accessEventLimitMock }));
 const accessEventInMock = vi.fn(() => ({ order: accessEventOrderMock }));
 const accessEventSelectMock = vi.fn(() => ({ in: accessEventInMock }));
+const invitationLimitMock = vi.fn();
+const invitationOrderMock = vi.fn(() => ({ limit: invitationLimitMock }));
+const invitationInMock = vi.fn(() => ({ order: invitationOrderMock }));
+const invitationSelectMock = vi.fn(() => ({ in: invitationInMock }));
 
 const fromMock = vi.fn((table: string) => {
   if (table === "assistant_action_executions") {
@@ -34,6 +38,9 @@ const serviceFromMock = vi.fn((table: string) => {
   }
   if (table === "access_request_review_events") {
     return { select: accessEventSelectMock };
+  }
+  if (table === "workspace_invitations") {
+    return { select: invitationSelectMock };
   }
 
   throw new Error(`Unexpected service table: ${table}`);
@@ -118,6 +125,10 @@ describe("AdminOperationsPage", () => {
       error: null,
     });
     accessEventLimitMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    invitationLimitMock.mockResolvedValue({
       data: [],
       error: null,
     });
@@ -212,6 +223,63 @@ describe("AdminOperationsPage", () => {
     expect(accessEventInMock).toHaveBeenCalledWith("access_request_id", [
       "44444444-4444-4444-8444-444444444444",
     ]);
+  });
+
+  it("surfaces linked owner invite status without loading invitation tokens", async () => {
+    vi.stubEnv("OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS", "operator@openplan.test");
+    accessLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          agency_name: "Nevada County Transportation Commission",
+          contact_name: "Nat Ford",
+          contact_email: "nat@example.gov",
+          role_title: "Planning lead",
+          region: "Nevada County",
+          use_case: "Screen rural transit corridors for a supervised early-access workflow.",
+          expected_workspace_name: "NCTC Pilot",
+          status: "provisioned",
+          source_path: "/request-access",
+          created_at: "2026-04-24T12:00:00.000Z",
+          reviewed_at: "2026-04-24T12:07:00.000Z",
+          provisioned_workspace_id: "11111111-1111-4111-8111-111111111111",
+        },
+      ],
+      error: null,
+    });
+    accessEventLimitMock.mockResolvedValueOnce({
+      data: [],
+      error: null,
+    });
+    invitationLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "33333333-3333-4333-8333-333333333333",
+          workspace_id: "11111111-1111-4111-8111-111111111111",
+          email_normalized: "nat@example.gov",
+          role: "owner",
+          status: "pending",
+          expires_at: "2026-05-08T12:00:00.000Z",
+          accepted_at: null,
+          created_at: "2026-04-24T12:06:00.000Z",
+          updated_at: "2026-04-24T12:06:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    render(await AdminOperationsPage());
+
+    expect(screen.getByText("Workspace 11111111 linked.")).toBeInTheDocument();
+    expect(screen.getByText("Owner invite Pending")).toBeInTheDocument();
+    expect(screen.getByText("33333333")).toBeInTheDocument();
+    expect(screen.getByText(/Token and manual-delivery URL are not loaded here/i)).toBeInTheDocument();
+    expect(screen.queryByDisplayValue(/invite=/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/test-token/i)).not.toBeInTheDocument();
+    expect(serviceFromMock).toHaveBeenCalledWith("workspace_invitations");
+    expect(invitationSelectMock).toHaveBeenCalledWith(expect.not.stringMatching(/token|invitationUrl/i));
+    expect(invitationInMock).toHaveBeenCalledWith("workspace_id", ["11111111-1111-4111-8111-111111111111"]);
+    expect(invitationLimitMock).toHaveBeenCalledWith(32);
   });
 
   it("keeps the activity lane explicit when no action executions exist", async () => {

@@ -125,7 +125,7 @@ async function main() {
   console.log(`checkedAt=${result.checkedAt}`);
 }
 
-main().catch((error) => {
+await main().catch((error) => {
   console.error(`OpenPlan health check failed: ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 });

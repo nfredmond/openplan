@@ -126,6 +126,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                   requestId={request.id}
                   status={request.status}
                   provisionedWorkspaceId={request.provisioned_workspace_id}
+                  ownerInvitation={request.owner_invitation}
                   workspaceName={request.expected_workspace_name ?? request.agency_name}
                 />
               </div>
