@@ -3,6 +3,7 @@
 Purpose: keep one-off but reusable production QA scripts outside the app runtime while preserving the exact evidence-generation path used for ship-critical checks.
 
 ## Current scripts
+- `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
@@ -21,6 +22,9 @@ From `openplan/qa-harness`:
 
 ```bash
 npm install
+npm run local-workspace-url-isolation-smoke -- --example-fixture
+# after copying the example fixture to a local seeded fixture and exporting synthetic password env vars:
+npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
 npm run prod-report-funding-smoke
@@ -43,6 +47,7 @@ npm run prod-qa-cleanup:apply
 - OpenPlan also auto-loads `secrets/openplan_vercel_protection_bypass.env` from the workspace root when present, so canonical proof runs can use the secure local bypass path without copying the secret into app env files.
 - When the canonical alias is still protected and no bypass secret is available in the harness env, use `OPENPLAN_BASE_URL=https://openplan-zeta.vercel.app` deliberately for a fallback production proof run, and record that alias choice explicitly in the generated smoke memo.
 - Uses Playwright in headless mode.
+- The local workspace URL isolation fixture is a template: replace placeholder IDs/text with records from a local synthetic seed and export the password env vars before running it.
 - Intended for controlled operator use, not CI.
 - Most smoke scripts create real production QA users/workspaces/records. Run cleanup after proof so production residue does not accumulate.
 - `openplan-prod-qa-cleanup.js` is intentionally non-destructive by default; use `--apply` only after reviewing the printed plan.

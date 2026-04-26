@@ -1,0 +1,33 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "users": {
+    "workspaceA": {
+      "email": "openplan-workspace-a@example.test",
+      "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_A_PASSWORD",
+      "workspaceName": "Synthetic Workspace A"
+    },
+    "workspaceB": {
+      "email": "openplan-workspace-b@example.test",
+      "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_B_PASSWORD",
+      "workspaceName": "Synthetic Workspace B"
+    }
+  },
+  "checks": [
+    {
+      "name": "Workspace A project detail is visible to A and blocked for B",
+      "url": "/projects/00000000-0000-4000-8000-0000000000a1",
+      "allowedUser": "workspaceA",
+      "allowedText": "Synthetic A Project",
+      "leakText": "Synthetic A Project",
+      "deniedPattern": "not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned|sign in"
+    },
+    {
+      "name": "Workspace B project detail is visible to B and blocked for A",
+      "url": "/projects/00000000-0000-4000-8000-0000000000b1",
+      "allowedUser": "workspaceB",
+      "allowedText": "Synthetic B Project",
+      "leakText": "Synthetic B Project",
+      "deniedPattern": "not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned|sign in"
+    }
+  ]
+}
