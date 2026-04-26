@@ -23,7 +23,9 @@ From `openplan/qa-harness`:
 ```bash
 npm install
 npm run local-workspace-url-isolation-smoke -- --example-fixture
-# after copying the example fixture to a local seeded fixture and exporting synthetic password env vars:
+# from ../openplan, seed local synthetic users/workspaces/projects and write the ignored local fixture:
+corepack pnpm seed:workspace-isolation
+# then export the printed synthetic password env vars and run the browser proof:
 npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke

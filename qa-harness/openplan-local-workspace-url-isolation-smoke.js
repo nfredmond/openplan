@@ -182,11 +182,19 @@ async function signInIfNeeded(page, baseUrl, userKey, user, password) {
   await passwordInput.fill(password);
 
   await page.getByRole('button', { name: /^sign in$/i }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForFunction(
+    () => !window.location.pathname.startsWith('/sign-in') || Boolean(document.querySelector('[role="alert"]')),
+    { timeout: 15_000 }
+  );
 
   if (page.url().includes('/sign-in')) {
-    throw new Error(`Synthetic user ${userKey} remained on /sign-in after submit.`);
+    const alertText = await page.locator('[role="alert"]').first().innerText().catch(() => null);
+    throw new Error(
+      `Synthetic user ${userKey} remained on /sign-in after submit${alertText ? `: ${alertText}` : '.'}`
+    );
   }
+
+  await page.waitForLoadState('networkidle').catch(() => undefined);
 }
 
 async function buildContext(browser, baseUrl, userKey, user) {

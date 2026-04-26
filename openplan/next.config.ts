@@ -1,11 +1,24 @@
 import type { NextConfig } from "next";
 
+const LOCAL_DEV_CONNECT_SRC =
+  process.env.NODE_ENV === "production"
+    ? []
+    : ["http://localhost:*", "http://127.0.0.1:*", "ws://localhost:*", "ws://127.0.0.1:*"];
+
 const CSP_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com",
+  [
+    "connect-src 'self'",
+    "https://*.supabase.co",
+    "wss://*.supabase.co",
+    ...LOCAL_DEV_CONNECT_SRC,
+    "https://api.mapbox.com",
+    "https://events.mapbox.com",
+    "https://*.tiles.mapbox.com",
+  ].join(" "),
   "worker-src 'self' blob:",
   "font-src 'self' data:",
   "frame-ancestors 'none'",

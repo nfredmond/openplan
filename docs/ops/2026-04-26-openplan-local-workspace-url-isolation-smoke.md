@@ -1,0 +1,33 @@
+# OpenPlan Local Workspace URL Isolation Smoke — 2026-04-26
+
+- Base URL: http://localhost:3010
+- Fixture: /home/narford/.openclaw/workspace/openplan/qa-harness/fixtures/workspace-url-isolation.local.json
+- Mutation posture: read-only browser navigation; no Supabase admin/service key used by this harness.
+
+## Result
+- PASS
+
+## Notes
+- Loaded fixture /home/narford/.openclaw/workspace/openplan/qa-harness/fixtures/workspace-url-isolation.local.json.
+- Validated 2 synthetic users and 2 URL checks.
+- Authenticated synthetic user workspaceA.
+- Authenticated synthetic user workspaceB.
+- Allowed-view pass: Synthetic Workspace A project detail is visible to workspaceA and blocked for workspaceB (workspaceA).
+- Denied-view pass: Synthetic Workspace A project detail is visible to workspaceA and blocked for workspaceB (workspaceB).
+- Allowed-view pass: Synthetic Workspace B project detail is visible to workspaceB and blocked for workspaceA (workspaceB).
+- Denied-view pass: Synthetic Workspace B project detail is visible to workspaceB and blocked for workspaceA (workspaceA).
+
+## Failures
+- None
+
+## Artifacts
+- docs/ops/2026-04-26-test-output/2026-04-26-synthetic-workspace-a-project-detail-is-visible-to-workspacea-and-blocked-for-workspaceb-a.png
+- docs/ops/2026-04-26-test-output/2026-04-26-synthetic-workspace-a-project-detail-is-visible-to-workspacea-and-blocked-for-workspaceb-d.png
+- docs/ops/2026-04-26-test-output/2026-04-26-synthetic-workspace-b-project-detail-is-visible-to-workspaceb-and-blocked-for-workspacea-a.png
+- docs/ops/2026-04-26-test-output/2026-04-26-synthetic-workspace-b-project-detail-is-visible-to-workspaceb-and-blocked-for-workspacea-d.png
+
+## Preconditions
+- Local app is running against local/synthetic Supabase data.
+- Fixture users belong to different workspaces and use `passwordEnv` or Playwright `storageStatePath`; no real credentials are required.
+- Fixture URLs point to records seeded in only one workspace so cross-user access can be verified without production mutation.
+

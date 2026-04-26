@@ -11,6 +11,7 @@
     "test:workspace-selection-hardening": "vitest run src/test/workspace-membership-current.test.ts src/test/workspace-membership-query-guard.test.ts src/test/plans-route.test.ts src/test/programs-route.test.ts src/test/funding-opportunities-route.test.ts src/test/models-route.test.ts src/test/rtp-cycles-route.test.ts src/test/engagement-campaigns-route.test.ts src/test/current-workspace-route.test.ts src/test/assistant-context-route.test.ts src/test/assistant-route.test.ts",
     "test:watch": "vitest",
     "seed:gtfs": "tsx scripts/seed-gtfs.ts",
+    "seed:workspace-isolation": "tsx scripts/seed-local-workspace-isolation.ts",
     "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
     "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",

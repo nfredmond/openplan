@@ -66,6 +66,12 @@ npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-
 
 Supabase was not touched for this prep slice. The harness intentionally assumes the local synthetic auth/workspace fixture already exists so the proof lane can be prepared without production mutation or service-role access. The next implementation step, if desired, is a separate local seed fixture/script that creates only local Supabase records and is clearly barred from production.
 
+## Follow-up enablement
+
+- Added app-side local-only seed script: `openplan/scripts/seed-local-workspace-isolation.ts`.
+- Added npm script: `pnpm seed:workspace-isolation` from `openplan/openplan`.
+- The seed script refuses non-local Supabase/app URLs, creates/updates only `@example.test` local synthetic users, upserts deterministic synthetic workspaces/projects, removes accidental cross-memberships between the two synthetic users, verifies project RLS read/cross-read behavior with anon-authenticated clients, and writes the ignored fixture at `qa-harness/fixtures/workspace-url-isolation.local.json`.
+
 ## Blocker / not yet executed
 
-The actual browser smoke was not run because this slice did not create or verify local synthetic auth users and workspace-scoped records. The harness is ready for the seeded local fixture lane.
+Resolved for local environments with Supabase and the Next dev server running. If either service is down, run `corepack pnpm supabase status -o env` / `corepack pnpm dev` from `openplan/openplan`, then seed and run the harness.
