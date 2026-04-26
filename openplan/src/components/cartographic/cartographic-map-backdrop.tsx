@@ -16,8 +16,10 @@ import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
-const MAPBOX_ACCESS_TOKEN =
+const RAW_MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = RAW_MAPBOX_ACCESS_TOKEN.startsWith("pk.") ? RAW_MAPBOX_ACCESS_TOKEN : "";
+const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = Boolean(RAW_MAPBOX_ACCESS_TOKEN && !MAPBOX_ACCESS_TOKEN);
 
 // Routes that own their own map and should suppress the shell backdrop.
 const MAP_OWNING_ROUTES = ["/explore"];
@@ -163,6 +165,11 @@ export function CartographicMapBackdrop() {
     if (!containerRef.current || mapRef.current) return;
     if (!MAPBOX_ACCESS_TOKEN) {
       // Fall back to the CSS parchment gradient (no Mapbox) — still visually on-brand.
+      // This also prevents a mis-scoped secret token (`sk.*`) in a public env var from
+      // crashing route-level smoke tests or being handed to Mapbox GL.
+      if (HAS_INVALID_PUBLIC_MAPBOX_TOKEN) {
+        console.warn("[cartographic-backdrop] NEXT_PUBLIC_MAPBOX token must use a public pk.* token; rendering CSS fallback.");
+      }
       return;
     }
 
