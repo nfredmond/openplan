@@ -162,7 +162,7 @@ describe("AdminOperationsPage", () => {
   it("keeps access request PII locked when the operator is not allowlisted", async () => {
     render(await AdminOperationsPage());
 
-    expect(screen.getByText("Recent supervised onboarding requests")).toBeInTheDocument();
+    expect(screen.getByText("Service lane intake queue")).toBeInTheDocument();
     expect(screen.getByText(/Access request review is locked/i)).toBeInTheDocument();
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
   });
@@ -178,7 +178,13 @@ describe("AdminOperationsPage", () => {
           contact_email: "nat@example.gov",
           role_title: "Planning lead",
           region: "Nevada County",
-          use_case: "Screen rural transit corridors for a supervised early-access workflow.",
+          organization_type: "rtpa_mpo",
+          service_lane: "managed_hosting_admin",
+          deployment_posture: "nat_ford_managed",
+          data_sensitivity: "internal_planning",
+          desired_first_workflow: "rtp",
+          onboarding_needs: "Import existing RTP project tables and brief staff leads.",
+          use_case: "Screen rural transit corridors for a managed-hosting workflow.",
           expected_workspace_name: "NCTC Pilot",
           status: "new",
           source_path: "/request-access",
@@ -207,7 +213,14 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText("Nevada County Transportation Commission")).toBeInTheDocument();
     expect(screen.getByText(/Nat Ford, Planning lead/i)).toBeInTheDocument();
     expect(screen.getByText(/nat@example.gov/i)).toBeInTheDocument();
+    expect(screen.getByText(/Managed hosting\/admin · RTP/i)).toBeInTheDocument();
     expect(screen.getByText(/Screen rural transit corridors/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Managed hosting\/admin/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/RTP/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Internal planning data/i)).toBeInTheDocument();
+    expect(screen.getByText(/Import existing RTP project tables/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Mark reviewing/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Defer/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Decline/i })).toBeInTheDocument();
@@ -236,7 +249,13 @@ describe("AdminOperationsPage", () => {
           contact_email: "nat@example.gov",
           role_title: "Planning lead",
           region: "Nevada County",
-          use_case: "Screen rural transit corridors for a supervised early-access workflow.",
+          organization_type: "rtpa_mpo",
+          service_lane: "implementation_onboarding",
+          deployment_posture: "agency_cloud",
+          data_sensitivity: "confidential_project",
+          desired_first_workflow: "grants",
+          onboarding_needs: "Prepare staff onboarding and import grant evidence tables.",
+          use_case: "Screen rural transit corridors for a managed-hosting workflow.",
           expected_workspace_name: "NCTC Pilot",
           status: "provisioned",
           source_path: "/request-access",

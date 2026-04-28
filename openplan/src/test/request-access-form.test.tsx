@@ -31,6 +31,9 @@ describe("RequestAccessForm", () => {
     fireEvent.change(screen.getByLabelText(/Region/i), {
       target: { value: "Nevada County" },
     });
+    fireEvent.change(screen.getByLabelText(/Organization type/i), {
+      target: { value: "rtpa_mpo" },
+    });
     fireEvent.change(screen.getByLabelText(/Expected workspace name/i), {
       target: { value: "NCTC Pilot" },
     });
@@ -42,6 +45,21 @@ describe("RequestAccessForm", () => {
     });
     fireEvent.change(screen.getByLabelText(/Role or title/i), {
       target: { value: "Planning lead" },
+    });
+    fireEvent.change(screen.getByLabelText(/Which service lane do you need/i), {
+      target: { value: "managed_hosting_admin" },
+    });
+    fireEvent.change(screen.getByLabelText(/First workflow to stand up/i), {
+      target: { value: "rtp" },
+    });
+    fireEvent.change(screen.getByLabelText(/Deployment posture/i), {
+      target: { value: "nat_ford_managed" },
+    });
+    fireEvent.change(screen.getByLabelText(/Data sensitivity/i), {
+      target: { value: "internal_planning" },
+    });
+    fireEvent.change(screen.getByLabelText(/Onboarding needs/i), {
+      target: { value: "Import existing RTP project tables and brief staff leads." },
     });
     fireEvent.change(screen.getByLabelText(/What should OpenPlan help with first/i), {
       target: { value: "Screen rural transit corridors and prepare grant support material." },
@@ -65,7 +83,13 @@ describe("RequestAccessForm", () => {
         contactEmail: "nat@example.gov",
         roleTitle: "Planning lead",
         region: "Nevada County",
+        organizationType: "rtpa_mpo",
         expectedWorkspaceName: "NCTC Pilot",
+        serviceLane: "managed_hosting_admin",
+        desiredFirstWorkflow: "rtp",
+        deploymentPosture: "nat_ford_managed",
+        dataSensitivity: "internal_planning",
+        onboardingNeeds: "Import existing RTP project tables and brief staff leads.",
         useCase: "Screen rural transit corridors and prepare grant support material.",
         sourcePath: "/request-access",
       }),
@@ -84,6 +108,12 @@ describe("RequestAccessForm", () => {
     fireEvent.change(screen.getByLabelText(/Agency or organization/i), { target: { value: "Agency" } });
     fireEvent.change(screen.getByLabelText(/Contact name/i), { target: { value: "Planner" } });
     fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.gov" } });
+    fireEvent.change(screen.getByLabelText(/Which service lane do you need/i), {
+      target: { value: "planning_services" },
+    });
+    fireEvent.change(screen.getByLabelText(/First workflow to stand up/i), {
+      target: { value: "grants" },
+    });
     fireEvent.change(screen.getByLabelText(/What should OpenPlan help with first/i), {
       target: { value: "Prepare a first corridor screening workflow for review." },
     });

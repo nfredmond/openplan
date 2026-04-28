@@ -18,6 +18,10 @@ const provisioningLinkMigrationSql = readFileSync(
   join(process.cwd(), "supabase/migrations/20260424000077_access_request_provisioning_link.sql"),
   "utf8",
 );
+const servicePipelineMigrationSql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260427000078_access_request_service_pipeline.sql"),
+  "utf8",
+);
 
 describe("access requests migration", () => {
   it("creates a service-role-only intake table with contact fields", () => {
@@ -87,5 +91,19 @@ describe("access requests migration", () => {
     expect(provisioningLinkMigrationSql).not.toMatch(/CREATE POLICY/i);
     expect(provisioningLinkMigrationSql).not.toMatch(/SECURITY DEFINER/i);
     expect(provisioningLinkMigrationSql).not.toMatch(/DROP TABLE/i);
+  });
+
+  it("adds additive service-pipeline intake fields without changing access posture", () => {
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS service_lane TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS desired_first_workflow TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS deployment_posture TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS organization_type TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS data_sensitivity TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/ADD COLUMN IF NOT EXISTS onboarding_needs TEXT/i);
+    expect(servicePipelineMigrationSql).toMatch(/access_requests_service_lane_status_created_idx/i);
+    expect(servicePipelineMigrationSql).toMatch(/access_requests_first_workflow_status_created_idx/i);
+    expect(servicePipelineMigrationSql).not.toMatch(/CREATE POLICY/i);
+    expect(servicePipelineMigrationSql).not.toMatch(/\bGRANT\b\s/i);
+    expect(servicePipelineMigrationSql).not.toMatch(/DROP TABLE/i);
   });
 });

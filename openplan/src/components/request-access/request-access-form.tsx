@@ -7,6 +7,18 @@ import { ArrowRight, Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  ACCESS_REQUEST_DATA_SENSITIVITY_LABELS,
+  ACCESS_REQUEST_DATA_SENSITIVITY_VALUES,
+  ACCESS_REQUEST_DEPLOYMENT_POSTURE_LABELS,
+  ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES,
+  ACCESS_REQUEST_FIRST_WORKFLOW_LABELS,
+  ACCESS_REQUEST_FIRST_WORKFLOW_VALUES,
+  ACCESS_REQUEST_ORGANIZATION_TYPE_LABELS,
+  ACCESS_REQUEST_ORGANIZATION_TYPE_VALUES,
+  ACCESS_REQUEST_SERVICE_LANE_LABELS,
+  ACCESS_REQUEST_SERVICE_LANE_VALUES,
+} from "@/lib/access-request-intake";
 
 type RequestAccessFormState = {
   agencyName: string;
@@ -14,6 +26,12 @@ type RequestAccessFormState = {
   contactEmail: string;
   roleTitle: string;
   region: string;
+  organizationType: string;
+  serviceLane: string;
+  deploymentPosture: string;
+  dataSensitivity: string;
+  desiredFirstWorkflow: string;
+  onboardingNeeds: string;
   useCase: string;
   expectedWorkspaceName: string;
   website: string;
@@ -25,6 +43,12 @@ const initialState: RequestAccessFormState = {
   contactEmail: "",
   roleTitle: "",
   region: "",
+  organizationType: "",
+  serviceLane: "",
+  deploymentPosture: "",
+  dataSensitivity: "",
+  desiredFirstWorkflow: "",
+  onboardingNeeds: "",
   useCase: "",
   expectedWorkspaceName: "",
   website: "",
@@ -79,7 +103,7 @@ export function RequestAccessForm() {
       }
 
       setForm(initialState);
-      setSuccessMessage(payload.message ?? "Request received. The OpenPlan team will review it before any workspace is provisioned.");
+      setSuccessMessage(payload.message ?? "Request received. The OpenPlan team will review it before any hosted workspace, support commitment, or implementation scope is created.");
     } catch {
       setError("The request could not be submitted. Please try again.");
     } finally {
@@ -95,14 +119,15 @@ export function RequestAccessForm() {
             <div className="public-form-heading">
               <h3 className="public-section-label">Agency context</h3>
               <p className="text-sm text-muted-foreground">
-                Tell us who the workspace would support and where the first planning workflow should start.
+                Tell us who OpenPlan would support, whether you expect self-hosting or managed hosting, and where the first planning workflow should start.
               </p>
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="request-agency" className="text-sm font-medium">
-                  Agency or organization <span className="text-xs text-muted-foreground">(required)</span>
+                  Agency or organization <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  <span className="sr-only"> required</span>
                 </label>
                 <Input
                   id="request-agency"
@@ -112,6 +137,25 @@ export function RequestAccessForm() {
                   maxLength={140}
                   required
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="request-organization-type" className="text-sm font-medium">
+                  Organization type <span className="text-xs text-muted-foreground">(optional)</span>
+                </label>
+                <select
+                  id="request-organization-type"
+                  className="module-select"
+                  value={form.organizationType}
+                  onChange={(event) => setForm((current) => updateField(current, "organizationType", event.target.value))}
+                >
+                  <option value="">Select if known</option>
+                  {ACCESS_REQUEST_ORGANIZATION_TYPE_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {ACCESS_REQUEST_ORGANIZATION_TYPE_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1.5">
@@ -128,7 +172,7 @@ export function RequestAccessForm() {
                 />
               </div>
 
-              <div className="space-y-1.5 md:col-span-2">
+              <div className="space-y-1.5">
                 <label htmlFor="request-workspace" className="text-sm font-medium">
                   Expected workspace name <span className="text-xs text-muted-foreground">(optional)</span>
                 </label>
@@ -154,7 +198,8 @@ export function RequestAccessForm() {
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="request-contact-name" className="text-sm font-medium">
-                  Contact name <span className="text-xs text-muted-foreground">(required)</span>
+                  Contact name <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  <span className="sr-only"> required</span>
                 </label>
                 <Input
                   id="request-contact-name"
@@ -168,7 +213,8 @@ export function RequestAccessForm() {
 
               <div className="space-y-1.5">
                 <label htmlFor="request-contact-email" className="text-sm font-medium">
-                  Work email <span className="text-xs text-muted-foreground">(required)</span>
+                  Work email <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  <span className="sr-only"> required</span>
                 </label>
                 <Input
                   id="request-contact-email"
@@ -199,27 +245,134 @@ export function RequestAccessForm() {
 
           <section className="public-form-section">
             <div className="public-form-heading">
-              <h3 className="public-section-label">First workflow</h3>
+              <h3 className="public-section-label">Service lane</h3>
               <p className="text-sm text-muted-foreground">
-                A focused first use case makes it easier to provision the right workspace and avoid speculative setup.
+                Route the request to the right Nat Ford delivery lane before anyone creates a workspace.
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="request-service-lane" className="text-sm font-medium">
+                  Which service lane do you need? <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  <span className="sr-only"> required</span>
+                </label>
+                <select
+                  id="request-service-lane"
+                  className="module-select"
+                  value={form.serviceLane}
+                  onChange={(event) => setForm((current) => updateField(current, "serviceLane", event.target.value))}
+                  required
+                >
+                  <option value="">Select a service lane</option>
+                  {ACCESS_REQUEST_SERVICE_LANE_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {ACCESS_REQUEST_SERVICE_LANE_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="request-first-workflow" className="text-sm font-medium">
+                  First workflow to stand up <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  <span className="sr-only"> required</span>
+                </label>
+                <select
+                  id="request-first-workflow"
+                  className="module-select"
+                  value={form.desiredFirstWorkflow}
+                  onChange={(event) => setForm((current) => updateField(current, "desiredFirstWorkflow", event.target.value))}
+                  required
+                >
+                  <option value="">Select first workflow</option>
+                  {ACCESS_REQUEST_FIRST_WORKFLOW_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {ACCESS_REQUEST_FIRST_WORKFLOW_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="request-deployment-posture" className="text-sm font-medium">
+                  Deployment posture <span className="text-xs text-muted-foreground">(optional)</span>
+                </label>
+                <select
+                  id="request-deployment-posture"
+                  className="module-select"
+                  value={form.deploymentPosture}
+                  onChange={(event) => setForm((current) => updateField(current, "deploymentPosture", event.target.value))}
+                >
+                  <option value="">Select if known</option>
+                  {ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {ACCESS_REQUEST_DEPLOYMENT_POSTURE_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="request-data-sensitivity" className="text-sm font-medium">
+                  Data sensitivity <span className="text-xs text-muted-foreground">(optional)</span>
+                </label>
+                <select
+                  id="request-data-sensitivity"
+                  className="module-select"
+                  value={form.dataSensitivity}
+                  onChange={(event) => setForm((current) => updateField(current, "dataSensitivity", event.target.value))}
+                >
+                  <option value="">Select if known</option>
+                  {ACCESS_REQUEST_DATA_SENSITIVITY_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {ACCESS_REQUEST_DATA_SENSITIVITY_LABELS[value]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5 md:col-span-2">
+                <label htmlFor="request-onboarding-needs" className="text-sm font-medium">
+                  Onboarding needs <span className="text-xs text-muted-foreground">(optional)</span>
+                </label>
+                <Textarea
+                  id="request-onboarding-needs"
+                  rows={3}
+                  placeholder="Example: import existing RTP tables, brief staff leads, configure public map comments, or review self-hosting constraints."
+                  value={form.onboardingNeeds}
+                  onChange={(event) => setForm((current) => updateField(current, "onboardingNeeds", event.target.value))}
+                  maxLength={1200}
+                />
+                <div className="text-right text-xs text-muted-foreground">{form.onboardingNeeds.length}/1200 characters</div>
+              </div>
+            </div>
+          </section>
+
+          <section className="public-form-section">
+            <div className="public-form-heading">
+              <h3 className="public-section-label">Use case detail</h3>
+              <p className="text-sm text-muted-foreground">
+                A focused first use case makes it easier to decide whether the right path is self-hosted software, managed hosting, implementation help, or no-fit for now.
               </p>
             </div>
 
             <div className="mt-4 space-y-1.5">
               <label htmlFor="request-use-case" className="text-sm font-medium">
-                What should OpenPlan help with first? <span className="text-xs text-muted-foreground">(required)</span>
+                What should OpenPlan help with first? <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                <span className="sr-only"> required</span>
               </label>
               <Textarea
                 id="request-use-case"
                 rows={7}
-                placeholder="Example: screen rural transit corridors, prepare ATP support material, organize RTP project evidence, or collect engagement input tied to a live plan."
+                placeholder="Example: self-host OpenPlan for RTP project evidence, ask Nat Ford to host a grant-support workspace, configure engagement intake for an ATP update, or scope a custom reporting extension."
                 value={form.useCase}
                 onChange={(event) => setForm((current) => updateField(current, "useCase", event.target.value))}
                 maxLength={2400}
                 required
               />
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>Include the planning lane, decision timeline, and any known data constraints.</span>
+                <span>Include the planning lane, hosting preference, decision timeline, and any known data constraints.</span>
                 <span>{form.useCase.length}/2400 characters</span>
               </div>
             </div>
@@ -230,20 +383,20 @@ export function RequestAccessForm() {
           <div>
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <ArrowRight className="h-4 w-4 text-[color:var(--accent)]" />
-              Review lane
+              Service lane review
             </h3>
             <ul className="public-bullet-list public-bullet-list--compact mt-3 text-sm text-muted-foreground">
-              <li>Requests are reviewed before a workspace is provisioned.</li>
+              <li>Requests are triaged by service lane before a hosted workspace, implementation scope, or support commitment is created.</li>
               <li>No outbound message is sent automatically from this form.</li>
-              <li>Plan selection and paid activation remain separate supervised steps.</li>
+              <li>Self-hosting, managed-hosting billing, onboarding, and paid implementation remain separate supervised steps.</li>
             </ul>
           </div>
 
           <div className="public-note-block">
             <p className="public-section-label">Helpful detail</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              The most useful requests name one immediate workflow, one responsible contact, and the public agency or
-              client context behind the work.
+              The most useful requests name one immediate workflow, data sensitivity, deployment posture, and the staff path
+              needed to get from evaluation to production use.
             </p>
           </div>
         </aside>
@@ -264,7 +417,7 @@ export function RequestAccessForm() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            Submitting creates an internal intake record only; it does not create an account, workspace, or subscription.
+            Submitting creates an internal intake record only; it does not create an account, hosted workspace, subscription, or services contract.
           </p>
           <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

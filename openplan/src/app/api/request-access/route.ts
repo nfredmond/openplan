@@ -8,6 +8,13 @@ import {
   normalizeAccessRequestEmail,
   type AccessRequestSafetyClient,
 } from "@/lib/access-requests";
+import {
+  ACCESS_REQUEST_DATA_SENSITIVITY_VALUES,
+  ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES,
+  ACCESS_REQUEST_FIRST_WORKFLOW_VALUES,
+  ACCESS_REQUEST_ORGANIZATION_TYPE_VALUES,
+  ACCESS_REQUEST_SERVICE_LANE_VALUES,
+} from "@/lib/access-request-intake";
 import { readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -23,6 +30,12 @@ const accessRequestSchema = z.object({
   contactEmail: z.string().trim().email().max(220),
   roleTitle: z.string().trim().max(140).optional(),
   region: z.string().trim().max(180).optional(),
+  organizationType: z.enum(ACCESS_REQUEST_ORGANIZATION_TYPE_VALUES).optional().or(z.literal("")),
+  serviceLane: z.enum(ACCESS_REQUEST_SERVICE_LANE_VALUES),
+  deploymentPosture: z.enum(ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES).optional().or(z.literal("")),
+  dataSensitivity: z.enum(ACCESS_REQUEST_DATA_SENSITIVITY_VALUES).optional().or(z.literal("")),
+  desiredFirstWorkflow: z.enum(ACCESS_REQUEST_FIRST_WORKFLOW_VALUES),
+  onboardingNeeds: z.string().trim().max(1200).optional(),
   useCase: z.string().trim().min(10).max(2400),
   expectedWorkspaceName: z.string().trim().max(140).optional(),
   sourcePath: z.string().trim().max(220).optional(),
@@ -130,6 +143,12 @@ export async function POST(request: NextRequest) {
       email_normalized: emailNormalized,
       role_title: cleanOptional(parsed.data.roleTitle),
       region: cleanOptional(parsed.data.region),
+      organization_type: cleanOptional(parsed.data.organizationType),
+      service_lane: parsed.data.serviceLane,
+      deployment_posture: cleanOptional(parsed.data.deploymentPosture),
+      data_sensitivity: cleanOptional(parsed.data.dataSensitivity),
+      desired_first_workflow: parsed.data.desiredFirstWorkflow,
+      onboarding_needs: cleanOptional(parsed.data.onboardingNeeds),
       use_case: parsed.data.useCase.trim(),
       expected_workspace_name: cleanOptional(parsed.data.expectedWorkspaceName),
       source_path: cleanOptional(parsed.data.sourcePath) ?? request.nextUrl.pathname,

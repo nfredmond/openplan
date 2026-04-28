@@ -8,6 +8,13 @@ import {
   type AccessRequestReviewRow,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
+import {
+  labelAccessRequestDataSensitivity,
+  labelAccessRequestDeploymentPosture,
+  labelAccessRequestFirstWorkflow,
+  labelAccessRequestOrganizationType,
+  labelAccessRequestServiceLane,
+} from "@/lib/access-request-intake";
 
 type RecentAccessRequestsProps = {
   enabled: boolean;
@@ -42,9 +49,9 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Access request intake</p>
-          <h2 className="module-section-title">Recent supervised onboarding requests</h2>
+          <h2 className="module-section-title">Service lane intake queue</h2>
           <p className="module-section-description">
-            This lane reads the service-role-only access request table only for explicitly allowlisted operator emails.
+            This lane reads service-role-only request rows and routes each prospect by service lane, deployment posture, data sensitivity, and first workflow.
           </p>
         </div>
         <StatusBadge tone={!enabled ? "neutral" : error ? "warning" : "info"}>
@@ -100,6 +107,9 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                       {request.contact_name}
                       {request.role_title ? `, ${request.role_title}` : ""} · {request.contact_email}
                     </p>
+                    <p className="module-record-summary">
+                      {labelAccessRequestServiceLane(request.service_lane)} · {labelAccessRequestFirstWorkflow(request.desired_first_workflow)}
+                    </p>
                     <p className="module-record-summary">{request.use_case}</p>
                   </div>
                 </div>
@@ -108,18 +118,44 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,0.75fr)_minmax(0,0.8fr)_minmax(0,1.25fr)_minmax(0,1.55fr)]">
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,1.55fr)]">
                 <div className="module-subpanel">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    Region
+                    Service lane context
                   </p>
-                  <p className="mt-2 text-sm text-foreground">{request.region ?? "Not specified"}</p>
+                  <dl className="mt-2 space-y-1 text-sm">
+                    <div>
+                      <dt className="inline text-muted-foreground">Lane: </dt>
+                      <dd className="inline text-foreground">{labelAccessRequestServiceLane(request.service_lane)}</dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-muted-foreground">Workflow: </dt>
+                      <dd className="inline text-foreground">{labelAccessRequestFirstWorkflow(request.desired_first_workflow)}</dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-muted-foreground">Deployment: </dt>
+                      <dd className="inline text-foreground">{labelAccessRequestDeploymentPosture(request.deployment_posture)}</dd>
+                    </div>
+                  </dl>
                 </div>
                 <div className="module-subpanel">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    Expected workspace
+                    Organization and data
                   </p>
-                  <p className="mt-2 text-sm text-foreground">{request.expected_workspace_name ?? "Not specified"}</p>
+                  <dl className="mt-2 space-y-1 text-sm">
+                    <div>
+                      <dt className="inline text-muted-foreground">Type: </dt>
+                      <dd className="inline text-foreground">{labelAccessRequestOrganizationType(request.organization_type)}</dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-muted-foreground">Region: </dt>
+                      <dd className="inline text-foreground">{request.region ?? "Not specified"}</dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-muted-foreground">Sensitivity: </dt>
+                      <dd className="inline text-foreground">{labelAccessRequestDataSensitivity(request.data_sensitivity)}</dd>
+                    </div>
+                  </dl>
                 </div>
                 <AccessRequestStatusControls requestId={request.id} status={request.status} />
                 <AccessRequestProvisionControls
@@ -129,6 +165,21 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                   ownerInvitation={request.owner_invitation}
                   workspaceName={request.expected_workspace_name ?? request.agency_name}
                 />
+              </div>
+
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="module-subpanel">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Expected workspace
+                  </p>
+                  <p className="mt-2 text-sm text-foreground">{request.expected_workspace_name ?? "Not specified"}</p>
+                </div>
+                <div className="module-subpanel">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Onboarding needs
+                  </p>
+                  <p className="mt-2 text-sm text-foreground">{request.onboarding_needs ?? "Not specified"}</p>
+                </div>
               </div>
 
               {request.review_events.length > 0 ? (

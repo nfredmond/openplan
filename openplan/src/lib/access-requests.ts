@@ -1,6 +1,13 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import type { AccessRequestStatus } from "@/lib/access-request-status";
+import type {
+  AccessRequestDataSensitivity,
+  AccessRequestDeploymentPosture,
+  AccessRequestFirstWorkflow,
+  AccessRequestOrganizationType,
+  AccessRequestServiceLane,
+} from "@/lib/access-request-intake";
 import type { WorkspaceInvitationStatus } from "@/lib/workspaces/invitations";
 export {
   ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
@@ -33,6 +40,12 @@ export type AccessRequestReviewRow = {
   contact_email: string;
   role_title: string | null;
   region: string | null;
+  organization_type: AccessRequestOrganizationType | null;
+  service_lane: AccessRequestServiceLane | null;
+  deployment_posture: AccessRequestDeploymentPosture | null;
+  data_sensitivity: AccessRequestDataSensitivity | null;
+  desired_first_workflow: AccessRequestFirstWorkflow | null;
+  onboarding_needs: string | null;
   use_case: string;
   expected_workspace_name: string | null;
   status: AccessRequestStatus;
@@ -79,6 +92,8 @@ export type AccessRequestOwnerInvitationSummary = {
 export type AccessRequestSafetyInput = {
   agencyName: string;
   contactEmail: string;
+  serviceLane?: string | null;
+  desiredFirstWorkflow?: string | null;
   useCase: string;
   expectedWorkspaceName?: string | null;
 };
@@ -169,6 +184,12 @@ export const ACCESS_REQUEST_REVIEW_SELECT = [
   "contact_email",
   "role_title",
   "region",
+  "organization_type",
+  "service_lane",
+  "deployment_posture",
+  "data_sensitivity",
+  "desired_first_workflow",
+  "onboarding_needs",
   "use_case",
   "expected_workspace_name",
   "status",
@@ -264,6 +285,8 @@ export function buildAccessRequestBodyFingerprint(input: AccessRequestSafetyInpu
       normalizeText(input.agencyName).toLowerCase(),
       normalizeAccessRequestEmail(input.contactEmail),
       normalizeText(input.expectedWorkspaceName).toLowerCase(),
+      normalizeText(input.serviceLane).toLowerCase(),
+      normalizeText(input.desiredFirstWorkflow).toLowerCase(),
       normalizeText(input.useCase).toLowerCase(),
     ].join("|"),
   );
