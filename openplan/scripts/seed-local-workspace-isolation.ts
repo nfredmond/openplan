@@ -294,7 +294,7 @@ function buildFixture(baseUrl: string) {
         allowedUser: seedUser.key,
         deniedUsers: [other.key],
         allowedText: seedUser.projectName,
-        leakText: seedUser.projectName,
+        leakText: [seedUser.projectName, seedUser.workspaceName],
         deniedPattern: DENIED_PATTERN,
       };
     }),

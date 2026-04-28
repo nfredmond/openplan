@@ -18,7 +18,7 @@
       "url": "/projects/00000000-0000-4000-8000-0000000000a1",
       "allowedUser": "workspaceA",
       "allowedText": "Synthetic A Project",
-      "leakText": "Synthetic A Project",
+      "leakText": ["Synthetic A Project", "Synthetic Workspace A"],
       "deniedPattern": "not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned|sign in"
     },
     {
@@ -26,7 +26,7 @@
       "url": "/projects/00000000-0000-4000-8000-0000000000b1",
       "allowedUser": "workspaceB",
       "allowedText": "Synthetic B Project",
-      "leakText": "Synthetic B Project",
+      "leakText": ["Synthetic B Project", "Synthetic Workspace B"],
       "deniedPattern": "not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned|sign in"
     }
   ]

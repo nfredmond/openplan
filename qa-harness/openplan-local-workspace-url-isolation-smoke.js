@@ -29,7 +29,7 @@ const EXAMPLE_FIXTURE = {
       url: '/projects/00000000-0000-4000-8000-0000000000a1',
       allowedUser: 'workspaceA',
       allowedText: 'Synthetic A Project',
-      leakText: 'Synthetic A Project',
+      leakText: ['Synthetic A Project', 'Synthetic Workspace A'],
       deniedPattern: DEFAULT_DENIED_PATTERN,
     },
     {
@@ -37,20 +37,59 @@ const EXAMPLE_FIXTURE = {
       url: '/projects/00000000-0000-4000-8000-0000000000b1',
       allowedUser: 'workspaceB',
       allowedText: 'Synthetic B Project',
-      leakText: 'Synthetic B Project',
+      leakText: ['Synthetic B Project', 'Synthetic Workspace B'],
       deniedPattern: DEFAULT_DENIED_PATTERN,
     },
   ],
 };
 
 function printUsage() {
-  process.stdout.write(`OpenPlan local workspace URL isolation smoke\n\nUsage:\n  node openplan-local-workspace-url-isolation-smoke.js --fixture <path>\n\nSafe defaults:\n  - Refuses non-local base URLs unless --allow-nonlocal is passed.\n  - Performs browser GET/navigation checks only; it does not seed, insert, update, or delete data.\n  - Requires synthetic local users through passwordEnv or storageStatePath; inline passwords are rejected.\n\nOptions:\n  --fixture <path>       JSON fixture describing users and workspace-scoped URLs.\n  --base-url <url>       Override fixture baseUrl. Defaults to fixture baseUrl or http://localhost:3000.\n  --allow-nonlocal       Permit a non-local base URL. Use only for preview/prod read-only proof and document it.\n  --headed               Run Playwright headed.\n  --example-fixture      Print a valid fixture template and exit.\n  --help                 Show this help.\n\nFixture shape:\n  {\n    "baseUrl": "http://localhost:3000",\n    "users": {\n      "workspaceA": { "email": "...", "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_A_PASSWORD" },\n      "workspaceB": { "email": "...", "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_B_PASSWORD" }\n    },\n    "checks": [\n      {\n        "name": "A project detail is isolated",\n        "url": "/projects/<workspace-a-project-id>",\n        "allowedUser": "workspaceA",\n        "allowedText": "Synthetic A Project",\n        "leakText": "Synthetic A Project",\n        "deniedPattern": "${DEFAULT_DENIED_PATTERN}"\n      }\n    ]\n  }\n`);
+  process.stdout.write(`OpenPlan local workspace URL isolation smoke
+
+Usage:
+  node openplan-local-workspace-url-isolation-smoke.js --fixture <path>
+
+Safe defaults:
+  - Refuses non-local base URLs unless --allow-nonlocal is passed.
+  - Performs browser GET/navigation checks only; it does not seed, insert, update, or delete data.
+  - Requires synthetic local users through passwordEnv or storageStatePath; inline passwords are rejected.
+  - After a denied cross-workspace URL, verifies the same session still loads its own workspace URL.
+
+Options:
+  --fixture <path>       JSON fixture describing users and workspace-scoped URLs.
+  --base-url <url>       Override fixture baseUrl. Defaults to fixture baseUrl or http://localhost:3000.
+  --allow-nonlocal       Permit a non-local base URL. Use only for preview/prod read-only proof and document it.
+  --validate-fixture     Validate fixture contract and required password env only; do not launch a browser.
+  --headed               Run Playwright headed.
+  --example-fixture      Print a valid fixture template and exit.
+  --help                 Show this help.
+
+Fixture shape:
+  {
+    "baseUrl": "http://localhost:3000",
+    "users": {
+      "workspaceA": { "email": "...", "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_A_PASSWORD" },
+      "workspaceB": { "email": "...", "passwordEnv": "OPENPLAN_SYNTH_WORKSPACE_B_PASSWORD" }
+    },
+    "checks": [
+      {
+        "name": "A project detail is isolated",
+        "url": "/projects/<workspace-a-project-id>",
+        "allowedUser": "workspaceA",
+        "allowedText": "Synthetic A Project",
+        "leakText": ["Synthetic A Project", "Synthetic Workspace A"],
+        "deniedPattern": "${DEFAULT_DENIED_PATTERN}"
+      }
+    ]
+  }
+`);
 }
 
 function parseArgs(argv) {
   const args = {
     allowNonlocal: false,
     headed: false,
+    validateFixtureOnly: false,
     exampleFixture: false,
     help: false,
     fixturePath: process.env.OPENPLAN_WORKSPACE_ISOLATION_FIXTURE || null,
@@ -62,6 +101,7 @@ function parseArgs(argv) {
     if (arg === '--help' || arg === '-h') args.help = true;
     else if (arg === '--example-fixture') args.exampleFixture = true;
     else if (arg === '--allow-nonlocal') args.allowNonlocal = true;
+    else if (arg === '--validate-fixture') args.validateFixtureOnly = true;
     else if (arg === '--headed') args.headed = true;
     else if (arg === '--fixture') args.fixturePath = argv[++i];
     else if (arg === '--base-url') args.baseUrl = argv[++i];
@@ -95,6 +135,11 @@ function loadFixture(fixturePath) {
 function asArray(value) {
   if (value == null) return [];
   return Array.isArray(value) ? value : [value];
+}
+
+function deniedUsersForCheck(check, userKeys) {
+  const explicitDeniedUsers = asArray(check.deniedUsers);
+  return explicitDeniedUsers.length ? explicitDeniedUsers : userKeys.filter((userKey) => userKey !== check.allowedUser);
 }
 
 function resolveUserPassword(userKey, user) {
@@ -149,6 +194,21 @@ function validateFixture(fixture, args) {
     }
     if (asArray(check.deniedUsers).some((userKey) => !users[userKey])) {
       throw new Error(`Check ${check.name} references an unknown deniedUser.`);
+    }
+    if (deniedUsersForCheck(check, userKeys).includes(check.allowedUser)) {
+      throw new Error(`Check ${check.name} lists its allowedUser as a denied user.`);
+    }
+  }
+
+  const usersWithOwnUrl = new Set(fixture.checks.map((check) => check.allowedUser));
+  for (const check of fixture.checks) {
+    for (const deniedUser of deniedUsersForCheck(check, userKeys)) {
+      if (!usersWithOwnUrl.has(deniedUser)) {
+        throw new Error(
+          `Check ${check.name} denies ${deniedUser}, but no fixture check has ${deniedUser} as allowedUser. ` +
+            'Add an own-workspace URL check so the harness can verify session continuity after denial.'
+        );
+      }
     }
   }
 
@@ -227,7 +287,7 @@ function expectTextAbsent(bodyText, forbidden, label) {
   }
 }
 
-async function runAllowedCheck(page, baseUrl, check, artifacts) {
+async function runAllowedCheck(page, baseUrl, check, artifacts, screenshotLabel) {
   const response = await page.goto(absoluteUrl(baseUrl, check.url), { waitUntil: 'networkidle' });
   const status = response ? response.status() : null;
   const bodyText = await page.locator('body').innerText();
@@ -238,7 +298,7 @@ async function runAllowedCheck(page, baseUrl, check, artifacts) {
 
   expectTextPresent(bodyText, check.allowedText, `${check.name} allowed view`);
   expectTextAbsent(bodyText, check.forbiddenText, `${check.name} allowed view`);
-  await writeScreenshot(page, artifacts, `${check.name} allowed ${check.allowedUser}`);
+  await writeScreenshot(page, artifacts, screenshotLabel || `${check.name} allowed ${check.allowedUser}`);
 }
 
 async function runDeniedCheck(page, baseUrl, check, deniedUser, artifacts) {
@@ -255,6 +315,14 @@ async function runDeniedCheck(page, baseUrl, check, deniedUser, artifacts) {
   }
 
   await writeScreenshot(page, artifacts, `${check.name} denied ${deniedUser}`);
+}
+
+function firstAllowedCheckByUser(checks) {
+  const checksByUser = {};
+  for (const check of checks) {
+    if (!checksByUser[check.allowedUser]) checksByUser[check.allowedUser] = check;
+  }
+  return checksByUser;
 }
 
 function reportMarkdown({ baseUrl, fixturePath, notes, artifacts, failures }) {
@@ -281,6 +349,7 @@ function reportMarkdown({ baseUrl, fixturePath, notes, artifacts, failures }) {
     '- Local app is running against local/synthetic Supabase data.',
     '- Fixture users belong to different workspaces and use `passwordEnv` or Playwright `storageStatePath`; no real credentials are required.',
     '- Fixture URLs point to records seeded in only one workspace so cross-user access can be verified without production mutation.',
+    '- Every denied user also has an own-workspace URL check, allowing the harness to prove denied navigation did not poison or switch that browser session.',
     '',
   ];
 
@@ -302,6 +371,14 @@ async function main() {
 
   const { fixture, resolvedPath } = loadFixture(args.fixturePath);
   const { baseUrl, users, userKeys } = validateFixture(fixture, args);
+  if (args.validateFixtureOnly) {
+    process.stdout.write(
+      `Validated ${userKeys.length} synthetic users and ${fixture.checks.length} workspace URL checks for ${baseUrl}.\n`
+    );
+    process.stdout.write('No browser launched and no evidence artifacts written.\n');
+    return;
+  }
+
   const artifacts = [];
   const notes = [
     `Loaded fixture ${resolvedPath}.`,
@@ -309,6 +386,7 @@ async function main() {
   ];
   const failures = [];
   const sessions = {};
+  const sessionContinuityChecks = firstAllowedCheckByUser(fixture.checks);
 
   fs.mkdirSync(outputDir, { recursive: true });
 
@@ -327,16 +405,28 @@ async function main() {
         failures.push(`Allowed-view failure for ${check.name}: ${error instanceof Error ? error.message : String(error)}`);
       }
 
-      const deniedUsers = asArray(check.deniedUsers).length
-        ? asArray(check.deniedUsers)
-        : userKeys.filter((userKey) => userKey !== check.allowedUser);
+      const deniedUsers = deniedUsersForCheck(check, userKeys);
 
       for (const deniedUser of deniedUsers) {
         try {
           await runDeniedCheck(sessions[deniedUser].page, baseUrl, check, deniedUser, artifacts);
           notes.push(`Denied-view pass: ${check.name} (${deniedUser}).`);
+
+          const ownCheck = sessionContinuityChecks[deniedUser];
+          await runAllowedCheck(
+            sessions[deniedUser].page,
+            baseUrl,
+            ownCheck,
+            artifacts,
+            `${check.name} session-continuity ${deniedUser}`
+          );
+          notes.push(`Session-continuity pass: ${deniedUser} still loads own workspace URL after denial.`);
         } catch (error) {
-          failures.push(`Denied-view failure for ${check.name} / ${deniedUser}: ${error instanceof Error ? error.message : String(error)}`);
+          failures.push(
+            `Denied/session-continuity failure for ${check.name} / ${deniedUser}: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
         }
       }
     }

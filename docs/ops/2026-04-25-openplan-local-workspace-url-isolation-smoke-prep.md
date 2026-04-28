@@ -17,7 +17,8 @@ For each workspace-scoped URL in the fixture:
 1. Synthetic user A can sign in locally and load an A-owned URL.
 2. Synthetic user B can sign in locally and is clearly denied from the same A-owned URL.
 3. The denied view does not leak the fixture's A-only identifying text.
-4. The same pattern can be mirrored for B-owned URLs.
+4. The denied user's same browser session can still load its own workspace URL after the denial, proving the cross-workspace navigation did not poison or switch the session.
+5. The same pattern can be mirrored for B-owned URLs.
 
 The harness writes a dated evidence memo to `docs/ops/<date>-openplan-local-workspace-url-isolation-smoke.md` and screenshots to `docs/ops/<date>-test-output/` when run with real local fixture values.
 
@@ -53,6 +54,8 @@ Syntax/fixture sanity:
 cd qa-harness
 node --check openplan-local-workspace-url-isolation-smoke.js
 npm run local-workspace-url-isolation-smoke -- --example-fixture
+OPENPLAN_SYNTH_WORKSPACE_A_PASSWORD=dummy OPENPLAN_SYNTH_WORKSPACE_B_PASSWORD=dummy \
+  npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.example.json --validate-fixture
 ```
 
 Real local smoke, after local users/records exist:
