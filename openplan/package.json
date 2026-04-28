@@ -15,6 +15,7 @@
     "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
     "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
+    "ops:check-public-demo-preflight": "node scripts/ops/check-public-demo-preflight.mjs",
     "ops:webhook-proof": "tsx scripts/verify-webhook-ingestion.ts",
     "qa:gate": "npm run lint && npm test && pnpm audit --prod --audit-level=moderate && npm run build",
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log"

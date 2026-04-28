@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const DEFAULT_HEALTH_URL = "https://openplan-natford.vercel.app/api/health";
 const REQUEST_TIMEOUT_MS = 10_000;
 const EXPECTED_CACHE_CONTROL = "no-store, max-age=0";
@@ -98,10 +101,9 @@ async function check(url) {
   };
 }
 
-async function main() {
-  if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    console.log(usage());
-    return;
+export async function runHealthCheck(argv = process.argv.slice(2)) {
+  if (argv.includes("--help") || argv.includes("-h")) {
+    return { help: true, text: usage() };
   }
 
   const url = (process.env.OPENPLAN_HEALTH_URL || DEFAULT_HEALTH_URL).trim();
@@ -120,12 +122,30 @@ async function main() {
     fail("OPENPLAN_HEALTH_URL must use http or https");
   }
 
-  const result = await check(parsedUrl.toString());
-  console.log(`OpenPlan health check passed: ${result.url}`);
-  console.log(`checkedAt=${result.checkedAt}`);
+  return check(parsedUrl.toString());
 }
 
-await main().catch((error) => {
-  console.error(`OpenPlan health check failed: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+export function formatResult(result) {
+  if (result.help) {
+    return result.text;
+  }
+
+  return [
+    `OpenPlan health check passed: ${result.url}`,
+    `checkedAt=${result.checkedAt}`,
+  ].join("\n");
+}
+
+async function main(argv = process.argv.slice(2)) {
+  try {
+    const result = await runHealthCheck(argv);
+    console.log(formatResult(result));
+  } catch (error) {
+    console.error(`OpenPlan health check failed: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
+}

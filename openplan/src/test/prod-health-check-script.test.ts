@@ -1,13 +1,13 @@
-import { spawnSync } from "node:child_process";
 import { readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const scriptPath = path.join(process.cwd(), "scripts/ops/check-prod-health.mjs");
 const mockFetchPath = path.join(process.cwd(), "src/test/fixtures/prod-health-mock-fetch.mjs");
 const callFiles: string[] = [];
+const originalFetch = globalThis.fetch;
 
 type HealthServerOptions = {
   status?: number;
@@ -44,60 +44,45 @@ async function runHealthCheck(options: HealthServerOptions = {}) {
   const url = "https://openplan.example/api/health";
   callFiles.push(callsPath);
 
-  const env = {
-    ...process.env,
-    OPENPLAN_HEALTH_URL: url,
-    OPENPLAN_HEALTH_MOCK_CALLS_PATH: callsPath,
-    OPENPLAN_HEALTH_MOCK_STATUS: String(options.status ?? 200),
-    OPENPLAN_HEALTH_MOCK_HEAD_STATUS: String(options.headStatus ?? options.status ?? 200),
-    OPENPLAN_HEALTH_MOCK_CACHE_CONTROL: options.cacheControl ?? "no-store, max-age=0",
-    OPENPLAN_HEALTH_MOCK_PAYLOAD: JSON.stringify(options.payload ?? healthyPayload),
+  vi.stubEnv("OPENPLAN_HEALTH_URL", url);
+  vi.stubEnv("OPENPLAN_HEALTH_MOCK_CALLS_PATH", callsPath);
+  vi.stubEnv("OPENPLAN_HEALTH_MOCK_STATUS", String(options.status ?? 200));
+  vi.stubEnv("OPENPLAN_HEALTH_MOCK_HEAD_STATUS", String(options.headStatus ?? options.status ?? 200));
+  vi.stubEnv("OPENPLAN_HEALTH_MOCK_CACHE_CONTROL", options.cacheControl ?? "no-store, max-age=0");
+  vi.stubEnv("OPENPLAN_HEALTH_MOCK_PAYLOAD", JSON.stringify(options.payload ?? healthyPayload));
+
+  await import(`${pathToFileURL(mockFetchPath).href}?t=${Date.now()}-${Math.random()}`);
+  const importedHealthCheck = await import(pathToFileURL(scriptPath).href);
+  const healthCheckModule = importedHealthCheck as {
+    runHealthCheck: (argv?: string[]) => Promise<{ help?: boolean; text?: string; url?: string; checkedAt?: string }>;
+    formatResult: (result: { help?: boolean; text?: string; url?: string; checkedAt?: string }) => string;
   };
 
-  const result = spawnSync(
-    process.execPath,
-    [
-      "-e",
-      [
-        `await import(${JSON.stringify(pathToFileURL(mockFetchPath).href)});`,
-        `await import(${JSON.stringify(pathToFileURL(scriptPath).href)});`,
-      ].join(" "),
-    ],
-    {
-      cwd: process.cwd(),
-      env,
-      encoding: "utf8",
-      stdio: "pipe",
-    },
-  );
-
-  const output = {
-    stdout: result.stdout ?? "",
-    stderr: result.stderr ?? "",
-    status: result.status,
-    calls: await readCalls(callsPath),
-    url,
-  };
-
-  if (!output.stdout && !output.stderr && output.calls.length === 0) {
-    throw Object.assign(new Error("Health check child process produced no observable output"), {
-      ...output,
-      status: result.status,
-      signal: result.signal,
-      spawnError: result.error?.message,
+  try {
+    const result = await healthCheckModule.runHealthCheck();
+    return {
+      stdout: healthCheckModule.formatResult(result),
+      stderr: "",
+      status: 0,
+      calls: await readCalls(callsPath),
+      url,
+    };
+  } catch (caught) {
+    const error = new Error("Command failed: scripts/ops/check-prod-health.mjs");
+    Object.assign(error, {
+      stdout: "",
+      stderr: `OpenPlan health check failed: ${caught instanceof Error ? caught.message : String(caught)}`,
+      status: 1,
+      calls: await readCalls(callsPath),
+      url,
     });
-  }
-
-  if (result.status !== 0) {
-    const error = new Error(`Command failed: ${process.execPath} scripts/ops/check-prod-health.mjs`);
-    Object.assign(error, output);
     throw error;
   }
-
-  return output;
 }
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
+  globalThis.fetch = originalFetch;
   await Promise.all(callFiles.splice(0).map((file) => rm(file, { force: true })));
 });
 
