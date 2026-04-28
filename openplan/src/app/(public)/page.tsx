@@ -35,9 +35,9 @@ const publicSurfaces = [
   },
   {
     href: "/pricing",
-    label: "Pricing lane",
-    title: "Review early-access pricing",
-    description: "See supervised-pilot plans, activation guardrails, and billing posture currently available in production.",
+    label: "Services lane",
+    title: "Review open-source, hosting, and implementation options",
+    description: "See how Apache-2.0 software, managed hosting, onboarding, support, planning services, and custom extensions fit together.",
   },
   {
     href: "/request-access",
@@ -56,23 +56,24 @@ const publicSurfaces = [
 const releaseFacts = [
   {
     label: "Core posture",
-    value: "One civic workbench",
-    detail: "Maps, projects, engagement, and reporting stay connected instead of splitting into separate systems.",
+    value: "Apache-2.0 core",
+    detail: "OpenPlan is positioned as inspectable planning software, not a closed black-box SaaS dependency.",
   },
   {
     label: "Public lane",
-    value: "Share-ready access",
-    detail: "Pricing, sign-in, and engagement portals are available without exposing the full operator shell.",
+    value: "Services-first access",
+    detail: "Hosting, support, onboarding, implementation, and custom extensions are the commercial lanes around the open-source core.",
   },
   {
     label: "Current motion",
-    value: "Supervised early access",
-    detail: "OpenPlan is live, with deliberate activation controls around billing, onboarding, and production rollout.",
+    value: "Supervised rollout",
+    detail: "OpenPlan is live, with deliberate controls around managed-hosting activation, billing, onboarding, and production rollout.",
   },
 ];
 
 const pilotBoundaries = [
-  "Self-serve account creation is open, while workspace activation and billing remain intentionally supervised.",
+  "The source-first posture is intentional: public agencies should be able to inspect the software behind their planning work.",
+  "Managed hosting and billing remain intentionally supervised because support obligations, data posture, and workspace ownership matter.",
   "Public engagement portals preserve review and moderation before feedback enters formal reporting or summaries.",
   "The platform is built for agencies and consulting teams that need traceable planning work, not generic dashboard theater.",
 ];
@@ -107,10 +108,9 @@ export default function PublicLandingPage() {
         <article className="public-hero">
           <p className="public-kicker">OpenPlan public lane</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Planning software that keeps maps, engagement, and delivery in one record.</h1>
+            <h1 className="public-title">Open-source planning software that keeps maps, engagement, and delivery in one record.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan helps planning teams move from a corridor question to a clear deliverable with maps, project context,
-              public input, and reporting tools in one connected workspace.
+              OpenPlan is Apache-2.0 planning software for agencies, tribes, RTPAs, counties, and consulting teams. Nat Ford Planning supports it through managed hosting, onboarding, planning services, and custom implementation work.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export default function PublicLandingPage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/pricing" className="public-secondary-link">
-              Review pricing
+              Review services
             </Link>
             <Link href="/request-access" className="public-secondary-link">
               Request access
@@ -149,15 +149,14 @@ export default function PublicLandingPage() {
             </div>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is meant to feel like a serious operations surface for agencies and consulting teams, not a startup
-            landing page with scattered feature cards.
+            OpenPlan is meant to feel like a serious operations surface for agencies and consulting teams: inspectable software when you need transparency, managed operations when you need someone accountable to run it.
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">
               Public engagement stays connected to project context, moderation, and report generation.
             </div>
             <div className="public-rail-item">
-              Pricing is explicit about activation boundaries, billing writes, and supervised pilot posture.
+              Services language is explicit about the difference between open-source code and paid hosting, support, onboarding, and planning implementation.
             </div>
             <div className="public-rail-item">
               The product language is civic, dense, and operational because the work itself is.

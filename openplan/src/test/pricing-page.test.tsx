@@ -13,13 +13,27 @@ vi.mock("next/link", () => ({
 import PricingPage from "@/app/(public)/pricing/page";
 
 describe("PricingPage", () => {
-  it("keeps pricing language aligned to explicit account creation and workspace billing selection", () => {
+  it("frames OpenPlan as open-source software with managed hosting and services, not subscription-first SaaS", () => {
     render(<PricingPage />);
 
-    expect(screen.getByRole("heading", { name: /OpenPlan Early Access Pricing/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Create Starter account/i })).toHaveAttribute("href", "/sign-up?plan=starter");
-    expect(screen.getByRole("link", { name: /Create Professional account/i })).toHaveAttribute("href", "/sign-up?plan=professional");
-    expect(screen.getByText(/Checkout starts only after account creation, sign-in, and explicit workspace billing selection/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Stripe checkout wiring is in progress/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /Open-source planning software, with managed hosting and implementation help/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Apache-2.0 source code license/i)).toBeInTheDocument();
+    expect(screen.getByText(/Managed hosting \+ support/i)).toBeInTheDocument();
+    expect(screen.getByText(/Implementation \+ planning services/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stripe remains the payment rail for hosted workspace support and service retainers/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Request self-hosting review/i })).toHaveAttribute(
+      "href",
+      "/request-access?lane=self-hosted",
+    );
+    expect(screen.getByRole("link", { name: /Request managed hosting/i })).toHaveAttribute(
+      "href",
+      "/request-access?lane=managed-hosting",
+    );
+    expect(screen.queryByText(/Create Starter account/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Create Professional account/i)).not.toBeInTheDocument();
   });
 });

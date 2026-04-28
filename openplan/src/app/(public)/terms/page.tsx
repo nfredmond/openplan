@@ -5,14 +5,19 @@ import { ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Terms of Use — OpenPlan",
   description:
-    "Terms that govern supervised early-access use of OpenPlan, a civic-planning workbench operated by Nat Ford Planning.",
+    "Terms that govern Nat Ford managed hosting and services for OpenPlan, an Apache-2.0 civic-planning workbench.",
 };
 
 const accessBoundaries = [
   {
-    title: "Supervised early access",
+    title: "Open-source software, hosted service when managed by Nat Ford",
     description:
-      "OpenPlan is provided as supervised early-access software. Workspace activation, billing, and production rollout are intentionally gated and individually reviewed before live use.",
+      "OpenPlan source code is provided under the Apache License, Version 2.0, unless a file says otherwise. These terms govern Nat Ford-hosted workspaces and related services; they do not replace the Apache-2.0 license for self-hosted use of the open-source code.",
+  },
+  {
+    title: "Supervised managed hosting",
+    description:
+      "Managed workspace activation, billing, support, and production rollout are intentionally gated and individually reviewed before live use.",
   },
   {
     title: "Internal prototype posture",
@@ -39,8 +44,8 @@ const prohibitedUses = [
 ];
 
 const changeExpectations = [
-  "These terms may change as OpenPlan moves from supervised early access toward broader availability. Material changes are announced to active workspace owners.",
-  "Pilot pricing posture, activation boundaries, and billing policies are published on the pricing lane and reflect the current supervised release, not a final commercial contract.",
+  "These terms may change as OpenPlan moves from supervised rollout toward broader availability. Material changes are announced to active managed-workspace owners.",
+  "Managed-hosting pricing posture, activation boundaries, and billing policies are published on the services lane and reflect the current supervised release, not a final commercial contract.",
 ];
 
 export default function TermsPage() {
@@ -52,10 +57,9 @@ export default function TermsPage() {
         <article className="public-hero">
           <p className="public-kicker">Terms of use</p>
           <div className="public-headline-block">
-            <h1 className="public-title">How OpenPlan is made available during supervised early access.</h1>
+            <h1 className="public-title">How OpenPlan is made available as open-source software and as a Nat Ford managed service.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan is operated by Nat Ford Planning. These terms describe what the platform is, who may use it, what is
-              expected of users, and the boundaries that protect clients and the communities their work serves.
+              OpenPlan is built by Nat Ford Planning as Apache-2.0 planning software. These terms describe the hosted-service and support boundaries for Nat Ford-managed workspaces, plus the safeguards that protect clients and the communities their work serves.
             </p>
           </div>
 
@@ -73,11 +77,10 @@ export default function TermsPage() {
         <aside className="public-rail">
           <div>
             <p className="public-rail-kicker">Operating posture</p>
-            <h2 className="public-rail-title">Honest prototype, not a finished SaaS.</h2>
+            <h2 className="public-rail-title">Open-source core, honest managed-service boundary.</h2>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is in deliberate supervised release. Some modules produce planning-grade outputs; others are still labeled
-            internal prototype only. The difference is shown to the user, not hidden behind marketing copy.
+            OpenPlan is in deliberate supervised release. The source license, hosted-service terms, and screening-grade limits are kept separate so agencies can understand what they may reuse, what Nat Ford operates, and what still requires review.
           </p>
         </aside>
       </section>

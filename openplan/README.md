@@ -1,10 +1,12 @@
 # OpenPlan
 
-OpenPlan is a transportation and land use planning operating system being built for small agencies, tribes, counties, RTPAs, transportation commissions, and consultancies that need credible planning workflows without enterprise-software pricing.
+OpenPlan is Apache-2.0 open-source transportation and land-use planning software for small agencies, tribes, counties, RTPAs, transportation commissions, and consultancies that need credible planning workflows without black-box enterprise software.
+
+Nat Ford Planning's commercial model is services around the open-source core: managed hosting, onboarding, implementation, support, planning services, and custom extensions.
 
 ## Current product truth
 
-OpenPlan is currently strongest as a **supervised pilot Planning OS**, not a broad self-serve municipal SaaS.
+OpenPlan is currently strongest as a **supervised planning workbench with optional Nat Ford managed hosting**, not a broad self-serve municipal SaaS.
 
 What is real now:
 - authenticated planning workspace flows,
@@ -12,14 +14,15 @@ What is real now:
 - engagement campaigns and public/share intake,
 - geospatial analysis surfaces and report traceability,
 - county-run onboarding/scaffold workflows,
-- bounded billing/admin and pilot-support operations.
+- bounded billing/admin and managed-hosting/support operations.
 
 What is **not** currently an honest broad claim:
 - validated forecasting,
 - behavioral-demand readiness,
 - full LAPM/legal-grade compliance automation,
 - fully autonomous self-serve onboarding,
-- or a finished all-in-one planning suite across the entire original vision.
+- a finished all-in-one planning suite across the entire original vision,
+- or a proprietary subscription-first software whose core value is hidden from agencies.
 
 For the canonical April 2026 product boundary, start here:
 - `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`
@@ -105,6 +108,7 @@ Safe current posture:
 - guided onboarding.
 
 Unsafe overclaims:
+- proprietary, subscription-first software,
 - fully launched self-serve SaaS,
 - validated forecasting platform,
 - complete LAPM automation,
@@ -112,6 +116,6 @@ Unsafe overclaims:
 
 ## Bottom line
 
-OpenPlan is a real planning product with real production-backed workflows.
+OpenPlan is a real planning product with real production-backed workflows and an open-source-first posture.
 
-It is not finished, but it is well beyond prototype theater. Treat it as a serious supervised-pilot Planning OS and keep all external claims inside the current evidence boundary.
+It is not finished, but it is well beyond prototype theater. Treat it as serious Apache-2.0 planning software with optional Nat Ford managed services, and keep all external claims inside the current evidence boundary.

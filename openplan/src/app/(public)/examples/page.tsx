@@ -288,13 +288,13 @@ export default function ExamplesEvidenceCatalogPage() {
                 <p className="public-ledger-copy text-foreground">
                   Agencies and consultants who want to see the methodology behind a run can{" "}
                   <Link href="/pricing" className="underline underline-offset-4 hover:text-foreground">
-                    review pricing
+                    review service lanes
                   </Link>{" "}
                   or{" "}
-                  <Link href="/sign-in" className="underline underline-offset-4 hover:text-foreground">
-                    sign in
-                  </Link>{" "}
-                  to request a supervised walk-through.
+                  <Link href="/request-access" className="underline underline-offset-4 hover:text-foreground">
+                    request a supervised walk-through
+                  </Link>
+                  .
                 </p>
               </div>
             </div>

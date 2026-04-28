@@ -4,20 +4,20 @@ import { ArrowRight, ClipboardCheck, ShieldCheck } from "lucide-react";
 import { RequestAccessForm } from "@/components/request-access/request-access-form";
 
 export const metadata = {
-  title: "Request Access | OpenPlan",
-  description: "Request supervised early access to OpenPlan for a planning agency or delivery team.",
+  title: "Request Services Review | OpenPlan",
+  description: "Request self-hosting, managed hosting, implementation, or planning-services review for OpenPlan.",
 };
 
 const reviewFacts = [
   {
     label: "Activation",
     value: "Reviewed first",
-    detail: "A request starts an internal review record, not a live workspace or subscription.",
+    detail: "A request starts an internal review record, not a live workspace, hosted subscription, or service commitment.",
   },
   {
     label: "Onboarding",
-    value: "Workflow-led",
-    detail: "Provisioning is tied to the first real planning workflow and the responsible operator.",
+    value: "Services-led",
+    detail: "Review is tied to the first real planning workflow, hosting preference, support need, and responsible operator.",
   },
   {
     label: "Boundary",
@@ -27,9 +27,9 @@ const reviewFacts = [
 ];
 
 const reviewSteps = [
-  "Confirm the agency, responsible contact, and first planning lane.",
-  "Decide whether the request fits the current supervised early-access surface.",
-  "Provision or invite only after scope, workspace ownership, and activation posture are clear.",
+  "Confirm the agency, responsible contact, first planning lane, and whether the likely path is self-hosted, managed hosted, implementation support, or a mix.",
+  "Decide whether the request fits the current open-source product boundary and Nat Ford service capacity.",
+  "Provision, invite, or scope services only after workspace ownership, data posture, billing, and support obligations are clear.",
 ];
 
 export default function RequestAccessPage() {
@@ -39,12 +39,11 @@ export default function RequestAccessPage() {
 
       <section className="public-hero-grid">
         <article className="public-hero">
-          <p className="public-kicker">Request access</p>
+          <p className="public-kicker">Request services review</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Start a supervised OpenPlan workspace review.</h1>
+            <h1 className="public-title">Start an OpenPlan self-hosting, managed-hosting, or implementation review.</h1>
             <p className="public-lead max-w-4xl">
-              Share the agency context, responsible contact, and first planning workflow so OpenPlan can evaluate whether a
-              workspace should be provisioned for the current early-access surface.
+              Share the agency context, responsible contact, and first planning workflow so Nat Ford can determine whether the right path is self-hosted OpenPlan, managed hosting, onboarding support, planning services, custom implementation, or no-fit for now.
             </p>
           </div>
 
@@ -54,7 +53,7 @@ export default function RequestAccessPage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/pricing" className="public-secondary-link">
-              Review pricing lane
+              Review services lane
             </Link>
           </div>
 
@@ -75,13 +74,13 @@ export default function RequestAccessPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Onboarding posture</p>
-              <h2 className="public-rail-title">Access stays deliberately gated.</h2>
+              <p className="public-rail-kicker">Services posture</p>
+              <h2 className="public-rail-title">Hosting and implementation stay deliberately scoped.</h2>
             </div>
           </div>
           <p className="public-rail-copy">
             OpenPlan can accept self-serve interest without turning prospect intake into automatic workspace creation,
-            billing activation, or customer communication.
+            managed-hosting billing, implementation scope, or customer communication.
           </p>
           <div className="public-rail-list">
             {reviewSteps.map((step) => (
@@ -121,8 +120,7 @@ export default function RequestAccessPage() {
             <div className="public-ledger-body">
               <h3 className="public-ledger-title">Keep billing separate</h3>
               <p className="public-ledger-copy">
-                Pricing and checkout remain on the pricing lane, with workspace selection and subscription status confirmed
-                separately from this request.
+                Managed-hosting billing and checkout remain on the services lane, with workspace selection and service scope confirmed separately from this request.
               </p>
             </div>
           </div>

@@ -16,8 +16,8 @@ function normalizeSelectedPlan(value: string | null): "starter" | "professional"
 }
 
 function labelForPlan(value: "starter" | "professional" | null): string {
-  if (value === "starter") return "Starter";
-  if (value === "professional") return "Professional";
+  if (value === "starter") return "Starter managed hosting";
+  if (value === "professional") return "Professional managed hosting";
   return "OpenPlan";
 }
 
@@ -91,16 +91,16 @@ function SignUpForm() {
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Create account</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create the identity before the workspace is activated.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          This step establishes the operator account only. Workspace setup, billing selection, and paid activation still happen after sign-in so OpenPlan can target the right workspace explicitly.
+          This step establishes the operator account only. Workspace setup, managed-hosting billing, and paid service activation still happen after sign-in so OpenPlan can target the right workspace explicitly.
         </p>
       </header>
 
       <div className="space-y-4 px-6 py-5 sm:px-7">
         {selectedPlan ? (
           <article className={noticeClass("info")}>
-            <p className="font-semibold">Selected early-access plan: {labelForPlan(selectedPlan)}</p>
+            <p className="font-semibold">Selected managed-hosting lane: {labelForPlan(selectedPlan)}</p>
             <p className="mt-1.5">
-              This step creates your account only. After sign-in, create or open the correct workspace, then launch billing from the in-app billing surface.
+              This step creates your account only. After sign-in, create or open the correct workspace, then launch managed-hosting billing from the in-app billing surface.
             </p>
           </article>
         ) : null}

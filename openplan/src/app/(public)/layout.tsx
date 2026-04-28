@@ -21,7 +21,7 @@ export default function PublicLayout({
           <div className="grid gap-3 lg:justify-items-end">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-muted-foreground">
               <Link href="/pricing" className="transition hover:text-foreground">
-                Pricing
+                Services
               </Link>
               <Link href="/sign-in" className="transition hover:text-foreground">
                 Sign in
@@ -42,7 +42,7 @@ export default function PublicLayout({
               </Link>
             </div>
             <p className="text-sm text-muted-foreground lg:text-right">
-              Supervised early access for planning teams that need traceable work, not dashboard theater.
+              Open-source planning software with managed services for teams that need traceable work, not dashboard theater.
             </p>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Legal Notice — OpenPlan",
   description:
-    "Combined legal notice for OpenPlan: operating posture, AI disclosure, screening-grade limits, and supervised early-access boundaries.",
+    "Combined legal notice for OpenPlan: open-source license boundary, hosted-service posture, AI disclosure, and screening-grade limits.",
 };
 
 const operatingPosture = [
@@ -15,9 +15,14 @@ const operatingPosture = [
       "OpenPlan is currently in supervised early access. Some modules — notably the behavioral modeling runtime — are labeled internal prototype only. Those outputs are shared with caveats, not as planning-grade conclusions.",
   },
   {
-    title: "Supervised activation",
+    title: "Open-source license boundary",
     description:
-      "Workspace activation, pilot onboarding, and billing are gated and reviewed individually. Commercial terms during this phase reflect pilot posture rather than a finalized SaaS contract.",
+      "OpenPlan source code is made available under the Apache License, Version 2.0, unless a file says otherwise. That source license does not grant rights to Nat Ford trademarks, private credentials, client confidential information, third-party datasets, third-party media, or client-specific deliverables.",
+  },
+  {
+    title: "Managed hosting and services",
+    description:
+      "Nat Ford commercial terms cover managed hosting, onboarding, support, planning services, and custom implementation work around the open-source core. Workspace activation, service scope, and billing are gated and reviewed individually.",
   },
   {
     title: "Screening-grade boundary",
@@ -40,7 +45,7 @@ const modelLimits = [
 
 const covenant = [
   "Truth without spin: assumptions, limitations, and uncertainty are labeled rather than smoothed over. Regulatory and technical claims are cited.",
-  "Fair exchange: pricing aims to be sustainable, transparent, and non-predatory. Supervised early-access pricing is not final commercial pricing.",
+  "Fair exchange: managed-hosting and service pricing aim to be sustainable, transparent, and non-predatory. Published service baselines are not proprietary software-license fees.",
   "Community protection: analysis and recommendations do not shift burden onto disadvantaged or tribal communities for convenience or optics. This is a standing constraint, not a soft preference.",
   "Rapid repair: when something is wrong, the operator communicates early and makes it right through rework, credits, or refunds as appropriate.",
   "Responsible AI use: AI accelerates drafting and QA; it does not replace qualified review on client-critical outputs.",
@@ -56,11 +61,10 @@ export default function LegalPage() {
         <article className="public-hero">
           <p className="public-kicker">Legal notice</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Combined safety harbor: how OpenPlan is governed during supervised early access.</h1>
+            <h1 className="public-title">Combined safety harbor: how OpenPlan is governed as open-source software and a managed service.</h1>
             <p className="public-lead max-w-4xl">
-              This page consolidates the operating posture, AI disclosures, and model-output limits that govern OpenPlan today.
-              It is the authoritative source for the &ldquo;internal prototype only&rdquo; and screening-grade language that
-              appears elsewhere in the platform.
+              This page consolidates the open-source license boundary, hosted-service posture, AI disclosures, and model-output limits that govern OpenPlan today.
+              It is the authoritative source for the &ldquo;internal prototype only&rdquo; and screening-grade language that appears elsewhere in the platform.
             </p>
           </div>
 
@@ -81,8 +85,7 @@ export default function LegalPage() {
             <h2 className="public-rail-title">Screening-grade today, planning-grade only where promoted.</h2>
           </div>
           <p className="public-rail-copy">
-            OpenPlan distinguishes between modules that are safe for planning-grade consumption and modules that are still
-            labeled internal prototype only. The difference is surfaced on the screen, not hidden behind marketing copy.
+            OpenPlan distinguishes between open-source software, Nat Ford managed services, planning-grade outputs, and modules that are still labeled internal prototype only. The difference is surfaced on the screen, not hidden behind marketing copy.
           </p>
         </aside>
       </section>

@@ -13,13 +13,13 @@ export async function TopNav() {
     ? [
         { href: "/dashboard", label: "Overview" },
         { href: "/explore", label: "Analysis Studio" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/pricing", label: "Services" },
         { href: "/billing", label: "Billing" },
       ]
     : [
         { href: "/", label: "Home" },
         { href: "/explore", label: "App Preview" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/pricing", label: "Services" },
         { href: "/sign-in", label: "Sign in" },
         { href: "/sign-up", label: "Sign up" },
       ];
@@ -44,7 +44,7 @@ export async function TopNav() {
             <span className="text-sm text-muted-foreground">Civic workbench</span>
           </div>
           <span className="max-w-3xl text-sm text-muted-foreground">
-            Public entry into the planning workspace, pricing lane, and share-ready engagement portals.
+            Public entry into the open-source planning workspace, managed-services lane, and share-ready engagement portals.
           </span>
         </Link>
 
@@ -55,8 +55,8 @@ export async function TopNav() {
             </p>
             <p className="text-sm text-muted-foreground">
               {user
-                ? "Move between the public pricing surface and the live workspace without dropping planning context."
-                : "Review the platform, pricing posture, and live public engagement views before opening the full operator shell."}
+                ? "Move between the public services surface and the live workspace without dropping planning context."
+                : "Review the open-source posture, managed-services options, and live public engagement views before opening the full operator shell."}
             </p>
           </div>
 
