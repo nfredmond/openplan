@@ -38,10 +38,10 @@ This repo has multiple layers. The main Next.js product app lives in `openplan/`
 
 ## App stack
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Supabase (Postgres, Auth, Storage, PostGIS)
-- MapLibre GL JS + deck.gl
+- Mapbox GL JS + deck.gl
 - Tailwind CSS
 - Vercel
 
