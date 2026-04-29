@@ -10,6 +10,16 @@ type PublicPostureSurface = {
 
 const publicPostureSurfaces: PublicPostureSurface[] = [
   {
+    route: "/",
+    sourcePath: "src/app/(public)/page.tsx",
+    requiredMarkers: [
+      /Open-source planning software that keeps maps, engagement, and delivery in one record/i,
+      /Apache-2\.0 planning software for agencies, tribes, RTPAs, counties, and consulting teams/i,
+      /supports it through managed hosting, onboarding, planning services, and custom implementation work/i,
+      /managed operations when you need someone accountable to run it/i,
+    ],
+  },
+  {
     route: "/pricing",
     sourcePath: "src/app/(public)/pricing/page.tsx",
     requiredMarkers: [
@@ -40,6 +50,16 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
     ],
   },
   {
+    route: "/terms",
+    sourcePath: "src/app/(public)/terms/page.tsx",
+    requiredMarkers: [
+      /Open-source software, hosted service when managed by Nat Ford/i,
+      /do not replace the Apache-2\.0 license for self-hosted use of the open-source code/i,
+      /Supervised managed hosting/i,
+      /not a consumer analytics product and is not sold as one/i,
+    ],
+  },
+  {
     route: "/examples",
     sourcePath: "src/app/(public)/examples/page.tsx",
     requiredMarkers: [
@@ -47,6 +67,29 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /legal notice/i,
       /review service lanes/i,
       /request a supervised walk-through/i,
+    ],
+  },
+];
+
+const repositoryPostureSurfaces: PublicPostureSurface[] = [
+  {
+    route: "root README",
+    sourcePath: "../README.md",
+    requiredMarkers: [
+      /Apache-2\.0 open-source planning software/i,
+      /commercial model is services around the open-source core/i,
+      /not intended to turn the Apache-2\.0 core into a closed source license/i,
+      /should not be described as a finished autonomous municipal SaaS/i,
+    ],
+  },
+  {
+    route: "app README",
+    sourcePath: "README.md",
+    requiredMarkers: [
+      /Apache-2\.0 open-source transportation and land-use planning software/i,
+      /commercial model is services around the open-source core/i,
+      /not a broad self-serve municipal SaaS/i,
+      /serious Apache-2\.0 planning software with optional Nat Ford managed services/i,
     ],
   },
 ];
@@ -82,5 +125,14 @@ describe("public open-source posture guardrail", () => {
       .map(({ label }) => label);
 
     expect(offenders).toEqual([]);
+  });
+
+  it.each(repositoryPostureSurfaces)("$route keeps repository-level posture markers", (surface) => {
+    const source = readPublicSurfaceSource(surface);
+    const missingMarkers = surface.requiredMarkers
+      .filter((marker) => !marker.test(source))
+      .map((marker) => marker.toString());
+
+    expect(missingMarkers).toEqual([]);
   });
 });
