@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "openplan.local_ui_ux_settle_capture.v1",
+  "generatedAt": "2026-04-29T18:19:59.507Z",
+  "baseUrl": "http://localhost:3000",
+  "outputDir": "docs/ops/2026-04-29-test-output/ui-ux-settle",
+  "storageStateSupplied": false,
+  "rows": [
+    {
+      "routeKey": "dashboard",
+      "routeUrl": "/dashboard",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Command board and overview populated",
+      "visibleTarget": "Shell rails visible",
+      "missingDependency": "Missing --storage-state or OPENPLAN_UI_UX_STORAGE_STATE.",
+      "screenshot": null,
+      "status": "missing_auth",
+      "notes": "No browser launched and no screenshots captured."
+    },
+    {
+      "routeKey": "projects-index",
+      "routeUrl": "/projects",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "NCTC project row visible",
+      "visibleTarget": "Registry/list worksurface",
+      "missingDependency": "Missing --storage-state or OPENPLAN_UI_UX_STORAGE_STATE.",
+      "screenshot": null,
+      "status": "missing_auth",
+      "notes": "No browser launched and no screenshots captured."
+    },
+    {
+      "routeKey": "explore-map",
+      "routeUrl": "/explore",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Mapbox map and layers loaded",
+      "visibleTarget": "Map controls/inspector visible",
+      "missingDependency": "Missing --storage-state or OPENPLAN_UI_UX_STORAGE_STATE.",
+      "screenshot": null,
+      "status": "missing_auth",
+      "notes": "No browser launched and no screenshots captured."
+    }
+  ]
+}

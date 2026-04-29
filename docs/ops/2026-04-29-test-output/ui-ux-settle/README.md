@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture tooling. No screenshots were captured in this turn.
+Status: P0 preparation plus local-only capture tooling. A read-only prerequisite report was generated; no screenshots were captured because no local authenticated Playwright storage state was supplied.
 
 ## Scope
 
@@ -20,6 +20,7 @@ The work here is local proof-pack preparation:
 
 - `capture-manifest.md` - route, viewport, state, and artifact manifest for the priority routes.
 - `local-capture-prerequisites.md` - exact local prerequisites plus existing scripts and tests inspected for capture support.
+- `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only prerequisite ledger from a desktop capture attempt against localhost; it records missing local auth storage state before browser launch and does not include screenshots.
 - `../../../../qa-harness/openplan-local-ui-ux-settle-capture.js` - local-only read-only Playwright capture harness for this manifest.
 
 ## Canonical Inputs
