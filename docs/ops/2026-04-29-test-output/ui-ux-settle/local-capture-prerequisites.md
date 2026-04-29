@@ -45,6 +45,7 @@ Application scripts in `openplan/package.json`:
 - `pnpm ops:check-admin-operations-smoke` performs a non-mutating admin-operations preflight and prints the manual smoke checklist.
 
 QA harness scripts in `qa-harness/package.json`:
+- `npm run local-ui-ux-settle-capture` is the local-only read-only capture harness for this manifest. It consumes an existing Playwright storage-state file, refuses production/Vercel base URLs, captures desktop/mobile screenshots for populated local routes, and writes the screenshot ledger under this proof-pack folder.
 - `npm run local-workspace-url-isolation-smoke` is a read-only local Playwright browser proof after its local fixture exists. It is useful as an auth/session/browser harness reference, but its route coverage is workspace URL isolation rather than the UI settle route manifest.
 - `npm run prod-layout-overlap-audit` captures screenshots and checks visible container overlap, but it creates a production QA user and production QA records. Do not run it for this checkpoint under the no-mutation boundary.
 - Other `prod-*` harnesses also create production QA users and records. Treat them as implementation references only unless Nathaniel separately approves a production smoke lane.
@@ -53,6 +54,19 @@ QA harness scripts in `qa-harness/package.json`:
 Existing screenshot pattern:
 - The QA harness uses Playwright `chromium`, fixed browser contexts, and `page.screenshot({ fullPage: true })`.
 - Current harness output defaults to `docs/ops/<date>-test-output/`; this settle pack should stay under `docs/ops/2026-04-29-test-output/ui-ux-settle/`.
+
+Exact local capture command from `qa-harness/`:
+
+```bash
+BASE_URL=http://localhost:3000 OPENPLAN_UI_UX_STORAGE_STATE=/absolute/path/to/local-storage-state.json \
+  npm run local-ui-ux-settle-capture
+```
+
+Optional local-only overrides:
+- `--viewports desktop,mobile` limits or expands the viewport set supported by the harness.
+- `--route <route-key>` can be repeated to capture a smaller local slice.
+- `OPENPLAN_UI_UX_SETTLE_OUTPUT_DIR=docs/ops/<local-output-dir>` may redirect output, but only inside `docs/ops/`.
+- `--allow-local-network` permits an explicit private local base URL such as `http://192.168.x.x:3000`; Vercel URLs remain refused.
 
 ## Safe Capture Path
 
@@ -67,6 +81,10 @@ For this UI settle proof pack, the safest executable path is:
 ## No-Go Checks
 
 Do not proceed with capture if any of these are true:
+- `BASE_URL` is not `localhost` or `127.0.0.1`, unless it is an explicit private local URL and `--allow-local-network` is documented in the ledger.
+- `BASE_URL` points at Vercel or production.
+- No already-authenticated local Playwright storage state is available. The harness should produce a missing-auth prerequisite report instead of attempting login or credential extraction.
+- The output directory is outside `docs/ops/`.
 - The app points at production Supabase.
 - The Mapbox token is missing for map-route proof.
 - The page is still loading, signed out, or showing workspace-membership-required state for a route that is meant to prove populated workspace UX.
