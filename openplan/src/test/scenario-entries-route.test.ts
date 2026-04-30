@@ -178,6 +178,18 @@ describe("scenario entry routes", () => {
         attached_run_id: "55555555-5555-4555-8555-555555555555",
       })
     );
+    expect(markScenarioLinkedReportsBasisStaleMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scenarioSetId: "11111111-1111-4111-8111-111111111111",
+        workspaceId: "33333333-3333-4333-8333-333333333333",
+        runId: null,
+        reason: "Scenario entry Existing conditions changed the linked RTP packet basis.",
+      })
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "scenario_entry_created",
+      expect.objectContaining({ staleReportCount: 1 })
+    );
   });
 
   it("POST rejects a second baseline when one already exists", async () => {
