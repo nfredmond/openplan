@@ -60,6 +60,14 @@ export const DEMO_PROGRAM_PLAN_LINK_ID = "d0000001-0000-4000-8000-000000000017";
 export const DEMO_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000018";
 export const DEMO_REPORT_ID = "d0000001-0000-4000-8000-000000000019";
 export const DEMO_REPORT_ARTIFACT_ID = "d0000001-0000-4000-8000-00000000001a";
+export const DEMO_SCENARIO_SET_ID = "d0000001-0000-4000-8000-000000000030";
+export const DEMO_SCENARIO_BASELINE_RUN_ID = "d0000001-0000-4000-8000-000000000031";
+export const DEMO_SCENARIO_ALTERNATIVE_RUN_ID = "d0000001-0000-4000-8000-000000000032";
+export const DEMO_SCENARIO_BASELINE_ENTRY_ID = "d0000001-0000-4000-8000-000000000033";
+export const DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID = "d0000001-0000-4000-8000-000000000034";
+export const DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID = "d0000001-0000-4000-8000-000000000035";
+export const DEMO_SCENARIO_ACCESSIBILITY_DELTA_ID = "d0000001-0000-4000-8000-000000000036";
+export const DEMO_SCENARIO_SAFETY_DELTA_ID = "d0000001-0000-4000-8000-000000000037";
 
 export const DEMO_MISSION_DOWNTOWN_ID = "d0000001-0000-4000-8000-000000000008";
 export const DEMO_MISSION_SR49_ID = "d0000001-0000-4000-8000-000000000009";
@@ -116,6 +124,10 @@ export const DEMO_REPORT_TITLE = "NCTC 2045 RTP settle board packet";
 export const DEMO_REPORT_GENERATED_AT = "2026-04-30T12:00:00.000Z";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
+export const DEMO_SCENARIO_SET_TITLE = "NCTC 2045 RTP scenario comparison";
+export const DEMO_SCENARIO_BASELINE_LABEL = "Existing conditions baseline";
+export const DEMO_SCENARIO_ALTERNATIVE_LABEL = "SR-49 safety package";
+export const DEMO_SCENARIO_COMPARISON_LABEL = "SR-49 safety package comparison snapshot";
 
 export type SeedRecords = {
   workspace: Record<string, unknown>;
@@ -132,6 +144,11 @@ export type SeedRecords = {
   report: Record<string, unknown>;
   reportArtifact: Record<string, unknown>;
   reportSections: Array<Record<string, unknown>>;
+  scenarioRuns: Array<Record<string, unknown>>;
+  scenarioSet: Record<string, unknown>;
+  scenarioEntries: Array<Record<string, unknown>>;
+  scenarioComparisonSnapshot: Record<string, unknown>;
+  scenarioComparisonIndicatorDeltas: Array<Record<string, unknown>>;
 };
 
 // Realistic AOI polygons near Grass Valley, CA (Nevada County seat,
@@ -922,6 +939,204 @@ export function buildSeedRecords(
       metadata_json: buildNctcReportArtifactMetadata(),
     },
     reportSections: buildNctcReportSections(),
+    scenarioRuns: [
+      {
+        id: DEMO_SCENARIO_BASELINE_RUN_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        title: "NCTC existing conditions screening run",
+        query_text:
+          "Local NCTC UI settle fixture: existing-conditions screening metrics from the frozen Nevada County run.",
+        corridor_geojson: DEMO_CORRIDOR_SR49,
+        metrics: {
+          overallScore: 58,
+          accessibilityScore: 58,
+          safetyScore: 61,
+          equityScore: 54,
+          totalTransitStops: 18,
+          totalFatalCrashes: 5,
+          pctDisadvantaged: 21.4,
+          pctZeroVehicle: 7.6,
+          dataQuality: {
+            posture: "local_ui_ux_settle_fixture",
+            sourceRun: DEMO_COUNTY_RUN_NAME,
+          },
+        },
+        result_geojson: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {
+                label: DEMO_SCENARIO_BASELINE_LABEL,
+                source: "seed:nctc",
+              },
+              geometry: DEMO_CORRIDOR_SR49,
+            },
+          ],
+        },
+        summary_text:
+          "Existing-conditions baseline for the local NCTC scenario proof. Screening-grade only; not a calibrated planning model.",
+        ai_interpretation:
+          "Local fixture summary. Use only for UI settle capture and scenario-readiness proof.",
+        created_at: "2026-04-30T12:10:00.000Z",
+      },
+      {
+        id: DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        title: "NCTC SR-49 safety package screening run",
+        query_text:
+          "Local NCTC UI settle fixture: SR-49 safety package comparison metrics against the existing-conditions baseline.",
+        corridor_geojson: DEMO_CORRIDOR_SR49,
+        metrics: {
+          overallScore: 66,
+          accessibilityScore: 64,
+          safetyScore: 70,
+          equityScore: 57,
+          totalTransitStops: 20,
+          totalFatalCrashes: 4,
+          pctDisadvantaged: 21.4,
+          pctZeroVehicle: 7.6,
+          dataQuality: {
+            posture: "local_ui_ux_settle_fixture",
+            sourceRun: DEMO_COUNTY_RUN_NAME,
+          },
+        },
+        result_geojson: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {
+                label: DEMO_SCENARIO_ALTERNATIVE_LABEL,
+                source: "seed:nctc",
+              },
+              geometry: DEMO_CORRIDOR_SR49,
+            },
+          ],
+        },
+        summary_text:
+          "Alternative package fixture for SR-49 crossing, signal, and shoulder treatments. Screening-grade only; intended for UI settle capture.",
+        ai_interpretation:
+          "Local fixture summary. Use only for UI settle capture and scenario-readiness proof.",
+        created_at: "2026-04-30T12:20:00.000Z",
+      },
+    ],
+    scenarioSet: {
+      id: DEMO_SCENARIO_SET_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_SCENARIO_SET_TITLE,
+      summary:
+        "Local-only proof-pack fixture for the scenarios index/detail UI settle capture, comparing the NCTC existing-conditions baseline with a targeted SR-49 safety package.",
+      planning_question:
+        "Does the SR-49 safety package improve access and safety enough to advance into the NCTC 2045 RTP programming pipeline?",
+      status: "active",
+      baseline_entry_id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+      created_by: ownerUserId,
+      created_at: "2026-04-30T12:05:00.000Z",
+      updated_at: "2026-04-30T12:30:00.000Z",
+    },
+    scenarioEntries: [
+      {
+        id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+        scenario_set_id: DEMO_SCENARIO_SET_ID,
+        entry_type: "baseline",
+        label: DEMO_SCENARIO_BASELINE_LABEL,
+        slug: "existing-conditions-baseline",
+        summary:
+          "Baseline entry for the frozen Nevada County screening run, preserved as the comparison anchor for the local UI settle proof.",
+        assumptions_json: {
+          horizonYear: 2045,
+          sourceRun: DEMO_COUNTY_RUN_NAME,
+          posture: "screening_grade",
+        },
+        attached_run_id: DEMO_SCENARIO_BASELINE_RUN_ID,
+        status: "ready",
+        sort_order: 0,
+        created_by: ownerUserId,
+        created_at: "2026-04-30T12:12:00.000Z",
+        updated_at: "2026-04-30T12:12:00.000Z",
+      },
+      {
+        id: DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+        scenario_set_id: DEMO_SCENARIO_SET_ID,
+        entry_type: "alternative",
+        label: DEMO_SCENARIO_ALTERNATIVE_LABEL,
+        slug: "sr-49-safety-package",
+        summary:
+          "Targeted SR-49 package with crossing, signal, and shoulder treatments for scenario-detail comparison proof.",
+        assumptions_json: {
+          packageType: "safety_and_access",
+          corridor: "SR-49 through Grass Valley",
+          modeledAs: "screening_delta_fixture",
+        },
+        attached_run_id: DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+        status: "ready",
+        sort_order: 1,
+        created_by: ownerUserId,
+        created_at: "2026-04-30T12:22:00.000Z",
+        updated_at: "2026-04-30T12:22:00.000Z",
+      },
+    ],
+    scenarioComparisonSnapshot: {
+      id: DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID,
+      scenario_set_id: DEMO_SCENARIO_SET_ID,
+      baseline_entry_id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+      candidate_entry_id: DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+      label: DEMO_SCENARIO_COMPARISON_LABEL,
+      summary:
+        "Seeded local comparison snapshot so scenario detail renders persistent comparison state without empty proof.",
+      narrative:
+        "The SR-49 safety package improves the local fixture scorecard while preserving the screening-grade caveat inherited from the frozen Nevada County run.",
+      caveats_json: [
+        "Local UI settle fixture only.",
+        "Screening-grade metrics are not calibrated planning-model outputs.",
+      ],
+      metadata_json: {
+        source: "seed:nctc",
+        posture: "local_ui_ux_settle_fixture",
+      },
+      status: "ready",
+      created_by: ownerUserId,
+      created_at: "2026-04-30T12:30:00.000Z",
+      updated_at: "2026-04-30T12:30:00.000Z",
+    },
+    scenarioComparisonIndicatorDeltas: [
+      {
+        id: DEMO_SCENARIO_ACCESSIBILITY_DELTA_ID,
+        comparison_snapshot_id: DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID,
+        indicator_key: "accessibilityScore",
+        indicator_label: "Accessibility score",
+        unit_label: "points",
+        delta_json: {
+          baseline: 58,
+          candidate: 64,
+          delta: 6,
+        },
+        summary_text:
+          "Seeded comparison delta: access improves under the SR-49 package fixture.",
+        sort_order: 0,
+        created_at: "2026-04-30T12:30:00.000Z",
+        updated_at: "2026-04-30T12:30:00.000Z",
+      },
+      {
+        id: DEMO_SCENARIO_SAFETY_DELTA_ID,
+        comparison_snapshot_id: DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID,
+        indicator_key: "safetyScore",
+        indicator_label: "Safety score",
+        unit_label: "points",
+        delta_json: {
+          baseline: 61,
+          candidate: 70,
+          delta: 9,
+        },
+        summary_text:
+          "Seeded comparison delta: safety posture improves under the SR-49 package fixture.",
+        sort_order: 1,
+        created_at: "2026-04-30T12:30:00.000Z",
+        updated_at: "2026-04-30T12:30:00.000Z",
+      },
+    ],
   };
 }
 
@@ -1365,7 +1580,71 @@ async function main(): Promise<void> {
     `[seed:nctc] upserted chapter ${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY} (${chapterContent.length} chars)`
   );
 
-  // 10. Aerial missions with authored AOI polygons. Three missions
+  // 10. Scenario set + comparison fixture for local UI/UX settle proof.
+  //     The first scenario_set upsert intentionally leaves baseline_entry_id
+  //     null because the baseline entry FK cannot exist until entries are
+  //     written. The final upsert below restores the deterministic baseline.
+  const scenarioSeedRecords = buildSeedRecords(demoUserId, bundleManifest, validationSummary);
+  const { error: scenarioSetInitialError } = await supabase.from("scenario_sets").upsert(
+    {
+      ...scenarioSeedRecords.scenarioSet,
+      baseline_entry_id: null,
+    },
+    { onConflict: "id" }
+  );
+  if (scenarioSetInitialError) {
+    throw new Error(`Failed to upsert scenario set fixture: ${scenarioSetInitialError.message}`);
+  }
+
+  const { error: scenarioRunsError } = await supabase.from("runs").upsert(
+    scenarioSeedRecords.scenarioRuns,
+    { onConflict: "id" }
+  );
+  if (scenarioRunsError) {
+    throw new Error(`Failed to upsert scenario runs: ${scenarioRunsError.message}`);
+  }
+
+  const { error: scenarioEntriesError } = await supabase.from("scenario_entries").upsert(
+    scenarioSeedRecords.scenarioEntries,
+    { onConflict: "id" }
+  );
+  if (scenarioEntriesError) {
+    throw new Error(`Failed to upsert scenario entries: ${scenarioEntriesError.message}`);
+  }
+
+  const { error: scenarioSetFinalError } = await supabase.from("scenario_sets").upsert(
+    scenarioSeedRecords.scenarioSet,
+    { onConflict: "id" }
+  );
+  if (scenarioSetFinalError) {
+    throw new Error(`Failed to finalize scenario set baseline: ${scenarioSetFinalError.message}`);
+  }
+
+  const { error: scenarioComparisonSnapshotError } = await supabase
+    .from("scenario_comparison_snapshots")
+    .upsert(scenarioSeedRecords.scenarioComparisonSnapshot, { onConflict: "id" });
+  if (scenarioComparisonSnapshotError) {
+    throw new Error(
+      `Failed to upsert scenario comparison snapshot: ${scenarioComparisonSnapshotError.message}`
+    );
+  }
+
+  const { error: scenarioComparisonDeltasError } = await supabase
+    .from("scenario_comparison_indicator_deltas")
+    .upsert(scenarioSeedRecords.scenarioComparisonIndicatorDeltas, { onConflict: "id" });
+  if (scenarioComparisonDeltasError) {
+    throw new Error(
+      `Failed to upsert scenario comparison deltas: ${scenarioComparisonDeltasError.message}`
+    );
+  }
+
+  console.log(
+    `[seed:nctc] upserted scenario fixture ${DEMO_SCENARIO_SET_ID} ` +
+      `(${scenarioSeedRecords.scenarioEntries.length} entries, ` +
+      `${scenarioSeedRecords.scenarioComparisonIndicatorDeltas.length} deltas)`
+  );
+
+  // 11. Aerial missions with authored AOI polygons. Three missions
   //    cover distinct NCTC geographies (downtown Grass Valley, the
   //    SR-49 / Alta Sierra corridor south of town, and the Empire
   //    Mine State Historic Park area). Each polygon carries 9+
@@ -1469,7 +1748,7 @@ async function main(): Promise<void> {
     console.log(`[seed:nctc] upserted evidence package ${evidence.id} (${evidence.status})`);
   }
 
-  // 11. Project corridors — display-only LineStrings on the backdrop.
+  // 12. Project corridors — display-only LineStrings on the backdrop.
   //     Two authored roads anchored on Grass Valley geography: SR-49
   //     through downtown heading south, and Empire St heading east
   //     toward Empire Mine State Historic Park.
@@ -1507,7 +1786,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 12. Community engagement input — approved map comments that render as
+  // 13. Community engagement input — approved map comments that render as
   //     low-weight point features on the cartographic shell.
   const { error: engagementCampaignError } = await supabase.from("engagement_campaigns").upsert(
     {
@@ -1549,7 +1828,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 13. Deterministic report packet fixture for local UI/UX settle proof.
+  // 14. Deterministic report packet fixture for local UI/UX settle proof.
   const { error: reportError } = await supabase.from("reports").upsert(
     {
       id: DEMO_REPORT_ID,
@@ -1614,7 +1893,7 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted report fixture artifact ${DEMO_REPORT_ARTIFACT_ID}`);
 
-  // 14. Public census tracts (equity choropleth demo data).
+  // 15. Public census tracts (equity choropleth demo data).
   //     `census_tracts` is public data (no workspace scoping) and has a
   //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
   //     client can't send PostGIS geometry directly, so we upsert through
@@ -1699,6 +1978,7 @@ async function main(): Promise<void> {
   console.log(`  program:     ${DEMO_PROGRAM_ID}`);
   console.log(`  opportunity: ${DEMO_FUNDING_OPPORTUNITY_ID}`);
   console.log(`  report:      ${DEMO_REPORT_ID}`);
+  console.log(`  scenario:    ${DEMO_SCENARIO_SET_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);

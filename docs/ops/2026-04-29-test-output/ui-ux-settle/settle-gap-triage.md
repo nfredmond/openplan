@@ -8,19 +8,20 @@ Scope: docs-only next-action checklist for the local proof pack. No app/runtime,
 
 ## Priority Checklist
 
-### P0 - Fixture-Required Operating Surfaces
+### P0 - Fixture-Required Operating Surface
 
-Routes: `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile. Reports are now captured in the main ledger; scenarios and grants still need fixture work.
+Routes: `/grants` across desktop and mobile. Reports are now captured in the main ledger; scenarios are seed-backed and recapture-pending; grants is the only operating surface that still needs fixture work.
 
 Plans update:
 - `/plans` and `/plans/d0000001-0000-4000-8000-000000000015` now have a deterministic NCTC local seed fixture and harness target.
 - `/programs` and `/programs/d0000001-0000-4000-8000-000000000016` now have a deterministic NCTC local seed fixture, funding opportunity lane, and captured desktop/mobile proof.
 - `/reports` and `/reports/d0000001-0000-4000-8000-000000000019` now have a deterministic NCTC local seed fixture with a generated board-packet artifact and captured desktop/mobile proof.
+- `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` now have deterministic NCTC local seed fixtures with baseline/alternative entries, attached local runs, and a saved comparison snapshot. The historical ledger rows remain fixture-required until the next local recapture changes them to captured.
 
 Safe prerequisites:
 - Use only a local authenticated Playwright storage state for a non-production workspace.
-- Prepare populated local fixtures before capture: add separate scenario set/detail comparison and grants opportunity/award/reimbursement fixtures before the next broad capture.
-- Use stable local IDs and update only the local capture manifest or harness route placeholders when the fixtures exist.
+- Prepare populated local fixtures before capture: rerun the NCTC seed for scenarios, and add a grants opportunity/award/reimbursement fixture before the next broad capture.
+- Use stable local IDs and update only the local capture manifest or harness route placeholders when the grants fixture exists.
 - Keep capture output under `docs/ops/2026-04-29-test-output/ui-ux-settle/`.
 
 Do not do in watchdog mode:
@@ -34,9 +35,25 @@ Acceptance criteria:
 - Ledger status changes from `fixture_required` to `captured`.
 - Screenshot filenames and route rows identify the stable local fixture state used.
 
+### P0 - Scenario Recapture
+
+Routes: `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` across desktop and mobile.
+
+Status: seed-backed / recapture-pending. The local NCTC seed now owns the scenario fixture; the current proof ledger still reflects the pre-fixture run.
+
+Safe prerequisites:
+- Run only against local Supabase and local Next.js.
+- Rerun `pnpm seed:nctc` locally after confirming `NEXT_PUBLIC_SUPABASE_URL` points to local Supabase.
+- Capture with the updated harness targets and the existing authenticated local storage state.
+
+Acceptance criteria:
+- `/scenarios` renders `NCTC 2045 RTP scenario comparison`.
+- `/scenarios/d0000001-0000-4000-8000-000000000030` renders the scenario detail with `SR-49 safety package` comparison state.
+- Desktop and mobile rows move from historical `fixture_required` to `captured`.
+
 ### P1 - Historical Detail and Admin Authorization States
 
-Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are fixture-required scenario/grants rows above.
+Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are scenario recapture and the fixture-required grants rows above.
 
 Routes: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` across desktop and mobile.
 

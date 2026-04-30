@@ -22,6 +22,18 @@ import {
   DEMO_RTP_ANCHOR_LATITUDE,
   DEMO_RTP_ANCHOR_LONGITUDE,
   DEMO_RTP_CYCLE_ID,
+  DEMO_SCENARIO_ACCESSIBILITY_DELTA_ID,
+  DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+  DEMO_SCENARIO_ALTERNATIVE_LABEL,
+  DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+  DEMO_SCENARIO_BASELINE_ENTRY_ID,
+  DEMO_SCENARIO_BASELINE_LABEL,
+  DEMO_SCENARIO_BASELINE_RUN_ID,
+  DEMO_SCENARIO_COMPARISON_LABEL,
+  DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID,
+  DEMO_SCENARIO_SAFETY_DELTA_ID,
+  DEMO_SCENARIO_SET_ID,
+  DEMO_SCENARIO_SET_TITLE,
   DEMO_WORKSPACE_ID,
   buildExistingConditionsChapterMarkdown,
   buildNctcCountyOnrampManifest,
@@ -119,6 +131,9 @@ describe("buildSeedRecords", () => {
     expect(records.countyRun.created_by).toBe(ownerUserId);
     expect(records.report.created_by).toBe(ownerUserId);
     expect(records.reportArtifact.generated_by).toBe(ownerUserId);
+    expect(records.scenarioSet.created_by).toBe(ownerUserId);
+    expect(records.scenarioEntries.every((entry) => entry.created_by === ownerUserId)).toBe(true);
+    expect(records.scenarioComparisonSnapshot.created_by).toBe(ownerUserId);
   });
 
   it("preserves the manifest and validation summary verbatim on county_runs", () => {
@@ -173,6 +188,23 @@ describe("buildSeedRecords", () => {
     expect(records.projectRtpLink.rtp_cycle_id).toBe(DEMO_RTP_CYCLE_ID);
     expect(records.countyRun.id).toBe(DEMO_COUNTY_RUN_ID);
     expect(records.countyRun.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.scenarioSet.id).toBe(DEMO_SCENARIO_SET_ID);
+    expect(records.scenarioSet.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.scenarioSet.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.scenarioSet.baseline_entry_id).toBe(DEMO_SCENARIO_BASELINE_ENTRY_ID);
+    expect(records.scenarioRuns.map((run) => run.id)).toEqual([
+      DEMO_SCENARIO_BASELINE_RUN_ID,
+      DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+    ]);
+    expect(records.scenarioEntries.map((entry) => entry.id)).toEqual([
+      DEMO_SCENARIO_BASELINE_ENTRY_ID,
+      DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+    ]);
+    expect(records.scenarioComparisonSnapshot.id).toBe(DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID);
+    expect(records.scenarioComparisonIndicatorDeltas.map((delta) => delta.id)).toEqual([
+      DEMO_SCENARIO_ACCESSIBILITY_DELTA_ID,
+      DEMO_SCENARIO_SAFETY_DELTA_ID,
+    ]);
   });
 
   it("is idempotent: the same inputs produce structurally equal records", () => {
@@ -258,6 +290,86 @@ describe("buildSeedRecords", () => {
     expect(new Set(records.reportSections.map((section) => section.id)).size).toBe(
       records.reportSections.length
     );
+  });
+
+  it("adds a deterministic local scenario fixture for UI settle scenario proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.scenarioSet).toMatchObject({
+      id: DEMO_SCENARIO_SET_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_SCENARIO_SET_TITLE,
+      status: "active",
+      baseline_entry_id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+    });
+    expect(records.scenarioSet.planning_question).toContain("SR-49 safety package");
+
+    expect(records.scenarioRuns).toHaveLength(2);
+    expect(records.scenarioRuns[0]).toMatchObject({
+      id: DEMO_SCENARIO_BASELINE_RUN_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      title: "NCTC existing conditions screening run",
+    });
+    expect(records.scenarioRuns[1]).toMatchObject({
+      id: DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      title: "NCTC SR-49 safety package screening run",
+    });
+    expect(records.scenarioRuns[0].metrics).toMatchObject({
+      overallScore: 58,
+      accessibilityScore: 58,
+      safetyScore: 61,
+    });
+    expect(records.scenarioRuns[1].metrics).toMatchObject({
+      overallScore: 66,
+      accessibilityScore: 64,
+      safetyScore: 70,
+    });
+
+    expect(records.scenarioEntries).toEqual([
+      expect.objectContaining({
+        id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+        scenario_set_id: DEMO_SCENARIO_SET_ID,
+        entry_type: "baseline",
+        label: DEMO_SCENARIO_BASELINE_LABEL,
+        slug: "existing-conditions-baseline",
+        attached_run_id: DEMO_SCENARIO_BASELINE_RUN_ID,
+        status: "ready",
+        sort_order: 0,
+      }),
+      expect.objectContaining({
+        id: DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+        scenario_set_id: DEMO_SCENARIO_SET_ID,
+        entry_type: "alternative",
+        label: DEMO_SCENARIO_ALTERNATIVE_LABEL,
+        slug: "sr-49-safety-package",
+        attached_run_id: DEMO_SCENARIO_ALTERNATIVE_RUN_ID,
+        status: "ready",
+        sort_order: 1,
+      }),
+    ]);
+
+    expect(records.scenarioComparisonSnapshot).toMatchObject({
+      id: DEMO_SCENARIO_COMPARISON_SNAPSHOT_ID,
+      scenario_set_id: DEMO_SCENARIO_SET_ID,
+      baseline_entry_id: DEMO_SCENARIO_BASELINE_ENTRY_ID,
+      candidate_entry_id: DEMO_SCENARIO_ALTERNATIVE_ENTRY_ID,
+      label: DEMO_SCENARIO_COMPARISON_LABEL,
+      status: "ready",
+    });
+    expect(records.scenarioComparisonIndicatorDeltas).toEqual([
+      expect.objectContaining({
+        id: DEMO_SCENARIO_ACCESSIBILITY_DELTA_ID,
+        indicator_key: "accessibilityScore",
+        delta_json: { baseline: 58, candidate: 64, delta: 6 },
+      }),
+      expect.objectContaining({
+        id: DEMO_SCENARIO_SAFETY_DELTA_ID,
+        indicator_key: "safetyScore",
+        delta_json: { baseline: 61, candidate: 70, delta: 9 },
+      }),
+    ]);
   });
 
   it("anchors the demo project to the Grass Valley map center so the marker renders under the shell viewport", () => {
