@@ -52,6 +52,9 @@ export const DEMO_COUNTY_RUN_ID = "d0000001-0000-4000-8000-000000000005";
 export const DEMO_PROJECT_RTP_LINK_ID = "d0000001-0000-4000-8000-000000000006";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_ID = "d0000001-0000-4000-8000-000000000007";
 export const DEMO_PLAN_ID = "d0000001-0000-4000-8000-000000000015";
+export const DEMO_PROGRAM_ID = "d0000001-0000-4000-8000-000000000016";
+export const DEMO_PROGRAM_PLAN_LINK_ID = "d0000001-0000-4000-8000-000000000017";
+export const DEMO_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000018";
 
 export const DEMO_MISSION_DOWNTOWN_ID = "d0000001-0000-4000-8000-000000000008";
 export const DEMO_MISSION_SR49_ID = "d0000001-0000-4000-8000-000000000009";
@@ -102,6 +105,8 @@ export const DEMO_RTP_ANCHOR_LATITUDE = 39.2616;
 export const DEMO_RTP_ANCHOR_LONGITUDE = -121.0161;
 export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_PLAN_TITLE = "NCTC 2045 RTP local proof plan";
+export const DEMO_PROGRAM_TITLE = "NCTC 2045 RTP programming pipeline";
+export const DEMO_FUNDING_OPPORTUNITY_TITLE = "Rural RTP implementation readiness call";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
 
@@ -110,6 +115,9 @@ export type SeedRecords = {
   membership: Record<string, unknown>;
   project: Record<string, unknown>;
   plan: Record<string, unknown>;
+  program: Record<string, unknown>;
+  programPlanLink: Record<string, unknown>;
+  fundingOpportunity: Record<string, unknown>;
   rtpCycle: Record<string, unknown>;
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
@@ -635,6 +643,53 @@ export function buildSeedRecords(
         "Local-only proof-pack fixture for the plans index/detail UI settle capture, grounded in the NCTC demo project and inherited engagement context.",
       created_by: ownerUserId,
     },
+    program: {
+      id: DEMO_PROGRAM_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_PROGRAM_TITLE,
+      program_type: "rtip",
+      status: "assembling",
+      cycle_name: "FY 2027/28–2030/31 RTIP",
+      funding_classification: "mixed",
+      sponsor_agency: "Nevada County Transportation Commission",
+      owner_label: "NCTC programming desk",
+      cadence_label: "biennial RTIP cycle",
+      fiscal_year_start: 2027,
+      fiscal_year_end: 2031,
+      nomination_due_at: "2026-09-15T17:00:00Z",
+      adoption_target_at: "2026-12-11T17:00:00Z",
+      summary:
+        "Local-only proof-pack fixture for the programs index/detail UI settle capture, linking the NCTC RTP proof plan to an RTIP-style funding readiness lane.",
+      created_by: ownerUserId,
+    },
+    programPlanLink: {
+      id: DEMO_PROGRAM_PLAN_LINK_ID,
+      program_id: DEMO_PROGRAM_ID,
+      link_type: "plan",
+      linked_id: DEMO_PLAN_ID,
+      label: DEMO_PLAN_TITLE,
+      created_by: ownerUserId,
+    },
+    fundingOpportunity: {
+      id: DEMO_FUNDING_OPPORTUNITY_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      program_id: DEMO_PROGRAM_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_FUNDING_OPPORTUNITY_TITLE,
+      opportunity_status: "open",
+      decision_state: "pursue",
+      agency_name: "California Transportation Commission",
+      owner_label: "NCTC programming desk",
+      cadence_label: "biennial call",
+      expected_award_amount: 1250000,
+      opens_at: "2026-07-01T16:00:00Z",
+      closes_at: "2026-09-15T17:00:00Z",
+      decision_due_at: "2026-12-11T17:00:00Z",
+      summary:
+        "Demo funding lane for capturing a populated programs detail surface with project, plan, and readiness context. Internal prototype only.",
+      created_by: ownerUserId,
+    },
     rtpCycle: {
       id: DEMO_RTP_CYCLE_ID,
       workspace_id: DEMO_WORKSPACE_ID,
@@ -939,6 +994,78 @@ async function main(): Promise<void> {
     throw new Error(`Failed to upsert plan: ${planError.message}`);
   }
   console.log(`[seed:nctc] upserted plan ${DEMO_PLAN_ID}`);
+
+  // 4b. Local program fixture for programs index/detail UI settle proof.
+  const { error: programError } = await supabase.from("programs").upsert(
+    {
+      id: DEMO_PROGRAM_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_PROGRAM_TITLE,
+      program_type: "rtip",
+      status: "assembling",
+      cycle_name: "FY 2027/28–2030/31 RTIP",
+      funding_classification: "mixed",
+      sponsor_agency: "Nevada County Transportation Commission",
+      owner_label: "NCTC programming desk",
+      cadence_label: "biennial RTIP cycle",
+      fiscal_year_start: 2027,
+      fiscal_year_end: 2031,
+      nomination_due_at: "2026-09-15T17:00:00Z",
+      adoption_target_at: "2026-12-11T17:00:00Z",
+      summary:
+        "Local-only proof-pack fixture for the programs index/detail UI settle capture, linking the NCTC RTP proof plan to an RTIP-style funding readiness lane.",
+      created_by: demoUserId,
+    },
+    { onConflict: "id" }
+  );
+  if (programError) {
+    throw new Error(`Failed to upsert program: ${programError.message}`);
+  }
+  console.log(`[seed:nctc] upserted program ${DEMO_PROGRAM_ID}`);
+
+  const { error: programPlanLinkError } = await supabase.from("program_links").upsert(
+    {
+      id: DEMO_PROGRAM_PLAN_LINK_ID,
+      program_id: DEMO_PROGRAM_ID,
+      link_type: "plan",
+      linked_id: DEMO_PLAN_ID,
+      label: DEMO_PLAN_TITLE,
+      created_by: demoUserId,
+    },
+    { onConflict: "id" }
+  );
+  if (programPlanLinkError) {
+    throw new Error(`Failed to upsert program plan link: ${programPlanLinkError.message}`);
+  }
+  console.log(`[seed:nctc] upserted program plan link ${DEMO_PROGRAM_PLAN_LINK_ID}`);
+
+  const { error: fundingOpportunityError } = await supabase.from("funding_opportunities").upsert(
+    {
+      id: DEMO_FUNDING_OPPORTUNITY_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      program_id: DEMO_PROGRAM_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_FUNDING_OPPORTUNITY_TITLE,
+      opportunity_status: "open",
+      decision_state: "pursue",
+      agency_name: "California Transportation Commission",
+      owner_label: "NCTC programming desk",
+      cadence_label: "biennial call",
+      expected_award_amount: 1250000,
+      opens_at: "2026-07-01T16:00:00Z",
+      closes_at: "2026-09-15T17:00:00Z",
+      decision_due_at: "2026-12-11T17:00:00Z",
+      summary:
+        "Demo funding lane for capturing a populated programs detail surface with project, plan, and readiness context. Internal prototype only.",
+      created_by: demoUserId,
+    },
+    { onConflict: "id" }
+  );
+  if (fundingOpportunityError) {
+    throw new Error(`Failed to upsert funding opportunity: ${fundingOpportunityError.message}`);
+  }
+  console.log(`[seed:nctc] upserted funding opportunity ${DEMO_FUNDING_OPPORTUNITY_ID}`);
 
   // 5. RTP cycle.
   const { error: rtpCycleError } = await supabase.from("rtp_cycles").upsert(
@@ -1326,6 +1453,8 @@ async function main(): Promise<void> {
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
   console.log(`  project:     ${DEMO_PROJECT_ID}`);
   console.log(`  plan:        ${DEMO_PLAN_ID}`);
+  console.log(`  program:     ${DEMO_PROGRAM_ID}`);
+  console.log(`  opportunity: ${DEMO_FUNDING_OPPORTUNITY_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);

@@ -4,8 +4,13 @@ import {
   DEMO_COUNTY_RUN_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
+  DEMO_FUNDING_OPPORTUNITY_ID,
+  DEMO_FUNDING_OPPORTUNITY_TITLE,
   DEMO_PLAN_ID,
   DEMO_PLAN_TITLE,
+  DEMO_PROGRAM_ID,
+  DEMO_PROGRAM_PLAN_LINK_ID,
+  DEMO_PROGRAM_TITLE,
   DEMO_PROJECT_ID,
   DEMO_PROJECT_LATITUDE,
   DEMO_PROJECT_LONGITUDE,
@@ -102,6 +107,9 @@ describe("buildSeedRecords", () => {
     expect(records.membership.role).toBe("owner");
     expect(records.project.created_by).toBe(ownerUserId);
     expect(records.plan.created_by).toBe(ownerUserId);
+    expect(records.program.created_by).toBe(ownerUserId);
+    expect(records.programPlanLink.created_by).toBe(ownerUserId);
+    expect(records.fundingOpportunity.created_by).toBe(ownerUserId);
     expect(records.rtpCycle.created_by).toBe(ownerUserId);
     expect(records.projectRtpLink.created_by).toBe(ownerUserId);
     expect(records.countyRun.created_by).toBe(ownerUserId);
@@ -135,6 +143,16 @@ describe("buildSeedRecords", () => {
     expect(records.plan.id).toBe(DEMO_PLAN_ID);
     expect(records.plan.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.plan.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.program.id).toBe(DEMO_PROGRAM_ID);
+    expect(records.program.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.program.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.programPlanLink.id).toBe(DEMO_PROGRAM_PLAN_LINK_ID);
+    expect(records.programPlanLink.program_id).toBe(DEMO_PROGRAM_ID);
+    expect(records.programPlanLink.linked_id).toBe(DEMO_PLAN_ID);
+    expect(records.fundingOpportunity.id).toBe(DEMO_FUNDING_OPPORTUNITY_ID);
+    expect(records.fundingOpportunity.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.fundingOpportunity.program_id).toBe(DEMO_PROGRAM_ID);
+    expect(records.fundingOpportunity.project_id).toBe(DEMO_PROJECT_ID);
     expect(records.rtpCycle.id).toBe(DEMO_RTP_CYCLE_ID);
     expect(records.rtpCycle.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.projectRtpLink.id).toBe(DEMO_PROJECT_RTP_LINK_ID);
@@ -171,6 +189,28 @@ describe("buildSeedRecords", () => {
     expect(records.plan.geography_label).toBe("Nevada County, CA");
     expect(records.plan.horizon_year).toBe(2045);
     expect(records.plan.summary).toContain("plans index/detail");
+  });
+
+  it("adds a deterministic local program fixture for UI settle program proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.program.id).toBe(DEMO_PROGRAM_ID);
+    expect(records.program.title).toBe(DEMO_PROGRAM_TITLE);
+    expect(records.program.program_type).toBe("rtip");
+    expect(records.program.status).toBe("assembling");
+    expect(records.program.funding_classification).toBe("mixed");
+    expect(records.program.cycle_name).toContain("RTIP");
+    expect(records.program.summary).toContain("programs index/detail");
+
+    expect(records.programPlanLink.link_type).toBe("plan");
+    expect(records.programPlanLink.linked_id).toBe(DEMO_PLAN_ID);
+    expect(records.programPlanLink.label).toBe(DEMO_PLAN_TITLE);
+
+    expect(records.fundingOpportunity.id).toBe(DEMO_FUNDING_OPPORTUNITY_ID);
+    expect(records.fundingOpportunity.title).toBe(DEMO_FUNDING_OPPORTUNITY_TITLE);
+    expect(records.fundingOpportunity.opportunity_status).toBe("open");
+    expect(records.fundingOpportunity.decision_state).toBe("pursue");
+    expect(records.fundingOpportunity.expected_award_amount).toBe(1250000);
   });
 
   it("anchors the demo project to the Grass Valley map center so the marker renders under the shell viewport", () => {
