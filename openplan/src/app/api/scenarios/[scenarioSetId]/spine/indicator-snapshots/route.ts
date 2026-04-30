@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  markScenarioLinkedReportsBasisStale,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
 const paramsSchema = z.object({
@@ -149,10 +153,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to create indicator snapshot" }, { status: 500 });
     }
 
+    const staleWriteback = await markScenarioLinkedReportsBasisStale({
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
+      scenarioSetId: access.scenarioSet.id,
+      workspaceId: access.scenarioSet.workspace_id,
+      runId: null,
+      reason: `Scenario indicator snapshot ${indicatorSnapshot.indicator_label} changed the linked RTP packet basis.`,
+    });
+
+    if (staleWriteback.error) {
+      audit.warn("scenario_indicator_snapshot_report_basis_stale_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        indicatorSnapshotId: indicatorSnapshot.id,
+        message: staleWriteback.error.message,
+        code: staleWriteback.error.code ?? null,
+      });
+    }
+
     audit.info("scenario_indicator_snapshot_created", {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
       indicatorSnapshotId: indicatorSnapshot.id,
+      staleReportCount: staleWriteback.staleReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

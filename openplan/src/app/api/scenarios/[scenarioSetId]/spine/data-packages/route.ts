@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  markScenarioLinkedReportsBasisStale,
+  type ScenarioReportWritebackSupabaseLike,
+} from "@/lib/reports/scenario-writeback";
 import { SCENARIO_DATA_PACKAGE_STATUSES, SCENARIO_DATA_PACKAGE_TYPES } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 
@@ -146,10 +150,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to create data package" }, { status: 500 });
     }
 
+    const staleWriteback = await markScenarioLinkedReportsBasisStale({
+      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
+      scenarioSetId: access.scenarioSet.id,
+      workspaceId: access.scenarioSet.workspace_id,
+      runId: null,
+      reason: `Scenario data package ${dataPackage.label} changed the linked RTP packet basis.`,
+    });
+
+    if (staleWriteback.error) {
+      audit.warn("scenario_data_package_report_basis_stale_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        dataPackageId: dataPackage.id,
+        message: staleWriteback.error.message,
+        code: staleWriteback.error.code ?? null,
+      });
+    }
+
     audit.info("scenario_data_package_created", {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
       dataPackageId: dataPackage.id,
+      staleReportCount: staleWriteback.staleReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

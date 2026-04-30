@@ -91,7 +91,7 @@ export async function markScenarioLinkedReportsBasisStale({
   supabase: ScenarioReportWritebackSupabaseLike;
   scenarioSetId: string;
   workspaceId: string;
-  runId: string;
+  runId?: string | null;
   reason: string;
   markedAt?: string;
 }): Promise<{ staleReportIds: string[]; error: { message: string; code?: string | null } | null }> {
@@ -128,7 +128,7 @@ export async function markScenarioLinkedReportsBasisStale({
     .update({
       rtp_basis_stale: true,
       rtp_basis_stale_reason: reason,
-      rtp_basis_stale_run_id: runId,
+      rtp_basis_stale_run_id: runId ?? null,
       rtp_basis_stale_marked_at: markedAt,
       updated_at: markedAt,
     })
