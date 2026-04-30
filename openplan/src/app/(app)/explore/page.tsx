@@ -63,6 +63,7 @@ import {
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
 } from "./_components/explore-page-state";
+import { buildDatasetOverlayState } from "./_components/explore-dataset-overlay-state";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
@@ -650,129 +651,57 @@ export default function ExplorePage() {
       mapRef.current.setPaintProperty("dataset-overlay-point", "circle-stroke-color", "#fff7ed");
     }
 
-    if (!selectedDataset || !canRenderDatasetCoverageOverlay(selectedDataset)) {
-      source.setData({
-        type: "FeatureCollection",
-        features: [],
-      });
+    const datasetOverlayState = buildDatasetOverlayState({
+      selectedDataset,
+      analysisResult,
+      corridorGeojson,
+    });
+
+    source.setData(datasetOverlayState.featureCollection);
+
+    if (!selectedDataset || datasetOverlayState.mode !== "thematic_overlay") {
       return;
     }
 
-    if (selectedDataset.geographyScope === "tract") {
-      const tractFeatures =
-        analysisResult?.geojson.features.filter(
-          (feature) =>
-            feature.geometry?.type !== "Point" &&
-            feature.properties &&
-            (feature.properties as Record<string, unknown>).kind === "census_tract"
-        ) ?? [];
-
-      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
-
-      source.setData({
-        type: "FeatureCollection",
-        features: tractFeatures.map((feature) => ({
-          ...feature,
-          properties: {
-            ...(feature.properties ?? {}),
-            overlayDatasetName: selectedDataset.name,
-            overlayDatasetId: selectedDataset.datasetId,
-            overlayMode,
-            overlayMetricKey: selectedDataset.thematicMetricKey,
-          },
-        })),
-      });
-
-      if (overlayMode === "thematic_overlay") {
-        if (mapRef.current.getLayer("dataset-overlay-fill")) {
-          mapRef.current.setPaintProperty(
-            "dataset-overlay-fill",
-            "fill-color",
-            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
-          );
-          mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.42);
-        }
-        if (mapRef.current.getLayer("dataset-overlay-line")) {
-          mapRef.current.setPaintProperty("dataset-overlay-line", "line-color", "#f8fafc");
-          mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
-        }
+    if (datasetOverlayState.geographyScope === "tract") {
+      if (mapRef.current.getLayer("dataset-overlay-fill")) {
+        mapRef.current.setPaintProperty(
+          "dataset-overlay-fill",
+          "fill-color",
+          buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+        );
+        mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.42);
+      }
+      if (mapRef.current.getLayer("dataset-overlay-line")) {
+        mapRef.current.setPaintProperty("dataset-overlay-line", "line-color", "#f8fafc");
+        mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
       }
       return;
     }
 
-    if (selectedDataset.geographyScope === "corridor" || selectedDataset.geographyScope === "route") {
-      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
-
-      source.setData({
-        type: "FeatureCollection",
-        features: corridorGeojson
-          ? [
-              {
-                type: "Feature",
-                geometry: corridorGeojson,
-                properties: {
-                  kind: "dataset_coverage_corridor",
-                  overlayDatasetName: selectedDataset.name,
-                  overlayDatasetId: selectedDataset.datasetId,
-                  overlayMode,
-                  overlayMetricKey: selectedDataset.thematicMetricKey,
-                  overallScore: analysisResult?.metrics.overallScore ?? null,
-                  accessibilityScore: analysisResult?.metrics.accessibilityScore ?? null,
-                  safetyScore: analysisResult?.metrics.safetyScore ?? null,
-                  equityScore: analysisResult?.metrics.equityScore ?? null,
-                },
-              },
-            ]
-          : [],
-      });
-
-      if (overlayMode === "thematic_overlay") {
-        if (mapRef.current.getLayer("dataset-overlay-fill")) {
-          mapRef.current.setPaintProperty(
-            "dataset-overlay-fill",
-            "fill-color",
-            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
-          );
-          mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.24);
-        }
-        if (mapRef.current.getLayer("dataset-overlay-line")) {
-          mapRef.current.setPaintProperty(
-            "dataset-overlay-line",
-            "line-color",
-            buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
-          );
-          mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
-          mapRef.current.setPaintProperty("dataset-overlay-line", "line-width", ["interpolate", ["linear"], ["zoom"], 4, 3, 11, 6]);
-        }
+    if (datasetOverlayState.geographyScope === "corridor" || datasetOverlayState.geographyScope === "route") {
+      if (mapRef.current.getLayer("dataset-overlay-fill")) {
+        mapRef.current.setPaintProperty(
+          "dataset-overlay-fill",
+          "fill-color",
+          buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+        );
+        mapRef.current.setPaintProperty("dataset-overlay-fill", "fill-opacity", 0.24);
+      }
+      if (mapRef.current.getLayer("dataset-overlay-line")) {
+        mapRef.current.setPaintProperty(
+          "dataset-overlay-line",
+          "line-color",
+          buildThematicOverlayPaintExpression(selectedDataset.thematicMetricKey)
+        );
+        mapRef.current.setPaintProperty("dataset-overlay-line", "line-dasharray", [1, 0]);
+        mapRef.current.setPaintProperty("dataset-overlay-line", "line-width", ["interpolate", ["linear"], ["zoom"], 4, 3, 11, 6]);
       }
       return;
     }
 
-    if (selectedDataset.geographyScope === "point") {
-      const overlayMode = canRenderDatasetThematicOverlay(selectedDataset) ? "thematic_overlay" : "coverage_footprint";
-      const crashPointFeatures =
-        analysisResult?.geojson.features.filter(
-          (feature) =>
-            feature.geometry?.type === "Point" &&
-            feature.properties &&
-            (feature.properties as Record<string, unknown>).kind === "crash_point"
-        ) ?? [];
-
-      source.setData({
-        type: "FeatureCollection",
-        features: crashPointFeatures.map((feature) => ({
-          ...feature,
-          properties: {
-            ...(feature.properties ?? {}),
-            overlayDatasetName: selectedDataset.name,
-            overlayDatasetId: selectedDataset.datasetId,
-            overlayMode,
-            overlayMetricKey: selectedDataset.thematicMetricKey,
-          },
-        })),
-      });
-
-      if (overlayMode === "thematic_overlay" && mapRef.current.getLayer("dataset-overlay-point")) {
+    if (datasetOverlayState.geographyScope === "point") {
+      if (mapRef.current.getLayer("dataset-overlay-point")) {
         mapRef.current.setPaintProperty(
           "dataset-overlay-point",
           "circle-color",
@@ -798,11 +727,6 @@ export default function ExplorePage() {
       }
       return;
     }
-
-    source.setData({
-      type: "FeatureCollection",
-      features: [],
-    });
   }, [activeDatasetOverlayId, analysisContext, analysisResult, corridorGeojson]);
 
   useEffect(() => {
