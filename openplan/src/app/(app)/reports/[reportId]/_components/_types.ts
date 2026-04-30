@@ -1,3 +1,5 @@
+import type { ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
+
 export type ReportRow = {
   id: string;
   workspace_id: string;
@@ -71,12 +73,21 @@ export type ProjectRecordSnapshotEntry = {
   latestAt: string | null;
 };
 
+export type CurrentProjectRecordEntry = ProjectRecordSnapshotEntry;
+
 export type ProjectRecordSnapshotListItem = {
   key: string;
   label: string;
   anchor: string;
   value: ProjectRecordSnapshotEntry;
 };
+
+export type ProjectRecordSnapshotKey =
+  | "deliverables"
+  | "risks"
+  | "issues"
+  | "decisions"
+  | "meetings";
 
 export type DriftStatus = "unchanged" | "updated" | "count changed" | "gate changed";
 
@@ -98,4 +109,51 @@ export type PacketFreshness = {
 export type RunAuditEntry = {
   runId: string;
   gate: { decision: string; missingArtifacts: string[] };
+};
+
+export type StageGateSnapshotControlHealth =
+  ProjectStageGateSnapshot["controlHealth"];
+
+export type ScenarioSpineRow = {
+  scenario_set_id?: string | null;
+  updated_at?: string | null;
+  snapshot_at?: string | null;
+};
+
+export type EngagementCampaignSnapshot = {
+  id: string;
+  title: string;
+  status: string | null;
+  updatedAt: string | null;
+};
+
+export type EngagementCategoryRow = {
+  id: string;
+  label: string | null;
+  slug: string | null;
+  description: string | null;
+  sort_order: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type EngagementItemRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type StageGateDecisionRow = {
+  gate_id: string;
+  decision: string;
+  rationale: string | null;
+  decided_at: string | null;
+  missing_artifacts?: string[] | null;
 };

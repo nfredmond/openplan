@@ -1,427 +1,76 @@
 import { notFound, redirect } from "next/navigation";
-import { ScrollText } from "lucide-react";
-import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import {
-  buildGrantDecisionModelingSupport,
-  describeProjectGrantModelingReadiness,
-} from "@/lib/grants/modeling-evidence";
-import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
-import { buildPortfolioFundingSnapshot, type PortfolioFundingSnapshot } from "@/lib/projects/funding";
-import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import {
+  buildPortfolioFundingSnapshot,
+  buildProjectFundingSnapshot,
+} from "@/lib/projects/funding";
+import {
+  buildRtpCycleReadiness,
+  buildRtpCycleWorkflowSummary,
+  buildRtpPublicReviewSummary,
+} from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   describeComparisonSnapshotAggregate,
+  describeEvidenceChainSummary,
   describeFundingSnapshot,
   getRtpPacketPresetAlignment,
-  describeEvidenceChainSummary,
-  formatDateTime,
-  formatReportStatusLabel,
   parseStoredComparisonSnapshotAggregate,
-  formatReportTypeLabel,
   parseStoredEvidenceChainSummary,
   parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
-  reportStatusTone,
   titleize,
 } from "@/lib/reports/catalog";
-import {
-  PACKET_FRESHNESS_LABELS,
-} from "@/lib/reports/packet-labels";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
-import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildProjectStageGateSummary,
   type ProjectStageGateSummary,
-  type ProjectStageGateSnapshot,
-  type StageGateSnapshotGateSummary,
-  type StageGateWorkflowState,
 } from "@/lib/stage-gates/summary";
-import { ReportPacketReview } from "./_components/report-packet-review";
-import { ReportCompositionAudit } from "./_components/report-composition-audit";
-import { ReportProvenanceAudit } from "./_components/report-provenance-audit";
-import { ReportNavigationPreview } from "./_components/report-navigation-preview";
+import {
+  asEngagementCampaignSnapshot,
+  asHtmlContent,
+  asNullableNumber,
+  asNullableString,
+  asPortfolioFundingSnapshot,
+  asProjectRecordSnapshotEntry,
+  asRecord,
+  asRunAudit,
+  asScenarioSetLinks,
+  asSourceContext,
+  asStageGateSnapshot,
+  buildCurrentProjectRecordEntry,
+  formatCompactDateTime,
+  formatCurrency,
+  maxTimestamp,
+  summarizeProjectRecordDrift,
+} from "./_components/_helpers";
+import type {
+  CurrentProjectRecordEntry,
+  DriftItem,
+  DriftStatus,
+  EngagementCampaignLinkRow,
+  EngagementCategoryRow,
+  EngagementItemRow,
+  LinkedRunRow,
+  ProjectRecordSnapshotEntry,
+  ProjectRecordSnapshotKey,
+  ReportArtifact,
+  ScenarioSpineRow,
+  StageGateDecisionRow,
+} from "./_components/_types";
+import { ReportStandardDetail } from "./_components/report-standard-detail";
 
 type RouteParams = {
   params: Promise<{ reportId: string }>;
 };
-
-type ReportArtifact = {
-  id: string;
-  artifact_kind: string;
-  generated_at: string;
-  metadata_json: Record<string, unknown> | null;
-};
-
-type LinkedRunRow = {
-  id: string;
-  title: string;
-  summary_text: string | null;
-  created_at: string;
-};
-
-type EngagementCampaignLinkRow = {
-  id: string;
-  title: string;
-  summary: string | null;
-  public_description: string | null;
-  status: string;
-  engagement_type: string;
-  share_token: string | null;
-  allow_public_submissions: boolean;
-  submissions_closed_at: string | null;
-  updated_at: string;
-};
-
-type ProjectRecordSnapshotEntry = {
-  count: number;
-  latestTitle: string | null;
-  latestAt: string | null;
-};
-
-type StageGateSnapshotControlHealth = ProjectStageGateSnapshot["controlHealth"];
-
-type CurrentProjectRecordEntry = ProjectRecordSnapshotEntry;
-
-type DriftStatus = "unchanged" | "updated" | "count changed" | "gate changed";
-
-type DriftItem = {
-  key: string;
-  label: string;
-  status: DriftStatus;
-  detail: string;
-};
-
-type ScenarioSpineRow = {
-  scenario_set_id?: string | null;
-  updated_at?: string | null;
-  snapshot_at?: string | null;
-};
-
-type ProjectRecordSnapshotKey =
-  | "deliverables"
-  | "risks"
-  | "issues"
-  | "decisions"
-  | "meetings";
-
-type EngagementCampaignSnapshot = {
-  id: string;
-  title: string;
-  status: string | null;
-  updatedAt: string | null;
-};
-
-type EngagementCategoryRow = {
-  id: string;
-  label: string | null;
-  slug: string | null;
-  description: string | null;
-  sort_order: number | null;
-  created_at: string | null;
-  updated_at: string | null;
-};
-
-type EngagementItemRow = {
-  id: string;
-  campaign_id: string;
-  category_id: string | null;
-  status: string | null;
-  source_type: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  moderation_notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-};
-
-type StageGateDecisionRow = {
-  gate_id: string;
-  decision: string;
-  rationale: string | null;
-  decided_at: string | null;
-  missing_artifacts?: string[] | null;
-};
-
-function asHtmlContent(
-  metadata: Record<string, unknown> | null | undefined
-): string | null {
-  if (!metadata) return null;
-  return typeof metadata.htmlContent === "string"
-    ? metadata.htmlContent
-    : null;
-}
-
-function asRunAudit(metadata: Record<string, unknown> | null | undefined) {
-  if (!metadata || !Array.isArray(metadata.runAudit)) {
-    return [];
-  }
-
-  return metadata.runAudit.filter(
-    (
-      item
-    ): item is {
-      runId: string;
-      gate: { decision: string; missingArtifacts: string[] };
-    } => {
-      if (!item || typeof item !== "object") {
-        return false;
-      }
-
-      const record = item as Record<string, unknown>;
-      const gate = record.gate;
-
-      return (
-        typeof record.runId === "string" &&
-        Boolean(gate) &&
-        typeof gate === "object"
-      );
-    }
-  );
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  return value as Record<string, unknown>;
-}
-
-function asNullableString(value: unknown): string | null {
-  return typeof value === "string" ? value : null;
-}
-
-function asNullableNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
-  if (!metadata) return null;
-  return asRecord(metadata.sourceContext);
-}
-
-function asScenarioSetLinks(value: unknown): ReportScenarioSetLink[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter(
-    (item): item is ReportScenarioSetLink =>
-      Boolean(item) &&
-      typeof item === "object" &&
-      typeof (item as Record<string, unknown>).scenarioSetId === "string" &&
-      typeof (item as Record<string, unknown>).scenarioSetTitle === "string" &&
-      Array.isArray((item as Record<string, unknown>).matchedEntries)
-  );
-}
-
-function asProjectRecordSnapshotEntry(
-  value: unknown
-): ProjectRecordSnapshotEntry | null {
-  const record = asRecord(value);
-  if (!record) {
-    return null;
-  }
-
-  return {
-    count: asNullableNumber(record.count) ?? 0,
-    latestTitle: asNullableString(record.latestTitle),
-    latestAt: asNullableString(record.latestAt),
-  };
-}
-
-function asStageGateSnapshotGateSummary(
-  value: unknown
-): StageGateSnapshotGateSummary | null {
-  const record = asRecord(value);
-  if (!record) {
-    return null;
-  }
-
-  const workflowState = asNullableString(record.workflowState) as StageGateWorkflowState | null;
-  const missingArtifacts = Array.isArray(record.missingArtifacts)
-    ? record.missingArtifacts.filter(
-        (item): item is string =>
-          typeof item === "string" && item.trim().length > 0
-      )
-    : [];
-
-  if (
-    !workflowState ||
-    !["pass", "hold", "not_started"].includes(workflowState)
-  ) {
-    return null;
-  }
-
-  return {
-    gateId: asNullableString(record.gateId) ?? "Unknown gate",
-    sequence: asNullableNumber(record.sequence) ?? 0,
-    name: asNullableString(record.name) ?? "Unknown gate",
-    workflowState,
-    rationale: asNullableString(record.rationale) ?? "No rationale provided.",
-    missingArtifacts,
-    requiredEvidenceCount: asNullableNumber(record.requiredEvidenceCount) ?? 0,
-    operatorControlEvidenceCount:
-      asNullableNumber(record.operatorControlEvidenceCount) ?? 0,
-  };
-}
-
-function asStageGateSnapshotControlHealth(
-  value: unknown
-): StageGateSnapshotControlHealth {
-  const record = asRecord(value);
-
-  return {
-    totalOperatorControlEvidenceCount:
-      asNullableNumber(record?.totalOperatorControlEvidenceCount) ?? 0,
-    gatesWithOperatorControlsCount:
-      asNullableNumber(record?.gatesWithOperatorControlsCount) ?? 0,
-  };
-}
-
-function asStageGateSnapshot(
-  value: unknown
-): ProjectStageGateSnapshot | null {
-  const record = asRecord(value);
-  if (!record) {
-    return null;
-  }
-
-  const templateId = asNullableString(record.templateId);
-  const templateVersion = asNullableString(record.templateVersion);
-
-  if (!templateId || !templateVersion) {
-    return null;
-  }
-
-  return {
-    templateId,
-    templateVersion,
-    passCount: asNullableNumber(record.passCount) ?? 0,
-    holdCount: asNullableNumber(record.holdCount) ?? 0,
-    notStartedCount: asNullableNumber(record.notStartedCount) ?? 0,
-    blockedGate: asStageGateSnapshotGateSummary(record.blockedGate),
-    nextGate: asStageGateSnapshotGateSummary(record.nextGate),
-    controlHealth: asStageGateSnapshotControlHealth(record.controlHealth),
-  };
-}
-
-function asPortfolioFundingSnapshot(value: unknown): PortfolioFundingSnapshot | null {
-  const record = asRecord(value);
-  if (!record) {
-    return null;
-  }
-
-  return {
-    capturedAt: asNullableString(record.capturedAt),
-    latestSourceUpdatedAt: asNullableString(record.latestSourceUpdatedAt),
-    linkedProjectCount: asNullableNumber(record.linkedProjectCount) ?? 0,
-    trackedProjectCount: asNullableNumber(record.trackedProjectCount) ?? 0,
-    fundedProjectCount: asNullableNumber(record.fundedProjectCount) ?? 0,
-    likelyCoveredProjectCount: asNullableNumber(record.likelyCoveredProjectCount) ?? 0,
-    gapProjectCount: asNullableNumber(record.gapProjectCount) ?? 0,
-    committedFundingAmount: asNullableNumber(record.committedFundingAmount) ?? 0,
-    likelyFundingAmount: asNullableNumber(record.likelyFundingAmount) ?? 0,
-    totalPotentialFundingAmount: asNullableNumber(record.totalPotentialFundingAmount) ?? 0,
-    unfundedAfterLikelyAmount: asNullableNumber(record.unfundedAfterLikelyAmount) ?? 0,
-    paidReimbursementAmount: asNullableNumber(record.paidReimbursementAmount) ?? 0,
-    outstandingReimbursementAmount: asNullableNumber(record.outstandingReimbursementAmount) ?? 0,
-    uninvoicedAwardAmount: asNullableNumber(record.uninvoicedAwardAmount) ?? 0,
-    awardRiskCount: asNullableNumber(record.awardRiskCount) ?? 0,
-    label: asNullableString(record.label) ?? "Unknown funding posture",
-    reason: asNullableString(record.reason) ?? "No RTP funding posture was captured on this packet artifact.",
-    reimbursementLabel: asNullableString(record.reimbursementLabel) ?? "Unknown reimbursement posture",
-    reimbursementReason:
-      asNullableString(record.reimbursementReason) ?? "No RTP reimbursement posture was captured on this packet artifact.",
-  };
-}
-
-function parseTimestamp(value: string | null | undefined): number | null {
-  if (!value) return null;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? null : parsed;
-}
-
-function maxTimestamp(
-  ...values: Array<string | null | undefined>
-): string | null {
-  const timestamps = values
-    .map((value) => parseTimestamp(value))
-    .filter((value): value is number => value !== null);
-
-  if (timestamps.length === 0) {
-    return null;
-  }
-
-  return new Date(Math.max(...timestamps)).toISOString();
-}
-
-function formatCompactDateTime(value: string | null | undefined): string {
-  return value ? formatDateTime(value) : "Unavailable";
-}
-
-function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(numeric) ? numeric : 0);
-}
-
-function asEngagementCampaignSnapshot(
-  value: unknown
-): EngagementCampaignSnapshot | null {
-  const record = asRecord(value);
-  if (!record) {
-    return null;
-  }
-
-  const id = asNullableString(record.id);
-  const title = asNullableString(record.title);
-
-  if (!id || !title) {
-    return null;
-  }
-
-  return {
-    id,
-    title,
-    status: asNullableString(record.status),
-    updatedAt: asNullableString(record.updatedAt),
-  };
-}
-
-function buildCurrentProjectRecordEntry<T extends { title: string | null; created_at: string | null }>(
-  items: T[],
-  getAt: (item: T) => string | null
-): CurrentProjectRecordEntry {
-  return {
-    count: items.length,
-    latestTitle: items[0]?.title ?? null,
-    latestAt: items[0] ? getAt(items[0]) : null,
-  };
-}
-
-function summarizeProjectRecordDrift(changes: string[]): string {
-  if (changes.length === 0) {
-    return "Snapshot counts and latest record timing still match live project records.";
-  }
-
-  return changes.join(" ");
-}
 
 export default async function ReportDetailPage({ params }: RouteParams) {
   const { reportId } = await params;
@@ -1472,217 +1121,59 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         detail:
           "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
       };
-  const currentReportGrantModelingEvidence =
-    project && currentReportComparisonAggregate && currentReportComparisonDigest
-      ? {
-          projectId: project.id,
-          comparisonBackedCount: 1,
-          leadComparisonReport: {
-            id: report.id,
-            title: report.title,
-            href: `/reports/${report.id}#packet-release-review`,
-            packetFreshness: currentReportPacketFreshness,
-            comparisonAggregate: currentReportComparisonAggregate,
-            comparisonDigest: currentReportComparisonDigest,
-          },
-        }
-      : null;
-  const currentReportGrantModelingReadiness = describeProjectGrantModelingReadiness(
-    currentReportGrantModelingEvidence
-  );
-  const currentReportGrantModelingSupport = buildGrantDecisionModelingSupport(
-    currentReportGrantModelingEvidence,
-    project?.name ?? null
-  );
-  const driftActionByKey: Record<string, { href: string; label: string } | null> = {
-    engagement: engagementCampaign
-      ? { href: `/engagement/${engagementCampaign.id}`, label: "Review engagement source" }
-      : engagementPublicHref
-        ? { href: engagementPublicHref, label: "Review public engagement" }
-        : null,
-    "scenario-basis": scenarioSetLinks[0]
-      ? { href: `/scenarios/${scenarioSetLinks[0].scenarioSetId}`, label: "Review scenario set" }
-      : null,
-    "project-records": project
-      ? { href: `/projects/${project.id}`, label: "Review project records" }
-      : null,
-    "stage-gates": project
-      ? { href: `/projects/${project.id}#project-governance`, label: "Review project settings" }
-      : null,
-  };
-
   return (
-    <section className="module-page space-y-6">
-      <CartographicSurfaceWide />
-      {/* ── Hero row ─────────────────────────────────────────── */}
-      <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        {/* Left: report identity */}
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <ScrollText className="h-3.5 w-3.5" />
-            Report detail
-          </div>
-
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {report.title}
-          </h1>
-          <p className="mt-3 max-w-3xl text-[0.9rem] leading-relaxed text-muted-foreground sm:text-base">
-            {report.summary ||
-              "No summary provided. Use the controls to describe this report\u2019s purpose and generate an HTML packet."}
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <StatusBadge tone={reportStatusTone(report.status)}>
-              {formatReportStatusLabel(report.status)}
-            </StatusBadge>
-            <span className="module-record-chip"><span>Type</span><strong>{formatReportTypeLabel(report.report_type)}</strong></span>
-            {report.latest_artifact_kind ? (
-              <span className="text-[0.73rem] text-muted-foreground">{report.latest_artifact_kind.toUpperCase()}</span>
-            ) : null}
-          </div>
-
-          <div className="module-summary-grid cols-4 mt-6">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Project</p>
-              <p className="module-summary-value truncate text-xl">
-                {project?.name ?? "Unknown"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Workspace</p>
-              <p className="module-summary-value truncate text-xl">
-                {workspace?.name ?? "Unknown"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Linked runs</p>
-              <p className="module-summary-value text-xl tabular-nums">
-                {runs.length}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Generated</p>
-              <p className="module-summary-value text-base">
-                {latestArtifact?.generated_at ?? report.generated_at
-                  ? formatDateTime(latestArtifact?.generated_at ?? report.generated_at)
-                  : "Not yet"}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Funding posture</p>
-              <p className="module-summary-value text-base">
-                {fundingSnapshot?.label ?? "Not captured"}
-              </p>
-              <p className="module-summary-detail">
-                {fundingSnapshot
-                  ? fundingSnapshot.unfundedAfterLikelyAmount > 0
-                    ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
-                    : fundingSnapshot.uninvoicedAwardAmount > 0
-                      ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
-                      : fundingSnapshot.reimbursementLabel
-                  : "Generate a packet to snapshot funding posture into report evidence."}
-              </p>
-            </div>
-          </div>
-
-          {/* Timestamps */}
-          <div className="module-inline-list mt-4">
-            <span className="module-inline-item">Created {formatDateTime(report.created_at)}</span>
-            <span className="module-inline-item">Updated {formatDateTime(report.updated_at)}</span>
-            {project?.updated_at ? <span className="module-inline-item">Project snapshot {formatDateTime(project.updated_at)}</span> : null}
-          </div>
-        </article>
-
-        {/* Right: controls */}
-        <div id="report-controls">
-          <ReportDetailControls
-            report={{
-              id: report.id,
-              title: report.title,
-              summary: report.summary,
-              status: report.status,
-              hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
-            }}
-            driftSummary={{
-              changedCount: driftedItems.length,
-              totalCount: driftItems.length,
-              labels: driftedItems.map((item) => item.label),
-            }}
-            evidenceSummary={evidenceSummaryDigest}
-            fundingSummary={fundingSummaryDigest}
-          />
-        </div>
-      </header>
-
-      <WorkspaceCommandBoard
-        summary={operationsSummary}
-        label="Workspace command board"
-        title="What should move around this report"
-        description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
-      />
-
-      <PilotWorkflowHandoff
-        currentStep="packet"
-        projectId={project?.id ?? null}
-        reportId={report.id}
-        engagementCampaignId={engagementCampaign?.id ?? null}
-        publicEngagementHref={engagementPublicHref}
-        title="Carry this packet through readiness"
-        description="This report is the packet-assembly step. Review the source context, refresh any drift, then move to readiness proof before using the packet externally."
-      />
-
-      <ReportPacketReview
-        report={report}
-        projectId={project?.id ?? null}
-        packetFreshness={currentReportPacketFreshness}
-        grantModelingReadiness={currentReportGrantModelingReadiness}
-        grantModelingSupport={currentReportGrantModelingSupport}
-        grantModelingEvidence={currentReportGrantModelingEvidence}
-        comparisonDigest={currentReportComparisonDigest}
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <ReportCompositionAudit
-          sectionList={sectionList}
-          enabledSectionsCount={enabledSections}
-          runs={runs}
-          artifactList={artifactList}
-        />
-
-        <div className="space-y-6">
-          <ReportProvenanceAudit
-            runAudit={runAudit}
-            runs={runs}
-            runTitleById={runTitleById}
-            sourceContext={sourceContext}
-            engagementCampaign={engagementCampaign}
-            engagementPublicHref={engagementPublicHref}
-            engagementSummaryText={engagementSummaryText}
-            reportOrigin={reportOrigin}
-            reportReason={reportReason}
-            engagementSnapshotCapturedAt={engagementSnapshotCapturedAt}
-            engagementSnapshotTotalItems={engagementSnapshotTotalItems}
-            engagementSnapshotReadyForHandoff={engagementSnapshotReadyForHandoff}
-            evidenceChainSummary={evidenceChainSummary}
-            storedScenarioSpineSummary={storedScenarioSpineSummary}
-            projectId={project?.id ?? null}
-            projectUpdatedAt={project?.updated_at ?? null}
-            driftItems={driftItems}
-            driftActionByKey={driftActionByKey}
-            stageGateSnapshot={stageGateSnapshot}
-            projectRecordsSnapshot={projectRecordsSnapshot}
-            scenarioSetLinks={scenarioSetLinks}
-          />
-
-          <ReportNavigationPreview
-            projectId={project?.id ?? null}
-            engagementCampaign={engagementCampaign}
-            engagementPublicHref={engagementPublicHref}
-            latestHtml={latestHtml}
-            latestArtifact={latestArtifact}
-          />
-        </div>
-      </div>
-    </section>
+    <ReportStandardDetail
+      report={report}
+      project={project}
+      workspace={workspace}
+      runs={runs}
+      latestArtifact={latestArtifact}
+      fundingSnapshot={fundingSnapshot}
+      operationsSummary={operationsSummary}
+      driftItems={driftItems}
+      driftedItems={driftedItems}
+      evidenceSummaryDigest={evidenceSummaryDigest}
+      fundingSummaryDigest={fundingSummaryDigest}
+      engagementCampaign={engagementCampaign}
+      engagementPublicHref={engagementPublicHref}
+      currentReportPacketFreshness={currentReportPacketFreshness}
+      currentReportComparisonAggregate={currentReportComparisonAggregate}
+      currentReportComparisonDigest={currentReportComparisonDigest}
+      compositionAuditProps={{
+        sectionList,
+        enabledSectionsCount: enabledSections,
+        runs,
+        artifactList,
+      }}
+      provenanceAuditProps={{
+        runAudit,
+        runs,
+        runTitleById,
+        sourceContext,
+        engagementCampaign,
+        engagementPublicHref,
+        engagementSummaryText,
+        reportOrigin,
+        reportReason,
+        engagementSnapshotCapturedAt,
+        engagementSnapshotTotalItems,
+        engagementSnapshotReadyForHandoff,
+        evidenceChainSummary,
+        storedScenarioSpineSummary,
+        projectId: project?.id ?? null,
+        projectUpdatedAt: project?.updated_at ?? null,
+        driftItems,
+        stageGateSnapshot,
+        projectRecordsSnapshot,
+        scenarioSetLinks,
+      }}
+      navigationPreviewProps={{
+        projectId: project?.id ?? null,
+        engagementCampaign,
+        engagementPublicHref,
+        latestHtml,
+        latestArtifact,
+      }}
+    />
   );
 }
