@@ -43,10 +43,7 @@ import {
   buildPointThematicOverlayColorExpression,
   buildRunTitle,
   buildThematicOverlayPaintExpression,
-  canRenderDatasetCoverageOverlay,
-  canRenderDatasetThematicOverlay,
   coerceNumber,
-  formatRunTimestamp,
   getBoundsFromGeometry,
   titleize,
 } from "./_components/_helpers";
@@ -57,13 +54,13 @@ import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel"
 import {
   buildCurrentMapViewState,
   getCrashPointFeatures,
-  getLinkedDatasetPreview,
   hasSwitrsPointLayer,
   resolveActiveDatasetOverlay,
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
 } from "./_components/explore-page-state";
 import { buildDatasetOverlayState } from "./_components/explore-dataset-overlay-state";
+import { buildLinkedDatasetQueueState } from "./_components/explore-linked-dataset-state";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
@@ -1155,7 +1152,14 @@ export default function ExplorePage() {
     }
   }, [analysisContext, activeDatasetOverlayId]);
 
-  const linkedDatasetPreview = getLinkedDatasetPreview(analysisContext);
+  const linkedDatasetQueueState = useMemo(
+    () =>
+      buildLinkedDatasetQueueState({
+        datasets: analysisContext?.linkedDatasets,
+        activeDatasetOverlayId,
+      }),
+    [analysisContext?.linkedDatasets, activeDatasetOverlayId]
+  );
 
   return (
     <section className="analysis-explore-shell grid min-h-[calc(100dvh-3rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -1350,7 +1354,7 @@ export default function ExplorePage() {
                     <div className="module-alert text-xs">
                       Data Hub is wired into Analysis Studio, but the current database still needs the latest migration before linked datasets can fully appear here.
                     </div>
-                  ) : linkedDatasetPreview.length > 0 ? (
+                  ) : linkedDatasetQueueState.items.length > 0 ? (
                     <div className="space-y-3">
                       <div>
                         <p className="module-section-label">Map-linked dataset queue</p>
@@ -1359,54 +1363,31 @@ export default function ExplorePage() {
                         </p>
                       </div>
                       <div className="module-record-list">
-                        {linkedDatasetPreview.map((dataset) => {
-                          const canRenderCoverage = canRenderDatasetCoverageOverlay(dataset);
-                          const isActiveOverlay = activeDatasetOverlayId === dataset.datasetId;
-                          const thematicReady = canRenderDatasetThematicOverlay(dataset);
-                          const geometryLabel =
-                            dataset.geometryAttachment === "analysis_corridor"
-                              ? "corridor"
-                              : dataset.geometryAttachment === "analysis_crash_points"
-                                ? "crash-point"
-                                : "tract";
-
+                        {linkedDatasetQueueState.items.map((item) => {
+                          const { dataset } = item;
                           return (
                             <article
                               key={dataset.datasetId}
-                              className={[
-                                "module-record-row",
-                                canRenderCoverage ? "is-interactive" : "",
-                                isActiveOverlay ? "is-selected" : thematicReady ? "is-comparison" : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
+                              className={item.rowClassName}
                             >
                               <div className="module-record-head">
                                 <div className="module-record-main">
                                   <div className="module-record-kicker">
                                     <StatusBadge tone={resolveStatusTone(dataset.status)}>{titleize(dataset.status)}</StatusBadge>
                                     <StatusBadge tone="info">{titleize(dataset.relationshipType)}</StatusBadge>
-                                    <StatusBadge tone={dataset.overlayReady ? "success" : "neutral"}>
-                                      {dataset.overlayReady ? "Overlay-ready" : "Registry-only"}
-                                    </StatusBadge>
-                                    {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
+                                    <StatusBadge tone={item.overlayStatusTone}>{item.overlayStatusLabel}</StatusBadge>
+                                    {item.thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
                                   </div>
                                   <div className="flex flex-wrap items-start justify-between gap-3">
                                     <p className="module-record-title">{dataset.name}</p>
                                     <p className="module-record-stamp">
-                                      {dataset.lastRefreshedAt ? `Refreshed ${formatRunTimestamp(dataset.lastRefreshedAt)}` : "Refresh pending"}
+                                      {item.refreshedLabel}
                                     </p>
                                   </div>
-                                  <p className="module-record-summary">
-                                    {thematicReady
-                                      ? `Uses real ${geometryLabel} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
-                                      : dataset.overlayReady
-                                        ? "Coverage footprint only — dataset values stay honest until a thematic binding exists."
-                                        : "Registry record only for now; geometry attachment is not drawable yet."}
-                                  </p>
+                                  <p className="module-record-summary">{item.summary}</p>
                                   <div className="module-record-meta">
                                     <span className="module-record-chip">Scope {titleize(dataset.geographyScope)}</span>
-                                    <span className="module-record-chip">Source {dataset.connectorLabel ?? "Manual source"}</span>
+                                    <span className="module-record-chip">Source {item.sourceLabel}</span>
                                     {dataset.vintageLabel ? <span className="module-record-chip">Vintage {dataset.vintageLabel}</span> : null}
                                     {dataset.thematicMetricLabel ? <span className="module-record-chip">Metric {dataset.thematicMetricLabel}</span> : null}
                                   </div>
@@ -1416,23 +1397,15 @@ export default function ExplorePage() {
                                   <Button
                                     type="button"
                                     size="sm"
-                                    variant={isActiveOverlay ? "secondary" : "outline"}
-                                    disabled={!canRenderCoverage}
+                                    variant={item.buttonVariant}
+                                    disabled={item.buttonDisabled}
                                     onClick={() =>
                                       setActiveDatasetOverlayId((current) =>
                                         current === dataset.datasetId ? null : dataset.datasetId
                                       )
                                     }
                                   >
-                                    {isActiveOverlay
-                                      ? thematicReady
-                                        ? "Hide thematic"
-                                        : "Hide coverage"
-                                      : canRenderCoverage
-                                        ? thematicReady
-                                          ? "Show thematic"
-                                          : "Show coverage"
-                                        : "Not drawable"}
+                                    {item.buttonLabel}
                                   </Button>
                                 </div>
                               </div>
