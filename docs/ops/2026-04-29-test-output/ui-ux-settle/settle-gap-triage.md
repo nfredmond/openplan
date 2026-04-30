@@ -10,11 +10,16 @@ Scope: docs-only next-action checklist for the local proof pack. No app/runtime,
 
 ### P0 - Fixture-Required Operating Surfaces
 
-Routes: `/plans`, `/plans/<local-plan-id>`, `/programs`, `/programs/<local-program-id>`, `/reports`, `/reports/<local-report-id>`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile.
+Routes: `/programs`, `/programs/<local-program-id>`, `/reports`, `/reports/<local-report-id>`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile.
+
+Plans update:
+- `/plans` and `/plans/d0000001-0000-4000-8000-000000000015` now have a deterministic NCTC local seed fixture and harness target.
+- They still need a local recapture after the updated `pnpm seed:nctc` has run against local Supabase; do not treat the historical `fixture_required` ledger rows as proof.
 
 Safe prerequisites:
 - Use only a local authenticated Playwright storage state for a non-production workspace.
-- Prepare populated local fixtures before capture: plan registry/detail, program registry/detail, generated report packet/detail artifact, scenario set/detail comparison, and grants opportunity/award/reimbursement state.
+- Prepare populated local fixtures before capture: program registry/detail, generated report packet/detail artifact, scenario set/detail comparison, and grants opportunity/award/reimbursement state.
+- For plans, confirm the updated NCTC seed fixture ID `d0000001-0000-4000-8000-000000000015` is visible through ordinary authenticated app access before recapture.
 - Use stable local IDs and update only the local capture manifest or harness route placeholders when the fixtures exist.
 - Keep capture output under `docs/ops/2026-04-29-test-output/ui-ux-settle/`.
 
@@ -29,7 +34,9 @@ Acceptance criteria:
 - Ledger status changes from `fixture_required` to `captured`.
 - Screenshot filenames and route rows identify the stable local fixture state used.
 
-### P1 - Blocked Detail and Admin Authorization States
+### P1 - Historical Detail and Admin Authorization States
+
+Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are the plan recapture and fixture-required programs/reports/scenarios/grants rows above.
 
 Routes: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` across desktop and mobile.
 

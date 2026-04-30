@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger includes 16 populated screenshots plus 2 watch captures, `/explore` has a supplemental 2-screenshot proof pack, blocked detail/admin rows now have a supplemental 8-screenshot auth check, and the capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks.
+Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger includes 16 populated screenshots plus 2 watch captures, `/explore` has a supplemental 2-screenshot proof pack, blocked detail/admin rows now have a supplemental 8-screenshot auth check, and the capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks. Plans now have a deterministic NCTC local seed fixture and harness target; screenshots remain pending until the updated local seed and capture are rerun.
 
 ## Scope
 
@@ -33,6 +33,11 @@ The work here is local proof-pack preparation:
 - `docs/ops/2026-04-08-openplan-frontend-design-constitution.md`
 - `docs/ops/2026-04-16-openplan-integrated-deep-dive-review.md`
 
+## Fixture Status
+
+- Plans: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000015`; recapture pending.
+- Programs, reports, scenarios, grants: still fixture-required.
+
 ## Proof Pack Rule
 
-Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are the fixture-required plan/program/report/scenario/grants operating surfaces.
+Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are the plan recapture plus fixture-required program/report/scenario/grants operating surfaces.

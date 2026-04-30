@@ -52,11 +52,12 @@ Known deterministic NCTC demo records from `openplan/scripts/seed-nctc-demo.ts`:
 | Record | Id | Label |
 | --- | --- | --- |
 | Project | `d0000001-0000-4000-8000-000000000003` | `NCTC 2045 RTP (proof-of-capability)` |
+| Plan | `d0000001-0000-4000-8000-000000000015` | `NCTC 2045 RTP local proof plan` |
 | RTP cycle | `d0000001-0000-4000-8000-000000000004` | `NCTC 2045 RTP - demo cycle` |
 | County run | `d0000001-0000-4000-8000-000000000005` | `nevada-county-runtime-norenumber-freeze-20260324` |
 | Engagement campaign | `d0000001-0000-4000-8000-000000000010` | `NCTC 2045 RTP community input map` |
 
-The NCTC seed does not currently provide deterministic plan, program, report, model, or scenario-set detail IDs. Those routes still need a local populated fixture before final capture. If the fixture is missing during the proof pass, record the missing dependency instead of substituting an empty-state screenshot.
+The NCTC seed now provides a deterministic plan fixture for `/plans` and `/plans/d0000001-0000-4000-8000-000000000015`. The seed does not currently provide deterministic program, report, model-detail, or scenario-set detail IDs. Those routes still need a local populated fixture before final capture. If the fixture is missing during the proof pass, record the missing dependency instead of substituting an empty-state screenshot.
 
 ## Route Queue
 
@@ -64,7 +65,7 @@ The NCTC seed does not currently provide deterministic plan, program, report, mo
 | --- | --- | --- | --- | --- | --- |
 | App shell and overview | `dashboard` | `/dashboard` | Authenticated workspace with populated command board, KPI/run history, and shell rails visible. | Desktop and mobile workspace overview. | Capture tablet if left rail or command board changes layout. |
 | Projects | `projects-index`, `project-detail` | `/projects`; `/projects/d0000001-0000-4000-8000-000000000003` | NCTC project visible, with detail page showing project posture, evidence/activity, funding/RTP context, and primary action hierarchy. | Desktop and mobile index plus detail. | Capture tablet if detail columns or right-side context rail change. |
-| Plans | `plans-index`, `plan-detail` | `/plans`; `/plans/<local-plan-id>` | At least one local plan linked to a project/model/program. NCTC seed does not provide this today. | Desktop and mobile populated index plus one detail page after fixture exists. | Capture tablet if registry/detail split changes. |
+| Plans | `plans-index`, `plan-detail` | `/plans`; `/plans/d0000001-0000-4000-8000-000000000015` | NCTC local proof plan linked to the demo project and inherited engagement context. Rerun the local NCTC seed before capture if this ID is not present. | Desktop and mobile populated index plus one detail page after fixture exists locally. | Capture tablet if registry/detail split changes. |
 | Programs | `programs-index`, `program-detail` | `/programs`; `/programs/<local-program-id>` | At least one local program linked to a project/plan and funding lane. NCTC seed does not provide this today. | Desktop and mobile populated index plus one detail page after fixture exists. | Capture tablet if funding lanes or summary grids reflow. |
 | Reports | `reports-index`, `report-detail` | `/reports`; `/reports/<local-report-id>` | At least one generated or current report packet with traceable source context. NCTC seed does not provide this today. | Desktop and mobile registry plus detail/artifact state after fixture exists. | Capture tablet if report navigation/detail preview changes. |
 | Scenarios | `scenarios-index`, `scenario-detail` | `/scenarios`; `/scenarios/<local-scenario-set-id>` | At least one scenario set with entries/comparison state. NCTC seed does not provide this today. | Desktop and mobile registry plus detail after fixture exists. | Capture tablet if comparison board changes materially. |
@@ -83,7 +84,8 @@ The NCTC seed does not currently provide deterministic plan, program, report, mo
 | `dashboard--desktop--workspace-overview.png` | `/dashboard` | 1440x1100 | NCTC demo workspace | Command board and overview populated | Shell rails visible | None expected after local auth | Pending capture |
 | `projects-index--desktop--nctc-project-visible.png` | `/projects` | 1440x1100 | NCTC demo workspace | NCTC project row visible | Registry/list worksurface | None expected after seed | Pending capture |
 | `project-detail--desktop--nctc-project.png` | `/projects/d0000001-0000-4000-8000-000000000003` | 1440x1100 | NCTC demo workspace | NCTC project detail | Project posture/detail regions | None expected after seed | Pending capture |
-| `plans-index--desktop--fixture-required.png` | `/plans` | 1440x1100 | Workspace fixture TBD | Populated plan registry required | TBD | Local plan fixture missing | Do not use empty-state proof |
+| `plans-index--desktop--nctc-plan-visible.png` | `/plans` | 1440x1100 | NCTC demo workspace | NCTC local proof plan visible | Plan registry/detail surface | Rerun updated local NCTC seed if missing | Pending capture |
+| `plan-detail--desktop--nctc-plan.png` | `/plans/d0000001-0000-4000-8000-000000000015` | 1440x1100 | NCTC demo workspace | Linked NCTC local proof plan detail | Plan detail surface | Rerun updated local NCTC seed if missing | Pending capture |
 | `programs-index--desktop--fixture-required.png` | `/programs` | 1440x1100 | Workspace fixture TBD | Populated program registry required | TBD | Local program fixture missing | Do not use empty-state proof |
 | `reports-index--desktop--fixture-required.png` | `/reports` | 1440x1100 | Workspace fixture TBD | Generated/current report packet required | TBD | Local report fixture missing | Do not use empty-state proof |
 | `scenarios-index--desktop--fixture-required.png` | `/scenarios` | 1440x1100 | Workspace fixture TBD | Scenario set and entries required | TBD | Local scenario fixture missing | Do not use empty-state proof |

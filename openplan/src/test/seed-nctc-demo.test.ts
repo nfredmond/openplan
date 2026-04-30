@@ -4,6 +4,8 @@ import {
   DEMO_COUNTY_RUN_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
+  DEMO_PLAN_ID,
+  DEMO_PLAN_TITLE,
   DEMO_PROJECT_ID,
   DEMO_PROJECT_LATITUDE,
   DEMO_PROJECT_LONGITUDE,
@@ -99,6 +101,7 @@ describe("buildSeedRecords", () => {
     expect(records.membership.user_id).toBe(ownerUserId);
     expect(records.membership.role).toBe("owner");
     expect(records.project.created_by).toBe(ownerUserId);
+    expect(records.plan.created_by).toBe(ownerUserId);
     expect(records.rtpCycle.created_by).toBe(ownerUserId);
     expect(records.projectRtpLink.created_by).toBe(ownerUserId);
     expect(records.countyRun.created_by).toBe(ownerUserId);
@@ -129,6 +132,9 @@ describe("buildSeedRecords", () => {
     expect(records.membership.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.project.id).toBe(DEMO_PROJECT_ID);
     expect(records.project.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.plan.id).toBe(DEMO_PLAN_ID);
+    expect(records.plan.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.plan.project_id).toBe(DEMO_PROJECT_ID);
     expect(records.rtpCycle.id).toBe(DEMO_RTP_CYCLE_ID);
     expect(records.rtpCycle.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.projectRtpLink.id).toBe(DEMO_PROJECT_RTP_LINK_ID);
@@ -153,6 +159,18 @@ describe("buildSeedRecords", () => {
     expect(records.rtpCycle.status).toBe("draft");
     expect(records.project.plan_type).toBe("regional_transportation_plan");
     expect(records.project.delivery_phase).toBe("analysis");
+  });
+
+  it("adds a deterministic local plan fixture for UI settle plan proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.plan.id).toBe(DEMO_PLAN_ID);
+    expect(records.plan.title).toBe(DEMO_PLAN_TITLE);
+    expect(records.plan.plan_type).toBe("regional");
+    expect(records.plan.status).toBe("active");
+    expect(records.plan.geography_label).toBe("Nevada County, CA");
+    expect(records.plan.horizon_year).toBe(2045);
+    expect(records.plan.summary).toContain("plans index/detail");
   });
 
   it("anchors the demo project to the Grass Valley map center so the marker renders under the shell viewport", () => {

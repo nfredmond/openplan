@@ -51,6 +51,7 @@ export const DEMO_RTP_CYCLE_ID = "d0000001-0000-4000-8000-000000000004";
 export const DEMO_COUNTY_RUN_ID = "d0000001-0000-4000-8000-000000000005";
 export const DEMO_PROJECT_RTP_LINK_ID = "d0000001-0000-4000-8000-000000000006";
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_ID = "d0000001-0000-4000-8000-000000000007";
+export const DEMO_PLAN_ID = "d0000001-0000-4000-8000-000000000015";
 
 export const DEMO_MISSION_DOWNTOWN_ID = "d0000001-0000-4000-8000-000000000008";
 export const DEMO_MISSION_SR49_ID = "d0000001-0000-4000-8000-000000000009";
@@ -100,6 +101,7 @@ export const DEMO_PROJECT_LONGITUDE = -121.033982;
 export const DEMO_RTP_ANCHOR_LATITUDE = 39.2616;
 export const DEMO_RTP_ANCHOR_LONGITUDE = -121.0161;
 export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
+export const DEMO_PLAN_TITLE = "NCTC 2045 RTP local proof plan";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
 
@@ -107,6 +109,7 @@ export type SeedRecords = {
   workspace: Record<string, unknown>;
   membership: Record<string, unknown>;
   project: Record<string, unknown>;
+  plan: Record<string, unknown>;
   rtpCycle: Record<string, unknown>;
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
@@ -619,6 +622,19 @@ export function buildSeedRecords(
       longitude: DEMO_PROJECT_LONGITUDE,
       created_by: ownerUserId,
     },
+    plan: {
+      id: DEMO_PLAN_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_PLAN_TITLE,
+      plan_type: "regional",
+      status: "active",
+      geography_label: "Nevada County, CA",
+      horizon_year: 2045,
+      summary:
+        "Local-only proof-pack fixture for the plans index/detail UI settle capture, grounded in the NCTC demo project and inherited engagement context.",
+      created_by: ownerUserId,
+    },
     rtpCycle: {
       id: DEMO_RTP_CYCLE_ID,
       workspace_id: DEMO_WORKSPACE_ID,
@@ -901,6 +917,28 @@ async function main(): Promise<void> {
     throw new Error(`Failed to upsert project: ${projectError.message}`);
   }
   console.log(`[seed:nctc] upserted project ${DEMO_PROJECT_ID}`);
+
+  // 4a. Local plan fixture for plans index/detail UI settle proof.
+  const { error: planError } = await supabase.from("plans").upsert(
+    {
+      id: DEMO_PLAN_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_PLAN_TITLE,
+      plan_type: "regional",
+      status: "active",
+      geography_label: "Nevada County, CA",
+      horizon_year: 2045,
+      summary:
+        "Local-only proof-pack fixture for the plans index/detail UI settle capture, grounded in the NCTC demo project and inherited engagement context.",
+      created_by: demoUserId,
+    },
+    { onConflict: "id" }
+  );
+  if (planError) {
+    throw new Error(`Failed to upsert plan: ${planError.message}`);
+  }
+  console.log(`[seed:nctc] upserted plan ${DEMO_PLAN_ID}`);
 
   // 5. RTP cycle.
   const { error: rtpCycleError } = await supabase.from("rtp_cycles").upsert(
@@ -1287,6 +1325,7 @@ async function main(): Promise<void> {
   console.log("[seed:nctc] done.");
   console.log(`  workspace:   ${DEMO_WORKSPACE_ID} (${DEMO_WORKSPACE_NAME})`);
   console.log(`  project:     ${DEMO_PROJECT_ID}`);
+  console.log(`  plan:        ${DEMO_PLAN_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);
