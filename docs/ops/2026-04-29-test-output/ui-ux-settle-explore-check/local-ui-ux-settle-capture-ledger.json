@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "openplan.local_ui_ux_settle_capture.v1",
+  "generatedAt": "2026-04-30T05:43:43.651Z",
+  "baseUrl": "http://localhost:3000",
+  "outputDir": "docs/ops/2026-04-29-test-output/ui-ux-settle-explore-check",
+  "storageStateSupplied": true,
+  "rows": [
+    {
+      "routeKey": "explore-map",
+      "routeUrl": "/explore",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Mapbox map and layers loaded",
+      "visibleTarget": "Map controls/inspector visible",
+      "missingDependency": "Mapbox token or local map layer state missing.",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle-explore-check/explore-map--desktop--nctc-layers-ready.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    },
+    {
+      "routeKey": "explore-map",
+      "routeUrl": "/explore",
+      "viewportKey": "mobile",
+      "viewport": "390x844",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Mapbox map and layers loaded",
+      "visibleTarget": "Map controls/inspector visible",
+      "missingDependency": "Mapbox token or local map layer state missing.",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle-explore-check/explore-map--mobile--nctc-layers-ready.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    }
+  ]
+}

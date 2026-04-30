@@ -52,7 +52,9 @@ Acceptance criteria:
 
 Route: `/explore` across desktop and mobile.
 
-Safe prerequisites:
+Status: locally resolved in the supplemental proof check at `../ui-ux-settle-explore-check/` after public Mapbox token normalization was corrected to ignore invalid `sk.*` public candidates and use the available `pk.*` token. The main full-ledger row remains historical; use the supplemental ledger/screenshots as the current `/explore` proof until the next full capture run regenerates the canonical ledger.
+
+Safe prerequisites for any recapture:
 - Confirm local `.env` has the required Mapbox/public map token without printing or committing its value.
 - Confirm the local app can render `.mapboxgl-canvas` and the expected map controls/inspector on localhost.
 - Confirm local layer/feed state is present enough for proof; if layers require external map assets or network that are unavailable, record that blocker without faking the canvas.

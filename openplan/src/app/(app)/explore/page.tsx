@@ -23,6 +23,7 @@ import {
   type MapViewState,
 } from "@/lib/analysis/map-view-state";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { resolveStatusTone } from "@/lib/ui/status";
 import type {
   AnalysisContextLoadState,
@@ -56,8 +57,10 @@ import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel"
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
-const MAPBOX_ACCESS_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 export default function ExplorePage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);

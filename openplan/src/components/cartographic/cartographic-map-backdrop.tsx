@@ -13,13 +13,18 @@ import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature
 import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
 import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-item-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
+import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
-const RAW_MAPBOX_ACCESS_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-const MAPBOX_ACCESS_TOKEN = RAW_MAPBOX_ACCESS_TOKEN.startsWith("pk.") ? RAW_MAPBOX_ACCESS_TOKEN : "";
-const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = Boolean(RAW_MAPBOX_ACCESS_TOKEN && !MAPBOX_ACCESS_TOKEN);
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
+const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = hasInvalidPublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+) && !MAPBOX_ACCESS_TOKEN;
 
 // Routes that own their own map and should suppress the shell backdrop.
 const MAP_OWNING_ROUTES = ["/explore"];
