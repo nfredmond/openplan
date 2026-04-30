@@ -75,7 +75,7 @@ For this UI settle proof pack, the safest executable path is:
 2. Seed deterministic NCTC data locally.
 3. Establish a local browser session for the demo workspace without storing credentials.
 4. Capture the route queue in `capture-manifest.md` at `desktop` and `mobile`; add `tablet` only where the layout changes materially.
-5. For routes not populated by the NCTC seed, record the missing fixture as a dependency instead of accepting empty screenshots. Reports and scenarios are now populated by the deterministic NCTC seed; scenario rows are recapture-pending until the next harness run. Grants remains fixture-required.
+5. For routes not populated by the NCTC seed, record the missing fixture as a dependency instead of accepting empty screenshots. Reports, scenarios, and grants are now populated by the deterministic NCTC seed; scenario and grants rows are recapture-pending until the next harness run.
 6. Run `git diff --check` after docs are updated.
 
 ## No-Go Checks
@@ -88,5 +88,5 @@ Do not proceed with capture if any of these are true:
 - The app points at production Supabase.
 - The Mapbox token is missing for map-route proof.
 - The page is still loading, signed out, or showing workspace-membership-required state for a route that is meant to prove populated workspace UX.
-- The route requires a plan, program, report, scenario, grant, or dataset fixture that is not present. For the current manifest, grants is the only operating surface still expected to be fixture-required after rerunning the NCTC seed.
+- The route requires a plan, program, report, scenario, grant, or dataset fixture that is not present. For the current manifest, no priority operating surface should remain fixture-required after rerunning the NCTC seed; data hub may still be captured as watch if connector/dataset rows are absent.
 - The only available tooling path is a production harness that creates QA users or records.

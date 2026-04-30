@@ -195,13 +195,18 @@ const ROUTES = [
   },
   {
     routeKey: 'grants',
-    stateKey: 'fixture-required',
+    stateKey: 'nctc-grants-visible',
     url: '/grants',
-    authWorkspace: 'Workspace fixture TBD',
-    seedState: 'Opportunity/award/reimbursement state required',
+    authWorkspace: 'NCTC demo workspace',
+    seedState: 'NCTC grants opportunity, award, and reimbursement state visible',
     visibleTarget: 'Grants operating lanes',
-    fixtureRequired: true,
-    missingDependency: 'Local grants fixture missing; do not use empty-state proof.',
+    expectedTextAll: [
+      'Rural RTP implementation readiness call',
+      'NCTC RTP LPP construction award',
+      'NCTC SR-49 safety package construction award',
+      'NCTC-LPP-2026-001',
+    ],
+    missingDependency: 'Updated local NCTC grants fixture missing; rerun the local NCTC seed before capture.',
   },
   {
     routeKey: 'rtp-index',
@@ -457,9 +462,11 @@ async function bodyText(page) {
 }
 
 function expectedTextMatched(route, text) {
-  return Boolean(
-    route.expectedTextAny?.length && route.expectedTextAny.some((expected) => text.includes(expected))
-  );
+  if (route.expectedTextAll?.length && route.expectedTextAll.every((expected) => text.includes(expected))) {
+    return true;
+  }
+
+  return Boolean(route.expectedTextAny?.length && route.expectedTextAny.some((expected) => text.includes(expected)));
 }
 
 function deniedOrEmptyAuth(route, text) {
@@ -517,6 +524,19 @@ async function waitForRouteState(page, route) {
         status: 'missing_expected_state',
         missingDependency: route.missingDependency || `Expected one of: ${route.expectedTextAny.join(' | ')}`,
         notes: 'No screenshot captured.',
+      };
+    }
+  }
+
+  if (route.expectedTextAll && route.expectedTextAll.length) {
+    const textAfterWait = await bodyText(page);
+    const missing = route.expectedTextAll.filter((expected) => !textAfterWait.includes(expected));
+    if (missing.length) {
+      return {
+        ok: false,
+        status: 'missing_expected_state',
+        missingDependency: route.missingDependency || `Expected all of: ${route.expectedTextAll.join(' | ')}`,
+        notes: `No screenshot captured. Missing: ${missing.join(' | ')}`,
       };
     }
   }

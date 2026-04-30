@@ -60,6 +60,10 @@ export const DEMO_PROGRAM_PLAN_LINK_ID = "d0000001-0000-4000-8000-000000000017";
 export const DEMO_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000018";
 export const DEMO_REPORT_ID = "d0000001-0000-4000-8000-000000000019";
 export const DEMO_REPORT_ARTIFACT_ID = "d0000001-0000-4000-8000-00000000001a";
+export const DEMO_PROJECT_FUNDING_PROFILE_ID = "d0000001-0000-4000-8000-000000000040";
+export const DEMO_AWARDED_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000041";
+export const DEMO_FUNDING_AWARD_ID = "d0000001-0000-4000-8000-000000000042";
+export const DEMO_REIMBURSEMENT_INVOICE_ID = "d0000001-0000-4000-8000-000000000043";
 export const DEMO_SCENARIO_SET_ID = "d0000001-0000-4000-8000-000000000030";
 export const DEMO_SCENARIO_BASELINE_RUN_ID = "d0000001-0000-4000-8000-000000000031";
 export const DEMO_SCENARIO_ALTERNATIVE_RUN_ID = "d0000001-0000-4000-8000-000000000032";
@@ -120,6 +124,9 @@ export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_PLAN_TITLE = "NCTC 2045 RTP local proof plan";
 export const DEMO_PROGRAM_TITLE = "NCTC 2045 RTP programming pipeline";
 export const DEMO_FUNDING_OPPORTUNITY_TITLE = "Rural RTP implementation readiness call";
+export const DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE = "NCTC RTP LPP construction award";
+export const DEMO_FUNDING_AWARD_TITLE = "NCTC SR-49 safety package construction award";
+export const DEMO_REIMBURSEMENT_INVOICE_NUMBER = "NCTC-LPP-2026-001";
 export const DEMO_REPORT_TITLE = "NCTC 2045 RTP settle board packet";
 export const DEMO_REPORT_GENERATED_AT = "2026-04-30T12:00:00.000Z";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
@@ -136,7 +143,11 @@ export type SeedRecords = {
   plan: Record<string, unknown>;
   program: Record<string, unknown>;
   programPlanLink: Record<string, unknown>;
+  projectFundingProfile: Record<string, unknown>;
   fundingOpportunity: Record<string, unknown>;
+  awardedFundingOpportunity: Record<string, unknown>;
+  fundingAward: Record<string, unknown>;
+  billingInvoiceRecords: Array<Record<string, unknown>>;
   rtpCycle: Record<string, unknown>;
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
@@ -827,6 +838,16 @@ export function buildSeedRecords(
       label: DEMO_PLAN_TITLE,
       created_by: ownerUserId,
     },
+    projectFundingProfile: {
+      id: DEMO_PROJECT_FUNDING_PROFILE_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      funding_need_amount: 2400000,
+      local_match_need_amount: 300000,
+      notes:
+        "Local-only grants proof fixture: anchors the NCTC RTP implementation funding need so /grants can render gap, award, and reimbursement posture with real project math.",
+      created_by: ownerUserId,
+    },
     fundingOpportunity: {
       id: DEMO_FUNDING_OPPORTUNITY_ID,
       workspace_id: DEMO_WORKSPACE_ID,
@@ -846,6 +867,75 @@ export function buildSeedRecords(
         "Demo funding lane for capturing a populated programs detail surface with project, plan, and readiness context. Internal prototype only.",
       created_by: ownerUserId,
     },
+    awardedFundingOpportunity: {
+      id: DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      program_id: DEMO_PROGRAM_ID,
+      project_id: DEMO_PROJECT_ID,
+      title: DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
+      opportunity_status: "awarded",
+      decision_state: "awarded",
+      agency_name: "California Transportation Commission",
+      owner_label: "NCTC programming desk",
+      cadence_label: "local partnership program cycle",
+      expected_award_amount: 900000,
+      opens_at: "2026-02-02T17:00:00Z",
+      closes_at: "2026-03-27T17:00:00Z",
+      decision_due_at: "2026-04-17T17:00:00Z",
+      fit_notes:
+        "Awarded local-only fixture supporting the SR-49 safety package funding stack in the UI settle grants proof.",
+      readiness_notes:
+        "Use as deterministic awarded opportunity evidence only; not a real agency award.",
+      decision_rationale:
+        "Seeded so the grants workbench can show an awarded opportunity connected to a committed award and reimbursement record.",
+      decided_at: "2026-04-17T18:00:00Z",
+      summary:
+        "Local-only awarded opportunity fixture for /grants desktop/mobile populated capture. Internal prototype only.",
+      created_by: ownerUserId,
+    },
+    fundingAward: {
+      id: DEMO_FUNDING_AWARD_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      program_id: DEMO_PROGRAM_ID,
+      funding_opportunity_id: DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
+      title: DEMO_FUNDING_AWARD_TITLE,
+      awarded_amount: 900000,
+      match_amount: 180000,
+      match_posture: "secured",
+      obligation_due_at: "2026-06-30T17:00:00Z",
+      spending_status: "active",
+      risk_flag: "watch",
+      notes:
+        "Local-only grants proof fixture: committed award record tied to the NCTC RTP implementation funding stack.",
+      created_by: ownerUserId,
+    },
+    billingInvoiceRecords: [
+      {
+        id: DEMO_REIMBURSEMENT_INVOICE_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        project_id: DEMO_PROJECT_ID,
+        funding_award_id: DEMO_FUNDING_AWARD_ID,
+        invoice_number: DEMO_REIMBURSEMENT_INVOICE_NUMBER,
+        consultant_name: "NCTC local proof consultant",
+        billing_basis: "progress_payment",
+        status: "submitted",
+        period_start: "2026-03-01",
+        period_end: "2026-03-31",
+        invoice_date: "2026-04-10",
+        due_date: "2026-04-20",
+        amount: 225000,
+        retention_percent: 5,
+        retention_amount: 11250,
+        net_amount: 213750,
+        supporting_docs_status: "complete",
+        submitted_to: "Caltrans Local Assistance",
+        caltrans_posture: "federal_aid_candidate",
+        notes:
+          "Local-only reimbursement fixture for /grants UI settle capture; no billing, payment, or external submission is implied.",
+        created_by: ownerUserId,
+      },
+    ],
     rtpCycle: {
       id: DEMO_RTP_CYCLE_ID,
       workspace_id: DEMO_WORKSPACE_ID,
@@ -1433,6 +1523,17 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted program plan link ${DEMO_PROGRAM_PLAN_LINK_ID}`);
 
+  const grantsSeedRecords = buildSeedRecords(demoUserId, bundleManifest, validationSummary);
+
+  const { error: projectFundingProfileError } = await supabase.from("project_funding_profiles").upsert(
+    grantsSeedRecords.projectFundingProfile,
+    { onConflict: "project_id" }
+  );
+  if (projectFundingProfileError) {
+    throw new Error(`Failed to upsert project funding profile: ${projectFundingProfileError.message}`);
+  }
+  console.log(`[seed:nctc] upserted project funding profile ${DEMO_PROJECT_FUNDING_PROFILE_ID}`);
+
   const { error: fundingOpportunityError } = await supabase.from("funding_opportunities").upsert(
     {
       id: DEMO_FUNDING_OPPORTUNITY_ID,
@@ -1459,6 +1560,35 @@ async function main(): Promise<void> {
     throw new Error(`Failed to upsert funding opportunity: ${fundingOpportunityError.message}`);
   }
   console.log(`[seed:nctc] upserted funding opportunity ${DEMO_FUNDING_OPPORTUNITY_ID}`);
+
+  const { error: awardedOpportunityError } = await supabase.from("funding_opportunities").upsert(
+    grantsSeedRecords.awardedFundingOpportunity,
+    { onConflict: "id" }
+  );
+  if (awardedOpportunityError) {
+    throw new Error(`Failed to upsert awarded funding opportunity: ${awardedOpportunityError.message}`);
+  }
+  console.log(`[seed:nctc] upserted awarded funding opportunity ${DEMO_AWARDED_FUNDING_OPPORTUNITY_ID}`);
+
+  const { error: fundingAwardError } = await supabase.from("funding_awards").upsert(
+    grantsSeedRecords.fundingAward,
+    { onConflict: "id" }
+  );
+  if (fundingAwardError) {
+    throw new Error(`Failed to upsert funding award: ${fundingAwardError.message}`);
+  }
+  console.log(`[seed:nctc] upserted funding award ${DEMO_FUNDING_AWARD_ID}`);
+
+  const { error: billingInvoiceRecordsError } = await supabase.from("billing_invoice_records").upsert(
+    grantsSeedRecords.billingInvoiceRecords,
+    { onConflict: "id" }
+  );
+  if (billingInvoiceRecordsError) {
+    throw new Error(`Failed to upsert reimbursement invoice fixture: ${billingInvoiceRecordsError.message}`);
+  }
+  console.log(
+    `[seed:nctc] upserted ${grantsSeedRecords.billingInvoiceRecords.length} reimbursement invoice fixture`
+  );
 
   // 5. RTP cycle.
   const { error: rtpCycleError } = await supabase.from("rtp_cycles").upsert(
@@ -1977,6 +2107,8 @@ async function main(): Promise<void> {
   console.log(`  plan:        ${DEMO_PLAN_ID}`);
   console.log(`  program:     ${DEMO_PROGRAM_ID}`);
   console.log(`  opportunity: ${DEMO_FUNDING_OPPORTUNITY_ID}`);
+  console.log(`  grant_award: ${DEMO_FUNDING_AWARD_ID}`);
+  console.log(`  invoice:     ${DEMO_REIMBURSEMENT_INVOICE_ID} (${DEMO_REIMBURSEMENT_INVOICE_NUMBER})`);
   console.log(`  report:      ${DEMO_REPORT_ID}`);
   console.log(`  scenario:    ${DEMO_SCENARIO_SET_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);

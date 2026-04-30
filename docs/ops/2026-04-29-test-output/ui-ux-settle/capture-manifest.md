@@ -56,10 +56,14 @@ Known deterministic NCTC demo records from `openplan/scripts/seed-nctc-demo.ts`:
 | RTP cycle | `d0000001-0000-4000-8000-000000000004` | `NCTC 2045 RTP - demo cycle` |
 | Report | `d0000001-0000-4000-8000-000000000019` | `NCTC 2045 RTP settle board packet` |
 | Scenario set | `d0000001-0000-4000-8000-000000000030` | `NCTC 2045 RTP scenario comparison` |
+| Grants open opportunity | `d0000001-0000-4000-8000-000000000018` | `Rural RTP implementation readiness call` |
+| Grants awarded opportunity | `d0000001-0000-4000-8000-000000000041` | `NCTC RTP LPP construction award` |
+| Grants award | `d0000001-0000-4000-8000-000000000042` | `NCTC SR-49 safety package construction award` |
+| Grants reimbursement invoice | `d0000001-0000-4000-8000-000000000043` | `NCTC-LPP-2026-001` |
 | County run | `d0000001-0000-4000-8000-000000000005` | `nevada-county-runtime-norenumber-freeze-20260324` |
 | Engagement campaign | `d0000001-0000-4000-8000-000000000010` | `NCTC 2045 RTP community input map` |
 
-The NCTC seed now provides deterministic plan, program, report, and scenario fixtures for `/plans`, `/plans/d0000001-0000-4000-8000-000000000015`, `/programs`, `/programs/d0000001-0000-4000-8000-000000000016`, `/reports`, `/reports/d0000001-0000-4000-8000-000000000019`, `/scenarios`, and `/scenarios/d0000001-0000-4000-8000-000000000030`. Scenario rows are seed-backed but recapture-pending until the next local harness run. Grants remains the only fixture-required operating surface in this manifest. If a fixture is missing during the proof pass, record the missing dependency instead of substituting an empty-state screenshot.
+The NCTC seed now provides deterministic plan, program, report, scenario, and grants fixtures for `/plans`, `/plans/d0000001-0000-4000-8000-000000000015`, `/programs`, `/programs/d0000001-0000-4000-8000-000000000016`, `/reports`, `/reports/d0000001-0000-4000-8000-000000000019`, `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030`, and `/grants`. Scenario and grants rows are seed-backed but recapture-pending until the next local harness run. If a fixture is missing during the proof pass, record the missing dependency instead of substituting an empty-state screenshot.
 
 ## Route Queue
 
@@ -75,7 +79,7 @@ The NCTC seed now provides deterministic plan, program, report, and scenario fix
 | Data Hub | `data-hub` | `/data-hub` | Workspace membership present. Prefer at least one connector/dataset/refresh row; if absent, record missing local dependency. | Desktop and mobile data hub worksurface. | Capture tablet if data registry and map preview split. |
 | Map / Analysis Studio | `explore-map` | `/explore` | Mapbox token present, workspace resolved, map loaded, NCTC layers or analysis context visible. | Desktop and mobile map worksurface, including controls and inspector/hover context where possible. | Capture tablet for map controls and rail placement. |
 | Engagement | `engagement-index`, `engagement-detail` | `/engagement`; `/engagement/d0000001-0000-4000-8000-000000000010` | NCTC campaign and approved items visible; capture moderation/intake context without creating or editing items. | Desktop and mobile index plus campaign detail. | Capture tablet if moderation/detail columns change. |
-| Grants | `grants` | `/grants` | Populated opportunity/award/reimbursement state. NCTC seed does not provide this today. This is the only fixture-required operating surface remaining. | Desktop and mobile grants workbench after local fixture exists. | Capture tablet if left/right operating lanes reflow. |
+| Grants | `grants` | `/grants` | NCTC grants opportunity, award, and reimbursement state visible: `Rural RTP implementation readiness call`, `NCTC RTP LPP construction award`, `NCTC SR-49 safety package construction award`, and `NCTC-LPP-2026-001`. Rerun the local NCTC seed before recapture if these IDs are not present. | Desktop and mobile populated grants workbench. Current historical ledger rows are recapture-pending. | Capture tablet if left/right operating lanes reflow. |
 | RTP | `rtp-index`, `rtp-detail` | `/rtp`; `/rtp/d0000001-0000-4000-8000-000000000004` | NCTC RTP cycle and existing-conditions chapter visible; capture registry and cycle detail. | Desktop and mobile index plus detail. | Capture tablet if chapter/detail rail changes. |
 | Admin / readiness | `admin-index`, `pilot-readiness` | `/admin`; `/admin/pilot-readiness` | Authenticated route reachable. Pilot readiness reads local proof docs from `docs/ops`; do not run mutating admin actions. | Desktop and mobile admin index plus readiness center. | Capture tablet if admin module grid or readiness table changes. |
 
@@ -98,7 +102,7 @@ The NCTC seed now provides deterministic plan, program, report, and scenario fix
 | `data-hub--desktop--workspace-data.png` | `/data-hub` | 1440x1100 | NCTC demo workspace | Connector/dataset rows preferred | Data hub worksurface | Dataset fixture may be missing | Record actual state |
 | `explore-map--desktop--nctc-layers-ready.png` | `/explore` | 1440x1100 | NCTC demo workspace | Mapbox map and layers loaded | Map controls/inspector visible | Mapbox token required | Pending capture |
 | `engagement-detail--desktop--nctc-campaign.png` | `/engagement/d0000001-0000-4000-8000-000000000010` | 1440x1100 | NCTC demo workspace | Campaign and items visible | Campaign detail/workflow | None expected after seed | Pending capture |
-| `grants--desktop--fixture-required.png` | `/grants` | 1440x1100 | Workspace fixture TBD | Opportunity/award/reimbursement state required | Grants operating lanes | Grants fixture missing | Do not use empty-state proof |
+| `grants--desktop--nctc-grants-visible.png` | `/grants` | 1440x1100 | NCTC demo workspace | NCTC grants opportunity, award, and reimbursement state visible | Grants operating lanes | None after local seed recapture | Recapture pending |
 | `rtp-detail--desktop--nctc-cycle.png` | `/rtp/d0000001-0000-4000-8000-000000000004` | 1440x1100 | NCTC demo workspace | RTP cycle and chapter visible | Cycle detail/document flow | None expected after seed | Pending capture |
 | `pilot-readiness--desktop--local-doc-status.png` | `/admin/pilot-readiness` | 1440x1100 | Authenticated operator workspace | Local proof docs visible as readiness inputs | Readiness status list | None expected after auth | Pending capture |
 

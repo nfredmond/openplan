@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
+  DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
+  DEMO_FUNDING_AWARD_ID,
+  DEMO_FUNDING_AWARD_TITLE,
   DEMO_COUNTY_RUN_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_ID,
   DEMO_EXISTING_CONDITIONS_CHAPTER_KEY,
@@ -12,9 +16,12 @@ import {
   DEMO_PROGRAM_PLAN_LINK_ID,
   DEMO_PROGRAM_TITLE,
   DEMO_PROJECT_ID,
+  DEMO_PROJECT_FUNDING_PROFILE_ID,
   DEMO_PROJECT_LATITUDE,
   DEMO_PROJECT_LONGITUDE,
   DEMO_PROJECT_RTP_LINK_ID,
+  DEMO_REIMBURSEMENT_INVOICE_ID,
+  DEMO_REIMBURSEMENT_INVOICE_NUMBER,
   DEMO_REPORT_ARTIFACT_ID,
   DEMO_REPORT_GENERATED_AT,
   DEMO_REPORT_ID,
@@ -125,7 +132,11 @@ describe("buildSeedRecords", () => {
     expect(records.plan.created_by).toBe(ownerUserId);
     expect(records.program.created_by).toBe(ownerUserId);
     expect(records.programPlanLink.created_by).toBe(ownerUserId);
+    expect(records.projectFundingProfile.created_by).toBe(ownerUserId);
     expect(records.fundingOpportunity.created_by).toBe(ownerUserId);
+    expect(records.awardedFundingOpportunity.created_by).toBe(ownerUserId);
+    expect(records.fundingAward.created_by).toBe(ownerUserId);
+    expect(records.billingInvoiceRecords.every((record) => record.created_by === ownerUserId)).toBe(true);
     expect(records.rtpCycle.created_by).toBe(ownerUserId);
     expect(records.projectRtpLink.created_by).toBe(ownerUserId);
     expect(records.countyRun.created_by).toBe(ownerUserId);
@@ -170,10 +181,30 @@ describe("buildSeedRecords", () => {
     expect(records.programPlanLink.id).toBe(DEMO_PROGRAM_PLAN_LINK_ID);
     expect(records.programPlanLink.program_id).toBe(DEMO_PROGRAM_ID);
     expect(records.programPlanLink.linked_id).toBe(DEMO_PLAN_ID);
+    expect(records.projectFundingProfile.id).toBe(DEMO_PROJECT_FUNDING_PROFILE_ID);
+    expect(records.projectFundingProfile.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.projectFundingProfile.project_id).toBe(DEMO_PROJECT_ID);
     expect(records.fundingOpportunity.id).toBe(DEMO_FUNDING_OPPORTUNITY_ID);
     expect(records.fundingOpportunity.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.fundingOpportunity.program_id).toBe(DEMO_PROGRAM_ID);
     expect(records.fundingOpportunity.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.awardedFundingOpportunity.id).toBe(DEMO_AWARDED_FUNDING_OPPORTUNITY_ID);
+    expect(records.awardedFundingOpportunity.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.awardedFundingOpportunity.program_id).toBe(DEMO_PROGRAM_ID);
+    expect(records.awardedFundingOpportunity.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.fundingAward.id).toBe(DEMO_FUNDING_AWARD_ID);
+    expect(records.fundingAward.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.fundingAward.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.fundingAward.program_id).toBe(DEMO_PROGRAM_ID);
+    expect(records.fundingAward.funding_opportunity_id).toBe(DEMO_AWARDED_FUNDING_OPPORTUNITY_ID);
+    expect(records.billingInvoiceRecords.map((record) => record.id)).toEqual([
+      DEMO_REIMBURSEMENT_INVOICE_ID,
+    ]);
+    expect(records.billingInvoiceRecords[0]).toMatchObject({
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      funding_award_id: DEMO_FUNDING_AWARD_ID,
+    });
     expect(records.report.id).toBe(DEMO_REPORT_ID);
     expect(records.report.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.report.rtp_cycle_id).toBe(DEMO_RTP_CYCLE_ID);
@@ -256,6 +287,59 @@ describe("buildSeedRecords", () => {
     expect(records.fundingOpportunity.opportunity_status).toBe("open");
     expect(records.fundingOpportunity.decision_state).toBe("pursue");
     expect(records.fundingOpportunity.expected_award_amount).toBe(1250000);
+  });
+
+  it("adds a deterministic local grants fixture for UI settle grants proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.projectFundingProfile).toMatchObject({
+      id: DEMO_PROJECT_FUNDING_PROFILE_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      funding_need_amount: 2400000,
+      local_match_need_amount: 300000,
+    });
+    expect(records.projectFundingProfile.notes).toContain("grants proof fixture");
+
+    expect(records.awardedFundingOpportunity).toMatchObject({
+      id: DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
+      title: DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
+      opportunity_status: "awarded",
+      decision_state: "awarded",
+      expected_award_amount: 900000,
+      program_id: DEMO_PROGRAM_ID,
+      project_id: DEMO_PROJECT_ID,
+    });
+
+    expect(records.fundingAward).toMatchObject({
+      id: DEMO_FUNDING_AWARD_ID,
+      title: DEMO_FUNDING_AWARD_TITLE,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: DEMO_PROJECT_ID,
+      program_id: DEMO_PROGRAM_ID,
+      funding_opportunity_id: DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
+      awarded_amount: 900000,
+      match_amount: 180000,
+      match_posture: "secured",
+      spending_status: "active",
+      risk_flag: "watch",
+    });
+
+    expect(records.billingInvoiceRecords).toEqual([
+      expect.objectContaining({
+        id: DEMO_REIMBURSEMENT_INVOICE_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        project_id: DEMO_PROJECT_ID,
+        funding_award_id: DEMO_FUNDING_AWARD_ID,
+        invoice_number: DEMO_REIMBURSEMENT_INVOICE_NUMBER,
+        status: "submitted",
+        amount: 225000,
+        retention_percent: 5,
+        retention_amount: 11250,
+        net_amount: 213750,
+        caltrans_posture: "federal_aid_candidate",
+      }),
+    ]);
   });
 
   it("adds a deterministic local reports fixture for UI settle reports proof", () => {
