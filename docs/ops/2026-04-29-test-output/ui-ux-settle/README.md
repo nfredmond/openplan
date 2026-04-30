@@ -22,6 +22,7 @@ The work here is local proof-pack preparation:
 - `local-capture-prerequisites.md` - exact local prerequisites plus existing scripts and tests inspected for capture support.
 - `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only prerequisite ledger from a desktop capture attempt against localhost; it records missing local auth storage state before browser launch and does not include screenshots.
 - `settle-gap-triage.md` - prioritized next-action checklist for the remaining proof gaps.
+- `fixture-auth-continuation.md` - practical local-only runbook for closing the remaining fixture-required and blocked/detail/admin authorization-check gaps.
 - `../../../../qa-harness/openplan-local-ui-ux-settle-capture.js` - local-only read-only Playwright capture harness for this manifest.
 
 ## Canonical Inputs

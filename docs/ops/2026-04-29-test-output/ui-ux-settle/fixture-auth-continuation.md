@@ -1,0 +1,54 @@
+# UI/UX Settle Fixture/Auth Continuation
+
+Date: 2026-04-29
+Scope: practical next-step runbook for the remaining local proof gaps after the main `ui-ux-settle` ledger and supplemental `ui-ux-settle-explore-check` pack. This is not a capture result and does not authorize runtime code changes, seed scripts, database resets, service-role access, or production/Vercel activity.
+
+## Current State
+
+- `/explore` is separately settled by `../ui-ux-settle-explore-check/`.
+- Remaining main-ledger gaps are:
+  - `fixture_required`: `/plans`, `/plans/<local-plan-id>`, `/programs`, `/programs/<local-program-id>`, `/reports`, `/reports/<local-report-id>`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` at desktop and mobile.
+  - `blocked_or_denied`: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` at desktop and mobile.
+- The capture harness marks body text matching `not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned` as `blocked_or_denied` (`qa-harness/openplan-local-ui-ux-settle-capture.js:9-10`). Treat the blocked/detail rows as checks to verify, not as proven auth failures, because valid route content can include ordinary words like `Required`.
+
+## Grounding From Repo Inspection
+
+- The app shell requires an authenticated user for all `(app)` routes (`openplan/src/app/(app)/layout.tsx:10-17`).
+- Current workspace selection reads `workspace_members` and picks the first available membership when no explicit workspace is requested (`openplan/src/lib/workspaces/current.ts:132-152`).
+- Workspace member, admin, and owner can read/write plans, programs, reports, scenarios, and generate reports; invoice writes require owner/admin (`openplan/src/lib/auth/role-matrix.ts:33-56`).
+- Plans require workspace membership and read `plans`, `plan_links`, project scenario/campaign/report counts for populated registry/detail proof (`openplan/src/app/(app)/plans/page.tsx:87-125`; `openplan/src/app/(app)/plans/[planId]/page.tsx:178-234`).
+- Programs require workspace membership and read `programs`, `program_links`, project plans/reports/campaigns, and funding opportunities (`openplan/src/app/(app)/programs/page.tsx:165-241`; `openplan/src/app/(app)/programs/[programId]/page.tsx:191-245`).
+- Reports require workspace membership and read report artifacts plus project/RTP context; generation checks workspace membership, subscription/quota posture, and `report.generate` (`openplan/src/app/(app)/reports/page.tsx:219-281`; `openplan/src/app/api/reports/[reportId]/generate/route.ts:317-362`).
+- Scenarios require workspace membership and read scenario entries, runs, models, comparison snapshots, and linked reports (`openplan/src/app/(app)/scenarios/page.tsx:63-84`; `openplan/src/app/(app)/scenarios/[scenarioSetId]/page.tsx:94-184`).
+- Grants require workspace membership and read opportunities, projects, programs, awards, invoices, funding profiles, reports, and comparison summaries (`openplan/src/app/(app)/grants/page.tsx:95-154`; `openplan/src/app/(app)/grants/page.tsx:180-260`).
+- `/admin` has no page-level owner/admin gate; it is inside the authenticated app shell and renders static admin module links (`openplan/src/app/(app)/admin/page.tsx:64-203`).
+
+## Route Groups And Safe Next Steps
+
+| Group | Routes | Local-only prerequisites | Safe continuation steps | Acceptance |
+| --- | --- | --- | --- | --- |
+| Plans | `/plans`, `/plans/<local-plan-id>` | Authenticated local storage state for a workspace member; local project already visible, preferably the NCTC project id from the manifest; no production Supabase. | In a future approved local fixture-write pass, create or identify one plan through the normal app UI/API path only. Use `/api/plans` semantics: `title`, `planType`, `status`, optional `projectId`, `geographyLabel`, `horizonYear`, `summary`, and links to same-workspace scenario/campaign/report/project records. Update the manifest placeholder to the returned local plan id. | Registry shows a non-empty plan row; detail shows scope/context plus linked project and at least one linked evidence lane or a clearly populated readiness state. Desktop/mobile rows become `captured`. |
+| Programs | `/programs`, `/programs/<local-program-id>` | Same authenticated local workspace; at least one local project; plan/report/engagement links preferred for readiness. | Create or identify one program through normal UI/API only. Use `/api/programs` semantics: `title`, `programType`, `cycleName`, `status`, optional funding classification, sponsor/owner/cadence, fiscal years, dates, `projectId`, and same-workspace links. Update the manifest placeholder to the returned local program id. | Registry shows a populated program; detail shows delivery/funding lane context, linked plans/reports/campaigns, or an explicit packet/readiness queue. |
+| Reports | `/reports`, `/reports/<local-report-id>` | Same local workspace; local project or RTP cycle target; subscription/quota state must satisfy generation if generation is used. | Prefer an existing local generated/current report artifact. If none exists and an approved local fixture-write pass allows it, create a report through `/api/reports` and generate only through `/api/reports/<id>/generate`; do not direct-insert artifacts or bypass billing/quota gates. For RTP packets, use `reportType=board_packet` with `rtpCycleId`; for project packets, use `projectId` and optional existing run ids. | Registry shows report packet freshness/artifact status; detail shows sections, artifact metadata, provenance/funding context, and no empty artifact placeholder. |
+| Scenarios | `/scenarios`, `/scenarios/<local-scenario-set-id>` | Same local workspace; local project; existing local run if the proof needs attached-run comparison. Do not launch a new model worker for this lane. | Create or identify one scenario set via normal UI/API. Add one baseline and one alternative entry through `/api/scenarios/<id>/entries`; attach only existing same-workspace runs. Create comparison snapshot only if local subscription/quota gates pass normally. Update the manifest placeholder to the returned scenario set id. | Registry shows a scenario set with baseline/alternative counts; detail shows baseline, alternative, comparison readiness/snapshot state, and linked report context where available. |
+| Grants | `/grants` | Same local workspace; local project and preferably a linked program; owner/admin role if invoice writes are needed. | Build the minimal local grants stack through normal UI/API only: project funding profile (`/api/projects/<projectId>/funding-profile`), one funding opportunity (`/api/funding-opportunities`), one award (`/api/funding-awards`), and one invoice through `/api/billing/invoices` only if the storage-state role is owner/admin. If invoice write is not authorized, record the owner/admin prerequisite instead of weakening the proof. | Grants page shows opportunity queue, award/obligation posture, and reimbursement/invoice state, not just an empty opportunity form. |
+| Detail/admin checks | Project detail, county-run detail, RTP detail, `/admin` | Existing local storage state; no auth-session edits; no RLS bypass; no service-role reads. | First confirm whether each blocked row is a real app denial or a capture-classifier false positive. Read-only checks: route should stay on its target URL, not `/sign-in`; expected object text should be present; detail APIs should return 200 under the same browser session where applicable. For `/admin`, do not escalate role before checking the harness pattern, because the page itself has no owner/admin gate. If a stable demo id no longer exists, update the manifest to the actual local id discovered from the captured index route. | Each row is either recaptured as populated content in both viewports or reclassified with an exact cause: missing local record id, expired storage state, wrong current workspace, owner/admin-only invoice prerequisite, or capture harness overmatch. |
+
+## No-Go Checks
+
+- Do not run seed scripts, `pnpm supabase db reset`, Supabase CLI mutations, Vercel commands, production harnesses, browser captures, or external writes in this docs-only pass.
+- Do not create users, alter auth sessions, paste tokens, print secrets, bypass RLS, or use service-role shortcuts to make rows visible.
+- Do not direct-insert fixture rows with elevated credentials. When a future local fixture-write pass is approved, use normal app UI/API flows with the same local authenticated session the capture will use.
+- Do not accept empty-state, sign-in, unauthorized, forbidden, not-found, loading-only, or marketing screenshots as settled proof.
+- Do not update route placeholders until the local fixture id exists and is visible through ordinary RLS-scoped app access.
+- Do not treat `/admin` as requiring owner/admin unless repo behavior changes; today it is auth-only through the app layout.
+
+## Capture Acceptance Criteria
+
+1. Run only against `http://localhost:3000` or an explicitly documented private local URL accepted by the local harness.
+2. Use a local authenticated Playwright storage state for the same workspace that owns every fixture id in the manifest.
+3. For each route, capture desktop `1440x1100` and mobile `390x844`.
+4. Ledger rows move from `fixture_required` or `blocked_or_denied` to `captured`, except rows deliberately reclassified with a concrete local prerequisite.
+5. Screenshot names keep the manifest pattern and include route key, viewport, and state key.
+6. The captured page body shows populated civic-workbench content: left rail where applicable, continuous worksurface, detail/inspector/document/map context, and one clear primary action area.
+7. No output artifact contains credentials, token fragments, session values, production URLs, or service-role evidence.
