@@ -5,7 +5,6 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   markScenarioLinkedReportsBasisStale,
-  touchScenarioLinkedReportPackets,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 
@@ -125,30 +124,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (scenarioUpdateError) {
       audit.error("scenario_entry_update_failed", { message: scenarioUpdateError.message, code: scenarioUpdateError.code ?? null });
       return NextResponse.json({ error: "Failed to update scenario entry attachment" }, { status: 500 });
-    }
-
-    const { touchedReportIds, error: writebackError } = await touchScenarioLinkedReportPackets({
-      supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
-      scenarioSetId: entryRow.scenario_set_id,
-      workspaceId: access.model.workspace_id,
-      touchedAt: now,
-    });
-
-    if (writebackError) {
-      audit.warn("scenario_report_writeback_failed", {
-        modelId: access.model.id,
-        modelRunId: runRow.id,
-        scenarioEntryId: entryRow.id,
-        message: writebackError.message,
-        code: writebackError.code ?? null,
-      });
-    } else {
-      audit.info("scenario_report_writeback_succeeded", {
-        modelId: access.model.id,
-        modelRunId: runRow.id,
-        scenarioEntryId: entryRow.id,
-        touchedReportCount: touchedReportIds.length,
-      });
     }
 
     const staleReason = `Linked model run ${runRow.run_title} promoted to scenario entry`;

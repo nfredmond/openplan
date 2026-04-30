@@ -4,7 +4,6 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
-const touchScenarioLinkedReportPacketsMock = vi.fn();
 const markScenarioLinkedReportsBasisStaleMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
@@ -79,7 +78,6 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 vi.mock("@/lib/reports/scenario-writeback", () => ({
-  touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
   markScenarioLinkedReportsBasisStale: (...args: unknown[]) => markScenarioLinkedReportsBasisStaleMock(...args),
 }));
 
@@ -156,11 +154,6 @@ describe("model run write-back", () => {
 
     modelLinksMaybeSingleMock.mockResolvedValue({ data: null, error: null });
 
-    touchScenarioLinkedReportPacketsMock.mockResolvedValue({
-      touchedReportIds: ["report-1"],
-      error: null,
-    });
-
     markScenarioLinkedReportsBasisStaleMock.mockResolvedValue({
       staleReportIds: ["report-1"],
       error: null,
@@ -173,7 +166,7 @@ describe("model run write-back", () => {
   });
 
   describe("PATCH /api/models/[modelId]/runs/[modelRunId] — promote run", () => {
-    it("calls touchScenarioLinkedReportPackets with scenario set and workspace", async () => {
+    it("marks linked reports stale with scenario set and workspace", async () => {
       const response = await patchModelRun(
         new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}`, {
           method: "PATCH",
@@ -184,21 +177,23 @@ describe("model run write-back", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+      expect(markScenarioLinkedReportsBasisStaleMock).toHaveBeenCalledWith(
         expect.objectContaining({
           scenarioSetId: SCENARIO_SET_ID,
           workspaceId: WORKSPACE_ID,
+          runId: MODEL_RUN_ID,
+          reason: "Linked model run County mobility model run promoted to scenario entry",
         })
       );
       expect(mockAudit.info).toHaveBeenCalledWith(
-        "scenario_report_writeback_succeeded",
-        expect.objectContaining({ touchedReportCount: 1 })
+        "scenario_report_basis_stale_marked",
+        expect.objectContaining({ staleReportCount: 1 })
       );
     });
 
-    it("logs a warning but still returns 200 when write-back fails", async () => {
-      touchScenarioLinkedReportPacketsMock.mockResolvedValueOnce({
-        touchedReportIds: [],
+    it("logs a warning but still returns 200 when stale write-back fails", async () => {
+      markScenarioLinkedReportsBasisStaleMock.mockResolvedValueOnce({
+        staleReportIds: [],
         error: { message: "DB timeout", code: "57014" },
       });
 
@@ -213,7 +208,7 @@ describe("model run write-back", () => {
 
       expect(response.status).toBe(200);
       expect(mockAudit.warn).toHaveBeenCalledWith(
-        "scenario_report_writeback_failed",
+        "scenario_report_basis_stale_failed",
         expect.objectContaining({ message: "DB timeout", code: "57014" })
       );
     });
@@ -240,7 +235,7 @@ describe("model run write-back", () => {
       vi.unstubAllGlobals();
     });
 
-    it("calls touchScenarioLinkedReportPackets after attaching the run to a scenario entry", async () => {
+    it("marks linked reports stale after attaching the run to a scenario entry", async () => {
       const response = await postModelRun(
         new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs`, {
           method: "POST",
@@ -254,19 +249,21 @@ describe("model run write-back", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+      expect(markScenarioLinkedReportsBasisStaleMock).toHaveBeenCalledWith(
         expect.objectContaining({
           scenarioSetId: SCENARIO_SET_ID,
           workspaceId: WORKSPACE_ID,
+          runId: expect.any(String),
+          reason: "Linked model run Protected bike package succeeded",
         })
       );
       expect(mockAudit.info).toHaveBeenCalledWith(
-        "scenario_report_writeback_succeeded",
-        expect.objectContaining({ touchedReportCount: 1 })
+        "scenario_report_basis_stale_marked",
+        expect.objectContaining({ staleReportCount: 1 })
       );
     });
 
-    it("does not call touchScenarioLinkedReportPackets when attachToScenarioEntry is not set", async () => {
+    it("does not mark linked reports stale when attachToScenarioEntry is not set", async () => {
       const response = await postModelRun(
         new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs`, {
           method: "POST",
@@ -280,7 +277,7 @@ describe("model run write-back", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(touchScenarioLinkedReportPacketsMock).not.toHaveBeenCalled();
+      expect(markScenarioLinkedReportsBasisStaleMock).not.toHaveBeenCalled();
     });
   });
 });
