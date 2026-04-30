@@ -1,6 +1,6 @@
 {
   "schemaVersion": "openplan.local_ui_ux_settle_capture.v1",
-  "generatedAt": "2026-04-30T03:22:39.962Z",
+  "generatedAt": "2026-04-30T09:02:05.401Z",
   "baseUrl": "http://localhost:3000",
   "outputDir": "docs/ops/2026-04-29-test-output/ui-ux-settle",
   "storageStateSupplied": true,
@@ -39,36 +39,36 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "NCTC project detail visible",
       "visibleTarget": "Project posture/detail regions",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/project-detail--desktop--nctc-project.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "plans-index",
       "routeUrl": "/plans",
       "viewportKey": "desktop",
       "viewport": "1440x1100",
-      "authWorkspace": "Workspace fixture TBD",
-      "seedState": "Populated plan registry required",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "NCTC local proof plan visible",
       "visibleTarget": "Plan registry/detail surface",
-      "missingDependency": "Local plan fixture missing; do not use empty-state proof.",
-      "screenshot": null,
-      "status": "fixture_required",
-      "notes": "Local plan fixture missing; do not use empty-state proof."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/plans-index--desktop--nctc-plan-visible.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "plan-detail",
-      "routeUrl": "/plans/<local-plan-id>",
+      "routeUrl": "/plans/d0000001-0000-4000-8000-000000000015",
       "viewportKey": "desktop",
       "viewport": "1440x1100",
-      "authWorkspace": "Workspace fixture TBD",
-      "seedState": "Linked local plan detail required",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Linked NCTC local proof plan detail visible",
       "visibleTarget": "Plan detail surface",
-      "missingDependency": "Local plan detail fixture missing; do not use empty-state proof.",
-      "screenshot": null,
-      "status": "fixture_required",
-      "notes": "Local plan detail fixture missing; do not use empty-state proof."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/plan-detail--desktop--nctc-plan.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "programs-index",
@@ -182,10 +182,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "County run evidence visible",
       "visibleTarget": "Run detail/evidence panel",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/county-run-detail--desktop--nctc-run.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "data-hub",
@@ -208,10 +208,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "Mapbox map and layers loaded",
       "visibleTarget": "Map controls/inspector visible",
-      "missingDependency": "Mapbox token or local map layer state missing.",
-      "screenshot": null,
-      "status": "missing_expected_state",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/explore-map--desktop--nctc-layers-ready.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "engagement-index",
@@ -273,10 +273,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "RTP cycle and chapter visible",
       "visibleTarget": "Cycle detail/document flow",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/rtp-detail--desktop--nctc-cycle.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "admin-index",
@@ -286,10 +286,10 @@
       "authWorkspace": "Authenticated operator workspace",
       "seedState": "Admin route reachable",
       "visibleTarget": "Admin module surface",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/admin-index--desktop--authenticated-admin.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "pilot-readiness",
@@ -338,36 +338,36 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "NCTC project detail visible",
       "visibleTarget": "Project posture/detail regions",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/project-detail--mobile--nctc-project.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "plans-index",
       "routeUrl": "/plans",
       "viewportKey": "mobile",
       "viewport": "390x844",
-      "authWorkspace": "Workspace fixture TBD",
-      "seedState": "Populated plan registry required",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "NCTC local proof plan visible",
       "visibleTarget": "Plan registry/detail surface",
-      "missingDependency": "Local plan fixture missing; do not use empty-state proof.",
-      "screenshot": null,
-      "status": "fixture_required",
-      "notes": "Local plan fixture missing; do not use empty-state proof."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/plans-index--mobile--nctc-plan-visible.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "plan-detail",
-      "routeUrl": "/plans/<local-plan-id>",
+      "routeUrl": "/plans/d0000001-0000-4000-8000-000000000015",
       "viewportKey": "mobile",
       "viewport": "390x844",
-      "authWorkspace": "Workspace fixture TBD",
-      "seedState": "Linked local plan detail required",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "Linked NCTC local proof plan detail visible",
       "visibleTarget": "Plan detail surface",
-      "missingDependency": "Local plan detail fixture missing; do not use empty-state proof.",
-      "screenshot": null,
-      "status": "fixture_required",
-      "notes": "Local plan detail fixture missing; do not use empty-state proof."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/plan-detail--mobile--nctc-plan.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "programs-index",
@@ -481,10 +481,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "County run evidence visible",
       "visibleTarget": "Run detail/evidence panel",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/county-run-detail--mobile--nctc-run.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "data-hub",
@@ -507,10 +507,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "Mapbox map and layers loaded",
       "visibleTarget": "Map controls/inspector visible",
-      "missingDependency": "Mapbox token or local map layer state missing.",
-      "screenshot": null,
-      "status": "missing_expected_state",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/explore-map--mobile--nctc-layers-ready.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "engagement-index",
@@ -572,10 +572,10 @@
       "authWorkspace": "NCTC demo workspace",
       "seedState": "RTP cycle and chapter visible",
       "visibleTarget": "Cycle detail/document flow",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/rtp-detail--mobile--nctc-cycle.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "admin-index",
@@ -585,10 +585,10 @@
       "authWorkspace": "Authenticated operator workspace",
       "seedState": "Admin route reachable",
       "visibleTarget": "Admin module surface",
-      "missingDependency": "Route did not render an authorized workspace state.",
-      "screenshot": null,
-      "status": "blocked_or_denied",
-      "notes": "No screenshot captured."
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-04-29-test-output/ui-ux-settle/admin-index--mobile--authenticated-admin.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
     },
     {
       "routeKey": "pilot-readiness",

@@ -554,6 +554,7 @@ async function captureRoute(page, baseUrl, outputDir, route, viewportKey) {
     ...row,
     status: route.optionalState ? 'captured_watch' : 'captured',
     screenshot: relativeToRepo(fullPath),
+    missingDependency: route.optionalState || '',
     notes: route.optionalState || 'Captured populated/authenticated local route state.',
   };
 }
