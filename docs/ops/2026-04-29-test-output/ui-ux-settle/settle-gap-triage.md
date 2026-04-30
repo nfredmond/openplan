@@ -3,23 +3,23 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Source: `local-ui-ux-settle-capture-ledger.md` generated 2026-04-30T03:22:39.962Z.
+Source: `local-ui-ux-settle-capture-ledger.md` generated 2026-04-30T10:45:27.260Z.
 Scope: docs-only next-action checklist for the local proof pack. No app/runtime, data, auth, billing, email, credential, or external-service mutation is authorized here.
 
 ## Priority Checklist
 
 ### P0 - Fixture-Required Operating Surfaces
 
-Routes: `/reports`, `/reports/d0000001-0000-4000-8000-000000000019`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile. Reports are now fixture-ready and need a fresh local read-only capture; scenarios and grants still need fixture work.
+Routes: `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile. Reports are now captured in the main ledger; scenarios and grants still need fixture work.
 
 Plans update:
 - `/plans` and `/plans/d0000001-0000-4000-8000-000000000015` now have a deterministic NCTC local seed fixture and harness target.
 - `/programs` and `/programs/d0000001-0000-4000-8000-000000000016` now have a deterministic NCTC local seed fixture, funding opportunity lane, and captured desktop/mobile proof.
-- `/reports` and `/reports/d0000001-0000-4000-8000-000000000019` now have a deterministic NCTC local seed fixture with a generated board-packet artifact and harness target.
+- `/reports` and `/reports/d0000001-0000-4000-8000-000000000019` now have a deterministic NCTC local seed fixture with a generated board-packet artifact and captured desktop/mobile proof.
 
 Safe prerequisites:
 - Use only a local authenticated Playwright storage state for a non-production workspace.
-- Prepare populated local fixtures before capture: rerun the NCTC seed for report packet/detail artifact state, then add separate scenario set/detail comparison and grants opportunity/award/reimbursement fixtures before broadening beyond reports.
+- Prepare populated local fixtures before capture: add separate scenario set/detail comparison and grants opportunity/award/reimbursement fixtures before the next broad capture.
 - Use stable local IDs and update only the local capture manifest or harness route placeholders when the fixtures exist.
 - Keep capture output under `docs/ops/2026-04-29-test-output/ui-ux-settle/`.
 
@@ -36,7 +36,7 @@ Acceptance criteria:
 
 ### P1 - Historical Detail and Admin Authorization States
 
-Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are fixture-required reports/scenarios/grants rows above.
+Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are fixture-required scenario/grants rows above.
 
 Routes: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` across desktop and mobile.
 

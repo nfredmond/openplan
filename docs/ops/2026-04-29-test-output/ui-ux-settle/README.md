@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger now includes 34 populated screenshots plus 2 watch captures, including plans, programs, project detail, county-run detail, RTP detail, `/explore`, and admin routes in the primary ledger. The capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks. Reports now have a deterministic NCTC seed fixture and harness route IDs; remaining fixture gaps are 6 rows for scenarios and grants until the next local capture regenerates the ledger.
+Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger now includes 38 populated screenshots plus 2 watch captures, including plans, programs, reports, project detail, county-run detail, RTP detail, `/explore`, and admin routes in the primary ledger. The capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks. Remaining fixture gaps are 6 rows for scenarios and grants.
 
 ## Scope
 
@@ -36,9 +36,9 @@ The work here is local proof-pack preparation:
 ## Fixture Status
 
 - Plans: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000015`; desktop/mobile index and detail captures complete.
-- Reports: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000019`; desktop/mobile index and detail captures should be regenerated after rerunning the local seed.
+- Reports: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000019`; desktop/mobile index and detail captures complete.
 - Scenarios, grants: still fixture-required.
 
 ## Proof Pack Rule
 
-Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are fixture-required scenario/grants operating surfaces plus reports rows until the seeded report fixture is captured in a fresh local pass.
+Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are fixture-required scenario/grants operating surfaces.

@@ -1,6 +1,6 @@
 # OpenPlan Local UI/UX Settle Capture Ledger
 
-Generated: 2026-04-30T09:47:25.765Z
+Generated: 2026-04-30T10:45:27.260Z
 Base URL: http://localhost:3000
 Output directory: docs/ops/2026-04-29-test-output/ui-ux-settle
 Storage state supplied: yes
@@ -16,9 +16,9 @@ Mutation posture: read-only browser navigation/screenshots only; no users, seeds
 
 | Status | Count |
 | --- | ---: |
-| captured | 34 |
+| captured | 38 |
 | captured_watch | 2 |
-| fixture_required | 10 |
+| fixture_required | 6 |
 
 ## Ledger
 
@@ -31,8 +31,8 @@ Mutation posture: read-only browser navigation/screenshots only; no users, seeds
 | docs/ops/2026-04-29-test-output/ui-ux-settle/plan-detail--desktop--nctc-plan.png | /plans/d0000001-0000-4000-8000-000000000015 | 1440x1100 | captured | NCTC demo workspace | Linked NCTC local proof plan detail visible | Plan detail surface | - | Captured populated/authenticated local route state. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/programs-index--desktop--nctc-program-visible.png | /programs | 1440x1100 | captured | NCTC demo workspace | NCTC programming pipeline visible | Program registry surface | - | Captured populated/authenticated local route state. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/program-detail--desktop--nctc-program.png | /programs/d0000001-0000-4000-8000-000000000016 | 1440x1100 | captured | NCTC demo workspace | Linked NCTC program detail visible | Program detail/funding lane surface | - | Captured populated/authenticated local route state. |
-| - | /reports | 1440x1100 | fixture_required | Workspace fixture TBD | Generated/current report packet required | Report registry surface | Local report fixture missing; do not use empty-state proof. | Local report fixture missing; do not use empty-state proof. |
-| - | /reports/<local-report-id> | 1440x1100 | fixture_required | Workspace fixture TBD | Report packet detail/artifact required | Report detail/artifact state | Local report detail fixture missing; do not use empty-state proof. | Local report detail fixture missing; do not use empty-state proof. |
+| docs/ops/2026-04-29-test-output/ui-ux-settle/reports-index--desktop--nctc-report-visible.png | /reports | 1440x1100 | captured | NCTC demo workspace | NCTC report packet visible | Report registry surface | - | Captured populated/authenticated local route state. |
+| docs/ops/2026-04-29-test-output/ui-ux-settle/report-detail--desktop--nctc-report.png | /reports/d0000001-0000-4000-8000-000000000019 | 1440x1100 | captured | NCTC demo workspace | NCTC report packet detail visible | Report detail/artifact state | - | Captured populated/authenticated local route state. |
 | - | /scenarios | 1440x1100 | fixture_required | Workspace fixture TBD | Scenario set and entries required | Scenario registry surface | Local scenario fixture missing; do not use empty-state proof. | Local scenario fixture missing; do not use empty-state proof. |
 | - | /scenarios/<local-scenario-set-id> | 1440x1100 | fixture_required | Workspace fixture TBD | Scenario comparison detail required | Scenario comparison surface | Local scenario detail fixture missing; do not use empty-state proof. | Local scenario detail fixture missing; do not use empty-state proof. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/models-index--desktop--workspace-models.png | /models | 1440x1100 | captured | NCTC demo workspace | Modeling readiness/run history visible | Modeling workbench surface | - | Captured populated/authenticated local route state. |
@@ -54,8 +54,8 @@ Mutation posture: read-only browser navigation/screenshots only; no users, seeds
 | docs/ops/2026-04-29-test-output/ui-ux-settle/plan-detail--mobile--nctc-plan.png | /plans/d0000001-0000-4000-8000-000000000015 | 390x844 | captured | NCTC demo workspace | Linked NCTC local proof plan detail visible | Plan detail surface | - | Captured populated/authenticated local route state. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/programs-index--mobile--nctc-program-visible.png | /programs | 390x844 | captured | NCTC demo workspace | NCTC programming pipeline visible | Program registry surface | - | Captured populated/authenticated local route state. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/program-detail--mobile--nctc-program.png | /programs/d0000001-0000-4000-8000-000000000016 | 390x844 | captured | NCTC demo workspace | Linked NCTC program detail visible | Program detail/funding lane surface | - | Captured populated/authenticated local route state. |
-| - | /reports | 390x844 | fixture_required | Workspace fixture TBD | Generated/current report packet required | Report registry surface | Local report fixture missing; do not use empty-state proof. | Local report fixture missing; do not use empty-state proof. |
-| - | /reports/<local-report-id> | 390x844 | fixture_required | Workspace fixture TBD | Report packet detail/artifact required | Report detail/artifact state | Local report detail fixture missing; do not use empty-state proof. | Local report detail fixture missing; do not use empty-state proof. |
+| docs/ops/2026-04-29-test-output/ui-ux-settle/reports-index--mobile--nctc-report-visible.png | /reports | 390x844 | captured | NCTC demo workspace | NCTC report packet visible | Report registry surface | - | Captured populated/authenticated local route state. |
+| docs/ops/2026-04-29-test-output/ui-ux-settle/report-detail--mobile--nctc-report.png | /reports/d0000001-0000-4000-8000-000000000019 | 390x844 | captured | NCTC demo workspace | NCTC report packet detail visible | Report detail/artifact state | - | Captured populated/authenticated local route state. |
 | - | /scenarios | 390x844 | fixture_required | Workspace fixture TBD | Scenario set and entries required | Scenario registry surface | Local scenario fixture missing; do not use empty-state proof. | Local scenario fixture missing; do not use empty-state proof. |
 | - | /scenarios/<local-scenario-set-id> | 390x844 | fixture_required | Workspace fixture TBD | Scenario comparison detail required | Scenario comparison surface | Local scenario detail fixture missing; do not use empty-state proof. | Local scenario detail fixture missing; do not use empty-state proof. |
 | docs/ops/2026-04-29-test-output/ui-ux-settle/models-index--mobile--workspace-models.png | /models | 390x844 | captured | NCTC demo workspace | Modeling readiness/run history visible | Modeling workbench surface | - | Captured populated/authenticated local route state. |
