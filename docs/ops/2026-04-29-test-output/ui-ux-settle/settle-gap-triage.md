@@ -10,15 +10,16 @@ Scope: docs-only next-action checklist for the local proof pack. No app/runtime,
 
 ### P0 - Fixture-Required Operating Surfaces
 
-Routes: `/reports`, `/reports/<local-report-id>`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile.
+Routes: `/reports`, `/reports/d0000001-0000-4000-8000-000000000019`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` across desktop and mobile. Reports are now fixture-ready and need a fresh local read-only capture; scenarios and grants still need fixture work.
 
 Plans update:
 - `/plans` and `/plans/d0000001-0000-4000-8000-000000000015` now have a deterministic NCTC local seed fixture and harness target.
 - `/programs` and `/programs/d0000001-0000-4000-8000-000000000016` now have a deterministic NCTC local seed fixture, funding opportunity lane, and captured desktop/mobile proof.
+- `/reports` and `/reports/d0000001-0000-4000-8000-000000000019` now have a deterministic NCTC local seed fixture with a generated board-packet artifact and harness target.
 
 Safe prerequisites:
 - Use only a local authenticated Playwright storage state for a non-production workspace.
-- Prepare populated local fixtures before capture: generated report packet/detail artifact, scenario set/detail comparison, and grants opportunity/award/reimbursement state.
+- Prepare populated local fixtures before capture: rerun the NCTC seed for report packet/detail artifact state, then add separate scenario set/detail comparison and grants opportunity/award/reimbursement fixtures before broadening beyond reports.
 - Use stable local IDs and update only the local capture manifest or harness route placeholders when the fixtures exist.
 - Keep capture output under `docs/ops/2026-04-29-test-output/ui-ux-settle/`.
 

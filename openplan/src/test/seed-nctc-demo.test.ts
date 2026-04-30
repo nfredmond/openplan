@@ -15,6 +15,10 @@ import {
   DEMO_PROJECT_LATITUDE,
   DEMO_PROJECT_LONGITUDE,
   DEMO_PROJECT_RTP_LINK_ID,
+  DEMO_REPORT_ARTIFACT_ID,
+  DEMO_REPORT_GENERATED_AT,
+  DEMO_REPORT_ID,
+  DEMO_REPORT_TITLE,
   DEMO_RTP_ANCHOR_LATITUDE,
   DEMO_RTP_ANCHOR_LONGITUDE,
   DEMO_RTP_CYCLE_ID,
@@ -113,6 +117,8 @@ describe("buildSeedRecords", () => {
     expect(records.rtpCycle.created_by).toBe(ownerUserId);
     expect(records.projectRtpLink.created_by).toBe(ownerUserId);
     expect(records.countyRun.created_by).toBe(ownerUserId);
+    expect(records.report.created_by).toBe(ownerUserId);
+    expect(records.reportArtifact.generated_by).toBe(ownerUserId);
   });
 
   it("preserves the manifest and validation summary verbatim on county_runs", () => {
@@ -153,6 +159,13 @@ describe("buildSeedRecords", () => {
     expect(records.fundingOpportunity.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.fundingOpportunity.program_id).toBe(DEMO_PROGRAM_ID);
     expect(records.fundingOpportunity.project_id).toBe(DEMO_PROJECT_ID);
+    expect(records.report.id).toBe(DEMO_REPORT_ID);
+    expect(records.report.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.report.rtp_cycle_id).toBe(DEMO_RTP_CYCLE_ID);
+    expect(records.report.modeling_county_run_id).toBe(DEMO_COUNTY_RUN_ID);
+    expect(records.reportArtifact.id).toBe(DEMO_REPORT_ARTIFACT_ID);
+    expect(records.reportArtifact.report_id).toBe(DEMO_REPORT_ID);
+    expect(records.reportSections.every((section) => section.report_id === DEMO_REPORT_ID)).toBe(true);
     expect(records.rtpCycle.id).toBe(DEMO_RTP_CYCLE_ID);
     expect(records.rtpCycle.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.projectRtpLink.id).toBe(DEMO_PROJECT_RTP_LINK_ID);
@@ -211,6 +224,40 @@ describe("buildSeedRecords", () => {
     expect(records.fundingOpportunity.opportunity_status).toBe("open");
     expect(records.fundingOpportunity.decision_state).toBe("pursue");
     expect(records.fundingOpportunity.expected_award_amount).toBe(1250000);
+  });
+
+  it("adds a deterministic local reports fixture for UI settle reports proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.report.id).toBe(DEMO_REPORT_ID);
+    expect(records.report.title).toBe(DEMO_REPORT_TITLE);
+    expect(records.report.project_id).toBeNull();
+    expect(records.report.rtp_cycle_id).toBe(DEMO_RTP_CYCLE_ID);
+    expect(records.report.report_type).toBe("board_packet");
+    expect(records.report.status).toBe("generated");
+    expect(records.report.generated_at).toBe(DEMO_REPORT_GENERATED_AT);
+    expect(records.report.latest_artifact_kind).toBe("html");
+    expect(records.report.latest_artifact_url).toContain(DEMO_REPORT_ARTIFACT_ID);
+
+    expect(records.reportArtifact.id).toBe(DEMO_REPORT_ARTIFACT_ID);
+    expect(records.reportArtifact.artifact_kind).toBe("html");
+    expect(records.reportArtifact.generated_at).toBe(DEMO_REPORT_GENERATED_AT);
+    expect(records.reportArtifact.metadata_json).toMatchObject({
+      metadata_schema_version: "2026-04",
+      sourceContext: {
+        reportOrigin: "rtp_cycle_packet",
+        reportReason: "local_ui_ux_settle_fixture",
+        rtpCycleId: DEMO_RTP_CYCLE_ID,
+        modelingEvidenceCount: 1,
+      },
+    });
+    expect(JSON.stringify(records.reportArtifact.metadata_json)).toContain(DEMO_REPORT_TITLE);
+
+    expect(records.reportSections.length).toBeGreaterThan(0);
+    expect(records.reportSections.map((section) => section.section_key)).toContain("cycle_overview");
+    expect(new Set(records.reportSections.map((section) => section.id)).size).toBe(
+      records.reportSections.length
+    );
   });
 
   it("anchors the demo project to the Grass Valley map center so the marker renders under the shell viewport", () => {

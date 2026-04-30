@@ -75,7 +75,7 @@ For this UI settle proof pack, the safest executable path is:
 2. Seed deterministic NCTC data locally.
 3. Establish a local browser session for the demo workspace without storing credentials.
 4. Capture the route queue in `capture-manifest.md` at `desktop` and `mobile`; add `tablet` only where the layout changes materially.
-5. For routes not populated by the NCTC seed, record the missing fixture as a dependency instead of accepting empty screenshots.
+5. For routes not populated by the NCTC seed, record the missing fixture as a dependency instead of accepting empty screenshots. Reports are now populated by the deterministic NCTC seed; scenarios and grants remain fixture-required.
 6. Run `git diff --check` after docs are updated.
 
 ## No-Go Checks

@@ -29,6 +29,9 @@ import {
   refreshCountyRunModelingEvidence,
 } from "../src/lib/models/evidence-backbone";
 import type { CountyOnrampManifest } from "../src/lib/models/county-onramp";
+import {
+  createDefaultTargetedReportSections,
+} from "../src/lib/reports/catalog";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -55,6 +58,8 @@ export const DEMO_PLAN_ID = "d0000001-0000-4000-8000-000000000015";
 export const DEMO_PROGRAM_ID = "d0000001-0000-4000-8000-000000000016";
 export const DEMO_PROGRAM_PLAN_LINK_ID = "d0000001-0000-4000-8000-000000000017";
 export const DEMO_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000018";
+export const DEMO_REPORT_ID = "d0000001-0000-4000-8000-000000000019";
+export const DEMO_REPORT_ARTIFACT_ID = "d0000001-0000-4000-8000-00000000001a";
 
 export const DEMO_MISSION_DOWNTOWN_ID = "d0000001-0000-4000-8000-000000000008";
 export const DEMO_MISSION_SR49_ID = "d0000001-0000-4000-8000-000000000009";
@@ -107,6 +112,8 @@ export const DEMO_RTP_CYCLE_TITLE = "NCTC 2045 RTP — demo cycle";
 export const DEMO_PLAN_TITLE = "NCTC 2045 RTP local proof plan";
 export const DEMO_PROGRAM_TITLE = "NCTC 2045 RTP programming pipeline";
 export const DEMO_FUNDING_OPPORTUNITY_TITLE = "Rural RTP implementation readiness call";
+export const DEMO_REPORT_TITLE = "NCTC 2045 RTP settle board packet";
+export const DEMO_REPORT_GENERATED_AT = "2026-04-30T12:00:00.000Z";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
 
@@ -122,6 +129,9 @@ export type SeedRecords = {
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
   existingConditionsChapter: Record<string, unknown>;
+  report: Record<string, unknown>;
+  reportArtifact: Record<string, unknown>;
+  reportSections: Array<Record<string, unknown>>;
 };
 
 // Realistic AOI polygons near Grass Valley, CA (Nevada County seat,
@@ -360,6 +370,135 @@ function record(value: unknown): Record<string, unknown> {
 
 function text(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function demoReportSectionId(index: number): string {
+  return `d0000001-0000-4000-8000-${(0x20 + index).toString(16).padStart(12, "0")}`;
+}
+
+function buildNctcReportArtifactMetadata() {
+  const reportSections = buildNctcReportSections();
+  const enabledSectionKeys = reportSections
+    .filter((section) => section.enabled)
+    .map((section) => section.section_key);
+  const fundingSnapshot = {
+    capturedAt: DEMO_REPORT_GENERATED_AT,
+    latestSourceUpdatedAt: DEMO_REPORT_GENERATED_AT,
+    linkedProjectCount: 1,
+    trackedProjectCount: 1,
+    fundedProjectCount: 0,
+    likelyCoveredProjectCount: 1,
+    gapProjectCount: 1,
+    committedFundingAmount: 0,
+    likelyFundingAmount: 1250000,
+    totalPotentialFundingAmount: 1250000,
+    unfundedAfterLikelyAmount: 0,
+    paidReimbursementAmount: 0,
+    outstandingReimbursementAmount: 0,
+    uninvoicedAwardAmount: 0,
+    awardRiskCount: 0,
+    label: "Likely funding identified",
+    reason:
+      "The deterministic NCTC local proof packet sees one linked RTP project and one pursued RTP implementation funding opportunity.",
+    reimbursementLabel: "No reimbursement draw yet",
+    reimbursementReason:
+      "The local UI settle fixture stops at packet evidence; it does not create invoices or billing-side reimbursement rows.",
+  };
+
+  return {
+    metadata_schema_version: "2026-04",
+    htmlContent: [
+      '<article class="report-html report-html--nctc-settle">',
+      "<h1>NCTC 2045 RTP settle board packet</h1>",
+      "<p>This local-only proof packet is anchored to the NCTC demo RTP cycle, the linked proof project, the programming pipeline, and the frozen Nevada County screening run.</p>",
+      "<h2>Packet basis</h2>",
+      "<ul>",
+      "<li>RTP cycle: NCTC 2045 RTP - demo cycle.</li>",
+      "<li>Linked project: NCTC 2045 RTP (proof-of-capability).</li>",
+      "<li>Modeling basis: nevada-county-runtime-norenumber-freeze-20260324.</li>",
+      "<li>Public input basis: four approved NCTC community map comments.</li>",
+      "</ul>",
+      "<h2>Operator note</h2>",
+      "<p>This artifact exists only to prove the reports index/detail surfaces with populated local state. It is not a production packet and does not make planning-grade modeling claims.</p>",
+      "</article>",
+    ].join(""),
+    generatedAt: DEMO_REPORT_GENERATED_AT,
+    auditability: {
+      posture: "local_ui_ux_settle_fixture",
+      note:
+        "Local-only deterministic report fixture for read-only UI settle capture. It does not bypass production report generation or external storage.",
+    },
+    sourceContext: {
+      reportOrigin: "rtp_cycle_packet",
+      reportReason: "local_ui_ux_settle_fixture",
+      rtpCycleId: DEMO_RTP_CYCLE_ID,
+      rtpCycleTitle: DEMO_RTP_CYCLE_TITLE,
+      rtpCycleUpdatedAt: DEMO_REPORT_GENERATED_AT,
+      chapterCount: 8,
+      chapterCompleteCount: 0,
+      chapterReadyForReviewCount: 1,
+      linkedProjectCount: 1,
+      engagementCampaignCount: 1,
+      cycleLevelCampaignCount: 1,
+      chapterLevelCampaignCount: 0,
+      engagementPendingCommentCount: 0,
+      engagementApprovedCommentCount: DEMO_ENGAGEMENT_ITEMS.length,
+      engagementReadyCommentCount: DEMO_ENGAGEMENT_ITEMS.length,
+      publicReviewSummary: {
+        label: "Review loop active",
+        detail:
+          "The local NCTC fixture includes one active cycle-level engagement campaign and approved map comments ready for packet review.",
+        tone: "info",
+        actionItems: ["Review approved community map comments before board-packet signoff."],
+      },
+      rtpFundingSnapshot: fundingSnapshot,
+      readiness: {
+        label: "Local proof ready",
+        reason:
+          "The demo RTP cycle has geography, horizon, a linked project, a populated existing-conditions chapter, and a local report artifact.",
+      },
+      workflow: {
+        label: "Packet review ready",
+        detail:
+          "Use this fixture to inspect reports index/detail UX only; production packet generation remains governed by the API path.",
+      },
+      modelingEvidence: [
+        {
+          countyRunId: DEMO_COUNTY_RUN_ID,
+          runName: DEMO_COUNTY_RUN_NAME,
+          claimStatus: "screening_grade",
+          statusReason:
+            "Frozen Nevada County run is screening-grade only and is included as transparent context, not calibrated model proof.",
+        },
+      ],
+      modelingEvidenceCount: 1,
+      modelingEvidenceClaimStatuses: ["screening_grade"],
+      enabledSectionCount: enabledSectionKeys.length,
+      enabledSectionKeys,
+      packetPresetAlignment: {
+        presetStage: "draft",
+        presetLabel: "Draft packet preset",
+        statusLabel: "Preset aligned",
+        detail:
+          "The local fixture uses the draft RTP board-packet section set expected for the seeded cycle status.",
+      },
+    },
+    generationMode: "local_ui_ux_settle_fixture",
+  };
+}
+
+function buildNctcReportSections() {
+  return createDefaultTargetedReportSections("board_packet", "rtp_cycle", {
+    rtpCycleStatus: "draft",
+  }).map((section, index) => ({
+    id: demoReportSectionId(index),
+    report_id: DEMO_REPORT_ID,
+    section_key: section.sectionKey,
+    title: section.title,
+    enabled: section.enabled,
+    sort_order: section.sortOrder,
+    config_json: section.configJson ?? {},
+  }));
 }
 
 type FacilityRow = {
@@ -744,6 +883,45 @@ export function buildSeedRecords(
       content_markdown: buildExistingConditionsChapterMarkdown(bundleManifest, validationSummary),
       created_by: ownerUserId,
     },
+    report: {
+      id: DEMO_REPORT_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: null,
+      rtp_cycle_id: DEMO_RTP_CYCLE_ID,
+      modeling_county_run_id: DEMO_COUNTY_RUN_ID,
+      title: DEMO_REPORT_TITLE,
+      report_type: "board_packet",
+      status: "generated",
+      summary:
+        "Local-only proof-pack fixture for the reports index/detail UI settle capture, grounded in the NCTC RTP cycle and frozen screening-grade model context.",
+      created_by: ownerUserId,
+      generated_at: DEMO_REPORT_GENERATED_AT,
+      latest_artifact_kind: "html",
+      latest_artifact_url: `/reports/${DEMO_REPORT_ID}#artifact-${DEMO_REPORT_ARTIFACT_ID}`,
+      metadata_json: {
+        queueTrace: {
+          action: "seed_local_fixture",
+          actedAt: DEMO_REPORT_GENERATED_AT,
+          actorUserId: ownerUserId,
+          source: "seed:nctc",
+          detail: "Seeded deterministic local UI settle report fixture.",
+        },
+      },
+      rtp_basis_stale: false,
+      rtp_basis_stale_reason: null,
+      rtp_basis_stale_run_id: null,
+      rtp_basis_stale_marked_at: null,
+    },
+    reportArtifact: {
+      id: DEMO_REPORT_ARTIFACT_ID,
+      report_id: DEMO_REPORT_ID,
+      artifact_kind: "html",
+      storage_path: null,
+      generated_by: ownerUserId,
+      generated_at: DEMO_REPORT_GENERATED_AT,
+      metadata_json: buildNctcReportArtifactMetadata(),
+    },
+    reportSections: buildNctcReportSections(),
   };
 }
 
@@ -1371,7 +1549,72 @@ async function main(): Promise<void> {
     );
   }
 
-  // 13. Public census tracts (equity choropleth demo data).
+  // 13. Deterministic report packet fixture for local UI/UX settle proof.
+  const { error: reportError } = await supabase.from("reports").upsert(
+    {
+      id: DEMO_REPORT_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      project_id: null,
+      rtp_cycle_id: DEMO_RTP_CYCLE_ID,
+      modeling_county_run_id: DEMO_COUNTY_RUN_ID,
+      title: DEMO_REPORT_TITLE,
+      report_type: "board_packet",
+      status: "generated",
+      summary:
+        "Local-only proof-pack fixture for the reports index/detail UI settle capture, grounded in the NCTC RTP cycle and frozen screening-grade model context.",
+      created_by: demoUserId,
+      generated_at: DEMO_REPORT_GENERATED_AT,
+      latest_artifact_kind: "html",
+      latest_artifact_url: `/reports/${DEMO_REPORT_ID}#artifact-${DEMO_REPORT_ARTIFACT_ID}`,
+      metadata_json: {
+        queueTrace: {
+          action: "seed_local_fixture",
+          actedAt: DEMO_REPORT_GENERATED_AT,
+          actorUserId: demoUserId,
+          source: "seed:nctc",
+          detail: "Seeded deterministic local UI settle report fixture.",
+        },
+      },
+      rtp_basis_stale: false,
+      rtp_basis_stale_reason: null,
+      rtp_basis_stale_run_id: null,
+      rtp_basis_stale_marked_at: null,
+    },
+    { onConflict: "id" }
+  );
+  if (reportError) {
+    throw new Error(`Failed to upsert report fixture: ${reportError.message}`);
+  }
+  console.log(`[seed:nctc] upserted report fixture ${DEMO_REPORT_ID}`);
+
+  const reportSections = buildNctcReportSections();
+  const { error: reportSectionsError } = await supabase.from("report_sections").upsert(
+    reportSections,
+    { onConflict: "report_id,section_key" }
+  );
+  if (reportSectionsError) {
+    throw new Error(`Failed to upsert report fixture sections: ${reportSectionsError.message}`);
+  }
+  console.log(`[seed:nctc] upserted ${reportSections.length} report fixture sections`);
+
+  const { error: reportArtifactError } = await supabase.from("report_artifacts").upsert(
+    {
+      id: DEMO_REPORT_ARTIFACT_ID,
+      report_id: DEMO_REPORT_ID,
+      artifact_kind: "html",
+      storage_path: null,
+      generated_by: demoUserId,
+      generated_at: DEMO_REPORT_GENERATED_AT,
+      metadata_json: buildNctcReportArtifactMetadata(),
+    },
+    { onConflict: "id" }
+  );
+  if (reportArtifactError) {
+    throw new Error(`Failed to upsert report fixture artifact: ${reportArtifactError.message}`);
+  }
+  console.log(`[seed:nctc] upserted report fixture artifact ${DEMO_REPORT_ARTIFACT_ID}`);
+
+  // 14. Public census tracts (equity choropleth demo data).
   //     `census_tracts` is public data (no workspace scoping) and has a
   //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
   //     client can't send PostGIS geometry directly, so we upsert through
@@ -1455,6 +1698,7 @@ async function main(): Promise<void> {
   console.log(`  plan:        ${DEMO_PLAN_ID}`);
   console.log(`  program:     ${DEMO_PROGRAM_ID}`);
   console.log(`  opportunity: ${DEMO_FUNDING_OPPORTUNITY_ID}`);
+  console.log(`  report:      ${DEMO_REPORT_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);
   console.log(`  county_run:  ${DEMO_COUNTY_RUN_ID}`);
   console.log(`  chapter:     ${DEMO_EXISTING_CONDITIONS_CHAPTER_ID} (${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY})`);
