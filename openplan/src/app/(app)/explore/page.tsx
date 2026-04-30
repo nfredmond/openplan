@@ -54,6 +54,15 @@ import { ExploreHoverInspector } from "./_components/explore-hover-inspector";
 import { ExploreLayerVisibilityControls } from "./_components/explore-layer-visibility-controls";
 import { ExploreResultsBoard } from "./_components/explore-results-board";
 import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel";
+import {
+  buildCurrentMapViewState,
+  getCrashPointFeatures,
+  getLinkedDatasetPreview,
+  hasSwitrsPointLayer,
+  resolveActiveDatasetOverlay,
+  resolveWorkspaceHelperText,
+  resolveWorkspaceStatusLabel,
+} from "./_components/explore-page-state";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
@@ -1123,30 +1132,21 @@ export default function ExplorePage() {
   };
 
   const activeDatasetOverlay = useMemo(
-    () => analysisContext?.linkedDatasets.find((dataset) => dataset.datasetId === activeDatasetOverlayId) ?? null,
+    () => resolveActiveDatasetOverlay(analysisContext, activeDatasetOverlayId),
     [analysisContext, activeDatasetOverlayId]
   );
 
   const currentMapViewState = useMemo<MapViewState>(
-    () => ({
-      tractMetric,
-      showTracts,
-      showCrashes,
-      crashSeverityFilter,
-      crashUserFilter,
-      activeDatasetOverlayId,
-      activeOverlayContext: activeDatasetOverlay
-        ? {
-            datasetId: activeDatasetOverlay.datasetId,
-            datasetName: activeDatasetOverlay.name,
-            overlayMode: activeDatasetOverlay.thematicReady ? "thematic_overlay" : "coverage_footprint",
-            geometryAttachment: activeDatasetOverlay.geometryAttachment,
-            thematicMetricKey: activeDatasetOverlay.thematicMetricKey,
-            thematicMetricLabel: activeDatasetOverlay.thematicMetricLabel,
-            connectorLabel: activeDatasetOverlay.connectorLabel,
-          }
-        : null,
-    }),
+    () =>
+      buildCurrentMapViewState({
+        tractMetric,
+        showTracts,
+        showCrashes,
+        crashSeverityFilter,
+        crashUserFilter,
+        activeDatasetOverlayId,
+        activeDatasetOverlay,
+      }),
     [
       tractMetric,
       showTracts,
@@ -1158,59 +1158,24 @@ export default function ExplorePage() {
     ]
   );
 
-  const workspaceHelperText = useMemo(() => {
-    if (workspaceLoadState === "loading") {
-      return "Checking your default workspace and permissions...";
-    }
+  const workspaceHelperText = useMemo(
+    () => resolveWorkspaceHelperText({ workspaceLoadState, workspaceName, workspaceRole }),
+    [workspaceLoadState, workspaceName, workspaceRole]
+  );
 
-    if (workspaceLoadState === "signedOut") {
-      return "You are signed out. Enter a workspace ID manually, or sign in to continue.";
-    }
-
-    if (workspaceLoadState === "noMembership") {
-      return "Signed in, but no workspace membership was detected. Enter a workspace ID manually.";
-    }
-
-    if (workspaceLoadState === "loaded") {
-      const displayName = workspaceName ?? "workspace";
-      const role = workspaceRole ?? "member";
-      return `Connected to ${displayName} (${role}).`;
-    }
-
-    return "Unable to auto-load a workspace right now. Enter a workspace ID manually.";
-  }, [workspaceLoadState, workspaceName, workspaceRole]);
-
-  const workspaceStatusLabel = useMemo(() => {
-    if (workspaceLoadState === "loading") {
-      return "Loading";
-    }
-
-    if (workspaceLoadState === "loaded") {
-      return "Workspace loaded";
-    }
-
-    if (workspaceLoadState === "signedOut") {
-      return "Signed out";
-    }
-
-    if (workspaceLoadState === "noMembership") {
-      return "No membership";
-    }
-
-    return "Connection issue";
-  }, [workspaceLoadState]);
+  const workspaceStatusLabel = useMemo(
+    () => resolveWorkspaceStatusLabel(workspaceLoadState),
+    [workspaceLoadState]
+  );
 
   const crashPointFeatures = useMemo(
-    () =>
-      analysisResult?.geojson.features.filter(
-        (feature) => feature.geometry?.type === "Point" && (feature.properties as Record<string, unknown> | undefined)?.kind === "crash_point"
-      ) ?? [],
+    () => getCrashPointFeatures(analysisResult),
     [analysisResult]
   );
 
   const crashPointCount = crashPointFeatures.length;
 
-  const switrsPointLayerAvailable = analysisResult?.metrics.sourceSnapshots?.crashes?.source === "switrs-local" && crashPointCount > 0;
+  const switrsPointLayerAvailable = hasSwitrsPointLayer(analysisResult, crashPointCount);
 
   useEffect(() => {
     if (!analysisResult?.runId) {
@@ -1266,7 +1231,7 @@ export default function ExplorePage() {
     }
   }, [analysisContext, activeDatasetOverlayId]);
 
-  const linkedDatasetPreview = analysisContext?.linkedDatasets.slice(0, 4) ?? [];
+  const linkedDatasetPreview = getLinkedDatasetPreview(analysisContext);
 
   return (
     <section className="analysis-explore-shell grid min-h-[calc(100dvh-3rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
