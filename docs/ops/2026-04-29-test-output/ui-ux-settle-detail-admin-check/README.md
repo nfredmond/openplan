@@ -23,6 +23,6 @@ Mutation posture: read-only browser navigation/screenshots only; no database, au
 
 ## Interpretation
 
-- This check intentionally excludes the broad `required` term from hard-denial classification; the main capture harness currently treats that word as blocked because it was trying to catch missing workspace prerequisite screens.
+- This check intentionally excludes the broad `required` term from hard-denial classification; the main capture harness has now been narrowed the same way so ordinary readiness copy does not block proof capture.
 - Rows marked `captured` here have expected target text present under the same local storage state and no hard denial language.
-- These screenshots can be folded into the main proof pack after the harness classifier is narrowed or route-specific expectations are added.
+- These screenshots can be folded into the main proof pack, and the next full capture should classify these routes as `captured` if the same local storage state and demo IDs are available.

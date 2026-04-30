@@ -6,8 +6,10 @@ const repoRoot = path.resolve(__dirname, '..');
 const docsOpsRoot = path.join(repoRoot, 'docs', 'ops');
 const defaultOutputDir = path.join(docsOpsRoot, '2026-04-29-test-output', 'ui-ux-settle');
 
-const DENIED_OR_EMPTY_AUTH_PATTERN =
-  /(not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned)/i;
+const HARD_DENIAL_PATTERN =
+  /(not found|404|unauthorized|not authorized|forbidden|403|no workspace membership|not provisioned)/i;
+const WORKSPACE_AUTH_PREREQUISITE_PATTERN =
+  /(workspace membership (required|missing)|membership required|workspace required|workspace is required|no workspace selected)/i;
 
 const VIEWPORTS = {
   desktop: { width: 1440, height: 1100 },
@@ -450,6 +452,22 @@ async function bodyText(page) {
   return await page.locator('body').innerText({ timeout: 5_000 }).catch(() => '');
 }
 
+function expectedTextMatched(route, text) {
+  return Boolean(
+    route.expectedTextAny?.length && route.expectedTextAny.some((expected) => text.includes(expected))
+  );
+}
+
+function deniedOrEmptyAuth(route, text) {
+  if (HARD_DENIAL_PATTERN.test(text)) return true;
+
+  // The proof pack includes legitimate civic-workbench copy that uses the word
+  // "required" for compliance/readiness fields. Treat only workspace/auth
+  // prerequisite phrases as denial signals, and do not let them override a page
+  // that has already rendered the route-specific expected content.
+  return WORKSPACE_AUTH_PREREQUISITE_PATTERN.test(text) && !expectedTextMatched(route, text);
+}
+
 async function waitForRouteState(page, route) {
   const text = await bodyText(page);
 
@@ -462,7 +480,7 @@ async function waitForRouteState(page, route) {
     };
   }
 
-  if (DENIED_OR_EMPTY_AUTH_PATTERN.test(text)) {
+  if (deniedOrEmptyAuth(route, text)) {
     return {
       ok: false,
       status: 'blocked_or_denied',
@@ -488,7 +506,7 @@ async function waitForRouteState(page, route) {
 
   if (route.expectedTextAny && route.expectedTextAny.length) {
     const textAfterWait = await bodyText(page);
-    const matched = route.expectedTextAny.some((expected) => textAfterWait.includes(expected));
+    const matched = expectedTextMatched(route, textAfterWait);
     if (!matched) {
       return {
         ok: false,

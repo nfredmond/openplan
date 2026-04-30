@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger includes 16 populated screenshots plus 2 watch captures, `/explore` has a supplemental 2-screenshot proof pack, and blocked detail/admin rows now have a supplemental 8-screenshot auth check.
+Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger includes 16 populated screenshots plus 2 watch captures, `/explore` has a supplemental 2-screenshot proof pack, blocked detail/admin rows now have a supplemental 8-screenshot auth check, and the capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks.
 
 ## Scope
 

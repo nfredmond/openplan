@@ -9,7 +9,7 @@ Scope: practical next-step runbook for the remaining local proof gaps after the 
 - Remaining main-ledger gaps are:
   - `fixture_required`: `/plans`, `/plans/<local-plan-id>`, `/programs`, `/programs/<local-program-id>`, `/reports`, `/reports/<local-report-id>`, `/scenarios`, `/scenarios/<local-scenario-set-id>`, `/grants` at desktop and mobile.
   - `blocked_or_denied`: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` at desktop and mobile.
-- The capture harness marks body text matching `not found|404|unauthorized|not authorized|forbidden|403|workspace membership|required|no workspace membership|not provisioned` as `blocked_or_denied` (`qa-harness/openplan-local-ui-ux-settle-capture.js:9-10`). Treat the blocked/detail rows as checks to verify, not as proven auth failures, because valid route content can include ordinary words like `Required`.
+- The capture harness now separates hard denial terms from workspace-prerequisite phrases and no longer treats ordinary compliance/readiness uses of `Required` as an authorization failure (`qa-harness/openplan-local-ui-ux-settle-capture.js`). Treat the historical blocked/detail rows as classifier false positives unless a fresh capture finds hard denial language or missing expected route text.
 
 ## Grounding From Repo Inspection
 
