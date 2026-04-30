@@ -6,10 +6,10 @@ Scope: practical next-step runbook for the remaining local proof gaps after the 
 ## Current State
 
 - `/explore` is separately settled by `../ui-ux-settle-explore-check/`.
-- Current remaining proof-pack gaps are:
-  - reports are settled in the main ledger as `/reports/d0000001-0000-4000-8000-000000000019` with desktop/mobile captures.
-  - `seed_backed_recapture_pending`: `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030` at desktop and mobile.
-  - `seed_backed_recapture_pending`: `/grants` at desktop and mobile.
+- Current proof-pack gaps are closed in the main ledger:
+  - reports are settled as `/reports/d0000001-0000-4000-8000-000000000019` with desktop/mobile captures.
+  - scenarios are settled as `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` with desktop/mobile captures.
+  - grants are settled as `/grants` with desktop/mobile captures.
 - Historical `blocked_or_denied` rows for project detail, county-run detail, RTP detail, and `/admin` were resolved by the supplemental detail/admin auth check; keep those rows only as regression context.
 - The capture harness now separates hard denial terms from workspace-prerequisite phrases and no longer treats ordinary compliance/readiness uses of `Required` as an authorization failure (`qa-harness/openplan-local-ui-ux-settle-capture.js`). Treat the historical blocked/detail rows as classifier false positives unless a fresh capture finds hard denial language or missing expected route text.
 
@@ -32,8 +32,8 @@ Scope: practical next-step runbook for the remaining local proof gaps after the 
 | Plans | `/plans`, `/plans/d0000001-0000-4000-8000-000000000015` | Authenticated local storage state for a workspace member; updated NCTC local seed run against local Supabase; no production Supabase. | Rerun the local NCTC seed, then run the capture harness for `plans-index` and `plan-detail`. If the plan ID is missing, record the local seed prerequisite instead of substituting an empty-state capture. | Registry shows `NCTC 2045 RTP local proof plan`; detail shows scope/context, the linked NCTC project, and inherited engagement context. Desktop/mobile rows become `captured`. |
 | Programs | `/programs`, `/programs/d0000001-0000-4000-8000-000000000016` | Resolved in the main ledger after the updated local NCTC seed and capture. | Keep the deterministic seed fixture (`NCTC 2045 RTP programming pipeline`) and linked funding opportunity (`Rural RTP implementation readiness call`) as regression coverage. | Registry/detail rows are captured on desktop and mobile. |
 | Reports | `/reports`, `/reports/d0000001-0000-4000-8000-000000000019` | Resolved in the main ledger after the updated local NCTC seed and capture. | Keep the deterministic RTP board-packet fixture, sections, and HTML artifact as regression coverage; do not generate reports during capture-only passes. | Registry/detail rows are captured on desktop and mobile. |
-| Scenarios | `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030` | Same local NCTC demo workspace; updated NCTC local seed run against local Supabase; no new model worker launch. | Rerun the local NCTC seed, then run the capture harness for `scenarios-index` and `scenario-detail`. The seed supplies two local `runs`, one baseline entry, one alternative entry, and one comparison snapshot. | Registry shows `NCTC 2045 RTP scenario comparison`; detail shows `SR-49 safety package` comparison readiness/snapshot state. Desktop/mobile rows become `captured`. |
-| Grants | `/grants` | Same local NCTC demo workspace; updated NCTC local seed run against local Supabase; no billing/email/external writes. | Rerun the local NCTC seed, then run the capture harness for `grants`. The seed supplies one open opportunity, one awarded opportunity, one funding profile anchor, one committed award, and one linked reimbursement invoice. | Grants page shows `Rural RTP implementation readiness call`, `NCTC RTP LPP construction award`, `NCTC SR-49 safety package construction award`, and `NCTC-LPP-2026-001`; desktop/mobile rows become `captured`. |
+| Scenarios | `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030` | Resolved in the main ledger after the updated local NCTC seed and capture. | Keep the deterministic seed fixture with two local `runs`, one baseline entry, one alternative entry, and one comparison snapshot as regression coverage. | Registry/detail rows are captured on desktop and mobile. |
+| Grants | `/grants` | Resolved in the main ledger after the updated local NCTC seed and capture. | Keep the deterministic grants fixture with one open opportunity, one awarded opportunity, one funding profile anchor, one committed award, and one linked reimbursement invoice as regression coverage. | Grants rows are captured on desktop and mobile. |
 | Detail/admin checks | Project detail, county-run detail, RTP detail, `/admin` | Existing local storage state; no auth-session edits; no RLS bypass; no service-role reads. | First confirm whether each blocked row is a real app denial or a capture-classifier false positive. Read-only checks: route should stay on its target URL, not `/sign-in`; expected object text should be present; detail APIs should return 200 under the same browser session where applicable. For `/admin`, do not escalate role before checking the harness pattern, because the page itself has no owner/admin gate. If a stable demo id no longer exists, update the manifest to the actual local id discovered from the captured index route. | Each row is either recaptured as populated content in both viewports or reclassified with an exact cause: missing local record id, expired storage state, wrong current workspace, owner/admin-only invoice prerequisite, or capture harness overmatch. |
 
 ## No-Go Checks
@@ -42,7 +42,7 @@ Scope: practical next-step runbook for the remaining local proof gaps after the 
 - Do not create users, alter auth sessions, paste tokens, print secrets, bypass RLS, or use service-role shortcuts to make rows visible.
 - Do not direct-insert fixture rows with ad hoc elevated credentials. Use the deterministic local NCTC seed for the grants fixture so route IDs and screenshot expectations stay stable.
 - Do not accept empty-state, sign-in, unauthorized, forbidden, not-found, loading-only, or marketing screenshots as settled proof.
-- Do not update route placeholders until the local fixture id exists and is visible through ordinary RLS-scoped app access. The scenario and grants placeholders are now resolved to NCTC seed IDs.
+- Do not update route placeholders until the local fixture id exists and is visible through ordinary RLS-scoped app access. The scenario and grants placeholders are resolved to NCTC seed IDs and captured in the main ledger.
 - Do not treat `/admin` as requiring owner/admin unless repo behavior changes; today it is auth-only through the app layout.
 
 ## Capture Acceptance Criteria

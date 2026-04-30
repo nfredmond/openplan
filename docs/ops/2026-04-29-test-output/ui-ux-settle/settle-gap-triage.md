@@ -3,21 +3,21 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Source: `local-ui-ux-settle-capture-ledger.md` generated 2026-04-30T10:45:27.260Z.
-Scope: docs-only next-action checklist for the local proof pack. No app/runtime, data, auth, billing, email, credential, or external-service mutation is authorized here.
+Source: `local-ui-ux-settle-capture-ledger.md` generated 2026-04-30T12:25:04.188Z.
+Scope: closure checklist for the local proof pack. No app/runtime, production data, billing, email, credential, or external-service mutation is authorized here.
 
 ## Priority Checklist
 
-### P0 - Seed-Backed Recapture
+### P0 - Seed-Backed Recapture — Closed
 
-Routes: `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030`, and `/grants` across desktop and mobile. Reports are now captured in the main ledger; scenarios and grants are seed-backed and recapture-pending.
+Routes: `/scenarios`, `/scenarios/d0000001-0000-4000-8000-000000000030`, and `/grants` across desktop and mobile. Reports, scenarios, and grants are now captured in the main ledger.
 
 Plans update:
 - `/plans` and `/plans/d0000001-0000-4000-8000-000000000015` now have a deterministic NCTC local seed fixture and harness target.
 - `/programs` and `/programs/d0000001-0000-4000-8000-000000000016` now have a deterministic NCTC local seed fixture, funding opportunity lane, and captured desktop/mobile proof.
 - `/reports` and `/reports/d0000001-0000-4000-8000-000000000019` now have a deterministic NCTC local seed fixture with a generated board-packet artifact and captured desktop/mobile proof.
-- `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` now have deterministic NCTC local seed fixtures with baseline/alternative entries, attached local runs, and a saved comparison snapshot. The historical ledger rows remain fixture-required until the next local recapture changes them to captured.
-- `/grants` now has a deterministic NCTC local seed fixture with one open opportunity, one awarded opportunity, one committed award, a funding profile anchor, and one linked reimbursement invoice. The historical ledger rows remain fixture-required until the next local recapture changes them to captured.
+- `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` have deterministic NCTC local seed fixtures with baseline/alternative entries, attached local runs, and a saved comparison snapshot; the 2026-04-30 local recapture changed the desktop/mobile rows to captured.
+- `/grants` has a deterministic NCTC local seed fixture with one open opportunity, one awarded opportunity, one committed award, a funding profile anchor, and one linked reimbursement invoice; the 2026-04-30 local recapture changed the desktop/mobile rows to captured.
 
 Safe prerequisites:
 - Use only a local authenticated Playwright storage state for a non-production workspace.
@@ -36,11 +36,11 @@ Acceptance criteria:
 - Ledger status changes from `fixture_required` to `captured`.
 - Screenshot filenames and route rows identify the stable local fixture state used.
 
-### P0 - Scenario Recapture
+### P0 - Scenario Recapture — Closed
 
 Routes: `/scenarios` and `/scenarios/d0000001-0000-4000-8000-000000000030` across desktop and mobile.
 
-Status: seed-backed / recapture-pending. The local NCTC seed now owns the scenario fixture; the current proof ledger still reflects the pre-fixture run.
+Status: captured. The local NCTC seed owns the scenario fixture, and the current proof ledger includes populated desktop/mobile screenshots.
 
 Safe prerequisites:
 - Run only against local Supabase and local Next.js.
@@ -52,11 +52,11 @@ Acceptance criteria:
 - `/scenarios/d0000001-0000-4000-8000-000000000030` renders the scenario detail with `SR-49 safety package` comparison state.
 - Desktop and mobile rows move from historical `fixture_required` to `captured`.
 
-### P0 - Grants Recapture
+### P0 - Grants Recapture — Closed
 
 Routes: `/grants` across desktop and mobile.
 
-Status: seed-backed / recapture-pending. The local NCTC seed now owns the grants fixture; the current proof ledger still reflects the pre-fixture run.
+Status: captured. The local NCTC seed owns the grants fixture, and the current proof ledger includes populated desktop/mobile screenshots.
 
 Safe prerequisites:
 - Run only against local Supabase and local Next.js.
@@ -64,12 +64,12 @@ Safe prerequisites:
 - Capture with the updated harness target and the existing authenticated local storage state.
 
 Acceptance criteria:
-- `/grants` renders `Rural RTP implementation readiness call`, `NCTC RTP LPP construction award`, `NCTC SR-49 safety package construction award`, and `NCTC-LPP-2026-001`.
+- `/grants` renders `Rural RTP implementation readiness call`, `NCTC RTP LPP construction award`, `NCTC SR-49 SAFETY PACKAGE CONSTRUCTION AWARD`, and `NCTC-LPP-2026-001`.
 - Desktop and mobile rows move from historical `fixture_required` to `captured`.
 
 ### P1 - Historical Detail and Admin Authorization States
 
-Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; the active remaining gaps are scenario and grants recapture above.
+Status: resolved by the supplemental `../ui-ux-settle-detail-admin-check/` proof pack. Keep this section as regression context only; scenario and grants recapture are also closed above.
 
 Routes: `/projects/d0000001-0000-4000-8000-000000000003`, `/county-runs/d0000001-0000-4000-8000-000000000005`, `/rtp/d0000001-0000-4000-8000-000000000004`, `/admin` across desktop and mobile.
 

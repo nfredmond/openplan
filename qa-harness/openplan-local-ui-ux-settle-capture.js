@@ -203,7 +203,7 @@ const ROUTES = [
     expectedTextAll: [
       'Rural RTP implementation readiness call',
       'NCTC RTP LPP construction award',
-      'NCTC SR-49 safety package construction award',
+      'NCTC SR-49 SAFETY PACKAGE CONSTRUCTION AWARD',
       'NCTC-LPP-2026-001',
     ],
     missingDependency: 'Updated local NCTC grants fixture missing; rerun the local NCTC seed before capture.',

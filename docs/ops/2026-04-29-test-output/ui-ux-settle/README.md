@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger now includes 38 populated screenshots plus 2 watch captures, including plans, programs, reports, project detail, county-run detail, RTP detail, `/explore`, and admin routes in the primary ledger. The capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks. Scenario and grants routes are now seed-backed and recapture-pending.
+Status: P0 local-only capture evidence complete. The main read-only capture ledger now includes 44 populated screenshots plus 2 watch captures, including plans, programs, reports, scenarios, grants, project detail, county-run detail, RTP detail, `/explore`, and admin routes in the primary ledger. The capture harness classifier has been narrowed so ordinary `Required` copy no longer causes false authorization blocks.
 
 ## Scope
 
@@ -20,9 +20,9 @@ The work here is local proof-pack preparation:
 
 - `capture-manifest.md` - route, viewport, state, and artifact manifest for the priority routes.
 - `local-capture-prerequisites.md` - exact local prerequisites plus existing scripts and tests inspected for capture support.
-- `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only authenticated local capture ledger with populated route evidence plus historical fixture-required rows from the pre-scenario-fixture run.
-- `settle-gap-triage.md` - prioritized next-action checklist for the remaining proof gaps.
-- `fixture-auth-continuation.md` - practical local-only runbook for closing the remaining scenario/grants recaptures and blocked/detail/admin authorization-check gaps.
+- `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only authenticated local capture ledger with populated route evidence for all priority operating surfaces.
+- `settle-gap-triage.md` - closure checklist for the proof gaps settled by the local-only capture pass.
+- `fixture-auth-continuation.md` - practical local-only runbook retained as regression context now that scenario/grants recaptures and blocked/detail/admin authorization-check gaps are closed.
 - `../ui-ux-settle-explore-check/` - supplemental read-only `/explore` Mapbox proof pack.
 - `../ui-ux-settle-detail-admin-check/` - supplemental read-only project/county-run/RTP detail and `/admin` proof pack; confirms the earlier blocked rows were `required`-word classifier false positives rather than auth failures.
 - `../../../../qa-harness/openplan-local-ui-ux-settle-capture.js` - local-only read-only Playwright capture harness for this manifest.
@@ -37,9 +37,9 @@ The work here is local proof-pack preparation:
 
 - Plans: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000015`; desktop/mobile index and detail captures complete.
 - Reports: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000019`; desktop/mobile index and detail captures complete.
-- Scenarios: seed-backed by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000030`; desktop/mobile index and detail recapture pending.
-- Grants: seed-backed by `openplan/scripts/seed-nctc-demo.ts` with opportunity `d0000001-0000-4000-8000-000000000018`, awarded opportunity `d0000001-0000-4000-8000-000000000041`, award `d0000001-0000-4000-8000-000000000042`, and invoice `d0000001-0000-4000-8000-000000000043`; desktop/mobile recapture pending.
+- Scenarios: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000030`; desktop/mobile index and detail captures complete.
+- Grants: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` with opportunity `d0000001-0000-4000-8000-000000000018`, awarded opportunity `d0000001-0000-4000-8000-000000000041`, award `d0000001-0000-4000-8000-000000000042`, and invoice `d0000001-0000-4000-8000-000000000043`; desktop/mobile captures complete.
 
 ## Proof Pack Rule
 
-Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are scenario and grants recapture.
+Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. The priority desktop/mobile operating-surface rows are now settled in the local ledger.
