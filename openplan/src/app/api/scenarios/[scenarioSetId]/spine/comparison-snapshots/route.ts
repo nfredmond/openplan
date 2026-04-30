@@ -15,7 +15,7 @@ import {
 } from "@/lib/billing/subscription";
 import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
-  touchScenarioLinkedReportPackets,
+  markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -404,18 +404,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       comparisonIndicatorDeltas = (insertedDeltas ?? []) as Array<Record<string, unknown>>;
     }
 
-    const packetWriteback = await touchScenarioLinkedReportPackets({
+    const staleWriteback = await markScenarioLinkedReportsBasisStale({
       supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: access.scenarioSet.id,
       workspaceId: access.scenarioSet.workspace_id,
+      runId: null,
+      reason: `Scenario comparison snapshot ${comparisonSnapshot.label} changed the linked RTP packet basis.`,
     });
 
-    if (packetWriteback.error) {
-      audit.warn("comparison_snapshot_report_packet_writeback_failed", {
+    if (staleWriteback.error) {
+      audit.warn("comparison_snapshot_report_basis_stale_failed", {
         scenarioSetId: access.scenarioSet.id,
         comparisonSnapshotId: comparisonSnapshot.id,
-        message: packetWriteback.error.message,
-        code: packetWriteback.error.code ?? null,
+        message: staleWriteback.error.message,
+        code: staleWriteback.error.code ?? null,
       });
     }
 
@@ -424,7 +426,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenarioSetId: access.scenarioSet.id,
       comparisonSnapshotId: comparisonSnapshot.id,
       indicatorDeltaCount: comparisonIndicatorDeltas.length,
-      packetWritebackReportCount: packetWriteback.touchedReportIds.length,
+      staleReportCount: staleWriteback.staleReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

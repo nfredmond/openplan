@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
-  touchScenarioLinkedReportPackets,
+  markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
@@ -171,18 +171,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update scenario entry" }, { status: 500 });
     }
 
-    const packetWriteback = await touchScenarioLinkedReportPackets({
+    const staleWriteback = await markScenarioLinkedReportsBasisStale({
       supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
       scenarioSetId: access.scenarioSet.id,
       workspaceId: access.scenarioSet.workspace_id,
+      runId: null,
+      reason: `Scenario entry ${String(parsed.data.label ?? existingEntry.label)} changed the linked RTP packet basis.`,
     });
 
-    if (packetWriteback.error) {
-      audit.warn("scenario_entry_report_packet_writeback_failed", {
+    if (staleWriteback.error) {
+      audit.warn("scenario_entry_report_basis_stale_failed", {
         scenarioSetId: access.scenarioSet.id,
         entryId: existingEntry.id,
-        message: packetWriteback.error.message,
-        code: packetWriteback.error.code ?? null,
+        message: staleWriteback.error.message,
+        code: staleWriteback.error.code ?? null,
       });
     }
 
@@ -190,7 +192,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       userId: user.id,
       scenarioSetId: access.scenarioSet.id,
       entryId: existingEntry.id,
-      packetWritebackReportCount: packetWriteback.touchedReportIds.length,
+      staleReportCount: staleWriteback.staleReportIds.length,
       durationMs: Date.now() - startedAt,
     });
 

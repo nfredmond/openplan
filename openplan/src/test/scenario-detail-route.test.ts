@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
-const touchScenarioLinkedReportPacketsMock = vi.fn();
+const markScenarioLinkedReportsBasisStaleMock = vi.fn();
 
 const scenarioSetMaybeSingleMock = vi.fn();
 const scenarioSetEqMock = vi.fn(() => ({ maybeSingle: scenarioSetMaybeSingleMock }));
@@ -118,7 +118,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 vi.mock("@/lib/reports/scenario-writeback", () => ({
-  touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
+  markScenarioLinkedReportsBasisStale: (...args: unknown[]) => markScenarioLinkedReportsBasisStaleMock(...args),
 }));
 
 import { GET as getScenarioDetail, PATCH as patchScenarioDetail } from "@/app/api/scenarios/[scenarioSetId]/route";
@@ -225,8 +225,8 @@ describe("/api/scenarios/[scenarioSetId]", () => {
       },
       error: null,
     });
-    touchScenarioLinkedReportPacketsMock.mockResolvedValue({
-      touchedReportIds: ["99999999-9999-4999-8999-999999999999"],
+    markScenarioLinkedReportsBasisStaleMock.mockResolvedValue({
+      staleReportIds: ["99999999-9999-4999-8999-999999999999"],
       error: null,
     });
 
@@ -303,7 +303,7 @@ describe("/api/scenarios/[scenarioSetId]", () => {
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
-  it("PATCH updates metadata and baseline pointer", async () => {
+  it("PATCH updates metadata and marks linked RTP packet basis stale", async () => {
     const response = await patchScenarioDetail(
       new NextRequest("http://localhost/api/scenarios/1", {
         method: "PATCH",
@@ -327,11 +327,17 @@ describe("/api/scenarios/[scenarioSetId]", () => {
         baseline_entry_id: "55555555-5555-4555-8555-555555555555",
       })
     );
-    expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+    expect(markScenarioLinkedReportsBasisStaleMock).toHaveBeenCalledWith(
       expect.objectContaining({
         scenarioSetId: "11111111-1111-4111-8111-111111111111",
         workspaceId: "33333333-3333-4333-8333-333333333333",
+        runId: null,
+        reason: "Scenario set Updated set changed the linked RTP packet basis.",
       })
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "scenario_set_updated",
+      expect.objectContaining({ staleReportCount: 1 })
     );
   });
 });

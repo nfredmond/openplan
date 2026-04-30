@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
-const touchScenarioLinkedReportPacketsMock = vi.fn();
+const markScenarioLinkedReportsBasisStaleMock = vi.fn();
 
 const scenarioSetMaybeSingleMock = vi.fn();
 const scenarioSetEqMock = vi.fn(() => ({ maybeSingle: scenarioSetMaybeSingleMock }));
@@ -90,7 +90,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 vi.mock("@/lib/reports/scenario-writeback", () => ({
-  touchScenarioLinkedReportPackets: (...args: unknown[]) => touchScenarioLinkedReportPacketsMock(...args),
+  markScenarioLinkedReportsBasisStale: (...args: unknown[]) => markScenarioLinkedReportsBasisStaleMock(...args),
 }));
 
 import { POST as postComparisonSnapshot } from "@/app/api/scenarios/[scenarioSetId]/spine/comparison-snapshots/route";
@@ -189,8 +189,8 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       error: null,
     });
 
-    touchScenarioLinkedReportPacketsMock.mockResolvedValue({
-      touchedReportIds: ["cccccccc-cccc-4ccc-8ccc-cccccccccccc"],
+    markScenarioLinkedReportsBasisStaleMock.mockResolvedValue({
+      staleReportIds: ["cccccccc-cccc-4ccc-8ccc-cccccccccccc"],
       error: null,
     });
 
@@ -200,7 +200,7 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     });
   });
 
-  it("touches linked report packets after creating saved comparison evidence", async () => {
+  it("marks linked RTP packet basis stale after creating saved comparison evidence", async () => {
     const response = await postComparisonSnapshot(
       new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
         method: "POST",
@@ -242,17 +242,19 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         indicator_key: "vmt",
       }),
     ]);
-    expect(touchScenarioLinkedReportPacketsMock).toHaveBeenCalledWith(
+    expect(markScenarioLinkedReportsBasisStaleMock).toHaveBeenCalledWith(
       expect.objectContaining({
         scenarioSetId: "11111111-1111-4111-8111-111111111111",
         workspaceId: "33333333-3333-4333-8333-333333333333",
+        runId: null,
+        reason: "Scenario comparison snapshot Protected bike package comparison changed the linked RTP packet basis.",
       })
     );
     expect(mockAudit.info).toHaveBeenCalledWith(
       "comparison_snapshot_created",
       expect.objectContaining({
         comparisonSnapshotId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        packetWritebackReportCount: 1,
+        staleReportCount: 1,
       })
     );
   });
