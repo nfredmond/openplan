@@ -3,7 +3,7 @@
 Date: 2026-04-29
 Owner: Bartholomew Hale
 Sponsor: Nathaniel Ford Redmond
-Status: P0 preparation plus local-only capture tooling. A read-only prerequisite report was generated; no screenshots were captured because no local authenticated Playwright storage state was supplied.
+Status: P0 preparation plus local-only capture evidence. The main read-only capture ledger includes 16 populated screenshots plus 2 watch captures, `/explore` has a supplemental 2-screenshot proof pack, and blocked detail/admin rows now have a supplemental 8-screenshot auth check.
 
 ## Scope
 
@@ -20,9 +20,11 @@ The work here is local proof-pack preparation:
 
 - `capture-manifest.md` - route, viewport, state, and artifact manifest for the priority routes.
 - `local-capture-prerequisites.md` - exact local prerequisites plus existing scripts and tests inspected for capture support.
-- `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only prerequisite ledger from a desktop capture attempt against localhost; it records missing local auth storage state before browser launch and does not include screenshots.
+- `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only authenticated local capture ledger with populated route evidence plus remaining fixture-required rows.
 - `settle-gap-triage.md` - prioritized next-action checklist for the remaining proof gaps.
 - `fixture-auth-continuation.md` - practical local-only runbook for closing the remaining fixture-required and blocked/detail/admin authorization-check gaps.
+- `../ui-ux-settle-explore-check/` - supplemental read-only `/explore` Mapbox proof pack.
+- `../ui-ux-settle-detail-admin-check/` - supplemental read-only project/county-run/RTP detail and `/admin` proof pack; confirms the earlier blocked rows were `required`-word classifier false positives rather than auth failures.
 - `../../../../qa-harness/openplan-local-ui-ux-settle-capture.js` - local-only read-only Playwright capture harness for this manifest.
 
 ## Canonical Inputs
@@ -33,4 +35,4 @@ The work here is local proof-pack preparation:
 
 ## Proof Pack Rule
 
-Future screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero.
+Screenshots should show the actual usable worksurface in populated state. Do not accept captures that show only a loading shell, empty placeholder, marketing page, redirect screen, or cropped hero. Remaining unsettled rows are the fixture-required plan/program/report/scenario/grants operating surfaces.
