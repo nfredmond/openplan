@@ -39,7 +39,7 @@ Do not sell this release as:
 - [x] Keep public pricing/service lanes aligned to self-hosted core, managed hosting/support, and implementation/planning services.
 - [x] Carry the billing waiver honestly: no fresh same-cycle paid canary claimed.
 - [x] Draft buyer one-pager: `../sales/2026-05-01-openplan-buyer-one-pager.md`.
-- [ ] Convert the buyer one-pager into a designed external PDF when the visual package is ready.
+- [x] Convert the buyer one-pager into a designed external visual package: `../sales/2026-05-01-openplan-buyer-one-pager.html` and `../sales/2026-05-01-openplan-buyer-one-pager.pdf`.
 
 ### Pilot SOW
 
@@ -135,7 +135,7 @@ Pause external sales or pilot expansion if:
 
 ## Next Build Queue
 
-1. Convert buyer one-pager into external PDF/visual format.
+1. [x] Buyer one-pager external visual package created: `../sales/2026-05-01-openplan-buyer-one-pager.html` and `../sales/2026-05-01-openplan-buyer-one-pager.pdf`.
 2. Export a fresh Admin Pilot Readiness proof packet.
 3. Prepare first buyer-specific demo workspace and outreach package.
 

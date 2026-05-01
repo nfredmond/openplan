@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenPlan Buyer One-Pager</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17231f;
+        --muted: #5a6760;
+        --line: #cfd9d2;
+        --panel: #f6f8f5;
+        --panel-strong: #e8f0e8;
+        --field: #fbfcfa;
+        --green: #285f4b;
+        --blue: #335d7d;
+        --gold: #8b6b2f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #eef2ee;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 12px;
+        line-height: 1.42;
+      }
+
+      .sheet {
+        width: 8.5in;
+        min-height: 11in;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid var(--line);
+        box-shadow: 0 18px 50px rgba(28, 40, 34, 0.18);
+        padding: 0.42in 0.46in;
+      }
+
+      .masthead {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.28in;
+        align-items: start;
+        padding-bottom: 0.2in;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 5.75in;
+        margin-top: 0.08in;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .date-block {
+        min-width: 1.45in;
+        padding-left: 0.18in;
+        border-left: 1px solid var(--line);
+        text-align: right;
+        color: var(--muted);
+        font-size: 10.5px;
+      }
+
+      .date-block strong {
+        display: block;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .lead {
+        display: grid;
+        grid-template-columns: 1.03fr 0.97fr;
+        gap: 0.18in;
+        margin-top: 0.2in;
+      }
+
+      .lead-copy {
+        padding: 0.16in 0.18in;
+        background: var(--panel);
+        border-left: 4px solid var(--green);
+      }
+
+      .lead-copy h2 {
+        color: var(--green);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .lead-copy p {
+        margin-top: 0.06in;
+        font-size: 13px;
+      }
+
+      .boundary {
+        padding: 0.16in 0.18in;
+        background: #fff;
+        border: 1px solid var(--line);
+      }
+
+      .boundary h2 {
+        color: var(--blue);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .boundary p {
+        margin-top: 0.06in;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .spine {
+        margin: 0.2in 0 0.17in;
+        padding: 0.14in 0.16in 0.15in;
+        background: var(--field);
+        border: 1px solid var(--line);
+      }
+
+      .spine-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.2in;
+        color: var(--muted);
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .spine-track {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.1in;
+        margin-top: 0.12in;
+        position: relative;
+      }
+
+      .spine-track::before {
+        content: "";
+        position: absolute;
+        left: 0.2in;
+        right: 0.2in;
+        top: 0.19in;
+        height: 2px;
+        background: var(--line);
+      }
+
+      .node {
+        position: relative;
+        min-height: 0.64in;
+        padding-top: 0.37in;
+        text-align: center;
+      }
+
+      .node::before {
+        content: "";
+        position: absolute;
+        top: 0.08in;
+        left: 50%;
+        width: 0.22in;
+        height: 0.22in;
+        transform: translateX(-50%);
+        border: 3px solid #fff;
+        border-radius: 999px;
+        background: var(--green);
+        box-shadow: 0 0 0 1px var(--green);
+        z-index: 1;
+      }
+
+      .node:nth-child(2)::before {
+        background: var(--blue);
+        box-shadow: 0 0 0 1px var(--blue);
+      }
+
+      .node:nth-child(3)::before {
+        background: var(--gold);
+        box-shadow: 0 0 0 1px var(--gold);
+      }
+
+      .node:nth-child(4)::before {
+        background: #38413c;
+        box-shadow: 0 0 0 1px #38413c;
+      }
+
+      .node strong {
+        display: block;
+        font-size: 11px;
+      }
+
+      .node span {
+        display: block;
+        margin-top: 0.02in;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.18in;
+      }
+
+      .block {
+        border-top: 1px solid var(--line);
+        padding-top: 0.12in;
+      }
+
+      .block h2 {
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.15;
+      }
+
+      ul,
+      ol {
+        margin: 0.08in 0 0;
+        padding-left: 0.18in;
+      }
+
+      li {
+        margin: 0.035in 0;
+      }
+
+      .numbered {
+        counter-reset: reason;
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .numbered li {
+        counter-increment: reason;
+        display: grid;
+        grid-template-columns: 0.24in 1fr;
+        gap: 0.07in;
+      }
+
+      .numbered li::before {
+        content: counter(reason);
+        width: 0.2in;
+        height: 0.2in;
+        border: 1px solid var(--line);
+        color: var(--green);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 0.18in;
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 0.08in;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      th,
+      td {
+        padding: 0.07in 0.08in;
+        border: 1px solid var(--line);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        width: 32%;
+        background: var(--panel-strong);
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .first-call {
+        margin-top: 0.17in;
+        padding: 0.13in 0.16in;
+        background: #fff9ed;
+        border: 1px solid #dccb9b;
+      }
+
+      .first-call h2 {
+        color: var(--gold);
+        font-size: 13px;
+      }
+
+      .first-call p {
+        margin-top: 0.06in;
+      }
+
+      .workflow-list {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.08in;
+        margin-top: 0.1in;
+      }
+
+      .workflow {
+        padding-top: 0.07in;
+        border-top: 2px solid var(--gold);
+        font-size: 10.5px;
+      }
+
+      .foot {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.2in;
+        margin-top: 0.18in;
+        padding-top: 0.11in;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .foot a {
+        color: var(--green);
+        text-decoration: none;
+      }
+
+      @media print {
+        @page {
+          size: Letter;
+          margin: 0.36in;
+        }
+
+        body {
+          background: #fff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .sheet {
+          width: auto;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sheet" aria-label="OpenPlan buyer one-pager">
+      <div class="masthead">
+        <div>
+          <h1>OpenPlan</h1>
+          <p class="subtitle">
+            Apache-2.0 planning software plus Nat Ford managed hosting,
+            onboarding, support, customization, and planning services.
+          </p>
+        </div>
+        <div class="date-block">
+          <strong>Buyer One-Pager</strong>
+          May 1, 2026<br />
+          External briefing
+        </div>
+      </div>
+
+      <div class="lead">
+        <div class="lead-copy" aria-labelledby="offer-heading">
+          <h2 id="offer-heading">The offer</h2>
+          <p>
+            OpenPlan is a supervised planning workbench where projects, plans,
+            funding, maps, model runs, public comments, reports, and evidence
+            stay connected. The near-term sale is implementation and managed
+            service support around scoped planning workflows.
+          </p>
+        </div>
+        <div class="boundary" aria-labelledby="boundary-heading">
+          <h2 id="boundary-heading">Proof boundary</h2>
+          <p>
+            OpenPlan is ready for supervised pilots and managed-service
+            engagements where the workflow is scoped, evidence-backed, and
+            human-reviewed.
+          </p>
+        </div>
+      </div>
+
+      <div class="spine" aria-labelledby="spine-heading">
+        <div class="spine-title">
+          <span id="spine-heading">Connected planning spine</span>
+          <span>Records to evidence to deliverables</span>
+        </div>
+        <div class="spine-track" aria-hidden="true">
+          <div class="node">
+            <strong>Workspace records</strong>
+            <span>projects, plans, programs</span>
+          </div>
+          <div class="node">
+            <strong>Evidence</strong>
+            <span>maps, data, comments, runs</span>
+          </div>
+          <div class="node">
+            <strong>Workflows</strong>
+            <span>RTP, grants, reports</span>
+          </div>
+          <div class="node">
+            <strong>Services</strong>
+            <span>hosting, onboarding, support</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="block" aria-labelledby="who-heading">
+          <h2 id="who-heading">Who it is for</h2>
+          <ul>
+            <li>Rural RTPAs, counties, and small transportation commissions.</li>
+            <li>Cities and towns managing plans, grants, project lists, and maps.</li>
+            <li>Tribes needing LRTP, TTIP/TIP, safety, grant, and infrastructure evidence support.</li>
+            <li>Consultants managing multiple planning clients and defensible deliverables.</li>
+            <li>MPOs or state/regional agencies coordinating programs and reporting.</li>
+          </ul>
+        </div>
+
+        <div class="block" aria-labelledby="today-heading">
+          <h2 id="today-heading">What OpenPlan helps with today</h2>
+          <ul>
+            <li>Project and workspace records.</li>
+            <li>RTP and report packet workflow proof.</li>
+            <li>Grants, funding, reimbursement, and closeout posture.</li>
+            <li>Engagement intake, moderation, and report handoff.</li>
+            <li>Analysis and model-run output linked into reports.</li>
+            <li>Admin/support intake, reviewer triage, provisioning, and owner invitations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 0.17in">
+        <div class="block" aria-labelledby="different-heading">
+          <h2 id="different-heading">Why it is different</h2>
+          <ol class="numbered">
+            <li>Planning concepts are native: RTPs, grants, comments, project lists, funding cycles, model runs, and board packets.</li>
+            <li>Evidence is connected across records, maps, datasets, comments, scenarios, reports, and exports.</li>
+            <li>The core is open source, so agencies can inspect the code and avoid closed vendor dependency.</li>
+            <li>The posture is rural, tribal, and small-agency friendly; it does not assume a large internal GIS or modeling shop.</li>
+            <li>AI is supervised assistance. Human review and evidence remain central.</li>
+            <li>The goal is deliverables, not only dashboard views.</li>
+          </ol>
+        </div>
+
+        <div class="block" aria-labelledby="lanes-heading">
+          <h2 id="lanes-heading">Commercial lanes</h2>
+          <table>
+            <tbody>
+              <tr>
+                <th scope="row">Self-hosted core</th>
+                <td>Apache-2.0 software with no OpenPlan license fee.</td>
+              </tr>
+              <tr>
+                <th scope="row">Managed hosting + support</th>
+                <td>Nat Ford operates the hosted workspace and support path, starting from the public service baseline.</td>
+              </tr>
+              <tr>
+                <th scope="row">Implementation + planning services</th>
+                <td>Onboarding, data setup, workflow configuration, reports, integrations, training, and planning support scoped by engagement.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="first-call" aria-labelledby="call-heading">
+        <h2 id="call-heading">First call goal</h2>
+        <p>
+          Do not sell every future module. Pick one workflow to prove first.
+        </p>
+        <div class="workflow-list">
+          <div class="workflow">RTP/report packet</div>
+          <div class="workflow">Grants and reimbursement</div>
+          <div class="workflow">Engagement-to-report handoff</div>
+          <div class="workflow">Analysis/report linkage</div>
+          <div class="workflow">Managed-hosting setup</div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>
+          Buyer-safe boundary: not broad self-serve SaaS, autonomous planning,
+          validated travel demand forecasting, or complete LAPM/legal compliance
+          automation.
+        </span>
+        <span><a href="https://www.natfordplanning.com/">natfordplanning.com</a></span>
+      </div>
+    </div>
+  </body>
+</html>
