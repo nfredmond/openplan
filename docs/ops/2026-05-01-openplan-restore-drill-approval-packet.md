@@ -1,7 +1,7 @@
 # OpenPlan Restore Drill Approval Packet
 
 **Date:** 2026-05-01
-**Status:** Approval packet only; staging restore drill not yet run
+**Status:** Superseded by completed staging drill log `2026-05-01-openplan-restore-drill-staging-supabase.md`
 **Approver:** Nathaniel Ford Redmond
 **Operator:** Bartholomew Hale or a named trusted OpenPlan operator
 **Related preflight:** `2026-05-01-openplan-restore-drill-preflight-plan.md`
@@ -9,9 +9,9 @@
 
 ## Decision Needed
 
-Nathaniel approval is needed before the first quarterly restore drill may mutate any Supabase resource.
+Nathaniel approval was needed before the first quarterly restore drill could mutate any Supabase resource. The later completed drill is recorded in `2026-05-01-openplan-restore-drill-staging-supabase.md`.
 
-Approve one named staging Supabase target, one source restore point, one operator, one mutation window, and one cleanup expectation. Without that written approval, the release-to-sale restore-drill gate stays open and no cloud/data operation should be run.
+This packet defines the required approval shape: one named staging Supabase target, one source restore point, one operator, one mutation window, and one cleanup expectation. Without that written approval, no future restore-drill cloud/data operation should be run.
 
 ## Recommended Staging Target Posture
 
@@ -114,4 +114,4 @@ Nathaniel can approve by sending:
 
 > I approve the first OpenPlan staging restore drill for staging target `<project name or private alias>`, source restore point `<backup id or timestamp>`, operator `<name>`, mutation window `<date/time/timezone>`, cleanup posture `<wipe | restore baseline | retire project | retain until date>`, and evidence log `docs/ops/YYYY-MM-DD-openplan-restore-drill-<slug>.md`. Production Supabase, Vercel production, billing, email, customer, auth-session, and secret operations remain out of scope.
 
-This packet does not complete the release-to-sale restore-drill gate. The gate can close only after the approved staging drill runs, validation is logged, cleanup is recorded, and the separate drill log is reviewed.
+This packet did not itself complete the release-to-sale restore-drill gate. The gate was later closed by the completed staging drill log after validation and cleanup were recorded.

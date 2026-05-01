@@ -1,11 +1,11 @@
 # OpenPlan Restore Drill Preflight Plan
 
 **Date:** 2026-05-01
-**Status:** Preflight only; actual staging restore drill not yet run
+**Status:** Superseded by completed staging drill log `2026-05-01-openplan-restore-drill-staging-supabase.md`
 **Audience:** Nathaniel Ford Redmond, Bartholomew Hale, and trusted OpenPlan operators
 **Scope:** Buyer/internal-safe preparation for the first quarterly Supabase restore drill
 
-This document is intentionally bounded. It prepares the release-to-sale restore-drill gate without creating, linking, restoring, or mutating any Supabase project. The actual drill remains open until a named staging Supabase target is approved in writing and a separate dated drill log is created under `docs/ops/YYYY-MM-DD-openplan-restore-drill-<slug>.md`.
+This document is intentionally bounded. It prepared the release-to-sale restore-drill gate without creating, linking, restoring, or mutating any Supabase project. The later completed drill is recorded in `2026-05-01-openplan-restore-drill-staging-supabase.md`.
 
 Related operator procedure: `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`.
 
@@ -153,4 +153,4 @@ Stop immediately if any condition is true:
 
 ## Release-To-Sale Status
 
-This preflight reduces operator ambiguity but does not complete the release-to-sale restore-drill gate. The gate can be closed only after the approved staging restore drill runs, validation passes or is explicitly adjudicated, cleanup is recorded, and the separate drill log is committed.
+This preflight reduced operator ambiguity but did not itself complete the release-to-sale restore-drill gate. The gate was later closed by `2026-05-01-openplan-restore-drill-staging-supabase.md`.

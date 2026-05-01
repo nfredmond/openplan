@@ -65,7 +65,7 @@
 ### Governance & Decisions
 - [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
 - [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) — active release-to-sale operating checklist with gates, owners, exact proof links, sales-package tasks, commands, and stop conditions
-- [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; actual restore remains approval-gated and open
+- [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; superseded by the completed staging drill log
 - [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) — Nathaniel approval packet for the first staging restore drill, including safeguards, mutation boundary, cleanup expectation, evidence requirements, and approval phrase
 - [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) — records approval intent and missing required fields; no Supabase cloud mutation has run
 - [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — completed staging restore drill with migration/data replay, RLS/count/storage validation, and dedicated project cleanup
