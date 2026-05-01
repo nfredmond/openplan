@@ -73,7 +73,7 @@ Do not sell this release as:
 ### Proof Packet Export
 
 - [x] Admin Pilot Readiness now parses line-item PASS evidence.
-- [ ] Export a fresh Admin Pilot Readiness proof packet after this release-to-sale plan is merged.
+- [x] Export a fresh Admin Pilot Readiness proof packet: `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md`, `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html`, and `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf`.
 
 ### Operator Procedures
 
@@ -136,7 +136,7 @@ Pause external sales or pilot expansion if:
 ## Next Build Queue
 
 1. [x] Buyer one-pager external visual package created: `../sales/2026-05-01-openplan-buyer-one-pager.html` and `../sales/2026-05-01-openplan-buyer-one-pager.pdf`.
-2. Export a fresh Admin Pilot Readiness proof packet.
+2. [x] Admin Pilot Readiness proof packet exported: `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html` and `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf`.
 3. Prepare first buyer-specific demo workspace and outreach package.
 
 ## Verdict

@@ -1,0 +1,198 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Length 5559 >>
+stream
+BT /F1 19 Tf 1 0 0 1 54.00 738.00 Tm (OpenPlan Admin Pilot Readiness Proof Packet) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 707.00 Tm (Date: 2026-05-01) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 694.00 Tm (Status: Buyer-safe proof export for supervised pilot and managed-service review) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 681.00 Tm (Audience: rural RTPA, county, tribe, transportation commission, or consultant buyer diligence) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 658.00 Tm (Buyer-Safe Summary) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 635.00 Tm (OpenPlan is ready to discuss as a supervised planning workbench with an Apache-2.0 open-source) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 622.00 Tm (core and optional Nat Ford managed hosting, onboarding, implementation, support, and planning) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 609.00 Tm (services.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 593.00 Tm (This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 580.00 Tm (behavioral forecasting platform, a complete legal/compliance automation system, or an autonomous) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 567.00 Tm (AI planning product.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 551.00 Tm (What has been proven for this release-to-sale posture:) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 535.00 Tm (- release-candidate checks across tests, lint, build, production health, audit, and public) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 522.50 Tm (demo preflight;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 510.00 Tm (- authenticated workspace and cross-workspace isolation behavior in local synthetic smoke;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 497.50 Tm (- RTP/report packet creation, artifact generation, and release-review navigation;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 485.00 Tm (- grants, funding awards, reimbursement, closeout, and RTP posture write-back;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 472.50 Tm (- engagement public intake, moderation, public feedback publication, and report handoff;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 460.00 Tm (- analysis/model-run output linked into scenarios and generated report artifacts;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 447.50 Tm (- supervised request-access, reviewer triage, pilot workspace provisioning, owner) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 435.00 Tm (invitation, and invited-owner acceptance;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 422.50 Tm (- current billing posture with an explicit no-fresh-paid-canary waiver; and) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 410.00 Tm (- operator backup/restore procedure and managed-hosting service schedule language.) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 387.50 Tm (Proof Snapshot) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 364.50 Tm (Release candidate baseline - PASS: pnpm test, pnpm lint, pnpm build, production health,) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 352.30 Tm (production audit, and public demo preflight all passed for the May 1 RC gate.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 340.10 Tm (Source: docs/ops/2026-05-01-openplan-rc-proof-log.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 326.30 Tm (Public demo preflight - PASS: No-auth checks cover health, request-access page availability,) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 314.10 Tm (protected billing-readiness access, Mapbox/CSP posture, and no token printing.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 301.90 Tm (Source: openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md;) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 291.10 Tm (docs/ops/2026-05-01-openplan-phase0-proof-repair.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 277.30 Tm (Admin Pilot Readiness surface - PASS: The readiness parser now reads line-item PASS:) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 265.10 Tm (evidence, and /admin/pilot-readiness was recaptured on desktop and mobile with passing local) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 252.90 Tm (proof state.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 240.70 Tm (Source: docs/ops/2026-05-01-openplan-phase0-proof-repair.md;) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 229.90 Tm (docs/ops/2026-05-01-openplan-ui-ux-watch-recapture.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 216.10 Tm (Workspace isolation - PASS: Two synthetic users could access their own workspace project) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 203.90 Tm (URLs and were blocked from the other workspace, with session continuity after denial.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 191.70 Tm (Source: docs/ops/2026-05-01-openplan-local-workspace-url-isolation-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 177.90 Tm (RTP/report workflow - PASS: Local rendered smoke confirms RTP cycle creation, board-packet) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 165.70 Tm (creation, artifact generation, registry packet navigation, and release-review anchor) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 153.50 Tm (landing.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 141.30 Tm (Source: docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 127.50 Tm (Grants/funding workflow - PASS: Local rendered/API smoke confirms funding need, awarded) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 115.30 Tm (opportunity, committed award, project RTP posture write-back, obligation milestone, paid) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 103.10 Tm (reimbursement invoice, closeout, and funded/reimbursed posture.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 90.90 Tm (Source: docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 77.10 Tm (Engagement handoff - PASS: Local rendered/API smoke confirms public feedback intake, staff) Tj ET
+BT /F1 8 Tf 1 0 0 1 54.00 30.00 Tm (OpenPlan Admin Pilot Readiness Proof Packet - Page 1 of 3) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 6146 >>
+stream
+BT /F1 9.2 Tf 1 0 0 1 54.00 738.00 Tm (moderation, public publication, handoff report provenance, HTML artifact generation, and) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 725.80 Tm (source-context traceability.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 713.60 Tm (Source: docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 699.80 Tm (Analysis/report linkage - PASS: Local rendered/API smoke confirms corridor run-template) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 687.60 Tm (model, managed run launch, persisted source analysis output, scenario attachment, Analysis) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 675.40 Tm (Studio deep link, report linkage, HTML artifact, and source-context traceability.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 663.20 Tm (Source: docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 649.40 Tm (Admin/support onboarding flow - PASS: Local rendered/API smoke confirms public intake,) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 637.20 Tm (allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 625.00 Tm (creation, owner invitation, review-event audit trail, and invited-owner acceptance.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 612.80 Tm (Source: docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 599.00 Tm (Billing posture - PASS with explicit waiver: Billing is positioned as historical live) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 586.80 Tm (payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 574.60 Tm (canary is claimed.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 562.40 Tm (Source: docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 548.60 Tm (Managed hosting posture - Buyer-reviewable template: The service schedule defines scoped) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 536.40 Tm (managed-hosting responsibilities, support targets, backup/restore fields to fill, and) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 524.20 Tm (out-of-scope items before signature.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 512.00 Tm (Source: docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 498.20 Tm (Backup/restore posture - Operator procedure: The operator procedure names durable state,) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 486.00 Tm (backup cadence, restore decision gates, staging-first posture, validation, and customer) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 473.80 Tm (communication boundaries.) Tj ET
+BT /F1 8.2 Tf 1 0 0 1 66.00 461.60 Tm (Source: openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 437.80 Tm (What Nat Ford Should Validate During Buyer Onboarding) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 414.80 Tm (Before a rural RTPA/county buyer relies on the pilot workspace, Nat Ford should validate the) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 401.80 Tm (buyer-specific operating facts below.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 385.80 Tm (- Name one workspace owner and support contact\(s\).: Keeps access, triage, and issue escalation) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 373.60 Tm (accountable.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 361.40 Tm (- Select the first workflow: RTP/report, grants/funding, engagement handoff, analysis/report) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 349.20 Tm (linkage, or managed-hosting setup.: Prevents a buyer conversation from expanding into) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 337.00 Tm (unsupported full-suite claims.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 324.80 Tm (- Classify data sensitivity: public, internal, confidential, or mixed.: Determines what data) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 312.60 Tm (belongs in OpenPlan, what should remain outside, and whether enhanced terms are needed.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 300.40 Tm (- Confirm the managed-hosting service schedule fields.: Support targets, backup/restore) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 288.20 Tm (posture, billing posture, and any enhanced SLA terms must be filled before signature.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 276.00 Tm (- Re-run the relevant workspace-specific smoke after setup.: The May 1 proof is) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 263.80 Tm (platform/release evidence; each pilot still needs its own scoped acceptance check.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 251.60 Tm (- Confirm Mapbox, Supabase, Vercel, Stripe, and model-provider posture for the chosen) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 239.40 Tm (workflow.: Third-party dependencies are part of the hosted operating path and may affect) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 227.20 Tm (procurement or availability expectations.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 215.00 Tm (- Decide whether procurement needs a fresh paid checkout canary.: The May 1 packet explicitly) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 202.80 Tm (waived same-cycle money-moving proof.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 190.60 Tm (- Review AI/modeling output caveats before external reliance.: AI-assisted and modeling) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 178.40 Tm (outputs are planning-support materials, not autonomous or certified decisions.) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 166.20 Tm (- Confirm client official-record retention outside OpenPlan.: OpenPlan exports and records do) Tj ET
+BT /F1 9.2 Tf 1 0 0 1 54.00 154.00 Tm (not replace public-records, legal-hold, or official archive duties.) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 131.80 Tm (Implementation-Specific Items Still To Scope) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 108.80 Tm (These items remain real work or engagement-specific decisions, not release-wide guarantees:) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 92.80 Tm (- buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 80.30 Tm (review;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 67.80 Tm (- SSO, private cloud, agency-cloud deployment, custom security review, or enhanced) Tj ET
+BT /F1 8 Tf 1 0 0 1 54.00 30.00 Tm (OpenPlan Admin Pilot Readiness Proof Packet - Page 2 of 3) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 4583 >>
+stream
+BT /F1 9.5 Tf 1 0 0 1 66.00 738.00 Tm (support/SLA terms;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 725.50 Tm (- formal RPO/RTO commitments beyond the signed managed-hosting schedule;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 713.00 Tm (- a first quarterly restore drill into staging before the next external paid milestone;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 700.50 Tm (- fresh same-cycle paid checkout proof if the buyer or procurement reviewer requires it;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 688.00 Tm (- calibrated or certified behavioral-demand modeling and broader ActivitySim/MATSim) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 675.50 Tm (readiness;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 663.00 Tm (- complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 650.50 Tm (- custom reports, integrations, migrations, or planning services beyond the scoped SOW;) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 638.00 Tm (and) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 625.50 Tm (- aerial/field evidence workflows beyond the selected implementation scope.) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 603.00 Tm (Buyer-Safe Language) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 580.00 Tm (Use:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 564.00 Tm (Quote: OpenPlan supports supervised planning workflows with evidence traceability and human) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 551.00 Tm (review.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 535.00 Tm (Use:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 519.00 Tm (Quote: OpenPlan is ready for scoped pilots and managed-service engagements where the first) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 506.00 Tm (workflow, data posture, support path, and proof boundary are agreed up front.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 490.00 Tm (Use:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 474.00 Tm (Quote: Managed hosting and implementation are service wrappers around the Apache-2.0) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 461.00 Tm (open-source core.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 445.00 Tm (Avoid:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 429.00 Tm (Quote: OpenPlan is fully self-serve municipal SaaS.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 413.00 Tm (Avoid:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 397.00 Tm (Quote: OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 381.00 Tm (Avoid:) Tj ET
+BT /F1 10 Tf 1 0 0 1 66.00 365.00 Tm (Quote: Billing was freshly re-proven with a paid checkout in this release cycle.) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 342.00 Tm (Source Packet Links) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 319.00 Tm (- Release-to-sale plan: docs/ops/2026-05-01-openplan-release-to-sale-plan.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 306.50 Tm (- Buyer one-pager: docs/sales/2026-05-01-openplan-buyer-one-pager.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 294.00 Tm (- Buyer caveat sheet: docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 281.50 Tm (- Managed-hosting service description:) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 269.00 Tm (docs/sales/2026-05-01-openplan-managed-hosting-service-description.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 256.50 Tm (- Managed-hosting service schedule:) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 244.00 Tm (docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 231.50 Tm (- Pilot SOW template: docs/sales/2026-05-01-openplan-pilot-sow-template.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 219.00 Tm (- Backup/restore procedure:) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 206.50 Tm (openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 194.00 Tm (- RC proof log: docs/ops/2026-05-01-openplan-rc-proof-log.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 181.50 Tm (- Admin/support smoke: docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md) Tj ET
+BT /F1 9.5 Tf 1 0 0 1 66.00 169.00 Tm (- Billing waiver proof: docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md) Tj ET
+BT /F1 14 Tf 1 0 0 1 54.00 146.50 Tm (Packet Verdict) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 123.50 Tm (PASS for buyer-safe packaging: this packet makes the current proof posture readable for a) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 110.50 Tm (supervised pilot or managed-service sale while preserving the explicit limits around production) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 97.50 Tm (guarantees, billing proof, modeling, compliance, AI, backup/restore, and buyer-specific) Tj ET
+BT /F1 10 Tf 1 0 0 1 54.00 84.50 Tm (onboarding.) Tj ET
+BT /F1 8 Tf 1 0 0 1 54.00 30.00 Tm (OpenPlan Admin Pilot Readiness Proof Packet - Page 3 of 3) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000127 00000 n
+0000000197 00000 n
+0000005808 00000 n
+0000005934 00000 n
+0000012132 00000 n
+0000012258 00000 n
+0000016893 00000 n
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+17019
+%%EOF
