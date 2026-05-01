@@ -26,6 +26,7 @@
 | [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
 | [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) | **Active release-to-sale checklist** — gates, owners, proof links, sales package tasks, commands, and stop conditions |
 | [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) | **Active operator preflight** — buyer/internal-safe staging restore-drill plan; actual Supabase restore remains approval-gated and open |
+| [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) | **Approval packet** — Nathaniel decision language, safeguards, mutation boundary, cleanup expectation, and evidence requirements for the first staging restore drill |
 | [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) | **Buyer-safe proof export** — static HTML/PDF packet for supervised pilot and managed-service diligence |
 | [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) | **First buyer-specific release-to-sale package** — NCTC-geo demo posture, 30-minute walkthrough, outreach draft, pilot ask, and stop conditions |
 | [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
@@ -62,6 +63,7 @@
 - [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
 - [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) — active release-to-sale operating checklist with gates, owners, exact proof links, sales-package tasks, commands, and stop conditions
 - [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; actual restore remains approval-gated and open
+- [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) — Nathaniel approval packet for the first staging restore drill, including safeguards, mutation boundary, cleanup expectation, evidence requirements, and approval phrase
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — buyer-safe static HTML/PDF proof packet for supervised pilot and managed-service diligence
 - [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) — first buyer-specific release-to-sale package with demo posture, outreach draft, scoped pilot ask, and stop conditions
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
