@@ -85,7 +85,7 @@ describe("ExploreCurrentResultCard", () => {
           sourceReviewCount: 1,
           sourceTransparency: [
             {
-              key: "narrative",
+              key: "ai",
               label: "Narrative source",
               status: "Fallback",
               detail: "AI interpretation was unavailable for this run.",
