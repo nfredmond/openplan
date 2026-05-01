@@ -84,7 +84,7 @@ Baseline support is email-based and handled during normal business support hours
 |---|---|---|
 | P1 - workspace unavailable | Scoped workspace cannot be reached by authorized users during business support hours | Acknowledge within 1 business day; work toward restoration or workaround |
 | P2 - workflow blocked | Selected first workflow cannot proceed because of a platform or configuration issue | Acknowledge within 2 business days |
-| P3 - question or minor issue | Usage question, copy adjustment, non-blocking configuration issue | Acknowledge within 3 business days |
+| P3 - question or minor issue | Usage question, copy adjustment, non-blocking configuration issue | Acknowledge within 2 business days |
 | Change request | New workflow, custom report, integration, data migration, SSO/private cloud, or expanded support | Scope and quote separately |
 
 Support targets are response targets, not guaranteed resolution times, unless a stricter support schedule is attached.
