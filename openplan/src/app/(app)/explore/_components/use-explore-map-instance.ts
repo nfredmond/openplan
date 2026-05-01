@@ -38,7 +38,7 @@ export function useExploreMapInstance() {
       attributionControl: false,
     });
 
-    window.setTimeout(() => {
+    const resizeTimerId = window.setTimeout(() => {
       map.resize();
     }, 180);
 
@@ -55,6 +55,7 @@ export function useExploreMapInstance() {
     mapRef.current = map;
 
     return () => {
+      window.clearTimeout(resizeTimerId);
       map.remove();
       mapRef.current = null;
       setMapReady(false);
