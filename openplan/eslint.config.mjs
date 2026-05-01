@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    files: ["src/app/(app)/**/page.tsx"],
+    rules: {
+      "max-lines": ["error", { max: 1200, skipBlankLines: true, skipComments: true }],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

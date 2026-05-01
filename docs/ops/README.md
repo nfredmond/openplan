@@ -25,6 +25,7 @@
 | [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
 | [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
 | [2026-05-01 autonomous build protocol](2026-05-01-openplan-autonomous-build-protocol.md) | **COO execution protocol** — continuous AI-agent buildout toward the full saleable-v1 roadmap |
+| [2026-05-01 app page max-lines guard](2026-05-01-openplan-app-page-max-lines-guard.md) | **Current UI/code hygiene proof** — app page LOC cap is enforced by ESLint after Grants and Dashboard decomposition |
 | [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) | **Active release-to-sale checklist** — gates, owners, proof links, sales package tasks, commands, and stop conditions |
 | [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) | **Historical operator preflight** — superseded by the completed staging restore-drill proof; retained as the safe-prep and approval-gate pattern |
 | [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) | **Historical approval packet** — superseded by the completed staging restore-drill proof; retained for future written-approval shape, safeguards, mutation boundary, cleanup expectation, and evidence requirements |
@@ -67,6 +68,7 @@
 ### Governance & Decisions
 - [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
 - [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) — active release-to-sale operating checklist with gates, owners, exact proof links, sales-package tasks, commands, and stop conditions
+- [2026-05-01 app page max-lines guard](2026-05-01-openplan-app-page-max-lines-guard.md) — ESLint-enforced page LOC cap after Grants and Dashboard decomposition to prevent mega-page regression
 - [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; superseded by the completed staging drill log
 - [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) — historical approval packet for the first staging restore drill, retained for safeguards, mutation boundary, cleanup expectation, evidence requirements, and approval phrase
 - [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) — historical intake note for initial approval intent and missing required fields before the later completed staging drill
