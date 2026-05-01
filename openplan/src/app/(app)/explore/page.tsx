@@ -2,14 +2,8 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import mapboxgl, {
-  FullscreenControl,
-  NavigationControl,
-  ScaleControl,
-  type Map,
-} from "mapbox-gl";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
@@ -22,7 +16,6 @@ import {
   type MapViewState,
 } from "@/lib/analysis/map-view-state";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { resolveStatusTone } from "@/lib/ui/status";
 import type {
   AnalysisContextLoadState,
@@ -53,20 +46,14 @@ import {
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
 } from "./_components/explore-page-state";
-import { installAnalysisLayers } from "./_components/explore-analysis-layer-install";
 import { buildLinkedDatasetQueueState } from "./_components/explore-linked-dataset-state";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
+import { useExploreMapInstance } from "./_components/use-explore-map-instance";
 import { useExploreMapLayerEffects } from "./_components/use-explore-map-layer-effects";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
-
 export default function ExplorePage() {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<Map | null>(null);
+  const { mapContainerRef, mapRef, mapReady } = useExploreMapInstance();
 
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
@@ -86,7 +73,6 @@ export default function ExplorePage() {
   const [analysisContext, setAnalysisContext] = useState<AnalysisContextResponse | null>(null);
   const [analysisContextLoadState, setAnalysisContextLoadState] = useState<AnalysisContextLoadState>("idle");
   const [activeDatasetOverlayId, setActiveDatasetOverlayId] = useState<string | null>(null);
-  const [mapReady, setMapReady] = useState(false);
   const [showPolygonFill, setShowPolygonFill] = useState(true);
   const [showPoints, _setShowPoints] = useState(true);
   const [showTracts, setShowTracts] = useState(true);
@@ -97,47 +83,6 @@ export default function ExplorePage() {
   const [crashUserFilter, setCrashUserFilter] = useState<CrashUserFilter>("all");
   const [hoveredTract, setHoveredTract] = useState<HoveredTract | null>(null);
   const [hoveredCrash, setHoveredCrash] = useState<HoveredCrash | null>(null);
-
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) {
-      return;
-    }
-
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.033982, 39.239137],
-      zoom: 7,
-      pitch: 36,
-      bearing: -10,
-      antialias: true,
-      attributionControl: false,
-    });
-
-    window.setTimeout(() => {
-      map.resize();
-    }, 180);
-
-    map.on("style.load", () => installAnalysisLayers(map));
-    map.on("load", () => {
-      map.resize();
-      installAnalysisLayers(map);
-      map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
-      map.addControl(new FullscreenControl(), "top-right");
-      map.addControl(new ScaleControl({ unit: "imperial" }), "bottom-left");
-      setMapReady(true);
-    });
-
-    mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-      setMapReady(false);
-    };
-  }, []);
 
   useEffect(() => {
     let isCancelled = false;
