@@ -38,35 +38,37 @@ Do not sell this release as:
 - [x] Position OpenPlan as open-source planning OS plus managed services.
 - [x] Keep public pricing/service lanes aligned to self-hosted core, managed hosting/support, and implementation/planning services.
 - [x] Carry the billing waiver honestly: no fresh same-cycle paid canary claimed.
-- [ ] Prepare a one-page external buyer PDF from this plan.
+- [x] Draft buyer one-pager: `../sales/2026-05-01-openplan-buyer-one-pager.md`.
+- [ ] Convert the buyer one-pager into a designed external PDF when the visual package is ready.
 
 ### Pilot SOW
 
 - [x] Existing draft: `docs/sales/2026-02-24-openplan-pilot-sow-one-pager.md`.
-- [ ] Refresh the SOW against May 1 product truth before sending externally.
-- [ ] Remove or label older fixed-fee/monthly pricing that conflicts with current public pricing.
+- [x] Refreshed May 1 template: `../sales/2026-05-01-openplan-pilot-sow-template.md`.
+- [ ] Label older fixed-fee/monthly pricing docs as historical before reusing them.
 
 ### Managed-Hosting Service Description
 
 - [x] Public pricing page describes open-source core, managed hosting/support, and implementation lanes.
 - [x] Request-access intake captures service lane, deployment posture, data sensitivity, first workflow, and onboarding needs.
-- [ ] Convert managed-hosting duties into a customer-facing service schedule: uptime posture, backups, support target, scope boundaries, and escalation.
+- [x] Draft managed-hosting service description: `../sales/2026-05-01-openplan-managed-hosting-service-description.md`.
+- [ ] Convert the managed-hosting draft into a contract-ready service schedule with uptime posture, backups, support target, scope boundaries, and escalation.
 
 ### Implementation Services Menu
 
 - [x] Pricing page names onboarding, data setup, workflow configuration, training, custom reports, and planning workflow setup.
-- [ ] Convert implementation menu into buyer-safe scoped service options: RTP setup, Grants OS setup, Engagement handoff, Analysis setup, Data Hub migration, and Aerial/field evidence setup.
+- [x] Draft implementation menu: `../sales/2026-05-01-openplan-implementation-services-menu.md`.
 
 ### Demo Workspace Script
 
 - [x] Flagship smoke evidence proves the demoable flows.
-- [ ] Write a 30-minute guided demo script that follows: command center -> RTP packet -> grants/reimbursement -> engagement handoff -> analysis report -> admin/support posture.
+- [x] Draft 30-minute guided demo script: `../sales/2026-05-01-openplan-demo-workspace-script.md`.
 
 ### Caveat Sheet
 
 - [x] Current proof docs name unsupported claims.
 - [x] Billing waiver doc prevents overclaiming paid-canary proof.
-- [ ] Create a short buyer-safe caveat sheet: production-backed, prototype/beta, not-yet-supported, human-review-required.
+- [x] Draft buyer-safe caveat sheet: `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md`.
 
 ### Proof Packet Export
 
@@ -127,13 +129,11 @@ Pause external sales or pilot expansion if:
 
 ## Next Build Queue
 
-1. Buyer one-pager.
-2. Refreshed pilot SOW.
-3. Managed-hosting service schedule.
-4. Implementation services menu.
-5. Demo workspace script.
-6. Buyer-safe caveat sheet.
-7. Fresh Admin Pilot Readiness proof packet export.
+1. Convert buyer one-pager into external PDF/visual format.
+2. Label historical February sales docs or archive them.
+3. Convert managed-hosting draft into a contract-ready service schedule.
+4. Export a fresh Admin Pilot Readiness proof packet.
+5. Prepare first buyer-specific demo workspace and outreach package.
 
 ## Verdict
 
