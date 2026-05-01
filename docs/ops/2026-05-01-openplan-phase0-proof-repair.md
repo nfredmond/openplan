@@ -118,8 +118,24 @@ Checked:
 - Each denied navigation is followed by an own-workspace URL check, proving the browser session remains attached to the correct workspace after denial.
 - Fresh screenshots are recorded in `2026-05-01-test-output/`, and denied-route captures are clean of the prior React script-tag dev warning.
 
+## RC Proof Log
+
+`2026-05-01-openplan-rc-proof-log.md` records the fresh release-candidate gate after this proof-repair pass.
+
+Result: PASS.
+
+Included:
+
+- `pnpm test`: PASS, 253 files, 1274 passing, 4 skipped.
+- `pnpm lint`: PASS.
+- `pnpm build`: PASS.
+- `pnpm audit --prod --audit-level=moderate`: PASS.
+- `pnpm ops:check-prod-health`: PASS.
+- `pnpm ops:check-public-demo-preflight`: PASS with expected local-token warning.
+- `pnpm ops:check-public-demo-preflight -- --mapbox-env-file .env.local`: PASS.
+
 ## Remaining Phase 0 Work
 
 - UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`; the original Pilot Readiness and Data Hub watch items are closed by `2026-05-01-openplan-ui-ux-watch-recapture.md`.
 - Admin operations public preflight is recorded in `2026-05-01-openplan-admin-operations-smoke-preflight.md`. The remaining step is the authenticated browser smoke with the actual allowlisted reviewer account.
-- A fresh release-candidate proof packet should be captured when those operator/browser proof steps are complete.
+- The fresh RC proof packet is recorded in `2026-05-01-openplan-rc-proof-log.md`. A follow-up production-browser admin smoke is still needed when the allowlisted reviewer login path is available.
