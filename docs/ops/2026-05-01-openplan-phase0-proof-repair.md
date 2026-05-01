@@ -66,6 +66,6 @@ Checked:
 
 ## Remaining Phase 0 Work
 
-- UI/UX settle proof pack from `2026-04-29-openplan-ui-ux-settle-checkpoint.md` still needs populated screenshots and route-by-route review.
+- UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`. Remaining UI watch items are limited to Pilot Readiness recapture after the parser repair and a stronger Data Hub fixture recapture.
 - Admin operations smoke still needs operator input: `pnpm ops:check-admin-operations-smoke -- --reviewer-email <operator-reviewer-email>`.
 - A fresh release-candidate proof packet should be captured when those operator/browser proof steps are complete.
