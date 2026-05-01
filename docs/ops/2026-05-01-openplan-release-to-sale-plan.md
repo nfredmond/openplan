@@ -28,6 +28,7 @@ Do not sell this release as:
 | Grants workflow | Product/Ops | opportunity, award, reimbursement, closeout, RTP write-back | PASS - `2026-05-01-openplan-local-grants-flow-smoke.md` |
 | Engagement workflow | Product/Ops | public submission, moderation, report handoff, artifact provenance | PASS - `2026-05-01-openplan-local-engagement-report-handoff-smoke.md` |
 | Analysis workflow | Product/Ops | managed run, scenario attachment, report linkage, generated artifact | PASS - `2026-05-01-openplan-local-analysis-report-linkage-smoke.md` |
+| Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence | PASS - `2026-05-01-openplan-local-spine-smoke.md` |
 | Admin/support workflow | Ops | request access, reviewer triage, provisioning, owner invite acceptance | PASS - `2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Billing posture | CEO/Ops | explicit waiver plus current non-money-moving proof | PASS - `2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
 
