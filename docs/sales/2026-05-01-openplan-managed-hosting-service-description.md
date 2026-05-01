@@ -17,7 +17,7 @@ Managed hosting is a service wrapper around the Apache-2.0 OpenPlan core. It is 
 - Service-lane intake through `/request-access`.
 - Billing/support ledger for hosted workspace posture.
 - Reasonable backups and operational monitoring appropriate to the selected service tier.
-- Email support with a 2-business-day baseline target unless a stricter support schedule is contracted.
+- Email support following the active managed-hosting service schedule; if no schedule is attached, Nat Ford targets acknowledgement within 2 business days.
 - Guided onboarding session for the first selected workflow.
 
 ## Optional Managed-Service Add-Ons
