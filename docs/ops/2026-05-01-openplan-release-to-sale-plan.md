@@ -64,6 +64,11 @@ Do not sell this release as:
 - [x] Flagship smoke evidence proves the demoable flows.
 - [x] Draft 30-minute guided demo script: `../sales/2026-05-01-openplan-demo-workspace-script.md`.
 
+### Buyer-Specific Demo / Outreach Package
+
+- [x] Prepared first buyer-specific Nevada County / NCTC demo workspace and outreach package: `../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md`.
+- [x] Package keeps the demo buyer-safe: Nevada County / NCTC geography and public-data-style proofing only; no endorsement, active partnership, procurement signal, or non-public NCTC data claim.
+
 ### Caveat Sheet
 
 - [x] Current proof docs name unsupported claims.
@@ -137,7 +142,7 @@ Pause external sales or pilot expansion if:
 
 1. [x] Buyer one-pager external visual package created: `../sales/2026-05-01-openplan-buyer-one-pager.html` and `../sales/2026-05-01-openplan-buyer-one-pager.pdf`.
 2. [x] Admin Pilot Readiness proof packet exported: `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html` and `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf`.
-3. Prepare first buyer-specific demo workspace and outreach package.
+3. [x] First buyer-specific Nevada County / NCTC demo workspace and outreach package prepared: `../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md`.
 
 ## Verdict
 
