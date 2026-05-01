@@ -216,17 +216,17 @@ async function checkRequestAccess(origin) {
 
   const html = await response.text();
   const requiredMarkers = [
-    "Start a supervised OpenPlan workspace review",
+    "Start an OpenPlan self-hosting, managed-hosting, or implementation review.",
     "request-access-form",
     "No auto-send",
   ];
   const missingMarkers = requiredMarkers.filter((marker) => !html.includes(marker));
 
   if (missingMarkers.length) {
-    fail("GET /request-access returned HTML without expected supervised-intake markers", missingMarkers);
+    fail("GET /request-access returned HTML without expected services-intake markers", missingMarkers);
   }
 
-  return "GET /request-access returns the supervised intake page without submitting a request";
+  return "GET /request-access returns the services intake page without submitting a request";
 }
 
 async function checkBillingReadinessPublicPosture(origin) {

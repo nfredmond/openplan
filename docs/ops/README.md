@@ -1,6 +1,6 @@
 # OpenPlan — docs/ops Index
 
-**Last updated:** 2026-04-16
+**Last updated:** 2026-05-01
 **Maintainer:** Mateo Ruiz (Assistant Planner — package-control lane)
 
 ---
@@ -23,6 +23,8 @@
 | [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) | **Shared platform contract spec** — scenarios, assumptions, data packages, indicators, and comparisons |
 | [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
 | [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
+| [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
+| [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
 | [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
 | [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
 | [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
@@ -42,6 +44,7 @@
 ## By Category
 
 ### Governance & Decisions
+- [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
 - [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
 - [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) — app-wide operations copilot and agent-runtime north star for the next build wave
@@ -101,6 +104,10 @@
 - [billing-chooser-verification.md](2026-03-16-openplan-live-billing-chooser-verification.md)
 
 ### Production Smoke Evidence
+- [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) — public preflight, Pilot Readiness parser, Mapbox env posture, and validation proof
+- `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
+- `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
+- `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
 - `2026-03-17-test-output/` — **current canonical** (auth, engagement, managed-run, report-traceability screenshots + QA cleanup)
 - `2026-03-16-test-output/` — prior cycle (auth, edit, billing hold canary, billing chooser)
 - `2026-03-18-test-output/` — scenario comparison
@@ -119,6 +126,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **178**
-- Test output files (PNG/JSON/log/txt): **132**
-- Subdirectories: **14**
+- Markdown docs in `docs/ops/`: **319**
+- Test output files (PNG/JSON/log/txt): **369**
+- Subdirectories: **36**

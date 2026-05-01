@@ -1,74 +1,11 @@
-import fs from "fs";
-import path from "path";
 import { FileCheck2, ShieldCheck } from "lucide-react";
 import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
 
 export const metadata = {
   title: "Pilot Readiness Evidence Center | OpenPlan Admin",
 };
-
-interface SmokeStatus {
-  lane: string;
-  status: "PASS" | "FAIL" | "PENDING" | "UNKNOWN";
-  lastRun: string;
-  details: string;
-}
-
-function getSmokeStatus(): SmokeStatus[] {
-  const rootDir = process.cwd();
-  const opsDir = path.join(rootDir, "../docs/ops");
-
-  if (!fs.existsSync(opsDir)) {
-    return [{ lane: "System", status: "UNKNOWN", lastRun: "N/A", details: `Ops directory not found at ${opsDir}` }];
-  }
-
-  const files = fs.readdirSync(opsDir);
-  const lanes = [
-    { lane: "Authenticated Auth", regex: /openplan-production-authenticated-smoke\.md$/ },
-    { lane: "County Scaffold", regex: /openplan-production-county-scaffold-smoke\.md$/ },
-    { lane: "Layout Audit", regex: /openplan-production-layout-overlap-audit\.md$/ },
-    { lane: "Managed Run", regex: /openplan-production-managed-run-smoke\.md$/ },
-    { lane: "Scenario Comparison", regex: /openplan-production-scenario-comparison-smoke\.md$/ },
-  ];
-
-  const statusList: SmokeStatus[] = [];
-
-  for (const { lane, regex } of lanes) {
-    const matchingFiles = files.filter((file) => regex.test(file)).sort().reverse();
-    if (matchingFiles.length > 0) {
-      const latestFile = matchingFiles[0];
-      const content = fs.readFileSync(path.join(opsDir, latestFile), "utf8");
-      const isPass =
-        content.includes("Status: PASS") ||
-        content.includes("STATUS: PASS") ||
-        content.includes("**Status**: PASS") ||
-        content.includes("**STATUS**: PASS");
-      const isFail =
-        content.includes("Status: FAIL") ||
-        content.includes("STATUS: FAIL") ||
-        content.includes("**Status**: FAIL") ||
-        content.includes("**STATUS**: FAIL");
-      const dateMatch = latestFile.match(/^(\d{4}-\d{2}-\d{2})/);
-
-      statusList.push({
-        lane,
-        status: isPass ? "PASS" : isFail ? "FAIL" : "UNKNOWN",
-        lastRun: dateMatch ? dateMatch[1] : "Unknown",
-        details: latestFile,
-      });
-    } else {
-      statusList.push({
-        lane,
-        status: "PENDING",
-        lastRun: "N/A",
-        details: "No test runs found",
-      });
-    }
-  }
-
-  return statusList;
-}
 
 function getStatusTone(status: SmokeStatus["status"]): "success" | "danger" | "warning" | "neutral" {
   if (status === "PASS") return "success";

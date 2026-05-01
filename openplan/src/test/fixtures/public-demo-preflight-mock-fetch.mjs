@@ -16,7 +16,7 @@ const DEFAULT_REQUEST_ACCESS_HTML = [
   "<html>",
   "<body>",
   "<main>",
-  "<h1>Start a supervised OpenPlan workspace review.</h1>",
+  "<h1>Start an OpenPlan self-hosting, managed-hosting, or implementation review.</h1>",
   '<section id="request-access-form">Request access form</section>',
   "<p>No auto-send</p>",
   "</main>",

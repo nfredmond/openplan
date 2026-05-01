@@ -120,7 +120,7 @@ describe("public demo preflight script", () => {
     });
   });
 
-  it("fails if the request-access page loses supervised intake markers", async () => {
+  it("fails if the request-access page loses services intake markers", async () => {
     await expect(
       runPreflight({
         env: {
@@ -129,7 +129,7 @@ describe("public demo preflight script", () => {
       }),
     ).rejects.toMatchObject({
       status: 1,
-      stderr: expect.stringContaining("expected supervised-intake markers"),
+      stderr: expect.stringContaining("expected services-intake markers"),
       calls: expect.arrayContaining(["GET /request-access"]),
     });
   });
