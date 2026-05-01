@@ -40,7 +40,6 @@ import type {
 import {
   buildCrashLayerFilter,
   buildRunTitle,
-  coerceNumber,
   getBoundsFromGeometry,
   titleize,
 } from "./_components/_helpers";
@@ -58,6 +57,7 @@ import {
 } from "./_components/explore-page-state";
 import { syncDatasetOverlayMap } from "./_components/explore-dataset-overlay-map";
 import { buildLinkedDatasetQueueState } from "./_components/explore-linked-dataset-state";
+import { buildHoveredCrash } from "./_components/explore-crash-hover-state";
 import { buildHoveredTract, buildTractMetricPaintExpression } from "./_components/explore-tract-layer-state";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
@@ -587,20 +587,7 @@ export default function ExplorePage() {
     };
 
     const handleCrashMove = (event: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
-      const properties = event.features?.[0]?.properties;
-      if (!properties) {
-        setHoveredCrash(null);
-        return;
-      }
-
-      setHoveredCrash({
-        severityLabel: String(properties.severityLabel ?? "Crash"),
-        collisionYear: coerceNumber(properties.collisionYear),
-        fatalCount: coerceNumber(properties.fatalCount) ?? 0,
-        injuryCount: coerceNumber(properties.injuryCount) ?? 0,
-        pedestrianInvolved: String(properties.pedestrianInvolved ?? "false") === "true",
-        bicyclistInvolved: String(properties.bicyclistInvolved ?? "false") === "true",
-      });
+      setHoveredCrash(buildHoveredCrash(event.features?.[0]?.properties));
     };
 
     map.on("mouseenter", "crash-points-core", handleCrashEnter);
