@@ -30,6 +30,7 @@ Ship:
 - Fresh `docs/ops/README.md` index entries for the current roadmap and recent proof packets.
 - Clean local Mapbox posture: browser token values must be public `pk.*` values, never `sk.*`.
 - UI/UX settle proof pack from the 2026-04-29 checkpoint.
+- Local workspace URL isolation smoke with denied-route screenshots and session-continuity proof.
 - Fresh release-candidate proof log: lint, test, build, audit, prod health, public preflight.
 
 Exit gate:
@@ -167,4 +168,6 @@ cd openplan
 pnpm ops:check-public-demo-preflight -- --mapbox-env-file .env.local
 pnpm ops:check-admin-operations-smoke -- --reviewer-email <operator-reviewer-email>
 pnpm seed:workspace-isolation
+cd ../qa-harness
+npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
 ```

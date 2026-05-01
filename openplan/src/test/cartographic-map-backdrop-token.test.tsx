@@ -12,10 +12,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("next-themes", () => ({
-  useTheme: () => ({ resolvedTheme: "light" }),
-}));
-
 vi.mock("mapbox-gl", () => ({
   default: {
     Map: mockMapConstructor,

@@ -37,14 +37,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${spaceGroteskBody.variable} ${jetBrainsMono.variable}`}
+      className={`${spaceGrotesk.variable} ${spaceGroteskBody.variable} ${jetBrainsMono.variable} dark`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
       </body>
     </html>
   );

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
-import { useTheme } from "next-themes";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
@@ -14,6 +13,7 @@ import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-sel
 import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-item-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { useTheme } from "@/components/theme-provider";
 
 import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
 
@@ -149,7 +149,7 @@ export function CartographicMapBackdrop() {
   const backdropTheme = themeMounted && resolvedTheme === "dark" ? "dark" : "light";
 
   useEffect(() => {
-    // One-shot mount gate so next-themes can resolve without a hydration style diff.
+    // One-shot mount gate so stored theme state can resolve without a hydration style diff.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeMounted(true);
   }, []);

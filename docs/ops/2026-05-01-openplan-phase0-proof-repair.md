@@ -12,6 +12,7 @@
 - `docs/ops/README.md` now points to the active full OS roadmap and recent proof artifacts.
 - Local `.env.local` public Mapbox posture was cleaned without printing token values: the invalid `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` entry was blanked, and the remaining `NEXT_PUBLIC_MAPBOX_TOKEN` entry passes the `pk.*` public-token check.
 - The NCTC demo seed now includes a deterministic Data Hub connector, three ready datasets, one succeeded validation job, and project links so `/data-hub` can be recaptured with populated lineage state.
+- The app theme provider now uses OpenPlan's local class toggler instead of the `next-themes` inline script component, removing the React dev warning that appeared in denied-route workspace-isolation screenshots.
 
 ## Validation Run
 
@@ -99,6 +100,23 @@ Checked:
 - `/data-hub` desktop/mobile now requires and captures the seeded NCTC Data Hub connector plus three seeded datasets.
 - `/admin/pilot-readiness` desktop/mobile now captures the parser-repaired readiness page with four passing checks and no pending/failing checks.
 - The shared cartographic backdrop no longer triggers a Next dev hydration issue during the capture.
+
+## Workspace URL Isolation Smoke
+
+```bash
+pnpm seed:workspace-isolation --base-url http://localhost:3000
+cd ../qa-harness
+npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
+```
+
+Result: PASS, 2 synthetic users and 2 URL checks.
+
+Checked:
+
+- Workspace A can load its project detail while Workspace B receives the app not-found state for the same URL.
+- Workspace B can load its project detail while Workspace A receives the app not-found state for the same URL.
+- Each denied navigation is followed by an own-workspace URL check, proving the browser session remains attached to the correct workspace after denial.
+- Fresh screenshots are recorded in `2026-05-01-test-output/`, and denied-route captures are clean of the prior React script-tag dev warning.
 
 ## Remaining Phase 0 Work
 
