@@ -79,7 +79,7 @@ Attach or link these materials as the buyer conversation matures:
 - Buyer one-pager: [Markdown](2026-05-01-openplan-buyer-one-pager.md), [HTML](2026-05-01-openplan-buyer-one-pager.html), [PDF](2026-05-01-openplan-buyer-one-pager.pdf)
 - Admin Pilot Readiness proof packet: [Markdown](2026-05-01-openplan-admin-pilot-readiness-proof-packet.md), [HTML](2026-05-01-openplan-admin-pilot-readiness-proof-packet.html), [PDF](2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf)
 - Phase 1 spine smoke: [2026-05-01 OpenPlan local spine smoke](../ops/2026-05-01-openplan-local-spine-smoke.md)
-- Caveat sheet: [2026-05-01 OpenPlan buyer-safe caveat sheet](2026-05-01-openplan-buyer-safe-caveat-sheet.md)
+- Caveat sheet: [Markdown](2026-05-01-openplan-buyer-safe-caveat-sheet.md), [HTML](2026-05-01-openplan-buyer-safe-caveat-sheet.html), [PDF](2026-05-01-openplan-buyer-safe-caveat-sheet.pdf)
 - Pilot SOW template: [2026-05-01 OpenPlan pilot SOW template](2026-05-01-openplan-pilot-sow-template.md)
 - Managed-hosting schedule: [2026-05-01 OpenPlan managed-hosting service schedule](2026-05-01-openplan-managed-hosting-service-schedule.md)
 - Demo workspace script: [2026-05-01 OpenPlan demo workspace script](2026-05-01-openplan-demo-workspace-script.md)

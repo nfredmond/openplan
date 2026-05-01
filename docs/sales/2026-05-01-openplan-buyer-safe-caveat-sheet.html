@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenPlan Buyer-Safe Caveat Sheet</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17231f;
+        --muted: #5a6760;
+        --line: #cfd9d2;
+        --panel: #f6f8f5;
+        --green: #285f4b;
+        --blue: #335d7d;
+        --gold: #8b6b2f;
+        --danger: #8b3b32;
+        --danger-bg: #fff1ed;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #eef2ee;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 11.5px;
+        line-height: 1.36;
+      }
+
+      .sheet {
+        width: 8.5in;
+        min-height: 11in;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid var(--line);
+        box-shadow: 0 18px 50px rgba(28, 40, 34, 0.18);
+        padding: 0.4in 0.46in;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .masthead {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.28in;
+        align-items: start;
+        padding-bottom: 0.18in;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      h1 {
+        font-size: 27px;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 5.95in;
+        margin-top: 0.08in;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .date-block {
+        min-width: 1.5in;
+        padding-left: 0.18in;
+        border-left: 1px solid var(--line);
+        text-align: right;
+        color: var(--muted);
+        font-size: 10.5px;
+      }
+
+      .date-block strong {
+        display: block;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.18in;
+        margin-top: 0.18in;
+      }
+
+      .block {
+        border-top: 1px solid var(--line);
+        padding-top: 0.11in;
+      }
+
+      .block h2,
+      .language h2,
+      .questions h2 {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .green h2 {
+        color: var(--green);
+      }
+
+      .blue h2 {
+        color: var(--blue);
+      }
+
+      .gold h2 {
+        color: var(--gold);
+      }
+
+      .danger h2 {
+        color: var(--danger);
+      }
+
+      ul,
+      ol {
+        margin: 0.07in 0 0;
+        padding-left: 0.17in;
+      }
+
+      li {
+        margin: 0.03in 0;
+      }
+
+      .language {
+        margin-top: 0.18in;
+        border-top: 1px solid var(--line);
+        padding-top: 0.12in;
+      }
+
+      .quote-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.12in;
+        margin-top: 0.09in;
+      }
+
+      .quote {
+        min-height: 0.52in;
+        padding: 0.09in 0.1in;
+        background: var(--panel);
+        border-left: 3px solid var(--green);
+      }
+
+      .quote.avoid {
+        background: var(--danger-bg);
+        border-left-color: var(--danger);
+      }
+
+      .quote strong {
+        display: block;
+        margin-bottom: 0.03in;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .quote p {
+        font-size: 11.2px;
+      }
+
+      .questions {
+        margin-top: 0.18in;
+        padding: 0.12in 0.15in;
+        background: #fff9ed;
+        border: 1px solid #dccb9b;
+      }
+
+      .question-list {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.08in;
+        margin-top: 0.1in;
+      }
+
+      .question {
+        padding-top: 0.07in;
+        border-top: 2px solid var(--gold);
+        font-size: 10.2px;
+      }
+
+      .foot {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.2in;
+        margin-top: 0.18in;
+        padding-top: 0.1in;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .foot a {
+        color: var(--green);
+        text-decoration: none;
+      }
+
+      @media print {
+        @page {
+          size: Letter;
+          margin: 0.3in;
+        }
+
+        body {
+          background: #fff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .sheet {
+          width: auto;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sheet" aria-label="OpenPlan buyer-safe caveat sheet">
+      <div class="masthead">
+        <div>
+          <h1>OpenPlan Caveat Sheet</h1>
+          <p class="subtitle">
+            Buyer-safe boundaries for supervised pilots, managed hosting, and
+            implementation services around the Apache-2.0 OpenPlan core.
+          </p>
+        </div>
+        <div class="date-block">
+          <strong>Caveat Sheet</strong>
+          May 1, 2026<br />
+          External-safe copy
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="block green" aria-labelledby="ready-heading">
+          <h2 id="ready-heading">Production-backed enough</h2>
+          <ul>
+            <li>Authenticated workspaces and role-scoped access.</li>
+            <li>Project, plan, program, scenario, model, report, and engagement surfaces.</li>
+            <li>Shared project spine across RTP, grants, engagement, analysis, reports, maps, Data Hub, and aerial evidence.</li>
+            <li>RTP/report packet creation and artifact generation.</li>
+            <li>Grants, funding, reimbursement, and closeout posture.</li>
+            <li>Engagement intake, moderation, publication, and report handoff.</li>
+            <li>Admin request-access, reviewer triage, provisioning, and owner invitation flow.</li>
+            <li>Billing infrastructure and support posture with explicit paid-canary waiver.</li>
+          </ul>
+        </div>
+
+        <div class="block blue" aria-labelledby="scoped-heading">
+          <h2 id="scoped-heading">Prototype / beta / scoped carefully</h2>
+          <ul>
+            <li>Advanced transportation modeling and scenario analysis.</li>
+            <li>AequilibraE, ActivitySim, and MATSim direction.</li>
+            <li>Data Hub depth and external GIS integrations.</li>
+            <li>Aerial and field evidence workflows beyond scoped implementation.</li>
+            <li>AI-assisted drafting and summarization.</li>
+            <li>Private cloud, SSO, and enterprise integrations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="block danger" aria-labelledby="unsupported-heading">
+          <h2 id="unsupported-heading">Not a broad claim</h2>
+          <ul>
+            <li>Fully self-serve municipal SaaS.</li>
+            <li>Autonomous planning decisions.</li>
+            <li>Validated behavioral forecasting.</li>
+            <li>Complete LAPM, legal, or compliance automation.</li>
+            <li>Certified grant scoring or guaranteed funding competitiveness.</li>
+            <li>24/7 support unless separately contracted.</li>
+            <li>Automatic workspace creation from public request-access.</li>
+            <li>Fresh same-cycle paid checkout canary.</li>
+          </ul>
+        </div>
+
+        <div class="block gold" aria-labelledby="billing-heading">
+          <h2 id="billing-heading">Billing and support boundary</h2>
+          <ul>
+            <li>Managed-hosting billing is treated as operational from historical live payment evidence plus current non-money-moving proof.</li>
+            <li>A fresh paid checkout canary was waived for this release-to-sale cycle.</li>
+            <li>Paid activation should be handled as a supervised workspace-specific step.</li>
+            <li>Enhanced support, uptime, private-cloud, SSO, or agency-cloud terms need a separate written addendum.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="language" aria-labelledby="language-heading">
+        <h2 id="language-heading">Required language</h2>
+        <div class="quote-grid">
+          <div class="quote">
+            <strong>Use</strong>
+            <p>OpenPlan supports supervised planning workflows with evidence traceability and human review.</p>
+          </div>
+          <div class="quote">
+            <strong>Use</strong>
+            <p>Modeling and AI outputs are planning-support materials and must be reviewed before external reliance.</p>
+          </div>
+          <div class="quote">
+            <strong>Use</strong>
+            <p>Managed hosting and implementation are service wrappers around the Apache-2.0 open-source core.</p>
+          </div>
+          <div class="quote avoid">
+            <strong>Avoid</strong>
+            <p>OpenPlan replaces professional review, is fully self-serve municipal SaaS, or had billing freshly re-proven by paid checkout this cycle.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="questions" aria-labelledby="questions-heading">
+        <h2 id="questions-heading">Buyer qualification questions</h2>
+        <div class="question-list">
+          <div class="question">What first workflow needs proof?</div>
+          <div class="question">Who owns review and approval?</div>
+          <div class="question">What data is public, internal, or confidential?</div>
+          <div class="question">Self-hosted, managed hosting, services, or mix?</div>
+          <div class="question">What deliverable must exist in 30-90 days?</div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>
+          Attach this sheet when a buyer needs a concise proof boundary for
+          pilot, SOW, procurement, or managed-hosting review.
+        </span>
+        <span><a href="https://www.natfordplanning.com/">natfordplanning.com</a></span>
+      </div>
+    </div>
+  </body>
+</html>

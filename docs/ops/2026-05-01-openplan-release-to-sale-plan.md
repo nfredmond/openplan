@@ -75,7 +75,7 @@ Do not sell this release as:
 
 - [x] Current proof docs name unsupported claims.
 - [x] Billing waiver doc prevents overclaiming paid-canary proof.
-- [x] Draft buyer-safe caveat sheet: `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md`.
+- [x] Buyer-safe caveat sheet external package: `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md`, `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.html`, and `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.pdf`.
 
 ### Proof Packet Export
 
@@ -146,6 +146,7 @@ Pause external sales or pilot expansion if:
 1. [x] Buyer one-pager external visual package created: `../sales/2026-05-01-openplan-buyer-one-pager.html` and `../sales/2026-05-01-openplan-buyer-one-pager.pdf`.
 2. [x] Admin Pilot Readiness proof packet exported: `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html` and `../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf`.
 3. [x] First buyer-specific Nevada County / NCTC demo workspace and outreach package prepared: `../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md`.
+4. [x] Buyer-safe caveat sheet external package created: `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.html` and `../sales/2026-05-01-openplan-buyer-safe-caveat-sheet.pdf`.
 
 ## Verdict
 

@@ -1,7 +1,7 @@
 # OpenPlan Buyer-Safe Caveat Sheet
 
 _Date: 2026-05-01_
-_Status: External-safe caveat draft; attach to pilot/SOW packets when useful._
+_Status: External-safe caveat copy; attach to pilot/SOW packets when useful._
 
 ## Production-Backed Enough For Supervised Sale
 
