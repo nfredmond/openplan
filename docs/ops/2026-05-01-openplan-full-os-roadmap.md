@@ -89,6 +89,10 @@ Ship:
 - GIS imports/exports for GeoJSON, CSV coordinates, KML/KMZ, shapefile path, ArcGIS REST services, GTFS, Census/ACS, LODES/LEHD, OSM, and state/open-data sources.
 - Data Hub lineage: source, URL/API, license, geography, vintage, update frequency, owner, quality, field definitions, geometry type, transforms, QA status, citation text, and dependent reports/maps.
 
+Current proof:
+
+- `2026-05-01-openplan-local-engagement-report-handoff-smoke.md` proves the engagement handoff loop: public portal submission, pending moderation persistence, staff approval, public feedback publication, handoff report provenance, HTML packet generation, and artifact source-context traceability.
+
 Exit gate:
 
 - Every public-facing report claim can trace to datasets, comments, project records, maps, assumptions, reviewer notes, and export history.
@@ -177,4 +181,5 @@ cd ../qa-harness
 npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
 npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
+npm run local-engagement-report-handoff-smoke
 ```

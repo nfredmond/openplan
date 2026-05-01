@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,11 @@ export function EngagementShareControls({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [browserOrigin, setBrowserOrigin] = useState("");
+
+  useEffect(() => {
+    setBrowserOrigin(window.location.origin);
+  }, []);
 
   const portalState = getPublicPortalState({
     status: campaign.status,
@@ -53,9 +58,7 @@ export function EngagementShareControls({
     allow_public_submissions: allowSubmissions,
     submissions_closed_at: campaign.submissions_closed_at,
   });
-  const shareUrl = portalState.portalPath
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}${portalState.portalPath}`
-    : null;
+  const shareUrl = portalState.portalPath ? `${browserOrigin}${portalState.portalPath}` : null;
 
   const handleCopy = useCallback(async () => {
     if (shareUrl) {
