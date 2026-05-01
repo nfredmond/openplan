@@ -1,6 +1,6 @@
 # OpenPlan Ops Runbook
 
-**Last updated:** 2026-04-24
+**Last updated:** 2026-05-01
 **Audience:** Nathaniel and trusted operators preparing OpenPlan for first external paid access.
 
 This runbook favors fast triage, data safety, and clear customer communication. Do not run destructive database commands during an incident unless there is a written restore plan and Nathaniel explicitly approves.
@@ -219,6 +219,58 @@ Actions:
 2. Confirm `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` exists in the deployed environment.
 3. Query the relevant map feature route directly.
 4. If only one layer fails, run the matching route and helper tests.
+
+## Backup And Restore
+
+OpenPlan's durable state lives in Supabase Postgres and Supabase Storage. Everything else (Vercel deployments, Stripe, Mapbox, Anthropic, GitHub) is recoverable from upstream sources or rebuilt from `main`. Detailed operator commands live in `docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. This section covers triage and decision posture during an incident.
+
+What is backed up:
+
+- Supabase Postgres: all workspace tables, RLS policies, billing ledger, evidence backbone, modeling artifacts metadata, GTFS/Census/LODES public data, auth users and memberships.
+- Supabase Storage buckets: `gtfs-uploads`, `network-packages`, `report-artifacts`.
+- Vercel project environment variables: snapshotted offline via `vercel env pull` on a defined cadence; not part of Supabase backup.
+
+What is not backed up by OpenPlan:
+
+- Vercel build/deployment artifacts. Rebuild from `main`.
+- Stripe records. Vendor-managed.
+- Mapbox account state. Vendor-managed.
+- GitHub repository. Origin of truth for code; GitHub-managed.
+- Customer-supplied originals (drone imagery, source GIS, internal documents) once handed off and removed from OpenPlan storage. Client retention duty per the managed-hosting service schedule.
+
+Recovery point and time posture:
+
+- Baseline Supabase tier: ~24h RPO from automatic daily backups. RTO is best effort during business support hours and depends on the size of the dataset.
+- Paid Supabase tier with PITR enabled: up to 7-day point-in-time recovery. RTO measured in hours during business support hours.
+- Per-engagement RPO/RTO commitments belong in the managed-hosting service schedule (`docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md`, "Backup And Restore Posture"), not in this runbook. If a buyer needs a stricter target, attach an enhanced support addendum before signature.
+
+When to consider a restore:
+
+1. Confirmed destructive data loss (dropped table, mass row deletion, encrypted/corrupted column) that cannot be reproduced from logs or upstream sources.
+2. Cross-tenant exposure that requires reverting to a known-clean snapshot.
+3. Migration failure that mutated production data in a way the migration cannot itself reverse.
+
+Do not restore for:
+
+- Single-row mistakes a customer can fix in-app.
+- Auth/billing confusion that has not lost data.
+- Performance issues.
+
+Pre-restore checklist:
+
+1. Treat the incident as `SEV-1` and pause new customer onboarding.
+2. Capture the current state before restoring: a fresh `supabase db dump` and storage manifest, even if it is the broken state. Loss of forensic evidence is its own incident.
+3. Identify the target restore point: timestamp, backup id, or PITR moment.
+4. Identify what data created after the restore point must be recovered separately (recent invitations, recent reports, recent usage events). Plan to replay these from logs if possible.
+5. Confirm with Nathaniel before proceeding. A restore is a written decision, not a runtime convenience.
+
+Restore-drill cadence:
+
+- A non-production restore drill is run quarterly into a staging Supabase project.
+- Each drill is logged under `docs/ops/` with the dated filename pattern `YYYY-MM-DD-openplan-restore-drill-<slug>.md`. The log records: drill date, source backup id, target environment, time-to-restore, post-restore validation results, and any failure modes observed.
+- A drill that fails or reveals a missing operator step blocks the next external release until the gap is closed in the procedure doc.
+
+For exact command sequences (Supabase CLI, storage download, env-var capture, restore validation queries) see `docs/ops/2026-05-01-openplan-backup-restore-procedure.md`.
 
 ## Customer Data Exposure Concern
 

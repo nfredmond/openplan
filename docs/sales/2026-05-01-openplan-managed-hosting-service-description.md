@@ -16,7 +16,7 @@ Managed hosting is a service wrapper around the Apache-2.0 OpenPlan core. It is 
 - Basic user/access coordination during onboarding.
 - Service-lane intake through `/request-access`.
 - Billing/support ledger for hosted workspace posture.
-- Reasonable backups and operational monitoring appropriate to the selected service tier.
+- Reasonable backups and operational monitoring appropriate to the selected service tier. The operator-side backup, restore, and recovery-drill procedure is `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`; per-engagement RPO/RTO commitments are filled on the managed-hosting service schedule.
 - Email support following the active managed-hosting service schedule; if no schedule is attached, Nat Ford targets acknowledgement within 2 business days.
 - Guided onboarding session for the first selected workflow.
 
