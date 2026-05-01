@@ -85,7 +85,7 @@ Do not sell this release as:
 
 - [x] Incident triage runbook: `openplan/docs/ops/RUNBOOK.md`.
 - [x] Backup, restore, and recovery-drill procedure: `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. Quarterly drill cadence; per-engagement RPO/RTO commitments are filled on the managed-hosting service schedule, not promised here.
-- [ ] Run the first quarterly restore drill into a staging Supabase project and log under `docs/ops/YYYY-MM-DD-openplan-restore-drill-<slug>.md` before the next external paid milestone. Preflight plan: `2026-05-01-openplan-restore-drill-preflight-plan.md`; approval packet: `2026-05-01-openplan-restore-drill-approval-packet.md`; neither document completes the actual staging drill.
+- [ ] Run the first quarterly restore drill into a staging Supabase project and log under `docs/ops/YYYY-MM-DD-openplan-restore-drill-<slug>.md` before the next external paid milestone. Preflight plan: `2026-05-01-openplan-restore-drill-preflight-plan.md`; approval packet: `2026-05-01-openplan-restore-drill-approval-packet.md`; approval-intake note: `2026-05-01-openplan-restore-drill-approval-intake.md`. None of these documents completes the actual staging drill.
 
 ## Current Sellable Wedge
 
