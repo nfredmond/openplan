@@ -12,6 +12,7 @@
     "local-admin-support-flow-smoke": "node openplan-local-admin-support-flow-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
+    "prod-admin-operations-auth-smoke": "node openplan-prod-admin-operations-auth-smoke.js",
     "prod-auth-smoke": "node openplan-prod-auth-smoke.js",
     "prod-engagement-smoke": "node openplan-prod-engagement-smoke.js",
     "prod-engagement-report-handoff-smoke": "node openplan-prod-engagement-report-handoff-smoke.js",

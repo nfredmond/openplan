@@ -36,6 +36,7 @@
 | [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) | **Current UI proof review** — route-by-route pass/watch table over the 2026-04-29 local screenshot pack |
 | [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) | **Current UI watch closure** — Data Hub and Pilot Readiness desktop/mobile recapture after proof repairs |
 | [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) | **Current ops preflight** — public admin redirect/API-denial checks and Vercel reviewer allowlist env-name verification |
+| [2026-05-01 production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) | **Current production admin proof** — allowlisted reviewer session loads `/admin/operations` with service-lane intake unlocked and no prospect row capture |
 | [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) | **Current RLS/browser proof** — synthetic cross-workspace project URLs blocked with session continuity verified |
 | [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) | **Current release gate** — test, lint, build, audit, prod health, and public preflight proof |
 | [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) | **Current RTP workflow proof** — cycle creation, packet creation, artifact generation, and release-review anchor landing |
@@ -134,7 +135,8 @@
 - [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) — public preflight, Pilot Readiness parser, Mapbox env posture, and validation proof
 - [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) — pass review over the local desktop/mobile screenshot pack and supplemental watch closure
 - [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) — local Data Hub and Pilot Readiness desktop/mobile recapture proof
-- [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) — public preflight and production env-name verification before manual reviewer smoke
+- [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) — public preflight and production env-name verification
+- [2026-05-01 production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) — allowlisted reviewer session loads `/admin/operations`, sees service-lane intake unlocked, and does not capture prospect rows
 - [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) — local synthetic cross-workspace project URL isolation with session-continuity screenshots
 - [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) — current release-candidate gate across test, lint, build, audit, prod health, and public preflight
 - [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) — first Phase 1 flagship workflow proof for RTP cycle, board packet, artifact generation, and release-review navigation
@@ -167,6 +169,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **402**
-- Test output files (PNG/JSON/log/txt): **398**
+- Markdown docs in `docs/ops/`: **409**
+- Test output files (PNG/JSON/log/txt): **400**
 - Subdirectories: **38**

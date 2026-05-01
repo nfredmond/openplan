@@ -9,7 +9,7 @@
 - Public demo preflight now checks the current `/request-access` service-intake copy: self-hosting, managed hosting, or implementation review.
 - Admin Pilot Readiness parsing now treats line-item `PASS:` evidence as PASS when no explicit status header exists.
 - Pilot Readiness parsing moved into a focused server-side helper with unit coverage.
-- `docs/ops/README.md` now points to the active full OS roadmap and recent proof artifacts.
+- [docs/ops/README.md](README.md) now points to the active full OS roadmap and recent proof artifacts.
 - Local `.env.local` public Mapbox posture was cleaned without printing token values: the invalid `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` entry was blanked, and the remaining `NEXT_PUBLIC_MAPBOX_TOKEN` entry passes the `pk.*` public-token check.
 - The NCTC demo seed now includes a deterministic Data Hub connector, three ready datasets, one succeeded validation job, and project links so `/data-hub` can be recaptured with populated lineage state.
 - The app theme provider now uses OpenPlan's local class toggler instead of the `next-themes` inline script component, removing the React dev warning that appeared in denied-route workspace-isolation screenshots.
@@ -137,5 +137,5 @@ Included:
 ## Remaining Phase 0 Work
 
 - UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`; the original Pilot Readiness and Data Hub watch items are closed by `2026-05-01-openplan-ui-ux-watch-recapture.md`.
-- Admin operations public preflight is recorded in `2026-05-01-openplan-admin-operations-smoke-preflight.md`. The remaining step is the authenticated browser smoke with the actual allowlisted reviewer account.
-- The fresh RC proof packet is recorded in `2026-05-01-openplan-rc-proof-log.md`. A follow-up production-browser admin smoke is still needed when the allowlisted reviewer login path is available.
+- Admin operations public preflight is recorded in `2026-05-01-openplan-admin-operations-smoke-preflight.md`; the production authenticated reviewer browser proof is recorded in `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md`.
+- The fresh RC proof packet is recorded in `2026-05-01-openplan-rc-proof-log.md`.

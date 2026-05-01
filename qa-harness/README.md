@@ -11,6 +11,7 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-local-analysis-report-linkage-smoke.js` — local browser/API smoke for the Analysis flow: corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, analysis-summary report linkage, generated artifact, and artifact source-context traceability.
 - `local-spine-smoke.js` — local-only NCTC seed/API/browser smoke proving one canonical project flows through RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence rows without duplicate project creation.
 - `openplan-local-admin-support-flow-smoke.js` — local browser/API smoke for the supervised admin/support flow: public request-access intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, manual owner invite ledgering, review-event audit trail, and invited-owner acceptance.
+- `openplan-prod-admin-operations-auth-smoke.js` — production authenticated browser smoke for the Admin Operations page. It uses an admin-generated reviewer magic-link session, verifies `/admin/operations` renders with service-lane intake unlocked, and does not click triage/provision controls or print request rows.
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
@@ -45,6 +46,10 @@ npm run local-analysis-report-linkage-smoke
 npm run local-spine-smoke
 # start the local app with OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com
 OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
+OPENPLAN_PROD_ADMIN_OPERATIONS_ALLOW_MAGIC_LINK=1 \
+OPENPLAN_ADMIN_OPERATIONS_SMOKE_REVIEWER_EMAIL=<allowlisted-email> \
+OPENPLAN_ENV_PATH=/absolute/path/to/private-production-env \
+  npm run prod-admin-operations-auth-smoke
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
 npm run prod-report-funding-smoke
@@ -73,4 +78,5 @@ npm run prod-qa-cleanup:apply
 - The local workspace URL isolation fixture is a template: replace placeholder IDs/text with records from a local synthetic seed and export the password env vars before running it. Every denied user must also have an own-workspace URL check so the harness can prove session continuity after a cross-workspace denial.
 - Intended for controlled operator use, not CI.
 - Most smoke scripts create real production QA users/workspaces/records. Run cleanup after proof so production residue does not accumulate.
+- The production admin operations auth smoke creates a reviewer session only; it must not be used to click triage/provision controls or capture prospect rows.
 - `openplan-prod-qa-cleanup.js` is intentionally non-destructive by default; use `--apply` only after reviewing the printed plan.

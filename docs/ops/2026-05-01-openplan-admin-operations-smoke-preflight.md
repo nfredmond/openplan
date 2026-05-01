@@ -1,12 +1,12 @@
 # OpenPlan Admin Operations Smoke Preflight
 
-**Date:** 2026-05-01  
-**Status:** PASS with manual authenticated smoke still required  
+**Date:** 2026-05-01
+**Status:** PASS; authenticated production browser smoke completed separately
 **Scope:** non-mutating public/unauthenticated preflight plus Vercel env-name verification
 
 ## Result
 
-The admin operations smoke prerequisites pass for the public production origin. This does not complete the authenticated browser smoke, because that still requires a real allowlisted reviewer account and a normal browser session.
+The admin operations smoke prerequisites pass for the public production origin. The authenticated reviewer browser proof is now recorded separately in `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md`.
 
 Command run from `openplan/`:
 
@@ -34,16 +34,16 @@ Result:
 - PASS: `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS` exists for Production in Vercel.
 - Token/secret values were not recorded in this proof note.
 
-## Remaining Manual Smoke
+## Authenticated Smoke Follow-Up
 
-Run only with the actual allowlisted reviewer identity:
+Completed in `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` with the actual allowlisted reviewer identity:
 
-1. Sign in manually as the allowlisted reviewer.
-2. Open `https://openplan-natford.vercel.app/admin/operations`.
-3. Confirm the page renders Warning watchboard, Recent supervised onboarding requests, and Assistant action activity.
-4. Confirm the access-request lane is not locked for the reviewer.
-5. Do not click triage buttons, create workspaces, send email, or record prospect PII unless separately approved.
+1. Generated a Supabase admin magic-link reviewer session without changing the reviewer password.
+2. Opened `https://openplan-natford.vercel.app/admin/operations`.
+3. Confirmed Warning watchboard, service lane intake queue, and recent audited operator action activity rendered.
+4. Confirmed the access-request lane was not locked for the reviewer.
+5. Did not click triage buttons, create workspaces, send email, or record prospect PII.
 
 ## Interpretation
 
-The route and API denial posture are ready for authenticated operator review. The final proof gap is not code-level preflight; it is the manual confirmation that the configured production reviewer can see the allowlisted access-request operations lane in a browser session.
+The route and API denial posture passed before authentication, and the production browser smoke confirmed that the configured reviewer can see the allowlisted access-request operations lane.
