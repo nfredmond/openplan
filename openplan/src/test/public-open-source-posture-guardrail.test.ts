@@ -27,6 +27,8 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /earns revenue by operating hosted workspaces, onboarding teams, supporting planning workflows, and building custom extensions/i,
       /does not turn the open-source core into a proprietary software license/i,
       /not priced as a seat-based proprietary license/i,
+      /no fresh same-cycle paid canary was run for this release packet/i,
+      /historical live payment evidence plus current non-money-moving billing proof/i,
     ],
   },
   {

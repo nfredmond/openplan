@@ -150,6 +150,7 @@ Ship:
 Current proof:
 
 - `2026-05-01-openplan-local-admin-support-flow-smoke.md` proves the supervised admin/support flow: public request-access intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, manual owner invitation ledgering, review-event audit trail, and invited-owner acceptance.
+- `2026-05-01-openplan-billing-current-cycle-waiver-proof.md` retains the billing proof boundary: historical live payment evidence plus current non-money-moving billing proof, with no fresh same-cycle paid canary claimed.
 
 Exit gate:
 

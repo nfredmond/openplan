@@ -50,6 +50,7 @@ const implementationNotes = [
   "The OpenPlan codebase is intended to be open-source first under Apache-2.0. Managed hosting, onboarding, support, planning services, and custom extensions are the commercial lanes.",
   "Prices shown are service baselines, not proprietary software-license fees. Final managed-hosting or implementation scope may vary by agency complexity, data requirements, support level, and procurement path.",
   "Checkout and subscription records remain in the product because hosted workspaces need a reliable payment, entitlement, and support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
+  "Current billing proof posture is historical live payment evidence plus current non-money-moving billing proof; no fresh same-cycle paid canary was run for this release packet, so sales language should call that canary waived rather than re-proven.",
   "No hidden fees, punitive change orders, black-box scoring claims, or unsupported planning-grade promises.",
 ];
 
@@ -209,6 +210,7 @@ export default function PricingPage() {
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">Do not start managed-hosting billing until the account is attached to the intended workspace.</div>
+            <div className="public-rail-item">Use the current commercial proof waiver honestly: historical live payment plus current non-money-moving billing proof, not a fresh paid checkout canary.</div>
             <div className="public-rail-item">Use the request-access lane to decide whether the need is self-hosting, managed hosting, implementation, or a mix.</div>
             <div className="public-rail-item">If the service scope or workspace target is unclear, stop and resolve it before operators begin paid delivery work.</div>
           </div>

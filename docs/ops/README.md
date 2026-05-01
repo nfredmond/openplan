@@ -35,6 +35,7 @@
 | [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) | **Current Engagement workflow proof** — public submission, moderation, public feedback publication, handoff report provenance, generated artifact, and source-context traceability |
 | [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) | **Current Analysis workflow proof** — corridor model run, source analysis output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability |
 | [2026-05-01 local admin support flow smoke](2026-05-01-openplan-local-admin-support-flow-smoke.md) | **Current Admin/support workflow proof** — public intake, allowlisted reviewer triage, provision gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance |
+| [2026-05-01 billing current-cycle waiver proof](2026-05-01-openplan-billing-current-cycle-waiver-proof.md) | **Current Billing proof boundary** — historical live payment plus current non-money-moving proof; no fresh same-cycle paid canary claimed |
 | [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
 | [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
 | [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
@@ -125,6 +126,7 @@
 - [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) — flagship Engagement proof for public intake, moderation, public publication, handoff report provenance, generated artifact, and source-context traceability
 - [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) — flagship Analysis proof for corridor run output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability
 - [2026-05-01 local admin support flow smoke](2026-05-01-openplan-local-admin-support-flow-smoke.md) — flagship Admin/support proof for public intake, reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, audit trail, and invited-owner acceptance
+- [2026-05-01 billing current-cycle waiver proof](2026-05-01-openplan-billing-current-cycle-waiver-proof.md) — current Billing proof boundary retaining the explicit no-fresh-paid-canary waiver in sales language
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
 - `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
@@ -146,6 +148,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **399**
+- Markdown docs in `docs/ops/`: **400**
 - Test output files (PNG/JSON/log/txt): **398**
 - Subdirectories: **38**

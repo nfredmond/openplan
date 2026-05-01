@@ -25,6 +25,8 @@ describe("PricingPage", () => {
     expect(screen.getByText(/Managed hosting \+ support/i)).toBeInTheDocument();
     expect(screen.getByText(/Implementation \+ planning services/i)).toBeInTheDocument();
     expect(screen.getByText(/Stripe remains the payment rail for hosted workspace support and service retainers/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/historical live payment.*current non-money-moving billing proof/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/no fresh same-cycle paid canary was run/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Request self-hosting review/i })).toHaveAttribute(
       "href",
       "/request-access?lane=self-hosted",
