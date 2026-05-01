@@ -19,7 +19,7 @@ The near-term sale is not "AI writes your plan" and not broad self-serve municip
 
 ## What OpenPlan Helps With Today
 
-- Project and workspace records.
+- Shared project-spine proof across workflows.
 - RTP/report packet workflow proof.
 - Grants, funding, reimbursement, and closeout posture.
 - Engagement intake, moderation, and report handoff.

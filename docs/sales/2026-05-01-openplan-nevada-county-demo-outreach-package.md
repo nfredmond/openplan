@@ -35,7 +35,7 @@ Recommended first proof: show the NCTC 2045 RTP proof-of-capability workspace, t
 Why this is the right wedge:
 
 - it is the clearest fit with the existing NCTC demo one-pager;
-- it demonstrates OpenPlan's evidence spine without overclaiming AI or forecasting maturity;
+- it demonstrates OpenPlan's evidence spine without overclaiming AI or forecasting maturity, backed by the local smoke that reuses one seeded NCTC project across RTP, grants, engagement, analysis, reports, map/Data Hub, and aerial evidence;
 - it produces a recognizable planning deliverable rather than a generic dashboard;
 - it can expand later into grants, engagement, or analysis/report linkage; and
 - it stays buyer-safe because the walkthrough can be framed as supervised, caveated, and public-data-style.
@@ -78,6 +78,7 @@ Attach or link these materials as the buyer conversation matures:
 
 - Buyer one-pager: [Markdown](2026-05-01-openplan-buyer-one-pager.md), [HTML](2026-05-01-openplan-buyer-one-pager.html), [PDF](2026-05-01-openplan-buyer-one-pager.pdf)
 - Admin Pilot Readiness proof packet: [Markdown](2026-05-01-openplan-admin-pilot-readiness-proof-packet.md), [HTML](2026-05-01-openplan-admin-pilot-readiness-proof-packet.html), [PDF](2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf)
+- Phase 1 spine smoke: [2026-05-01 OpenPlan local spine smoke](../ops/2026-05-01-openplan-local-spine-smoke.md)
 - Caveat sheet: [2026-05-01 OpenPlan buyer-safe caveat sheet](2026-05-01-openplan-buyer-safe-caveat-sheet.md)
 - Pilot SOW template: [2026-05-01 OpenPlan pilot SOW template](2026-05-01-openplan-pilot-sow-template.md)
 - Managed-hosting schedule: [2026-05-01 OpenPlan managed-hosting service schedule](2026-05-01-openplan-managed-hosting-service-schedule.md)

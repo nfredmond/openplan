@@ -7,6 +7,7 @@ _Status: External-safe caveat draft; attach to pilot/SOW packets when useful._
 
 - Authenticated workspaces and role-scoped access.
 - Project, plan, program, scenario, model, report, and engagement surfaces.
+- Shared project-spine reuse across RTP, grants, engagement, analysis, reports, maps, Data Hub, and aerial evidence.
 - RTP/report packet creation and artifact generation.
 - Grants/funding/reimbursement and closeout posture.
 - Engagement intake, moderation, public publication, and report handoff.
