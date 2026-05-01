@@ -52,7 +52,7 @@ Do not sell this release as:
 - [x] Public pricing page describes open-source core, managed hosting/support, and implementation lanes.
 - [x] Request-access intake captures service lane, deployment posture, data sensitivity, first workflow, and onboarding needs.
 - [x] Draft managed-hosting service description: `../sales/2026-05-01-openplan-managed-hosting-service-description.md`.
-- [ ] Convert the managed-hosting draft into a contract-ready service schedule with uptime posture, backups, support target, scope boundaries, and escalation.
+- [x] Contract-ready service schedule template: `../sales/2026-05-01-openplan-managed-hosting-service-schedule.md`.
 
 ### Implementation Services Menu
 
@@ -130,9 +130,8 @@ Pause external sales or pilot expansion if:
 ## Next Build Queue
 
 1. Convert buyer one-pager into external PDF/visual format.
-2. Convert managed-hosting draft into a contract-ready service schedule.
-3. Export a fresh Admin Pilot Readiness proof packet.
-4. Prepare first buyer-specific demo workspace and outreach package.
+2. Export a fresh Admin Pilot Readiness proof packet.
+3. Prepare first buyer-specific demo workspace and outreach package.
 
 ## Verdict
 

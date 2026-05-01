@@ -1,7 +1,7 @@
 # OpenPlan Managed-Hosting Service Description
 
 _Date: 2026-05-01_
-_Status: Buyer-safe draft; review before external send._
+_Status: Buyer-safe draft; review before external send. Use `2026-05-01-openplan-managed-hosting-service-schedule.md` when a buyer needs an attachable service schedule._
 
 ## Service Summary
 
@@ -60,3 +60,7 @@ For the May 1, 2026 release-to-sale packet, billing is positioned as historical 
 ## Recommended External Sentence
 
 > Nat Ford can host and support OpenPlan for agencies that want the open-source planning workbench operated for them, with onboarding, support, and implementation scoped to the first planning workflow.
+
+## Contract Schedule
+
+Use `2026-05-01-openplan-managed-hosting-service-schedule.md` as the buyer-reviewable schedule template for scoped managed-hosting engagements. It keeps the service operationally concrete while preserving the legal/procurement review boundary before signature.
