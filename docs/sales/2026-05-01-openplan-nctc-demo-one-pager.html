@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenPlan NCTC Demo One-Pager</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17231f;
+        --muted: #5a6760;
+        --line: #cfd9d2;
+        --panel: #f6f8f5;
+        --field: #fbfcfa;
+        --green: #285f4b;
+        --blue: #335d7d;
+        --gold: #8b6b2f;
+        --warn-bg: #fff8e7;
+        --warn-line: #d6bd7b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #eef2ee;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 11.5px;
+        line-height: 1.38;
+      }
+
+      .sheet {
+        width: 8.5in;
+        min-height: 11in;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid var(--line);
+        box-shadow: 0 18px 50px rgba(28, 40, 34, 0.18);
+        padding: 0.4in 0.46in;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .masthead {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.28in;
+        align-items: start;
+        padding-bottom: 0.18in;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      h1 {
+        font-size: 27px;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 5.9in;
+        margin-top: 0.08in;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .date-block {
+        min-width: 1.55in;
+        padding-left: 0.18in;
+        border-left: 1px solid var(--line);
+        text-align: right;
+        color: var(--muted);
+        font-size: 10.5px;
+      }
+
+      .date-block strong {
+        display: block;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .lead {
+        display: grid;
+        grid-template-columns: 1.04fr 0.96fr;
+        gap: 0.18in;
+        margin-top: 0.18in;
+      }
+
+      .callout,
+      .boundary {
+        padding: 0.14in 0.17in;
+      }
+
+      .callout {
+        background: var(--panel);
+        border-left: 4px solid var(--green);
+      }
+
+      .boundary {
+        border: 1px solid var(--line);
+      }
+
+      .callout h2,
+      .boundary h2,
+      .block h2,
+      .warning h2 {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .callout h2 {
+        color: var(--green);
+      }
+
+      .boundary h2 {
+        color: var(--blue);
+      }
+
+      .callout p,
+      .boundary p,
+      .warning p {
+        margin-top: 0.06in;
+      }
+
+      .metric-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.08in;
+        margin-top: 0.18in;
+        padding: 0.12in;
+        background: var(--field);
+        border: 1px solid var(--line);
+      }
+
+      .metric {
+        padding-left: 0.08in;
+        border-left: 3px solid var(--green);
+      }
+
+      .metric:nth-child(2) {
+        border-left-color: var(--blue);
+      }
+
+      .metric:nth-child(3) {
+        border-left-color: var(--gold);
+      }
+
+      .metric:nth-child(4) {
+        border-left-color: #38413c;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 0.03in;
+        color: var(--muted);
+        font-size: 10.5px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.18in;
+        margin-top: 0.18in;
+      }
+
+      .block {
+        border-top: 1px solid var(--line);
+        padding-top: 0.11in;
+      }
+
+      .block h2 {
+        color: var(--ink);
+      }
+
+      ul,
+      ol {
+        margin: 0.07in 0 0;
+        padding-left: 0.17in;
+      }
+
+      li {
+        margin: 0.03in 0;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 0.08in;
+        border-collapse: collapse;
+        font-size: 10.6px;
+      }
+
+      th,
+      td {
+        padding: 0.06in 0.07in;
+        border: 1px solid var(--line);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        width: 43%;
+        background: #e8f0e8;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .warning {
+        margin-top: 0.18in;
+        padding: 0.12in 0.15in;
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+      }
+
+      .warning h2 {
+        color: var(--gold);
+      }
+
+      .foot {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.2in;
+        margin-top: 0.18in;
+        padding-top: 0.1in;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .foot a {
+        color: var(--green);
+        text-decoration: none;
+      }
+
+      @media print {
+        @page {
+          size: Letter;
+          margin: 0.3in;
+        }
+
+        body {
+          background: #fff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .sheet {
+          width: auto;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sheet" aria-label="OpenPlan NCTC demo one-pager">
+      <div class="masthead">
+        <div>
+          <h1>OpenPlan NCTC Demo</h1>
+          <p class="subtitle">
+            A supervised proof-of-capability workspace using Nevada County /
+            NCTC geography to show RTP evidence, caveats, reports, maps, and
+            project records in one planning workbench.
+          </p>
+        </div>
+        <div class="date-block">
+          <strong>Demo One-Pager</strong>
+          May 1, 2026<br />
+          Buyer-safe review copy
+        </div>
+      </div>
+
+      <div class="lead">
+        <div class="callout" aria-labelledby="what-heading">
+          <h2 id="what-heading">What this is</h2>
+          <p>
+            The demo shows an RTP/report packet workflow for a rural RTPA-scale
+            planning problem. It links a proof project, draft RTP cycle,
+            county-run evidence, caveats, and generated report posture.
+          </p>
+        </div>
+        <div class="boundary" aria-labelledby="boundary-heading">
+          <h2 id="boundary-heading">Buyer-safe boundary</h2>
+          <p>
+            This is not an NCTC endorsement, active partnership, procurement
+            signal, approval claim, or claim that NCTC supplied non-public data.
+          </p>
+        </div>
+      </div>
+
+      <div class="metric-strip" aria-label="Screening evidence metrics">
+        <div class="metric">
+          <strong>973.8</strong>
+          <span>square miles in the study area</span>
+        </div>
+        <div class="metric">
+          <strong>26</strong>
+          <span>tract-fragment traffic analysis zones</span>
+        </div>
+        <div class="metric">
+          <strong>54,944</strong>
+          <span>road-network links in the screening run</span>
+        </div>
+        <div class="metric">
+          <strong>0.00955</strong>
+          <span>relative gap after 50 assignment iterations</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="block" aria-labelledby="shows-heading">
+          <h2 id="shows-heading">What the walkthrough shows</h2>
+          <ul>
+            <li>Nevada County / NCTC demo workspace labeled as demo.</li>
+            <li>NCTC 2045 RTP proof project and draft RTP cycle.</li>
+            <li>Existing-conditions and travel-patterns evidence.</li>
+            <li>Frozen county-run manifest and validation summary.</li>
+            <li>Generated report/document posture with visible caveats.</li>
+            <li>One project spine reused across RTP, grants, engagement, analysis, reports, map/Data Hub, and aerial evidence in local proof.</li>
+          </ul>
+        </div>
+
+        <div class="block" aria-labelledby="not-heading">
+          <h2 id="not-heading">What this is not</h2>
+          <ul>
+            <li>Validated behavioral forecasting.</li>
+            <li>A calibrated production travel-demand model.</li>
+            <li>Legal, engineering, or compliance sign-off.</li>
+            <li>Certified grant scoring.</li>
+            <li>Autonomous AI planning.</li>
+            <li>Broad self-serve municipal SaaS.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="block" aria-labelledby="evidence-heading">
+          <h2 id="evidence-heading">Screening evidence</h2>
+          <ul>
+            <li>102,322 residents and 48,252 estimated jobs.</li>
+            <li>628,262 total daily person-trips.</li>
+            <li>95.97% largest-component road-network coverage.</li>
+            <li>5 of 5 matched Caltrans 2023 priority count stations.</li>
+            <li>Median absolute percent error: 27.4%.</li>
+            <li>Highest station error: 237.62% at SR-174 at Brunswick Rd.</li>
+          </ul>
+        </div>
+
+        <div class="block" aria-labelledby="pilot-heading">
+          <h2 id="pilot-heading">What a pilot would replace</h2>
+          <table>
+            <tbody>
+              <tr>
+                <th scope="row">Demo network</th>
+                <td>Buyer-reviewed or calibrated network assumptions.</td>
+              </tr>
+              <tr>
+                <th scope="row">Demo zones</th>
+                <td>Buyer-reviewed zone system and local context.</td>
+              </tr>
+              <tr>
+                <th scope="row">Public proxy data</th>
+                <td>Buyer-approved employment, count, and plan inputs.</td>
+              </tr>
+              <tr>
+                <th scope="row">Screening caveat</th>
+                <td>Scoped deliverable caveat approved before reliance.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="warning" aria-labelledby="walkthrough-heading">
+        <h2 id="walkthrough-heading">30-minute walkthrough goal</h2>
+        <p>
+          Decide whether a narrow supervised pilot around one plan chapter,
+          corridor, or board-packet deliverable is worth scoping. The demo is
+          useful for pilot qualification, not production reliance.
+        </p>
+      </div>
+
+      <div class="foot">
+        <span>
+          Proof links: local spine smoke, admin pilot readiness packet,
+          buyer-safe caveat sheet, and guided demo script.
+        </span>
+        <span><a href="https://www.natfordplanning.com/">natfordplanning.com</a></span>
+      </div>
+    </div>
+  </body>
+</html>

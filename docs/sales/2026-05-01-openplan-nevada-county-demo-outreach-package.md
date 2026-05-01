@@ -83,7 +83,7 @@ Attach or link these materials as the buyer conversation matures:
 - Pilot SOW template: [2026-05-01 OpenPlan pilot SOW template](2026-05-01-openplan-pilot-sow-template.md)
 - Managed-hosting schedule: [2026-05-01 OpenPlan managed-hosting service schedule](2026-05-01-openplan-managed-hosting-service-schedule.md)
 - Demo workspace script: [2026-05-01 OpenPlan demo workspace script](2026-05-01-openplan-demo-workspace-script.md)
-- NCTC demo one-pager: [2026-05-01 NCTC demo one-pager](2026-05-01-openplan-nctc-demo-one-pager.md)
+- NCTC demo one-pager: [Markdown](2026-05-01-openplan-nctc-demo-one-pager.md), [HTML](2026-05-01-openplan-nctc-demo-one-pager.html), [PDF](2026-05-01-openplan-nctc-demo-one-pager.pdf)
 - Release-to-sale plan: [2026-05-01 OpenPlan release-to-sale plan](../ops/2026-05-01-openplan-release-to-sale-plan.md)
 
 Recommended first-send attachment set: buyer one-pager, NCTC demo one-pager, and caveat sheet. Send the proof packet, SOW template, and managed-hosting schedule after a buyer confirms interest in a scoped walkthrough or pilot.
