@@ -24,6 +24,7 @@
 | [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
 | [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
 | [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
+| [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) | **Active release-to-sale checklist** — gates, owners, proof links, sales package tasks, commands, and stop conditions |
 | [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
 | [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) | **Current UI proof review** — route-by-route pass/watch table over the 2026-04-29 local screenshot pack |
 | [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) | **Current UI watch closure** — Data Hub and Pilot Readiness desktop/mobile recapture after proof repairs |
@@ -56,6 +57,7 @@
 
 ### Governance & Decisions
 - [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
+- [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) — active release-to-sale operating checklist with gates, owners, exact proof links, sales-package tasks, commands, and stop conditions
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
 - [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
 - [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) — app-wide operations copilot and agent-runtime north star for the next build wave
@@ -148,6 +150,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **400**
+- Markdown docs in `docs/ops/`: **401**
 - Test output files (PNG/JSON/log/txt): **398**
 - Subdirectories: **38**

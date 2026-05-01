@@ -17,6 +17,8 @@ Near-term commercial posture remains narrower:
 - Supervised planning workbench before broad self-serve SaaS.
 - Evidence-backed planning intelligence before autonomous AI or legal/compliance automation claims.
 
+Current release-to-sale operating checklist: `2026-05-01-openplan-release-to-sale-plan.md`.
+
 ## Phase 0 - Proof Repair And Release Baseline
 
 **Target:** weeks 0-2
