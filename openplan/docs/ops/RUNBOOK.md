@@ -224,11 +224,11 @@ Actions:
 
 OpenPlan's durable state lives in Supabase Postgres and Supabase Storage. Everything else (Vercel deployments, Stripe, Mapbox, Anthropic, GitHub) is recoverable from upstream sources or rebuilt from `main`. Detailed operator commands live in `docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. This section covers triage and decision posture during an incident.
 
-What is backed up:
+Durable state surfaces (full inventory in the procedure doc):
 
-- Supabase Postgres: all workspace tables, RLS policies, billing ledger, evidence backbone, modeling artifacts metadata, GTFS/Census/LODES public data, auth users and memberships.
+- Supabase Postgres: workspace, membership, project, evidence, billing-ledger, usage-event, report-metadata, modeling-metadata, public-data, and policy state.
 - Supabase Storage buckets: `gtfs-uploads`, `network-packages`, `report-artifacts`.
-- Vercel project environment variables: snapshotted offline via `vercel env pull` on a defined cadence; not part of Supabase backup.
+- Vercel project environment variables, snapshotted offline; not part of Supabase backup.
 
 What is not backed up by OpenPlan:
 
@@ -238,11 +238,11 @@ What is not backed up by OpenPlan:
 - GitHub repository. Origin of truth for code; GitHub-managed.
 - Customer-supplied originals (drone imagery, source GIS, internal documents) once handed off and removed from OpenPlan storage. Client retention duty per the managed-hosting service schedule.
 
-Recovery point and time posture:
+Recovery objective posture:
 
-- Baseline Supabase tier: ~24h RPO from automatic daily backups. RTO is best effort during business support hours and depends on the size of the dataset.
-- Paid Supabase tier with PITR enabled: up to 7-day point-in-time recovery. RTO measured in hours during business support hours.
-- Per-engagement RPO/RTO commitments belong in the managed-hosting service schedule (`docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md`, "Backup And Restore Posture"), not in this runbook. If a buyer needs a stricter target, attach an enhanced support addendum before signature.
+- No RPO/RTO is promised in this runbook. Baseline posture is "reasonable backups appropriate to the selected service tier" per the managed-hosting service description.
+- Per-engagement RPO/RTO commitments belong in the managed-hosting service schedule (`docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md`, "Backup And Restore Posture"). If a buyer needs a stricter target, attach an enhanced support addendum before signature.
+- Confirm Supabase tier and PITR availability before relying on either; capture in the next drill log.
 
 When to consider a restore:
 
