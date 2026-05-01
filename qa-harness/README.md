@@ -8,6 +8,7 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-local-rtp-release-review-smoke.js` — local browser/API smoke for RTP cycle creation, board-packet creation, artifact generation, registry linked-packet navigation, and report-detail release-review anchor landing.
 - `openplan-local-grants-flow-smoke.js` — local browser/API smoke for the Grants OS flagship flow: project funding need, awarded opportunity, committed award, project RTP posture write-back, obligation milestone, paid reimbursement invoice, closeout reconciliation, closeout milestone, and project-detail funded/reimbursed posture.
 - `openplan-local-engagement-report-handoff-smoke.js` — local browser/API smoke for public portal feedback submission, pending moderation persistence, staff approval, public feedback publication, handoff report provenance, generated HTML packet verification, and artifact source-context traceability.
+- `openplan-local-analysis-report-linkage-smoke.js` — local browser/API smoke for the Analysis flow: corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, analysis-summary report linkage, generated artifact, and artifact source-context traceability.
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
@@ -38,6 +39,7 @@ BASE_URL=http://localhost:3000 OPENPLAN_UI_UX_STORAGE_STATE=/absolute/path/to/lo
 npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
+npm run local-analysis-report-linkage-smoke
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
 npm run prod-report-funding-smoke

@@ -110,6 +110,10 @@ Ship:
 - Scenario comparison for cost, funding gap, VMT, accessibility, travel time, equity, safety, emissions, population/jobs served, public support, grant competitiveness, and implementation risk.
 - ActivitySim beta with explicit caveats, job status, artifacts, assumptions, evidence packets, and refusal gates when callers attempt unsupported decision use.
 
+Current proof:
+
+- `2026-05-01-openplan-local-analysis-report-linkage-smoke.md` proves the Analysis flow: corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, analysis-summary report linkage, generated artifact, and artifact source-context traceability.
+
 Exit gate:
 
 - A county can compare No Build, constrained, safety, active transportation, and transit scenarios with maps, tables, narrative, citations, and caveats.
@@ -182,4 +186,5 @@ npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-
 npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
+npm run local-analysis-report-linkage-smoke
 ```

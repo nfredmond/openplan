@@ -7,6 +7,7 @@
     "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",
+    "local-analysis-report-linkage-smoke": "node openplan-local-analysis-report-linkage-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
     "prod-auth-smoke": "node openplan-prod-auth-smoke.js",

@@ -33,6 +33,7 @@
 | [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) | **Current RTP workflow proof** — cycle creation, packet creation, artifact generation, and release-review anchor landing |
 | [2026-05-01 local Grants flow smoke](2026-05-01-openplan-local-grants-flow-smoke.md) | **Current Grants workflow proof** — funding need, awarded opportunity, committed award, RTP posture write-back, obligation milestone, paid reimbursement, and closeout |
 | [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) | **Current Engagement workflow proof** — public submission, moderation, public feedback publication, handoff report provenance, generated artifact, and source-context traceability |
+| [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) | **Current Analysis workflow proof** — corridor model run, source analysis output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability |
 | [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
 | [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
 | [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
@@ -121,6 +122,7 @@
 - [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) — first Phase 1 flagship workflow proof for RTP cycle, board packet, artifact generation, and release-review navigation
 - [2026-05-01 local Grants flow smoke](2026-05-01-openplan-local-grants-flow-smoke.md) — flagship Grants OS proof for awarded opportunity, committed award, project RTP posture write-back, obligation milestone, reimbursement invoice, and closeout milestone
 - [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) — flagship Engagement proof for public intake, moderation, public publication, handoff report provenance, generated artifact, and source-context traceability
+- [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) — flagship Analysis proof for corridor run output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
 - `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
@@ -142,6 +144,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **397**
-- Test output files (PNG/JSON/log/txt): **388**
+- Markdown docs in `docs/ops/`: **398**
+- Test output files (PNG/JSON/log/txt): **393**
 - Subdirectories: **38**
