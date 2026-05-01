@@ -1,10 +1,19 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Run } from "@/components/runs/RunHistory";
 import type { MapViewState } from "@/lib/analysis/map-view-state";
 import { ExploreResultsBoard } from "@/app/(app)/explore/_components/explore-results-board";
 import type { AnalysisResult } from "@/app/(app)/explore/_components/_types";
+
+const downloadMocks = vi.hoisted(() => ({
+  downloadGeojson: vi.fn(),
+  downloadMetricsCsv: vi.fn(),
+  downloadRecordsCsv: vi.fn(),
+  downloadText: vi.fn(),
+}));
+
+vi.mock("@/lib/export/download", () => downloadMocks);
 
 const currentMapViewState: MapViewState = {
   tractMetric: "minority",
@@ -112,6 +121,10 @@ function buildComparisonRun(overrides: Partial<Run> = {}): Run {
 }
 
 describe("ExploreResultsBoard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders the empty board when no analysis is selected", () => {
     render(
       <ExploreResultsBoard
@@ -172,5 +185,78 @@ describe("ExploreResultsBoard", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Clear baseline" })[0]);
     expect(onClearComparison).toHaveBeenCalledTimes(1);
+  });
+
+  it("exports comparison artifacts with metric deltas and map-context rows", () => {
+    render(
+      <ExploreResultsBoard
+        analysisResult={buildAnalysisResult()}
+        comparisonRun={buildComparisonRun()}
+        queryText="Downtown access check"
+        currentMapViewState={currentMapViewState}
+        onClearComparison={vi.fn()}
+        onError={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Comparison CSV" }));
+
+    expect(downloadMocks.downloadRecordsCsv).toHaveBeenCalledTimes(1);
+    expect(downloadMocks.downloadRecordsCsv).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rowType: "metric_delta",
+          key: "overallScore",
+          current: 75,
+          baseline: 67,
+          delta: 8,
+        }),
+        expect.objectContaining({
+          rowType: "map_view",
+          label: "Project overlay",
+          current: "Equity overlay \u00b7 Poverty share",
+          baseline: "None",
+          changed: true,
+        }),
+      ]),
+      "openplan-run-current-vs-run-baseline-comparison.csv"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Comparison JSON" }));
+
+    expect(downloadMocks.downloadText).toHaveBeenCalledTimes(1);
+    const [jsonPayload, jsonFilename, jsonMimeType] = downloadMocks.downloadText.mock.calls[0];
+    expect(jsonFilename).toBe("openplan-run-current-vs-run-baseline-comparison.json");
+    expect(jsonMimeType).toBe("application/json;charset=utf-8");
+
+    const parsedPayload = JSON.parse(jsonPayload);
+    expect(parsedPayload).toMatchObject({
+      currentRun: {
+        id: "run-current",
+        mapViewState: currentMapViewState,
+      },
+      baselineRun: {
+        id: "run-baseline",
+        title: "Baseline package",
+      },
+    });
+    expect(parsedPayload.metricDeltas).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "overallScore",
+          delta: 8,
+        }),
+      ])
+    );
+    expect(parsedPayload.mapViewComparison).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Project overlay",
+          current: "Equity overlay \u00b7 Poverty share",
+          baseline: "None",
+          changed: true,
+        }),
+      ])
+    );
   });
 });
