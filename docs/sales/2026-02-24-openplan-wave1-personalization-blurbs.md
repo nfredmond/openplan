@@ -1,6 +1,8 @@
 # OpenPlan Wave 1 Personalization Blurbs
 _Date: 2026-02-24_
 
+> Historical note (2026-05-01): These blurbs predate the current release-to-sale package. Reuse only after aligning the ask with the open-source core, managed-hosting/services offer, and current proof boundaries.
+
 Use these as opening context lines in Email #1. Keep tone practical, specific, and non-hype.
 
 ## 1) Tehama County Transportation Commission

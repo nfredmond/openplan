@@ -1,6 +1,8 @@
 # OpenPlan Pilot SOW — One Pager (Draft)
 _Date: 2026-02-24_
 
+> Historical note (2026-05-01): This SOW predates the current open-source core + managed-hosting/services positioning and includes older pricing. Use `2026-05-01-openplan-pilot-sow-template.md` as the current buyer-safe template.
+
 ## Parties
 - **Consultant:** Nat Ford Planning & Analysis ("Nat Ford")
 - **Client:** [Agency Name]

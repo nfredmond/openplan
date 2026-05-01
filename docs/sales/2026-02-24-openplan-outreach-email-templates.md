@@ -1,6 +1,8 @@
 # OpenPlan Outreach Email Templates (v1)
 _Date: 2026-02-24_
 
+> Historical note (2026-05-01): These templates predate the current release-to-sale package. Treat them as source material only; update pricing, proof boundaries, and scope language before external use.
+
 Use these as starting points; personalize each message with a real corridor, grant timeline, and agency-specific context.
 
 ---

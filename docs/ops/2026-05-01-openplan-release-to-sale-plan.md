@@ -45,7 +45,7 @@ Do not sell this release as:
 
 - [x] Existing draft: `docs/sales/2026-02-24-openplan-pilot-sow-one-pager.md`.
 - [x] Refreshed May 1 template: `../sales/2026-05-01-openplan-pilot-sow-template.md`.
-- [ ] Label older fixed-fee/monthly pricing docs as historical before reusing them.
+- [x] Labeled older February sales docs as historical before reuse.
 
 ### Managed-Hosting Service Description
 
@@ -130,10 +130,9 @@ Pause external sales or pilot expansion if:
 ## Next Build Queue
 
 1. Convert buyer one-pager into external PDF/visual format.
-2. Label historical February sales docs or archive them.
-3. Convert managed-hosting draft into a contract-ready service schedule.
-4. Export a fresh Admin Pilot Readiness proof packet.
-5. Prepare first buyer-specific demo workspace and outreach package.
+2. Convert managed-hosting draft into a contract-ready service schedule.
+3. Export a fresh Admin Pilot Readiness proof packet.
+4. Prepare first buyer-specific demo workspace and outreach package.
 
 ## Verdict
 

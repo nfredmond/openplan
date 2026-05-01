@@ -1,6 +1,8 @@
 # OpenPlan Pilot Conversion Kit (v1)
 _Date: 2026-02-24_
 
+> Historical note (2026-05-01): This kit predates the current open-source core + managed-hosting/services positioning. Do not send externally without reconciling pricing, billing proof, scope, and caveats against the May 1 sales package.
+
 ## 1) Objective
 Convert at least **1 of the first 3 pilots** into a paid OpenPlan subscription by proving one thing clearly:
 
