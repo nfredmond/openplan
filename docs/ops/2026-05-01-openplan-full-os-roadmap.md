@@ -56,6 +56,10 @@ Exit gate:
 
 - A rural county can enter a project once and reuse it across RTP, funding, map, report, engagement, and evidence-packet surfaces.
 
+Current proof:
+
+- `2026-05-01-openplan-local-spine-smoke.md` proves the first shared-spine gate: one seeded NCTC project ID is reused across RTP, grants, engagement, scenario and county-run analysis evidence, a project-targeted report, map/Data Hub rows, aerial missions, and aerial evidence packages without duplicate project creation.
+
 ## Phase 2 - Rural County Planning OS v1
 
 **Target:** months 3-6
@@ -194,6 +198,7 @@ npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
+npm run local-spine-smoke
 # Start pnpm dev with the same reviewer allowlist before this smoke.
 OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
 ```

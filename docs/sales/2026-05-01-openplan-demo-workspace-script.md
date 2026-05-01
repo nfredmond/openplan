@@ -35,6 +35,10 @@ Point:
 
 - The workspace is the shared planning record, not a disconnected dashboard.
 
+Proof link:
+
+- `docs/ops/2026-05-01-openplan-local-spine-smoke.md`
+
 ### 2. RTP / Report Packet - 6 minutes
 
 Show:

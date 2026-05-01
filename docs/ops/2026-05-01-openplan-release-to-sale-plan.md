@@ -125,6 +125,7 @@ npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
+npm run local-spine-smoke
 OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
 ```
 
