@@ -64,6 +64,11 @@ export const DEMO_PROJECT_FUNDING_PROFILE_ID = "d0000001-0000-4000-8000-00000000
 export const DEMO_AWARDED_FUNDING_OPPORTUNITY_ID = "d0000001-0000-4000-8000-000000000041";
 export const DEMO_FUNDING_AWARD_ID = "d0000001-0000-4000-8000-000000000042";
 export const DEMO_REIMBURSEMENT_INVOICE_ID = "d0000001-0000-4000-8000-000000000043";
+export const DEMO_DATA_CONNECTOR_ID = "d0000001-0000-4000-8000-000000000050";
+export const DEMO_DATASET_EQUITY_TRACTS_ID = "d0000001-0000-4000-8000-000000000051";
+export const DEMO_DATASET_SR49_CORRIDOR_ID = "d0000001-0000-4000-8000-000000000052";
+export const DEMO_DATASET_CRASH_POINTS_ID = "d0000001-0000-4000-8000-000000000053";
+export const DEMO_DATA_REFRESH_JOB_ID = "d0000001-0000-4000-8000-000000000054";
 export const DEMO_SCENARIO_SET_ID = "d0000001-0000-4000-8000-000000000030";
 export const DEMO_SCENARIO_BASELINE_RUN_ID = "d0000001-0000-4000-8000-000000000031";
 export const DEMO_SCENARIO_ALTERNATIVE_RUN_ID = "d0000001-0000-4000-8000-000000000032";
@@ -129,6 +134,7 @@ export const DEMO_FUNDING_AWARD_TITLE = "NCTC SR-49 safety package construction 
 export const DEMO_REIMBURSEMENT_INVOICE_NUMBER = "NCTC-LPP-2026-001";
 export const DEMO_REPORT_TITLE = "NCTC 2045 RTP settle board packet";
 export const DEMO_REPORT_GENERATED_AT = "2026-04-30T12:00:00.000Z";
+export const DEMO_DATA_HUB_CAPTURED_AT = "2026-04-30T12:40:00.000Z";
 export const DEMO_COUNTY_RUN_NAME = "nevada-county-runtime-norenumber-freeze-20260324";
 export const DEMO_ENGAGEMENT_CAMPAIGN_TITLE = "NCTC 2045 RTP community input map";
 export const DEMO_SCENARIO_SET_TITLE = "NCTC 2045 RTP scenario comparison";
@@ -148,6 +154,10 @@ export type SeedRecords = {
   awardedFundingOpportunity: Record<string, unknown>;
   fundingAward: Record<string, unknown>;
   billingInvoiceRecords: Array<Record<string, unknown>>;
+  dataConnector: Record<string, unknown>;
+  dataDatasets: Array<Record<string, unknown>>;
+  dataRefreshJobs: Array<Record<string, unknown>>;
+  dataDatasetProjectLinks: Array<Record<string, unknown>>;
   rtpCycle: Record<string, unknown>;
   projectRtpLink: Record<string, unknown>;
   countyRun: Record<string, unknown>;
@@ -936,6 +946,157 @@ export function buildSeedRecords(
         created_by: ownerUserId,
       },
     ],
+    dataConnector: {
+      id: DEMO_DATA_CONNECTOR_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      key: "nctc-rtp-evidence-catalog",
+      display_name: "NCTC RTP evidence catalog",
+      source_type: "custom",
+      category: "local",
+      status: "active",
+      cadence: "manual",
+      auth_mode: "manual_upload",
+      endpoint_url: null,
+      owner_label: "NCTC demo operator",
+      description:
+        "Local-only Data Hub fixture that registers the evidence stack behind the NCTC RTP proof workspace.",
+      policy_monitor_enabled: true,
+      last_sync_at: DEMO_DATA_HUB_CAPTURED_AT,
+      last_success_at: DEMO_DATA_HUB_CAPTURED_AT,
+      last_error_at: null,
+      last_error_message: null,
+      created_by: ownerUserId,
+      created_at: DEMO_DATA_HUB_CAPTURED_AT,
+      updated_at: DEMO_DATA_HUB_CAPTURED_AT,
+    },
+    dataDatasets: [
+      {
+        id: DEMO_DATASET_EQUITY_TRACTS_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        connector_id: DEMO_DATA_CONNECTOR_ID,
+        name: "Nevada County ACS equity tract context",
+        status: "ready",
+        geography_scope: "tract",
+        geometry_attachment: "analysis_tracts",
+        thematic_metric_key: "zeroVehiclePct",
+        thematic_metric_label: "Zero-vehicle households",
+        coverage_summary:
+          "Four hand-authored Nevada County demo tracts used to prove tract-level equity lineage in Analysis Studio and Data Hub.",
+        vintage_label: "ACS 5-year demo extract, 2022 posture",
+        source_url: "https://www.census.gov/programs-surveys/acs",
+        license_label: "US Census public data",
+        citation_text:
+          "Synthetic Nevada County demo tracts derived for OpenPlan UI proof; production use requires live TIGER/ACS ingestion and citation.",
+        schema_version: "openplan.data_hub.dataset.v1",
+        checksum: "sha256:nctc-demo-equity-tracts-20260430",
+        row_count: 4,
+        refresh_cadence: "annual",
+        last_refreshed_at: DEMO_DATA_HUB_CAPTURED_AT,
+        notes:
+          "Thematic-ready tract dataset for proving evidence lineage, not a replacement for official ACS/TIGER records.",
+        created_by: ownerUserId,
+        created_at: DEMO_DATA_HUB_CAPTURED_AT,
+        updated_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+      {
+        id: DEMO_DATASET_SR49_CORRIDOR_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        connector_id: DEMO_DATA_CONNECTOR_ID,
+        name: "SR-49 safety package corridor screening",
+        status: "ready",
+        geography_scope: "corridor",
+        geometry_attachment: "analysis_corridor",
+        thematic_metric_key: "safetyScore",
+        thematic_metric_label: "Safety score",
+        coverage_summary:
+          "Scenario-ready corridor scoring fixture for the SR-49 package comparison in the NCTC RTP proof workspace.",
+        vintage_label: "Screening run freeze 2026-03-24",
+        source_url: null,
+        license_label: "Internal demo fixture",
+        citation_text:
+          "OpenPlan NCTC screening-grade corridor fixture, frozen 2026-03-24; not a calibrated planning model.",
+        schema_version: "openplan.analysis.corridor_score.v1",
+        checksum: "sha256:nctc-demo-sr49-corridor-20260430",
+        row_count: 2,
+        refresh_cadence: "manual",
+        last_refreshed_at: DEMO_DATA_HUB_CAPTURED_AT,
+        notes:
+          "Carries the baseline and SR-49 safety package corridor scores that feed scenario comparison proof.",
+        created_by: ownerUserId,
+        created_at: DEMO_DATA_HUB_CAPTURED_AT,
+        updated_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+      {
+        id: DEMO_DATASET_CRASH_POINTS_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        connector_id: DEMO_DATA_CONNECTOR_ID,
+        name: "SR-49 and Grass Valley safety comment/crash points",
+        status: "ready",
+        geography_scope: "point",
+        geometry_attachment: "analysis_crash_points",
+        thematic_metric_key: "severityBucket",
+        thematic_metric_label: "Severity bucket",
+        coverage_summary:
+          "Point-level safety and public-input evidence fixture for proving crash/comment overlays in a governed Data Hub registry.",
+        vintage_label: "Demo outreach + safety snapshot, 2026-04",
+        source_url: null,
+        license_label: "Internal demo fixture",
+        citation_text:
+          "OpenPlan NCTC local proof points combining authored engagement items and safety-screening context for UI proof only.",
+        schema_version: "openplan.analysis.safety_points.v1",
+        checksum: "sha256:nctc-demo-crash-points-20260430",
+        row_count: DEMO_ENGAGEMENT_ITEMS.length,
+        refresh_cadence: "manual",
+        last_refreshed_at: DEMO_DATA_HUB_CAPTURED_AT,
+        notes:
+          "Thematic-ready crash-point attachment so Data Hub can prove point-overlay provenance and linked-project evidence.",
+        created_by: ownerUserId,
+        created_at: DEMO_DATA_HUB_CAPTURED_AT,
+        updated_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+    ],
+    dataRefreshJobs: [
+      {
+        id: DEMO_DATA_REFRESH_JOB_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        connector_id: DEMO_DATA_CONNECTOR_ID,
+        dataset_id: DEMO_DATASET_EQUITY_TRACTS_ID,
+        job_name: "Validate NCTC demo Data Hub evidence catalog",
+        job_type: "validation",
+        status: "succeeded",
+        refresh_mode: "manual",
+        started_at: "2026-04-30T12:38:00.000Z",
+        completed_at: DEMO_DATA_HUB_CAPTURED_AT,
+        records_written: 10,
+        triggered_by_label: "seed:nctc",
+        error_summary: null,
+        created_by: ownerUserId,
+        created_at: "2026-04-30T12:38:00.000Z",
+      },
+    ],
+    dataDatasetProjectLinks: [
+      {
+        dataset_id: DEMO_DATASET_EQUITY_TRACTS_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "baseline",
+        linked_by: ownerUserId,
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+      {
+        dataset_id: DEMO_DATASET_SR49_CORRIDOR_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "primary_input",
+        linked_by: ownerUserId,
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+      {
+        dataset_id: DEMO_DATASET_CRASH_POINTS_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "evidence",
+        linked_by: ownerUserId,
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
+      },
+    ],
     rtpCycle: {
       id: DEMO_RTP_CYCLE_ID,
       workspace_id: DEMO_WORKSPACE_ID,
@@ -1630,7 +1791,46 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted project_rtp_cycle_link ${DEMO_PROJECT_RTP_LINK_ID}`);
 
-  // 7. county_runs row with manifest_json + validation_summary_json verbatim.
+  // 7. Data Hub connector/dataset lineage fixture for populated /data-hub proof.
+  const { error: dataConnectorError } = await supabase.from("data_connectors").upsert(
+    grantsSeedRecords.dataConnector,
+    { onConflict: "id" }
+  );
+  if (dataConnectorError) {
+    throw new Error(`Failed to upsert Data Hub connector: ${dataConnectorError.message}`);
+  }
+
+  const { error: dataDatasetsError } = await supabase.from("data_datasets").upsert(
+    grantsSeedRecords.dataDatasets,
+    { onConflict: "id" }
+  );
+  if (dataDatasetsError) {
+    throw new Error(`Failed to upsert Data Hub datasets: ${dataDatasetsError.message}`);
+  }
+
+  const { error: dataRefreshJobsError } = await supabase.from("data_refresh_jobs").upsert(
+    grantsSeedRecords.dataRefreshJobs,
+    { onConflict: "id" }
+  );
+  if (dataRefreshJobsError) {
+    throw new Error(`Failed to upsert Data Hub refresh jobs: ${dataRefreshJobsError.message}`);
+  }
+
+  const { error: dataDatasetProjectLinksError } = await supabase
+    .from("data_dataset_project_links")
+    .upsert(grantsSeedRecords.dataDatasetProjectLinks, { onConflict: "dataset_id,project_id" });
+  if (dataDatasetProjectLinksError) {
+    throw new Error(`Failed to upsert Data Hub project links: ${dataDatasetProjectLinksError.message}`);
+  }
+
+  console.log(
+    `[seed:nctc] upserted Data Hub fixture ${DEMO_DATA_CONNECTOR_ID} ` +
+      `(${grantsSeedRecords.dataDatasets.length} datasets, ` +
+      `${grantsSeedRecords.dataRefreshJobs.length} refresh job, ` +
+      `${grantsSeedRecords.dataDatasetProjectLinks.length} project links)`
+  );
+
+  // 8. county_runs row with manifest_json + validation_summary_json verbatim.
   const { error: countyRunError } = await supabase.from("county_runs").upsert(
     {
       id: DEMO_COUNTY_RUN_ID,
@@ -1653,7 +1853,7 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted county_run ${DEMO_COUNTY_RUN_ID}`);
 
-  // 8. Assignment modeling evidence backbone rows for the demo county run.
+  // 9. Assignment modeling evidence backbone rows for the demo county run.
   const evidenceResult = await refreshCountyRunModelingEvidence({
     supabase,
     workspaceId: DEMO_WORKSPACE_ID,
@@ -1678,7 +1878,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 9. Existing Conditions / Travel Patterns chapter for the demo cycle.
+  // 10. Existing Conditions / Travel Patterns chapter for the demo cycle.
   //    The default trigger seeds 7 standard chapters; this adds an 8th
   //    chapter specific to the NCTC demo, with content_markdown composed
   //    directly from the bundle manifest + validation summary.
@@ -1710,7 +1910,7 @@ async function main(): Promise<void> {
     `[seed:nctc] upserted chapter ${DEMO_EXISTING_CONDITIONS_CHAPTER_KEY} (${chapterContent.length} chars)`
   );
 
-  // 10. Scenario set + comparison fixture for local UI/UX settle proof.
+  // 11. Scenario set + comparison fixture for local UI/UX settle proof.
   //     The first scenario_set upsert intentionally leaves baseline_entry_id
   //     null because the baseline entry FK cannot exist until entries are
   //     written. The final upsert below restores the deterministic baseline.
@@ -1774,7 +1974,7 @@ async function main(): Promise<void> {
       `${scenarioSeedRecords.scenarioComparisonIndicatorDeltas.length} deltas)`
   );
 
-  // 11. Aerial missions with authored AOI polygons. Three missions
+  // 12. Aerial missions with authored AOI polygons. Three missions
   //    cover distinct NCTC geographies (downtown Grass Valley, the
   //    SR-49 / Alta Sierra corridor south of town, and the Empire
   //    Mine State Historic Park area). Each polygon carries 9+
@@ -1878,7 +2078,7 @@ async function main(): Promise<void> {
     console.log(`[seed:nctc] upserted evidence package ${evidence.id} (${evidence.status})`);
   }
 
-  // 12. Project corridors — display-only LineStrings on the backdrop.
+  // 13. Project corridors — display-only LineStrings on the backdrop.
   //     Two authored roads anchored on Grass Valley geography: SR-49
   //     through downtown heading south, and Empire St heading east
   //     toward Empire Mine State Historic Park.
@@ -1916,7 +2116,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 13. Community engagement input — approved map comments that render as
+  // 14. Community engagement input — approved map comments that render as
   //     low-weight point features on the cartographic shell.
   const { error: engagementCampaignError } = await supabase.from("engagement_campaigns").upsert(
     {
@@ -1958,7 +2158,7 @@ async function main(): Promise<void> {
     );
   }
 
-  // 14. Deterministic report packet fixture for local UI/UX settle proof.
+  // 15. Deterministic report packet fixture for local UI/UX settle proof.
   const { error: reportError } = await supabase.from("reports").upsert(
     {
       id: DEMO_REPORT_ID,
@@ -2023,7 +2223,7 @@ async function main(): Promise<void> {
   }
   console.log(`[seed:nctc] upserted report fixture artifact ${DEMO_REPORT_ARTIFACT_ID}`);
 
-  // 15. Public census tracts (equity choropleth demo data).
+  // 16. Public census tracts (equity choropleth demo data).
   //     `census_tracts` is public data (no workspace scoping) and has a
   //     GEOMETRY(MultiPolygon, 4326) NOT NULL column — the Supabase JS
   //     client can't send PostGIS geometry directly, so we upsert through
@@ -2109,6 +2309,7 @@ async function main(): Promise<void> {
   console.log(`  opportunity: ${DEMO_FUNDING_OPPORTUNITY_ID}`);
   console.log(`  grant_award: ${DEMO_FUNDING_AWARD_ID}`);
   console.log(`  invoice:     ${DEMO_REIMBURSEMENT_INVOICE_ID} (${DEMO_REIMBURSEMENT_INVOICE_NUMBER})`);
+  console.log(`  data_hub:    ${DEMO_DATA_CONNECTOR_ID} (${grantsSeedRecords.dataDatasets.length} datasets)`);
   console.log(`  report:      ${DEMO_REPORT_ID}`);
   console.log(`  scenario:    ${DEMO_SCENARIO_SET_ID}`);
   console.log(`  rtp_cycle:   ${DEMO_RTP_CYCLE_ID}`);

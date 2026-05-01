@@ -3,6 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
   DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
+  DEMO_DATA_CONNECTOR_ID,
+  DEMO_DATA_HUB_CAPTURED_AT,
+  DEMO_DATA_REFRESH_JOB_ID,
+  DEMO_DATASET_CRASH_POINTS_ID,
+  DEMO_DATASET_EQUITY_TRACTS_ID,
+  DEMO_DATASET_SR49_CORRIDOR_ID,
   DEMO_FUNDING_AWARD_ID,
   DEMO_FUNDING_AWARD_TITLE,
   DEMO_COUNTY_RUN_ID,
@@ -137,6 +143,10 @@ describe("buildSeedRecords", () => {
     expect(records.awardedFundingOpportunity.created_by).toBe(ownerUserId);
     expect(records.fundingAward.created_by).toBe(ownerUserId);
     expect(records.billingInvoiceRecords.every((record) => record.created_by === ownerUserId)).toBe(true);
+    expect(records.dataConnector.created_by).toBe(ownerUserId);
+    expect(records.dataDatasets.every((dataset) => dataset.created_by === ownerUserId)).toBe(true);
+    expect(records.dataRefreshJobs.every((job) => job.created_by === ownerUserId)).toBe(true);
+    expect(records.dataDatasetProjectLinks.every((link) => link.linked_by === ownerUserId)).toBe(true);
     expect(records.rtpCycle.created_by).toBe(ownerUserId);
     expect(records.projectRtpLink.created_by).toBe(ownerUserId);
     expect(records.countyRun.created_by).toBe(ownerUserId);
@@ -205,6 +215,27 @@ describe("buildSeedRecords", () => {
       project_id: DEMO_PROJECT_ID,
       funding_award_id: DEMO_FUNDING_AWARD_ID,
     });
+    expect(records.dataConnector.id).toBe(DEMO_DATA_CONNECTOR_ID);
+    expect(records.dataConnector.workspace_id).toBe(DEMO_WORKSPACE_ID);
+    expect(records.dataDatasets.map((dataset) => dataset.id)).toEqual([
+      DEMO_DATASET_EQUITY_TRACTS_ID,
+      DEMO_DATASET_SR49_CORRIDOR_ID,
+      DEMO_DATASET_CRASH_POINTS_ID,
+    ]);
+    expect(records.dataDatasets.every((dataset) => dataset.workspace_id === DEMO_WORKSPACE_ID)).toBe(true);
+    expect(records.dataDatasets.every((dataset) => dataset.connector_id === DEMO_DATA_CONNECTOR_ID)).toBe(true);
+    expect(records.dataRefreshJobs.map((job) => job.id)).toEqual([DEMO_DATA_REFRESH_JOB_ID]);
+    expect(records.dataRefreshJobs[0]).toMatchObject({
+      workspace_id: DEMO_WORKSPACE_ID,
+      connector_id: DEMO_DATA_CONNECTOR_ID,
+      dataset_id: DEMO_DATASET_EQUITY_TRACTS_ID,
+    });
+    expect(records.dataDatasetProjectLinks.map((link) => link.dataset_id)).toEqual([
+      DEMO_DATASET_EQUITY_TRACTS_ID,
+      DEMO_DATASET_SR49_CORRIDOR_ID,
+      DEMO_DATASET_CRASH_POINTS_ID,
+    ]);
+    expect(records.dataDatasetProjectLinks.every((link) => link.project_id === DEMO_PROJECT_ID)).toBe(true);
     expect(records.report.id).toBe(DEMO_REPORT_ID);
     expect(records.report.workspace_id).toBe(DEMO_WORKSPACE_ID);
     expect(records.report.rtp_cycle_id).toBe(DEMO_RTP_CYCLE_ID);
@@ -338,6 +369,99 @@ describe("buildSeedRecords", () => {
         retention_amount: 11250,
         net_amount: 213750,
         caltrans_posture: "federal_aid_candidate",
+      }),
+    ]);
+  });
+
+  it("adds a deterministic local Data Hub fixture for lineage proof", () => {
+    const records = buildSeedRecords(ownerUserId, bundleManifest, validationSummary);
+
+    expect(records.dataConnector).toMatchObject({
+      id: DEMO_DATA_CONNECTOR_ID,
+      workspace_id: DEMO_WORKSPACE_ID,
+      key: "nctc-rtp-evidence-catalog",
+      display_name: "NCTC RTP evidence catalog",
+      source_type: "custom",
+      category: "local",
+      status: "active",
+      cadence: "manual",
+      auth_mode: "manual_upload",
+      policy_monitor_enabled: true,
+      last_sync_at: DEMO_DATA_HUB_CAPTURED_AT,
+      last_success_at: DEMO_DATA_HUB_CAPTURED_AT,
+    });
+    expect(records.dataConnector.description).toContain("NCTC RTP proof workspace");
+
+    expect(records.dataDatasets).toEqual([
+      expect.objectContaining({
+        id: DEMO_DATASET_EQUITY_TRACTS_ID,
+        name: "Nevada County ACS equity tract context",
+        status: "ready",
+        geography_scope: "tract",
+        geometry_attachment: "analysis_tracts",
+        thematic_metric_key: "zeroVehiclePct",
+        thematic_metric_label: "Zero-vehicle households",
+        row_count: 4,
+        refresh_cadence: "annual",
+        last_refreshed_at: DEMO_DATA_HUB_CAPTURED_AT,
+      }),
+      expect.objectContaining({
+        id: DEMO_DATASET_SR49_CORRIDOR_ID,
+        name: "SR-49 safety package corridor screening",
+        status: "ready",
+        geography_scope: "corridor",
+        geometry_attachment: "analysis_corridor",
+        thematic_metric_key: "safetyScore",
+        thematic_metric_label: "Safety score",
+        row_count: 2,
+        refresh_cadence: "manual",
+      }),
+      expect.objectContaining({
+        id: DEMO_DATASET_CRASH_POINTS_ID,
+        name: "SR-49 and Grass Valley safety comment/crash points",
+        status: "ready",
+        geography_scope: "point",
+        geometry_attachment: "analysis_crash_points",
+        thematic_metric_key: "severityBucket",
+        thematic_metric_label: "Severity bucket",
+        row_count: 4,
+        refresh_cadence: "manual",
+      }),
+    ]);
+    expect(records.dataDatasets.every((dataset) => `${dataset.citation_text ?? ""}`.length > 20)).toBe(true);
+    expect(records.dataDatasets.every((dataset) => `${dataset.checksum ?? ""}`.startsWith("sha256:"))).toBe(true);
+
+    expect(records.dataRefreshJobs).toEqual([
+      expect.objectContaining({
+        id: DEMO_DATA_REFRESH_JOB_ID,
+        workspace_id: DEMO_WORKSPACE_ID,
+        job_name: "Validate NCTC demo Data Hub evidence catalog",
+        job_type: "validation",
+        status: "succeeded",
+        refresh_mode: "manual",
+        records_written: 10,
+        triggered_by_label: "seed:nctc",
+      }),
+    ]);
+
+    expect(records.dataDatasetProjectLinks).toEqual([
+      expect.objectContaining({
+        dataset_id: DEMO_DATASET_EQUITY_TRACTS_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "baseline",
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
+      }),
+      expect.objectContaining({
+        dataset_id: DEMO_DATASET_SR49_CORRIDOR_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "primary_input",
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
+      }),
+      expect.objectContaining({
+        dataset_id: DEMO_DATASET_CRASH_POINTS_ID,
+        project_id: DEMO_PROJECT_ID,
+        relationship_type: "evidence",
+        linked_at: DEMO_DATA_HUB_CAPTURED_AT,
       }),
     ]);
   });

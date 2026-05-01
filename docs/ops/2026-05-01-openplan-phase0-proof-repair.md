@@ -11,6 +11,7 @@
 - Pilot Readiness parsing moved into a focused server-side helper with unit coverage.
 - `docs/ops/README.md` now points to the active full OS roadmap and recent proof artifacts.
 - Local `.env.local` public Mapbox posture was cleaned without printing token values: the invalid `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` entry was blanked, and the remaining `NEXT_PUBLIC_MAPBOX_TOKEN` entry passes the `pk.*` public-token check.
+- The NCTC demo seed now includes a deterministic Data Hub connector, three ready datasets, one succeeded validation job, and project links so `/data-hub` can be recaptured with populated lineage state.
 
 ## Validation Run
 
@@ -64,8 +65,26 @@ Checked:
 - `GET /api/billing/readiness` is not publicly readable.
 - CSP includes Mapbox API, events, tile/image, and worker allowances.
 
+## Data Hub Seed Fixture Validation
+
+```bash
+pnpm seed:nctc -- --dry-run
+pnpm exec vitest run src/test/seed-nctc-demo.test.ts
+pnpm exec eslint scripts/seed-nctc-demo.ts src/test/seed-nctc-demo.test.ts
+pnpm exec tsc --noEmit
+git diff --check
+```
+
+Result: PASS.
+
+Checked:
+
+- The NCTC artifact tree still loads and the dry run reports the screening-grade evidence bundle without writes.
+- `buildSeedRecords` now emits stable Data Hub connector, dataset, refresh-job, and project-link records.
+- The seeded datasets exercise tract, corridor, and crash-point thematic attachment modes used by `/data-hub`.
+
 ## Remaining Phase 0 Work
 
-- UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`. Remaining UI watch items are limited to Pilot Readiness recapture after the parser repair and a stronger Data Hub fixture recapture.
+- UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`. Remaining UI watch items are limited to Pilot Readiness recapture after the parser repair and `/data-hub` recapture against the refreshed NCTC seed fixture.
 - Admin operations public preflight is recorded in `2026-05-01-openplan-admin-operations-smoke-preflight.md`. The remaining step is the authenticated browser smoke with the actual allowlisted reviewer account.
 - A fresh release-candidate proof packet should be captured when those operator/browser proof steps are complete.

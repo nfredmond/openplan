@@ -36,7 +36,7 @@ No priority route is currently marked `fail`.
 | Explore map | pass | Supplemental proof confirms Mapbox canvas, controls, and inspector in both viewports. |
 | Admin index | pass | Authenticated admin surface captured without hard denial terms. |
 | Pilot Readiness | watch | Existing screenshots predate the 2026-05-01 parser repair; parser behavior is tested, but the route should be recaptured in the next UI pack. |
-| Data Hub | watch | Captured as a usable worksurface, but ledger records missing or thin dataset fixture state. |
+| Data Hub | watch | Captured as a usable worksurface. A deterministic NCTC Data Hub fixture now exists in `scripts/seed-nctc-demo.ts`; the route still needs a fresh desktop/mobile recapture to move from watch to captured. |
 
 ## Anti-Generic Review
 
@@ -55,12 +55,12 @@ No full component census is needed because there are no route failures. Current 
 - Registry rows, tables, and document sections: preferred structures for scan/compare/review tasks.
 - `StatusBadge`: status-critical when tied to readiness, freshness, funding, moderation, or review posture.
 - Explore map chips/badges: acceptable as map control or inspector affordances, but keep under watch because map surfaces can drift into badge noise quickly.
-- Data Hub capture: watch until the fixture is strong enough to prove lineage rows, dataset metadata, and source posture rather than only the shell.
+- Data Hub capture: watch until the refreshed proof pack shows the new seeded connector, lineage rows, dataset metadata, and source posture in desktop/mobile screenshots.
 
 ## Bounded Follow-Up
 
 1. Recapture `/admin/pilot-readiness` desktop/mobile after the 2026-05-01 parser repair so the visual proof reflects line-item `PASS:` recognition.
-2. Add or refresh a local Data Hub fixture and recapture `/data-hub` desktop/mobile as `captured` instead of `captured_watch`.
+2. Recapture `/data-hub` desktop/mobile against the refreshed NCTC seed fixture as `captured` instead of `captured_watch`.
 3. On the next major UI change, rerun the same local-only settle harness before broad refactors.
 
 ## Definition Of Settled
