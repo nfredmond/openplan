@@ -1,7 +1,7 @@
 # OpenPlan — Demo one-pager (NCTC proof-of-capability) — **Draft**
 
 _Date: 2026-04-19_
-_Status: **Draft copy for Nathaniel / Claire review.** Pricing, tone, and any named-partner language below are placeholders. Do not send without review._
+_Status: **Historical draft.** Superseded for current outreach by [2026-05-01 OpenPlan NCTC demo one-pager](2026-05-01-openplan-nctc-demo-one-pager.md). Pricing, tone, and any named-partner language below are placeholders. Do not send externally._
 
 ---
 
