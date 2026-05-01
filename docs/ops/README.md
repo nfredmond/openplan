@@ -30,6 +30,7 @@
 | [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) | **Current ops preflight** — public admin redirect/API-denial checks and Vercel reviewer allowlist env-name verification |
 | [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) | **Current RLS/browser proof** — synthetic cross-workspace project URLs blocked with session continuity verified |
 | [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) | **Current release gate** — test, lint, build, audit, prod health, and public preflight proof |
+| [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) | **Current RTP workflow proof** — cycle creation, packet creation, artifact generation, and release-review anchor landing |
 | [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
 | [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
 | [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
@@ -115,6 +116,7 @@
 - [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) — public preflight and production env-name verification before manual reviewer smoke
 - [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) — local synthetic cross-workspace project URL isolation with session-continuity screenshots
 - [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) — current release-candidate gate across test, lint, build, audit, prod health, and public preflight
+- [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) — first Phase 1 flagship workflow proof for RTP cycle, board packet, artifact generation, and release-review navigation
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
 - `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
@@ -136,6 +138,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **324**
-- Test output files (PNG/JSON/log/txt): **380**
+- Markdown docs in `docs/ops/`: **325**
+- Test output files (PNG/JSON/log/txt): **382**
 - Subdirectories: **38**

@@ -4,6 +4,7 @@
   "description": "Reusable production QA harness for OpenPlan evidence-backed smoke checks.",
   "main": "index.js",
   "scripts": {
+    "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
     "prod-auth-smoke": "node openplan-prod-auth-smoke.js",

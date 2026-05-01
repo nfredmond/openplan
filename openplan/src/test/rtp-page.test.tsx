@@ -35,6 +35,10 @@ const billingInvoicesSelectMock = vi.fn(() => ({ in: billingInvoicesInMock }));
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
 
+const reportArtifactsOrderMock = vi.fn();
+const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
+const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+
 const modelingClaimLimitMock = vi.fn();
 const modelingClaimOrderMock = vi.fn(() => ({ limit: modelingClaimLimitMock }));
 const modelingClaimNotMock = vi.fn(() => ({ order: modelingClaimOrderMock }));
@@ -68,6 +72,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_sections") {
     return { select: reportSectionsSelectMock };
+  }
+  if (table === "report_artifacts") {
+    return { select: reportArtifactsSelectMock };
   }
   if (table === "modeling_claim_decisions") {
     return { select: modelingClaimSelectMock };
@@ -236,6 +243,11 @@ describe("RtpPage", () => {
       error: null,
     });
 
+    reportArtifactsOrderMock.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+
     modelingClaimLimitMock.mockResolvedValue({
       data: [{ county_run_id: "county-run-1" }],
       error: null,
@@ -255,5 +267,35 @@ describe("RtpPage", () => {
 
     const grantsLink = screen.getByRole("link", { name: /Open gap resolution/i });
     expect(grantsLink).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
+  });
+
+  it("does not treat the packet report self-write as stale immediately after generation", async () => {
+    reportsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "report-1",
+          rtp_cycle_id: "rtp-1",
+          title: "Nevada County RTP 2050 Board Packet",
+          report_type: "board_packet",
+          status: "generated",
+          generated_at: "2026-04-14T07:00:00.000Z",
+          latest_artifact_kind: "html",
+          metadata_json: {
+            queueTrace: {
+              action: "generate_first_artifact",
+              actedAt: "2026-04-14T07:00:00.000Z",
+            },
+          },
+          updated_at: "2026-04-14T07:00:01.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    const packetLink = screen.getByRole("link", { name: /Open linked packet/i });
+    expect(packetLink).toHaveAttribute("href", "/reports/report-1#packet-release-review");
+    expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
   });
 });

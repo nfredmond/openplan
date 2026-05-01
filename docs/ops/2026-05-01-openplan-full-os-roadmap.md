@@ -67,6 +67,10 @@ Ship:
 - Grants OS with transparent readiness factors, evidence used, missing data, risks, confidence, and next action.
 - Board-ready and grant-ready exports: project sheets, maps, funding tables, engagement summaries, draft chapters, evidence packets.
 
+Current proof:
+
+- `2026-05-01-openplan-local-rtp-release-review-smoke.md` proves the first RTP workflow loop: create cycle, create board-packet record, generate HTML artifact, navigate from registry to report release-review anchor, and keep the freshly generated packet current instead of self-marking it stale.
+
 Exit gate:
 
 - A county ATP/RTP demo can run from project intake to board-ready packet and grant-ready project package without leaving the OpenPlan spine.

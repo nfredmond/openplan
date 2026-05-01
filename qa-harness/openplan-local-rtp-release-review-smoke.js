@@ -61,7 +61,7 @@ async function main() {
     throw new Error(`Failed to create QA user: ${createUserResult.status} ${JSON.stringify(createUserResult.data)}`);
   }
 
-  ids.userId = createUserResult.data.user?.id ?? null;
+  ids.userId = createUserResult.data.user?.id ?? createUserResult.data.id ?? null;
   notes.push(`Created QA auth user ${email}.`);
 
   const browser = await chromium.launch({ headless: true });
@@ -153,15 +153,14 @@ async function main() {
 
     await page.goto(`${baseUrl}/rtp`, { waitUntil: 'networkidle' });
     await page.getByText(cycleTitle, { exact: false }).first().waitFor({ timeout: 20000 });
-    await page.getByRole('link', { name: /Open release-review lane/i }).waitFor({ timeout: 20000 });
-    const reviewCurrentPacketLink = page.getByRole('link', { name: /Review current packet/i }).first();
-    await reviewCurrentPacketLink.waitFor({ timeout: 20000 });
-    notes.push('RTP registry rendered the release-review lane CTA and the row-level current-packet action.');
+    const openLinkedPacketLink = page.getByRole('link', { name: /Open linked packet/i }).first();
+    await openLinkedPacketLink.waitFor({ timeout: 20000 });
+    notes.push('RTP registry rendered the linked packet action for the generated current packet.');
     await screenshot('local-rtp-release-review-01-registry');
 
     await Promise.all([
       page.waitForURL(new RegExp(`/reports/${ids.reportId}#packet-release-review$`, 'i'), { timeout: 20000 }),
-      reviewCurrentPacketLink.click(),
+      openLinkedPacketLink.click(),
     ]);
     await page.waitForLoadState('networkidle');
     await page.getByRole('heading', { name: /Freshness against RTP source/i }).waitFor({ timeout: 20000 });
@@ -187,7 +186,7 @@ async function main() {
       ...artifacts.map((artifact) => `- ` + artifact),
       '',
       '## Verdict',
-      '- PASS: Local rendered smoke confirms the RTP registry now surfaces the release-review lane and current-packet review navigation onto the report release-review anchor.',
+      '- PASS: Local rendered smoke confirms RTP cycle creation, board-packet creation, artifact generation, registry linked-packet navigation, and report release-review anchor landing.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

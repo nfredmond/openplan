@@ -6,7 +6,6 @@ import {
   getReportNavigationHref,
   getReportPacketFreshness,
   getRtpPacketPresetAlignment,
-  resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import { buildProjectGrantModelingEvidenceByProjectId } from "@/lib/grants/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
@@ -353,7 +352,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         ? getReportPacketFreshness({
             latestArtifactKind: packetReport.latest_artifact_kind,
             generatedAt: packetReport.generated_at,
-            updatedAt: resolveReportPacketSourceUpdatedAt([cycle.updated_at, packetReport.updated_at]),
+            // Report row writes happen during generation; compare freshness to the upstream RTP source.
+            updatedAt: cycle.updated_at,
           })
         : {
             label: PACKET_FRESHNESS_LABELS.NO_PACKET,
