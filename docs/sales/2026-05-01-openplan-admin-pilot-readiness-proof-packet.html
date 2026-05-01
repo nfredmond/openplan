@@ -360,20 +360,30 @@
       }
 
       @media print {
+        @page {
+          size: Letter;
+          margin: 0.3in;
+        }
+
         body {
           background: #fff;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
 
         .sheet {
           width: auto;
-          min-height: 10.9in;
+          min-height: 0;
           margin: 0;
+          padding: 0;
           border: 0;
           box-shadow: none;
+          break-after: page;
           page-break-after: always;
         }
 
         .sheet:last-child {
+          break-after: auto;
           page-break-after: auto;
         }
       }
@@ -451,7 +461,7 @@
           </div>
           <div class="proof-tile">
             <strong>Admin support</strong>
-            <span>Request-access, reviewer triage, provisioning, and owner invite flow passed locally.</span>
+            <span>Request-access, reviewer triage, provisioning, owner invite flow, and production reviewer access are proof-backed.</span>
           </div>
           <div class="proof-tile">
             <strong>Managed hosting</strong>
@@ -511,7 +521,7 @@
 
         <div class="footer">
           <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Page 1 of 4</span>
+          <span>Static proof export</span>
         </div>
       </div>
 
@@ -569,6 +579,12 @@
                 <td class="status-pass">PASS</td>
                 <td>Public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance.</td>
                 <td class="source">docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</td>
+              </tr>
+              <tr>
+                <td>Production Admin Operations access</td>
+                <td class="status-pass">PASS</td>
+                <td>Configured reviewer loaded /admin/operations with service-lane intake unlocked; no triage/provision controls were clicked and no prospect rows were captured.</td>
+                <td class="source">docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</td>
               </tr>
               <tr>
                 <td>Billing posture</td>
@@ -638,7 +654,7 @@
 
         <div class="footer">
           <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Page 2 of 4</span>
+          <span>Static proof export</span>
         </div>
       </div>
 
@@ -724,6 +740,7 @@
                 <li>docs/ops/2026-05-01-openplan-rc-proof-log.md</li>
                 <li>docs/ops/2026-05-01-openplan-local-spine-smoke.md</li>
                 <li>docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</li>
+                <li>docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</li>
                 <li>docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</li>
                 <li>docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</li>
                 <li>openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</li>
@@ -735,7 +752,7 @@
 
         <div class="footer">
           <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Page 3 of 4</span>
+          <span>Static proof export</span>
         </div>
       </div>
 
@@ -843,7 +860,7 @@
 
         <div class="footer">
           <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Page 4 of 4</span>
+          <span>Static proof export</span>
         </div>
       </div>
     </div>

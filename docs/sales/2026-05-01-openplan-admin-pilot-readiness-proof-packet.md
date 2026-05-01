@@ -20,6 +20,7 @@ What has been proven for this release-to-sale posture:
 - analysis/model-run output linked into scenarios and generated report artifacts;
 - one seeded project record reused across RTP, grants, engagement, modeling evidence, reports, map, Data Hub, and aerial evidence;
 - supervised request-access, reviewer triage, pilot workspace provisioning, owner invitation, and invited-owner acceptance;
+- production Admin Operations access for the configured reviewer, with the service-lane intake unlocked and no prospect row capture;
 - current billing posture with an explicit no-fresh-paid-canary waiver; and
 - operator backup/restore procedure, completed staging restore drill, and managed-hosting service schedule language.
 
@@ -37,6 +38,7 @@ What has been proven for this release-to-sale posture:
 | Analysis/report linkage | PASS | Local rendered/API smoke confirms corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, report linkage, HTML artifact, and source-context traceability. | `docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md` |
 | Phase 1 shared spine | PASS | Local API/rendered smoke confirms one seeded NCTC project ID is reused across RTP, grants, engagement, scenario/analysis runs, county-run modeling evidence, project-targeted report/report runs, Data Hub, map corridor rows, aerial missions, and aerial evidence packages without duplicate project creation. | `docs/ops/2026-05-01-openplan-local-spine-smoke.md` |
 | Admin/support onboarding flow | PASS | Local rendered/API smoke confirms public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance. | `docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md` |
+| Production Admin Operations access | PASS | Production authenticated browser smoke confirms the configured reviewer can load `/admin/operations`, see the service-lane intake surface unlocked, and avoid triage/provision actions or prospect row capture during proof. | `docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` |
 | Billing posture | PASS with explicit waiver | Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed. | `docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
 | Managed hosting posture | Buyer-reviewable template | The service schedule defines scoped managed-hosting responsibilities, support targets, backup/restore fields to fill, and out-of-scope items before signature. | `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md` |
 | Backup/restore posture | PASS | The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. A dedicated staging Supabase project was created, migrated, restored from private production schema/public-data dumps, validated, and retired. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`; `docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md` |
@@ -110,6 +112,7 @@ Avoid:
 - RC proof log: `docs/ops/2026-05-01-openplan-rc-proof-log.md`
 - Phase 1 spine smoke: `docs/ops/2026-05-01-openplan-local-spine-smoke.md`
 - Admin/support smoke: `docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md`
+- Production admin operations auth smoke: `docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md`
 - Billing waiver proof: `docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md`
 
 ## Packet Verdict
