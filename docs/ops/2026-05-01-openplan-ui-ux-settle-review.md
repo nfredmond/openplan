@@ -1,19 +1,21 @@
 # OpenPlan UI/UX Settle Review
 
-**Date:** 2026-05-01  
-**Status:** PASS with two watch items  
-**Checkpoint:** `2026-04-29-openplan-ui-ux-settle-checkpoint.md`  
-**Evidence folder:** `2026-04-29-test-output/ui-ux-settle/`
+- **Date:** 2026-05-01
+- **Status:** PASS
+- **Checkpoint:** `2026-04-29-openplan-ui-ux-settle-checkpoint.md`
+- **Evidence folder:** `2026-04-29-test-output/ui-ux-settle/`
+- **Watch recapture:** `2026-05-01-test-output/ui-ux-watch-recapture/`
 
 ## Result
 
-The UI/UX settle proof pack is sufficient to unblock the next roadmap slice. The existing local-only capture set shows populated desktop and mobile operating surfaces for the app shell and the priority routes requested by the checkpoint.
+The UI/UX settle proof pack is sufficient to unblock the next roadmap slice. The existing local-only capture set shows populated desktop and mobile operating surfaces for the app shell and the priority routes requested by the checkpoint. The two original watch items were closed by the 2026-05-01 local recapture pack.
 
 Evidence reviewed:
 
 - Main ledger: 46 screenshots across 23 route groups, desktop `1440x1100` and mobile `390x844`.
 - Supplemental `/explore` proof: Mapbox canvas, controls, and inspector capture after public-token normalization.
 - Supplemental detail/admin proof: project detail, county-run detail, RTP detail, and `/admin` captured without hard denial terms.
+- Supplemental watch recapture: `/data-hub` and `/admin/pilot-readiness` desktop/mobile captured after the Data Hub fixture and readiness parser repairs.
 - Source guardrails: frontend design constitution, 2026-04-29 settle checkpoint, and current web interface guidelines.
 
 No priority route is currently marked `fail`.
@@ -35,8 +37,8 @@ No priority route is currently marked `fail`.
 | RTP index/detail | pass | RTP cycle registry and detail/document flow are populated. |
 | Explore map | pass | Supplemental proof confirms Mapbox canvas, controls, and inspector in both viewports. |
 | Admin index | pass | Authenticated admin surface captured without hard denial terms. |
-| Pilot Readiness | watch | Existing screenshots predate the 2026-05-01 parser repair; parser behavior is tested, but the route should be recaptured in the next UI pack. |
-| Data Hub | watch | Captured as a usable worksurface. A deterministic NCTC Data Hub fixture now exists in `scripts/seed-nctc-demo.ts`; the route still needs a fresh desktop/mobile recapture to move from watch to captured. |
+| Pilot Readiness | pass | Supplemental 2026-05-01 desktop/mobile recapture shows the parser-repaired readiness surface with four passing checks and no pending/failing checks. |
+| Data Hub | pass | Supplemental 2026-05-01 desktop/mobile recapture requires and captures the NCTC Data Hub connector plus three seeded datasets. |
 
 ## Anti-Generic Review
 
@@ -55,13 +57,12 @@ No full component census is needed because there are no route failures. Current 
 - Registry rows, tables, and document sections: preferred structures for scan/compare/review tasks.
 - `StatusBadge`: status-critical when tied to readiness, freshness, funding, moderation, or review posture.
 - Explore map chips/badges: acceptable as map control or inspector affordances, but keep under watch because map surfaces can drift into badge noise quickly.
-- Data Hub capture: watch until the refreshed proof pack shows the new seeded connector, lineage rows, dataset metadata, and source posture in desktop/mobile screenshots.
+- Data Hub capture: pass after the 2026-05-01 recapture pack; the harness now requires the seeded connector and datasets before it marks the route captured.
 
 ## Bounded Follow-Up
 
-1. Recapture `/admin/pilot-readiness` desktop/mobile after the 2026-05-01 parser repair so the visual proof reflects line-item `PASS:` recognition.
-2. Recapture `/data-hub` desktop/mobile against the refreshed NCTC seed fixture as `captured` instead of `captured_watch`.
-3. On the next major UI change, rerun the same local-only settle harness before broad refactors.
+1. On the next major UI change, rerun the same local-only settle harness before broad refactors.
+2. Keep the NCTC Data Hub fixture in `scripts/seed-nctc-demo.ts` aligned with the Data Hub route expectations.
 
 ## Definition Of Settled
 
@@ -69,6 +70,6 @@ The UI/UX overhaul is settled enough for the next implementation wave:
 
 - The proof pack exists for all priority route groups.
 - No priority route fails the rejection criteria.
-- Watch items are named and bounded.
+- The original watch items have local desktop/mobile recapture proof.
 - The app preserves the civic workbench posture: left rail where applicable, continuous worksurface, row/table/document/map structures, clear context panels, and restrained status language.
 - Future UI work should start from this review, the frontend constitution, and the 2026-04-29 checkpoint.

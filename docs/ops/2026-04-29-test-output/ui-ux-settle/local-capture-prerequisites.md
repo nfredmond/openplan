@@ -88,5 +88,5 @@ Do not proceed with capture if any of these are true:
 - The app points at production Supabase.
 - The Mapbox token is missing for map-route proof.
 - The page is still loading, signed out, or showing workspace-membership-required state for a route that is meant to prove populated workspace UX.
-- The route requires a plan, program, report, scenario, grant, or dataset fixture that is not present. For the current manifest, no priority operating surface should remain fixture-required after rerunning the NCTC seed; data hub may still be captured as watch if connector/dataset rows are absent.
+- The route requires a plan, program, report, scenario, grant, or dataset fixture that is not present. For the current manifest, no priority operating surface should remain fixture-required after rerunning the NCTC seed; Data Hub should now show the seeded connector and datasets rather than a watch row.
 - The only available tooling path is a production harness that creates QA users or records.

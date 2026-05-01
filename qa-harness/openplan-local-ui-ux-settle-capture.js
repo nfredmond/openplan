@@ -160,10 +160,15 @@ const ROUTES = [
     stateKey: 'workspace-data',
     url: '/data-hub',
     authWorkspace: 'NCTC demo workspace',
-    seedState: 'Connector/dataset rows preferred',
+    seedState: 'NCTC Data Hub connector and datasets visible',
     visibleTarget: 'Data hub worksurface',
-    expectedTextAny: ['Data hub', 'Data Hub', 'Dataset', 'Connector'],
-    optionalState: 'Dataset fixture may be missing; record actual local state.',
+    expectedTextAll: [
+      'NCTC RTP evidence catalog',
+      'Nevada County ACS equity tract context',
+      'SR-49 safety package corridor screening',
+      'SR-49 and Grass Valley safety comment/crash points',
+    ],
+    missingDependency: 'Updated local NCTC Data Hub fixture missing; rerun the local NCTC seed before capture.',
   },
   {
     routeKey: 'explore-map',

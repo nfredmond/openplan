@@ -83,8 +83,25 @@ Checked:
 - `buildSeedRecords` now emits stable Data Hub connector, dataset, refresh-job, and project-link records.
 - The seeded datasets exercise tract, corridor, and crash-point thematic attachment modes used by `/data-hub`.
 
+## UI Watch Recapture
+
+```bash
+pnpm seed:nctc
+OPENPLAN_UI_UX_STORAGE_STATE=/tmp/openplan-nctc-local-storage-state.json \
+OPENPLAN_UI_UX_SETTLE_OUTPUT_DIR=docs/ops/2026-05-01-test-output/ui-ux-watch-recapture \
+npm run local-ui-ux-settle-capture -- --route data-hub --route pilot-readiness
+```
+
+Result: PASS, 4 captured rows.
+
+Checked:
+
+- `/data-hub` desktop/mobile now requires and captures the seeded NCTC Data Hub connector plus three seeded datasets.
+- `/admin/pilot-readiness` desktop/mobile now captures the parser-repaired readiness page with four passing checks and no pending/failing checks.
+- The shared cartographic backdrop no longer triggers a Next dev hydration issue during the capture.
+
 ## Remaining Phase 0 Work
 
-- UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`. Remaining UI watch items are limited to Pilot Readiness recapture after the parser repair and `/data-hub` recapture against the refreshed NCTC seed fixture.
+- UI/UX settle proof pack is reviewed in `2026-05-01-openplan-ui-ux-settle-review.md`; the original Pilot Readiness and Data Hub watch items are closed by `2026-05-01-openplan-ui-ux-watch-recapture.md`.
 - Admin operations public preflight is recorded in `2026-05-01-openplan-admin-operations-smoke-preflight.md`. The remaining step is the authenticated browser smoke with the actual allowlisted reviewer account.
 - A fresh release-candidate proof packet should be captured when those operator/browser proof steps are complete.

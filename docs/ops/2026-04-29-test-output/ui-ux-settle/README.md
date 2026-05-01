@@ -21,6 +21,7 @@ The work here is local proof-pack preparation:
 - `capture-manifest.md` - route, viewport, state, and artifact manifest for the priority routes.
 - `local-capture-prerequisites.md` - exact local prerequisites plus existing scripts and tests inspected for capture support.
 - `local-ui-ux-settle-capture-ledger.md` / `.json` - read-only authenticated local capture ledger with populated route evidence for all priority operating surfaces.
+- `../../2026-05-01-test-output/ui-ux-watch-recapture/` - supplemental local recapture that closes the original Data Hub and Pilot Readiness watch rows.
 - `settle-gap-triage.md` - closure checklist for the proof gaps settled by the local-only capture pass.
 - `fixture-auth-continuation.md` - practical local-only runbook retained as regression context now that scenario/grants recaptures and blocked/detail/admin authorization-check gaps are closed.
 - `../ui-ux-settle-explore-check/` - supplemental read-only `/explore` Mapbox proof pack.
@@ -39,6 +40,7 @@ The work here is local proof-pack preparation:
 - Reports: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000019`; desktop/mobile index and detail captures complete.
 - Scenarios: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` as `d0000001-0000-4000-8000-000000000030`; desktop/mobile index and detail captures complete.
 - Grants: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` with opportunity `d0000001-0000-4000-8000-000000000018`, awarded opportunity `d0000001-0000-4000-8000-000000000041`, award `d0000001-0000-4000-8000-000000000042`, and invoice `d0000001-0000-4000-8000-000000000043`; desktop/mobile captures complete.
+- Data Hub: fixture supplied by `openplan/scripts/seed-nctc-demo.ts` with connector `d0000001-0000-4000-8000-000000000050` and three datasets; desktop/mobile watch recapture complete in the 2026-05-01 supplemental pack.
 
 ## Proof Pack Rule
 

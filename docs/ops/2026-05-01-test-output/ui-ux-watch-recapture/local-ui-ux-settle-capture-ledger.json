@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "openplan.local_ui_ux_settle_capture.v1",
+  "generatedAt": "2026-05-01T07:02:20.376Z",
+  "baseUrl": "http://localhost:3000",
+  "outputDir": "docs/ops/2026-05-01-test-output/ui-ux-watch-recapture",
+  "storageStateSupplied": true,
+  "rows": [
+    {
+      "routeKey": "data-hub",
+      "routeUrl": "/data-hub",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "NCTC Data Hub connector and datasets visible",
+      "visibleTarget": "Data hub worksurface",
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/data-hub--desktop--workspace-data.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    },
+    {
+      "routeKey": "pilot-readiness",
+      "routeUrl": "/admin/pilot-readiness",
+      "viewportKey": "desktop",
+      "viewport": "1440x1100",
+      "authWorkspace": "Authenticated operator workspace",
+      "seedState": "Local proof docs visible as readiness inputs",
+      "visibleTarget": "Readiness status list",
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/pilot-readiness--desktop--local-doc-status.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    },
+    {
+      "routeKey": "data-hub",
+      "routeUrl": "/data-hub",
+      "viewportKey": "mobile",
+      "viewport": "390x844",
+      "authWorkspace": "NCTC demo workspace",
+      "seedState": "NCTC Data Hub connector and datasets visible",
+      "visibleTarget": "Data hub worksurface",
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/data-hub--mobile--workspace-data.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    },
+    {
+      "routeKey": "pilot-readiness",
+      "routeUrl": "/admin/pilot-readiness",
+      "viewportKey": "mobile",
+      "viewport": "390x844",
+      "authWorkspace": "Authenticated operator workspace",
+      "seedState": "Local proof docs visible as readiness inputs",
+      "visibleTarget": "Readiness status list",
+      "missingDependency": "",
+      "screenshot": "docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/pilot-readiness--mobile--local-doc-status.png",
+      "status": "captured",
+      "notes": "Captured populated/authenticated local route state."
+    }
+  ]
+}

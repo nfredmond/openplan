@@ -132,6 +132,7 @@ export function CartographicMapBackdrop() {
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [themeMounted, setThemeMounted] = useState(false);
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
@@ -145,6 +146,14 @@ export function CartographicMapBackdrop() {
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
   const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
+  const backdropTheme = themeMounted && resolvedTheme === "dark" ? "dark" : "light";
+
+  useEffect(() => {
+    // One-shot mount gate so next-themes can resolve without a hydration style diff.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setThemeMounted(true);
+  }, []);
+
   useEffect(() => {
     navigateRef.current = (path: string) => router.push(path);
   }, [router]);
@@ -167,6 +176,7 @@ export function CartographicMapBackdrop() {
 
   useEffect(() => {
     if (suppressed) return;
+    if (!themeMounted) return;
     if (!containerRef.current || mapRef.current) return;
     if (!MAPBOX_ACCESS_TOKEN) {
       // Fall back to the CSS parchment gradient (no Mapbox) — still visually on-brand.
@@ -181,7 +191,7 @@ export function CartographicMapBackdrop() {
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
     const styleUrl =
-      resolvedTheme === "dark"
+      backdropTheme === "dark"
         ? "mapbox://styles/mapbox/dark-v11"
         : "mapbox://styles/mapbox/light-v11";
 
@@ -204,14 +214,14 @@ export function CartographicMapBackdrop() {
       map.remove();
       mapRef.current = null;
     };
-  }, [suppressed, resolvedTheme]);
+  }, [suppressed, themeMounted, backdropTheme]);
 
   // Swap style when theme toggles (without tearing down the whole map).
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     const styleUrl =
-      resolvedTheme === "dark"
+      backdropTheme === "dark"
         ? "mapbox://styles/mapbox/dark-v11"
         : "mapbox://styles/mapbox/light-v11";
     try {
@@ -219,7 +229,7 @@ export function CartographicMapBackdrop() {
     } catch {
       // no-op: style change is best-effort
     }
-  }, [resolvedTheme]);
+  }, [backdropTheme]);
 
   // Fetch workspace-scoped mission AOIs once the shell is mounted. Unauthenticated
   // calls return 401 and we silently render no polygons — the public landing
@@ -1146,7 +1156,7 @@ export function CartographicMapBackdrop() {
             opacity: ready ? 1 : 0,
             transition: "opacity 300ms ease",
             filter:
-              resolvedTheme === "dark"
+              backdropTheme === "dark"
                 ? "saturate(0.8) brightness(0.95)"
                 : "saturate(0.7) contrast(0.95)",
           }}
@@ -1160,7 +1170,7 @@ export function CartographicMapBackdrop() {
             inset: 0,
             pointerEvents: "none",
             background:
-              resolvedTheme === "dark"
+              backdropTheme === "dark"
                 ? "linear-gradient(180deg, rgba(17,22,24,0.2) 0%, rgba(17,22,24,0.35) 100%)"
                 : "linear-gradient(180deg, rgba(244,241,236,0.3) 0%, rgba(244,241,236,0.12) 100%)",
           }}
