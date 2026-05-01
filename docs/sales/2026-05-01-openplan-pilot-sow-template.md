@@ -30,9 +30,10 @@ Select one primary workflow:
 3. User/access path confirmation.
 4. Initial data/workflow configuration for the selected use case.
 5. One guided workflow proof session.
-6. One midpoint check-in.
-7. One closeout call and short closeout memo.
-8. Export or handoff of agreed proof artifacts.
+6. One shared-spine reuse check for project/evidence records when the selected workflow crosses modules.
+7. One midpoint check-in.
+8. One closeout call and short closeout memo.
+9. Export or handoff of agreed proof artifacts.
 
 ## Optional Add-Ons
 
@@ -79,6 +80,7 @@ OpenPlan includes managed-hosting billing infrastructure, but no fresh same-cycl
 The pilot is successful if:
 
 - the selected workflow is completed end to end,
+- shared project/evidence records are reused rather than duplicated when the workflow crosses modules,
 - evidence and assumptions are visible,
 - the client can identify whether the workflow saves time or reduces risk,
 - caveats are clear,

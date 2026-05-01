@@ -20,6 +20,7 @@ Implementation services turn OpenPlan from software access into a working planni
 
 - Import or structure the first project list.
 - Normalize sponsor, phase, cost, funding, plan inclusion, status, and priority fields.
+- Confirm shared project-spine links for RTP, grants, engagement, analysis, reports, maps, and evidence when those surfaces are in scope.
 - Identify missing project evidence and next actions.
 
 ### 3. RTP / Plan Workflow Setup
