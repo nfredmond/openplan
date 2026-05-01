@@ -147,6 +147,10 @@ Ship:
 - Integrations that serve the spine: ArcGIS/QGIS exports, Mapbox, Google Drive, SharePoint path, calendar, Slack/Teams, email, Census, Caltrans/state portals, Socrata/open data, GTFS, OSM, drone/photogrammetry tools, billing, and private hosting/SSO path.
 - GA operations: backup/restore runbook, incident runbook, monitoring for CSP reports, billing/webhook failures, body-limit events, action audit failures, support SLA, and escalation path.
 
+Current proof:
+
+- `2026-05-01-openplan-local-admin-support-flow-smoke.md` proves the supervised admin/support flow: public request-access intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, manual owner invitation ledgering, review-event audit trail, and invited-owner acceptance.
+
 Exit gate:
 
 - Production pilots can run normal planning workflows without bespoke operator intervention, and every major output has traceable evidence, review history, export history, and caveat boundaries.
@@ -187,4 +191,6 @@ npm run local-rtp-release-review-smoke
 npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
+# Start pnpm dev with the same reviewer allowlist before this smoke.
+OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
 ```
