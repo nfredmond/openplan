@@ -1,7 +1,7 @@
 # OpenPlan Restore Drill Approval Intake
 
 **Date:** 2026-05-01
-**Status:** Blocked before cloud mutation; approval intent received but required drill fields are incomplete
+**Status:** Superseded by completed drill log; see `2026-05-01-openplan-restore-drill-staging-supabase.md`
 **Audience:** Nathaniel Ford Redmond and trusted OpenPlan operators
 **Related preflight:** `2026-05-01-openplan-restore-drill-preflight-plan.md`
 **Related approval packet:** `2026-05-01-openplan-restore-drill-approval-packet.md`
@@ -12,7 +12,7 @@ Nathaniel sent approval intent in chat: "I approve. Please continue."
 
 That is enough to continue non-mutating preparation, but it does not satisfy the approval packet's required mutation gate because it does not name a staging Supabase target, source restore point, operator, mutation window, cleanup posture, or evidence log path.
 
-No Supabase cloud command, project link, restore, dump import, storage replay, service-role staging inspection, cleanup, Vercel mutation, billing mutation, email operation, or secret operation was run from this approval intake.
+At intake time, no Supabase cloud command, project link, restore, dump import, storage replay, service-role staging inspection, cleanup, Vercel mutation, billing mutation, email operation, or secret operation had been run from this approval intake. The later completed staging drill is logged separately in `2026-05-01-openplan-restore-drill-staging-supabase.md`.
 
 ## Dry-Run Checks Completed
 
@@ -42,4 +42,4 @@ Use this shape before any cloud operation:
 
 ## Release-To-Sale Status
 
-OPEN: this intake does not complete the restore-drill release gate. The gate can close only after the approved staging drill runs, validation is logged, cleanup or retention is recorded, and the separate dated drill log is committed.
+SUPERSEDED: this intake did not complete the restore-drill release gate. The later staging drill log records the approved target, validation, cleanup, and PASS result.

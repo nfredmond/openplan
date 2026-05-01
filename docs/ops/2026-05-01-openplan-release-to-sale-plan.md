@@ -31,6 +31,7 @@ Do not sell this release as:
 | Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence | PASS - `2026-05-01-openplan-local-spine-smoke.md` |
 | Admin/support workflow | Ops | request access, reviewer triage, provisioning, owner invite acceptance | PASS - `2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Billing posture | CEO/Ops | explicit waiver plus current non-money-moving proof | PASS - `2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
+| Staging restore drill | Ops | dedicated staging Supabase restore, validation, and cleanup | PASS - `2026-05-01-openplan-restore-drill-staging-supabase.md` |
 
 ## Sales Package Checklist
 
@@ -85,7 +86,7 @@ Do not sell this release as:
 
 - [x] Incident triage runbook: `openplan/docs/ops/RUNBOOK.md`.
 - [x] Backup, restore, and recovery-drill procedure: `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. Quarterly drill cadence; per-engagement RPO/RTO commitments are filled on the managed-hosting service schedule, not promised here.
-- [ ] Run the first quarterly restore drill into a staging Supabase project and log under `docs/ops/YYYY-MM-DD-openplan-restore-drill-<slug>.md` before the next external paid milestone. Preflight plan: `2026-05-01-openplan-restore-drill-preflight-plan.md`; approval packet: `2026-05-01-openplan-restore-drill-approval-packet.md`; approval-intake note: `2026-05-01-openplan-restore-drill-approval-intake.md`. None of these documents completes the actual staging drill.
+- [x] Ran the first quarterly restore drill into a dedicated staging Supabase project and logged it under `2026-05-01-openplan-restore-drill-staging-supabase.md`; preflight plan: `2026-05-01-openplan-restore-drill-preflight-plan.md`; approval packet: `2026-05-01-openplan-restore-drill-approval-packet.md`; approval-intake note: `2026-05-01-openplan-restore-drill-approval-intake.md`.
 
 ## Current Sellable Wedge
 

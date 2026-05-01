@@ -21,7 +21,7 @@ What has been proven for this release-to-sale posture:
 - one seeded project record reused across RTP, grants, engagement, modeling evidence, reports, map, Data Hub, and aerial evidence;
 - supervised request-access, reviewer triage, pilot workspace provisioning, owner invitation, and invited-owner acceptance;
 - current billing posture with an explicit no-fresh-paid-canary waiver; and
-- operator backup/restore procedure and managed-hosting service schedule language.
+- operator backup/restore procedure, completed staging restore drill, and managed-hosting service schedule language.
 
 ## Proof Snapshot
 
@@ -39,7 +39,7 @@ What has been proven for this release-to-sale posture:
 | Admin/support onboarding flow | PASS | Local rendered/API smoke confirms public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance. | `docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Billing posture | PASS with explicit waiver | Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed. | `docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
 | Managed hosting posture | Buyer-reviewable template | The service schedule defines scoped managed-hosting responsibilities, support targets, backup/restore fields to fill, and out-of-scope items before signature. | `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md` |
-| Backup/restore posture | Operator procedure | The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md` |
+| Backup/restore posture | PASS | The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. A dedicated staging Supabase project was created, migrated, restored from private production schema/public-data dumps, validated, and retired. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`; `docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md` |
 
 ## What Nat Ford Should Validate During Buyer Onboarding
 
@@ -64,7 +64,7 @@ These items remain real work or engagement-specific decisions, not release-wide 
 - buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document review;
 - SSO, private cloud, agency-cloud deployment, custom security review, or enhanced support/SLA terms;
 - formal RPO/RTO commitments beyond the signed managed-hosting schedule;
-- a first quarterly restore drill into staging before the next external paid milestone;
+- future quarterly restore drills for later production milestones;
 - fresh same-cycle paid checkout proof if the buyer or procurement reviewer requires it;
 - calibrated or certified behavioral-demand modeling and broader ActivitySim/MATSim readiness;
 - complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off;
@@ -106,6 +106,7 @@ Avoid:
 - Managed-hosting service schedule: `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md`
 - Pilot SOW template: `docs/sales/2026-05-01-openplan-pilot-sow-template.md`
 - Backup/restore procedure: `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`
+- Staging restore drill: `docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md`
 - RC proof log: `docs/ops/2026-05-01-openplan-rc-proof-log.md`
 - Phase 1 spine smoke: `docs/ops/2026-05-01-openplan-local-spine-smoke.md`
 - Admin/support smoke: `docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md`

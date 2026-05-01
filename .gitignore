@@ -8,6 +8,7 @@ openplan/supabase/.temp/
 
 # Local env snapshots
 *.env.local.backup
+.operator-private/
 .vercel
 .venv
 __pycache__

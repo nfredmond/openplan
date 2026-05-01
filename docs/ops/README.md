@@ -28,6 +28,7 @@
 | [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) | **Active operator preflight** — buyer/internal-safe staging restore-drill plan; actual Supabase restore remains approval-gated and open |
 | [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) | **Approval packet** — Nathaniel decision language, safeguards, mutation boundary, cleanup expectation, and evidence requirements for the first staging restore drill |
 | [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) | **Approval intake note** — approval intent received, required target/source/window/cleanup fields still missing, no cloud mutation run |
+| [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) | **Current restore-drill proof** — dedicated staging Supabase project created, migrated, restored from private production schema/public-data dumps, validated, and retired |
 | [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) | **Buyer-safe proof export** — static HTML/PDF packet for supervised pilot and managed-service diligence |
 | [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) | **First buyer-specific release-to-sale package** — NCTC-geo demo posture, 30-minute walkthrough, outreach draft, pilot ask, and stop conditions |
 | [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
@@ -67,6 +68,7 @@
 - [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; actual restore remains approval-gated and open
 - [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) — Nathaniel approval packet for the first staging restore drill, including safeguards, mutation boundary, cleanup expectation, evidence requirements, and approval phrase
 - [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) — records approval intent and missing required fields; no Supabase cloud mutation has run
+- [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — completed staging restore drill with migration/data replay, RLS/count/storage validation, and dedicated project cleanup
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — buyer-safe static HTML/PDF proof packet for supervised pilot and managed-service diligence
 - [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) — first buyer-specific release-to-sale package with demo posture, outreach draft, scoped pilot ask, and stop conditions
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
@@ -141,6 +143,7 @@
 - [2026-05-01 local Phase 1 spine smoke](2026-05-01-openplan-local-spine-smoke.md) — shared-spine proof that one NCTC project ID is reused across RTP, grants, engagement, analysis/county-run, report, map, Data Hub, and aerial evidence rows
 - [2026-05-01 local admin support flow smoke](2026-05-01-openplan-local-admin-support-flow-smoke.md) — flagship Admin/support proof for public intake, reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, audit trail, and invited-owner acceptance
 - [2026-05-01 billing current-cycle waiver proof](2026-05-01-openplan-billing-current-cycle-waiver-proof.md) — current Billing proof boundary retaining the explicit no-fresh-paid-canary waiver in sales language
+- [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — current backup/restore proof for a dedicated non-production Supabase restore, validation, and cleanup
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — static buyer-facing proof export assembled from the current release-to-sale, workflow smoke, managed-hosting, and backup/restore evidence
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS

@@ -459,7 +459,7 @@
           </div>
           <div class="proof-tile">
             <strong>Operator recovery</strong>
-            <span>Backup/restore procedure exists; first quarterly restore drill remains to run.</span>
+            <span>Backup/restore procedure exists; first staging Supabase restore drill passed.</span>
           </div>
         </div>
 
@@ -584,9 +584,9 @@
               </tr>
               <tr>
                 <td>Backup/restore posture</td>
-                <td class="status-boundary">Procedure exists</td>
-                <td>Operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries.</td>
-                <td class="source">openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</td>
+                <td class="status-pass">PASS</td>
+                <td>Operator procedure exists, and a dedicated staging Supabase project was migrated, restored from private production schema/public-data dumps, validated, and retired.</td>
+                <td class="source">docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</td>
               </tr>
             </tbody>
           </table>
@@ -659,7 +659,7 @@
                 <li>SSO, private cloud, agency-cloud deployment, custom security review, or enhanced support/SLA terms.</li>
                 <li>Formal RPO/RTO commitments beyond the signed managed-hosting schedule.</li>
                 <li>Fresh same-cycle paid checkout proof if a buyer or procurement reviewer requires it.</li>
-                <li>First quarterly restore drill into staging before the next external paid milestone.</li>
+                <li>Future quarterly restore drills for later production milestones.</li>
               </ul>
             </div>
             <div class="text-block">
@@ -725,6 +725,7 @@
                 <li>docs/ops/2026-05-01-openplan-local-spine-smoke.md</li>
                 <li>docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</li>
                 <li>docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</li>
+                <li>docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</li>
                 <li>openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</li>
                 <li>docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/local-ui-ux-settle-capture-ledger.md</li>
               </ul>
