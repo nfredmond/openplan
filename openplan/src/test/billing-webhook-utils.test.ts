@@ -35,6 +35,19 @@ describe("billing webhook helpers", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("normalizes historical OpenPlan tier references in legacy webhook payloads", () => {
+    const parsed = parseLegacyWebhookPayload({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      subscriptionStatus: "active",
+      subscriptionPlan: "openplan-agency-prelaunch",
+    });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.subscriptionPlan).toBe("enterprise");
+    }
+  });
+
   it("returns guarded error when stripe webhook secret is missing", async () => {
     const result = await verifyStripeWebhookSignature({
       rawBody: "{}",
@@ -113,6 +126,28 @@ describe("billing webhook helpers", () => {
       expect(mapped.mutation.stripeCustomerId).toBe("cus_123");
       expect(mapped.mutation.stripeSubscriptionId).toBe("sub_123");
       expect(mapped.mutation.currentPeriodEnd).toBe("2026-01-01T00:00:00.000Z");
+    }
+  });
+
+  it("maps Stripe metadata with old OpenPlan tier references into billing plans", () => {
+    const mapped = mapStripeEventToBillingMutation({
+      id: "evt_legacy_tier",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          customer: "cus_123",
+          subscription: "sub_123",
+          metadata: {
+            workspaceId: "11111111-1111-4111-8111-111111111111",
+            plan: "openplan-professional-prelaunch",
+          },
+        },
+      },
+    });
+
+    expect(mapped.handled).toBe(true);
+    if (mapped.handled) {
+      expect(mapped.mutation.subscriptionPlan).toBe("professional");
     }
   });
 

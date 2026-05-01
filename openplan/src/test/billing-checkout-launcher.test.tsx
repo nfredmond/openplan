@@ -14,10 +14,10 @@ describe("BillingCheckoutLauncher", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("posts the selected workspace and plan before redirecting to Stripe", async () => {
+  it("posts the selected workspace and plan before redirecting to fit-review intake", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123" }),
+      json: async () => ({ intakeUrl: "/contact/openplan-fit?product=openplan&tier=starter" }),
     });
 
     render(
@@ -32,7 +32,7 @@ describe("BillingCheckoutLauncher", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Start Starter checkout for Nevada County Pilot" }));
+    fireEvent.click(screen.getByRole("button", { name: "Request Starter fit review for Nevada County Pilot" }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/billing/checkout", {
@@ -46,7 +46,7 @@ describe("BillingCheckoutLauncher", () => {
     });
 
     await waitFor(() => {
-      expect(assignMock).toHaveBeenCalledWith("https://checkout.stripe.com/c/pay/cs_test_123");
+      expect(assignMock).toHaveBeenCalledWith("/contact/openplan-fit?product=openplan&tier=starter");
     });
   });
 
@@ -68,7 +68,7 @@ describe("BillingCheckoutLauncher", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Start Professional checkout for Nevada County Pilot" }));
+    fireEvent.click(screen.getByRole("button", { name: "Request Professional fit review for Nevada County Pilot" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Owner/admin access is required");
     expect(assignMock).not.toHaveBeenCalled();
@@ -88,10 +88,10 @@ describe("BillingCheckoutLauncher", () => {
     );
 
     expect(screen.getByText(/Members can review billing posture/)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Start Starter checkout/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Request Starter fit review/i })).not.toBeInTheDocument();
   });
 
-  it("surfaces the locked workspace target in the safeguard copy", () => {
+  it("surfaces the locked workspace target in the fit-review safeguard copy", () => {
     render(
       <BillingCheckoutLauncher
         workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
@@ -104,9 +104,9 @@ describe("BillingCheckoutLauncher", () => {
       />
     );
 
-    expect(screen.getByText(/Checkout target is locked before Stripe opens/i)).toBeInTheDocument();
+    expect(screen.getByText(/Fit-review context is locked before intake opens/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Nevada County Pilot/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/aaaaaaaa/).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /Start Starter checkout for Nevada County Pilot/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Request Starter fit review for Nevada County Pilot/i })).toBeInTheDocument();
   });
 });

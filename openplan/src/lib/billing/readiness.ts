@@ -184,22 +184,11 @@ export function buildBillingReadinessSummary({
       required: true,
       detailWhenMissing: "Missing OPENPLAN_STRIPE_SECRET_KEY or STRIPE_SECRET_KEY.",
     }),
-    envCheck({
-      env,
-      key: "stripe_starter_price",
-      label: "Starter checkout price",
-      names: ["OPENPLAN_STRIPE_PRICE_ID_STARTER"],
-      required: true,
-      detailWhenMissing: "Missing OPENPLAN_STRIPE_PRICE_ID_STARTER.",
-    }),
-    envCheck({
-      env,
-      key: "stripe_professional_price",
-      label: "Professional checkout price",
-      names: ["OPENPLAN_STRIPE_PRICE_ID_PROFESSIONAL"],
-      required: false,
-      detailWhenMissing: "OPENPLAN_STRIPE_PRICE_ID_PROFESSIONAL is not configured; Starter canary can still run.",
-    }),
+    passCheck(
+      "openplan_fit_review_routing",
+      "OpenPlan checkout routing",
+      "Direct OpenPlan tier checkout is disabled; new public requests route to fit-review intake."
+    ),
     envCheck({
       env,
       key: "stripe_webhook_secret",

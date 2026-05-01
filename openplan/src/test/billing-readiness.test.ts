@@ -3,8 +3,6 @@ import { buildBillingReadinessSummary } from "@/lib/billing/readiness";
 
 const readyEnv = {
   OPENPLAN_STRIPE_SECRET_KEY: "sk_live_do_not_leak",
-  OPENPLAN_STRIPE_PRICE_ID_STARTER: "price_starter_do_not_leak",
-  OPENPLAN_STRIPE_PRICE_ID_PROFESSIONAL: "price_professional_do_not_leak",
   OPENPLAN_STRIPE_WEBHOOK_SECRET: "whsec_do_not_leak",
   OPENPLAN_BILLING_READINESS_SECRET: "readiness_secret_do_not_leak",
   OPENPLAN_BILLING_USAGE_FLUSH_SECRET: "flush_secret_do_not_leak",
@@ -68,7 +66,6 @@ describe("buildBillingReadinessSummary", () => {
   it("blocks when required paid-access configuration or ledgers are missing", () => {
     const summary = buildBillingReadinessSummary({
       env: {
-        OPENPLAN_STRIPE_PRICE_ID_STARTER: "price_starter",
         NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       },
       facts: {
@@ -103,11 +100,10 @@ describe("buildBillingReadinessSummary", () => {
     expect(summary.blockers.join(" ")).toContain("Usage flush dry run");
   });
 
-  it("keeps optional professional price and dry-run omissions as warnings rather than blockers", () => {
+  it("does not require OpenPlan checkout price IDs and keeps dry-run omissions as warnings", () => {
     const summary = buildBillingReadinessSummary({
       env: {
         ...readyEnv,
-        OPENPLAN_STRIPE_PRICE_ID_PROFESSIONAL: "",
       },
       facts: {
         subscriptionLedger: {
@@ -126,8 +122,13 @@ describe("buildBillingReadinessSummary", () => {
     expect(summary.status).toBe("ready");
     expect(summary.readyForPaidCanary).toBe(true);
     expect(summary.blockers).toEqual([]);
-    expect(summary.warnings.join(" ")).toContain("Professional checkout price");
     expect(summary.warnings.join(" ")).toContain("Workspace billing snapshot");
     expect(summary.warnings.join(" ")).toContain("Usage flush dry run");
+    expect(summary.checks).toContainEqual(
+      expect.objectContaining({
+        key: "openplan_fit_review_routing",
+        status: "pass",
+      }),
+    );
   });
 });

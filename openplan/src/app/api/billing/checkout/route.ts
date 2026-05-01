@@ -1,228 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createStripeCheckoutSession } from "@/lib/billing/checkout";
-import { logBillingEvent } from "@/lib/billing/events";
-import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
-import {
-  createClient,
-  createServiceRoleClient,
-  isMissingEnvironmentVariableError,
-} from "@/lib/supabase/server";
-import { createApiAuditLogger } from "@/lib/observability/audit";
+
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { buildOpenPlanFitReviewPath, resolveLegacyOpenPlanTierReference } from "@/lib/billing/openplan-fit";
+import { createApiAuditLogger } from "@/lib/observability/audit";
+import { createClient } from "@/lib/supabase/server";
 
-const billingCheckoutSchema = z.object({
-  workspaceId: z.string().uuid(),
-  plan: z.enum(["starter", "professional"]),
-});
-
-type Plan = z.infer<typeof billingCheckoutSchema>["plan"];
-
-type WorkspaceBillingContext = {
-  stripeCustomerId?: string | null;
-  stripeSubscriptionId?: string | null;
-  currentPeriodEnd?: string | null;
-};
-
-async function authorizeWorkspaceOwner(workspaceId: string, userId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("workspace_members")
-    .select("workspace_id, role")
-    .eq("workspace_id", workspaceId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data || !canAccessWorkspaceAction("billing.checkout", data.role)) {
-    return null;
-  }
-
-  return data;
-}
-
-async function getWorkspaceBillingContext(workspaceId: string): Promise<WorkspaceBillingContext> {
-  const serviceSupabase = createServiceRoleClient();
-  const { data, error } = await serviceSupabase
-    .from("workspaces")
-    .select("stripe_customer_id, stripe_subscription_id, subscription_current_period_end")
-    .eq("id", workspaceId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return {
-    stripeCustomerId: data?.stripe_customer_id ?? null,
-    stripeSubscriptionId: data?.stripe_subscription_id ?? null,
-    currentPeriodEnd: data?.subscription_current_period_end ?? null,
-  };
-}
-
-async function markCheckoutPending(workspaceId: string, plan: Plan, billingContext: WorkspaceBillingContext) {
-  const serviceSupabase = createServiceRoleClient();
-  const { error, ledgerMissing } = await applyBillingSubscriptionMutation(serviceSupabase, {
-    workspaceId,
-    subscriptionPlan: plan,
-    subscriptionStatus: "checkout_pending",
-    stripeCustomerId: billingContext.stripeCustomerId ?? undefined,
-    stripeSubscriptionId: billingContext.stripeSubscriptionId ?? undefined,
-    currentPeriodEnd: billingContext.currentPeriodEnd ?? undefined,
-    metadata: { source: "checkout_initialized" },
+const billingCheckoutSchema = z
+  .object({
+    workspaceId: z.string().uuid().optional(),
+    plan: z.string().trim().min(1).max(80).optional(),
+    tier: z.string().trim().min(1).max(80).optional(),
+    product: z.string().trim().min(1).max(80).optional(),
+  })
+  .refine((value) => value.plan || value.tier || value.product, {
+    message: "A product, plan, or tier is required.",
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+type CheckoutAuditLogger = ReturnType<typeof createApiAuditLogger>;
 
-  return { ledgerMissing };
-}
-
-async function handleCheckout(workspaceId: string, plan: Plan, request: NextRequest) {
-  const audit = createApiAuditLogger("billing.checkout", request);
-  const startedAt = Date.now();
-
+async function authorizeWorkspaceCheckout(
+  workspaceId: string,
+  request: NextRequest,
+  tier: string | null,
+  audit: CheckoutAuditLogger,
+) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    audit.warn("unauthorized", { workspaceId, plan });
+    audit.warn("unauthorized_fit_review_redirect", { workspaceId, tier });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let authorized;
-  try {
-    authorized = await authorizeWorkspaceOwner(workspaceId, user.id);
-  } catch (error) {
+  const { data, error } = await supabase
+    .from("workspace_members")
+    .select("workspace_id, role")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
     audit.error("membership_lookup_failed", {
       workspaceId,
       userId: user.id,
-      message: error instanceof Error ? error.message : "unknown",
+      message: error.message,
     });
-
     return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
   }
 
-  if (!authorized) {
-    audit.warn("forbidden", { workspaceId, userId: user.id, plan });
+  if (!data || !canAccessWorkspaceAction("billing.checkout", data.role)) {
+    audit.warn("forbidden_fit_review_redirect", { workspaceId, userId: user.id, tier });
     return NextResponse.json({ error: "Owner/admin access is required" }, { status: 403 });
   }
 
-  let billingContext: WorkspaceBillingContext;
-  try {
-    billingContext = await getWorkspaceBillingContext(workspaceId);
-  } catch (error) {
-    audit.error("workspace_billing_context_failed", {
-      workspaceId,
-      userId: user.id,
-      plan,
-      message: error instanceof Error ? error.message : "unknown",
-      missingEnv:
-        isMissingEnvironmentVariableError(error) ? error.variableName : undefined,
-    });
-
-    if (isMissingEnvironmentVariableError(error)) {
-      return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
-    }
-
-    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
-  }
-
-  let checkoutSession: { id: string; url: string };
-  try {
-    checkoutSession = await createStripeCheckoutSession({
-      workspaceId,
-      plan,
-      initiatedByUserId: user.id,
-      initiatedByUserEmail: user.email,
-      existingStripeCustomerId: billingContext.stripeCustomerId,
-      origin: request.nextUrl.origin,
-    });
-  } catch (error) {
-    audit.error("stripe_checkout_session_failed", {
-      workspaceId,
-      userId: user.id,
-      plan,
-      message: error instanceof Error ? error.message : "unknown",
-    });
-
-    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
-  }
-
-  try {
-    const pendingResult = await markCheckoutPending(workspaceId, plan, billingContext);
-    if (pendingResult.ledgerMissing) {
-      audit.warn("billing_ledger_schema_missing", {
-        workspaceId,
-        userId: user.id,
-        plan,
-      });
-    }
-  } catch (error) {
-    audit.error("workspace_billing_update_failed", {
-      workspaceId,
-      userId: user.id,
-      plan,
-      message: error instanceof Error ? error.message : "unknown",
-      missingEnv:
-        isMissingEnvironmentVariableError(error) ? error.variableName : undefined,
-    });
-
-    if (isMissingEnvironmentVariableError(error)) {
-      return NextResponse.json({ error: "Billing configuration unavailable" }, { status: 503 });
-    }
-
-    return NextResponse.json({ error: "Failed to initialize checkout" }, { status: 500 });
-  }
-
-  try {
-    await logBillingEvent({
-      workspaceId,
-      eventType: "checkout_initialized",
-      source: "stripe_checkout_session",
-      payload: {
-        plan,
-        mode: "stripe_checkout_session",
-        userId: user.id,
-        sessionId: checkoutSession.id,
-      },
-    });
-  } catch (eventError) {
-    audit.warn("billing_event_log_failed", {
-      workspaceId,
-      plan,
-      mode: "stripe_checkout_session",
-      message: eventError instanceof Error ? eventError.message : "unknown",
-    });
-  }
-
-  audit.info("checkout_initialized", {
-    workspaceId,
-    userId: user.id,
-    plan,
-    mode: "stripe_checkout_session",
-    sessionId: checkoutSession.id,
-    durationMs: Date.now() - startedAt,
-  });
-
-  return NextResponse.json(
-    {
-      checkoutUrl: checkoutSession.url,
-      mode: "stripe_checkout_session",
-      workspaceId,
-      plan,
-    },
-    { status: 200 }
-  );
+  return null;
 }
 
 export async function POST(request: NextRequest) {
+  const audit = createApiAuditLogger("billing.checkout", request);
   const body = await request.json().catch(() => null);
   const parsed = billingCheckoutSchema.safeParse(body);
 
@@ -230,7 +68,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid billing checkout payload" }, { status: 400 });
   }
 
-  return handleCheckout(parsed.data.workspaceId, parsed.data.plan, request);
+  const requestedTier = parsed.data.tier ?? parsed.data.plan ?? null;
+  const legacyOpenPlanTier = resolveLegacyOpenPlanTierReference(requestedTier);
+  const product = parsed.data.product?.trim().toLowerCase() ?? (legacyOpenPlanTier ? "openplan" : null);
+
+  if (product && product !== "openplan") {
+    audit.warn("unsupported_checkout_product", {
+      product,
+      workspaceId: parsed.data.workspaceId ?? null,
+    });
+    return NextResponse.json({ error: "Unsupported checkout product" }, { status: 400 });
+  }
+
+  const intakeUrl = buildOpenPlanFitReviewPath({
+    tier: legacyOpenPlanTier?.reference ?? requestedTier,
+    workspaceId: parsed.data.workspaceId,
+  });
+
+  if (parsed.data.workspaceId) {
+    const authorizationResponse = await authorizeWorkspaceCheckout(
+      parsed.data.workspaceId,
+      request,
+      requestedTier,
+      audit,
+    );
+    if (authorizationResponse) return authorizationResponse;
+  }
+
+  audit.info("openplan_checkout_disabled_redirect", {
+    workspaceId: parsed.data.workspaceId ?? null,
+    tier: legacyOpenPlanTier?.reference ?? requestedTier,
+    product: "openplan",
+    mode: "fit_review_redirect",
+  });
+
+  return NextResponse.json(
+    {
+      checkoutUrl: intakeUrl,
+      intakeUrl,
+      mode: "fit_review_redirect",
+      product: "openplan",
+      tier: legacyOpenPlanTier?.tier ?? requestedTier,
+      checkoutDisabled: true,
+      message: "OpenPlan direct checkout is disabled. Continue through fit-review intake.",
+    },
+    { status: 200 },
+  );
 }
 
 export async function GET() {
@@ -243,6 +126,6 @@ export async function GET() {
       headers: {
         Allow: "POST",
       },
-    }
+    },
   );
 }

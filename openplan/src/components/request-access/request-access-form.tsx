@@ -19,6 +19,7 @@ import {
   ACCESS_REQUEST_SERVICE_LANE_LABELS,
   ACCESS_REQUEST_SERVICE_LANE_VALUES,
 } from "@/lib/access-request-intake";
+import type { PublicIntakeSourceContext } from "@/lib/access-request-query";
 
 type RequestAccessFormState = {
   agencyName: string;
@@ -54,6 +55,12 @@ const initialState: RequestAccessFormState = {
   website: "",
 };
 
+type RequestAccessFormProps = {
+  initialValues?: Partial<Omit<RequestAccessFormState, "website">>;
+  sourcePath?: string;
+  sourceContext?: PublicIntakeSourceContext;
+};
+
 type RequestAccessResponse = {
   success?: boolean;
   message?: string;
@@ -71,8 +78,20 @@ function updateField(
   };
 }
 
-export function RequestAccessForm() {
-  const [form, setForm] = useState<RequestAccessFormState>(initialState);
+function buildInitialState(initialValues: RequestAccessFormProps["initialValues"]): RequestAccessFormState {
+  return {
+    ...initialState,
+    ...initialValues,
+    website: "",
+  };
+}
+
+export function RequestAccessForm({
+  initialValues,
+  sourcePath = "/request-access",
+  sourceContext,
+}: RequestAccessFormProps = {}) {
+  const [form, setForm] = useState<RequestAccessFormState>(() => buildInitialState(initialValues));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -91,7 +110,8 @@ export function RequestAccessForm() {
         },
         body: JSON.stringify({
           ...form,
-          sourcePath: "/request-access",
+          sourcePath,
+          sourceContext,
         }),
       });
 
@@ -102,7 +122,7 @@ export function RequestAccessForm() {
         return;
       }
 
-      setForm(initialState);
+      setForm(buildInitialState(initialValues));
       setSuccessMessage(payload.message ?? "Request received. The OpenPlan team will review it before any hosted workspace, support commitment, or implementation scope is created.");
     } catch {
       setError("The request could not be submitted. Please try again.");

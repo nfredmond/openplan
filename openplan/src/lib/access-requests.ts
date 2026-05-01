@@ -98,6 +98,16 @@ export type AccessRequestSafetyInput = {
   expectedWorkspaceName?: string | null;
 };
 
+export type AccessRequestSourceContext = {
+  product?: string;
+  tier?: string;
+  checkout?: string;
+  legacyCheckout?: boolean;
+  checkoutDisabled?: boolean;
+  workspaceId?: string;
+  source?: string;
+};
+
 export type RecentAccessRequestSafetyRecord = {
   id: string;
   created_at: string | null;
@@ -317,11 +327,18 @@ export function buildAccessRequestSupportMetadata(
   request: NextRequest,
   input: AccessRequestSafetyInput,
   receivedAt = new Date().toISOString(),
+  sourceContext?: AccessRequestSourceContext | null,
 ) {
-  return {
+  const metadata: Record<string, unknown> = {
     ...buildAccessRequestMetadata(request, receivedAt),
     body_fingerprint: buildAccessRequestBodyFingerprint(input),
   };
+
+  if (sourceContext && Object.keys(sourceContext).length > 0) {
+    metadata.source_context = sourceContext;
+  }
+
+  return metadata;
 }
 
 export function evaluateAccessRequestSafety(input: {

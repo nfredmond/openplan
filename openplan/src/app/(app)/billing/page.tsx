@@ -120,11 +120,11 @@ export default async function BillingPage({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
             <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace for billing</h1>
             <p className="text-sm text-muted-foreground sm:text-base">
-              Billing state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or starting checkout.
+              Billing state is workspace-specific. This account has access to multiple workspaces, so OpenPlan now requires an explicit workspace choice before showing subscription status or requesting fit review.
             </p>
           </div>
           <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
-            Open the exact billing surface you intend to review. That keeps status review, checkout writes, and later invoice work attached to the correct workspace ledger.
+            Open the exact billing surface you intend to review. That keeps status review, fit-review context, and later invoice work attached to the correct workspace ledger.
           </div>
         </header>
 
@@ -138,7 +138,7 @@ export default async function BillingPage({
           <div className="border-b border-border/60 pb-4">
             <h2 className="text-lg font-semibold tracking-tight">Available workspaces</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Open the exact billing surface you intend to review. This prevents accidental checkout or status review against the wrong workspace.
+              Open the exact billing surface you intend to review. This prevents accidental fit-review routing or status review against the wrong workspace.
             </p>
           </div>
 
@@ -437,7 +437,7 @@ export default async function BillingPage({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Billing</p>
           <h1 className="text-3xl font-semibold tracking-tight">{workspace.name ?? "Workspace"} Billing</h1>
           <p className="text-sm text-muted-foreground sm:text-base">
-            Manage both subscription state and consulting invoice posture for this workspace. Subscription checkout still requires owner/admin role, while invoice register reads are workspace-wide and writes are owner/admin only.
+            Review subscription state and consulting invoice posture for this workspace. OpenPlan tier checkout now routes to fit review, while invoice register reads are workspace-wide and writes are owner/admin only.
           </p>
         </div>
 
@@ -461,7 +461,7 @@ export default async function BillingPage({
         <article className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           <p className="font-semibold text-foreground">Viewing workspace-specific billing</p>
           <p className="mt-1.5">
-            This account has access to multiple workspaces. You are currently viewing billing for <strong>{workspace.name ?? "Workspace"}</strong>, and any checkout launched below will apply only to this workspace target.
+            This account has access to multiple workspaces. You are currently viewing billing for <strong>{workspace.name ?? "Workspace"}</strong>, and any fit-review request below will include only this workspace target.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-3">
             {selection.memberships.map((membershipOption) => {
@@ -488,7 +488,7 @@ export default async function BillingPage({
 
       {checkoutState === "mock" ? (
         <article className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
-          Mock checkout completed for plan <span className="font-semibold text-foreground">{titleCase(checkoutPlan)}</span>. Configure `OPENPLAN_STRIPE_SECRET_KEY` and Stripe price IDs to route to live Checkout Sessions.
+          Historical mock checkout state is recorded for plan <span className="font-semibold text-foreground">{titleCase(checkoutPlan)}</span>. New OpenPlan tier requests route to fit review instead of live Checkout Sessions.
         </article>
       ) : null}
 
@@ -542,7 +542,7 @@ export default async function BillingPage({
               </StatusBadge>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Checkout initialization sets billing state to <strong className="text-foreground">Checkout Pending</strong> and records the selected plan on this exact workspace. The consulting invoice register below is separate and is meant for project-delivery operations rather than subscription enforcement.
+              Historical checkout and webhook events can still reconcile this workspace ledger. New OpenPlan tier requests route to fit review and do not mark the workspace checkout-pending automatically.
             </p>
             {subscriptionSnapshotResult.error?.missingSchema ? (
               <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">
@@ -657,7 +657,7 @@ export default async function BillingPage({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
             <h2 className="text-2xl font-semibold tracking-tight text-foreground">Consulting invoice operations</h2>
             <p className="text-sm text-muted-foreground">
-              Subscription checkout stays above as account and billing state. This section is the project-delivery invoice register used by operators for retention, backup posture, and workspace or project linkage.
+              Subscription status review stays above as account and billing state. This section is the project-delivery invoice register used by operators for retention, backup posture, and workspace or project linkage.
             </p>
           </div>
           <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>

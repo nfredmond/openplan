@@ -412,12 +412,14 @@ describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
     );
 
     expect(adminCheckoutAttempt.status).toBe(200);
-    expect(await adminCheckoutAttempt.json()).toMatchObject({
-      workspaceId,
-      plan: "starter",
-      mode: "stripe_checkout_session",
-      checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_lifecycle",
+    const adminCheckoutPayload = await adminCheckoutAttempt.json();
+    expect(adminCheckoutPayload).toMatchObject({
+      product: "openplan",
+      tier: "starter",
+      mode: "fit_review_redirect",
+      checkoutDisabled: true,
     });
-    expect(createStripeCheckoutSessionMock).toHaveBeenCalledTimes(1);
+    expect(adminCheckoutPayload.intakeUrl).toContain(`workspaceId=${workspaceId}`);
+    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
   });
 });

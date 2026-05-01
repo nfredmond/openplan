@@ -39,6 +39,17 @@ const accessRequestSchema = z.object({
   useCase: z.string().trim().min(10).max(2400),
   expectedWorkspaceName: z.string().trim().max(140).optional(),
   sourcePath: z.string().trim().max(220).optional(),
+  sourceContext: z
+    .object({
+      product: z.string().trim().max(80).optional(),
+      tier: z.string().trim().max(80).optional(),
+      checkout: z.string().trim().max(80).optional(),
+      legacyCheckout: z.boolean().optional(),
+      checkoutDisabled: z.boolean().optional(),
+      workspaceId: z.string().uuid().optional(),
+      source: z.string().trim().max(120).optional(),
+    })
+    .optional(),
   // Honeypot field: real users never see it.
   website: z.string().trim().max(500).optional(),
 });
@@ -152,7 +163,7 @@ export async function POST(request: NextRequest) {
       use_case: parsed.data.useCase.trim(),
       expected_workspace_name: cleanOptional(parsed.data.expectedWorkspaceName),
       source_path: cleanOptional(parsed.data.sourcePath) ?? request.nextUrl.pathname,
-      metadata_json: buildAccessRequestSupportMetadata(request, parsed.data),
+      metadata_json: buildAccessRequestSupportMetadata(request, parsed.data, undefined, parsed.data.sourceContext),
     })
     .select("id, status, created_at")
     .single();

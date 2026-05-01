@@ -1,25 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const createClientMock = vi.fn();
-const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
-const createStripeCheckoutSessionMock = vi.fn();
-const logBillingEventMock = vi.fn();
-
-const authGetUserMock = vi.fn();
-const membershipMaybeSingleMock = vi.fn();
-const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
-const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
-const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
-
-const workspacesMaybeSingleMock = vi.fn();
-const workspacesEqForSelectMock = vi.fn(() => ({ maybeSingle: workspacesMaybeSingleMock }));
-const workspacesSelectMock = vi.fn(() => ({ eq: workspacesEqForSelectMock }));
-
-const workspacesEqForUpdateMock = vi.fn();
-const workspacesUpdateMock = vi.fn(() => ({ eq: workspacesEqForUpdateMock }));
-const subscriptionsUpsertMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -27,23 +9,8 @@ const mockAudit = {
   error: vi.fn(),
 };
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: (...args: unknown[]) => createClientMock(...args),
-  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
-  isMissingEnvironmentVariableError: (error: unknown) =>
-    error instanceof Error && error.name === "MissingEnvironmentVariableError",
-}));
-
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
-}));
-
-vi.mock("@/lib/billing/checkout", () => ({
-  createStripeCheckoutSession: (...args: unknown[]) => createStripeCheckoutSessionMock(...args),
-}));
-
-vi.mock("@/lib/billing/events", () => ({
-  logBillingEvent: (...args: unknown[]) => logBillingEventMock(...args),
 }));
 
 import { GET as getCheckout, POST as postCheckout } from "@/app/api/billing/checkout/route";
@@ -56,76 +23,10 @@ function jsonRequest(payload: unknown) {
   });
 }
 
-describe("/api/billing/checkout safe messaging", () => {
+describe("/api/billing/checkout fit-review routing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-
-    authGetUserMock.mockResolvedValue({
-      data: {
-        user: {
-          id: "22222222-2222-4222-8222-222222222222",
-          email: "owner@example.com",
-        },
-      },
-    });
-
-    membershipMaybeSingleMock.mockResolvedValue({
-      data: {
-        workspace_id: "11111111-1111-4111-8111-111111111111",
-        role: "owner",
-      },
-      error: null,
-    });
-
-    createClientMock.mockResolvedValue({
-      auth: { getUser: authGetUserMock },
-      from: (table: string) => {
-        if (table === "workspace_members") {
-          return { select: membershipSelectMock };
-        }
-        throw new Error(`Unexpected table: ${table}`);
-      },
-    });
-
-    workspacesMaybeSingleMock.mockResolvedValue({
-      data: {
-        stripe_customer_id: "cus_existing_123",
-        stripe_subscription_id: "sub_existing_123",
-        subscription_current_period_end: "2026-05-01T00:00:00.000Z",
-      },
-      error: null,
-    });
-
-    workspacesEqForUpdateMock.mockResolvedValue({ error: null });
-    subscriptionsUpsertMock.mockResolvedValue({ error: null });
-
-    createServiceRoleClientMock.mockImplementation(() => ({
-      from: (table: string) => {
-        if (table === "workspaces") {
-          return {
-            select: workspacesSelectMock,
-            update: workspacesUpdateMock,
-          };
-        }
-
-        if (table === "subscriptions") {
-          return {
-            upsert: subscriptionsUpsertMock,
-          };
-        }
-
-        throw new Error(`Unexpected table: ${table}`);
-      },
-    }));
-
-    createStripeCheckoutSessionMock.mockResolvedValue({
-      id: "cs_test_123",
-      url: "https://checkout.stripe.com/c/pay/cs_test_123",
-    });
-
-    logBillingEventMock.mockResolvedValue(undefined);
   });
 
   it("rejects GET so checkout cannot be launched from a link prefetch", async () => {
@@ -134,112 +35,62 @@ describe("/api/billing/checkout safe messaging", () => {
     expect(response.status).toBe(405);
     expect(response.headers.get("allow")).toBe("POST");
     expect(await response.json()).toMatchObject({ error: "Use POST to initialize billing checkout." });
-    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
   });
 
-  it("returns 401 Unauthorized when user is unauthenticated", async () => {
-    authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
-
+  it("routes legacy OpenPlan plan requests to fit-review intake without Stripe or workspace writes", async () => {
     const response = await postCheckout(
       jsonRequest({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        plan: "starter",
-      })
-    );
-
-    expect(response.status).toBe(401);
-    expect(await response.json()).toMatchObject({ error: "Unauthorized" });
-  });
-
-  it("returns 403 with owner/admin guidance when role is not authorized", async () => {
-    membershipMaybeSingleMock.mockResolvedValueOnce({
-      data: {
-        workspace_id: "11111111-1111-4111-8111-111111111111",
-        role: "member",
-      },
-      error: null,
-    });
-
-    const response = await postCheckout(
-      jsonRequest({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        plan: "starter",
-      })
-    );
-
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({ error: "Owner/admin access is required" });
-  });
-
-  it("returns 503 when service-role billing configuration is missing", async () => {
-    const missingEnvError = new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
-    missingEnvError.name = "MissingEnvironmentVariableError";
-    createServiceRoleClientMock.mockImplementationOnce(() => {
-      throw missingEnvError;
-    });
-
-    const response = await postCheckout(
-      jsonRequest({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        plan: "starter",
-      })
-    );
-
-    expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ error: "Billing configuration unavailable" });
-    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
-  });
-
-  it("returns safe activation error when checkout session creation fails", async () => {
-    createStripeCheckoutSessionMock.mockRejectedValueOnce(new Error("stripe unavailable"));
-
-    const response = await postCheckout(
-      jsonRequest({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        plan: "starter",
-      })
-    );
-
-    expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({ error: "Failed to initialize checkout" });
-  });
-
-  it("initializes checkout and preserves existing Stripe references while marking pending", async () => {
-    const response = await postCheckout(
-      jsonRequest({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
         plan: "professional",
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
-    expect(createStripeCheckoutSessionMock).toHaveBeenCalledWith(
+    const payload = await response.json();
+    expect(payload).toMatchObject({
+      checkoutUrl: expect.stringContaining("/contact/openplan-fit?"),
+      intakeUrl: expect.stringContaining("/contact/openplan-fit?"),
+      mode: "fit_review_redirect",
+      product: "openplan",
+      tier: "professional",
+      checkoutDisabled: true,
+    });
+    expect(payload.intakeUrl).toContain("product=openplan");
+    expect(payload.intakeUrl).toContain("tier=professional");
+    expect(payload.intakeUrl).toContain("checkout=disabled");
+    expect(payload.intakeUrl).toContain("legacyCheckout=1");
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "openplan_checkout_disabled_redirect",
       expect.objectContaining({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        plan: "professional",
-        existingStripeCustomerId: "cus_existing_123",
-      })
-    );
-    expect(subscriptionsUpsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        workspace_id: "11111111-1111-4111-8111-111111111111",
-        plan: "professional",
-        status: "checkout_pending",
-        stripe_customer_id: "cus_existing_123",
-        stripe_subscription_id: "sub_existing_123",
-        current_period_end: "2026-05-01T00:00:00.000Z",
+        product: "openplan",
+        tier: "professional",
+        mode: "fit_review_redirect",
       }),
-      { onConflict: "workspace_id" }
     );
-    expect(workspacesUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        plan: "professional",
-        subscription_plan: "professional",
-        subscription_status: "checkout_pending",
-        stripe_customer_id: "cus_existing_123",
-        stripe_subscription_id: "sub_existing_123",
-        subscription_current_period_end: "2026-05-01T00:00:00.000Z",
-      })
+  });
+
+  it("normalizes old prelaunch tier references for intake", async () => {
+    const response = await postCheckout(
+      jsonRequest({
+        product: "openplan",
+        tier: "openplan-starter-prelaunch",
+      }),
     );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.tier).toBe("starter");
+    expect(payload.intakeUrl).toContain("tier=openplan-starter-prelaunch");
+  });
+
+  it("rejects unsupported non-OpenPlan products in this checkout lane", async () => {
+    const response = await postCheckout(
+      jsonRequest({
+        product: "other-product",
+        tier: "starter",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Unsupported checkout product" });
   });
 });

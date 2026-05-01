@@ -38,56 +38,6 @@ require_bin() {
   fi
 }
 
-stripe_price_is_valid() {
-  local file="$1"
-  python3 - "$file" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as fh:
-    data = json.load(fh)
-
-ok = (
-    data.get("id") is not None
-    and data.get("livemode") is True
-    and data.get("active") is True
-    and data.get("type") == "recurring"
-    and ((data.get("recurring") or {}).get("interval") == "month")
-    and int(data.get("unit_amount") or 0) > 0
-)
-
-sys.exit(0 if ok else 1)
-PY
-}
-
-stripe_price_field() {
-  local file="$1"
-  local field="$2"
-  python3 - "$file" "$field" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as fh:
-    data = json.load(fh)
-
-field = sys.argv[2]
-if field == "summary":
-    print("\t".join([
-        str(data.get("id") or "n/a"),
-        "live" if data.get("livemode") else "test",
-        str(data.get("currency") or "n/a"),
-        str((data.get("unit_amount") or 0) / 100),
-        str((data.get("recurring") or {}).get("interval") or "n/a"),
-    ]))
-elif field == "currency":
-    print(data.get("currency") or "usd")
-elif field == "amount":
-    print(str((data.get("unit_amount") or 0) / 100))
-elif field == "interval":
-    print((data.get("recurring") or {}).get("interval") or "n/a")
-PY
-}
-
 workspace_snapshot_field() {
   local file="$1"
   local field="$2"
@@ -187,7 +137,6 @@ ALIAS_HEADERS_LOG="$EVIDENCE_DIR/public-alias-headers.txt"
 ALIAS_STATUS_LOG="$EVIDENCE_DIR/public-alias-status.txt"
 ALIAS_BYPASS_HEADERS_LOG="$EVIDENCE_DIR/public-alias-bypass-headers.txt"
 ALIAS_BYPASS_STATUS_LOG="$EVIDENCE_DIR/public-alias-bypass-status.txt"
-STARTER_PRICE_JSON="$EVIDENCE_DIR/starter-price.json"
 WEBHOOKS_JSON="$EVIDENCE_DIR/webhook-endpoints.json"
 WORKSPACE_SNAPSHOT_JSON="$EVIDENCE_DIR/workspace-preflight-snapshot.json"
 MONITOR_SNAPSHOT_LOG="$EVIDENCE_DIR/monitor-snapshot.log"
@@ -223,7 +172,6 @@ fi
 STRIPE_KEY="${OPENPLAN_STRIPE_SECRET_KEY:-${STRIPE_SECRET_KEY:-}}"
 SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-}"
 SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
-STARTER_PRICE_ID="${OPENPLAN_STRIPE_PRICE_ID_STARTER:-}"
 STRIPE_WEBHOOK_SECRET="${OPENPLAN_STRIPE_WEBHOOK_SECRET:-}"
 READINESS_SECRET="${OPENPLAN_BILLING_READINESS_SECRET:-${OPENPLAN_BILLING_USAGE_FLUSH_SECRET:-}}"
 USAGE_FLUSH_SECRET="${OPENPLAN_BILLING_USAGE_FLUSH_SECRET:-}"
@@ -243,7 +191,7 @@ ENV_SERVICE_ROLE_OK=1
 ENV_STRIPE_WEBHOOK_SECRET_OK=1
 ENV_USAGE_METERING_OK=1
 ALIAS_CHECK_OK=0
-PRICE_CHECK_OK=0
+PRICE_CHECK_OK=1
 WEBHOOK_CHECK_OK=0
 WORKSPACE_SNAPSHOT_OK=0
 MONITOR_SNAPSHOT_OK=0
@@ -256,10 +204,6 @@ ALIAS_EFFECTIVE_MODE="none"
 if [[ -z "$STRIPE_KEY" ]]; then
   ENV_CORE_OK=0
   BLOCKERS+=("Missing OPENPLAN_STRIPE_SECRET_KEY (or STRIPE_SECRET_KEY) in $ENV_FILE")
-fi
-if [[ -z "$STARTER_PRICE_ID" ]]; then
-  ENV_CORE_OK=0
-  BLOCKERS+=("Missing OPENPLAN_STRIPE_PRICE_ID_STARTER in $ENV_FILE")
 fi
 if [[ -z "$STRIPE_WEBHOOK_SECRET" ]]; then
   ENV_STRIPE_WEBHOOK_SECRET_OK=0
@@ -321,16 +265,7 @@ else
   BLOCKERS+=("Canonical alias returned unexpected HTTP ${ALIAS_PRIMARY_STATUS:-unknown} for /billing")
 fi
 
-if [[ -n "$STRIPE_KEY" && -n "$STARTER_PRICE_ID" ]]; then
-  curl -sS "https://api.stripe.com/v1/prices/$STARTER_PRICE_ID" \
-    -u "$STRIPE_KEY:" > "$STARTER_PRICE_JSON"
-
-  if stripe_price_is_valid "$STARTER_PRICE_JSON"; then
-    PRICE_CHECK_OK=1
-  else
-    BLOCKERS+=("Starter price $STARTER_PRICE_ID is not a live active recurring monthly non-zero price")
-  fi
-
+if [[ -n "$STRIPE_KEY" ]]; then
   curl -sS https://api.stripe.com/v1/webhook_endpoints \
     -u "$STRIPE_KEY:" > "$WEBHOOKS_JSON"
 
@@ -370,15 +305,8 @@ fi
 WORKSPACE_NAME="unknown"
 WORKSPACE_STATUS="unavailable"
 WORKSPACE_PLAN="unavailable"
-STARTER_PRICE_SUMMARY="unavailable"
-STARTER_PRICE_DISPLAY="unavailable"
-if [[ -f "$STARTER_PRICE_JSON" ]]; then
-  STARTER_PRICE_SUMMARY="$(stripe_price_field "$STARTER_PRICE_JSON" summary)"
-  STARTER_PRICE_CURRENCY="$(stripe_price_field "$STARTER_PRICE_JSON" currency)"
-  STARTER_PRICE_AMOUNT="$(stripe_price_field "$STARTER_PRICE_JSON" amount)"
-  STARTER_PRICE_INTERVAL="$(stripe_price_field "$STARTER_PRICE_JSON" interval)"
-  STARTER_PRICE_DISPLAY="${STARTER_PRICE_AMOUNT} ${STARTER_PRICE_CURRENCY}/${STARTER_PRICE_INTERVAL}"
-fi
+STARTER_PRICE_SUMMARY="not checked - direct OpenPlan checkout disabled"
+STARTER_PRICE_DISPLAY="not applicable"
 
 if [[ -n "$SUPABASE_URL" && -n "$SUPABASE_SERVICE_ROLE_KEY" ]]; then
   if (
@@ -479,19 +407,19 @@ cat > "$SUMMARY_MD" <<SUMMARY
 - Workspace name: $WORKSPACE_NAME
 - Current workspace subscription status: $WORKSPACE_STATUS
 - Current workspace subscription plan: $WORKSPACE_PLAN
-- Starter price summary: $STARTER_PRICE_SUMMARY
-- Starter price display: $STARTER_PRICE_DISPLAY
+- Legacy OpenPlan price summary: $STARTER_PRICE_SUMMARY
+- Legacy OpenPlan price display: $STARTER_PRICE_DISPLAY
 - Env file used: $ENV_FILE
 - Evidence directory: $EVIDENCE_DIR
 
 ## Preflight check status
 1. Production env snapshot file loaded: $( [[ "$ENV_FILE_PRESENT_OK" -eq 1 ]] && echo YES || echo NO )
-2. Required core env posture present (Stripe key, Starter price id, public Supabase URL): $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo YES || echo NO )
+2. Required core env posture present (Stripe key, public Supabase URL): $( [[ "$ENV_CORE_OK" -eq 1 ]] && echo YES || echo NO )
 3. Supabase service-role proof posture present: $( [[ "$ENV_SERVICE_ROLE_OK" -eq 1 ]] && echo YES || echo NO )
 4. Stripe webhook signing secret present: $( [[ "$ENV_STRIPE_WEBHOOK_SECRET_OK" -eq 1 ]] && echo YES || echo NO )
 5. Usage flush + readiness + runs meter env present: $( [[ "$ENV_USAGE_METERING_OK" -eq 1 ]] && echo YES || echo NO )
 6. Canonical alias/browser proof route reachable in current proof mode: $( [[ "$ALIAS_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
-7. Starter price posture valid: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
+7. OpenPlan direct price posture skipped: $( [[ "$PRICE_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
 8. Canonical Stripe webhook endpoint posture valid: $( [[ "$WEBHOOK_CHECK_OK" -eq 1 ]] && echo YES || echo NO )
 9. Production workspace snapshot captured via Supabase service role: $( [[ "$WORKSPACE_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
 10. Current monitor snapshot captured: $( [[ "$MONITOR_SNAPSHOT_OK" -eq 1 ]] && echo YES || echo NO )
@@ -536,7 +464,6 @@ $(if [[ ${#BLOCKERS[@]} -eq 0 ]]; then echo "- None."; else for blocker in "${BL
 - $ALIAS_STATUS_LOG
 - $ALIAS_BYPASS_HEADERS_LOG
 - $ALIAS_BYPASS_STATUS_LOG
-- $STARTER_PRICE_JSON
 - $WEBHOOKS_JSON
 - $WORKSPACE_SNAPSHOT_JSON
 - $MONITOR_SNAPSHOT_LOG

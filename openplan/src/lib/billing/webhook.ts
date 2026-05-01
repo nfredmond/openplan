@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import Stripe from "stripe";
 import { z } from "zod";
+import { legacyTierToBillingPlan, resolveLegacyOpenPlanTierReference } from "@/lib/billing/openplan-fit";
 
 const BILLING_STATUSES = [
   "active",
@@ -39,12 +40,17 @@ export type StripeCheckoutIdentityReview = {
   reason: "purchaser_email_mismatch";
 };
 
+const billingPlanSchema = z.preprocess(
+  (value) => (typeof value === "string" ? normalizePlan(value) ?? value : value),
+  z.enum(BILLING_PLANS).optional(),
+);
+
 export const legacyWebhookSchema = z.object({
   eventId: z.string().min(1).optional(),
   eventType: z.string().min(1).optional(),
   workspaceId: z.string().uuid(),
   subscriptionStatus: z.enum(BILLING_STATUSES),
-  subscriptionPlan: z.enum(BILLING_PLANS).optional(),
+  subscriptionPlan: billingPlanSchema,
   stripeCustomerId: z.string().optional(),
   stripeSubscriptionId: z.string().optional(),
   currentPeriodEnd: z.string().datetime().optional(),
@@ -148,7 +154,8 @@ function normalizePlan(plan: string | undefined): BillingPlan | undefined {
     return normalized as BillingPlan;
   }
 
-  return undefined;
+  const legacyOpenPlanTier = resolveLegacyOpenPlanTierReference(normalized);
+  return legacyTierToBillingPlan(legacyOpenPlanTier?.tier);
 }
 
 function extractWorkspaceId(metadata: unknown): string | undefined {

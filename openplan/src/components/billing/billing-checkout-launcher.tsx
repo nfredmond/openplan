@@ -20,6 +20,7 @@ type BillingCheckoutLauncherProps = {
 
 type CheckoutLaunchResponse = {
   checkoutUrl?: string;
+  intakeUrl?: string;
   error?: string;
   details?: string;
 };
@@ -33,13 +34,13 @@ type PlanCard = {
 const PLAN_CARDS: PlanCard[] = [
   {
     plan: "starter",
-    title: "Starter",
-    description: "Good fit for supervised pilot teams that need a supportable paid baseline without overcommitting the workspace.",
+    title: "Starter fit review",
+    description: "For teams that need a managed baseline or support lane reviewed before any hosted billing is opened.",
   },
   {
     plan: "professional",
-    title: "Professional",
-    description: "Higher run capacity for workspaces already using OpenPlan as an active delivery surface across multiple project threads.",
+    title: "Professional fit review",
+    description: "For workspaces already treating OpenPlan as an active delivery surface across multiple planning threads.",
   },
 ];
 
@@ -113,13 +114,14 @@ export function BillingCheckoutLauncher({
       });
 
       const payload = (await response.json().catch(() => ({}))) as CheckoutLaunchResponse;
-      if (!response.ok || !payload.checkoutUrl) {
-        throw new Error(payload.details || payload.error || "Failed to initialize checkout");
+      const redirectUrl = payload.intakeUrl ?? payload.checkoutUrl;
+      if (!response.ok || !redirectUrl) {
+        throw new Error(payload.details || payload.error || "Failed to open fit review");
       }
 
-      onCheckoutRedirect(payload.checkoutUrl);
+      onCheckoutRedirect(redirectUrl);
     } catch (checkoutError) {
-      setError(checkoutError instanceof Error ? checkoutError.message : "Failed to initialize checkout");
+      setError(checkoutError instanceof Error ? checkoutError.message : "Failed to open fit review");
       setPendingPlan(null);
     }
   }
@@ -132,12 +134,12 @@ export function BillingCheckoutLauncher({
             <ShieldCheck className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Checkout safeguards</p>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">Launch paid billing against the correct workspace</h2>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Fit-review safeguards</p>
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">Request OpenPlan billing review against the correct workspace</h2>
           </div>
         </div>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Stripe opens only after an explicit write for this workspace target. Return from Stripe is not treated as activation until webhook state confirms it.
+          Direct OpenPlan tier checkout is disabled. These actions preserve the workspace and legacy tier context, then route to fit-review intake.
         </p>
       </div>
 
@@ -163,21 +165,21 @@ export function BillingCheckoutLauncher({
         </div>
         <div className="bg-background/70 px-4 py-4">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Authority</p>
-          <p className="mt-2 text-sm font-semibold text-foreground">{canStartCheckout ? "Owner/Admin can start checkout" : "Read-only for member role"}</p>
-          <p className="mt-1 text-xs text-muted-foreground">OpenPlan now starts checkout only from an explicit POST action, not a prefetchable link.</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">{canStartCheckout ? "Owner/Admin can request review" : "Read-only for member role"}</p>
+          <p className="mt-1 text-xs text-muted-foreground">The POST action now returns a fit-review intake URL instead of opening Stripe.</p>
         </div>
       </div>
 
       <div className="mt-5 border-l-2 border-[color:var(--copper)] bg-[color:var(--copper)]/10 px-4 py-3 text-sm text-foreground">
-        <p className="font-semibold tracking-tight">Checkout target is locked before Stripe opens</p>
+        <p className="font-semibold tracking-tight">Fit-review context is locked before intake opens</p>
         <p className="mt-1.5">
-          Any checkout started below will apply to <strong>{workspaceName}</strong> ({formatWorkspaceIdSnippet(workspaceId)}). If this is not the workspace you intend to bill, switch workspaces before continuing.
+          Any review started below will include <strong>{workspaceName}</strong> ({formatWorkspaceIdSnippet(workspaceId)}). If this is not the workspace you intend to discuss, switch workspaces before continuing.
         </p>
       </div>
 
       {!canStartCheckout ? (
         <div className="mt-5 border border-border/60 bg-background/70 px-4 py-4 text-sm text-muted-foreground">
-          Members can review billing posture, but owner/admin role is required before OpenPlan will launch Stripe checkout for this workspace.
+          Members can review billing posture, but owner/admin role is required before OpenPlan will start a workspace-scoped billing fit review.
         </div>
       ) : (
         <div className="mt-5 space-y-3">
@@ -196,7 +198,7 @@ export function BillingCheckoutLauncher({
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span>{runLimitLabel(planCard.plan)}</span>
                     <span>{entitlementsForPlan(planCard.plan).capabilities.exportReports ? "Includes report exports" : "Report exports remain limited"}</span>
-                    <span>{normalizedStatus === "checkout_pending" ? "Can replace an abandoned pending attempt" : "Workspace targeting remains explicit"}</span>
+                    <span>{normalizedStatus === "checkout_pending" ? "Review can resolve an old pending attempt" : "Workspace context remains explicit"}</span>
                   </div>
                 </div>
 
@@ -206,16 +208,16 @@ export function BillingCheckoutLauncher({
                     variant={isCurrentPlan ? "secondary" : "default"}
                     disabled={pendingPlan !== null}
                     onClick={() => handleCheckout(planCard.plan)}
-                    aria-label={`Start ${planCard.title} checkout for ${workspaceName}`}
+                    aria-label={`Request ${planCard.title} for ${workspaceName}`}
                     className="min-w-52"
                   >
                     {isPending ? (
                       <span className="inline-flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Opening Stripe…
+                        Opening intake…
                       </span>
                     ) : (
-                      `Start ${planCard.title} checkout`
+                      `Request ${planCard.title}`
                     )}
                   </Button>
                 </div>

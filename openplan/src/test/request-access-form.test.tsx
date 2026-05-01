@@ -121,4 +121,48 @@ describe("RequestAccessForm", () => {
 
     expect(await screen.findByText("Invalid access request")).toBeInTheDocument();
   });
+
+  it("preserves OpenPlan fit-review source context in the lead payload", async () => {
+    render(
+      <RequestAccessForm
+        initialValues={{
+          serviceLane: "implementation_onboarding",
+          deploymentPosture: "undecided",
+          desiredFirstWorkflow: "other",
+          onboardingNeeds: "OpenPlan fit review requested before checkout.",
+          useCase: "Review fit for OpenPlan support before managed deployment is created.",
+        }}
+        sourcePath="/contact/openplan-fit?product=openplan&tier=openplan-starter&checkout=disabled"
+        sourceContext={{
+          product: "openplan",
+          tier: "openplan-starter",
+          checkout: "disabled",
+          legacyCheckout: true,
+          checkoutDisabled: true,
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Agency or organization/i), { target: { value: "Nevada County" } });
+    fireEvent.change(screen.getByLabelText(/Contact name/i), { target: { value: "Nat Ford" } });
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "nat@example.gov" } });
+    fireEvent.click(screen.getByRole("button", { name: /request access/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual(
+      expect.objectContaining({
+        serviceLane: "implementation_onboarding",
+        deploymentPosture: "undecided",
+        desiredFirstWorkflow: "other",
+        sourcePath: "/contact/openplan-fit?product=openplan&tier=openplan-starter&checkout=disabled",
+        sourceContext: {
+          product: "openplan",
+          tier: "openplan-starter",
+          checkout: "disabled",
+          legacyCheckout: true,
+          checkoutDisabled: true,
+        },
+      }),
+    );
+  });
 });
