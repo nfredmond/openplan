@@ -26,6 +26,7 @@
 | [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
 | [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
 | [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) | **Current UI proof review** — route-by-route pass/watch table over the 2026-04-29 local screenshot pack |
+| [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) | **Current ops preflight** — public admin redirect/API-denial checks and Vercel reviewer allowlist env-name verification |
 | [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
 | [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
 | [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
@@ -107,6 +108,7 @@
 ### Production Smoke Evidence
 - [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) — public preflight, Pilot Readiness parser, Mapbox env posture, and validation proof
 - [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) — pass/watch review over the local desktop/mobile screenshot pack
+- [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) — public preflight and production env-name verification before manual reviewer smoke
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
 - `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
@@ -128,6 +130,6 @@
 ---
 
 ## File Counts
-- Markdown docs in `docs/ops/`: **320**
+- Markdown docs in `docs/ops/`: **321**
 - Test output files (PNG/JSON/log/txt): **369**
 - Subdirectories: **36**
