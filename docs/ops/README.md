@@ -24,6 +24,7 @@
 | [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
 | [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
 | [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
+| [2026-05-01 autonomous build protocol](2026-05-01-openplan-autonomous-build-protocol.md) | **COO execution protocol** — continuous AI-agent buildout toward the full saleable-v1 roadmap |
 | [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) | **Active release-to-sale checklist** — gates, owners, proof links, sales package tasks, commands, and stop conditions |
 | [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) | **Historical operator preflight** — superseded by the completed staging restore-drill proof; retained as the safe-prep and approval-gate pattern |
 | [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) | **Historical approval packet** — superseded by the completed staging restore-drill proof; retained for future written-approval shape, safeguards, mutation boundary, cleanup expectation, and evidence requirements |
@@ -147,7 +148,7 @@
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — static buyer-facing proof export assembled from the current release-to-sale, workflow smoke, managed-hosting, and backup/restore evidence
 - `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
 - `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
-- `2026-04-27-public-demo-preflight-proof.md` — public demo preflight proof and command reference
+- [2026-04-27 public demo preflight proof](../../openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) — public demo preflight proof and command reference
 - `2026-03-17-test-output/` — **current canonical** (auth, engagement, managed-run, report-traceability screenshots + QA cleanup)
 - `2026-03-16-test-output/` — prior cycle (auth, edit, billing hold canary, billing chooser)
 - `2026-03-18-test-output/` — scenario comparison

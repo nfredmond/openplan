@@ -45,7 +45,7 @@ Do not sell this release as:
 
 ### Pilot SOW
 
-- [x] Existing draft: `docs/sales/2026-02-24-openplan-pilot-sow-one-pager.md`.
+- [x] Existing draft: [docs/sales/2026-02-24-openplan-pilot-sow-one-pager.md](../sales/2026-02-24-openplan-pilot-sow-one-pager.md).
 - [x] Refreshed May 1 template: `../sales/2026-05-01-openplan-pilot-sow-template.md`.
 - [x] Labeled older February sales docs as historical before reuse.
 
@@ -84,8 +84,8 @@ Do not sell this release as:
 
 ### Operator Procedures
 
-- [x] Incident triage runbook: `openplan/docs/ops/RUNBOOK.md`.
-- [x] Backup, restore, and recovery-drill procedure: `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. Quarterly drill cadence; per-engagement RPO/RTO commitments are filled on the managed-hosting service schedule, not promised here.
+- [x] Incident triage runbook: [openplan/docs/ops/RUNBOOK.md](../../openplan/docs/ops/RUNBOOK.md).
+- [x] Backup, restore, and recovery-drill procedure: [openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md](../../openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md). Quarterly drill cadence; per-engagement RPO/RTO commitments are filled on the managed-hosting service schedule, not promised here.
 - [x] Ran the first quarterly restore drill into a dedicated staging Supabase project and logged it under `2026-05-01-openplan-restore-drill-staging-supabase.md`; preflight plan: `2026-05-01-openplan-restore-drill-preflight-plan.md`; approval packet: `2026-05-01-openplan-restore-drill-approval-packet.md`; approval-intake note: `2026-05-01-openplan-restore-drill-approval-intake.md`.
 
 ## Current Sellable Wedge
