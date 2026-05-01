@@ -70,6 +70,7 @@ Ship:
 Current proof:
 
 - `2026-05-01-openplan-local-rtp-release-review-smoke.md` proves the first RTP workflow loop: create cycle, create board-packet record, generate HTML artifact, navigate from registry to report release-review anchor, and keep the freshly generated packet current instead of self-marking it stale.
+- `2026-05-01-openplan-local-grants-flow-smoke.md` proves the Grants OS loop: project funding need, awarded opportunity, committed award, project RTP posture write-back, obligation milestone, paid reimbursement invoice, closeout reconciliation, closeout milestone, and project-detail funded/reimbursed posture.
 
 Exit gate:
 
@@ -174,4 +175,6 @@ pnpm ops:check-admin-operations-smoke -- --reviewer-email <operator-reviewer-ema
 pnpm seed:workspace-isolation
 cd ../qa-harness
 npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.json
+npm run local-rtp-release-review-smoke
+npm run local-grants-flow-smoke
 ```
