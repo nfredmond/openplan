@@ -28,7 +28,8 @@ Do not sell this release as:
 | Grants workflow | Product/Ops | opportunity, award, reimbursement, closeout, RTP write-back | PASS - `2026-05-01-openplan-local-grants-flow-smoke.md` |
 | Engagement workflow | Product/Ops | public submission, moderation, report handoff, artifact provenance | PASS - `2026-05-01-openplan-local-engagement-report-handoff-smoke.md` |
 | Analysis workflow | Product/Ops | managed run, scenario attachment, report linkage, generated artifact | PASS - `2026-05-01-openplan-local-analysis-report-linkage-smoke.md` |
-| Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence | PASS - `2026-05-01-openplan-local-spine-smoke.md` |
+| Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence; harness-owned report cleanup before rerun | PASS - `2026-05-01-openplan-local-spine-smoke.md` |
+| Aerial evidence spine | Product/Ops | local mission creation, AOI PATCH, ready package, exact seeded-plus-new posture counts, Aerial list/detail render, map AOI feature | PASS - `2026-05-01-openplan-local-aerial-evidence-smoke.md` |
 | Admin/support workflow | Ops | request access, reviewer triage, provisioning, owner invite acceptance | PASS - `2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Production admin operations auth | Ops | allowlisted reviewer opens `/admin/operations`; service-lane intake unlocked; no triage/provision actions | PASS - `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` |
 | Billing posture | CEO/Ops | explicit waiver plus current non-money-moving proof | PASS - `2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
@@ -128,8 +129,11 @@ npm run local-grants-flow-smoke
 npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
 npm run local-spine-smoke
+npm run local-aerial-evidence-smoke
 OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
 ```
+
+Rerun posture: mutating local smokes now refuse non-local app/Supabase targets before service-role writes. The NCTC spine and aerial smokes clean their own harness-owned residue before writing the fresh proof row(s); the timestamped RTP, Grants, Engagement, Analysis, and Admin/support smokes are safe only against local Supabase and intentionally create fresh local proof users/workspaces/records unless reset or cleaned manually.
 
 ## Stop Conditions
 
@@ -139,8 +143,12 @@ Pause external sales or pilot expansion if:
 - workspace isolation or RLS smoke fails,
 - request-access/admin provisioning creates automatic outbound commitments,
 - billing language implies a fresh same-cycle paid canary,
-- a workflow claim requires unsupported modeling/legal/compliance validation,
+- a workflow claim requires unsupported modeling/legal/compliance validation (in particular: behavioral-onramp KPIs are gated at the helper boundary, not at RLS — see [KI-M1](2026-05-01-openplan-known-issues-register.md)),
 - or the buyer asks for broad self-serve operation without managed support.
+
+## Known Issues
+
+See [docs/ops/2026-05-01-openplan-known-issues-register.md](2026-05-01-openplan-known-issues-register.md). Any caveat surfaced in sales conversation must be in that register first, with a proof or source link.
 
 ## Next Build Queue
 

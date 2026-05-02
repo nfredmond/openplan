@@ -2,7 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { chromium } = require('playwright');
-const { appRoot, buildBrowserContextOptions, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
+const {
+  appRoot,
+  buildBrowserContextOptions,
+  getOutputDir,
+  guardLocalMutationTargets,
+  loadEnv,
+  repoRoot,
+} = require('./harness-env');
 
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
@@ -57,6 +64,7 @@ const DEMO = {
 const DEMO_PROJECT_NAME = 'NCTC 2045 RTP (proof-of-capability)';
 const DEMO_ALTERNATIVE_RUN_TITLE = 'NCTC SR-49 safety package screening run';
 const QA_EMAIL = 'openplan-local-spine-smoke@natfordplanning.com';
+const SPINE_REPORT_TITLE_PREFIX = 'NCTC Phase 1 Spine Smoke';
 
 async function jsonFetch(url, options = {}) {
   const response = await fetch(url, options);
@@ -116,16 +124,6 @@ function assertEvery(rows, predicate, label) {
 
 function inFilter(values) {
   return `in.(${values.join(',')})`;
-}
-
-function isLocalUrl(value) {
-  let parsed;
-  try {
-    parsed = new URL(value);
-  } catch {
-    return false;
-  }
-  return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
 }
 
 function tail(text, maxChars = 6000) {
@@ -239,20 +237,17 @@ async function createOrUpdateAuthUser({ supabaseUrl, serviceRoleKey, email, pass
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
 
-  if (!isLocalUrl(baseUrl)) {
-    throw new Error(`Local spine smoke refuses non-local base URLs. Received ${baseUrl}.`);
-  }
-
   const { env } = loadEnv();
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Missing Supabase environment keys');
   }
-
-  if (!isLocalUrl(supabaseUrl)) {
-    throw new Error(`Local spine smoke refuses non-local Supabase URLs. Received ${supabaseUrl}.`);
-  }
+  const localGuardNote = guardLocalMutationTargets({
+    appUrl: baseUrl,
+    supabaseUrl,
+    scriptName: 'local Phase 1 spine smoke',
+  });
 
   const restHeaders = {
     apikey: serviceRoleKey,
@@ -290,9 +285,71 @@ async function main() {
     });
   }
 
+  async function selectRows(table, params, label) {
+    return assertArray(await restSelect(table, params), label);
+  }
+
+  async function deleteRows(table, params, label) {
+    const result = await restDelete(table, params);
+    if (!result.ok) {
+      throw new Error(`${label} delete failed: ${result.status} ${JSON.stringify(result.data)}`);
+    }
+  }
+
+  async function cleanupPriorSpineReports() {
+    const priorReports = await selectRows(
+      'reports',
+      {
+        select: 'id,title',
+        workspace_id: `eq.${DEMO.workspaceId}`,
+        project_id: `eq.${DEMO.projectId}`,
+        title: `like.${SPINE_REPORT_TITLE_PREFIX}*`,
+      },
+      'prior spine smoke reports'
+    );
+    const reportIds = priorReports.map((report) => report.id).filter(Boolean);
+    const summary = {
+      reportCount: reportIds.length,
+      artifactCount: 0,
+      sectionCount: 0,
+      runLinkCount: 0,
+    };
+
+    if (!reportIds.length) {
+      return summary;
+    }
+
+    const reportIdFilter = inFilter(reportIds);
+    const artifacts = await selectRows(
+      'report_artifacts',
+      { select: 'id,report_id', report_id: reportIdFilter },
+      'prior spine report artifacts'
+    );
+    const sections = await selectRows(
+      'report_sections',
+      { select: 'id,report_id', report_id: reportIdFilter },
+      'prior spine report sections'
+    );
+    const runLinks = await selectRows(
+      'report_runs',
+      { select: 'id,report_id', report_id: reportIdFilter },
+      'prior spine report run links'
+    );
+    summary.artifactCount = artifacts.length;
+    summary.sectionCount = sections.length;
+    summary.runLinkCount = runLinks.length;
+
+    await deleteRows('report_artifacts', { report_id: reportIdFilter }, 'prior spine report artifacts');
+    await deleteRows('report_sections', { report_id: reportIdFilter }, 'prior spine report sections');
+    await deleteRows('report_runs', { report_id: reportIdFilter }, 'prior spine report run links');
+    await deleteRows('reports', { id: reportIdFilter }, 'prior spine smoke reports');
+
+    return summary;
+  }
+
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const password = `OpenPlan!${Date.now()}SpineSmoke`;
-  const reportTitle = `NCTC Phase 1 Spine Smoke ${stamp}`;
+  const reportTitle = `${SPINE_REPORT_TITLE_PREFIX} ${stamp}`;
   const artifacts = [];
   const notes = [];
   const ids = {
@@ -303,8 +360,13 @@ async function main() {
     baselineRunId: DEMO.baselineRunId,
     alternativeRunId: DEMO.alternativeRunId,
   };
+  notes.push(localGuardNote);
 
   runNctcSeed(env, notes);
+  const cleanupSummary = await cleanupPriorSpineReports();
+  notes.push(
+    `Removed ${cleanupSummary.reportCount} prior spine-smoke report(s), ${cleanupSummary.artifactCount} artifact(s), ${cleanupSummary.sectionCount} section(s), and ${cleanupSummary.runLinkCount} report-run link(s) before creating the fresh report.`
+  );
 
   const qaUser = await createOrUpdateAuthUser({
     supabaseUrl,
@@ -749,8 +811,20 @@ async function main() {
     const lines = [
       `# OpenPlan Local Phase 1 Spine Smoke - ${datePart}`,
       '',
-      `- Base URL: ${baseUrl}`,
+      '## Local Targets',
+      `- App URL: ${baseUrl}`,
       `- Supabase URL: ${supabaseUrl}`,
+      `- Local guard result: ${localGuardNote}`,
+      '',
+      '## Mutation Summary',
+      '- Refreshed the deterministic NCTC seed, scoped one deterministic local QA user to the NCTC workspace, and created one fresh project-targeted analysis_summary report with two report_run links.',
+      '',
+      '## Cleanup / Idempotency Posture',
+      `- Before creating the report, the harness deletes prior harness-owned reports whose title starts with \`${SPINE_REPORT_TITLE_PREFIX}\` in the deterministic NCTC workspace/project, plus their report artifacts, sections, and report_run links.`,
+      `- Cleanup removed ${cleanupSummary.reportCount} report(s), ${cleanupSummary.artifactCount} artifact(s), ${cleanupSummary.sectionCount} section(s), and ${cleanupSummary.runLinkCount} report_run link(s).`,
+      '- The NCTC seed and QA membership are deterministic; the only fresh harness residue after a successful run is the current proof report and screenshots.',
+      '',
+      '## Key IDs',
       `- QA user email: ${QA_EMAIL}`,
       `- QA user id: ${ids.userId ?? 'unknown'}`,
       `- Workspace id: ${ids.workspaceId}`,
@@ -786,7 +860,7 @@ async function main() {
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));
     console.log(`Wrote ${path.relative(repoRoot, reportPath)}`);
-    console.log(JSON.stringify({ reportPath, artifacts, ids, notes }, null, 2));
+    console.log(JSON.stringify({ reportPath, artifacts, cleanupSummary, ids, notes }, null, 2));
   } finally {
     await page.close().catch(() => {});
     await context.close().catch(() => {});

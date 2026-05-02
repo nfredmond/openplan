@@ -3,7 +3,7 @@
 _Date: 2026-05-01_
 _Status: External-safe caveat copy; attach to pilot/SOW packets when useful._
 
-## Production-Backed Enough For Supervised Sale
+## Proven Today For Supervised Pilots
 
 - Authenticated workspaces and role-scoped access.
 - Project, plan, program, scenario, model, report, and engagement surfaces.
@@ -23,6 +23,7 @@ _Status: External-safe caveat copy; attach to pilot/SOW packets when useful._
 - Aerial/field evidence workflows beyond scoped implementation.
 - AI-assisted drafting and summarization.
 - Private cloud, SSO, and enterprise integrations.
+- Behavioral-onramp screening-grade modeling — consent gate enforced at the application helper boundary; non-React or service-role queries are not blocked by Postgres RLS today.
 
 ## Not Yet Supported As A Broad Claim
 

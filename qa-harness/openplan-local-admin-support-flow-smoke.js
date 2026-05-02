@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { buildBrowserContextOptions, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
+const { buildBrowserContextOptions, getOutputDir, guardLocalMutationTargets, loadEnv, repoRoot } = require('./harness-env');
 
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
@@ -138,16 +138,17 @@ async function createOrUpdateAuthUser({ supabaseUrl, serviceRoleKey, email, pass
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
 
-  if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(baseUrl)) {
-    throw new Error(`Local admin/support flow smoke refuses non-local base URLs. Received ${baseUrl}.`);
-  }
-
   const { env } = loadEnv();
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Missing Supabase environment keys');
   }
+  const localGuardNote = guardLocalMutationTargets({
+    appUrl: baseUrl,
+    supabaseUrl,
+    scriptName: 'local Admin/support flow smoke',
+  });
 
   const allowlist = parseAllowlist(env[allowlistEnv]);
   if (!allowlist.has(reviewerEmail)) {
@@ -180,6 +181,7 @@ async function main() {
   const artifacts = [];
   const notes = [];
   const ids = {};
+  notes.push(localGuardNote);
 
   const reviewerUser = await createOrUpdateAuthUser({
     supabaseUrl,
@@ -487,7 +489,19 @@ async function main() {
     const lines = [
       `# OpenPlan Local Admin Support Flow Smoke — ${datePart}`,
       '',
-      `- Base URL: ${baseUrl}`,
+      '## Local Targets',
+      `- App URL: ${baseUrl}`,
+      `- Supabase URL: ${supabaseUrl}`,
+      `- Local guard result: ${localGuardNote}`,
+      '',
+      '## Mutation Summary',
+      '- Created or updated the local reviewer auth user, submitted one public access request, wrote triage/review events, provisioned one pilot workspace, created one owner invitation, created or updated the invited owner auth user, and accepted the invitation.',
+      '',
+      '## Cleanup / Idempotency Posture',
+      '- Local-only guard runs before service-role auth mutation and refuses Vercel, Supabase cloud, and arbitrary remote targets.',
+      '- This timestamped workflow smoke intentionally creates fresh local access-request/workspace/invitation records on each run. It is safe to rerun against local Supabase, but old local proof records remain until the local database is reset or cleaned manually.',
+      '',
+      '## Key IDs',
       `- Reviewer email: ${reviewerEmail}`,
       `- Reviewer user id: ${ids.reviewerUserId ?? 'unknown'}`,
       `- Access request id: ${ids.accessRequestId ?? 'unknown'}`,
