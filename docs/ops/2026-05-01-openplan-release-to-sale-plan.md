@@ -28,8 +28,8 @@ Do not sell this release as:
 | Grants workflow | Product/Ops | opportunity, award, reimbursement, closeout, RTP write-back | PASS - `2026-05-01-openplan-local-grants-flow-smoke.md` |
 | Engagement workflow | Product/Ops | public submission, moderation, report handoff, artifact provenance | PASS - `2026-05-01-openplan-local-engagement-report-handoff-smoke.md` |
 | Analysis workflow | Product/Ops | managed run, scenario attachment, report linkage, generated artifact | PASS - `2026-05-01-openplan-local-analysis-report-linkage-smoke.md` |
-| Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence; harness-owned report cleanup before rerun | PASS - `2026-05-01-openplan-local-spine-smoke.md` |
-| Aerial evidence spine | Product/Ops | local mission creation, AOI PATCH, ready package, exact seeded-plus-new posture counts, Aerial list/detail render, map AOI feature | PASS - `2026-05-01-openplan-local-aerial-evidence-smoke.md` |
+| Phase 1 spine gate | Product/Ops | one project reused across RTP, grants, engagement, analysis/county-run, report modeling evidence; local guard and harness-owned report cleanup proven on rerun | PASS - `2026-05-02-openplan-local-spine-smoke.md` |
+| Aerial evidence spine | Product/Ops | local mission creation, AOI PATCH, ready package, exact seeded-plus-new posture counts, local guard, cleanup/idempotency posture, Aerial list/detail render, map AOI feature | PASS - `2026-05-02-openplan-local-aerial-evidence-smoke.md` |
 | Admin/support workflow | Ops | request access, reviewer triage, provisioning, owner invite acceptance | PASS - `2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Production admin operations auth | Ops | allowlisted reviewer opens `/admin/operations`; service-lane intake unlocked; no triage/provision actions | PASS - `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` |
 | Billing posture | CEO/Ops | explicit waiver plus current non-money-moving proof | PASS - `2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
