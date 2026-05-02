@@ -4,11 +4,13 @@
   "description": "Reusable production QA harness for OpenPlan evidence-backed smoke checks.",
   "main": "index.js",
   "scripts": {
+    "check:local-guards": "node harness-env.local-guard.test.js",
     "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",
     "local-analysis-report-linkage-smoke": "node openplan-local-analysis-report-linkage-smoke.js",
     "local-spine-smoke": "node local-spine-smoke.js",
+    "local-aerial-evidence-smoke": "node local-aerial-evidence-smoke.js",
     "local-admin-support-flow-smoke": "node openplan-local-admin-support-flow-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { buildBrowserContextOptions, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
+const { buildBrowserContextOptions, getOutputDir, guardLocalMutationTargets, loadEnv, repoRoot } = require('./harness-env');
 
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
@@ -40,16 +40,17 @@ function firstRow(result, label) {
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
 
-  if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(baseUrl)) {
-    throw new Error(`Local analysis report linkage smoke refuses non-local base URLs. Received ${baseUrl}.`);
-  }
-
   const { env } = loadEnv();
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Missing Supabase environment keys');
   }
+  const localGuardNote = guardLocalMutationTargets({
+    appUrl: baseUrl,
+    supabaseUrl,
+    scriptName: 'local Analysis report linkage smoke',
+  });
 
   const restHeaders = {
     apikey: serviceRoleKey,
@@ -76,6 +77,7 @@ async function main() {
   const artifacts = [];
   const notes = [];
   const ids = {};
+  notes.push(localGuardNote);
 
   const corridorGeojson = {
     type: 'Polygon',
@@ -407,7 +409,19 @@ async function main() {
     const lines = [
       `# OpenPlan Local Analysis Report Linkage Smoke — ${datePart}`,
       '',
-      `- Base URL: ${baseUrl}`,
+      '## Local Targets',
+      `- App URL: ${baseUrl}`,
+      `- Supabase URL: ${supabaseUrl}`,
+      `- Local guard result: ${localGuardNote}`,
+      '',
+      '## Mutation Summary',
+      '- Created one local QA auth user and one project workspace, then wrote scenario/model records, launched one managed model run, linked the generated analysis run into a report, and generated one HTML report artifact.',
+      '',
+      '## Cleanup / Idempotency Posture',
+      '- Local-only guard runs before service-role auth mutation and refuses Vercel, Supabase cloud, and arbitrary remote targets.',
+      '- This timestamped workflow smoke intentionally creates fresh local proof records on each run. It is safe to rerun against local Supabase, but old local QA users/workspaces/records remain until the local database is reset or cleaned manually.',
+      '',
+      '## Key IDs',
       `- QA user email: ${email}`,
       `- QA user id: ${ids.userId ?? 'unknown'}`,
       `- Workspace id: ${ids.workspaceId ?? 'unknown'}`,

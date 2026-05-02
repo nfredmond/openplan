@@ -1,5 +1,7 @@
 # OpenPlan Baseline Validation + Release Risk Register
 
+> **Status:** Historical / superseded by [2026-05-01-openplan-known-issues-register.md](2026-05-01-openplan-known-issues-register.md). R1 and R5 are closed; R2/R3/R4 carried forward there with current proof links. This snapshot is preserved for the original Feb 25 baseline state.
+
 **Timestamp:** 2026-02-25 21:21 PST
 **Environment:** `/home/nathaniel/.openclaw/workspace/openplan/openplan`
 

@@ -63,6 +63,95 @@ function getOpenplanBaseUrl() {
   return process.env.OPENPLAN_BASE_URL || 'https://openplan-natford.vercel.app';
 }
 
+function parseTargetUrl(value, label = 'Target URL') {
+  if (!value) {
+    throw new Error(`${label} is required.`);
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${label} is not a valid URL: ${value}`);
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error(`${label} must use http or https. Received ${value}.`);
+  }
+
+  if (parsed.username || parsed.password) {
+    throw new Error(`${label} must not include embedded credentials.`);
+  }
+
+  return parsed;
+}
+
+function normalizeHostname(hostname) {
+  return String(hostname || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^\[(.*)\]$/, '$1');
+}
+
+function isLocalHostname(hostname) {
+  const normalized = normalizeHostname(hostname);
+  return (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '0.0.0.0'
+  );
+}
+
+function isVercelHostname(hostname) {
+  const normalized = normalizeHostname(hostname);
+  return normalized === 'vercel.app' || normalized.endsWith('.vercel.app') || normalized.includes('vercel');
+}
+
+function isSupabaseCloudHostname(hostname) {
+  const normalized = normalizeHostname(hostname);
+  return normalized === 'supabase.co' || normalized.endsWith('.supabase.co');
+}
+
+function assertLocalTargetUrl(value, label = 'Target URL') {
+  const parsed = parseTargetUrl(value, label);
+
+  if (isVercelHostname(parsed.hostname)) {
+    throw new Error(`${label} refuses Vercel URLs for local-only mutating proof. Received ${value}.`);
+  }
+
+  if (isSupabaseCloudHostname(parsed.hostname)) {
+    throw new Error(`${label} refuses Supabase cloud URLs for local-only mutating proof. Received ${value}.`);
+  }
+
+  if (!isLocalHostname(parsed.hostname)) {
+    throw new Error(`${label} refuses non-local URLs for local-only mutating proof. Received ${value}.`);
+  }
+
+  return parsed;
+}
+
+function guardLocalMutationTargets({ appUrl, supabaseUrl, scriptName = 'Local smoke harness' }) {
+  const guardedTargets = [];
+
+  if (appUrl) {
+    const parsedAppUrl = assertLocalTargetUrl(appUrl, `${scriptName} app URL`);
+    guardedTargets.push(`app=${parsedAppUrl.origin}`);
+  }
+
+  if (supabaseUrl) {
+    const parsedSupabaseUrl = assertLocalTargetUrl(supabaseUrl, `${scriptName} Supabase URL`);
+    guardedTargets.push(`supabase=${parsedSupabaseUrl.origin}`);
+  }
+
+  if (!guardedTargets.length) {
+    throw new Error(`${scriptName} local guard requires at least one target URL.`);
+  }
+
+  return `Local guard passed for ${scriptName}: ${guardedTargets.join(', ')}.`;
+}
+
 function readFirstSecretValue(filePath, key) {
   if (!filePath || !fs.existsSync(filePath)) {
     return null;
@@ -116,12 +205,19 @@ function buildBrowserContextOptions(baseOptions = {}) {
 }
 
 module.exports = {
+  assertLocalTargetUrl,
   appRoot,
   buildBrowserContextOptions,
   getOpenplanBaseUrl,
   getOutputDir,
   getVercelProtectionBypassHeaders,
+  guardLocalMutationTargets,
+  isLocalHostname,
+  isSupabaseCloudHostname,
+  isVercelHostname,
   loadEnv,
+  normalizeHostname,
+  parseTargetUrl,
   readEnv,
   repoRoot,
   resolveEnvPath,
