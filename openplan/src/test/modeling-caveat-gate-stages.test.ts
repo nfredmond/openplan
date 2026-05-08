@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { SCREENING_GRADE_STAGES, isScreeningGradeStage } from "@/lib/models/caveat-gate";
+import {
+  NON_SCREENING_GRADE_STAGES,
+  SCREENING_GRADE_STAGES,
+  isScreeningGradeStage,
+} from "@/lib/models/caveat-gate";
 import { countyRunStageSchema } from "@/lib/models/county-onramp";
 
 describe("modeling caveat gate — stage coverage", () => {
@@ -14,13 +18,21 @@ describe("modeling caveat gate — stage coverage", () => {
     }
   });
 
-  it("does not silently widen — a synthetic certified stage is not gated", () => {
-    expect(isScreeningGradeStage("certified-modeling")).toBe(false);
+  it("fails closed for a synthetic certified stage until it is explicitly registered", () => {
+    expect(isScreeningGradeStage("certified-modeling")).toBe(true);
+
+    NON_SCREENING_GRADE_STAGES.add("certified-modeling");
+    try {
+      expect(isScreeningGradeStage("certified-modeling")).toBe(false);
+    } finally {
+      NON_SCREENING_GRADE_STAGES.delete("certified-modeling");
+    }
   });
 
-  it("fails closed when stage is null or undefined", () => {
+  it("fails closed when stage is null, undefined, empty, or whitespace-only", () => {
     expect(isScreeningGradeStage(null)).toBe(true);
     expect(isScreeningGradeStage(undefined)).toBe(true);
     expect(isScreeningGradeStage("")).toBe(true);
+    expect(isScreeningGradeStage("  ")).toBe(true);
   });
 });

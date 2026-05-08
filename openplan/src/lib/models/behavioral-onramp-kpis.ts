@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { CountyOnrampManifest, CountyRunStage } from "@/lib/models/county-onramp";
+import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
 import {
   partitionScreeningGradeRows,
   type CaveatGateConsent,
@@ -23,6 +23,7 @@ export type BehavioralOnrampKpiRow = BehavioralOnrampKpi & {
 export type BehavioralOnrampKpiSnapshot = {
   kpi_name: string;
   kpi_label: string;
+  kpi_category: "behavioral_onramp";
   value: number | null;
   unit: string;
   breakdown_json: Record<string, unknown>;
@@ -148,7 +149,7 @@ export async function persistBehavioralOnrampKpis({
 }
 
 export type LoadBehavioralOnrampKpisInput = {
-  supabase: BehavioralOnrampKpiSupabaseLike;
+  supabase: Pick<SupabaseClient, "from" | "rpc">;
   workspaceId: string;
   consent?: CaveatGateConsent;
 };
@@ -182,7 +183,7 @@ export async function loadBehavioralOnrampKpisForWorkspace({
     };
   }
 
-  const countyRunRows = (countyRunsResult.data ?? []) as Array<{ id: string; stage: CountyRunStage }>;
+  const countyRunRows = (countyRunsResult.data ?? []) as Array<{ id: string; stage: string | null }>;
 
   if (countyRunRows.length === 0) {
     return { kpis: [], rejectedCountyRunIds: [], caveatGateReason: null, error: null };
@@ -194,23 +195,10 @@ export async function loadBehavioralOnrampKpisForWorkspace({
     resolveStage: (row) => row.stage,
   });
 
-  if (gate.accepted.length === 0) {
-    return {
-      kpis: [],
-      rejectedCountyRunIds: gate.rejected.map((row) => row.id),
-      caveatGateReason: gate.reason,
-      error: null,
-    };
-  }
-
-  const kpisResult = await supabase
-    .from("model_run_kpis")
-    .select("kpi_name, kpi_label, value, unit, breakdown_json, county_run_id, run_id")
-    .eq("kpi_category", "behavioral_onramp")
-    .in(
-      "county_run_id",
-      gate.accepted.map((row) => row.id)
-    );
+  const kpisResult = await supabase.rpc("load_behavioral_onramp_kpis_for_workspace", {
+    p_workspace_id: workspaceId,
+    p_accept_screening_grade: Boolean(consent?.acceptScreeningGrade),
+  });
 
   if (kpisResult.error) {
     return {

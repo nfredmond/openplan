@@ -19,9 +19,14 @@ export const SCREENING_GRADE_STAGES = new Set<CountyRunStage>([
   "validated-screening",
 ]);
 
+export const NON_SCREENING_GRADE_STAGES = new Set<string>([]);
+
 export function isScreeningGradeStage(stage: CountyRunStage | string | null | undefined): boolean {
-  if (!stage) return true;
-  return SCREENING_GRADE_STAGES.has(stage as CountyRunStage);
+  const normalizedStage = typeof stage === "string" ? stage.trim() : "";
+  if (!normalizedStage) return true;
+  if (SCREENING_GRADE_STAGES.has(normalizedStage as CountyRunStage)) return true;
+  if (NON_SCREENING_GRADE_STAGES.has(normalizedStage)) return false;
+  return true;
 }
 
 export function partitionScreeningGradeRows<T>({

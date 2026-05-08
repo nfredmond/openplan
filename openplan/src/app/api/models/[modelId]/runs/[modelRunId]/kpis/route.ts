@@ -311,6 +311,27 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   const kpiRecords = Array.isArray(body.kpis) ? body.kpis : [body];
 
+  if (
+    kpiRecords.some(
+      (kpi) =>
+        kpi &&
+        typeof kpi === "object" &&
+        (kpi as Record<string, unknown>).kpi_category === "behavioral_onramp"
+    )
+  ) {
+    audit.warn("behavioral_onramp_model_run_kpi_rejected", {
+      modelRunId: parsedParams.data.modelRunId,
+      attemptedCount: kpiRecords.length,
+    });
+    return NextResponse.json(
+      {
+        error:
+          "behavioral_onramp KPIs must be registered through county-run manifest ingestion.",
+      },
+      { status: 400 }
+    );
+  }
+
   const inserts = kpiRecords.map((kpi: Record<string, unknown>) => ({
     run_id: parsedParams.data.modelRunId,
     kpi_name: kpi.kpi_name as string,

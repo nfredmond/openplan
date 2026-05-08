@@ -133,9 +133,9 @@ describe("persistBehavioralOnrampKpis", () => {
 });
 
 describe("loadBehavioralOnrampKpisForWorkspace", () => {
-  function buildFromMock(countyRunRows: Array<{ id: string; stage: string }>, kpiRows: unknown[]) {
-    const kpiIn = vi.fn(async () => ({ data: kpiRows, error: null }));
-    return vi.fn((table: string) => {
+  function buildSupabaseMock(countyRunRows: Array<{ id: string; stage: string }>, kpiRows: unknown[]) {
+    const rpc = vi.fn(async () => ({ data: kpiRows, error: null }));
+    const from = vi.fn((table: string) => {
       if (table === "county_runs") {
         return {
           select: vi.fn(() => ({
@@ -143,19 +143,14 @@ describe("loadBehavioralOnrampKpisForWorkspace", () => {
           })),
         };
       }
-      if (table === "model_run_kpis") {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({ in: kpiIn })),
-          })),
-        };
-      }
       throw new Error(`Unexpected table: ${table}`);
     });
+
+    return { from, rpc };
   }
 
   it("holds screening-grade runs back when caller does not accept caveats", async () => {
-    const from = buildFromMock(
+    const supabase = buildSupabaseMock(
       [
         { id: "run-1", stage: "validated-screening" },
         { id: "run-2", stage: "runtime-complete" },
@@ -164,10 +159,14 @@ describe("loadBehavioralOnrampKpisForWorkspace", () => {
     );
 
     const result = await loadBehavioralOnrampKpisForWorkspace({
-      supabase: { from } as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
+      supabase: supabase as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
       workspaceId: "ws-1",
     });
 
+    expect(supabase.rpc).toHaveBeenCalledWith("load_behavioral_onramp_kpis_for_workspace", {
+      p_workspace_id: "ws-1",
+      p_accept_screening_grade: false,
+    });
     expect(result.error).toBeNull();
     expect(result.kpis).toEqual([]);
     expect(result.rejectedCountyRunIds).toEqual(["run-1", "run-2"]);
@@ -175,12 +174,13 @@ describe("loadBehavioralOnrampKpisForWorkspace", () => {
   });
 
   it("returns KPIs when caller passes acceptScreeningGrade: true", async () => {
-    const from = buildFromMock(
+    const supabase = buildSupabaseMock(
       [{ id: "run-1", stage: "validated-screening" }],
       [
         {
           kpi_name: "total_trips",
           kpi_label: "Total trips (behavioral)",
+          kpi_category: "behavioral_onramp",
           value: 100,
           unit: "trips",
           breakdown_json: {},
@@ -191,11 +191,15 @@ describe("loadBehavioralOnrampKpisForWorkspace", () => {
     );
 
     const result = await loadBehavioralOnrampKpisForWorkspace({
-      supabase: { from } as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
+      supabase: supabase as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
       workspaceId: "ws-1",
       consent: { acceptScreeningGrade: true },
     });
 
+    expect(supabase.rpc).toHaveBeenCalledWith("load_behavioral_onramp_kpis_for_workspace", {
+      p_workspace_id: "ws-1",
+      p_accept_screening_grade: true,
+    });
     expect(result.error).toBeNull();
     expect(result.kpis).toHaveLength(1);
     expect(result.kpis[0]?.kpi_name).toBe("total_trips");
@@ -205,26 +209,49 @@ describe("loadBehavioralOnrampKpisForWorkspace", () => {
 
   it("short-circuits when the workspace has no county runs", async () => {
     const selectEq = vi.fn(async () => ({ data: [], error: null }));
-    const kpiSelectMock = vi.fn();
+    const rpc = vi.fn();
     const from = vi.fn((table: string) => {
       if (table === "county_runs") {
         return {
           select: vi.fn(() => ({ eq: selectEq })),
         };
       }
-      if (table === "model_run_kpis") {
-        return { select: kpiSelectMock };
-      }
       throw new Error(`Unexpected table: ${table}`);
     });
 
     const result = await loadBehavioralOnrampKpisForWorkspace({
-      supabase: { from } as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
+      supabase: { from, rpc } as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
       workspaceId: "ws-1",
     });
 
     expect(result.error).toBeNull();
     expect(result.kpis).toEqual([]);
-    expect(kpiSelectMock).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("surfaces RPC errors without falling back to direct model_run_kpis reads", async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: { message: "consent denied", code: "42501" } }));
+    const from = vi.fn((table: string) => {
+      if (table === "county_runs") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(async () => ({ data: [{ id: "run-1", stage: "validated-screening" }], error: null })),
+          })),
+        };
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
+
+    const result = await loadBehavioralOnrampKpisForWorkspace({
+      supabase: { from, rpc } as unknown as Parameters<typeof loadBehavioralOnrampKpisForWorkspace>[0]["supabase"],
+      workspaceId: "ws-1",
+      consent: { acceptScreeningGrade: true },
+    });
+
+    expect(result.kpis).toEqual([]);
+    expect(result.rejectedCountyRunIds).toEqual([]);
+    expect(result.caveatGateReason).toBeNull();
+    expect(result.error).toEqual({ message: "consent denied", code: "42501" });
+    expect(from).not.toHaveBeenCalledWith("model_run_kpis");
   });
 });

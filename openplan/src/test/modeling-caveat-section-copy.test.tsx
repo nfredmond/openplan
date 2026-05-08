@@ -29,6 +29,7 @@ function makeKpi(overrides: Partial<BehavioralOnrampKpiSnapshot> = {}): Behavior
   return {
     kpi_name: "total_trips",
     kpi_label: "Total trips (behavioral)",
+    kpi_category: "behavioral_onramp",
     value: 231828.75,
     unit: "trips",
     breakdown_json: {},

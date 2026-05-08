@@ -143,7 +143,7 @@ Pause external sales or pilot expansion if:
 - workspace isolation or RLS smoke fails,
 - request-access/admin provisioning creates automatic outbound commitments,
 - billing language implies a fresh same-cycle paid canary,
-- a workflow claim requires unsupported modeling/legal/compliance validation (in particular: behavioral-onramp KPIs are gated at the helper boundary, not at RLS — see [KI-M1](2026-05-01-openplan-known-issues-register.md)),
+- a workflow claim requires unsupported modeling/legal/compliance validation (in particular: behavioral-onramp KPIs must keep using the SQL/RPC caveat gate proven on [2026-05-08](2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md); do not add raw `model_run_kpis` readers without a matching proof update),
 - or the buyer asks for broad self-serve operation without managed support.
 
 ## Known Issues

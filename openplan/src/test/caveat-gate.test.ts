@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  NON_SCREENING_GRADE_STAGES,
   describeScreeningGradeRefusal,
   isScreeningGradeStage,
   partitionScreeningGradeRows,
@@ -19,8 +20,10 @@ describe("isScreeningGradeStage", () => {
     expect(isScreeningGradeStage(undefined)).toBe(true);
   });
 
-  it("treats unknown stages as non-screening-grade so certified sources pass through", () => {
-    expect(isScreeningGradeStage("certified-modeling")).toBe(false);
+  it("fails closed on unknown or blank stage strings", () => {
+    expect(isScreeningGradeStage("certified-modeling")).toBe(true);
+    expect(isScreeningGradeStage("")).toBe(true);
+    expect(isScreeningGradeStage("   ")).toBe(true);
   });
 });
 
@@ -38,8 +41,8 @@ describe("partitionScreeningGradeRows", () => {
       resolveStage: (row) => row.stage,
     });
 
-    expect(decision.accepted.map((r) => r.id)).toEqual(["b"]);
-    expect(decision.rejected.map((r) => r.id)).toEqual(["a", "c"]);
+    expect(decision.accepted.map((r) => r.id)).toEqual([]);
+    expect(decision.rejected.map((r) => r.id)).toEqual(["a", "b", "c"]);
     expect(decision.reason).toBe("screening_grade_refused");
   });
 
@@ -55,16 +58,21 @@ describe("partitionScreeningGradeRows", () => {
     expect(decision.reason).toBeNull();
   });
 
-  it("reports no refusal reason when all rows are certified", () => {
-    const decision = partitionScreeningGradeRows({
-      rows: [{ id: "b", stage: "certified-modeling" }],
-      consent: undefined,
-      resolveStage: (row) => row.stage,
-    });
+  it("reports no refusal reason when all rows are explicitly registered as non-screening", () => {
+    NON_SCREENING_GRADE_STAGES.add("certified-modeling");
+    try {
+      const decision = partitionScreeningGradeRows({
+        rows: [{ id: "b", stage: "certified-modeling" }],
+        consent: undefined,
+        resolveStage: (row) => row.stage,
+      });
 
-    expect(decision.accepted).toHaveLength(1);
-    expect(decision.rejected).toHaveLength(0);
-    expect(decision.reason).toBeNull();
+      expect(decision.accepted).toHaveLength(1);
+      expect(decision.rejected).toHaveLength(0);
+      expect(decision.reason).toBeNull();
+    } finally {
+      NON_SCREENING_GRADE_STAGES.delete("certified-modeling");
+    }
   });
 });
 
