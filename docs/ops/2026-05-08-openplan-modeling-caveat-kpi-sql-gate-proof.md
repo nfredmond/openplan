@@ -57,6 +57,9 @@ Every current `county_runs.stage` value remains screening-grade.
 - `openplan/src/app/api/models/[modelId]/runs/[modelRunId]/kpis/route.ts`
   - rejects `kpi_category: "behavioral_onramp"` on the model-run KPI POST route
   - county-run manifest ingest remains the behavioral-onramp writer
+- `openplan/scripts/seed-nctc-demo.ts`
+  - now refreshes the same behavioral-onramp KPI cache as manifest ingest, so
+    the seeded local NCTC demo exercises the consent UI with real KPI rows
 
 ## Tests Added / Updated
 
@@ -72,6 +75,14 @@ Every current `county_runs.stage` value remains screening-grade.
   - proves current county-run stages are screening-grade and synthetic certified stages require explicit registration
 - `openplan/src/test/behavioral-onramp-kpis.test.ts`
   - proves the loader calls the RPC and preserves consent/rejection behavior
+- `openplan/src/test/model-run-kpis-reader-inventory.test.ts`
+  - inventories every app-side `model_run_kpis` caller
+  - allows only run-id-scoped model-run reads, run-id cleanup, model-run writes,
+    and the behavioral manifest writer
+  - fails if a new direct behavioral-onramp reader appears outside the RPC path
+- `openplan/src/test/seed-nctc-demo.test.ts`
+  - proves the NCTC county-onramp manifest produces the six behavioral KPI rows
+    used by the local demo seed
 
 ## Verification
 
@@ -97,6 +108,16 @@ pnpm test
 
 pnpm build
 # passed
+```
+
+Follow-up guardrail checks:
+
+```bash
+pnpm vitest run src/test/model-run-kpis-reader-inventory.test.ts \
+  src/test/seed-nctc-demo.test.ts \
+  src/test/behavioral-onramp-kpis.test.ts
+# Test Files  3 passed (3)
+#      Tests  35 passed (35)
 ```
 
 ### Local Supabase Reset + Live Probe
@@ -134,6 +155,50 @@ This proves the migration-level behavior, not only the static migration shape:
 - the RPC returns no behavioral rows without consent
 - the RPC returns behavioral rows with explicit consent
 - non-behavioral KPI reads still work through the existing model-run RLS path
+
+### Local Demo Seed + Browser Smoke
+
+After the reset:
+
+```bash
+pnpm seed:nctc
+# [seed:nctc] refreshed behavioral-onramp KPIs (6)
+```
+
+Then a headless Chrome smoke signed in as the local NCTC demo owner and loaded:
+
+- `/county-runs/d0000001-0000-4000-8000-000000000005`
+- `/county-runs/d0000001-0000-4000-8000-000000000005?includeScreening=1`
+
+Observed result:
+
+```json
+{
+  "status": "passed",
+  "noConsent": {
+    "behavioralSection": true,
+    "refusalBanner": true,
+    "productionOnly": true,
+    "totalTripsVisible": false
+  },
+  "consent": {
+    "behavioralSection": true,
+    "includingScreening": true,
+    "totalTripsVisible": true,
+    "revertVisible": true,
+    "emptyKpiState": false
+  }
+}
+```
+
+The consent view rendered six seeded KPI rows:
+
+- Assignment final gap
+- Jobs coverage
+- Loaded links
+- Population coverage
+- Total trips (behavioral)
+- Zones with activity
 
 ## Remaining Boundaries
 

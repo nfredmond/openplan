@@ -29,6 +29,7 @@ import {
   refreshCountyRunModelingEvidence,
 } from "../src/lib/models/evidence-backbone";
 import type { CountyOnrampManifest } from "../src/lib/models/county-onramp";
+import { persistBehavioralOnrampKpis } from "../src/lib/models/behavioral-onramp-kpis";
 import {
   createDefaultTargetedReportSections,
 } from "../src/lib/reports/catalog";
@@ -1852,6 +1853,16 @@ async function main(): Promise<void> {
     throw new Error(`Failed to upsert county_run: ${countyRunError.message}`);
   }
   console.log(`[seed:nctc] upserted county_run ${DEMO_COUNTY_RUN_ID}`);
+
+  const behavioralKpiResult = await persistBehavioralOnrampKpis({
+    supabase,
+    countyRunId: DEMO_COUNTY_RUN_ID,
+    manifest: countyRunOnrampManifest,
+  });
+  if (behavioralKpiResult.error) {
+    throw new Error(`Failed to refresh behavioral-onramp KPIs: ${behavioralKpiResult.error.message}`);
+  }
+  console.log(`[seed:nctc] refreshed behavioral-onramp KPIs (${behavioralKpiResult.inserted.length})`);
 
   // 9. Assignment modeling evidence backbone rows for the demo county run.
   const evidenceResult = await refreshCountyRunModelingEvidence({

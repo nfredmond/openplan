@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { buildBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
 import {
   DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
   DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
@@ -166,6 +167,23 @@ describe("buildSeedRecords", () => {
     expect(records.countyRun.status_label).toBe("internal prototype only");
     expect(records.countyRun.geography_id).toBe("06057");
     expect(records.countyRun.geography_type).toBe("county_fips");
+  });
+
+  it("builds behavioral-onramp KPIs from the NCTC county-onramp manifest used by the seed", () => {
+    const manifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary);
+    const kpis = buildBehavioralOnrampKpis(manifest);
+
+    expect(kpis).toHaveLength(6);
+    expect(kpis.every((kpi) => kpi.kpi_category === "behavioral_onramp")).toBe(true);
+    expect(kpis.find((kpi) => kpi.kpi_name === "total_trips")).toMatchObject({
+      kpi_label: "Total trips (behavioral)",
+      value: 628262.2,
+      unit: "trips",
+    });
+    expect(kpis.find((kpi) => kpi.kpi_name === "loaded_links")).toMatchObject({
+      value: 54944,
+      unit: "links",
+    });
   });
 
   it("falls back to the internal-prototype label when validation summary omits it", () => {
