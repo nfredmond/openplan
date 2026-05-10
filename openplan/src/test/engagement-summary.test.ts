@@ -106,4 +106,71 @@ describe("summarizeEngagementItems", () => {
       ])
     );
   });
+
+  it("separates appendix-ready public comments from private notes and duplicate-review holds", () => {
+    const summary = summarizeEngagementItems(
+      [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          label: "Safety",
+          description: "Crossings and speed management",
+        },
+      ],
+      [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          campaign_id: "99999999-9999-4999-8999-999999999999",
+          category_id: "55555555-5555-4555-8555-555555555555",
+          title: "Crossing concern",
+          body: "Add a crossing near the school.",
+          status: "approved",
+          source_type: "public",
+          metadata_json: { body_fingerprint: "duplicate-crossing", submitted_via: "public_portal" },
+          moderation_notes: "Duplicate reviewed - canonical public comment.",
+        },
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          campaign_id: "99999999-9999-4999-8999-999999999999",
+          category_id: "55555555-5555-4555-8555-555555555555",
+          title: "Crossing concern",
+          body: "Add a crossing near the school.",
+          status: "approved",
+          source_type: "public",
+          metadata_json: { body_fingerprint: "duplicate-crossing", submitted_via: "public_portal" },
+          moderation_notes: null,
+        },
+        {
+          id: "33333333-3333-4333-8333-333333333333",
+          campaign_id: "99999999-9999-4999-8999-999999999999",
+          category_id: "55555555-5555-4555-8555-555555555555",
+          title: "Lighting",
+          body: "Lighting would help people walking after work.",
+          status: "approved",
+          source_type: "public_comment",
+          metadata_json: { body_fingerprint: "lighting" },
+        },
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          campaign_id: "99999999-9999-4999-8999-999999999999",
+          category_id: "55555555-5555-4555-8555-555555555555",
+          title: "Staff note",
+          body: "Use staff note for internal response assignment only.",
+          status: "approved",
+          source_type: "internal",
+          metadata_json: {},
+        },
+      ]
+    );
+
+    expect(summary.moderationQueue.readyForHandoffCount).toBe(4);
+    expect(summary.appendixReadiness).toMatchObject({
+      appendixReadyCount: 2,
+      publicApprovedCategorizedCount: 3,
+      nonPublicApprovedCategorizedCount: 1,
+      duplicateReviewCount: 1,
+      duplicateGroupCount: 1,
+      duplicateExcludedCount: 1,
+      publicShareOfReadyItems: 3 / 4,
+    });
+  });
 });

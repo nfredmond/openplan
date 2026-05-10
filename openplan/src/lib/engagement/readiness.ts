@@ -7,6 +7,14 @@ type EngagementCountsLike = {
   totalItems: number;
   uncategorizedItems: number;
   moderationQueue: EngagementModerationQueue;
+  appendixReadiness?: {
+    appendixReadyCount: number;
+    publicApprovedCategorizedCount: number;
+    nonPublicApprovedCategorizedCount: number;
+    duplicateReviewCount: number;
+    duplicateGroupCount: number;
+    duplicateExcludedCount: number;
+  };
 };
 
 type EngagementHandoffReadinessInput = {
@@ -17,7 +25,16 @@ type EngagementHandoffReadinessInput = {
 };
 
 export type EngagementHandoffReadinessCheck = {
-  id: "project" | "categories" | "categorization" | "review_queue" | "approved_items" | "campaign_status";
+  id:
+    | "project"
+    | "categories"
+    | "categorization"
+    | "review_queue"
+    | "duplicate_review"
+    | "approved_items"
+    | "source_posture"
+    | "report_appendix"
+    | "campaign_status";
   label: string;
   passed: boolean;
   detail: string;
@@ -36,6 +53,16 @@ export function getEngagementHandoffReadiness(
   input: EngagementHandoffReadinessInput
 ): EngagementHandoffReadiness {
   const { campaignStatus, projectLinked, categoryCount, counts } = input;
+  const appendixReadiness =
+    counts.appendixReadiness ??
+    {
+      appendixReadyCount: counts.moderationQueue.readyForHandoffCount,
+      publicApprovedCategorizedCount: counts.moderationQueue.readyForHandoffCount,
+      nonPublicApprovedCategorizedCount: 0,
+      duplicateReviewCount: 0,
+      duplicateGroupCount: 0,
+      duplicateExcludedCount: 0,
+    };
 
   const checks: EngagementHandoffReadinessCheck[] = [
     {
@@ -76,6 +103,15 @@ export function getEngagementHandoffReadiness(
           : `${counts.moderationQueue.actionableCount} pending or flagged item${counts.moderationQueue.actionableCount === 1 ? " still needs" : "s still need"} operator review.`,
     },
     {
+      id: "duplicate_review",
+      label: "Duplicate review resolved",
+      passed: appendixReadiness.duplicateReviewCount === 0,
+      detail:
+        appendixReadiness.duplicateReviewCount === 0
+          ? "No duplicate-looking active comments are open for appendix review."
+          : `${appendixReadiness.duplicateReviewCount} active item${appendixReadiness.duplicateReviewCount === 1 ? " needs" : "s need"} duplicate review before appendix handoff.`,
+    },
+    {
       id: "approved_items",
       label: "Approved categorized items present",
       passed: counts.moderationQueue.readyForHandoffCount > 0,
@@ -83,6 +119,29 @@ export function getEngagementHandoffReadiness(
         counts.moderationQueue.readyForHandoffCount > 0
           ? `${counts.moderationQueue.readyForHandoffCount} approved item${counts.moderationQueue.readyForHandoffCount === 1 ? " is" : "s are"} ready for report inclusion.`
           : "Approve and categorize at least one item before calling the campaign handoff-ready.",
+    },
+    {
+      id: "source_posture",
+      label: "Public/private source posture visible",
+      passed:
+        counts.moderationQueue.readyForHandoffCount > 0 &&
+        appendixReadiness.publicApprovedCategorizedCount + appendixReadiness.nonPublicApprovedCategorizedCount ===
+          counts.moderationQueue.readyForHandoffCount,
+      detail:
+        counts.moderationQueue.readyForHandoffCount > 0
+          ? `${appendixReadiness.publicApprovedCategorizedCount} public comment${appendixReadiness.publicApprovedCategorizedCount === 1 ? "" : "s"} and ${appendixReadiness.nonPublicApprovedCategorizedCount} internal/meeting/email item${appendixReadiness.nonPublicApprovedCategorizedCount === 1 ? "" : "s"} are separated for staff review.`
+          : "Approve categorized items before staff can separate public comments from internal notes for handoff.",
+    },
+    {
+      id: "report_appendix",
+      label: "Report appendix candidates",
+      passed: appendixReadiness.appendixReadyCount > 0,
+      detail:
+        appendixReadiness.appendixReadyCount > 0
+          ? `${appendixReadiness.appendixReadyCount} approved public comment${appendixReadiness.appendixReadyCount === 1 ? " is" : "s are"} appendix-ready after category and duplicate checks.`
+          : appendixReadiness.nonPublicApprovedCategorizedCount > 0
+            ? "Approved non-public notes are available, but no approved public comments are ready for appendix use yet."
+            : "Approve at least one categorized public comment before building the public-comment appendix.",
     },
     {
       id: "campaign_status",
@@ -124,8 +183,12 @@ export function getEngagementHandoffReadiness(
     nextAction = `Categorize the ${counts.uncategorizedItems} uncategorized item${counts.uncategorizedItems === 1 ? "" : "s"} before final report matrix handoff.`;
   } else if (counts.moderationQueue.actionableCount > 0) {
     nextAction = `Resolve the ${counts.moderationQueue.actionableCount} pending or flagged moderation item${counts.moderationQueue.actionableCount === 1 ? "" : "s"} before calling this packet ready.`;
+  } else if (appendixReadiness.duplicateReviewCount > 0) {
+    nextAction = `Resolve ${appendixReadiness.duplicateReviewCount} duplicate-review item${appendixReadiness.duplicateReviewCount === 1 ? "" : "s"} before using comments in the report appendix.`;
   } else if (counts.moderationQueue.readyForHandoffCount === 0) {
     nextAction = "Approve and categorize at least one item so the handoff packet includes review-ready signal, not just setup state.";
+  } else if (appendixReadiness.appendixReadyCount === 0) {
+    nextAction = "Separate at least one approved public comment from internal or meeting notes before building the public-comment appendix.";
   } else if (!(campaignStatus === "active" || campaignStatus === "closed")) {
     nextAction = "Move the campaign into Active or Closed status before final handoff.";
   } else if (campaignStatus === "active") {

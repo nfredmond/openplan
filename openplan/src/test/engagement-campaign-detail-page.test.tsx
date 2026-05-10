@@ -289,6 +289,9 @@ describe("EngagementCampaignDetailPage", () => {
     expect(screen.getAllByText(/Nearly ready/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/close the campaign when intake is complete/i)).toBeInTheDocument();
     expect(screen.getByText(/Campaign reporting posture/i)).toBeInTheDocument();
+    expect(screen.getByText(/Report appendix readiness/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 approved public comment ready for appendix review/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a representativeness or legal sufficiency finding/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs packet attention/i)).toBeInTheDocument();
     expect(screen.getByText(/Refresh recommended/i)).toBeInTheDocument();
     expect(screen.getAllByText(/1 packet issue/i)).toHaveLength(2);

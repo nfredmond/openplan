@@ -172,6 +172,10 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
       readyForHandoffCount: 1,
       actionableCount: 0,
       uncategorizedItems: 0,
+      appendixReadyCount: 1,
+      duplicateReviewCount: 0,
+      publicApprovedCategorizedCount: 1,
+      nonPublicApprovedCategorizedCount: 0,
     });
   });
 

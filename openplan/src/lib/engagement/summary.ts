@@ -21,6 +21,7 @@ type ItemLike = {
   source_type?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  metadata_json?: Record<string, unknown> | null;
   moderation_notes?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -87,6 +88,16 @@ type ExportCoverageSummary = {
   mapReadyShare: number;
 };
 
+type AppendixReadinessSummary = {
+  appendixReadyCount: number;
+  publicApprovedCategorizedCount: number;
+  nonPublicApprovedCategorizedCount: number;
+  duplicateReviewCount: number;
+  duplicateGroupCount: number;
+  duplicateExcludedCount: number;
+  publicShareOfReadyItems: number;
+};
+
 type EngagementCounts = {
   totalItems: number;
   geolocatedItems: number;
@@ -101,6 +112,7 @@ type EngagementCounts = {
   moderationQueue: ModerationQueueSummary;
   geographyCoverage: GeographyCoverageSummary;
   exportCoverage: ExportCoverageSummary;
+  appendixReadiness: AppendixReadinessSummary;
   lastActivityAt: string | null;
   recentActivity: RecentActivityWindow;
 };
@@ -109,6 +121,37 @@ function parseTimestamp(value: string | null | undefined): number | null {
   if (!value) return null;
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? null : parsed;
+}
+
+function normalizeBodyFingerprint(input: { title?: string | null; body?: string | null }): string {
+  return `${input.title ?? ""}|${input.body ?? ""}`.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function metadataString(metadata: Record<string, unknown> | null | undefined, key: string): string | null {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function getDuplicateKey(item: ItemLike): string | null {
+  const metadataFingerprint = metadataString(item.metadata_json, "body_fingerprint");
+  if (metadataFingerprint) return metadataFingerprint;
+
+  const normalizedFingerprint = normalizeBodyFingerprint(item);
+  return normalizedFingerprint.replace(/[|\s]/g, "") ? normalizedFingerprint : null;
+}
+
+function isPublicInput(item: ItemLike): boolean {
+  return (
+    item.source_type === "public" ||
+    item.source_type === "public_comment" ||
+    metadataString(item.metadata_json, "submitted_via") === "public_portal"
+  );
+}
+
+function duplicateReviewResolved(item: ItemLike): boolean {
+  return /duplicate\s+(reviewed|resolved|cleared)|not\s+a\s+duplicate|canonical|merged/i.test(
+    item.moderation_notes ?? ""
+  );
 }
 
 function makeStatusCounts() {
@@ -318,12 +361,37 @@ export function summarizeEngagementItems(
   const readyForHandoffCount = categoryCounts
     .filter((category) => category.categoryId !== null)
     .reduce((sum, category) => sum + category.approvedCount, 0);
-  const mapReadyItems = items.filter(
-    (item) =>
-      item.status === "approved" &&
-      Boolean(item.category_id) &&
-      typeof item.latitude === "number" &&
-      typeof item.longitude === "number"
+  const handoffReadyItems = items.filter((item) => item.status === "approved" && Boolean(item.category_id));
+  const duplicateGroups = new Map<string, ItemLike[]>();
+  for (const item of items) {
+    const key = getDuplicateKey(item);
+    if (!key) continue;
+    duplicateGroups.set(key, [...(duplicateGroups.get(key) ?? []), item]);
+  }
+  const unresolvedDuplicateIds = new Set<string>();
+  let duplicateGroupCount = 0;
+
+  for (const group of duplicateGroups.values()) {
+    const reviewableItems = group.filter((item) => item.status !== "rejected");
+    if (reviewableItems.length <= 1) continue;
+
+    const unresolvedItems = reviewableItems.filter((item) => !duplicateReviewResolved(item));
+    if (unresolvedItems.length === 0) continue;
+
+    duplicateGroupCount += 1;
+    for (const item of unresolvedItems) {
+      unresolvedDuplicateIds.add(item.id);
+    }
+  }
+
+  const publicApprovedCategorizedCount = handoffReadyItems.filter(isPublicInput).length;
+  const nonPublicApprovedCategorizedCount = handoffReadyItems.length - publicApprovedCategorizedCount;
+  const duplicateExcludedCount = handoffReadyItems.filter((item) => unresolvedDuplicateIds.has(item.id)).length;
+  const appendixReadyCount = handoffReadyItems.filter(
+    (item) => isPublicInput(item) && !unresolvedDuplicateIds.has(item.id)
+  ).length;
+  const mapReadyItems = handoffReadyItems.filter(
+    (item) => typeof item.latitude === "number" && typeof item.longitude === "number"
   ).length;
   const handoffReadyWithoutLocation = readyForHandoffCount - mapReadyItems;
 
@@ -359,6 +427,15 @@ export function summarizeEngagementItems(
       mapReadyItems,
       handoffReadyWithoutLocation,
       mapReadyShare: readyForHandoffCount > 0 ? mapReadyItems / readyForHandoffCount : 0,
+    },
+    appendixReadiness: {
+      appendixReadyCount,
+      publicApprovedCategorizedCount,
+      nonPublicApprovedCategorizedCount,
+      duplicateReviewCount: unresolvedDuplicateIds.size,
+      duplicateGroupCount,
+      duplicateExcludedCount,
+      publicShareOfReadyItems: readyForHandoffCount > 0 ? publicApprovedCategorizedCount / readyForHandoffCount : 0,
     },
     lastActivityAt,
     recentActivity: {

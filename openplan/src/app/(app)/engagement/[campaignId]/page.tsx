@@ -136,6 +136,7 @@ export default async function EngagementCampaignDetailPage({
     categoryCount: (categories ?? []).length,
     counts,
   });
+  const appendixReadiness = counts.appendixReadiness;
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
@@ -395,6 +396,24 @@ export default async function EngagementCampaignDetailPage({
                     ? "Every handoff-ready item has a location for map display and downstream GIS review."
                     : "Approve and categorize geolocated items to build a reliable public map/export layer."}
               </p>
+            </div>
+
+            <div className="module-note border-amber-300/40 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Report appendix readiness</p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
+                {appendixReadiness.appendixReadyCount} approved public comment{appendixReadiness.appendixReadyCount === 1 ? "" : "s"} ready for appendix review
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This is a staff handoff cue, not a representativeness or legal sufficiency finding. Public comments, internal notes, meeting/email items, and duplicate-looking records stay separated before report use.
+              </p>
+              <div className="mt-3">
+                <MetaList>
+                  <MetaItem>{appendixReadiness.publicApprovedCategorizedCount} approved public comment{appendixReadiness.publicApprovedCategorizedCount === 1 ? "" : "s"}</MetaItem>
+                  <MetaItem>{appendixReadiness.nonPublicApprovedCategorizedCount} internal/meeting/email ready item{appendixReadiness.nonPublicApprovedCategorizedCount === 1 ? "" : "s"}</MetaItem>
+                  <MetaItem>{appendixReadiness.duplicateReviewCount} duplicate-review item{appendixReadiness.duplicateReviewCount === 1 ? "" : "s"}</MetaItem>
+                  <MetaItem>{appendixReadiness.duplicateExcludedCount} appendix candidate{appendixReadiness.duplicateExcludedCount === 1 ? "" : "s"} held for duplicate review</MetaItem>
+                </MetaList>
+              </div>
             </div>
 
             <div className="grid gap-3 xl:grid-cols-2">

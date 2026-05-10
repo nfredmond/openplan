@@ -187,6 +187,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
             readyForHandoffCount: counts.moderationQueue.readyForHandoffCount,
             actionableCount: counts.moderationQueue.actionableCount,
             uncategorizedItems: counts.uncategorizedItems,
+            appendixReadyCount: counts.appendixReadiness.appendixReadyCount,
+            duplicateReviewCount: counts.appendixReadiness.duplicateReviewCount,
+            publicApprovedCategorizedCount: counts.appendixReadiness.publicApprovedCategorizedCount,
+            nonPublicApprovedCategorizedCount: counts.appendixReadiness.nonPublicApprovedCategorizedCount,
           },
         },
       };
