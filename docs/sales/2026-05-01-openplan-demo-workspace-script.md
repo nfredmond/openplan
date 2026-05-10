@@ -114,6 +114,13 @@ Ask:
 - What data sensitivity or procurement constraint matters?
 - Is this self-hosted, managed-hosted, implementation-only, or a mix?
 
+Capture before the next step:
+
+- the buyer's single highest-value workflow,
+- the accountable reviewer or review group,
+- any public-records, PII, procurement, or hosting constraint,
+- and the service lane that should frame follow-up: self-hosted, managed hosting, implementation-only, planning support, or a blended lane.
+
 ## Do Not Say
 
 - "The model is validated forecasting."

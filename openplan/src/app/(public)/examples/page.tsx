@@ -312,6 +312,14 @@ export default function ExamplesEvidenceCatalogPage() {
               Request supervised access
             </Link>
           </div>
+          <div className="mt-5 rounded-xl border border-border/60 bg-muted/20 p-4">
+            <p className="public-ledger-label">Guided demo fit check</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              A useful buyer walkthrough should end with one scoped first workflow, a named review
+              owner, known data-sensitivity constraints, and the right delivery lane: self-hosted,
+              managed-hosted, implementation-only, or a mix.
+            </p>
+          </div>
         </article>
 
         <article className="public-surface">
