@@ -20,6 +20,15 @@ const READINESS_LANES = [
   { lane: "Layout Audit", regex: /openplan-production-layout-overlap-audit\.md$/ },
   { lane: "Managed Run", regex: /openplan-production-managed-run-smoke\.md$/ },
   { lane: "Scenario Comparison", regex: /openplan-production-scenario-comparison-smoke\.md$/ },
+  { lane: "Workspace URL Isolation", regex: /openplan-local-workspace-url-isolation-smoke\.md$/ },
+  { lane: "RTP Release Review", regex: /openplan-local-rtp-release-review-smoke\.md$/ },
+  { lane: "Grants Flow", regex: /openplan-local-grants-flow-smoke\.md$/ },
+  { lane: "Engagement Report Handoff", regex: /openplan-local-engagement-report-handoff-smoke\.md$/ },
+  { lane: "Analysis Report Linkage", regex: /openplan-local-analysis-report-linkage-smoke\.md$/ },
+  { lane: "Phase 1 Spine", regex: /openplan-local-spine-smoke\.md$/ },
+  { lane: "Aerial Evidence Spine", regex: /openplan-local-aerial-evidence-smoke\.md$/ },
+  { lane: "Admin Support Flow", regex: /openplan-local-admin-support-flow-smoke\.md$/ },
+  { lane: "Production Admin Operations Auth", regex: /openplan-production-admin-operations-authenticated-smoke\.md$/ },
 ];
 
 function defaultOpsDir() {
