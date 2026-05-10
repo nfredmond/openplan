@@ -9,6 +9,15 @@ export type WorkflowNextActionGroupKey =
   | "aerial"
   | "admin-release-proof";
 
+export const COMMAND_CENTER_ROADMAP_WORKFLOW_LANE_KEYS = [
+  "rtp",
+  "grants",
+  "engagement",
+  "analysis-modeling",
+  "aerial",
+  "admin-release-proof",
+] as const satisfies readonly WorkflowNextActionGroupKey[];
+
 export type WorkflowNextActionEntry = {
   key: string;
   title: string;
@@ -30,6 +39,8 @@ export type WorkflowNextActionGroup = {
   cue: string;
   href: string;
   tone: StatusTone;
+  queuedActionCount: number;
+  displayedActionCount: number;
   actions: WorkflowNextActionEntry[];
 };
 
@@ -40,6 +51,7 @@ type WorkflowGroupDefinition = {
   href: string;
   fallbackTitle: string;
   fallbackDetail: string;
+  fallbackBadges?: (summary: WorkspaceOperationsSummary) => WorkflowNextActionEntry["badges"];
   cue: (summary: WorkspaceOperationsSummary, queuedActionCount: number) => string;
 };
 
@@ -122,7 +134,12 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/rtp",
     fallbackTitle: "Inspect RTP packet posture",
     fallbackDetail:
-      "No RTP queue pressure is visible. Inspect cycle setup and packet release-review posture before sharing board or public-review material.",
+      "No RTP queue pressure. Verify cycle setup, packet freshness, and release-review basis before board or public-review sharing.",
+    fallbackBadges: (summary) => [
+      { label: "Regenerate", value: summary.counts.reportRefreshRecommended },
+      { label: "Generate", value: summary.counts.reportNoPacket },
+      { label: "Current", value: summary.counts.reportPacketCurrent },
+    ],
     cue: (summary) =>
       `${summary.counts.reportRefreshRecommended} regenerate · ${summary.counts.reportNoPacket} generate · ${summary.counts.reportPacketCurrent} review`,
   },
@@ -133,7 +150,12 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/grants",
     fallbackTitle: "Review grants pipeline",
     fallbackDetail:
-      "No funding pressure is queued. Review open opportunities and reimbursement posture before treating funding context as settled.",
+      "No funding pressure is queued. Confirm open opportunities, decisions, awards, and reimbursement posture before settling funding context.",
+    fallbackBadges: (summary) => [
+      { label: "Open opportunities", value: summary.counts.openFundingOpportunities },
+      { label: "Overdue decisions", value: summary.counts.overdueDecisionFundingOpportunities },
+      { label: "Funding gaps", value: summary.counts.projectFundingGapProjects },
+    ],
     cue: (summary, queuedActionCount) =>
       `${pluralize(summary.counts.openFundingOpportunities, "open opportunity", "open opportunities")} · ${pluralize(queuedActionCount, "queued check")}`,
   },
@@ -144,7 +166,8 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/engagement",
     fallbackTitle: "Inspect engagement handoff readiness",
     fallbackDetail:
-      "No engagement exception is queued from this summary. Inspect moderation, categorization, and report-handoff readiness before closing public-review loops.",
+      "No engagement exception is queued. Check moderation, categorization, duplicate review, and report handoff before closing public-review loops.",
+    fallbackBadges: () => [{ label: "Standing check", value: "handoff" }],
     cue: (_summary, queuedActionCount) =>
       queuedActionCount > 0 ? `${pluralize(queuedActionCount, "review-loop action")}` : "handoff check",
   },
@@ -155,7 +178,13 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/models",
     fallbackTitle: "Check modeling caveats",
     fallbackDetail:
-      "No modeling queue pressure is visible. Check scenario/model evidence and caveat posture before using analysis language in grants or reports.",
+      "No modeling queue pressure. Check scenario evidence, comparison context, and caveat posture before using analysis language in grants or reports.",
+    fallbackBadges: (summary) => [
+      { label: "Comparison-backed", value: summary.counts.comparisonBackedReports },
+      ...(summary.grantModelingSummary?.breakdownSummary
+        ? [{ label: "Modeling triage", value: summary.grantModelingSummary.breakdownSummary }]
+        : []),
+    ],
     cue: (summary) =>
       summary.grantModelingSummary?.breakdownSummary ??
       `${pluralize(summary.counts.comparisonBackedReports, "comparison-backed report")}`,
@@ -167,7 +196,11 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/aerial",
     fallbackTitle: "Check aerial evidence QA",
     fallbackDetail:
-      "No aerial exception is queued. Check mission packages and evidence QA before using field capture as report or grant support.",
+      "No aerial exception is queued. Confirm mission packages, AOI evidence, and QA status before using field capture in reports or grants.",
+    fallbackBadges: (summary) => [
+      { label: "Missions", value: summary.counts.aerialMissions },
+      { label: "Ready packages", value: summary.counts.aerialReadyPackages },
+    ],
     cue: (summary) =>
       `${pluralize(summary.counts.aerialMissions, "mission")} · ${pluralize(summary.counts.aerialReadyPackages, "ready package")}`,
   },
@@ -178,11 +211,16 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/admin/pilot-readiness",
     fallbackTitle: "Check release proof packet",
     fallbackDetail:
-      "Check the release proof packet, pilot readiness evidence, billing waiver language, and known caveats before any external demo or sale motion.",
+      "Check release proof, pilot readiness evidence, billing-waiver language, and known caveats before any external demo or sale motion.",
+    fallbackBadges: (summary) => [{ label: "Total commands", value: summary.counts.queueDepth }],
     cue: (summary, queuedActionCount) =>
       `${pluralize(summary.counts.queueDepth, "total command")} · ${pluralize(queuedActionCount, "proof-linked action")}`,
   },
 ];
+
+export function getCommandCenterRoadmapWorkflowLaneKeys(): WorkflowNextActionGroupKey[] {
+  return [...COMMAND_CENTER_ROADMAP_WORKFLOW_LANE_KEYS];
+}
 
 export function buildWorkflowNextActionGroups(summary: WorkspaceOperationsSummary): WorkflowNextActionGroup[] {
   const groups = new Map<WorkflowNextActionGroupKey, WorkflowNextActionEntry[]>();
@@ -214,7 +252,7 @@ export function buildWorkflowNextActionGroups(summary: WorkspaceOperationsSummar
               href: definition.href,
               tone: "neutral" as const,
               source: "standing-check" as const,
-              badges: [],
+              badges: definition.fallbackBadges?.(summary) ?? [],
             },
           ];
 
@@ -225,7 +263,30 @@ export function buildWorkflowNextActionGroups(summary: WorkspaceOperationsSummar
       href: definition.href,
       cue: definition.cue(summary, queuedActions.length),
       tone: groupTone(actions),
+      queuedActionCount: queuedActions.length,
+      displayedActionCount: actions.length,
       actions,
     };
+  });
+}
+
+export function workflowGroupsCoverCommandCenterRoadmapLanes(groups: Pick<WorkflowNextActionGroup, "key">[]) {
+  const expected = getCommandCenterRoadmapWorkflowLaneKeys();
+  return groups.length === expected.length && expected.every((key, index) => groups[index]?.key === key);
+}
+
+export function workflowGroupsPreserveStandingChecksWhenQueueIsEmpty(
+  groups: Pick<WorkflowNextActionGroup, "queuedActionCount" | "actions">[]
+) {
+  return groups.every((group) => {
+    const action = group.actions[0];
+
+    return (
+      group.queuedActionCount === 0 &&
+      group.actions.length === 1 &&
+      action?.source === "standing-check" &&
+      action.href.length > 0 &&
+      action.title.length > 0
+    );
   });
 }

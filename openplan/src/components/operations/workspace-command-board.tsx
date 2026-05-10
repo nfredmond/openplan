@@ -37,6 +37,18 @@ function resolveNextActionHref(action: WorkflowNextActionEntry) {
     : action.href;
 }
 
+function formatActionBadge(badge: WorkflowNextActionEntry["badges"][number]) {
+  return badge.value !== null && badge.value !== undefined ? `${badge.label}: ${badge.value}` : badge.label;
+}
+
+function groupCountLabel(group: ReturnType<typeof buildWorkflowNextActionGroups>[number]) {
+  if (group.queuedActionCount === 0) return "standing check";
+  if (group.queuedActionCount > group.displayedActionCount) {
+    return `${pluralize(group.queuedActionCount, "queued action")} · ${group.displayedActionCount} shown`;
+  }
+  return pluralize(group.queuedActionCount, "queued action");
+}
+
 export function WorkspaceCommandBoard({
   summary,
   label = "Operations command board",
@@ -187,7 +199,9 @@ export function WorkspaceCommandBoard({
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{group.description}</p>
-                <p className="mt-2 text-[0.72rem] font-medium text-muted-foreground/80">{group.cue}</p>
+                <p className="mt-2 text-[0.72rem] font-medium text-muted-foreground/80">
+                  {groupCountLabel(group)} · {group.cue}
+                </p>
               </div>
               <div className="space-y-2">
                 {group.actions.map((action) => (
@@ -205,6 +219,12 @@ export function WorkspaceCommandBoard({
                       ) : null}
                     </div>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
+                    {action.badges.length > 0 ? (
+                      <p className="mt-1.5 text-[0.7rem] font-medium leading-5 text-muted-foreground/80">
+                        {action.badges.slice(0, 3).map(formatActionBadge).join(" · ")}
+                        {action.badges.length > 3 ? ` · +${action.badges.length - 3} more` : ""}
+                      </p>
+                    ) : null}
                   </Link>
                 ))}
               </div>

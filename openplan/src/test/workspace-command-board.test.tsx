@@ -105,6 +105,9 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText("Admin / release proof")).toBeInTheDocument();
     expect(screen.getByText("Inspect engagement handoff readiness")).toBeInTheDocument();
     expect(screen.getByText(/1 total command · 1 proof-linked action/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 queued action · 1 open opportunity · 1 queued check/i)).toBeInTheDocument();
+    expect(screen.getByText(/standing check · handoff check/i)).toBeInTheDocument();
+    expect(screen.getByText(/Standing check: handoff/i)).toBeInTheDocument();
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();
@@ -186,7 +189,7 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/reports?posture=comparison-backed"
     );
-    expect(screen.getByText(/Modeling triage: 1 ready · 0 refresh · 0 thin · 1 none/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Modeling triage: 1 ready · 0 refresh · 0 thin · 1 none/i).length).toBeGreaterThan(0);
   });
 
   it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
