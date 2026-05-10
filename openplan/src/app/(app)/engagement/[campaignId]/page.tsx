@@ -13,7 +13,7 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
-import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
+import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -137,6 +137,14 @@ export default async function EngagementCampaignDetailPage({
     counts,
   });
   const appendixReadiness = counts.appendixReadiness;
+  const publicReviewCopyGuard = getEngagementPublicReviewCopyGuard({
+    campaignStatus: campaign.status,
+    allowPublicSubmissions: campaign.allow_public_submissions,
+    shareToken: campaign.share_token,
+    submissionsClosedAt: campaign.submissions_closed_at,
+    appendixReadyCount: appendixReadiness.appendixReadyCount,
+    actionableCount: counts.moderationQueue.actionableCount,
+  });
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
@@ -412,6 +420,26 @@ export default async function EngagementCampaignDetailPage({
                   <MetaItem>{appendixReadiness.nonPublicApprovedCategorizedCount} internal/meeting/email ready item{appendixReadiness.nonPublicApprovedCategorizedCount === 1 ? "" : "s"}</MetaItem>
                   <MetaItem>{appendixReadiness.duplicateReviewCount} duplicate-review item{appendixReadiness.duplicateReviewCount === 1 ? "" : "s"}</MetaItem>
                   <MetaItem>{appendixReadiness.duplicateExcludedCount} appendix candidate{appendixReadiness.duplicateExcludedCount === 1 ? "" : "s"} held for duplicate review</MetaItem>
+                </MetaList>
+              </div>
+            </div>
+
+            <div className="module-note border-slate-300/50 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/30">
+              <div className="module-record-kicker">
+                <StatusBadge tone={publicReviewCopyGuard.tone}>{publicReviewCopyGuard.label}</StatusBadge>
+                <StatusBadge tone={campaign.submissions_closed_at ? "neutral" : campaign.allow_public_submissions ? "warning" : "neutral"}>
+                  {campaign.submissions_closed_at ? "Intake closed" : campaign.allow_public_submissions ? "Intake may be open" : "Staff-controlled intake"}
+                </StatusBadge>
+              </div>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Public-review copy guard</p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">Keep handoff language supervised and source-bound</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.summary}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.nextCopyAction}</p>
+              <div className="mt-3">
+                <MetaList>
+                  {publicReviewCopyGuard.guardrails.map((guardrail) => (
+                    <MetaItem key={guardrail}>{guardrail}</MetaItem>
+                  ))}
                 </MetaList>
               </div>
             </div>

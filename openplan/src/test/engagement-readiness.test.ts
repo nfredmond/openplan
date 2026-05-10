@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
+import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
 
 describe("getEngagementHandoffReadiness", () => {
   it("marks a fully closed campaign as ready for handoff", () => {
@@ -148,5 +148,59 @@ describe("getEngagementHandoffReadiness", () => {
     );
     expect(readiness.checks.find((check) => check.id === "report_appendix")?.passed).toBe(false);
     expect(readiness.nextAction).toMatch(/public comment/i);
+  });
+});
+
+describe("getEngagementPublicReviewCopyGuard", () => {
+  it("keeps public-review copy in draft posture while public intake remains open", () => {
+    const guard = getEngagementPublicReviewCopyGuard({
+      campaignStatus: "active",
+      allowPublicSubmissions: true,
+      shareToken: "public-token",
+      submissionsClosedAt: null,
+      appendixReadyCount: 3,
+      actionableCount: 2,
+    });
+
+    expect(guard.label).toBe("Public-review draft");
+    expect(guard.tone).toBe("warning");
+    expect(guard.summary).toMatch(/working draft for staff review/i);
+    expect(guard.nextCopyAction).toMatch(/resolve 2 pending or flagged/i);
+    expect(guard.guardrails.join(" ")).toMatch(/noticing sufficiency has been automated/i);
+    expect(guard.guardrails.join(" ")).toMatch(/not an official-record certification/i);
+  });
+
+  it("allows closeout review language without claiming legal or public-records automation", () => {
+    const guard = getEngagementPublicReviewCopyGuard({
+      campaignStatus: "closed",
+      allowPublicSubmissions: false,
+      shareToken: "public-token",
+      submissionsClosedAt: "2026-05-10T08:00:00.000Z",
+      appendixReadyCount: 4,
+      actionableCount: 0,
+    });
+
+    expect(guard.label).toBe("Closeout review");
+    expect(guard.tone).toBe("info");
+    expect(guard.summary).toMatch(/staff still owns final publication, record, and noticing determinations/i);
+    expect(guard.nextCopyAction).toMatch(/source split/i);
+    expect(guard.guardrails.join(" ")).not.toMatch(/certified public records/i);
+    expect(guard.guardrails.join(" ")).not.toMatch(/legal-grade/i);
+  });
+
+  it("falls back to staff-only handoff when no public appendix candidate is ready", () => {
+    const guard = getEngagementPublicReviewCopyGuard({
+      campaignStatus: "draft",
+      allowPublicSubmissions: false,
+      shareToken: null,
+      submissionsClosedAt: null,
+      appendixReadyCount: 0,
+      actionableCount: 0,
+    });
+
+    expect(guard.label).toBe("Staff handoff only");
+    expect(guard.tone).toBe("neutral");
+    expect(guard.summary).toMatch(/use this campaign internally/i);
+    expect(guard.nextCopyAction).toMatch(/approve and categorize public comments/i);
   });
 });

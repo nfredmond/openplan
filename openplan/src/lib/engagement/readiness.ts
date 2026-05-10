@@ -49,6 +49,75 @@ export type EngagementHandoffReadiness = {
   nextAction: string;
 };
 
+type EngagementPublicReviewCopyGuardInput = {
+  campaignStatus: string;
+  allowPublicSubmissions: boolean;
+  shareToken: string | null;
+  submissionsClosedAt: string | null;
+  appendixReadyCount: number;
+  actionableCount: number;
+};
+
+export type EngagementPublicReviewCopyGuard = {
+  label: "Staff handoff only" | "Public-review draft" | "Closeout review";
+  tone: "info" | "warning" | "neutral";
+  summary: string;
+  guardrails: string[];
+  nextCopyAction: string;
+};
+
+export function getEngagementPublicReviewCopyGuard(
+  input: EngagementPublicReviewCopyGuardInput
+): EngagementPublicReviewCopyGuard {
+  const publicPortalOpen = Boolean(input.shareToken && input.allowPublicSubmissions && !input.submissionsClosedAt);
+  const closed = input.campaignStatus === "closed" || Boolean(input.submissionsClosedAt);
+  const hasAppendixCandidates = input.appendixReadyCount > 0;
+
+  const guardrails = [
+    "Describe this as a planner review aid, not an official-record certification.",
+    "Do not state or imply public-records handling, legal notice, or noticing sufficiency has been automated.",
+    "Keep public comments, internal notes, meeting/email items, and duplicate-review holds visibly separated before publication.",
+    "A planner or authorized agency reviewer must approve any public-review artifact before release.",
+  ];
+
+  if (publicPortalOpen) {
+    return {
+      label: "Public-review draft",
+      tone: "warning",
+      summary:
+        "Public submissions are still open. Treat any appendix, matrix, or report section as a working draft for staff review.",
+      guardrails,
+      nextCopyAction:
+        input.actionableCount > 0
+          ? `Resolve ${input.actionableCount} pending or flagged moderation item${input.actionableCount === 1 ? "" : "s"} before using public-review copy externally.`
+          : "Use draft-language copy until the intake window is closed and a planner confirms the publication posture.",
+    };
+  }
+
+  if (closed && hasAppendixCandidates) {
+    return {
+      label: "Closeout review",
+      tone: "info",
+      summary:
+        "The campaign has appendix candidates and a closeout posture, but staff still owns final publication, record, and noticing determinations.",
+      guardrails,
+      nextCopyAction:
+        "Review the appendix-ready comments, duplicate holds, and source split before exporting board-packet or public-review language.",
+    };
+  }
+
+  return {
+    label: "Staff handoff only",
+    tone: "neutral",
+    summary:
+      "Use this campaign internally until staff confirms the public-review artifact, source split, and handoff language are appropriate.",
+    guardrails,
+    nextCopyAction: hasAppendixCandidates
+      ? "Confirm the campaign closeout/publication posture before describing appendix-ready comments as public-review material."
+      : "Approve and categorize public comments before drafting a public-review appendix or comment matrix.",
+  };
+}
+
 export function getEngagementHandoffReadiness(
   input: EngagementHandoffReadinessInput
 ): EngagementHandoffReadiness {
