@@ -52,24 +52,61 @@ describe("CountyRunDetailClient", () => {
         id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
         geographyLabel: "Nevada County, CA",
         runName: "nevada-run",
-        stage: "validated_screening",
-        enqueueStatus: "not_enqueued",
+        stage: "validated-screening",
+        statusLabel: "bounded screening-ready",
+        enqueueStatus: "not-enqueued",
         manifest: {
-          geographyLabel: "Nevada County, CA",
-          geographySlug: "nevada-county-ca",
-          stageLabel: "Validated Screening",
-          stageReasonLabel: "Observed counts available for comparison.",
-          artifacts: [
-            {
-              label: "Validation summary",
-              relativePath: "validation/validation_summary.json",
+          schema_version: "openplan.county_onramp_manifest.v1",
+          generated_at: "2026-03-24T23:00:00Z",
+          name: "nevada-run",
+          county_fips: "06057",
+          county_prefix: "NEVADA",
+          run_dir: "/tmp/nevada-run",
+          mode: "existing-run",
+          stage: "validated-screening",
+          artifacts: {
+            scaffold_csv: "/tmp/nevada-run/scaffold.csv",
+            review_packet_md: "/tmp/nevada-run/review.md",
+            run_summary_json: "/tmp/nevada-run/run_summary.json",
+            bundle_manifest_json: "/tmp/nevada-run/bundle_manifest.json",
+            validation_summary_json: "/tmp/nevada-run/validation/validation_summary.json",
+          },
+          runtime: {
+            keep_project: true,
+            force: false,
+            overall_demand_scalar: 0.369,
+            external_demand_scalar: null,
+            hbw_scalar: null,
+            hbo_scalar: null,
+            nhb_scalar: null,
+          },
+          summary: {
+            run: {
+              zone_count: 26,
+              population_total: 102345,
+              jobs_total: 45678,
+              loaded_links: 3174,
+              final_gap: 0.0091,
+              total_trips: 231828.75,
             },
-          ],
+            validation: {
+              screening_gate: {
+                status_label: "bounded screening-ready",
+              },
+              metrics: {
+                median_absolute_percent_error: 16.01,
+                max_absolute_percent_error: 49.48,
+              },
+            },
+            bundle_validation: {
+              status_label: "bounded screening-ready",
+            },
+          },
         },
         artifacts: [
           {
-            label: "Validation summary",
-            relativePath: "validation/validation_summary.json",
+            artifactType: "validation_scaffold_csv",
+            path: "/tmp/nevada-run/scaffold.csv",
           },
         ],
         modelingEvidence: {
@@ -155,6 +192,23 @@ describe("CountyRunDetailClient", () => {
     expect(screen.getByText(/Screening-grade modeling result/i)).toBeInTheDocument();
     expect(screen.getByText("Critical facility absolute percent error")).toBeInTheDocument();
     expect(screen.getByText("County boundary and tract geography")).toBeInTheDocument();
+  });
+
+  it("renders the manifest proof checklist with inputs, artifacts, validation, next action, and caveats", () => {
+    render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+
+    expect(screen.getByText("Manifest proof checklist")).toBeInTheDocument();
+    expect(screen.getByText("Manifest and validation proof present")).toBeInTheDocument();
+    expect(screen.getByText("Inputs captured")).toBeInTheDocument();
+    expect(screen.getByText("06057")).toBeInTheDocument();
+    expect(screen.getByText("Generated artifacts")).toBeInTheDocument();
+    expect(screen.getByText("/tmp/nevada-run/validation/validation_summary.json")).toBeInTheDocument();
+    expect(screen.getByText("Validation status")).toBeInTheDocument();
+    expect(screen.getAllByText("bounded screening-ready").length).toBeGreaterThan(0);
+    expect(screen.getByText("Operator next action")).toBeInTheDocument();
+    expect(screen.getAllByText(/preserve all screening-grade caveats/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Caveat boundaries")).toBeInTheDocument();
+    expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
   });
 
   it("copies the detail link", async () => {
