@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   Activity,
+  FileCheck2,
   Search,
   ShieldAlert,
+  TerminalSquare,
 } from "lucide-react";
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { RecentAccessRequests } from "@/components/operations/recent-access-requests";
@@ -21,6 +24,8 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
+import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
+import { getSmokeStatus } from "@/lib/operations/pilot-readiness";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -36,6 +41,7 @@ function getSeverityTone(severity: OperationalWarningEvent["severity"]) {
 
 export default async function AdminOperationsPage() {
   const summary = summarizeOperationalWarnings();
+  const pilotControl = buildPilotReadinessControlSummary(getSmokeStatus());
   const supabase = await createClient();
 
   const {
@@ -142,6 +148,93 @@ export default async function AdminOperationsPage() {
         requests={accessRequestActivity.requests}
         error={accessRequestActivity.error}
       />
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Pilot control strip</p>
+            <h2 className="module-section-title">Readiness, preflight, and proof caveats in one operator view</h2>
+            <p className="module-section-description">
+              This is a read-only control strip for Bart/Nathaniel before demos or pilot diligence. It summarizes the
+              readiness packet posture without provisioning workspaces, starting deployments, or implying self-serve activation.
+            </p>
+          </div>
+          <StatusBadge tone={pilotControl.tone}>{pilotControl.label}</StatusBadge>
+        </div>
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]">
+          <div className="module-record-row">
+            <div className="module-record-head">
+              <div className="module-record-main">
+                <div className="module-record-kicker">
+                  <StatusBadge tone={pilotControl.tone}>{pilotControl.counts.pass}/{pilotControl.counts.total} pass</StatusBadge>
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Latest evidence: {pilotControl.latestEvidenceDate}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="module-record-title">{pilotControl.detail}</h3>
+                  <p className="module-record-summary">
+                    {pilotControl.proofArtifactCount} proof artifacts and {pilotControl.requiredCaveatCount} required caveats must travel with any readiness packet.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="module-subpanel">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Failing</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">{pilotControl.counts.fail}</p>
+              </div>
+              <div className="module-subpanel">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Pending</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">{pilotControl.counts.pending}</p>
+              </div>
+              <div className="module-subpanel">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Unknown</p>
+                <p className="mt-1 text-xl font-semibold text-foreground">{pilotControl.counts.unknown}</p>
+              </div>
+            </div>
+
+            <Link
+              href={pilotControl.proofPacketHref}
+              className="mt-3 inline-flex items-center gap-2 text-[0.8rem] font-semibold text-emerald-700 hover:text-emerald-900"
+            >
+              <FileCheck2 className="h-3.5 w-3.5" />
+              Open Pilot Readiness proof packet
+            </Link>
+          </div>
+
+          <div className="module-record-row">
+            <div className="module-record-head">
+              <div className="module-record-main">
+                <div className="module-record-kicker">
+                  <StatusBadge tone="warning">Manual preflight</StatusBadge>
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    No self-serve automation
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="module-record-title">Deployment posture check</h3>
+                  <p className="module-record-summary">{pilotControl.preflightPosture}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 module-subpanel">
+              <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-foreground">
+                <TerminalSquare className="h-3.5 w-3.5 text-emerald-700" />
+                Read-only preflight command
+              </div>
+              <code className="mt-2 block break-words rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-[0.72rem] text-slate-700">
+                {pilotControl.preflightCommand}
+              </code>
+            </div>
+            <p className="mt-3 text-[0.76rem] leading-relaxed text-muted-foreground">
+              {pilotControl.supervisedBoundary} {pilotControl.proofPacketCaveat}
+            </p>
+          </div>
+        </div>
+      </article>
 
       <RecentActionActivity executions={actionActivity.executions} error={actionActivity.error} />
 

@@ -1,6 +1,7 @@
-import { FileCheck2, ShieldCheck } from "lucide-react";
+import { FileCheck2, ShieldCheck, TerminalSquare } from "lucide-react";
 import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
 import {
   finalPilotReadinessChecklistSync,
@@ -19,53 +20,9 @@ function getStatusTone(status: SmokeStatus["status"]): "success" | "danger" | "w
   return "neutral";
 }
 
-function buildReadinessHeadline(statusList: SmokeStatus[]): { label: string; detail: string; tone: "success" | "danger" | "warning" | "neutral" } {
-  const failCount = statusList.filter((item) => item.status === "FAIL").length;
-  const pendingCount = statusList.filter((item) => item.status === "PENDING").length;
-  const passCount = statusList.filter((item) => item.status === "PASS").length;
-
-  if (failCount > 0) {
-    return {
-      label: "Follow-up required",
-      detail: `${failCount} readiness lane${failCount === 1 ? " is" : "s are"} currently failing.`,
-      tone: "danger",
-    };
-  }
-
-  if (passCount > 0 && pendingCount > 0) {
-    return {
-      label: "Evidence current with open gaps",
-      detail: `${passCount} lane${passCount === 1 ? " shows" : "s show"} recent passing evidence while ${pendingCount} still need fresh proof.`,
-      tone: "warning",
-    };
-  }
-
-  if (passCount > 0) {
-    return {
-      label: "Evidence current",
-      detail: "All tracked readiness lanes currently show passing proof artifacts.",
-      tone: "success",
-    };
-  }
-
-  return {
-    label: "Evidence still forming",
-    detail: "No passing proof artifacts are available yet for the tracked readiness lanes.",
-    tone: "neutral",
-  };
-}
-
 export default function PilotReadinessPage() {
   const statusList = getSmokeStatus();
-  const passCount = statusList.filter((item) => item.status === "PASS").length;
-  const failCount = statusList.filter((item) => item.status === "FAIL").length;
-  const pendingCount = statusList.filter((item) => item.status === "PENDING").length;
-  const latestEvidenceDate = statusList
-    .map((item) => item.lastRun)
-    .filter((value) => value !== "N/A" && value !== "Unknown")
-    .sort()
-    .reverse()[0] ?? "No dated proof yet";
-  const readinessHeadline = buildReadinessHeadline(statusList);
+  const pilotControl = buildPilotReadinessControlSummary(statusList);
   const salesCaveatProof =
     releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats") ?? releaseProofPosture.proofItems[0];
 
@@ -79,8 +36,8 @@ export default function PilotReadinessPage() {
           </div>
           <div className="module-intro-body">
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge tone={readinessHeadline.tone}>{readinessHeadline.label}</StatusBadge>
-              <StatusBadge tone="neutral">Latest evidence: {latestEvidenceDate}</StatusBadge>
+              <StatusBadge tone={pilotControl.tone}>{pilotControl.label}</StatusBadge>
+              <StatusBadge tone="neutral">Latest evidence: {pilotControl.latestEvidenceDate}</StatusBadge>
             </div>
             <h1 className="module-intro-title">Readiness overview</h1>
             <p className="module-intro-description">
@@ -92,23 +49,23 @@ export default function PilotReadinessPage() {
           <div className="module-summary-grid cols-4">
             <div className="module-summary-card">
               <p className="module-summary-label">Passing checks</p>
-              <p className="module-summary-value">{passCount}</p>
+              <p className="module-summary-value">{pilotControl.counts.pass}</p>
               <p className="module-summary-detail">Checks with a recent passing result.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Failing checks</p>
-              <p className="module-summary-value">{failCount}</p>
+              <p className="module-summary-value">{pilotControl.counts.fail}</p>
               <p className="module-summary-detail">Checks that need follow-up before they can be treated as healthy.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Pending checks</p>
-              <p className="module-summary-value">{pendingCount}</p>
+              <p className="module-summary-value">{pilotControl.counts.pending}</p>
               <p className="module-summary-detail">Tracked checks that still need a recent result.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Export</p>
-              <p className="module-summary-value">Ready</p>
-              <p className="module-summary-detail">Generate a markdown summary from the current status list.</p>
+              <p className="module-summary-value">{pilotControl.requiredCaveatCount}</p>
+              <p className="module-summary-detail">Required caveats travel with the current packet.</p>
             </div>
           </div>
 
@@ -136,17 +93,44 @@ export default function PilotReadinessPage() {
             </span>
             <div>
               <p className="module-operator-eyebrow">Status summary</p>
-              <h2 className="module-operator-title">{readinessHeadline.label}</h2>
+              <h2 className="module-operator-title">{pilotControl.label}</h2>
             </div>
           </div>
-          <p className="module-operator-copy">{readinessHeadline.detail}</p>
+          <p className="module-operator-copy">{pilotControl.detail}</p>
           <div className="module-operator-list">
             <div className="module-operator-item">This page shows recorded results rather than planned work.</div>
             <div className="module-operator-item">Each check stays visible even when the latest result is missing, pending, or failing.</div>
             <div className="module-operator-item">Use the exported summary as a status snapshot, then follow up in the source documents when more detail is needed.</div>
+            <div className="module-operator-item">Preflight posture: {pilotControl.preflightPosture}</div>
           </div>
         </article>
       </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Deployment preflight posture</p>
+            <h2 className="module-section-title">Run a read-only preflight before outward reliance</h2>
+            <p className="module-section-description">
+              The preflight is an operator check, not a deployment trigger or self-serve activation path. Replace the
+              target placeholders with the production URL immediately before a demo, diligence call, or proof-packet refresh.
+            </p>
+          </div>
+          <StatusBadge tone="warning">Manual operator gate</StatusBadge>
+        </div>
+        <div className="mt-5 module-subpanel">
+          <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-foreground">
+            <TerminalSquare className="h-3.5 w-3.5 text-emerald-700" />
+            Read-only command
+          </div>
+          <code className="mt-2 block break-words rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-[0.72rem] text-slate-700">
+            {pilotControl.preflightCommand}
+          </code>
+          <p className="mt-3 text-[0.78rem] leading-relaxed text-muted-foreground">
+            {pilotControl.supervisedBoundary} {pilotControl.proofPacketCaveat}
+          </p>
+        </div>
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">
