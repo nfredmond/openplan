@@ -1,9 +1,32 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { ExploreHoverInspector } from "@/app/(app)/explore/_components/explore-hover-inspector";
+import {
+  ExploreHoverInspector,
+  getActiveTractLegendLabel,
+} from "@/app/(app)/explore/_components/explore-hover-inspector";
 
 describe("ExploreHoverInspector", () => {
+  it("classifies the hovered tract into the active legend bin", () => {
+    const tract = {
+      name: "Nevada City Tract",
+      geoid: "06057000100",
+      population: 12345,
+      medianIncome: 56000,
+      pctMinority: 76,
+      pctBelowPoverty: 18,
+      zeroVehiclePct: 7,
+      transitCommutePct: 3,
+      isDisadvantaged: true,
+    };
+
+    expect(getActiveTractLegendLabel(tract, "poverty")).toBe("10-20%");
+    expect(getActiveTractLegendLabel(tract, "income")).toBe("$45k-$70k");
+    expect(getActiveTractLegendLabel(tract, "minority")).toBe("75-100%");
+    expect(getActiveTractLegendLabel(tract, "disadvantaged")).toBe("Flagged");
+    expect(getActiveTractLegendLabel(null, "poverty")).toBeNull();
+  });
+
   it("renders nothing when tract and crash layers are unavailable", () => {
     const { container } = render(
       <ExploreHoverInspector
@@ -50,6 +73,8 @@ describe("ExploreHoverInspector", () => {
     expect(screen.getByText("12,345")).toBeInTheDocument();
     expect(screen.getByText("$56,000")).toBeInTheDocument();
     expect(screen.getAllByText("18%").length).toBeGreaterThan(0);
+    expect(screen.getByText("10-20%")).toBeInTheDocument();
+    expect(screen.getByText("hovered")).toBeInTheDocument();
   });
 
   it("renders hovered crash attributes when SWITRS points are available", () => {

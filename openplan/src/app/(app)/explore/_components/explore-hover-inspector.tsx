@@ -96,6 +96,44 @@ function formatHoveredTractMetric(hoveredTract: HoveredTract | null, tractMetric
   return formatPercent(hoveredTract.pctMinority);
 }
 
+export function getActiveTractLegendLabel(hoveredTract: HoveredTract | null, tractMetric: TractMetric): string | null {
+  if (!hoveredTract) {
+    return null;
+  }
+
+  if (tractMetric === "income") {
+    const value = hoveredTract.medianIncome;
+    if (value === null) return null;
+    if (value < 45000) return "<$45k";
+    if (value < 70000) return "$45k-$70k";
+    if (value < 100000) return "$70k-$100k";
+    if (value < 150000) return "$100k-$150k";
+    return "$150k+";
+  }
+
+  if (tractMetric === "poverty") {
+    const value = hoveredTract.pctBelowPoverty;
+    if (value === null) return null;
+    if (value < 10) return "0-10%";
+    if (value < 20) return "10-20%";
+    if (value < 30) return "20-30%";
+    if (value < 45) return "30-45%";
+    return "45%+";
+  }
+
+  if (tractMetric === "disadvantaged") {
+    return hoveredTract.isDisadvantaged ? "Flagged" : "Not flagged";
+  }
+
+  const value = hoveredTract.pctMinority;
+  if (value === null) return null;
+  if (value < 30) return "0-30%";
+  if (value < 55) return "30-55%";
+  if (value < 75) return "55-75%";
+  if (value < 100) return "75-100%";
+  return "Highest concentration";
+}
+
 export function ExploreHoverInspector({
   showTracts,
   switrsPointLayerAvailable,
@@ -111,6 +149,7 @@ export function ExploreHoverInspector({
 
   const tractLegend = buildTractLegend(tractMetric);
   const hoveredTractMetricValue = formatHoveredTractMetric(hoveredTract, tractMetric);
+  const activeTractLegendLabel = getActiveTractLegendLabel(hoveredTract, tractMetric);
 
   return (
     <section className="analysis-studio-surface">
@@ -139,15 +178,28 @@ export function ExploreHoverInspector({
                   <StatusBadge tone="info">Legend</StatusBadge>
                 </div>
                 <div className="mt-2 space-y-1">
-                  {tractLegend.items.map((item) => (
-                    <div key={`legend-${item.label}`} className="flex items-center gap-2 py-0.5 text-xs text-slate-300/90">
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/15"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      {item.label}
-                    </div>
-                  ))}
+                  {tractLegend.items.map((item) => {
+                    const isActive = activeTractLegendLabel === item.label;
+
+                    return (
+                      <div
+                        key={`legend-${item.label}`}
+                        className={[
+                          "flex items-center justify-between gap-2 rounded-md px-1.5 py-0.5 text-xs",
+                          isActive ? "bg-sky-400/10 text-sky-100 ring-1 ring-sky-300/25" : "text-slate-300/90",
+                        ].join(" ")}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/15"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          {item.label}
+                        </span>
+                        {isActive ? <span className="text-[10px] uppercase tracking-[0.18em] text-sky-200/80">hovered</span> : null}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
