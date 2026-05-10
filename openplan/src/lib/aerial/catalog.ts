@@ -24,6 +24,56 @@ export type AerialMissionPackagePosture = {
   tone: "neutral" | "info" | "success" | "warning";
 };
 
+export type AerialEvidenceAttachmentReadiness = "ready" | "needs_source_context" | "blocked";
+
+export type AerialEvidenceAttachmentUse = "project" | "grant" | "report" | "public_response";
+
+export type AerialEvidenceAttachmentSummary = {
+  readiness: AerialEvidenceAttachmentReadiness;
+  label: string;
+  detail: string;
+  readyUses: AerialEvidenceAttachmentUse[];
+  blockedUses: AerialEvidenceAttachmentUse[];
+  sourceContext: string;
+  attachmentReadyPackageCount: number;
+  sourceContextPackageCount: number;
+  blockers: string[];
+  caveat: string;
+};
+
+const AERIAL_EVIDENCE_ATTACHMENT_USES: AerialEvidenceAttachmentUse[] = [
+  "project",
+  "grant",
+  "report",
+  "public_response",
+];
+
+const AERIAL_EVIDENCE_ATTACHMENT_CAVEAT =
+  "Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.";
+
+function formatAttachmentUse(use: AerialEvidenceAttachmentUse): string {
+  switch (use) {
+    case "project":
+      return "project record";
+    case "grant":
+      return "grant support";
+    case "report":
+      return "report exhibit";
+    case "public_response":
+      return "public response";
+  }
+}
+
+function joinUseLabels(uses: AerialEvidenceAttachmentUse[]): string {
+  if (uses.length === 0) return "No downstream uses";
+  return uses.map(formatAttachmentUse).join(", ");
+}
+
+function normalizePackageTitle(title: string | null | undefined, fallbackIndex: number): string {
+  const trimmed = title?.trim();
+  return trimmed ? trimmed : `Package ${fallbackIndex + 1}`;
+}
+
 export function formatAerialMissionStatusLabel(status: string): string {
   switch (status) {
     case "planned":
@@ -248,6 +298,82 @@ export function summarizeAerialMissionPackagePosture(
     attachmentReady,
     label: `${readyPackageCount}/${packageCount} ready`,
     tone: readyPackageCount > 0 ? "warning" : "neutral",
+  };
+}
+
+export function summarizeAerialEvidenceAttachmentReadiness(input: {
+  missionTitle?: string | null;
+  missionStatus?: string | null;
+  missionType?: string | null;
+  hasProjectLink: boolean;
+  hasAoi?: boolean;
+  packages: Array<{
+    title?: string | null;
+    status: string;
+    verification_readiness?: string | null;
+    notes?: string | null;
+    updated_at?: string | null;
+  }>;
+}): AerialEvidenceAttachmentSummary {
+  const packagePosture = summarizeAerialMissionPackagePosture(input.packages);
+  const sourceContextPackages = input.packages.filter(
+    (p) => (p.status === "ready" || p.status === "shared") && p.verification_readiness === "ready" && Boolean(p.notes?.trim())
+  );
+  const hasAttachmentReadyPackage = packagePosture.attachmentReadyPackageCount > 0;
+  const hasSourceContextPackage = sourceContextPackages.length > 0;
+  const blockers: string[] = [];
+
+  if (!input.hasProjectLink) {
+    blockers.push("Link the mission to a project before using aerial evidence for project, grant, report, or public-response support.");
+  }
+  if (input.packages.length === 0) {
+    blockers.push("Record at least one evidence package before claiming downstream attachment readiness.");
+  } else if (!hasAttachmentReadyPackage) {
+    blockers.push("At least one package must be ready/shared and verification-ready before it can support downstream materials.");
+  }
+  if (hasAttachmentReadyPackage && !hasSourceContextPackage) {
+    blockers.push("Add package notes or source-context text so reviewers can cite what the aerial evidence actually supports.");
+  }
+  if (input.hasAoi === false) {
+    blockers.push("Draw or attach an AOI before using the package as a map exhibit.");
+  }
+
+  const hasStructuralBlocker = !input.hasProjectLink || !hasAttachmentReadyPackage || input.hasAoi === false;
+  const downstreamReady = !hasStructuralBlocker && hasSourceContextPackage;
+  const readyUses = downstreamReady ? AERIAL_EVIDENCE_ATTACHMENT_USES : [];
+  const blockedUses = downstreamReady ? [] : AERIAL_EVIDENCE_ATTACHMENT_USES;
+  const readiness: AerialEvidenceAttachmentReadiness = downstreamReady
+    ? "ready"
+    : hasAttachmentReadyPackage && !hasStructuralBlocker
+      ? "needs_source_context"
+      : "blocked";
+  const label = downstreamReady
+    ? "Ready for project/report/grant attachment"
+    : readiness === "needs_source_context"
+      ? "Source context needed before attachment"
+      : "Not ready for downstream attachment";
+  const missionLabel = input.missionTitle?.trim() || "Aerial mission";
+  const sourceContextPackageText = sourceContextPackages
+    .map((pkg, index) => `${normalizePackageTitle(pkg.title, index)} (${formatAerialPackageStatusLabel(pkg.status)}; ${formatAerialVerificationReadinessLabel(pkg.verification_readiness ?? "pending")})`)
+    .join("; ");
+  const sourceContext = sourceContextPackageText
+    ? `${missionLabel} source context: ${sourceContextPackageText}. ${AERIAL_EVIDENCE_ATTACHMENT_CAVEAT}`
+    : `${missionLabel} source context is incomplete. ${AERIAL_EVIDENCE_ATTACHMENT_CAVEAT}`;
+  const detail = downstreamReady
+    ? `${packagePosture.attachmentReadyPackageCount} verified package${packagePosture.attachmentReadyPackageCount === 1 ? "" : "s"} can support ${joinUseLabels(readyUses)} after operator review.`
+    : blockers[0] ?? "Complete the evidence package and source context before downstream use.";
+
+  return {
+    readiness,
+    label,
+    detail,
+    readyUses,
+    blockedUses,
+    sourceContext,
+    attachmentReadyPackageCount: packagePosture.attachmentReadyPackageCount,
+    sourceContextPackageCount: sourceContextPackages.length,
+    blockers,
+    caveat: AERIAL_EVIDENCE_ATTACHMENT_CAVEAT,
   };
 }
 

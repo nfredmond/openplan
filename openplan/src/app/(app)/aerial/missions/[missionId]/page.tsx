@@ -21,6 +21,7 @@ import {
   formatAerialMissionTypeLabel,
   formatAerialPackageStatusLabel,
   formatAerialVerificationReadinessLabel,
+  summarizeAerialEvidenceAttachmentReadiness,
   summarizeAerialMissionPackagePosture,
   type AerialMissionStatus,
   type AerialPackageStatus,
@@ -156,7 +157,21 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     packages.map((p) => ({ status: p.status, verification_readiness: p.verification_readiness }))
   );
   const packagePosture = summarizeAerialMissionPackagePosture(packages);
+  const attachmentSummary = summarizeAerialEvidenceAttachmentReadiness({
+    missionTitle: mission.title,
+    missionStatus: mission.status,
+    missionType: mission.mission_type,
+    hasProjectLink: Boolean(project?.id),
+    hasAoi,
+    packages,
+  });
   const postureDescription = describeAerialProjectPosture(posture);
+  const attachmentSummaryTone =
+    attachmentSummary.readiness === "ready"
+      ? "success"
+      : attachmentSummary.readiness === "needs_source_context"
+        ? "warning"
+        : "neutral";
 
   const columns: Array<DataTableColumn<PackageRow>> = [
     { id: "title", header: "Package", cell: (row) => row.title },
@@ -245,6 +260,29 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             </StatusBadge>
           }
         />
+      </InspectorGroup>
+
+      <InspectorGroup label="Attachment readiness">
+        <InspectorField
+          label="Project / grant / report"
+          value={<StatusBadge tone={attachmentSummaryTone}>{attachmentSummary.label}</StatusBadge>}
+          hint={attachmentSummary.detail}
+        />
+        <InspectorField
+          label="Source context"
+          value={`${attachmentSummary.sourceContextPackageCount}/${Math.max(attachmentSummary.attachmentReadyPackageCount, packages.length)} source-backed`}
+          hint={attachmentSummary.sourceContext}
+        />
+        {attachmentSummary.blockers.length > 0 ? (
+          <div className="rounded-md border border-[color:var(--line)] bg-background/60 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Before attaching downstream</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              {attachmentSummary.blockers.map((blocker) => (
+                <li key={blocker}>{blocker}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </InspectorGroup>
 
       <InspectorGroup label="Linked project">
