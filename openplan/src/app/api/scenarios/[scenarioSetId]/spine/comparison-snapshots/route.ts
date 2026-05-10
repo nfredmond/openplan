@@ -20,6 +20,7 @@ import {
 } from "@/lib/reports/scenario-writeback";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { SCENARIO_COMPARISON_SNAPSHOT_STATUSES } from "@/lib/scenarios/catalog";
+import { buildScenarioComparisonSourceContext } from "@/lib/scenarios/comparison-source-context";
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -61,7 +62,7 @@ async function loadScenarioEntry(
 ) {
   const { data, error } = await supabase
     .from("scenario_entries")
-    .select("id, scenario_set_id, entry_type, label")
+    .select("id, scenario_set_id, entry_type, label, assumptions_json, attached_run_id")
     .eq("id", scenarioEntryId)
     .eq("scenario_set_id", scenarioSetId)
     .maybeSingle();
@@ -319,6 +320,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const sourceContext = buildScenarioComparisonSourceContext({
+      baselineEntry: baselineEntryResult.entry,
+      candidateEntry: candidateEntryResult.entry,
+      indicatorDeltaCount: parsed.data.indicatorDeltas?.length ?? 0,
+      evidenceLabels: (parsed.data.indicatorDeltas ?? []).map((delta) => delta.indicatorLabel),
+      caveats: parsed.data.caveats ?? [],
+      status: parsed.data.status ?? "draft",
+    });
+    const metadataJson = {
+      ...(parsed.data.metadata ?? {}),
+      sourceContext,
+    };
+
     const { data: comparisonSnapshot, error: insertError } = await supabase
       .from("scenario_comparison_snapshots")
       .insert({
@@ -331,7 +345,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         summary: parsed.data.summary?.trim() || null,
         narrative: parsed.data.narrative?.trim() || null,
         caveats_json: parsed.data.caveats ?? [],
-        metadata_json: parsed.data.metadata ?? {},
+        metadata_json: metadataJson,
         status: parsed.data.status ?? "draft",
         created_by: user.id,
       })

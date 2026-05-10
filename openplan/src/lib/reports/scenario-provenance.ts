@@ -3,6 +3,7 @@ import {
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
+import type { ScenarioComparisonSourceContext } from "@/lib/scenarios/comparison-source-context";
 
 export type ReportScenarioSupabaseLike = {
   from: (table: string) => {
@@ -101,6 +102,7 @@ type ScenarioComparisonSnapshotRow = {
   candidate_entry_id: string;
   label: string;
   summary: string | null;
+  metadata_json?: Record<string, unknown> | null;
   status: string;
   updated_at: string | null;
 };
@@ -142,8 +144,24 @@ export type ReportScenarioComparisonSnapshot = {
   candidateEntryId: string;
   candidateEntryLabel: string | null;
   indicatorDeltaCount: number;
+  sourceContext?: ScenarioComparisonSourceContext | null;
   updatedAt: string | null;
 };
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function asScenarioComparisonSourceContext(value: unknown): ScenarioComparisonSourceContext | null {
+  const record = asRecord(value);
+  if (!record || record.kind !== "scenario_comparison_snapshot_source_context") {
+    return null;
+  }
+  return record as unknown as ScenarioComparisonSourceContext;
+}
 
 export type ReportScenarioSetLink = {
   scenarioSetId: string;
@@ -308,7 +326,7 @@ export async function loadReportScenarioSetLinks({
         supabase
           .from("scenario_comparison_snapshots")
           .select(
-            "id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at"
+            "id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, summary, metadata_json, status, updated_at"
           )
           .in("scenario_set_id", scenarioSetIds),
       "scenario_comparison_snapshots",
@@ -524,6 +542,7 @@ export async function loadReportScenarioSetLinks({
             setEntries.find((entry) => entry.id === item.candidate_entry_id)?.label ?? null,
           indicatorDeltaCount:
             comparisonIndicatorDeltaCountBySnapshotId.get(item.id) ?? 0,
+          sourceContext: asScenarioComparisonSourceContext(asRecord(item.metadata_json)?.sourceContext),
           updatedAt: item.updated_at,
         }));
 

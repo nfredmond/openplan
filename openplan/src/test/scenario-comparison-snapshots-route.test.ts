@@ -145,6 +145,12 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
           scenario_set_id: "11111111-1111-4111-8111-111111111111",
           entry_type: "baseline",
           label: "Existing conditions",
+          assumptions_json: {
+            horizonYear: 2045,
+            network_source: "County public network",
+            hidden_raw_key: "do-not-leak",
+          },
+          attached_run_id: "baseline-run",
         },
         error: null,
       })
@@ -154,6 +160,11 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
           scenario_set_id: "11111111-1111-4111-8111-111111111111",
           entry_type: "alternative",
           label: "Protected bike package",
+          assumptions_json: {
+            projectPackage: "Protected bike network",
+            internalSolverKey: "do-not-leak",
+          },
+          attached_run_id: "candidate-run",
         },
         error: null,
       });
@@ -210,6 +221,7 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
           candidateEntryId: "77777777-7777-4777-8777-777777777777",
           label: "Protected bike package comparison",
           status: "ready",
+          caveats: ["Screening-grade comparison only; preserve validation caveats."],
           indicatorDeltas: [
             {
               baselineIndicatorSnapshotId: "88888888-8888-4888-8888-888888888888",
@@ -234,8 +246,28 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         baseline_entry_id: "55555555-5555-4555-8555-555555555555",
         candidate_entry_id: "77777777-7777-4777-8777-777777777777",
         status: "ready",
+        caveats_json: ["Screening-grade comparison only; preserve validation caveats."],
+        metadata_json: expect.objectContaining({
+          sourceContext: expect.objectContaining({
+            kind: "scenario_comparison_snapshot_source_context",
+            pairingLabel: "Protected bike package compared against Existing conditions",
+            baselineAssumptions: expect.stringContaining("Network source: County public network"),
+            alternativeAssumptions: expect.stringContaining("Project package: Protected bike network"),
+            caveatSummary: expect.stringContaining("Screening-grade comparison only"),
+            exportReadiness: expect.stringContaining("ready for a draft comparison packet"),
+            evidenceLabels: ["Vehicle miles traveled"],
+            pairing: expect.objectContaining({
+              baselineRunId: "baseline-run",
+              candidateRunId: "candidate-run",
+            }),
+          }),
+        }),
       })
     );
+    const persistedMetadata = comparisonSnapshotInsertMock.mock.calls[0]?.[0]?.metadata_json;
+    const renderedContext = JSON.stringify(persistedMetadata?.sourceContext);
+    expect(renderedContext).not.toContain("internalSolverKey");
+    expect(renderedContext).not.toContain("hidden_raw_key");
     expect(comparisonDeltaInsertMock).toHaveBeenCalledWith([
       expect.objectContaining({
         comparison_snapshot_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
