@@ -127,6 +127,54 @@ describe("evidence packet helpers", () => {
     ]);
   });
 
+  it("falls back to behavioral-onramp KPI highlights when no engine summary is present", () => {
+    const packet = normalizeEvidencePacket({
+      modelId: "model-789",
+      modelRunId: "run-789",
+      modelTitle: "Behavioral onramp",
+      runRecord: { id: "run-789", status: "succeeded", engine_key: "behavioral_demand" },
+      artifacts: [],
+      stages: [],
+      kpis: [
+        {
+          kpi_category: "behavioral_onramp",
+          kpi_name: "total_trips",
+          kpi_label: "Total trips (behavioral)",
+          value: 20668,
+          unit: "trips",
+        },
+        {
+          kpi_category: "behavioral_onramp",
+          kpi_name: "loaded_links",
+          kpi_label: "Loaded links",
+          value: 1241,
+          unit: "links",
+        },
+        {
+          kpi_category: "behavioral_onramp",
+          kpi_name: "final_gap",
+          kpi_label: "Assignment final gap",
+          value: 0.0068,
+          unit: "ratio",
+        },
+        {
+          kpi_category: "behavioral_onramp",
+          kpi_name: "zone_count",
+          kpi_label: "Zones with activity",
+          value: 9,
+          unit: "zones",
+        },
+      ],
+    });
+
+    expect(buildEvidenceHighlights(packet)).toEqual([
+      expect.objectContaining({ label: "Behavioral trips", value: "20,668" }),
+      expect.objectContaining({ label: "Loaded links", value: "1,241" }),
+      expect.objectContaining({ label: "Relative gap", value: "0.0068" }),
+      expect.objectContaining({ label: "Zones", value: "9" }),
+    ]);
+  });
+
   it("formats labels and durations for the run surface", () => {
     expect(labelForEngineKey("deterministic_corridor_v1")).toBe("Deterministic Corridor");
     expect(labelForEngineKey("aequilibrae")).toBe("AequilibraE");

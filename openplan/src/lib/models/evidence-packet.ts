@@ -393,6 +393,81 @@ function formatCompactNumber(value: number | null) {
   return `${Math.round(value * 10) / 10}`;
 }
 
+type BehavioralHighlightKpiName =
+  | "total_trips"
+  | "loaded_links"
+  | "final_gap"
+  | "zone_count"
+  | "population_total"
+  | "jobs_total";
+
+function findKpiValue(
+  packet: NormalizedEvidencePacket,
+  category: string,
+  name: BehavioralHighlightKpiName
+) {
+  return asNumber(packet.outputs.kpi_summary[category]?.find((item) => item.name === name)?.value);
+}
+
+function buildBehavioralKpiHighlights(packet: NormalizedEvidencePacket): EvidenceHighlight[] {
+  const highlights: EvidenceHighlight[] = [];
+  const totalTrips = findKpiValue(packet, "behavioral_onramp", "total_trips");
+  if (totalTrips !== null) {
+    highlights.push({
+      label: "Behavioral trips",
+      value: formatCompactNumber(totalTrips) ?? "0",
+      detail: "Demand loaded from the county behavioral-onramp manifest.",
+    });
+  }
+
+  const loadedLinks = findKpiValue(packet, "behavioral_onramp", "loaded_links");
+  if (loadedLinks !== null) {
+    highlights.push({
+      label: "Loaded links",
+      value: formatCompactNumber(loadedLinks) ?? "0",
+      detail: "Network links that received non-zero assigned demand.",
+    });
+  }
+
+  const finalGap = findKpiValue(packet, "behavioral_onramp", "final_gap");
+  if (finalGap !== null) {
+    highlights.push({
+      label: "Relative gap",
+      value: finalGap < 0.01 ? finalGap.toFixed(4) : finalGap.toFixed(3),
+      detail: "Assignment convergence indicator from the behavioral-demand run.",
+    });
+  }
+
+  const zoneCount = findKpiValue(packet, "behavioral_onramp", "zone_count");
+  if (zoneCount !== null) {
+    highlights.push({
+      label: "Zones",
+      value: formatCompactNumber(zoneCount) ?? "0",
+      detail: "Zones with activity carried into the behavioral-demand package.",
+    });
+  }
+
+  const population = findKpiValue(packet, "behavioral_onramp", "population_total");
+  if (population !== null) {
+    highlights.push({
+      label: "Population coverage",
+      value: formatCompactNumber(population) ?? "0",
+      detail: "Population represented by the onramp input package.",
+    });
+  }
+
+  const jobs = findKpiValue(packet, "behavioral_onramp", "jobs_total");
+  if (jobs !== null) {
+    highlights.push({
+      label: "Jobs coverage",
+      value: formatCompactNumber(jobs) ?? "0",
+      detail: "Jobs represented by the onramp input package.",
+    });
+  }
+
+  return highlights;
+}
+
 export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): EvidenceHighlight[] {
   const engineSummary = packet.outputs.engine_summary ?? {};
   const network = asRecord(engineSummary.network) ?? {};
@@ -453,6 +528,10 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
       value: rgap < 0.01 ? rgap.toFixed(4) : rgap.toFixed(3),
       detail: "Assignment convergence indicator from the traffic solver.",
     });
+  }
+
+  if (highlights.length === 0) {
+    highlights.push(...buildBehavioralKpiHighlights(packet));
   }
 
   return highlights.slice(0, 6);
