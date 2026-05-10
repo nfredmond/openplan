@@ -132,7 +132,7 @@ export default function PricingPage() {
         </aside>
       </div>
 
-      <article className="public-surface">
+      <article id="service-lanes" className="public-surface">
         <div className="public-section-header">
           <div>
             <p className="public-section-label">Service catalog</p>

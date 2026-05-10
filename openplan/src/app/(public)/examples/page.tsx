@@ -255,7 +255,65 @@ export default function ExamplesEvidenceCatalogPage() {
         </article>
       </section>
 
-      <section className="public-content-grid">
+      <section className="public-content-grid public-content-grid--balanced">
+        <article className="public-surface">
+          <div className="public-section-header">
+            <div>
+              <p className="public-section-label">Open source + services</p>
+              <h2 className="public-section-title">Open-source proof, then supervised service paths</h2>
+            </div>
+            <p className="public-section-description max-w-2xl">
+              The examples catalog should convert careful agencies without pretending OpenPlan is a
+              closed SaaS black box. Public artifacts show the work; paid help starts when someone
+              needs implementation, hosting, review, or planning support.
+            </p>
+          </div>
+          <div className="public-ledger">
+            <div className="public-ledger-row">
+              <div className="public-ledger-index">01</div>
+              <div className="public-ledger-body">
+                <p className="public-ledger-label">Clone the proof trail</p>
+                <p className="public-ledger-copy text-foreground">
+                  Evidence pages point back to repository records, validation artifacts, and caveats
+                  so technical reviewers can inspect how a claim was produced before asking for help.
+                </p>
+              </div>
+            </div>
+            <div className="public-ledger-row">
+              <div className="public-ledger-index">02</div>
+              <div className="public-ledger-body">
+                <p className="public-ledger-label">Request implementation help</p>
+                <p className="public-ledger-copy text-foreground">
+                  Conversion routes lead to service conversations — managed hosting, self-hosting
+                  readiness, workflow setup, or planning analysis — rather than instant unsupervised
+                  checkout.
+                </p>
+              </div>
+            </div>
+            <div className="public-ledger-row">
+              <div className="public-ledger-index">03</div>
+              <div className="public-ledger-body">
+                <p className="public-ledger-label">No subscription-first demo claim</p>
+                <p className="public-ledger-copy text-foreground">
+                  A public example is not a promise that every workspace will reproduce these results.
+                  Production commitments belong in scoped services with human review.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/pricing#service-lanes" className="public-primary-link">
+              Review service lanes
+            </Link>
+            <Link
+              href="/request-access?lane=implementation"
+              className="public-secondary-link"
+            >
+              Request supervised access
+            </Link>
+          </div>
+        </article>
+
         <article className="public-surface">
           <div className="public-section-header">
             <div>
