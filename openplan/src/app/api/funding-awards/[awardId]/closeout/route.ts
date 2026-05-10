@@ -138,6 +138,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    if (award.spending_status === "fully_spent") {
+      audit.info("funding_award_closeout_already_complete", {
+        awardId: award.id,
+        projectId: award.project_id,
+        awardedAmount,
+        paidAmount,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          awardId: award.id,
+          status: "already_closed",
+          coverage: {
+            awardedAmount,
+            paidAmount,
+            outstandingAmount,
+            coverageRatio,
+          },
+        },
+        { status: 200 }
+      );
+    }
+
     const closedAtIso = new Date().toISOString();
     const closedAtDate = closedAtIso.slice(0, 10);
 

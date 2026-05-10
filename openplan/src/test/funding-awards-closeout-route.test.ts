@@ -167,6 +167,44 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     );
   });
 
+  it("treats repeated closeout on a fully spent award as an idempotent no-op", async () => {
+    awardMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: AWARD_ID,
+        workspace_id: WORKSPACE_ID,
+        project_id: PROJECT_ID,
+        title: "ATP award",
+        awarded_amount: 1_000_000,
+        spending_status: "fully_spent",
+        obligation_due_at: "2026-07-01T00:00:00Z",
+      },
+      error: null,
+    });
+
+    const response = await postCloseout(closeoutRequest({ notes: "Already signed off" }), context());
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toEqual(
+      expect.objectContaining({
+        awardId: AWARD_ID,
+        status: "already_closed",
+        coverage: expect.objectContaining({
+          awardedAmount: 1_000_000,
+          paidAmount: 1_000_000,
+          outstandingAmount: 0,
+          coverageRatio: 1,
+        }),
+      })
+    );
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
+    expect(rebuildProjectRtpPostureMock).not.toHaveBeenCalled();
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "funding_award_closeout_already_complete",
+      expect.objectContaining({ awardId: AWARD_ID, projectId: PROJECT_ID })
+    );
+  });
+
   it("rejects closeout when paid coverage is below 100%", async () => {
     invoicesEqSecondMock.mockResolvedValue({
       data: [
