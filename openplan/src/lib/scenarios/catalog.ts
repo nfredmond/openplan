@@ -245,7 +245,7 @@ export function buildScenarioComparisonSummary({
   let primaryBlocker: ScenarioComparisonReadiness | null = null;
 
   for (const item of readiness) {
-    if (item.ready) continue;
+    if (item.ready || item.status === "ready") continue;
     blockerCounts[item.status] = (blockerCounts[item.status] ?? 0) + 1;
     primaryBlocker ??= item;
   }
