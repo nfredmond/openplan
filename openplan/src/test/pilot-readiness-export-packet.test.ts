@@ -136,4 +136,13 @@ describe("pilot readiness export packet", () => {
     expect(staticHtml).toContain("docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md");
     expect(staticPdf.subarray(0, 4).toString()).toBe("%PDF");
   });
+
+  it("documents the static proof packet regeneration and drift-check path", () => {
+    const readme = readFileSync(path.join(repoRoot, "docs/sales/README.md"), "utf8");
+
+    expect(readme).toContain("npm run ops:generate-admin-pilot-readiness-proof-packet");
+    expect(readme).toContain("npm run ops:check-admin-pilot-readiness-proof-packet-drift");
+    expect(readme).toContain("openplan/src/lib/operations/pilot-readiness-packet.ts");
+    expect(readme).toContain("buyer-safe caveats");
+  });
 });
