@@ -57,6 +57,7 @@ Do not sell this release as:
 - [x] Request-access intake captures service lane, deployment posture, data sensitivity, first workflow, and onboarding needs.
 - [x] Draft managed-hosting service description: `../sales/2026-05-01-openplan-managed-hosting-service-description.md`.
 - [x] Contract-ready service schedule template: `../sales/2026-05-01-openplan-managed-hosting-service-schedule.md`.
+- [x] Buyer-facing managed support proof map: `../sales/2026-05-10-openplan-managed-support-proof-map.md` ties hosting, support, onboarding, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries without global SLA/RPO/RTO promises.
 
 ### Implementation Services Menu
 
