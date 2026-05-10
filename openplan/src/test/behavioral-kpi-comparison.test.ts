@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildBehavioralDemandComparison,
   normalizeBehavioralComparisonSource,
+  summarizeBehavioralDemandComparisonTrust,
 } from "@/lib/models/behavioral-kpi-comparison";
 
 describe("behavioral KPI comparison helpers", () => {
@@ -58,6 +59,16 @@ describe("behavioral KPI comparison helpers", () => {
       absolute_delta: 20,
       percent_delta: 20,
     });
+
+    const trust = summarizeBehavioralDemandComparisonTrust(comparison);
+    expect(trust).toMatchObject({
+      posture: "ready_for_internal_review",
+      label: "Internal-review comparison",
+      comparableKpiCount: 3,
+      changedKpiCount: 3,
+      excludedKpiCount: 2,
+    });
+    expect(trust.detail).toContain("prototype-only");
   });
 
   it("blocks comparison when both sides are preflight-only or not-enough-output", () => {
@@ -90,6 +101,12 @@ describe("behavioral KPI comparison helpers", () => {
     expect(comparison.support.status).toBe("behavioral_comparison_blocked");
     expect(comparison.support.message).toContain("not supportable yet");
     expect(comparison.comparison.rows).toEqual([]);
+
+    expect(summarizeBehavioralDemandComparisonTrust(comparison)).toMatchObject({
+      posture: "blocked",
+      label: "Comparison blocked",
+      comparableKpiCount: 0,
+    });
   });
 
   it("keeps partial-output comparisons caveated and supportable only on shared rows", () => {
@@ -139,5 +156,13 @@ describe("behavioral KPI comparison helpers", () => {
     expect(comparison.support.partial).toBe(true);
     expect(comparison.caveats.join(" ")).toContain("partial-output only");
     expect(comparison.comparison.rows).toHaveLength(3);
+
+    const trust = summarizeBehavioralDemandComparisonTrust(comparison);
+    expect(trust).toMatchObject({
+      posture: "partial_output_only",
+      label: "Partial-output comparison only",
+      comparableKpiCount: 3,
+    });
+    expect(trust.detail).toContain("prototype artifact differences");
   });
 });

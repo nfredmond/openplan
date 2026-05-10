@@ -64,6 +64,16 @@ export type BehavioralDemandComparison = {
   };
 };
 
+export type BehavioralDemandComparisonTrustSummary = {
+  posture: "ready_for_internal_review" | "partial_output_only" | "blocked";
+  label: string;
+  detail: string;
+  caveats: string[];
+  comparableKpiCount: number;
+  changedKpiCount: number;
+  excludedKpiCount: number;
+};
+
 type SummaryValueRow = {
   label?: string;
   count?: number | null;
@@ -458,4 +468,48 @@ export function buildBehavioralDemandComparison(
       rows: blockedReasons.length ? [] : comparisonRows,
     },
   };
+}
+
+export function summarizeBehavioralDemandComparisonTrust(
+  comparison: BehavioralDemandComparison
+): BehavioralDemandComparisonTrustSummary {
+  const comparableKpiCount = comparison.comparison.comparable_kpi_count;
+  const changedKpiCount = comparison.comparison.changed_kpi_count;
+  const excludedKpiCount = comparison.coverage.current_only_count + comparison.coverage.baseline_only_count;
+
+  if (!comparison.support.supportable) {
+    return {
+      posture: "blocked",
+      label: "Comparison blocked",
+      detail:
+        comparison.support.message ||
+        "Behavioral-demand comparison is blocked until both runs expose shared comparison-ready behavioral KPI outputs.",
+      caveats: comparison.caveats,
+      comparableKpiCount,
+      changedKpiCount,
+      excludedKpiCount,
+    } satisfies BehavioralDemandComparisonTrustSummary;
+  }
+
+  if (comparison.support.partial) {
+    return {
+      posture: "partial_output_only",
+      label: "Partial-output comparison only",
+      detail: `${comparableKpiCount} shared behavioral KPI row${comparableKpiCount === 1 ? "" : "s"} can be compared, but at least one run produced partial outputs. Treat deltas as prototype artifact differences, not demand-model findings.`,
+      caveats: comparison.caveats,
+      comparableKpiCount,
+      changedKpiCount,
+      excludedKpiCount,
+    } satisfies BehavioralDemandComparisonTrustSummary;
+  }
+
+  return {
+    posture: "ready_for_internal_review",
+    label: "Internal-review comparison",
+    detail: `${comparableKpiCount} shared behavioral KPI row${comparableKpiCount === 1 ? "" : "s"} can be compared across the two runs; ${changedKpiCount} changed and ${excludedKpiCount} unmatched row${excludedKpiCount === 1 ? " is" : "s are"} excluded rather than imputed. Behavioral-demand deltas remain prototype-only unless separate calibration evidence is attached.`,
+    caveats: comparison.caveats,
+    comparableKpiCount,
+    changedKpiCount,
+    excludedKpiCount,
+  } satisfies BehavioralDemandComparisonTrustSummary;
 }
