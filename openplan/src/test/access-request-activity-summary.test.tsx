@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   AccessRequestActivitySummaryPanel,
+  AccessRequestProvisioningReadinessPanel,
   summarizeAccessRequestActivity,
+  summarizeAccessRequestProvisioningReadiness,
 } from "@/components/operations/access-request-activity-summary";
 import type { AccessRequestReviewRow } from "@/lib/access-requests";
 
@@ -119,5 +121,62 @@ describe("access request activity summary", () => {
     expect(screen.getByText("Operator handoff")).toBeInTheDocument();
     expect(screen.getByText("Invite pending")).toBeInTheDocument();
     expect(screen.getByText(/Manual delivery remains the operator handoff item/i)).toBeInTheDocument();
+  });
+
+  it("marks contacted requests with complete intake context as ready to provision", () => {
+    const readiness = summarizeAccessRequestProvisioningReadiness(
+      buildRequest({
+        status: "contacted",
+      }),
+    );
+
+    expect(readiness).toEqual(
+      expect.objectContaining({
+        label: "Ready to provision",
+        ready: true,
+        blockers: [],
+      }),
+    );
+  });
+
+  it("lists missing readiness checkpoints before provisioning", () => {
+    const readiness = summarizeAccessRequestProvisioningReadiness(
+      buildRequest({
+        status: "reviewing",
+        service_lane: null,
+        deployment_posture: null,
+        data_sensitivity: null,
+        desired_first_workflow: null,
+      }),
+    );
+
+    expect(readiness.label).toBe("Provisioning prep needed");
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toEqual(
+      expect.arrayContaining([
+        "Move status to Contacted or Invited; current status is Reviewing.",
+        "Select a service lane.",
+        "Confirm deployment posture.",
+        "Record data sensitivity before pilot setup.",
+        "Pick the first workflow to seed.",
+      ]),
+    );
+  });
+
+  it("renders provisioning readiness blockers for operators", () => {
+    render(
+      <AccessRequestProvisioningReadinessPanel
+        request={buildRequest({
+          status: "new",
+          desired_first_workflow: null,
+        })}
+      />,
+    );
+
+    expect(screen.getByText("Provisioning readiness")).toBeInTheDocument();
+    expect(screen.getByText("Needs prep")).toBeInTheDocument();
+    expect(screen.getByText("Provisioning prep needed")).toBeInTheDocument();
+    expect(screen.getByText(/Move status to Contacted or Invited/i)).toBeInTheDocument();
+    expect(screen.getByText("Pick the first workflow to seed.")).toBeInTheDocument();
   });
 });

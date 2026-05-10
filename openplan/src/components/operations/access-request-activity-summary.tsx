@@ -3,6 +3,7 @@ import { ArrowRight, Clock3, History } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   accessRequestStatusLabel,
+  canProvisionAccessRequestStatus,
   type AccessRequestReviewRow,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
@@ -11,6 +12,13 @@ export type AccessRequestActivitySummary = {
   label: string;
   detail: string;
   needsOperatorAction: boolean;
+};
+
+export type AccessRequestProvisioningReadiness = {
+  label: string;
+  detail: string;
+  blockers: string[];
+  ready: boolean;
 };
 
 function formatTimestamp(value: string | null) {
@@ -91,6 +99,92 @@ export function summarizeAccessRequestActivity(
     detail: `Submitted ${formatTimestamp(request.created_at)}. Mark reviewing, defer, or decline before provisioning.`,
     needsOperatorAction: true,
   };
+}
+
+export function summarizeAccessRequestProvisioningReadiness(
+  request: Pick<
+    AccessRequestReviewRow,
+    | "status"
+    | "expected_workspace_name"
+    | "agency_name"
+    | "contact_email"
+    | "service_lane"
+    | "deployment_posture"
+    | "data_sensitivity"
+    | "desired_first_workflow"
+    | "provisioned_workspace_id"
+  >,
+): AccessRequestProvisioningReadiness {
+  if (request.provisioned_workspace_id || request.status === "provisioned") {
+    return {
+      label: "Already provisioned",
+      detail: `Workspace ${request.provisioned_workspace_id?.slice(0, 8) ?? "linked"} is linked; switch to owner-invite handoff checks.`,
+      blockers: [],
+      ready: false,
+    };
+  }
+
+  const blockers: string[] = [];
+
+  if (!canProvisionAccessRequestStatus(request.status)) {
+    blockers.push(`Move status to Contacted or Invited; current status is ${accessRequestStatusLabel(request.status)}.`);
+  }
+
+  if (!(request.expected_workspace_name ?? request.agency_name).trim()) {
+    blockers.push("Confirm the workspace display name.");
+  }
+
+  if (!request.contact_email.trim()) {
+    blockers.push("Confirm the owner email for the initial invitation.");
+  }
+
+  if (!request.service_lane) blockers.push("Select a service lane.");
+  if (!request.deployment_posture) blockers.push("Confirm deployment posture.");
+  if (!request.data_sensitivity) blockers.push("Record data sensitivity before pilot setup.");
+  if (!request.desired_first_workflow) blockers.push("Pick the first workflow to seed.");
+
+  if (blockers.length === 0) {
+    return {
+      label: "Ready to provision",
+      detail: "Required intake, posture, data, workflow, owner, and status checks are present for supervised workspace creation.",
+      blockers,
+      ready: true,
+    };
+  }
+
+  return {
+    label: "Provisioning prep needed",
+    detail: `${blockers.length} checkpoint${blockers.length === 1 ? "" : "s"} remaining before creating a workspace and owner invite.`,
+    blockers,
+    ready: false,
+  };
+}
+
+export function AccessRequestProvisioningReadinessPanel({ request }: { request: AccessRequestReviewRow }) {
+  const readiness = summarizeAccessRequestProvisioningReadiness(request);
+
+  return (
+    <div className="module-subpanel mt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <Clock3 className="h-3.5 w-3.5 text-emerald-700" />
+          Provisioning readiness
+        </div>
+        <StatusBadge tone={readiness.ready ? "success" : readiness.blockers.length > 0 ? "warning" : "neutral"}>
+          {readiness.ready ? "Ready" : readiness.blockers.length > 0 ? "Needs prep" : "Linked"}
+        </StatusBadge>
+      </div>
+      <p className="mt-2 text-sm font-medium text-foreground">{readiness.label}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{readiness.detail}</p>
+      {readiness.blockers.length > 0 ? (
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+          {readiness.blockers.map((blocker) => (
+            <li key={blocker}>{blocker}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
 }
 
 export function AccessRequestActivitySummaryPanel({ request }: { request: AccessRequestReviewRow }) {
