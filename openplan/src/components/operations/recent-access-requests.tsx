@@ -1,5 +1,6 @@
-import { ArrowRight, History, Inbox, LockKeyhole, TriangleAlert } from "lucide-react";
+import { Inbox, LockKeyhole, TriangleAlert } from "lucide-react";
 
+import { AccessRequestActivitySummaryPanel } from "@/components/operations/access-request-activity-summary";
 import { AccessRequestProvisionControls } from "@/components/operations/access-request-provision-controls";
 import { AccessRequestStatusControls } from "@/components/operations/access-request-status-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -182,30 +183,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                 </div>
               </div>
 
-              {request.review_events.length > 0 ? (
-                <div className="module-subpanel mt-3">
-                  <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    <History className="h-3.5 w-3.5 text-emerald-700" />
-                    Review trail
-                  </div>
-                  <div className="mt-2 grid gap-1.5">
-                    {request.review_events.slice(0, 4).map((event) => (
-                      <div key={event.id} className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">
-                          {accessRequestStatusLabel(event.previous_status)}
-                        </span>
-                        <ArrowRight className="h-3 w-3" />
-                        <span className="font-medium text-foreground">{accessRequestStatusLabel(event.status)}</span>
-                        <span>{formatTimestamp(event.created_at)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : request.reviewed_at ? (
-                <div className="module-subpanel mt-3 text-xs text-muted-foreground">
-                  Latest review marker: {accessRequestStatusLabel(request.status)} at {formatTimestamp(request.reviewed_at)}.
-                </div>
-              ) : null}
+              <AccessRequestActivitySummaryPanel request={request} />
             </div>
           ))}
         </div>
