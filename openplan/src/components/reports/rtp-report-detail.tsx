@@ -781,11 +781,13 @@ export function RtpReportDetail({
               <EmptyState title="No packet artifacts yet" description="Generate the report to persist a packet artifact to this record." compact />
             ) : (
               <div className="space-y-2">
-                {artifacts.map((artifact) => (
+                {artifacts.map((artifact, index) => (
                   <div key={artifact.id} id={`artifact-${artifact.id}`} className="module-row-card gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge tone="neutral">{artifact.artifact_kind.toUpperCase()}</StatusBadge>
+                      {index === 0 ? <StatusBadge tone="success">Latest packet artifact</StatusBadge> : null}
                     </div>
+                    <p className="text-sm font-medium text-foreground">Artifact {artifact.id.slice(0, 12)}</p>
                     <p className="text-sm text-muted-foreground">Generated {formatDateTime(artifact.generated_at)}</p>
                   </div>
                 ))}

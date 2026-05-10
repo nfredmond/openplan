@@ -159,6 +159,8 @@ describe("RtpReportDetail", () => {
     expect(screen.getByText(/Next operator move: Open release review\./i)).toBeInTheDocument();
     expect(screen.queryByText("No packet")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Latest packet artifact")).toBeInTheDocument();
+    expect(screen.getByText("Artifact artifact-1")).toBeInTheDocument();
     expect(screen.getByText("Live comment-response posture")).toBeInTheDocument();
     expect(screen.getAllByText("Comment-response foundation ready").length).toBeGreaterThan(0);
     expect(screen.getByText("Approved categorized items ready for packet handoff.")).toBeInTheDocument();
