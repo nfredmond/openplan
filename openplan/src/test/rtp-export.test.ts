@@ -2,6 +2,68 @@ import { describe, expect, it } from "vitest";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 
 describe("buildRtpExportHtml", () => {
+  it("adds a release-review scan summary before packet sections", () => {
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-scan",
+        workspace_id: "workspace-scan",
+        title: "2027 RTP",
+        status: "draft",
+        geography_label: "Nevada County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: "2026-06-01T00:00:00.000Z",
+        public_review_open_at: "2026-04-20T00:00:00.000Z",
+        public_review_close_at: "2026-05-20T00:00:00.000Z",
+        summary: "Cycle summary",
+        updated_at: "2026-04-16T00:00:00.000Z",
+      },
+      chapters: [
+        {
+          id: "chapter-scan",
+          title: "Financial plan",
+          section_type: "financial_plan",
+          status: "ready_for_review",
+          summary: "Chapter summary",
+          guidance: "",
+          content_markdown: "Draft content",
+          sort_order: 10,
+        },
+      ],
+      linkedProjects: normalizeRtpLinkedProjects([
+        {
+          id: "link-scan",
+          portfolio_role: "constrained",
+          priority_rationale: "Priority rationale",
+          projects: {
+            id: "project-scan",
+            name: "Main Street Safety",
+            status: "active",
+            delivery_phase: "analysis",
+            summary: "Project summary",
+          },
+        },
+      ]),
+      campaigns: [
+        {
+          id: "campaign-scan",
+          title: "Planwide comments",
+          status: "active",
+          engagement_type: "comment_collection",
+          summary: "Collect planwide feedback",
+          rtp_cycle_chapter_id: null,
+        },
+      ],
+      options: { sectionKeys: ["cycle_overview", "adoption_readiness"] },
+    });
+
+    expect(html).toContain("Release-review scan summary");
+    expect(html).toContain("Use this packet summary for a quick completeness pass");
+    expect(html).toContain("1/1</strong><span>chapters complete or ready");
+    expect(html).toContain("Included sections:</strong> Cycle Overview · Adoption Readiness");
+    expect(html.indexOf("Release-review scan summary")).toBeLessThan(html.indexOf("Cycle overview"));
+  });
+
   it("renders public review loop posture when provided", () => {
     const html = buildRtpExportHtml({
       cycle: {

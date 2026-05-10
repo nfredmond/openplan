@@ -175,6 +175,33 @@ function buildRtpExportStats(input: {
   };
 }
 
+
+function buildRtpPacketScanSummary(input: {
+  enabledSectionKeys: RtpExportSectionKey[];
+  stats: ReturnType<typeof buildRtpExportStats>;
+  chapters: RtpExportChapter[];
+  linkedProjects: RtpExportNormalizedLinkedProject[];
+  campaigns: RtpExportCampaign[];
+}): string {
+  const { enabledSectionKeys, stats, chapters, linkedProjects, campaigns } = input;
+  const visibleSections = enabledSectionKeys.map((key) => titleizeRtpValue(key)).join(" · ");
+
+  return `
+  <section class="packet-scan-summary" aria-label="Packet scan summary">
+    <div>
+      <p class="eyebrow">Release-review scan summary</p>
+      <p class="muted">Use this packet summary for a quick completeness pass before sharing the RTP export with reviewers.</p>
+    </div>
+    <div class="scan-grid">
+      <div class="scan-card"><strong>${esc(`${stats.chapterCompleteCount + stats.chapterReadyForReviewCount}/${chapters.length}`)}</strong><span>chapters complete or ready</span></div>
+      <div class="scan-card"><strong>${linkedProjects.length}</strong><span>linked projects in portfolio</span></div>
+      <div class="scan-card"><strong>${campaigns.length}</strong><span>engagement targets attached</span></div>
+      <div class="scan-card"><strong>${esc(stats.readiness.label)}</strong><span>${esc(stats.workflow.label)}</span></div>
+    </div>
+    <p class="muted"><strong>Included sections:</strong> ${esc(visibleSections || "Default RTP packet sections")}</p>
+  </section>`;
+}
+
 function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): string {
   if (modelingEvidence.length === 0) return "";
 
@@ -427,6 +454,12 @@ export function buildRtpExportHtml(input: {
     .card { border: 1px solid #d8dee4; border-radius: 16px; padding: 16px; background: #fff; }
     .section { margin-top: 28px; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8dee4; font-size: 12px; margin-right: 8px; }
+    .eyebrow { margin: 0 0 4px; color: #3e4a55; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .packet-scan-summary { margin-top: 18px; padding: 18px; border: 1px solid #d8dee4; border-radius: 18px; background: #f8fafc; }
+    .scan-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .scan-card { border: 1px solid #d8dee4; border-radius: 14px; padding: 12px; background: #fff; }
+    .scan-card strong { display: block; font-size: 1.05em; }
+    .scan-card span { display: block; color: #5f6b76; font-size: 12px; margin-top: 2px; }
     ul { padding-left: 20px; }
     .compact-list li { margin-bottom: 10px; }
     .modeling-evidence-card { margin-bottom: 12px; border-left: 4px solid #7a3d5f; }
@@ -476,6 +509,7 @@ export function buildRtpExportHtml(input: {
 <body>
   <p class="muted">${esc(titleSuffix)} · Generated ${esc(new Date().toLocaleString())}</p>
   <h1>${esc(cycle.title)}</h1>
+  ${buildRtpPacketScanSummary({ enabledSectionKeys, stats, chapters, linkedProjects, campaigns })}
   ${sections.join("\n")}
 </body>
 </html>`;
