@@ -444,6 +444,26 @@ export default async function ProgramsPage({
     .filter((program) => (filters.programType ? program.program_type === filters.programType : true))
     .filter((program) => (filters.status ? program.status === filters.status : true));
 
+  const activeFilterLabels = [
+    filters.projectId
+      ? `project ${
+          (projectsData ?? []).find((project) => project.id === filters.projectId)?.name ??
+          filters.projectId
+        }`
+      : null,
+    filters.programType ? `program type ${formatProgramTypeLabel(filters.programType)}` : null,
+    filters.status ? `status ${formatProgramStatusLabel(filters.status)}` : null,
+  ].filter((label): label is string => Boolean(label));
+  const hasProgramCatalogFilters = activeFilterLabels.length > 0;
+  const emptyProgramCatalogTitle = hasProgramCatalogFilters
+    ? "No programming cycles match these filters"
+    : "No programming cycles yet";
+  const emptyProgramCatalogDescription = hasProgramCatalogFilters
+    ? `The workspace has ${allTypedPrograms.length} programming ${
+        allTypedPrograms.length === 1 ? "cycle" : "cycles"
+      }, but none match ${activeFilterLabels.join(" + ")}. Clear or change the filters to review the full catalog.`
+    : "Create a program record to track RTIP/STIP package readiness, timing, and supporting records.";
+
   const packetQueuePrograms = typedPrograms
     .filter(
       (program) =>
@@ -632,8 +652,8 @@ export default async function ProgramsPage({
           {typedPrograms.length === 0 ? (
             <div className="mt-5">
               <EmptyState
-                title="No programming cycles yet"
-                description="Create a program record to track RTIP/STIP package readiness, timing, and supporting records."
+                title={emptyProgramCatalogTitle}
+                description={emptyProgramCatalogDescription}
               />
             </div>
           ) : (

@@ -125,8 +125,8 @@ vi.mock("@/components/operations/workspace-command-board", () => ({
 
 import ProgramsPage from "@/app/(app)/programs/page";
 
-async function renderPage() {
-  render(await ProgramsPage({ searchParams: Promise.resolve({}) }));
+async function renderPage(searchParams: { projectId?: string; programType?: string; status?: string } = {}) {
+  render(await ProgramsPage({ searchParams: Promise.resolve(searchParams) }));
 }
 
 describe("ProgramsPage", () => {
@@ -244,5 +244,17 @@ describe("ProgramsPage", () => {
         .getAllByRole("link")
         .some((link) => link.getAttribute("href") === "/reports/report-1#drift-since-generation")
     ).toBe(true);
+  });
+
+  it("explains when filters hide existing programming cycles", async () => {
+    await renderPage({ status: "programmed" });
+
+    expect(screen.getByText("No programming cycles match these filters")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /The workspace has 1 programming cycle, but none match status Programmed/i
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText("No programming cycles yet")).not.toBeInTheDocument();
   });
 });
