@@ -15,6 +15,10 @@ import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-com
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  resolveDatasetLineageReadiness,
+  toneForDatasetLineageReadiness,
+} from "@/lib/data-sources/dataset-lineage-readiness";
 import { resolveDatasetTrustLabel, toneForDatasetTrustLevel } from "@/lib/data-sources/dataset-provenance";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -258,6 +262,21 @@ export default async function DataHubPage() {
   const activeConnectors = connectors.filter((connector) => connector.status === "active").length;
   const monitoredConnectors = connectors.filter((connector) => connector.policy_monitor_enabled).length;
   const staleDatasets = datasets.filter((dataset) => dataset.status === "stale" || dataset.status === "error").length;
+  const lineageCompleteDatasets = datasets.filter(
+    (dataset) =>
+      resolveDatasetLineageReadiness({
+        citationText: dataset.citation_text,
+        sourceUrl: dataset.source_url,
+        licenseLabel: dataset.license_label,
+        vintageLabel: dataset.vintage_label,
+        schemaVersion: dataset.schema_version,
+        checksum: dataset.checksum,
+        rowCount: dataset.row_count,
+        lastRefreshedAt: dataset.last_refreshed_at,
+        geographyScope: dataset.geography_scope,
+        geometryAttachment: dataset.geometry_attachment,
+      }).level === "complete"
+  ).length;
   const overlayReadyDatasets = datasets.filter(
     (dataset) =>
       dataset.status === "ready" &&
@@ -331,7 +350,7 @@ export default async function DataHubPage() {
               <p className="module-summary-label">Datasets</p>
               <p className="module-summary-value">{datasets.length}</p>
               <p className="module-summary-detail">
-                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready.
+                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {lineageCompleteDatasets} lineage-complete.
               </p>
             </div>
             <div className="module-summary-card">
@@ -545,6 +564,18 @@ export default async function DataHubPage() {
                   vintageLabel: dataset.vintage_label,
                   lastRefreshedAt: dataset.last_refreshed_at,
                 });
+                const lineageReadiness = resolveDatasetLineageReadiness({
+                  citationText: dataset.citation_text,
+                  sourceUrl: dataset.source_url,
+                  licenseLabel: dataset.license_label,
+                  vintageLabel: dataset.vintage_label,
+                  schemaVersion: dataset.schema_version,
+                  checksum: dataset.checksum,
+                  rowCount: dataset.row_count,
+                  lastRefreshedAt: dataset.last_refreshed_at,
+                  geographyScope: dataset.geography_scope,
+                  geometryAttachment: dataset.geometry_attachment,
+                });
 
                 return (
                   <div key={dataset.id} className="module-record-row">
@@ -558,6 +589,9 @@ export default async function DataHubPage() {
                           </StatusBadge>
                           {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
                           <StatusBadge tone={toneForDatasetTrustLevel(trustLabel.level)}>{trustLabel.label}</StatusBadge>
+                          <StatusBadge tone={toneForDatasetLineageReadiness(lineageReadiness.level)}>
+                            {lineageReadiness.label}
+                          </StatusBadge>
                         </div>
 
                         <div className="space-y-1.5">
@@ -634,6 +668,10 @@ export default async function DataHubPage() {
                         <p className="font-medium text-foreground">Provenance</p>
                         <p className="mt-2">{dataset.citation_text || dataset.source_url || "No provenance note captured yet."}</p>
                         <p className="mt-2 text-xs text-muted-foreground">{trustLabel.detail}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Lineage readiness: {lineageReadiness.readyCount}/{lineageReadiness.totalCount} fields captured.
+                          {lineageReadiness.missing.length > 0 ? ` Missing ${lineageReadiness.missing.join(", ")}.` : ""}
+                        </p>
                       </div>
                       <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Refresh posture</p>
