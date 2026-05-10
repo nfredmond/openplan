@@ -92,10 +92,19 @@ describe("WorkspaceCommandBoard", () => {
       screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Run Grants follow-through on current packets/i })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Run Grants follow-through on current packets/i })[0]).toHaveAttribute(
       "href",
       "/grants#grants-gap-resolution-lane"
     );
+    expect(screen.getByText("Workflow next-action groups")).toBeInTheDocument();
+    expect(screen.getByText("RTP")).toBeInTheDocument();
+    expect(screen.getByText("Grants")).toBeInTheDocument();
+    expect(screen.getByText("Engagement")).toBeInTheDocument();
+    expect(screen.getByText("Analysis / modeling")).toBeInTheDocument();
+    expect(screen.getByText("Aerial")).toBeInTheDocument();
+    expect(screen.getByText("Admin / release proof")).toBeInTheDocument();
+    expect(screen.getByText("Inspect engagement handoff readiness")).toBeInTheDocument();
+    expect(screen.getByText(/1 total command · 1 proof-linked action/i)).toBeInTheDocument();
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();
@@ -173,7 +182,7 @@ describe("WorkspaceCommandBoard", () => {
         .length
     ).toBeGreaterThan(0);
     expect(screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Review comparison-backed packet posture/i })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Review comparison-backed packet posture/i })[0]).toHaveAttribute(
       "href",
       "/reports?posture=comparison-backed"
     );
@@ -238,7 +247,7 @@ describe("WorkspaceCommandBoard", () => {
     );
 
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Anchor project funding needs/i })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Anchor project funding needs/i })[0]).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
     );
