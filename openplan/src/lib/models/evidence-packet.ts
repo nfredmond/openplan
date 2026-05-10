@@ -548,6 +548,14 @@ export function labelForEngineKey(engineKey: string | null | undefined) {
     .join(" ");
 }
 
+function titleCaseTokenized(value: string) {
+  return value
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function labelForArtifactType(artifactType: string | null | undefined) {
   if (!artifactType) return "Artifact";
   if (artifactType === "behavioral_prototype_manifest_json") return "Behavioral Prototype Manifest";
@@ -557,11 +565,16 @@ export function labelForArtifactType(artifactType: string | null | undefined) {
   if (artifactType === "behavioral_kpi_summary_json") return "Behavioral KPI Summary";
   if (artifactType === "behavioral_kpi_packet_md") return "Behavioral KPI Packet";
   if (artifactType === "activitysim_bundle_manifest_json") return "ActivitySim Bundle Manifest";
-  return artifactType
-    .split(/[_-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return titleCaseTokenized(artifactType);
+}
+
+export function labelForKpiCategory(category: string | null | undefined) {
+  if (!category) return "General";
+  if (category === "behavioral_onramp") return "Behavioral Onramp";
+  if (category === "assignment") return "Assignment";
+  if (category === "validation") return "Validation";
+  if (category === "accessibility") return "Accessibility";
+  return titleCaseTokenized(category);
 }
 
 export function formatFileSize(bytes: number | null | undefined) {

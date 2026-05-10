@@ -4,6 +4,7 @@ import {
   formatDurationSeconds,
   labelForArtifactType,
   labelForEngineKey,
+  labelForKpiCategory,
   normalizeEvidencePacket,
 } from "@/lib/models/evidence-packet";
 
@@ -181,6 +182,8 @@ describe("evidence packet helpers", () => {
     expect(labelForEngineKey("behavioral_demand")).toBe("Behavioral Demand");
     expect(labelForArtifactType("volumes_geojson")).toBe("Volumes Geojson");
     expect(labelForArtifactType("behavioral_kpi_summary_json")).toBe("Behavioral KPI Summary");
+    expect(labelForKpiCategory("behavioral_onramp")).toBe("Behavioral Onramp");
+    expect(labelForKpiCategory("scenario-equity_delta")).toBe("Scenario Equity Delta");
     expect(formatDurationSeconds(45)).toBe("45s");
     expect(formatDurationSeconds(125)).toBe("2m 5s");
     expect(formatDurationSeconds(7200)).toBe("2h");

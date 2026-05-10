@@ -9,6 +9,7 @@ import {
   buildEvidenceHighlights,
   formatDurationSeconds,
   labelForEngineKey,
+  labelForKpiCategory,
   normalizeEvidencePacket,
   summarizeEvidenceCategories,
   type NormalizedEvidencePacket,
@@ -372,7 +373,7 @@ export function ModelRunEvidencePanel({
                         {categories.map((category) => (
                           <div key={category.category} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                             <div className="flex items-center justify-between gap-3">
-                              <p className="text-sm font-semibold text-foreground capitalize">{category.category}</p>
+                              <p className="text-sm font-semibold text-foreground">{labelForKpiCategory(category.category)}</p>
                               <StatusBadge tone="neutral">{category.count} KPI{category.count === 1 ? "" : "s"}</StatusBadge>
                             </div>
                             <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
@@ -567,7 +568,7 @@ export function ModelRunEvidencePanel({
                                 .map((category) => (
                                   <div key={category.category} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                                     <div className="flex items-center justify-between gap-3">
-                                      <p className="text-sm font-semibold text-foreground capitalize">{category.category}</p>
+                                      <p className="text-sm font-semibold text-foreground">{labelForKpiCategory(category.category)}</p>
                                       <StatusBadge tone="neutral">
                                         {category.changedCount}/{category.comparableCount || category.totalCount} moved
                                       </StatusBadge>
