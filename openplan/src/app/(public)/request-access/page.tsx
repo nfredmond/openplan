@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ClipboardCheck, ShieldCheck } from "lucide-react";
 
 import { RequestAccessForm } from "@/components/request-access/request-access-form";
+import { buildRequestAccessPrefill } from "@/lib/access-request-query";
 
 export const metadata = {
   title: "Request Services Review | OpenPlan",
@@ -32,7 +33,13 @@ const reviewSteps = [
   "Provision, invite, or scope services only after workspace ownership, data posture, billing, and support obligations are clear.",
 ];
 
-export default function RequestAccessPage() {
+export default async function RequestAccessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const prefill = buildRequestAccessPrefill("/request-access", (await searchParams) ?? {});
+
   return (
     <main className="public-page">
       <div className="public-page-backdrop" />
@@ -93,7 +100,11 @@ export default function RequestAccessPage() {
       </section>
 
       <section id="request-access-form" className="scroll-mt-24">
-        <RequestAccessForm />
+        <RequestAccessForm
+          initialValues={prefill.initialValues}
+          sourcePath={prefill.sourcePath}
+          sourceContext={prefill.sourceContext}
+        />
       </section>
 
       <article className="public-surface">

@@ -13,8 +13,8 @@ vi.mock("next/link", () => ({
 import RequestAccessPage from "@/app/(public)/request-access/page";
 
 describe("RequestAccessPage", () => {
-  it("renders the services review intake surface without auto-provisioning language", () => {
-    render(<RequestAccessPage />);
+  it("renders the services review intake surface without auto-provisioning language", async () => {
+    render(await RequestAccessPage({}));
 
     expect(
       screen.getByRole("heading", {
@@ -29,5 +29,22 @@ describe("RequestAccessPage", () => {
     expect(screen.getByLabelText(/What should OpenPlan help with first/i)).toBeInTheDocument();
     expect(screen.getByText(/does not create an account, hosted workspace, subscription, or services contract/i)).toBeInTheDocument();
     expect(screen.queryByText(/workspace will be created automatically/i)).not.toBeInTheDocument();
+  });
+
+  it("prefills the service lane and workflow from pricing deep links", async () => {
+    render(
+      await RequestAccessPage({
+        searchParams: Promise.resolve({
+          lane: "managed-hosting",
+          workflow: "grants",
+          deployment: "nat_ford_managed",
+          source: "pricing",
+        }),
+      }),
+    );
+
+    expect(screen.getByLabelText(/Which service lane do you need/i)).toHaveValue("managed_hosting_admin");
+    expect(screen.getByLabelText(/First workflow to stand up/i)).toHaveValue("grants");
+    expect(screen.getByLabelText(/Deployment posture/i)).toHaveValue("nat_ford_managed");
   });
 });
