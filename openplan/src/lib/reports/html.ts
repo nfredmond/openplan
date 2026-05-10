@@ -534,11 +534,16 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
                 ${(link.comparisonSnapshots ?? [])
                   .slice(0, 3)
                   .map(
-                    (snapshot) => `<li>
-                      <strong>${esc(snapshot.label)}</strong>
-                      <p>${esc(titleize(snapshot.status))} • ${snapshot.candidateEntryLabel ? `${esc(snapshot.candidateEntryLabel)} vs ${esc(link.baselineLabel ?? "Baseline")}` : "Saved comparison"}</p>
-                      <span class="meta">${snapshot.indicatorDeltaCount} indicator delta${snapshot.indicatorDeltaCount === 1 ? "" : "s"}${snapshot.updatedAt ? ` • Updated ${esc(formatDateTime(snapshot.updatedAt))}` : ""}</span>
-                    </li>`
+                    (snapshot) => {
+                      const sourceContext = snapshot.sourceContext;
+                      return `<li>
+                        <strong>${esc(snapshot.label)}</strong>
+                        <p>${esc(titleize(snapshot.status))} • ${sourceContext?.pairingLabel ? esc(sourceContext.pairingLabel) : snapshot.candidateEntryLabel ? `${esc(snapshot.candidateEntryLabel)} vs ${esc(link.baselineLabel ?? "Baseline")}` : "Saved comparison"}</p>
+                        <span class="meta">${snapshot.indicatorDeltaCount} indicator delta${snapshot.indicatorDeltaCount === 1 ? "" : "s"}${snapshot.updatedAt ? ` • Updated ${esc(formatDateTime(snapshot.updatedAt))}` : ""}</span>
+                        ${sourceContext?.caveatSummary ? `<p class="meta">${esc(sourceContext.caveatSummary)}</p>` : ""}
+                        ${sourceContext?.exportReadiness ? `<p class="meta">${esc(sourceContext.exportReadiness)}</p>` : ""}
+                      </li>`;
+                    }
                   )
                   .join("")}
               </ul>`
