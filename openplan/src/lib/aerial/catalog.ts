@@ -17,6 +17,9 @@ export type AerialMissionPackagePosture = {
   qaPendingPackageCount: number;
   processingPackageCount: number;
   verificationReadyPackageCount: number;
+  attachmentReadyPackageCount: number;
+  attachmentReadyLabel: string;
+  attachmentReady: boolean;
   label: string;
   tone: "neutral" | "info" | "success" | "warning";
 };
@@ -164,6 +167,15 @@ export function summarizeAerialMissionPackagePosture(
   const qaPendingPackageCount = packages.filter((p) => p.status === "qa_pending").length;
   const processingPackageCount = packages.filter((p) => p.status === "processing").length;
   const verificationReadyPackageCount = packages.filter((p) => p.verification_readiness === "ready").length;
+  const attachmentReadyPackageCount = packages.filter(
+    (p) => (p.status === "ready" || p.status === "shared") && p.verification_readiness === "ready"
+  ).length;
+  const attachmentReady = packageCount > 0 && attachmentReadyPackageCount === packageCount;
+  const attachmentReadyLabel = attachmentReady
+    ? "Report attachment ready"
+    : packageCount === 0
+      ? "No report attachments"
+      : `${attachmentReadyPackageCount}/${packageCount} attachment-ready`;
 
   if (packageCount === 0) {
     return {
@@ -172,6 +184,9 @@ export function summarizeAerialMissionPackagePosture(
       qaPendingPackageCount,
       processingPackageCount,
       verificationReadyPackageCount,
+      attachmentReadyPackageCount,
+      attachmentReadyLabel,
+      attachmentReady,
       label: "No packages",
       tone: "neutral",
     };
@@ -184,6 +199,9 @@ export function summarizeAerialMissionPackagePosture(
       qaPendingPackageCount,
       processingPackageCount,
       verificationReadyPackageCount,
+      attachmentReadyPackageCount,
+      attachmentReadyLabel,
+      attachmentReady,
       label: `${readyPackageCount}/${packageCount} verification-ready`,
       tone: "success",
     };
@@ -196,6 +214,9 @@ export function summarizeAerialMissionPackagePosture(
       qaPendingPackageCount,
       processingPackageCount,
       verificationReadyPackageCount,
+      attachmentReadyPackageCount,
+      attachmentReadyLabel,
+      attachmentReady,
       label: `${readyPackageCount}/${packageCount} ready · ${qaPendingPackageCount} QA pending`,
       tone: "info",
     };
@@ -208,6 +229,9 @@ export function summarizeAerialMissionPackagePosture(
       qaPendingPackageCount,
       processingPackageCount,
       verificationReadyPackageCount,
+      attachmentReadyPackageCount,
+      attachmentReadyLabel,
+      attachmentReady,
       label: `${readyPackageCount}/${packageCount} ready · ${processingPackageCount} processing`,
       tone: "neutral",
     };
@@ -219,6 +243,9 @@ export function summarizeAerialMissionPackagePosture(
     qaPendingPackageCount,
     processingPackageCount,
     verificationReadyPackageCount,
+    attachmentReadyPackageCount,
+    attachmentReadyLabel,
+    attachmentReady,
     label: `${readyPackageCount}/${packageCount} ready`,
     tone: readyPackageCount > 0 ? "warning" : "neutral",
   };

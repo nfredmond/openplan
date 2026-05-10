@@ -10,6 +10,9 @@ describe("aerial catalog package posture", () => {
       qaPendingPackageCount: 0,
       processingPackageCount: 0,
       verificationReadyPackageCount: 0,
+      attachmentReadyPackageCount: 0,
+      attachmentReadyLabel: "No report attachments",
+      attachmentReady: false,
       label: "No packages",
       tone: "neutral",
     });
@@ -28,6 +31,9 @@ describe("aerial catalog package posture", () => {
       qaPendingPackageCount: 1,
       processingPackageCount: 1,
       verificationReadyPackageCount: 1,
+      attachmentReadyPackageCount: 1,
+      attachmentReadyLabel: "1/3 attachment-ready",
+      attachmentReady: false,
       label: "1/3 ready · 1 QA pending",
       tone: "info",
     });
@@ -42,6 +48,9 @@ describe("aerial catalog package posture", () => {
     ).toMatchObject({
       readyPackageCount: 2,
       verificationReadyPackageCount: 2,
+      attachmentReadyPackageCount: 2,
+      attachmentReadyLabel: "Report attachment ready",
+      attachmentReady: true,
       label: "2/2 verification-ready",
       tone: "success",
     });

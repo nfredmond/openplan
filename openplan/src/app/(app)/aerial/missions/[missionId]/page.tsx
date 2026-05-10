@@ -21,6 +21,7 @@ import {
   formatAerialMissionTypeLabel,
   formatAerialPackageStatusLabel,
   formatAerialVerificationReadinessLabel,
+  summarizeAerialMissionPackagePosture,
   type AerialMissionStatus,
   type AerialPackageStatus,
   type AerialProjectPosture,
@@ -154,6 +155,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     [{ status: mission.status }],
     packages.map((p) => ({ status: p.status, verification_readiness: p.verification_readiness }))
   );
+  const packagePosture = summarizeAerialMissionPackagePosture(packages);
   const postureDescription = describeAerialProjectPosture(posture);
 
   const columns: Array<DataTableColumn<PackageRow>> = [
@@ -227,6 +229,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
         <InspectorField
           label="Packages recorded"
           value={`${posture.readyPackageCount} ready · ${packages.length} total`}
+          hint={packagePosture.attachmentReadyLabel}
         />
         <InspectorField
           label="Verification"
@@ -367,8 +370,8 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             id="aerial-mission-packages"
             label="Evidence"
             title="Packages"
-            description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status and verification readiness."
-            trailing={<StatusBadge tone="neutral">{packages.length} total</StatusBadge>}
+            description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status, verification readiness, and report-attachment posture."
+            trailing={<StatusBadge tone={packagePosture.attachmentReady ? "success" : packagePosture.tone}>{packagePosture.attachmentReadyLabel}</StatusBadge>}
           >
             <DataTable<PackageRow>
               columns={columns}
