@@ -52,6 +52,7 @@ import {
   normalizeJoin,
   normalizeProjectFilterId,
   normalizeRelinkedInvoiceId,
+  summarizeBillingStatusFreshness,
   noticeClass,
   panelClass,
   quotaRowStatusText,
@@ -216,6 +217,11 @@ export default async function BillingPage({
   const stripeCustomerId = subscriptionSnapshot?.stripeCustomerId ?? workspaceBillingDetail?.stripe_customer_id ?? null;
   const stripeSubscriptionId =
     subscriptionSnapshot?.stripeSubscriptionId ?? workspaceBillingDetail?.stripe_subscription_id ?? null;
+  const billingStatusFreshness = summarizeBillingStatusFreshness({
+    status,
+    ledgerUpdatedAt,
+    currentPeriodEnd,
+  });
   const usageSummary = await loadUsageForCurrentPeriod(supabase, workspaceId, {
     periodStart: currentPeriodStart,
     periodEnd: currentPeriodEnd,
@@ -540,6 +546,7 @@ export default async function BillingPage({
               <StatusBadge tone={subscriptionSnapshot ? "success" : "warning"}>
                 Ledger: {subscriptionSnapshot ? "Normalized" : "Workspace fallback"}
               </StatusBadge>
+              <StatusBadge tone={billingStatusFreshness.tone}>{billingStatusFreshness.label}</StatusBadge>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
               Historical checkout and webhook events can still reconcile this workspace ledger. New OpenPlan tier requests route to fit review and do not mark the workspace checkout-pending automatically.
@@ -554,6 +561,9 @@ export default async function BillingPage({
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em]">Operating rule</p>
             <p className="mt-2 text-foreground">
               Subscription state belongs to the workspace ledger. Invoice records belong to delivery operations. Keep the two lanes aligned, but do not conflate them.
+            </p>
+            <p className="mt-3 border-t border-border/60 pt-3 text-xs leading-5">
+              <span className="font-semibold text-foreground">Status cue:</span> {billingStatusFreshness.summary}
             </p>
           </div>
         </div>
