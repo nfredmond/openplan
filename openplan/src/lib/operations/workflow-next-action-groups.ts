@@ -47,6 +47,10 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function safeCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function includesAny(value: string, fragments: string[]) {
   const normalized = value.toLowerCase();
   return fragments.some((fragment) => normalized.includes(fragment));
@@ -124,7 +128,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     fallbackDetail:
       "No RTP queue pressure is visible. Inspect cycle setup and packet release-review posture before sharing board or public-review material.",
     cue: (summary) =>
-      `${summary.counts.reportRefreshRecommended} regenerate · ${summary.counts.reportNoPacket} generate · ${summary.counts.reportPacketCurrent} review`,
+      `${safeCount(summary.counts.reportRefreshRecommended)} regenerate · ${safeCount(summary.counts.reportNoPacket)} generate · ${safeCount(summary.counts.reportPacketCurrent)} review`,
   },
   {
     key: "grants",
@@ -135,7 +139,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     fallbackDetail:
       "No funding pressure is queued. Review open opportunities and reimbursement posture before treating funding context as settled.",
     cue: (summary, queuedActionCount) =>
-      `${pluralize(summary.counts.openFundingOpportunities, "open opportunity", "open opportunities")} · ${pluralize(queuedActionCount, "queued check")}`,
+      `${pluralize(safeCount(summary.counts.openFundingOpportunities), "open opportunity", "open opportunities")} · ${pluralize(queuedActionCount, "queued check")}`,
   },
   {
     key: "engagement",
@@ -158,7 +162,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
       "No modeling queue pressure is visible. Check scenario/model evidence and caveat posture before using analysis language in grants or reports.",
     cue: (summary) =>
       summary.grantModelingSummary?.breakdownSummary ??
-      `${pluralize(summary.counts.comparisonBackedReports, "comparison-backed report")}`,
+      `${pluralize(safeCount(summary.counts.comparisonBackedReports), "comparison-backed report")}`,
   },
   {
     key: "aerial",
@@ -169,7 +173,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     fallbackDetail:
       "No aerial exception is queued. Check mission packages and evidence QA before using field capture as report or grant support.",
     cue: (summary) =>
-      `${pluralize(summary.counts.aerialMissions, "mission")} · ${pluralize(summary.counts.aerialReadyPackages, "ready package")}`,
+      `${pluralize(safeCount(summary.counts.aerialMissions), "mission")} · ${pluralize(safeCount(summary.counts.aerialReadyPackages), "ready package")}`,
   },
   {
     key: "admin-release-proof",
@@ -180,7 +184,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     fallbackDetail:
       "Check the release proof packet, pilot readiness evidence, billing waiver language, and known caveats before any external demo or sale motion.",
     cue: (summary, queuedActionCount) =>
-      `${pluralize(summary.counts.queueDepth, "total command")} · ${pluralize(queuedActionCount, "proof-linked action")}`,
+      `${pluralize(safeCount(summary.counts.queueDepth), "total command")} · ${pluralize(queuedActionCount, "proof-linked action")}`,
   },
 ];
 
