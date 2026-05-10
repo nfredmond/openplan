@@ -66,6 +66,18 @@ function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisR
             kind: "analysis_corridor",
           },
         },
+        {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [-121.05, 39.15],
+          },
+          properties: {
+            kind: "crash_point",
+            fatalCount: 1,
+            injuryCount: 3,
+          },
+        },
       ],
     },
     metrics: {
@@ -135,5 +147,31 @@ describe("buildDatasetOverlayState", () => {
     expect(state.mode).toBeNull();
     expect(state.geographyScope).toBeNull();
     expect(state.featureCollection).toEqual({ type: "FeatureCollection", features: [] });
+  });
+
+  it("builds point thematic overlay features from crash point result geometry", () => {
+    const state = buildDatasetOverlayState({
+      selectedDataset: buildDataset({
+        geographyScope: "point",
+        geometryAttachment: "analysis_crash_points",
+        thematicMetricKey: "fatalCount",
+        thematicMetricLabel: "Fatal crashes",
+      }),
+      analysisResult: buildAnalysisResult(),
+      corridorGeojson,
+    });
+
+    expect(state.mode).toBe("thematic_overlay");
+    expect(state.geographyScope).toBe("point");
+    expect(state.featureCollection.features).toHaveLength(1);
+    expect(state.featureCollection.features[0].properties).toMatchObject({
+      kind: "crash_point",
+      fatalCount: 1,
+      injuryCount: 3,
+      overlayDatasetName: "Equity screen",
+      overlayDatasetId: "dataset-1",
+      overlayMode: "thematic_overlay",
+      overlayMetricKey: "fatalCount",
+    });
   });
 });

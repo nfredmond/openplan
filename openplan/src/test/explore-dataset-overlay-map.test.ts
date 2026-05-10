@@ -67,6 +67,18 @@ function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisR
             kind: "analysis_corridor",
           },
         },
+        {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [-121.05, 39.15],
+          },
+          properties: {
+            kind: "crash_point",
+            fatalCount: 1,
+            injuryCount: 3,
+          },
+        },
       ],
     },
     metrics: {
@@ -224,5 +236,64 @@ describe("syncDatasetOverlayMap", () => {
     expect(mapStub.setPaintProperty).toHaveBeenCalledTimes(7);
     expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-fill", "fill-opacity", 0.12);
     expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-line", "line-dasharray", [1.2, 1]);
+  });
+
+  it("syncs point thematic overlays and applies crash metric point paint", () => {
+    const mapStub = createMapStub();
+
+    syncDatasetOverlayMap({
+      map: mapStub.map,
+      selectedDataset: buildDataset({
+        geographyScope: "point",
+        geometryAttachment: "analysis_crash_points",
+        thematicMetricKey: "fatalCount",
+        thematicMetricLabel: "Fatal crashes",
+      }),
+      analysisResult: buildAnalysisResult(),
+      corridorGeojson,
+    });
+
+    expect(mapStub.setData).toHaveBeenCalledWith({
+      type: "FeatureCollection",
+      features: [
+        expect.objectContaining({
+          geometry: {
+            type: "Point",
+            coordinates: [-121.05, 39.15],
+          },
+          properties: expect.objectContaining({
+            kind: "crash_point",
+            fatalCount: 1,
+            injuryCount: 3,
+            overlayDatasetId: "dataset-1",
+            overlayDatasetName: "Equity screen",
+            overlayMetricKey: "fatalCount",
+            overlayMode: "thematic_overlay",
+          }),
+        }),
+      ],
+    });
+    expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-point", "circle-color", [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "fatalCount"]], 0],
+      0,
+      "#fbbf24",
+      1,
+      "#f97316",
+      2,
+      "#dc2626",
+    ]);
+    expect(mapStub.setPaintProperty).toHaveBeenCalledWith("dataset-overlay-point", "circle-radius", [
+      "interpolate",
+      ["linear"],
+      ["coalesce", ["to-number", ["get", "fatalCount"]], 0],
+      0,
+      3,
+      1,
+      5,
+      4,
+      9,
+    ]);
   });
 });

@@ -170,7 +170,7 @@ export function canRenderDatasetCoverageOverlay(
     return false;
   }
 
-  return ["tract", "corridor", "route"].includes(dataset.geographyScope);
+  return ["tract", "corridor", "route", "point"].includes(dataset.geographyScope);
 }
 
 export function canRenderDatasetThematicOverlay(
