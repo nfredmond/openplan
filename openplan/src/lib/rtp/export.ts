@@ -175,6 +175,63 @@ function buildRtpExportStats(input: {
   };
 }
 
+function buildRtpAdoptionRecordChecklist(input: {
+  cycle: RtpExportCycle;
+  chapters: RtpExportChapter[];
+  stats: ReturnType<typeof buildRtpExportStats>;
+}): Array<{ label: string; status: string; detail: string }> {
+  const { cycle, chapters, stats } = input;
+  const adoptionChapter = chapters.find(
+    (chapter) =>
+      chapter.section_type === "compliance" ||
+      /adoption|compliance|appendix/i.test(`${chapter.title} ${chapter.section_type}`)
+  );
+  const publicReviewReady = Boolean(cycle.public_review_open_at && cycle.public_review_close_at);
+  const chapterRecordReady = stats.chapterCompleteCount + stats.chapterReadyForReviewCount;
+
+  return [
+    {
+      label: "Cycle status",
+      status: formatRtpCycleStatusLabel(cycle.status),
+      detail:
+        cycle.status === "adopted"
+          ? "Marked adopted for the permanent RTP record."
+          : "Not yet marked adopted; keep draft/public-review posture visible for reviewers.",
+    },
+    {
+      label: "Adoption target",
+      status: formatRtpExportDate(cycle.adoption_target_date),
+      detail: cycle.adoption_target_date
+        ? "Target date is available for board calendar and packet cover checks."
+        : "Add an adoption target date before board packet circulation.",
+    },
+    {
+      label: "Public review window",
+      status: publicReviewReady
+        ? `${formatRtpExportDate(cycle.public_review_open_at)} → ${formatRtpExportDate(cycle.public_review_close_at)}`
+        : "Not set",
+      detail: publicReviewReady
+        ? "Review window is recorded for comment-response and adoption findings."
+        : "Record both public review open and close dates before adoption findings.",
+    },
+    {
+      label: "Adoption/compliance chapter",
+      status: adoptionChapter ? formatRtpChapterStatusLabel(adoptionChapter.status) : "Missing",
+      detail: adoptionChapter
+        ? `${adoptionChapter.title} is present in the chapter record.`
+        : "Add the adoption package and compliance appendix chapter to preserve the board record.",
+    },
+    {
+      label: "Chapter record",
+      status: `${chapterRecordReady}/${chapters.length} complete or ready`,
+      detail:
+        chapters.length > 0
+          ? "Use the chapter digest as the board packet completeness backstop."
+          : "Create RTP chapters before circulating a board packet.",
+    },
+  ];
+}
+
 
 function buildRtpPacketScanSummary(input: {
   enabledSectionKeys: RtpExportSectionKey[];
@@ -303,6 +360,7 @@ export function buildRtpExportHtml(input: {
 
   const enabledSectionKeys = resolveEnabledSectionKeys(options?.sectionKeys);
   const stats = buildRtpExportStats({ cycle, chapters, linkedProjects, campaigns });
+  const adoptionRecordChecklist = buildRtpAdoptionRecordChecklist({ cycle, chapters, stats });
   const titleSuffix = options?.titleSuffix ?? "OpenPlan RTP Export";
   const publicReviewSummary = options?.publicReviewSummary ?? null;
   const modelingEvidence = options?.modelingEvidence ?? [];
@@ -410,6 +468,17 @@ export function buildRtpExportHtml(input: {
       <h3>${esc(stats.readiness.label)}</h3>
       <p>${esc(stats.readiness.reason)}</p>
       <p class="muted">${esc(stats.workflow.label)} · ${esc(stats.workflow.detail)}</p>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <h3>Adoption record checklist</h3>
+      <p class="muted">Board packet readiness, public-review dates, and adoption/compliance chapter posture in one scan-friendly record.</p>
+      <ul class="compact-list">
+        ${adoptionRecordChecklist
+          .map(
+            (item) => `<li><strong>${esc(item.label)}:</strong> ${esc(item.status)}<br/><span class="muted">${esc(item.detail)}</span></li>`
+          )
+          .join("")}
+      </ul>
     </div>
     <div class="grid">
       ${stats.readiness.checks

@@ -285,4 +285,45 @@ describe("buildRtpExportHtml", () => {
     expect(html).toContain("3 pass · 1 warning · 1 fail");
     expect(html).toContain("Observed count validation");
   });
+
+  it("renders a scan-friendly adoption record checklist in adoption readiness", () => {
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-adoption",
+        workspace_id: "workspace-adoption",
+        title: "2027 RTP",
+        status: "public_review",
+        geography_label: "Nevada County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: "2026-06-15T00:00:00.000Z",
+        public_review_open_at: "2026-04-20T00:00:00.000Z",
+        public_review_close_at: "2026-05-20T00:00:00.000Z",
+        summary: "Cycle summary",
+        updated_at: "2026-05-09T00:00:00.000Z",
+      },
+      chapters: [
+        {
+          id: "chapter-adoption",
+          title: "Adoption package and compliance appendix",
+          section_type: "compliance",
+          status: "ready_for_review",
+          summary: "Resolution and findings are staged for board review.",
+          guidance: "Keep final resolution references attached after adoption.",
+          content_markdown: "Draft adoption record",
+          sort_order: 70,
+        },
+      ],
+      linkedProjects: [],
+      campaigns: [],
+      options: { sectionKeys: ["adoption_readiness"] },
+    });
+
+    expect(html).toContain("Adoption record checklist");
+    expect(html).toContain("Board packet readiness, public-review dates");
+    expect(html).toContain("<strong>Adoption/compliance chapter:</strong> Ready for Review");
+    expect(html).toContain("Adoption package and compliance appendix is present in the chapter record.");
+    expect(html).toContain("<strong>Chapter record:</strong> 1/1 complete or ready");
+  });
+
 });
