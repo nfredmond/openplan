@@ -11,6 +11,7 @@ import {
   ingestCountyRunManifestRequestSchema,
 } from "@/lib/api/county-onramp";
 import {
+  buildCountyRunManifestProofSummary,
   buildCountyRunUiCard,
   getCountyRunMetricHighlights,
   getCountyRunNextAction,
@@ -146,5 +147,38 @@ describe("county onramp primitives", () => {
     expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
     expect(getCountyRunCaveats("runtime-complete")).toContain("No local validation result yet.");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
+  });
+
+  it("builds a bounded manifest proof summary for operator review", () => {
+    const manifest = countyOnrampManifestSchema.parse(validatedManifestFixture);
+    const proof = buildCountyRunManifestProofSummary({
+      manifest,
+      stage: manifest.stage,
+      statusLabel: "bounded screening-ready",
+      artifacts: [{ artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" }],
+    });
+
+    expect(proof.proofStatusLabel).toBe("Manifest and validation proof present");
+    expect(proof.inputRows).toEqual(
+      expect.arrayContaining([
+        { label: "County FIPS", value: "06057" },
+        { label: "Run mode", value: "existing-run" },
+      ])
+    );
+    expect(proof.artifactRows).toEqual(
+      expect.arrayContaining([
+        { label: "Validation Summary JSON", value: "/tmp/validation_summary.json" },
+        { label: "Registered Validation Scaffold CSV", value: "/tmp/scaffold.csv" },
+      ])
+    );
+    expect(proof.validationRows).toEqual(
+      expect.arrayContaining([
+        { label: "Recorded stage", value: "Validated Screening" },
+        { label: "Screening gate", value: "bounded screening-ready" },
+        { label: "Median APE", value: "16.01%" },
+      ])
+    );
+    expect(proof.operatorNextAction).toContain("preserve all screening-grade caveats");
+    expect(proof.caveatRows.join(" ")).toContain("not a validated behavioral forecast");
   });
 });

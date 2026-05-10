@@ -10,7 +10,11 @@ import {
   getCountyRunEnqueueStatusLabel,
   getCountyRunEnqueueStatusTone,
 } from "@/lib/models/county-onramp";
-import { buildCountyRunUiCard, getCountyRunMetricHighlights } from "@/lib/ui/county-onramp";
+import {
+  buildCountyRunManifestProofSummary,
+  buildCountyRunUiCard,
+  getCountyRunMetricHighlights,
+} from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { isValidatedNevadaCountyRun } from "@/lib/examples/nevada-county-2026-03-24";
 import { Button } from "@/components/ui/button";
@@ -87,6 +91,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     geographyLabel: data.geographyLabel,
     manifest: data.manifest,
     stage: data.stage,
+  });
+  const manifestProof = buildCountyRunManifestProofSummary({
+    manifest: data.manifest,
+    artifacts: data.artifacts,
+    stage: data.stage,
+    statusLabel: data.statusLabel,
   });
   const metrics = getCountyRunMetricHighlights(data.manifest);
   const enqueueStatus = data.enqueueStatus ?? "not-enqueued";
@@ -182,6 +192,72 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
       {isValidatedNevadaCountyRun(data.runName) ? <NevadaCountyValidatedEvidence /> : null}
       <CountyRunModelingEvidence evidence={data.modelingEvidence} />
+
+      <Card className="mt-4">
+        <CardHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle>Manifest proof checklist</CardTitle>
+            <StatusBadge tone={manifestProof.proofStatusTone}>{manifestProof.proofStatusLabel}</StatusBadge>
+          </div>
+          <CardDescription>
+            Read this as the county-run audit surface: inputs captured, generated artifacts, validation posture,
+            operator next action, and boundaries that must travel with downstream reports.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5 text-sm xl:grid-cols-[1.1fr_1.1fr_1fr]">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Inputs captured</div>
+            <dl className="mt-3 space-y-3">
+              {manifestProof.inputRows.map((row) => (
+                <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
+                  <dt className="font-medium text-foreground">{row.label}</dt>
+                  <dd className="mt-1 break-words text-muted-foreground">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated artifacts</div>
+            <dl className="mt-3 space-y-3">
+              {manifestProof.artifactRows.map((row) => (
+                <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
+                  <dt className="font-medium text-foreground">{row.label}</dt>
+                  <dd className="mt-1 break-all text-muted-foreground">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Validation status</div>
+              <dl className="mt-3 space-y-3">
+                {manifestProof.validationRows.map((row) => (
+                  <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
+                    <dt className="font-medium text-foreground">{row.label}</dt>
+                    <dd className="mt-1 text-muted-foreground">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator next action</div>
+              <p className="mt-3 text-muted-foreground">{manifestProof.operatorNextAction}</p>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Caveat boundaries</div>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
+                {manifestProof.caveatRows.map((caveat) => (
+                  <li key={caveat}>{caveat}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Card>
