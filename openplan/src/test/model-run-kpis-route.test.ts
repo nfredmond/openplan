@@ -7,6 +7,7 @@ const loadModelAccessMock = vi.fn();
 const authGetUserMock = vi.fn();
 const runMaybeSingleMock = vi.fn();
 const modelRunKpisInsertMock = vi.fn();
+const modelRunKpisOrderSecondMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "22222222-2222-4222-8222-222222222222";
@@ -33,6 +34,13 @@ const fromMock = vi.fn((table: string) => {
   if (table === "model_run_kpis") {
     return {
       insert: modelRunKpisInsertMock,
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          order: vi.fn(() => ({
+            order: modelRunKpisOrderSecondMock,
+          })),
+        })),
+      })),
     };
   }
 
@@ -51,7 +59,14 @@ vi.mock("@/lib/models/api", () => ({
   loadModelAccess: (...args: unknown[]) => loadModelAccessMock(...args),
 }));
 
-import { POST as postModelRunKpis } from "@/app/api/models/[modelId]/runs/[modelRunId]/kpis/route";
+import {
+  GET as getModelRunKpis,
+  POST as postModelRunKpis,
+} from "@/app/api/models/[modelId]/runs/[modelRunId]/kpis/route";
+
+function getRequest() {
+  return new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/kpis`);
+}
 
 function postRequest(payload: unknown) {
   return new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/kpis`, {
@@ -61,7 +76,7 @@ function postRequest(payload: unknown) {
   });
 }
 
-describe("POST /api/models/[modelId]/runs/[modelRunId]/kpis", () => {
+describe("/api/models/[modelId]/runs/[modelRunId]/kpis", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -84,9 +99,53 @@ describe("POST /api/models/[modelId]/runs/[modelRunId]/kpis", () => {
       },
       error: null,
     });
+    modelRunKpisOrderSecondMock.mockResolvedValue({ data: [], error: null });
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+    });
+  });
+
+  it("summarizes category averages using only populated KPI values", async () => {
+    modelRunKpisOrderSecondMock.mockResolvedValue({
+      data: [
+        {
+          run_id: MODEL_RUN_ID,
+          kpi_category: "accessibility",
+          kpi_name: "jobs_30_min",
+          value: 10,
+        },
+        {
+          run_id: MODEL_RUN_ID,
+          kpi_category: "accessibility",
+          kpi_name: "households_30_min",
+          value: null,
+        },
+        {
+          run_id: MODEL_RUN_ID,
+          kpi_category: "accessibility",
+          kpi_name: "jobs_45_min",
+          value: 20,
+        },
+      ],
+      error: null,
+    });
+
+    const response = await getModelRunKpis(getRequest(), {
+      params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      run_id: MODEL_RUN_ID,
+      kpi_count: 3,
+      categories: {
+        accessibility: {
+          count: 3,
+          value_count: 2,
+          avg_value: 15,
+        },
+      },
     });
   });
 

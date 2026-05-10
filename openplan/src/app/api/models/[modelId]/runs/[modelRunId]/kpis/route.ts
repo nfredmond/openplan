@@ -259,17 +259,21 @@ export async function GET(req: NextRequest, context: RouteContext) {
     });
   }
 
-  const categories = new Map<string, { count: number; avg_value: number | null }>();
+  const categories = new Map<
+    string,
+    { count: number; value_count: number; avg_value: number | null }
+  >();
   for (const kpi of kpis ?? []) {
     const cat = (kpi as Record<string, unknown>).kpi_category as string;
     const val = (kpi as Record<string, unknown>).value as number | null;
-    const existing = categories.get(cat) ?? { count: 0, avg_value: null };
+    const existing = categories.get(cat) ?? { count: 0, value_count: 0, avg_value: null };
     existing.count++;
-    if (val !== null) {
+    if (typeof val === "number") {
       existing.avg_value =
         existing.avg_value !== null
-          ? (existing.avg_value * (existing.count - 1) + val) / existing.count
+          ? (existing.avg_value * existing.value_count + val) / (existing.value_count + 1)
           : val;
+      existing.value_count++;
     }
     categories.set(cat, existing);
   }
