@@ -445,7 +445,7 @@ function ScenarioEntryCard({
             <>
               <p className="text-sm font-medium">{latestLinkedReport.title ?? "Untitled report"}</p>
               <p className="text-sm text-muted-foreground">
-                {latestLinkedReport.generated_at ? `Generated from linked evidence.` : "Draft report linked to this entry evidence."}
+                {latestLinkedReport.sharedSpineBasisLabel}. {latestLinkedReport.generated_at ? "Generated from linked evidence." : "Draft report linked to this entry evidence."}
               </p>
             </>
           ) : (

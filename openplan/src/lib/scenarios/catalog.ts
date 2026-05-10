@@ -66,6 +66,8 @@ export type ScenarioLinkedReport = ScenarioLinkedReportRecord & {
   matchedEntryLabels: string[];
   matchedBaselineRun: boolean;
   matchedAlternativeEntryCount: number;
+  matchedComparisonPairKeys: string[];
+  sharedSpineBasisLabel: string;
   comparisonReady: boolean;
   linkageKind: "comparison-ready" | "run-linked-only";
 };
@@ -318,6 +320,38 @@ export function buildScenarioReportDraft({
   return { title, summary };
 }
 
+export function buildScenarioComparisonPairKey({
+  baselineEntryId,
+  candidateEntryId,
+}: {
+  baselineEntryId: string;
+  candidateEntryId: string;
+}): string {
+  return `${baselineEntryId}::${candidateEntryId}`;
+}
+
+export function buildScenarioSharedSpineBasisLabel({
+  matchedBaselineRun,
+  matchedAlternativeEntryCount,
+}: {
+  matchedBaselineRun: boolean;
+  matchedAlternativeEntryCount: number;
+}): string {
+  if (matchedBaselineRun && matchedAlternativeEntryCount > 0) {
+    return `${matchedAlternativeEntryCount} comparison-ready alternative${matchedAlternativeEntryCount === 1 ? "" : "s"}`;
+  }
+
+  if (matchedBaselineRun) {
+    return "Baseline evidence linked";
+  }
+
+  if (matchedAlternativeEntryCount > 0) {
+    return `${matchedAlternativeEntryCount} alternative-only link${matchedAlternativeEntryCount === 1 ? "" : "s"}`;
+  }
+
+  return "Run-linked only";
+}
+
 export function buildScenarioLinkedReports({
   reports,
   reportRuns,
@@ -333,6 +367,7 @@ export function buildScenarioLinkedReports({
   const entryLabelsById = new Map(entries.map((entry) => [entry.id, entry.label]));
   const baselineEntry = entries.find((entry) => entry.id === baselineEntryId) ?? null;
   const baselineRunId = baselineEntry?.attached_run_id ?? null;
+  const alternativeEntryIds = new Set(entries.filter((entry) => entry.id !== baselineEntryId).map((entry) => entry.id));
 
   for (const entry of entries) {
     if (!entry.attached_run_id) continue;
@@ -357,8 +392,19 @@ export function buildScenarioLinkedReports({
       );
 
       const matchedBaselineRun = Boolean(baselineRunId) && (baselineRunId ? matchedRunIds.includes(baselineRunId) : false);
-      const matchedAlternativeEntryCount = matchedEntryIds.filter((entryId) => entryId !== baselineEntryId).length;
-      const comparisonReady = Boolean(baselineRunId) && matchedBaselineRun && matchedAlternativeEntryCount > 0;
+      const matchedAlternativeEntryIds = matchedEntryIds.filter((entryId) => alternativeEntryIds.has(entryId));
+      const matchedAlternativeEntryCount = matchedAlternativeEntryIds.length;
+      const matchedComparisonPairKeys =
+        baselineEntryId && matchedBaselineRun
+          ? matchedAlternativeEntryIds.map((candidateEntryId) =>
+              buildScenarioComparisonPairKey({ baselineEntryId, candidateEntryId })
+            )
+          : [];
+      const comparisonReady = matchedComparisonPairKeys.length > 0;
+      const sharedSpineBasisLabel = buildScenarioSharedSpineBasisLabel({
+        matchedBaselineRun,
+        matchedAlternativeEntryCount,
+      });
 
       return {
         ...report,
@@ -367,6 +413,8 @@ export function buildScenarioLinkedReports({
         matchedEntryLabels: matchedEntryIds.map((entryId) => entryLabelsById.get(entryId) ?? entryId),
         matchedBaselineRun,
         matchedAlternativeEntryCount,
+        matchedComparisonPairKeys,
+        sharedSpineBasisLabel,
         comparisonReady,
         linkageKind: comparisonReady
           ? ("comparison-ready" as const)

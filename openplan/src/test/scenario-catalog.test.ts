@@ -106,6 +106,8 @@ describe("scenario comparison helpers", () => {
       id: "report-1",
       matchedBaselineRun: true,
       matchedAlternativeEntryCount: 1,
+      matchedComparisonPairKeys: ["baseline-entry::alternative-entry"],
+      sharedSpineBasisLabel: "1 comparison-ready alternative",
       comparisonReady: true,
       linkageKind: "comparison-ready",
       matchedEntryLabels: ["Existing conditions", "Protected bike package"],
@@ -114,6 +116,36 @@ describe("scenario comparison helpers", () => {
       totalLinkedReports: 1,
       generatedLinkedReports: 1,
       latestReportId: "report-1",
+    });
+  });
+
+  it("labels alternative-only report links without marking them comparison-ready", () => {
+    const linkage = buildScenarioLinkedReports({
+      reports: [
+        {
+          id: "report-2",
+          title: "Alternative-only packet",
+          status: "draft",
+          report_type: "analysis_summary",
+          generated_at: null,
+          updated_at: "2026-03-14T10:00:00.000Z",
+        },
+      ],
+      reportRuns: [{ report_id: "report-2", run_id: "alternative-run" }],
+      entries: [
+        { id: "baseline-entry", label: "Existing conditions", attached_run_id: "baseline-run" },
+        { id: "alternative-entry", label: "Protected bike package", attached_run_id: "alternative-run" },
+      ],
+      baselineEntryId: "baseline-entry",
+    });
+
+    expect(linkage.linkedReports[0]).toMatchObject({
+      matchedBaselineRun: false,
+      matchedAlternativeEntryCount: 1,
+      matchedComparisonPairKeys: [],
+      sharedSpineBasisLabel: "1 alternative-only link",
+      comparisonReady: false,
+      linkageKind: "run-linked-only",
     });
   });
 
