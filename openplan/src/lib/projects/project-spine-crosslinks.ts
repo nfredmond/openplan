@@ -1,13 +1,21 @@
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
 
 export type ProjectSpineCrosslinkRow = {
-  id: "rtp_packets" | "funding_profile" | "engagement_evidence" | "analysis_modeling" | "aerial_evidence";
+  id:
+    | "rtp_packets"
+    | "scenario_sets"
+    | "funding_profile"
+    | "engagement_evidence"
+    | "analysis_modeling"
+    | "aerial_evidence";
   lane: string;
   readiness: ProjectSpineCrosslinkReadiness;
   statusLabel: string;
   headline: string;
   detail: string;
   evidence: string;
+  nextAction: string;
+  caveat: string;
   href: string;
   actionLabel: string;
 };
@@ -27,6 +35,18 @@ export type ProjectSpineCrosslinkInput = {
   reportAttentionCount: number;
   evidenceBackedReportCount: number;
   comparisonBackedReportCount: number;
+  rtpLinks: {
+    constrainedCount: number;
+    illustrativeCount: number;
+    candidateCount: number;
+  };
+  scenarios: {
+    scenarioSetCount: number;
+    activeScenarioSetCount: number;
+    baselineCount: number;
+    readyAlternativeCount: number;
+    attachedRunCount: number;
+  };
   funding: {
     hasTargetNeed: boolean;
     label: string;
@@ -83,6 +103,13 @@ export function buildProjectSpineCrosslinkSummary(
         ? "ready"
         : "missing";
 
+  const scenarioReadiness: ProjectSpineCrosslinkReadiness =
+    input.scenarios.scenarioSetCount === 0
+      ? "missing"
+      : input.scenarios.baselineCount === 0 || input.scenarios.readyAlternativeCount === 0
+        ? "attention"
+        : "ready";
+
   const fundingReadiness: ProjectSpineCrosslinkReadiness = !input.funding.hasTargetNeed
     ? "missing"
     : input.funding.unfundedAfterLikelyAmount > 0 || input.funding.awardRiskCount > 0
@@ -125,15 +152,59 @@ export function buildProjectSpineCrosslinkSummary(
         input.reportAttentionCount > 0
           ? `${pluralize(input.reportAttentionCount, "packet")} need refresh or generation before reuse.`
           : input.reportRecordCount > 0
-            ? "Report packets are visible from this project spine."
-            : "Create or link the first packet before board-ready reuse.",
-      detail: `${pluralize(input.linkedRtpCycleCount, "RTP cycle")} · ${pluralize(input.reportRecordCount, "report")} · ${pluralize(input.evidenceBackedReportCount, "evidence-backed packet")}`,
+            ? "Project-linked report packets are visible from this project spine."
+            : input.linkedRtpCycleCount > 0
+              ? "RTP placement exists, but no project-linked report packet is visible yet."
+              : "Create or link the first RTP cycle and packet before board-ready reuse.",
+      detail: `${pluralize(input.linkedRtpCycleCount, "RTP cycle")} · ${pluralize(input.reportRecordCount, "project report")} · roles ${input.rtpLinks.constrainedCount} constrained / ${input.rtpLinks.illustrativeCount} illustrative / ${input.rtpLinks.candidateCount} candidate`,
       evidence:
         input.comparisonBackedReportCount > 0
           ? `${pluralize(input.comparisonBackedReportCount, "comparison-backed report")} can inform packet review.`
-          : "No comparison-backed report packet is visible yet.",
+          : input.evidenceBackedReportCount > 0
+            ? `${pluralize(input.evidenceBackedReportCount, "evidence-backed packet")} carry source context, but no saved scenario comparison is visible yet.`
+            : "No evidence-backed or comparison-backed report packet is visible yet.",
+      nextAction:
+        input.reportAttentionCount > 0
+          ? "Refresh or generate the lead project report before citing it in board, RTP, or public materials."
+          : input.reportRecordCount > 0
+            ? "Open the lead report and confirm packet freshness, source context, and release-review posture."
+            : input.linkedRtpCycleCount > 0
+              ? "Create the first project-linked RTP packet from the visible RTP cycle anchor."
+              : "Attach this project to the right RTP cycle, then create the first packet record.",
+      caveat: "RTP links show portfolio placement and report reuse paths; they are not adopted policy or board-ready evidence until the packet trail is current and reviewed.",
       href: "#project-reporting",
       actionLabel: "Review packet queue",
+    },
+    {
+      id: "scenario_sets",
+      lane: "Scenario sets",
+      readiness: scenarioReadiness,
+      statusLabel:
+        scenarioReadiness === "attention"
+          ? "Scenario basis incomplete"
+          : scenarioReadiness === "ready"
+            ? "Scenario basis visible"
+            : "No scenario set",
+      headline:
+        input.scenarios.scenarioSetCount === 0
+          ? "No project-linked scenario set is attached yet."
+          : scenarioReadiness === "attention"
+            ? "Scenario sets exist, but the baseline/ready-alternative comparison basis is still thin."
+            : "Project-linked scenario sets include baseline and ready alternative evidence.",
+      detail: `${pluralize(input.scenarios.scenarioSetCount, "scenario set")} · ${pluralize(input.scenarios.activeScenarioSetCount, "active")} · ${pluralize(input.scenarios.baselineCount, "baseline")} · ${pluralize(input.scenarios.readyAlternativeCount, "ready alternative")}`,
+      evidence:
+        input.scenarios.attachedRunCount > 0
+          ? `${pluralize(input.scenarios.attachedRunCount, "attached run")} keep scenario evidence traceable into reports.`
+          : "No attached model runs are visible on scenario entries yet.",
+      nextAction:
+        input.scenarios.scenarioSetCount === 0
+          ? "Create the scenario set that defines the baseline-versus-alternative question for this project."
+          : scenarioReadiness === "attention"
+            ? "Add or mark the baseline and at least one alternative as ready before using scenario language downstream."
+            : "Review the scenario set, then confirm downstream report packets reference the same comparison basis.",
+      caveat: "Scenario evidence is planning-support context only; do not treat it as a validated forecast, legal finding, or autonomous prioritization decision.",
+      href: "/scenarios",
+      actionLabel: "Review scenarios",
     },
     {
       id: "funding_profile",
@@ -153,6 +224,13 @@ export function buildProjectSpineCrosslinkSummary(
         fundingReadiness === "attention"
           ? `${formatMoney(input.funding.unfundedAfterLikelyAmount)} remains after likely funding, with ${pluralize(input.funding.awardRiskCount, "award risk")}.`
           : "Funding posture remains an operator-reviewed scan, not proof of award likelihood.",
+      nextAction:
+        !input.funding.hasTargetNeed
+          ? "Set the funding need and local match target before using this project in RTP or grant tables."
+          : fundingReadiness === "attention"
+            ? "Resolve the funding gap, award risk, or reimbursement follow-through before reusing the packet funding language."
+            : "Confirm source documents and award status before moving funding language into external packets.",
+      caveat: "Funding evidence shows current source-context posture only; it is not an award commitment, eligibility opinion, or reimbursement approval.",
       href: `/grants?focusProjectId=${input.projectId}`,
       actionLabel: "Open Grants OS",
     },
@@ -172,6 +250,13 @@ export function buildProjectSpineCrosslinkSummary(
           : "No engagement item has been surfaced for this project yet.",
       detail: `${input.engagement.handoffReadyCount}/${input.engagement.itemCount} items ready for report handoff`,
       evidence: "Use approved/moderated comments for appendices and public-response proof; do not treat raw intake as final findings.",
+      nextAction:
+        engagementReadiness === "missing"
+          ? "Create or attach the engagement campaign that should support this project."
+          : engagementReadiness === "attention"
+            ? "Moderate or approve enough engagement items for clean packet handoff."
+            : "Confirm the approved engagement excerpts are attached to the downstream report packet.",
+      caveat: "Engagement rows are evidence of intake and moderation status, not a substitute for adopted outreach findings or public agency response records.",
       href: `/engagement?projectId=${input.projectId}`,
       actionLabel: "Open engagement",
     },
@@ -193,6 +278,13 @@ export function buildProjectSpineCrosslinkSummary(
             : "Add a model run or scenario comparison before citing analysis outputs.",
       detail: `${pluralize(input.analysis.recentRunCount, "recent run")} · ${pluralize(input.analysis.comparisonBackedReportCount, "comparison-backed packet")}`,
       evidence: "Screening/source-context posture only; no validated behavioral forecast or autonomous model decision is implied.",
+      nextAction:
+        analysisReadiness === "missing"
+          ? "Create or attach the model run and scenario comparison this project is allowed to cite."
+          : analysisReadiness === "attention"
+            ? "Bind the recent run to a scenario entry or comparison-backed report before citing the output."
+            : "Open the comparison-backed packet and verify caveats before reusing analysis language.",
+      caveat: "Modeling evidence must stay source-cited and supervised; this board does not certify travel behavior forecasts or prioritization outcomes.",
       href: "/models",
       actionLabel: "Open models",
     },
@@ -212,6 +304,13 @@ export function buildProjectSpineCrosslinkSummary(
           : "No aerial mission or package is attached to this project yet.",
       detail: `${pluralize(input.aerial.activeMissionCount, "active mission")} · verification ${input.aerial.verificationReadiness}`,
       evidence: "Aerial outputs remain operator-assisted evidence; attach source context and human review before grant/report/public use.",
+      nextAction:
+        aerialReadiness === "missing"
+          ? "Attach a mission or evidence package only if aerial context is material to this project."
+          : aerialReadiness === "attention"
+            ? "Finish package QA and verification before citing aerial evidence downstream."
+            : "Confirm the ready package is linked to the report or grant evidence trail that needs it.",
+      caveat: "Aerial evidence supports documentation and measurement review; it is not a stamped survey, final engineering record, or autonomous verification.",
       href: "/aerial",
       actionLabel: "Open aerial ops",
     },

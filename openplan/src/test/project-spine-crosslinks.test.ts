@@ -8,6 +8,18 @@ const baseInput = {
   reportAttentionCount: 0,
   evidenceBackedReportCount: 2,
   comparisonBackedReportCount: 1,
+  rtpLinks: {
+    constrainedCount: 1,
+    illustrativeCount: 0,
+    candidateCount: 0,
+  },
+  scenarios: {
+    scenarioSetCount: 1,
+    activeScenarioSetCount: 1,
+    baselineCount: 1,
+    readyAlternativeCount: 1,
+    attachedRunCount: 2,
+  },
   funding: {
     hasTargetNeed: true,
     label: "Gap remains",
@@ -42,15 +54,22 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       reportAttentionCount: 1,
     });
 
-    expect(summary.rows).toHaveLength(5);
+    expect(summary.rows).toHaveLength(6);
     expect(summary.attentionCount).toBe(3);
-    expect(summary.readyCount).toBe(2);
+    expect(summary.readyCount).toBe(3);
     expect(summary.missingCount).toBe(0);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.find((row) => row.id === "engagement_evidence")?.statusLabel).toBe(
       "Moderation/handoff pending"
     );
     expect(summary.rows.find((row) => row.id === "funding_profile")?.evidence).toContain("$250,000 remains");
+    expect(summary.rows.find((row) => row.id === "rtp_packets")?.detail).toContain(
+      "roles 1 constrained / 0 illustrative / 0 candidate"
+    );
+    expect(summary.rows.find((row) => row.id === "scenario_sets")?.nextAction).toMatch(
+      /confirm downstream report packets/i
+    );
+    expect(summary.leadAction.caveat).toMatch(/not adopted policy/i);
   });
 
   it("marks unlinked lanes as missing without overstating readiness", () => {
@@ -61,6 +80,18 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       reportAttentionCount: 0,
       evidenceBackedReportCount: 0,
       comparisonBackedReportCount: 0,
+      rtpLinks: {
+        constrainedCount: 0,
+        illustrativeCount: 0,
+        candidateCount: 0,
+      },
+      scenarios: {
+        scenarioSetCount: 0,
+        activeScenarioSetCount: 0,
+        baselineCount: 0,
+        readyAlternativeCount: 0,
+        attachedRunCount: 0,
+      },
       funding: {
         ...baseInput.funding,
         hasTargetNeed: false,
@@ -88,9 +119,30 @@ describe("buildProjectSpineCrosslinkSummary", () => {
 
     expect(summary.readyCount).toBe(0);
     expect(summary.attentionCount).toBe(0);
-    expect(summary.missingCount).toBe(5);
+    expect(summary.missingCount).toBe(6);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
     expect(summary.rows.find((row) => row.id === "analysis_modeling")?.evidence).toMatch(/no validated behavioral forecast/i);
+    expect(summary.rows.find((row) => row.id === "scenario_sets")?.caveat).toMatch(/planning-support context/i);
+  });
+
+  it("keeps scenario sets in review posture until baseline and ready alternative evidence exist", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      scenarios: {
+        scenarioSetCount: 2,
+        activeScenarioSetCount: 1,
+        baselineCount: 1,
+        readyAlternativeCount: 0,
+        attachedRunCount: 1,
+      },
+    });
+
+    const scenarioRow = summary.rows.find((row) => row.id === "scenario_sets");
+
+    expect(scenarioRow?.readiness).toBe("attention");
+    expect(scenarioRow?.statusLabel).toBe("Scenario basis incomplete");
+    expect(scenarioRow?.nextAction).toMatch(/baseline and at least one alternative/i);
+    expect(scenarioRow?.evidence).toContain("1 attached run");
   });
 });

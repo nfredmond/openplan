@@ -213,6 +213,38 @@ export default async function ProjectDetailPage({
     .order("updated_at", { ascending: false })
     .limit(4);
 
+  const scenarioSetsResult = await supabase
+    .from("scenario_sets")
+    .select("id, title, status, planning_question, updated_at")
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false })
+    .limit(8);
+  const scenarioSets = looksLikePendingSchema(scenarioSetsResult.error?.message)
+    ? []
+    : ((scenarioSetsResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string;
+        planning_question: string | null;
+        updated_at: string;
+      }>);
+  const scenarioSetIds = scenarioSets.map((set) => set.id);
+  const scenarioEntriesResult = scenarioSetIds.length
+    ? await supabase
+        .from("scenario_entries")
+        .select("id, scenario_set_id, entry_type, status, attached_run_id")
+        .in("scenario_set_id", scenarioSetIds)
+    : { data: [], error: null };
+  const scenarioEntries = looksLikePendingSchema(scenarioEntriesResult.error?.message)
+    ? []
+    : ((scenarioEntriesResult.data ?? []) as Array<{
+        id: string;
+        scenario_set_id: string;
+        entry_type: string;
+        status: string;
+        attached_run_id: string | null;
+      }>);
+
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
     .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
@@ -677,6 +709,20 @@ export default async function ProjectDetailPage({
     reportAttentionCount,
     evidenceBackedReportCount,
     comparisonBackedReportCount,
+    rtpLinks: {
+      constrainedCount: constrainedRtpLinkCount,
+      illustrativeCount: illustrativeRtpLinkCount,
+      candidateCount: candidateRtpLinkCount,
+    },
+    scenarios: {
+      scenarioSetCount: scenarioSets.length,
+      activeScenarioSetCount: scenarioSets.filter((set) => set.status === "active").length,
+      baselineCount: scenarioEntries.filter((entry) => entry.entry_type === "baseline").length,
+      readyAlternativeCount: scenarioEntries.filter(
+        (entry) => entry.entry_type === "alternative" && entry.status === "ready"
+      ).length,
+      attachedRunCount: scenarioEntries.filter((entry) => Boolean(entry.attached_run_id)).length,
+    },
     funding: {
       hasTargetNeed: fundingStackSummary.hasTargetNeed,
       label: fundingStackSummary.label,

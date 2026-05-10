@@ -30,6 +30,14 @@ const reportsOrderMock = vi.fn(() => ({ limit: reportsLimitMock }));
 const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
 const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
 
+const scenarioSetsLimitMock = vi.fn();
+const scenarioSetsOrderMock = vi.fn(() => ({ limit: scenarioSetsLimitMock }));
+const scenarioSetsEqMock = vi.fn(() => ({ order: scenarioSetsOrderMock }));
+const scenarioSetsSelectMock = vi.fn(() => ({ eq: scenarioSetsEqMock }));
+
+const scenarioEntriesInMock = vi.fn();
+const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
+
 const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
@@ -139,6 +147,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "reports") {
     return { select: reportsSelectMock };
+  }
+  if (table === "scenario_sets") {
+    return { select: scenarioSetsSelectMock };
+  }
+  if (table === "scenario_entries") {
+    return { select: scenarioEntriesSelectMock };
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
@@ -449,6 +463,39 @@ describe("ProjectDetailPage", () => {
       error: null,
     });
 
+    scenarioSetsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "scenario-set-1",
+          title: "Downtown alternatives",
+          status: "active",
+          planning_question: "Which safety package should advance?",
+          updated_at: "2026-03-28T19:30:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    scenarioEntriesInMock.mockResolvedValue({
+      data: [
+        {
+          id: "scenario-entry-1",
+          scenario_set_id: "scenario-set-1",
+          entry_type: "baseline",
+          status: "ready",
+          attached_run_id: "run-1",
+        },
+        {
+          id: "scenario-entry-2",
+          scenario_set_id: "scenario-set-1",
+          entry_type: "alternative",
+          status: "ready",
+          attached_run_id: "run-2",
+        },
+      ],
+      error: null,
+    });
+
     buildProjectControlsSummaryMock.mockReturnValue({
       controlHealth: "attention",
       milestoneCount: 0,
@@ -560,9 +607,16 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
     expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
+    expect(screen.getByText(/RTP links, project reports, scenario sets/i)).toBeInTheDocument();
     expect(screen.getByText(/Shared project spine/i)).toBeInTheDocument();
     expect(screen.getByText(/Regeneration needed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scenario basis visible/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 scenario set · 1 active · 1 baseline · 1 ready alternative/i)).toBeInTheDocument();
+    expect(screen.getByText(/Review the scenario set, then confirm downstream report packets reference the same comparison basis/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Scenario evidence is planning-support context only/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Funding target missing/i)).toBeInTheDocument();
+    expect(screen.getByText(/Set the funding need and local match target before using this project in RTP or grant tables/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/not an award commitment, eligibility opinion, or reimbursement approval/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Moderation\/handoff pending/i)).toBeInTheDocument();
     expect(screen.getByText(/Source context linked/i)).toBeInTheDocument();
     expect(screen.getAllByText(/No aerial evidence/i).length).toBeGreaterThan(0);

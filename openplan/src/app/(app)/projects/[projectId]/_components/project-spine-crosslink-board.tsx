@@ -40,7 +40,7 @@ export function ProjectSpineCrosslinkBoard({
             <p className="module-section-label">Shared project spine</p>
             <h2 className="module-section-title">Linked outputs across this project</h2>
             <p className="module-section-description">
-              One scanable rail for the downstream outputs that reuse this project record: RTP/report packets, grants, engagement, analysis, and aerial evidence.
+              One scanable rail for the downstream outputs that reuse this project record: RTP links, project reports, scenario sets, grants, engagement, analysis, and aerial evidence.
             </p>
           </div>
         </div>
@@ -74,11 +74,19 @@ export function ProjectSpineCrosslinkBoard({
                   <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <div className="grid gap-3 pl-2 md:grid-cols-[0.84fr_1.16fr]">
+              <div className="grid gap-3 pl-2 md:grid-cols-[0.74fr_1.26fr]">
                 <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
                   {row.detail}
                 </p>
-                <p className="text-xs leading-relaxed text-muted-foreground">{row.evidence}</p>
+                <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+                  <p>{row.evidence}</p>
+                  <p>
+                    <span className="font-semibold text-foreground/80">Next:</span> {row.nextAction}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-foreground/80">Caveat:</span> {row.caveat}
+                  </p>
+                </div>
               </div>
             </Link>
           ))}
@@ -109,6 +117,12 @@ export function ProjectSpineCrosslinkBoard({
             <h3 className="mt-2 text-sm font-semibold text-foreground">{summary.leadAction.lane}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {summary.leadAction.headline}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground">Next:</span> {summary.leadAction.nextAction}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground/80">Caveat:</span> {summary.leadAction.caveat}
             </p>
             <Link
               href={summary.leadAction.href}
