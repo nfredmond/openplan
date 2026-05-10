@@ -39,6 +39,26 @@ export type ProjectFundingReimbursementStatus =
   | "partially_paid"
   | "paid";
 
+export type ProjectFundingProfileScanStatus = "ready" | "attention" | "blocked" | "not_started" | "unknown";
+
+export type ProjectFundingProfileScanLane = {
+  id: "funding_target" | "local_match" | "obligation" | "reimbursement" | "closeout" | "evidence_support";
+  label: string;
+  status: ProjectFundingProfileScanStatus;
+  statusLabel: string;
+  detail: string;
+  nextAction: string;
+  amount: number | null;
+};
+
+export type ProjectFundingProfileScan = {
+  generatedAt: string;
+  status: ProjectFundingProfileScanStatus;
+  label: string;
+  nextAction: string;
+  lanes: ProjectFundingProfileScanLane[];
+};
+
 export type ProjectFundingSnapshot = {
   capturedAt: string | null;
   projectUpdatedAt: string | null;
@@ -257,6 +277,9 @@ export function buildProjectFundingStackSummary(
     remainingFundingGap,
     remainingMatchGap,
     unfundedAfterLikelyAmount,
+    awardCount: awards.length,
+    opportunityCount: opportunities.length,
+    reimbursementPacketCount: invoices.length,
     awardRiskCount,
     requestedReimbursementAmount,
     paidReimbursementAmount,
@@ -281,6 +304,274 @@ export function buildProjectFundingStackSummary(
       committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
     paidReimbursementCoverageRatio:
       committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
+  };
+}
+
+export type ProjectFundingStackSummary = ReturnType<typeof buildProjectFundingStackSummary>;
+
+function scanStatusPriority(status: ProjectFundingProfileScanStatus): number {
+  if (status === "blocked") return 0;
+  if (status === "attention") return 1;
+  if (status === "not_started") return 2;
+  if (status === "unknown") return 3;
+  return 4;
+}
+
+function daysUntil(value: string | null | undefined, now: Date): number | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return Math.ceil((parsed.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+function formatScanCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+export function projectFundingProfileScanTone(
+  status: ProjectFundingProfileScanStatus
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "ready") return "success";
+  if (status === "blocked") return "danger";
+  if (status === "attention") return "warning";
+  if (status === "not_started") return "neutral";
+  return "neutral";
+}
+
+export function buildProjectFundingProfileScan(input: {
+  summary: ProjectFundingStackSummary;
+  hasComparisonEvidence?: boolean;
+  unlinkedInvoiceCount?: number;
+  unlinkedInvoiceAmount?: number;
+  now?: Date | string;
+}): ProjectFundingProfileScan {
+  const summary = input.summary;
+  const now = input.now instanceof Date ? input.now : new Date(input.now ?? Date.now());
+  const obligationDaysUntil = daysUntil(summary.nextObligationAt, now);
+  const lanes: ProjectFundingProfileScanLane[] = [];
+
+  if (!summary.hasTargetNeed) {
+    lanes.push({
+      id: "funding_target",
+      label: "Funding target",
+      status: "not_started",
+      statusLabel: "Target not set",
+      detail: "No project-level funding need has been recorded yet.",
+      nextAction: "Set the funding need and local match target before using this project in grant or RTP funding tables.",
+      amount: null,
+    });
+  } else if (summary.unfundedAfterLikelyAmount > 0) {
+    lanes.push({
+      id: "funding_target",
+      label: "Funding target",
+      status: summary.committedFundingAmount > 0 || summary.likelyFundingAmount > 0 ? "attention" : "blocked",
+      statusLabel: summary.pipelineLabel,
+      detail: `${formatScanCurrency(summary.committedFundingAmount)} committed and ${formatScanCurrency(summary.likelyFundingAmount)} likely against a ${formatScanCurrency(summary.fundingNeedAmount)} target.`,
+      nextAction: `Resolve the remaining ${formatScanCurrency(summary.unfundedAfterLikelyAmount)} funding gap or keep it explicit in RTP/grant packet language.`,
+      amount: summary.unfundedAfterLikelyAmount,
+    });
+  } else {
+    lanes.push({
+      id: "funding_target",
+      label: "Funding target",
+      status: "ready",
+      statusLabel: summary.pipelineLabel,
+      detail: `${formatScanCurrency(summary.committedFundingAmount)} committed plus ${formatScanCurrency(summary.likelyFundingAmount)} likely covers the current target need.`,
+      nextAction: "Keep the funding basis current when award, scope, or estimate records change.",
+      amount: summary.totalPotentialFundingAmount,
+    });
+  }
+
+  if (summary.localMatchNeedAmount <= 0) {
+    lanes.push({
+      id: "local_match",
+      label: "Local match",
+      status: "unknown",
+      statusLabel: "Match target not set",
+      detail: "No local match need is recorded on the funding profile.",
+      nextAction: "Record a match target when the funding source requires local or partner match.",
+      amount: null,
+    });
+  } else if (summary.committedMatchAmount >= summary.localMatchNeedAmount) {
+    lanes.push({
+      id: "local_match",
+      label: "Local match",
+      status: "ready",
+      statusLabel: "Match covered",
+      detail: `${formatScanCurrency(summary.committedMatchAmount)} committed against a ${formatScanCurrency(summary.localMatchNeedAmount)} match need.`,
+      nextAction: "Preserve match source notes for reimbursement and board packet review.",
+      amount: summary.committedMatchAmount,
+    });
+  } else {
+    lanes.push({
+      id: "local_match",
+      label: "Local match",
+      status: summary.committedMatchAmount > 0 ? "attention" : "blocked",
+      statusLabel: summary.committedMatchAmount > 0 ? "Match gap" : "No match committed",
+      detail: `${formatScanCurrency(summary.remainingMatchGap)} still missing against the current match need.`,
+      nextAction: "Identify eligible match sources or mark the gap plainly before using the profile in a funding package.",
+      amount: summary.remainingMatchGap,
+    });
+  }
+
+  if (summary.awardCount === 0) {
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: "unknown",
+      statusLabel: "No awards yet",
+      detail: "No award records are attached, so obligation pressure cannot be computed.",
+      nextAction: "Create award records when funding is committed, then add obligation dates for operations review.",
+      amount: null,
+    });
+  } else if (!summary.nextObligationAt || obligationDaysUntil === null) {
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: "attention",
+      statusLabel: "Date missing",
+      detail: `${summary.awardCount} award record${summary.awardCount === 1 ? "" : "s"} exist, but no obligation date is available.`,
+      nextAction: "Add the next obligation deadline before calling the award stack operations-ready.",
+      amount: null,
+    });
+  } else if (obligationDaysUntil < 0) {
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: "blocked",
+      statusLabel: "Overdue",
+      detail: `Next obligation date is ${Math.abs(obligationDaysUntil)} day${Math.abs(obligationDaysUntil) === 1 ? "" : "s"} overdue.`,
+      nextAction: "Review the award file and update obligation posture before relying on this profile for closeout or RTP readiness.",
+      amount: null,
+    });
+  } else if (obligationDaysUntil <= 30) {
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: "attention",
+      statusLabel: "Due soon",
+      detail: `Next obligation date is due in ${obligationDaysUntil} day${obligationDaysUntil === 1 ? "" : "s"}.`,
+      nextAction: "Confirm obligation evidence and owner before the date becomes a blocker.",
+      amount: null,
+    });
+  } else {
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: "ready",
+      statusLabel: "Scheduled",
+      detail: `Next obligation date is ${obligationDaysUntil} day${obligationDaysUntil === 1 ? "" : "s"} out.`,
+      nextAction: "Keep the date current as award agreements or delivery schedules change.",
+      amount: null,
+    });
+  }
+
+  lanes.push({
+    id: "reimbursement",
+    label: "Reimbursement chain",
+    status:
+      summary.reimbursementStatus === "paid"
+        ? "ready"
+        : summary.reimbursementStatus === "not_started"
+          ? "blocked"
+          : summary.reimbursementStatus === "unknown"
+            ? "unknown"
+            : "attention",
+    statusLabel: summary.reimbursementLabel,
+    detail:
+      input.unlinkedInvoiceCount && input.unlinkedInvoiceCount > 0
+        ? `${formatScanCurrency(summary.requestedReimbursementAmount)} requested on linked award invoices; ${input.unlinkedInvoiceCount} project invoice record${input.unlinkedInvoiceCount === 1 ? " is" : "s are"} unlinked and excluded from award posture.`
+        : `${formatScanCurrency(summary.requestedReimbursementAmount)} requested, ${formatScanCurrency(summary.paidReimbursementAmount)} paid, and ${formatScanCurrency(summary.outstandingReimbursementAmount)} outstanding.`,
+    nextAction:
+      input.unlinkedInvoiceCount && input.unlinkedInvoiceCount > 0
+        ? "Link project invoice records to funding awards before using reimbursement posture in closeout language."
+        : summary.reimbursementReason,
+    amount:
+      input.unlinkedInvoiceAmount && input.unlinkedInvoiceAmount > 0
+        ? input.unlinkedInvoiceAmount
+        : summary.outstandingReimbursementAmount + summary.uninvoicedAwardAmount,
+  });
+
+  if (summary.awardRiskCount > 0) {
+    lanes.push({
+      id: "closeout",
+      label: "Closeout posture",
+      status: "attention",
+      statusLabel: "Award risk flagged",
+      detail: `${summary.awardRiskCount} award record${summary.awardRiskCount === 1 ? " has" : "s have"} watch or critical risk flags.`,
+      nextAction: "Resolve or document award risk flags before treating this funding profile as closeout-ready.",
+      amount: null,
+    });
+  } else if (summary.awardCount > 0 && summary.paidReimbursementAmount >= summary.committedFundingAmount && summary.uninvoicedAwardAmount === 0) {
+    lanes.push({
+      id: "closeout",
+      label: "Closeout posture",
+      status: "ready",
+      statusLabel: "Closeout-ready posture",
+      detail: "Committed award dollars are fully paid in linked reimbursement records, with no award risk flags.",
+      nextAction: "Attach final evidence and operator review notes before any formal closeout claim.",
+      amount: summary.paidReimbursementAmount,
+    });
+  } else if (summary.awardCount > 0) {
+    lanes.push({
+      id: "closeout",
+      label: "Closeout posture",
+      status: "attention",
+      statusLabel: "Closeout not ready",
+      detail: `${formatScanCurrency(summary.uninvoicedAwardAmount)} remains uninvoiced and ${formatScanCurrency(summary.outstandingReimbursementAmount)} remains outstanding.`,
+      nextAction: "Finish invoice/reimbursement follow-through before using this record as closeout support.",
+      amount: summary.uninvoicedAwardAmount + summary.outstandingReimbursementAmount,
+    });
+  } else {
+    lanes.push({
+      id: "closeout",
+      label: "Closeout posture",
+      status: "unknown",
+      statusLabel: "No award closeout chain",
+      detail: "Closeout posture starts after an award and linked reimbursement chain exist.",
+      nextAction: "Create award and invoice records before evaluating closeout readiness.",
+      amount: null,
+    });
+  }
+
+  lanes.push({
+    id: "evidence_support",
+    label: "Planning evidence support",
+    status: input.hasComparisonEvidence ? "ready" : "attention",
+    statusLabel: input.hasComparisonEvidence ? "Evidence linked" : "Evidence not linked",
+    detail: input.hasComparisonEvidence
+      ? "A comparison-backed report is available as planning evidence for grant narrative review. It is not an award prediction."
+      : "No comparison-backed report is linked to this project funding profile yet.",
+    nextAction: input.hasComparisonEvidence
+      ? "Review source context and funding-source criteria before reusing the evidence in a grant package."
+      : "Attach a current report, analysis, or engagement source before using the profile in grant narrative language.",
+    amount: null,
+  });
+
+  const firstActionLane = [...lanes].sort(
+    (left, right) => scanStatusPriority(left.status) - scanStatusPriority(right.status)
+  )[0];
+  const hasBlocked = lanes.some((lane) => lane.status === "blocked");
+  const hasAttention = lanes.some((lane) => lane.status === "attention");
+  const hasNotStarted = lanes.some((lane) => lane.status === "not_started");
+  const allReadyOrUnknown = lanes.every((lane) => lane.status === "ready" || lane.status === "unknown");
+
+  return {
+    generatedAt: now.toISOString(),
+    status: hasBlocked ? "blocked" : hasAttention ? "attention" : hasNotStarted ? "not_started" : allReadyOrUnknown ? "ready" : "unknown",
+    label: hasBlocked
+      ? "Funding profile has blockers"
+      : hasAttention
+        ? "Funding profile needs operator review"
+        : hasNotStarted
+          ? "Funding profile needs setup"
+          : "Funding profile scan is ready",
+    nextAction: firstActionLane?.nextAction ?? "Review the funding profile before using it in grant or RTP materials.",
+    lanes,
   };
 }
 

@@ -18,7 +18,9 @@ import {
   fundingOpportunityStatusTone,
 } from "@/lib/programs/catalog";
 import {
+  buildProjectFundingProfileScan,
   buildProjectFundingStackSummary,
+  projectFundingProfileScanTone,
   projectFundingReimbursementTone,
   projectFundingStackTone,
 } from "@/lib/projects/funding";
@@ -98,6 +100,13 @@ export function ProjectFundingPanel({
   unlinkedProjectInvoiceSummary,
   comparisonBackedFundingReport,
 }: ProjectFundingPanelProps) {
+  const fundingProfileScan = buildProjectFundingProfileScan({
+    summary: fundingStackSummary,
+    hasComparisonEvidence: Boolean(comparisonBackedFundingReport?.comparisonDigest),
+    unlinkedInvoiceCount: unlinkedProjectInvoices.length,
+    unlinkedInvoiceAmount: unlinkedProjectInvoiceSummary.totalNetAmount,
+  });
+
   return (
     <article id="project-funding-opportunities" className="module-section-surface">
       <div className="module-section-header">
@@ -205,6 +214,37 @@ export function ProjectFundingPanel({
                   ? `Obligation due ${fmtDateTime(nextObligationAward.obligation_due_at)}.`
                   : "Record obligation timing on awards so reimbursement and delivery risk can surface earlier."}
               </p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding profile scan</p>
+                <h3 className="mt-1 text-base font-semibold text-foreground">Target, match, obligation, reimbursement, closeout, and evidence in one row stack</h3>
+                <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
+                  This is an operator scan for grant and RTP readiness. It keeps gaps explicit and does not claim legal compliance automation or grant-award prediction.
+                </p>
+              </div>
+              <div className="flex flex-col items-start gap-2 text-sm md:items-end">
+                <StatusBadge tone={projectFundingProfileScanTone(fundingProfileScan.status)}>{fundingProfileScan.label}</StatusBadge>
+                <p className="max-w-xl text-xs leading-relaxed text-muted-foreground md:text-right">Next action: {fundingProfileScan.nextAction}</p>
+              </div>
+            </div>
+            <div className="divide-y divide-border/60">
+              {fundingProfileScan.lanes.map((lane) => (
+                <div key={lane.id} className="grid gap-3 px-5 py-4 md:grid-cols-[0.95fr_0.75fr_1.45fr_1.45fr] md:items-start">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{lane.label}</p>
+                    <p className="mt-1 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">{lane.amount !== null ? fmtCurrency(lane.amount) : "No amount"}</p>
+                  </div>
+                  <div>
+                    <StatusBadge tone={projectFundingProfileScanTone(lane.status)}>{lane.statusLabel}</StatusBadge>
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{lane.detail}</p>
+                  <p className="text-sm leading-relaxed text-foreground">{lane.nextAction}</p>
+                </div>
+              ))}
             </div>
           </div>
 

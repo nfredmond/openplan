@@ -108,6 +108,9 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText(/1 queued action · 1 open opportunity · 1 queued check/i)).toBeInTheDocument();
     expect(screen.getByText(/standing check · handoff check/i)).toBeInTheDocument();
     expect(screen.getByText(/Standing check: handoff/i)).toBeInTheDocument();
+    expect(screen.getByText("Funding follow-through")).toBeInTheDocument();
+    expect(screen.getByText(/1 current RTP packet still carries linked-project funding follow-through/i)).toBeInTheDocument();
+    expect(screen.getByText("Proof review needed")).toBeInTheDocument();
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();
@@ -148,6 +151,7 @@ describe("WorkspaceCommandBoard", () => {
       expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
       expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();
       expect(screen.getByText(/0 total commands · 0 proof-linked actions/i)).toBeInTheDocument();
+      expect(screen.getByText("No linked analysis evidence")).toBeInTheDocument();
       expect(document.body).not.toHaveTextContent(/NaN/);
       expect(
         consoleErrorSpy.mock.calls.some((call) =>
@@ -231,7 +235,42 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/reports?posture=comparison-backed"
     );
+    expect(screen.getByText("Comparison support visible")).toBeInTheDocument();
     expect(screen.getAllByText(/Modeling triage: 1 ready · 0 refresh · 0 thin · 1 none/i).length).toBeGreaterThan(0);
+  });
+
+  it("rolls stale modeling readiness into the workflow lanes", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          counts: {
+            ...summary.counts,
+            comparisonBackedReports: 2,
+            projectFundingDecisionProjects: 2,
+            queueDepth: 1,
+          },
+          grantModelingSummary: {
+            breakdown: {
+              decisionReady: 1,
+              refreshRecommended: 1,
+              thin: 0,
+              noVisibleSupport: 1,
+            },
+            breakdownSummary:
+              "3 opportunity-linked projects: 1 appears decision-ready, 1 refresh recommended, 0 appears thin, 1 without visible support.",
+            operatorDetail: null,
+            leadDecisionDetail: null,
+          },
+        }}
+      />
+    );
+
+    expect(screen.getAllByText("Stale modeling evidence").length).toBeGreaterThan(0);
+    expect(screen.getByText("Stale evidence refresh")).toBeInTheDocument();
+    expect(screen.getByText("Proof packet has stale inputs")).toBeInTheDocument();
+    expect(screen.getAllByText(/Stale modeling: 1/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Stale evidence: 1/i).length).toBeGreaterThan(0);
   });
 
   it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {

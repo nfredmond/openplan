@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeFundingSnapshot,
+  describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportNavigationHref,
   getReportPacketActionLabel,
@@ -14,6 +15,7 @@ import {
   normalizeReportFreshnessFilter,
   normalizeReportPostureFilter,
   parseStoredFundingSnapshot,
+  parseStoredComparisonSnapshotAggregate,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 
@@ -302,5 +304,62 @@ describe("getReportPacketFreshness", () => {
       detail:
         "0 assumptions · 0 packages · 0 indicators · 1 modeling evidence · Screening-grade · Not linked engagement · 0/0 handoff-ready · In progress governance",
     });
+  });
+
+  it("summarizes comparison source context, export readiness, and caveats for report review", () => {
+    const aggregate = parseStoredComparisonSnapshotAggregate({
+      sourceContext: {
+        scenarioSetLinks: [
+          {
+            comparisonSnapshots: [
+              {
+                status: "ready",
+                indicatorDeltaCount: 3,
+                updatedAt: "2026-05-10T18:00:00.000Z",
+                sourceContext: {
+                  kind: "scenario_comparison_snapshot_source_context",
+                  pairingLabel: "Safety package compared against Existing conditions",
+                  exportReady: true,
+                  caveatSummary:
+                    "Caveat posture: planning analysis only; not a validated behavioral forecast.",
+                },
+              },
+              {
+                status: "draft",
+                indicatorDeltaCount: 1,
+                updatedAt: "2026-05-10T17:00:00.000Z",
+                sourceContext: {
+                  kind: "scenario_comparison_snapshot_source_context",
+                  pairingLabel: "Transit package compared against Existing conditions",
+                  exportReady: false,
+                  caveats: ["Draft review only."],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(aggregate).toMatchObject({
+      comparisonSnapshotCount: 2,
+      readyComparisonSnapshotCount: 1,
+      indicatorDeltaCount: 4,
+      sourceContextSnapshotCount: 2,
+      exportReadySnapshotCount: 1,
+      caveatSnapshotCount: 2,
+      firstPairingLabel: "Safety package compared against Existing conditions",
+      latestComparisonSnapshotUpdatedAt: "2026-05-10T18:00:00.000Z",
+    });
+
+    expect(describeComparisonSnapshotAggregate(aggregate)).toMatchObject({
+      headline: "2 saved comparisons · 1 ready",
+      detail: expect.stringContaining("2 source-context summaries"),
+    });
+    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain("1 export-ready");
+    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain("2 caveat-backed");
+    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain(
+      "Lead pairing: Safety package compared against Existing conditions"
+    );
   });
 });

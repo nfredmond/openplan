@@ -68,6 +68,10 @@ export type ReportComparisonSnapshotAggregate = {
   readyComparisonSnapshotCount: number;
   indicatorDeltaCount: number;
   latestComparisonSnapshotUpdatedAt: string | null;
+  sourceContextSnapshotCount?: number;
+  exportReadySnapshotCount?: number;
+  caveatSnapshotCount?: number;
+  firstPairingLabel?: string | null;
 };
 
 export type ReportComparisonSnapshotDigest = {
@@ -770,6 +774,10 @@ export function parseStoredComparisonSnapshotAggregate(
   let comparisonSnapshotCount = 0;
   let readyComparisonSnapshotCount = 0;
   let indicatorDeltaCount = 0;
+  let sourceContextSnapshotCount = 0;
+  let exportReadySnapshotCount = 0;
+  let caveatSnapshotCount = 0;
+  let firstPairingLabel: string | null = null;
   const updatedAtValues: string[] = [];
 
   for (const item of scenarioSetLinks) {
@@ -791,6 +799,27 @@ export function parseStoredComparisonSnapshotAggregate(
       }
       indicatorDeltaCount += asNullableNumber(snapshotRecord.indicatorDeltaCount) ?? 0;
 
+      const snapshotSourceContext = asRecord(snapshotRecord.sourceContext);
+      if (snapshotSourceContext) {
+        sourceContextSnapshotCount += 1;
+
+        if (!firstPairingLabel) {
+          firstPairingLabel = asNullableString(snapshotSourceContext.pairingLabel);
+        }
+
+        if (snapshotSourceContext.exportReady === true) {
+          exportReadySnapshotCount += 1;
+        }
+
+        const sourceContextCaveats = snapshotSourceContext.caveats;
+        if (
+          asNullableString(snapshotSourceContext.caveatSummary) ||
+          (Array.isArray(sourceContextCaveats) && sourceContextCaveats.length > 0)
+        ) {
+          caveatSnapshotCount += 1;
+        }
+      }
+
       const updatedAt = asNullableString(snapshotRecord.updatedAt);
       if (updatedAt) {
         updatedAtValues.push(updatedAt);
@@ -804,6 +833,10 @@ export function parseStoredComparisonSnapshotAggregate(
       readyComparisonSnapshotCount: 0,
       indicatorDeltaCount: 0,
       latestComparisonSnapshotUpdatedAt: null,
+      sourceContextSnapshotCount: 0,
+      exportReadySnapshotCount: 0,
+      caveatSnapshotCount: 0,
+      firstPairingLabel: null,
     };
   }
 
@@ -819,6 +852,10 @@ export function parseStoredComparisonSnapshotAggregate(
     readyComparisonSnapshotCount,
     indicatorDeltaCount,
     latestComparisonSnapshotUpdatedAt,
+    sourceContextSnapshotCount,
+    exportReadySnapshotCount,
+    caveatSnapshotCount,
+    firstPairingLabel,
   };
 }
 
@@ -934,10 +971,34 @@ export function describeComparisonSnapshotAggregate(
   const updatedLabel = summary.latestComparisonSnapshotUpdatedAt
     ? `Latest comparison updated ${formatDateTime(summary.latestComparisonSnapshotUpdatedAt)}`
     : "Latest comparison timing unavailable";
+  const sourceContextSnapshotCount = summary.sourceContextSnapshotCount ?? 0;
+  const exportReadySnapshotCount = summary.exportReadySnapshotCount ?? 0;
+  const caveatSnapshotCount = summary.caveatSnapshotCount ?? 0;
+  const sourceContextLabel = sourceContextSnapshotCount > 0
+    ? `${sourceContextSnapshotCount} source-context summar${sourceContextSnapshotCount === 1 ? "y" : "ies"}`
+    : null;
+  const exportReadyLabel = exportReadySnapshotCount > 0
+    ? `${exportReadySnapshotCount} export-ready`
+    : null;
+  const caveatLabel = caveatSnapshotCount > 0
+    ? `${caveatSnapshotCount} caveat-backed`
+    : null;
+  const pairingLabel = summary.firstPairingLabel
+    ? `Lead pairing: ${summary.firstPairingLabel}`
+    : null;
 
   return {
     headline: `${comparisonLabel} · ${readyLabel}`,
-    detail: `${deltaLabel} · ${updatedLabel}`,
+    detail: [
+      deltaLabel,
+      sourceContextLabel,
+      exportReadyLabel,
+      caveatLabel,
+      pairingLabel,
+      updatedLabel,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join(" · "),
   };
 }
 

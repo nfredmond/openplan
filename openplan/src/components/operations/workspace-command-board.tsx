@@ -224,6 +224,17 @@ export function WorkspaceCommandBoard({
                 <p className="mt-2 text-[0.72rem] font-medium text-muted-foreground/80">
                   {groupCountLabel(group)} · {group.cue}
                 </p>
+                <div className="mt-3 border-l border-border/80 pl-3">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                    Readiness: <span className="normal-case tracking-normal text-foreground">{group.readiness.label}</span>
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{group.readiness.detail}</p>
+                  {group.readiness.metrics.length > 0 ? (
+                    <p className="mt-1 text-[0.7rem] font-medium leading-5 text-muted-foreground/80">
+                      {group.readiness.metrics.slice(0, 3).map(formatActionBadge).join(" · ")}
+                    </p>
+                  ) : null}
+                </div>
               </div>
               <div className="space-y-2">
                 {group.actions.map((action) => (

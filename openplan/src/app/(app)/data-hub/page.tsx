@@ -16,6 +16,10 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
+  resolveDatasetDependentOutputContext,
+  toneForDatasetDependentOutputLevel,
+} from "@/lib/data-sources/dataset-dependent-output-context";
+import {
   resolveDatasetLineageReadiness,
   toneForDatasetLineageReadiness,
 } from "@/lib/data-sources/dataset-lineage-readiness";
@@ -250,6 +254,12 @@ export default async function DataHubPage() {
   const connectorMap = new Map(connectors.map((connector) => [connector.id, connector]));
   const projectMap = new Map(projects.map((project) => [project.id, project]));
   const datasetLinksByDataset = new Map<string, Array<{ project: ProjectRow; relationshipType: string }>>();
+  const latestRefreshJobByDataset = new Map<string, RefreshJobRow>();
+
+  refreshJobs.forEach((job) => {
+    if (!job.dataset_id || latestRefreshJobByDataset.has(job.dataset_id)) return;
+    latestRefreshJobByDataset.set(job.dataset_id, job);
+  });
 
   ((datasetLinksResult.data ?? []) as DatasetProjectLinkRow[]).forEach((link) => {
     const project = projectMap.get(link.project_id);
@@ -293,6 +303,45 @@ export default async function DataHubPage() {
           dataset.geometry_attachment === "analysis_corridor") ||
         (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"))
   ).length;
+  const outputReadyDatasets = datasets.filter((dataset) => {
+    const links = datasetLinksByDataset.get(dataset.id) ?? [];
+    const latestRefreshJob = latestRefreshJobByDataset.get(dataset.id);
+    const overlayReady =
+      dataset.status === "ready" &&
+      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
+        dataset.geography_scope
+      );
+    const thematicReady =
+      dataset.status === "ready" &&
+      Boolean(dataset.thematic_metric_key) &&
+      ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
+        ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
+          dataset.geometry_attachment === "analysis_corridor") ||
+        (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
+    const lineageReadiness = resolveDatasetLineageReadiness({
+      citationText: dataset.citation_text,
+      sourceUrl: dataset.source_url,
+      licenseLabel: dataset.license_label,
+      vintageLabel: dataset.vintage_label,
+      schemaVersion: dataset.schema_version,
+      checksum: dataset.checksum,
+      rowCount: dataset.row_count,
+      lastRefreshedAt: dataset.last_refreshed_at,
+      geographyScope: dataset.geography_scope,
+      geometryAttachment: dataset.geometry_attachment,
+    });
+
+    return (
+      resolveDatasetDependentOutputContext({
+        status: dataset.status,
+        linkedProjectCount: links.length,
+        lineageLevel: lineageReadiness.level,
+        overlayReady,
+        thematicReady,
+        latestRefreshStatus: latestRefreshJob?.status,
+      }).level === "output_ready"
+    );
+  }).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
   const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
@@ -350,7 +399,7 @@ export default async function DataHubPage() {
               <p className="module-summary-label">Datasets</p>
               <p className="module-summary-value">{datasets.length}</p>
               <p className="module-summary-detail">
-                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {lineageCompleteDatasets} lineage-complete.
+                {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {outputReadyDatasets} output-ready · {lineageCompleteDatasets} lineage-complete.
               </p>
             </div>
             <div className="module-summary-card">
@@ -542,6 +591,7 @@ export default async function DataHubPage() {
               {datasets.map((dataset) => {
                 const connector = dataset.connector_id ? connectorMap.get(dataset.connector_id) : null;
                 const links = datasetLinksByDataset.get(dataset.id) ?? [];
+                const latestRefreshJob = latestRefreshJobByDataset.get(dataset.id);
                 const overlayReady =
                   dataset.status === "ready" &&
                   ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
@@ -576,6 +626,15 @@ export default async function DataHubPage() {
                   geographyScope: dataset.geography_scope,
                   geometryAttachment: dataset.geometry_attachment,
                 });
+                const dependentOutputContext = resolveDatasetDependentOutputContext({
+                  status: dataset.status,
+                  linkedProjectCount: links.length,
+                  lineageLevel: lineageReadiness.level,
+                  overlayReady,
+                  thematicReady,
+                  latestRefreshStatus: latestRefreshJob?.status,
+                  latestRefreshAt: latestRefreshJob?.completed_at || latestRefreshJob?.started_at || latestRefreshJob?.created_at,
+                });
 
                 return (
                   <div key={dataset.id} className="module-record-row">
@@ -591,6 +650,9 @@ export default async function DataHubPage() {
                           <StatusBadge tone={toneForDatasetTrustLevel(trustLabel.level)}>{trustLabel.label}</StatusBadge>
                           <StatusBadge tone={toneForDatasetLineageReadiness(lineageReadiness.level)}>
                             {lineageReadiness.label}
+                          </StatusBadge>
+                          <StatusBadge tone={toneForDatasetDependentOutputLevel(dependentOutputContext.level)}>
+                            {dependentOutputContext.label}
                           </StatusBadge>
                         </div>
 
@@ -651,9 +713,16 @@ export default async function DataHubPage() {
 
                     <div className="module-record-detail-grid cols-3">
                       <div className="module-note text-sm">
-                        <p className="font-medium text-foreground">Overlay posture</p>
+                        <p className="font-medium text-foreground">Dependent output context</p>
                         <p className="mt-2">
-                          {thematicReady
+                          {dependentOutputContext.detail}
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {dependentOutputContext.dependentOutputCount}/4 output cues ready.
+                          {dependentOutputContext.needs.length > 0 ? ` Needs ${dependentOutputContext.needs.slice(0, 2).join(" and ")}.` : " Ready for supervised handoff."}
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Map posture: {thematicReady
                             ? dataset.geometry_attachment === "analysis_corridor"
                               ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis corridor geometry.`
                               : dataset.geometry_attachment === "analysis_crash_points"

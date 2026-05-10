@@ -84,6 +84,18 @@ function summary(overrides: Partial<WorkspaceOperationsSummary> = {}): Workspace
     nextCommand: fullCommandQueue[0] ?? null,
     commandQueue: fullCommandQueue.slice(0, 2),
     fullCommandQueue,
+    grantModelingSummary: {
+      breakdown: {
+        decisionReady: 1,
+        refreshRecommended: 1,
+        thin: 1,
+        noVisibleSupport: 0,
+      },
+      breakdownSummary:
+        "3 opportunity-linked projects: 1 appears decision-ready, 1 refresh recommended, 1 appears thin, 0 without visible support.",
+      operatorDetail: null,
+      leadDecisionDetail: null,
+    },
     ...overrides,
   };
 }
@@ -125,6 +137,19 @@ describe("workflow next-action groups", () => {
     expect(groups.find((group) => group.key === "admin-release-proof")?.actions[0]?.title).toBe(
       "Run release review on current packets"
     );
+    expect(groups.find((group) => group.key === "analysis-modeling")?.readiness).toMatchObject({
+      label: "Stale evidence refresh",
+      tone: "warning",
+      metrics: [
+        { label: "Ready", value: 1 },
+        { label: "Refresh", value: 1 },
+        { label: "Thin/none", value: 1 },
+      ],
+    });
+    expect(groups.find((group) => group.key === "admin-release-proof")?.readiness).toMatchObject({
+      label: "Proof packet has stale inputs",
+      metrics: expect.arrayContaining([{ label: "Stale evidence", value: 1 }]),
+    });
     expect(groups.find((group) => group.key === "grants")).toMatchObject({
       queuedActionCount: 1,
       displayedActionCount: 1,
@@ -135,7 +160,9 @@ describe("workflow next-action groups", () => {
   });
 
   it("keeps standing check actions visible when a workflow has no queued pressure", () => {
-    const groups = buildWorkflowNextActionGroups(summary({ fullCommandQueue: [], commandQueue: [], nextCommand: null }));
+    const groups = buildWorkflowNextActionGroups(
+      summary({ fullCommandQueue: [], commandQueue: [], nextCommand: null, grantModelingSummary: null })
+    );
 
     expect(workflowGroupsCoverCommandCenterRoadmapLanes(groups)).toBe(true);
     expect(workflowGroupsPreserveStandingChecksWhenQueueIsEmpty(groups)).toBe(true);
@@ -160,6 +187,15 @@ describe("workflow next-action groups", () => {
     expect(groups.find((group) => group.key === "rtp")).toMatchObject({
       queuedActionCount: 0,
       displayedActionCount: 1,
+      readiness: {
+        label: "Release-review basis visible",
+        detail: "1 current packet can move through supervised release review with normal caveat checks.",
+        tone: "success",
+        metrics: [
+          { label: "Current", value: 1 },
+          { label: "Reports", value: 1 },
+        ],
+      },
     });
   });
 });
