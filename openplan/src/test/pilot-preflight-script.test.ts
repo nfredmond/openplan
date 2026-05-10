@@ -1,3 +1,4 @@
+import { execFile, type ExecFileException } from "node:child_process";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -29,6 +30,27 @@ async function makeFixture() {
   await writeFile(path.join(migrationsDir, "20260219000001_gtfs_schema.sql"), "select 1;\n", "utf8");
   await writeFile(path.join(migrationsDir, "20260508000079_modeling_caveat_kpi_sql_gate.sql"), "select 1;\n", "utf8");
   return { dir, envFile: path.join(dir, ".env.local"), migrationsDir };
+}
+
+async function runNpmPreflightJson(args: string[]) {
+  return await new Promise<{
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+  }>((resolve) => {
+    execFile(
+      "npm",
+      ["run", "--silent", "ops:check-pilot-preflight", "--", ...args],
+      { cwd: process.cwd(), timeout: 15_000, maxBuffer: 1024 * 1024 },
+      (error: ExecFileException | null, stdout, stderr) => {
+        resolve({
+          exitCode: typeof error?.code === "number" ? error.code : 0,
+          stdout: String(stdout),
+          stderr: String(stderr),
+        });
+      },
+    );
+  });
 }
 
 afterEach(async () => {
@@ -92,9 +114,22 @@ describe("pilot preflight script", () => {
       { healthCheck, vercelInspect },
     );
 
+    expect(summary.schemaVersion).toBe("pilot-preflight.v1");
+    expect(summary.command).toBe("ops:check-pilot-preflight");
     expect(summary.status).toBe("ok");
     expect(summary.readOnly).toBe(true);
     expect(summary.secretSafe).toBe(true);
+    expect(summary.safety).toMatchObject({
+      readOnly: true,
+      secretSafe: true,
+      noProductionWrites: true,
+      noSchemaApply: true,
+      noSecretValues: true,
+      noEvidenceFileWrites: true,
+      stdoutOnly: true,
+      externalReads: { productionHealth: true, vercelInspect: true },
+    });
+    expect(summary.safety.caveats.join(" ")).toContain("No schema apply");
     expect(summary.sections.localSupabase.env.required).toEqual([
       { key: "NEXT_PUBLIC_SUPABASE_URL", status: "set-redacted", localUrl: "local" },
       { key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", status: "set-redacted" },
@@ -161,6 +196,62 @@ describe("pilot preflight script", () => {
     const serialized = JSON.stringify(summary) + rendered;
     expect(serialized).not.toContain("aggphdqkanxsfzzoxlbk");
     expect(serialized).not.toContain("remote-service-role-secret");
+  });
+
+  it("emits a pure JSON npm-run contract for automation without secrets or write claims", async () => {
+    const fixture = await makeFixture();
+
+    const result = await runNpmPreflightJson([
+      "--env-file",
+      fixture.envFile,
+      "--migrations-dir",
+      fixture.migrationsDir,
+      "--skip-health",
+      "--skip-vercel",
+      "--json",
+    ]);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toBe("");
+    expect(result.stdout.trim().startsWith("{")).toBe(true);
+    expect(result.stdout).not.toContain("openplan@0.1.0");
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toMatchObject({
+      schemaVersion: "pilot-preflight.v1",
+      command: "ops:check-pilot-preflight",
+      status: "attention",
+      readOnly: true,
+      secretSafe: true,
+      safety: {
+        readOnly: true,
+        secretSafe: true,
+        noProductionWrites: true,
+        noSchemaApply: true,
+        noSecretValues: true,
+        noEvidenceFileWrites: true,
+        stdoutOnly: true,
+        externalReads: { productionHealth: false, vercelInspect: false },
+      },
+      sections: {
+        localSupabase: { status: "ok" },
+        migrationInventory: { status: "ok" },
+        productionHealth: { status: "skipped", skipped: true },
+        deploymentReadiness: { status: "skipped", skipped: true },
+      },
+    });
+    expect(parsed.safety.caveats).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Read-only preflight only"),
+        expect.stringContaining("No production writes"),
+        expect.stringContaining("No schema apply"),
+        expect.stringContaining("No secret values"),
+        expect.stringContaining("No evidence-file writes"),
+      ]),
+    );
+    const serialized = JSON.stringify(parsed);
+    expect(serialized).not.toContain("fixture-anon-secret");
+    expect(serialized).not.toContain("fixture-service-role-secret");
+    expect(serialized).not.toContain("postgres:postgres");
   });
 
   it("normalizes Vercel inspect JSON through a mocked read-only CLI call", async () => {

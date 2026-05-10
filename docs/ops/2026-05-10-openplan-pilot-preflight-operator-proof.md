@@ -44,7 +44,13 @@ Machine-readable evidence for an operator log:
 
 ```bash
 cd openplan
-pnpm ops:check-pilot-preflight -- --json
+npm run --silent ops:check-pilot-preflight -- --json
+```
+
+`--silent` is intentional for npm-based automation. Plain `npm run ops:check-pilot-preflight -- --json` may prepend npm's script banner before the JSON payload, which is fine for a human terminal but not a strict parser. Direct script invocation is also parser-safe:
+
+```bash
+node scripts/ops/check-pilot-preflight.mjs --json
 ```
 
 ## Safety boundary
@@ -58,6 +64,39 @@ This command is intentionally safe to run as a pre-conversation check:
 - **Vercel inspection is normalized:** the Vercel lane is a read-only `inspect` posture check; output is reduced to deployment status fields such as ready state, environment, deployment URL, commit SHA, and issues.
 
 If a future change expands the command beyond this safety boundary, this proof note must be updated in the same PR and the command should no longer be treated as routine pre-conversation tooling.
+
+## JSON contract for automation
+
+When run as `npm run --silent ops:check-pilot-preflight -- --json`, stdout is a single JSON object. Automation should parse only stdout and should key off these stable fields:
+
+- `schemaVersion`: currently `pilot-preflight.v1`.
+- `command`: `ops:check-pilot-preflight`.
+- `status`: `ok` or `attention`; the process exits non-zero when status is `attention`, but stdout still contains the parseable summary.
+- `checkedAt`: ISO timestamp for the bundled check.
+- `readOnly` / `secretSafe`: legacy top-level booleans kept for simple consumers.
+- `safety`: explicit machine-readable caveats:
+  - `readOnly: true`
+  - `secretSafe: true`
+  - `noProductionWrites: true`
+  - `noSchemaApply: true`
+  - `noSecretValues: true`
+  - `noEvidenceFileWrites: true`
+  - `stdoutOnly: true`
+  - `externalReads.productionHealth` and `externalReads.vercelInspect`, reflecting skip flags.
+- `sections`: `localSupabase`, `migrationInventory`, `productionHealth`, and `deploymentReadiness`, each with a `status` and `issues` array.
+- `issues`: bundled, prefixed attention items suitable for a CI/operator summary.
+
+Minimal parser pattern:
+
+```bash
+set +e
+json="$(npm run --silent ops:check-pilot-preflight -- --json)"
+code=$?
+node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(0,"utf8")); if (!p.safety?.readOnly || !p.safety?.noSchemaApply || !p.safety?.noProductionWrites || !p.safety?.noSecretValues) process.exit(2); console.log(`${p.status}: ${p.issues.length} issue(s)`);' <<<"$json"
+exit "$code"
+```
+
+Do not treat this JSON as proof of schema application, production write success, workspace provisioning, or secret-backed billing truth. It is a read-only/no-secret/no-schema-apply preflight contract.
 
 ## Expected PASS shape
 

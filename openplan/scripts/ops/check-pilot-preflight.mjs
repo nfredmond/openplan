@@ -15,6 +15,31 @@ const DEFAULT_DEPLOYMENT_TARGET = "https://openplan-natford.vercel.app";
 const DEFAULT_VERCEL_COMMAND = "vercel";
 const DEFAULT_TIMEOUT_MS = 15_000;
 const READY_STATES = new Set(["READY"]);
+const JSON_CONTRACT_VERSION = "pilot-preflight.v1";
+const SAFETY_CAVEATS = Object.freeze([
+  "Read-only preflight only; this command does not insert, update, delete, or upsert application data.",
+  "No production writes; this command does not create pilot workspaces, support intake rows, billing records, comments, reports, or smoke-test artifacts.",
+  "No schema apply; this command does not run supabase db push, migration up, db reset, SQL migrations, or equivalent schema-changing operations.",
+  "No secret values; env keys are reported as present/missing/local/non-local only, and Vercel output is normalized to status fields.",
+  "No evidence-file writes; JSON mode emits the contract to stdout for the caller to capture if desired.",
+]);
+
+function buildSafetyContract(options = {}) {
+  return {
+    readOnly: true,
+    secretSafe: true,
+    noProductionWrites: true,
+    noSchemaApply: true,
+    noSecretValues: true,
+    noEvidenceFileWrites: true,
+    stdoutOnly: true,
+    externalReads: {
+      productionHealth: !options.skipHealth,
+      vercelInspect: !options.skipVercel,
+    },
+    caveats: [...SAFETY_CAVEATS],
+  };
+}
 
 function usage() {
   return [
@@ -241,10 +266,13 @@ export async function buildPilotPreflight(options = {}, deps = {}) {
   ];
 
   return {
+    schemaVersion: JSON_CONTRACT_VERSION,
+    command: "ops:check-pilot-preflight",
     status: issues.length ? "attention" : "ok",
     checkedAt: new Date().toISOString(),
     readOnly: true,
     secretSafe: true,
+    safety: buildSafetyContract(options),
     sections,
     issues,
   };
@@ -313,7 +341,7 @@ export function formatPreflight(summary) {
   if (summary.issues.length) {
     lines.push("", "Attention items:", ...summary.issues.map((issue) => `  - ${issue}`));
   }
-  lines.push("", "Safety: read-only; no schema apply, production writes, or secret values emitted.");
+  lines.push("", "Safety: read-only; no schema apply, production writes, secret values, or evidence-file writes emitted.");
   return lines.join("\n");
 }
 
