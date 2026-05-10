@@ -718,7 +718,9 @@ export function ScenarioEntryRegistry({
             <p className="text-sm font-semibold tracking-tight">Blocked alternatives</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight">{comparisonSummary.blockedAlternatives}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Entries stay blocked when a baseline is missing, one side lacks a run, or both entries point at the same run.
+              {comparisonSummary.primaryBlocker
+                ? `${comparisonSummary.primaryBlocker.label}: ${comparisonSummary.primaryBlocker.reason}`
+                : "No blockers detected. Alternatives with distinct attached runs are ready for evidence review."}
             </p>
           </div>
         </div>

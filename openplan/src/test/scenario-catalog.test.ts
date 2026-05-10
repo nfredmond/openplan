@@ -48,12 +48,20 @@ describe("scenario comparison helpers", () => {
         baselineRunId: "baseline-run",
         candidateRunIds: ["alternative-run", null, "baseline-run"],
       })
-    ).toEqual({
+    ).toMatchObject({
       totalAlternatives: 3,
       readyAlternatives: 1,
       blockedAlternatives: 2,
       baselineEntryPresent: true,
       baselineRunPresent: true,
+      blockerCounts: {
+        "missing-candidate-run": 1,
+        "same-run": 1,
+      },
+      primaryBlocker: {
+        status: "missing-candidate-run",
+        reason: "Attach a run to this alternative before comparison.",
+      },
     });
   });
 

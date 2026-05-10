@@ -41,6 +41,8 @@ export type ScenarioComparisonSummary = {
   blockedAlternatives: number;
   baselineEntryPresent: boolean;
   baselineRunPresent: boolean;
+  blockerCounts: Partial<Record<Exclude<ScenarioComparisonStatus, "ready">, number>>;
+  primaryBlocker: ScenarioComparisonReadiness | null;
 };
 
 export type ScenarioLinkedReportRecord = {
@@ -231,13 +233,23 @@ export function buildScenarioComparisonSummary({
   baselineRunId: string | null | undefined;
   candidateRunIds: Array<string | null | undefined>;
 }): ScenarioComparisonSummary {
-  const readyAlternatives = candidateRunIds.filter((candidateRunId) =>
+  const readiness = candidateRunIds.map((candidateRunId) =>
     getScenarioComparisonReadiness({
       baselineEntryId,
       baselineRunId,
       candidateRunId,
-    }).ready
-  ).length;
+    })
+  );
+  const readyAlternatives = readiness.filter((item) => item.ready).length;
+  const blockerCounts: ScenarioComparisonSummary["blockerCounts"] = {};
+  let primaryBlocker: ScenarioComparisonReadiness | null = null;
+
+  for (const item of readiness) {
+    if (item.ready) continue;
+    blockerCounts[item.status] = (blockerCounts[item.status] ?? 0) + 1;
+    primaryBlocker ??= item;
+  }
+
   const totalAlternatives = candidateRunIds.length;
 
   return {
@@ -246,6 +258,8 @@ export function buildScenarioComparisonSummary({
     blockedAlternatives: totalAlternatives - readyAlternatives,
     baselineEntryPresent: Boolean(baselineEntryId),
     baselineRunPresent: Boolean(baselineRunId),
+    blockerCounts,
+    primaryBlocker,
   };
 }
 
