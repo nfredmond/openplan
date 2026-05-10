@@ -15,6 +15,7 @@ import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-com
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { resolveDatasetTrustLabel, toneForDatasetTrustLevel } from "@/lib/data-sources/dataset-provenance";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -534,6 +535,16 @@ export default async function DataHubPage() {
                     ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
                       dataset.geometry_attachment === "analysis_corridor") ||
                     (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
+                const trustLabel = resolveDatasetTrustLabel({
+                  connectorId: dataset.connector_id,
+                  citationText: dataset.citation_text,
+                  sourceUrl: dataset.source_url,
+                  licenseLabel: dataset.license_label,
+                  schemaVersion: dataset.schema_version,
+                  checksum: dataset.checksum,
+                  vintageLabel: dataset.vintage_label,
+                  lastRefreshedAt: dataset.last_refreshed_at,
+                });
 
                 return (
                   <div key={dataset.id} className="module-record-row">
@@ -546,6 +557,7 @@ export default async function DataHubPage() {
                             {overlayReady ? "Overlay-ready" : "Coverage-only"}
                           </StatusBadge>
                           {thematicReady ? <StatusBadge tone="warning">Thematic-ready</StatusBadge> : null}
+                          <StatusBadge tone={toneForDatasetTrustLevel(trustLabel.level)}>{trustLabel.label}</StatusBadge>
                         </div>
 
                         <div className="space-y-1.5">
@@ -621,6 +633,7 @@ export default async function DataHubPage() {
                       <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Provenance</p>
                         <p className="mt-2">{dataset.citation_text || dataset.source_url || "No provenance note captured yet."}</p>
+                        <p className="mt-2 text-xs text-muted-foreground">{trustLabel.detail}</p>
                       </div>
                       <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Refresh posture</p>
