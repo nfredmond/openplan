@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
+import { buildWorkflowNextActionGroups, type WorkflowNextActionEntry } from "@/lib/operations/workflow-next-action-groups";
 
 function postureTone(posture: WorkspaceOperationsSummary["posture"]) {
   switch (posture) {
@@ -30,6 +31,12 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function resolveNextActionHref(action: WorkflowNextActionEntry) {
+  return action.command && isGrantsCommand(action.command)
+    ? resolveSharedGrantsQueueHref(action.command)
+    : action.href;
+}
+
 export function WorkspaceCommandBoard({
   summary,
   label = "Operations command board",
@@ -54,6 +61,7 @@ export function WorkspaceCommandBoard({
     rtpFundingReviewCount > 0
       ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"}${rtpFundingReviewRoutesThroughGrants ? " Grants OS follow-through before packet release review is treated as settled." : " funding-backed release review even though packet freshness already reads current."}`
       : baseDescription;
+  const workflowGroups = buildWorkflowNextActionGroups(summary);
 
   return (
     <article className="module-section-surface">
@@ -158,6 +166,52 @@ export function WorkspaceCommandBoard({
           </Link>
         </div>
       ) : null}
+
+      <div className="mt-5 rounded-2xl border border-border/80 bg-background/70">
+        <div className="border-b border-border/70 px-4 py-3">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+            Workflow next-action groups
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Review, check, inspect, or regenerate work by lane before treating the Command Center queue as clear.
+          </p>
+        </div>
+        <div className="divide-y divide-border/60">
+          {workflowGroups.map((group) => (
+            <section key={group.key} className="grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">{group.title}</span>
+                  <span className="text-[0.7rem] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+                    {group.tone === "warning" ? "Next" : group.tone === "danger" ? "Blocked" : "Check"}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{group.description}</p>
+                <p className="mt-2 text-[0.72rem] font-medium text-muted-foreground/80">{group.cue}</p>
+              </div>
+              <div className="space-y-2">
+                {group.actions.map((action) => (
+                  <Link
+                    key={`${group.key}-${action.key}`}
+                    href={resolveNextActionHref(action)}
+                    className="block rounded-xl border border-border/70 bg-muted/20 px-3 py-2 transition-colors hover:border-primary/35 hover:bg-muted/40"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-foreground">{action.title}</p>
+                      {action.source === "queue" ? (
+                        <span className="shrink-0 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-primary">
+                          queued
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-5 space-y-1">
         <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Command queue</p>
