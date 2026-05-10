@@ -6,7 +6,7 @@ import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { getPublicPortalReadiness, getPublicPortalState } from "@/lib/engagement/public-portal";
 
 type ShareControlsCampaign = {
   id: string;
@@ -55,6 +55,14 @@ export function EngagementShareControls({
   const portalState = getPublicPortalState({
     status: campaign.status,
     share_token: shareToken,
+    public_description: publicDescription,
+    allow_public_submissions: allowSubmissions,
+    submissions_closed_at: campaign.submissions_closed_at,
+  });
+  const portalReadiness = getPublicPortalReadiness({
+    status: campaign.status,
+    share_token: shareToken,
+    public_description: publicDescription,
     allow_public_submissions: allowSubmissions,
     submissions_closed_at: campaign.submissions_closed_at,
   });
@@ -181,6 +189,31 @@ export function EngagementShareControls({
               ) : null}
             </div>
           ) : null}
+        </div>
+
+        <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold text-foreground">Share readiness: {portalReadiness.label}</p>
+              <p className="mt-1 text-muted-foreground">
+                {portalReadiness.completeCount} of {portalReadiness.totalChecks} checks complete · {portalReadiness.nextAction}
+              </p>
+            </div>
+          </div>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {portalReadiness.checks.map((check) => (
+              <li key={check.id} className="flex items-start gap-2 rounded-lg border border-border/50 bg-background/70 px-3 py-2">
+                <span
+                  className={`mt-0.5 h-2.5 w-2.5 rounded-full ${check.passed ? "bg-emerald-500" : "bg-amber-500"}`}
+                  aria-hidden="true"
+                />
+                <span>
+                  <span className="block font-medium text-foreground">{check.label}</span>
+                  <span className="block text-xs text-muted-foreground">{check.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="space-y-1.5">
