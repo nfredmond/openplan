@@ -32,6 +32,23 @@ export type ReleaseProofAction = {
   detail: string;
 };
 
+export type PilotReadinessSyncArtifact = {
+  label: string;
+  artifact: string;
+  role: string;
+  caveat: string;
+};
+
+export type PilotReadinessSyncChecklist = {
+  label: string;
+  checklistArtifact: string;
+  verdict: string;
+  operatorInstruction: string;
+  supervisedOnboardingCaveat: string;
+  exportFilenames: readonly string[];
+  latestProofArtifacts: readonly PilotReadinessSyncArtifact[];
+};
+
 export const releaseProofCaveatItems = [
   {
     key: "billing-waiver",
@@ -42,8 +59,8 @@ export const releaseProofCaveatItems = [
   {
     key: "supervised-onboarding",
     label: "Supervised onboarding",
-    text: "Onboarding remains a supervised implementation step, not instant self-serve activation.",
-    sourceArtifact: "docs/ops/2026-05-01-openplan-release-to-sale-plan.md",
+    text: "Onboarding remains a supervised implementation step, not instant self-serve activation; buyer use requires operator review before reliance.",
+    sourceArtifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
   },
   {
     key: "hosting-rpo-rto",
@@ -64,6 +81,47 @@ export const releaseProofCaveatItems = [
     sourceArtifact: "docs/ops/2026-05-01-openplan-known-issues-register.md",
   },
 ] satisfies ReleaseProofCaveat[];
+
+export const finalPilotReadinessChecklistSync = {
+  label: "Final pilot-readiness checklist sync",
+  checklistArtifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
+  verdict: "PASS for a supervised pilot-readiness conversation; not a launch certificate for a finished planning suite.",
+  operatorInstruction:
+    "Use this sync block before buyer reliance: confirm the final checklist, exported Admin Pilot Readiness packet filenames, and latest proof-lane artifacts still match the current caveats.",
+  supervisedOnboardingCaveat:
+    "Onboarding is a supervised implementation step: no instant public workspace activation, no broad self-serve municipal SaaS claim, and no outbound reliance without human review.",
+  exportFilenames: [
+    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
+    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html",
+    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf",
+  ],
+  latestProofArtifacts: [
+    {
+      label: "Managed support diligence",
+      artifact: "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
+      role: "Connects managed hosting, onboarding, support, backup/restore, billing, and pilot closeout claims to proof.",
+      caveat: "Buyer-specific reliance checks and per-engagement operations terms still need operator completion before contracting.",
+    },
+    {
+      label: "County-run manifest proof",
+      artifact: "docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md",
+      role: "Keeps county-run evidence, source context, and caveats visible for pilot diligence.",
+      caveat: "County-run output is evidence packaging, not validated forecasting or autonomous decision support.",
+    },
+    {
+      label: "Modeling evidence exports",
+      artifact: "openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md",
+      role: "Carries modeling caveats and source context into report and RTP export paths.",
+      caveat: "Behavioral-onramp KPIs remain behind the proven SQL/RPC caveat gate; no validated behavioral forecasting claim is made.",
+    },
+    {
+      label: "Release proof synchronization",
+      artifact: "openplan/src/test/pilot-readiness-export-packet.test.ts",
+      role: "Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.",
+      caveat: "Internal packet synchronization does not replace fresh smoke reruns after behavior changes.",
+    },
+  ],
+} satisfies PilotReadinessSyncChecklist;
 
 export const releaseProofPosture = {
   label: "Release proof packet",
@@ -163,6 +221,18 @@ export function releaseProofCopyBlock() {
   return [
     releaseProofPosture.summary,
     releaseProofPosture.wedge,
+    finalPilotReadinessChecklistSync.label,
+    finalPilotReadinessChecklistSync.checklistArtifact,
+    finalPilotReadinessChecklistSync.verdict,
+    finalPilotReadinessChecklistSync.operatorInstruction,
+    finalPilotReadinessChecklistSync.supervisedOnboardingCaveat,
+    ...finalPilotReadinessChecklistSync.exportFilenames,
+    ...finalPilotReadinessChecklistSync.latestProofArtifacts.flatMap((artifact) => [
+      artifact.label,
+      artifact.artifact,
+      artifact.role,
+      artifact.caveat,
+    ]),
     ...releaseProofPosture.proofItems.flatMap((item) => [
       item.headline,
       item.detail,

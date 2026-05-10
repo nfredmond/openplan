@@ -1,7 +1,11 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { getReleaseProofItemCaveats, releaseProofPosture } from '@/lib/operations/release-proof-packet'
+import {
+  finalPilotReadinessChecklistSync,
+  getReleaseProofItemCaveats,
+  releaseProofPosture,
+} from '@/lib/operations/release-proof-packet'
 
 interface ExportButtonProps {
   statusList: {
@@ -23,6 +27,23 @@ export function buildPilotReadinessPacket(statusList: ExportButtonProps['statusL
     '## Operator follow-up',
     '- Treat PASS lanes as citeable only when the named source document is available in `docs/ops`.',
     '- Re-run or refresh any FAIL, PENDING, or UNKNOWN lane before using this packet for pilot diligence.',
+    '- Treat this packet as an internal diligence aid; buyer-specific emails, public posts, and signed SOW language still need human review.',
+    '',
+    '## Final Pilot-Readiness Checklist Sync',
+    `- Checklist: ${finalPilotReadinessChecklistSync.checklistArtifact}`,
+    `- Verdict: ${finalPilotReadinessChecklistSync.verdict}`,
+    `- Operator instruction: ${finalPilotReadinessChecklistSync.operatorInstruction}`,
+    `- Supervised-onboarding caveat: ${finalPilotReadinessChecklistSync.supervisedOnboardingCaveat}`,
+    '',
+    '### Exported proof packet filenames',
+    ...finalPilotReadinessChecklistSync.exportFilenames.map((filename) => `- ${filename}`),
+    '',
+    '### Latest proof lanes synchronized from the final checklist',
+    ...finalPilotReadinessChecklistSync.latestProofArtifacts.flatMap((artifact) => [
+      `- **${artifact.label}**: ${artifact.artifact}`,
+      `  - Role: ${artifact.role}`,
+      `  - Caveat: ${artifact.caveat}`,
+    ]),
     '',
     '## Release Proof Packet Alignment',
     releaseProofPosture.summary,

@@ -2,7 +2,11 @@ import { FileCheck2, ShieldCheck } from "lucide-react";
 import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
-import { getReleaseProofItemCaveats, releaseProofPosture } from "@/lib/operations/release-proof-packet";
+import {
+  finalPilotReadinessChecklistSync,
+  getReleaseProofItemCaveats,
+  releaseProofPosture,
+} from "@/lib/operations/release-proof-packet";
 
 export const metadata = {
   title: "Pilot Readiness Evidence Center | OpenPlan Admin",
@@ -118,7 +122,7 @@ export default function PilotReadinessPage() {
               <span>
                 <span className="block font-medium">Export caveats mirror Command Center release proof.</span>
                 <span className="block text-emerald-900/80 dark:text-emerald-100/75">
-                  The packet reuses {releaseProofPosture.caveats.length} required caveats and {releaseProofPosture.proofItems.length} proof artifacts from the shared release-proof posture; caveat source: {salesCaveatProof.artifact}.
+                  The packet reuses {releaseProofPosture.caveats.length} required caveats and {releaseProofPosture.proofItems.length} proof artifacts from the shared release-proof posture; final checklist source: {finalPilotReadinessChecklistSync.checklistArtifact}; caveat source: {salesCaveatProof.artifact}.
                 </span>
               </span>
             </div>
@@ -143,6 +147,83 @@ export default function PilotReadinessPage() {
           </div>
         </article>
       </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Final checklist sync</p>
+            <h2 className="module-section-title">Export filenames and caveats before buyer reliance</h2>
+            <p className="module-section-description">
+              {finalPilotReadinessChecklistSync.operatorInstruction}
+            </p>
+          </div>
+          <StatusBadge tone="warning">Human review before external use</StatusBadge>
+        </div>
+
+        <div className="mt-5 module-record-list">
+          <div className="module-record-row">
+            <div className="module-record-head">
+              <div className="module-record-main">
+                <div className="module-record-kicker">
+                  <StatusBadge tone="success">Checklist</StatusBadge>
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Supervised pilot posture
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="module-record-title">{finalPilotReadinessChecklistSync.verdict}</h3>
+                  <p className="module-record-summary">{finalPilotReadinessChecklistSync.supervisedOnboardingCaveat}</p>
+                  <p className="font-mono text-[0.72rem] text-muted-foreground">
+                    {finalPilotReadinessChecklistSync.checklistArtifact}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="module-record-row">
+            <div className="module-record-head">
+              <div className="module-record-main">
+                <div className="module-record-kicker">
+                  <StatusBadge tone="neutral">Packet files</StatusBadge>
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Generated export surface
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="module-record-title">Admin Pilot Readiness proof packet filenames</h3>
+                  <ul className="space-y-1 font-mono text-[0.72rem] text-muted-foreground">
+                    {finalPilotReadinessChecklistSync.exportFilenames.map((filename) => (
+                      <li key={filename}>{filename}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => (
+            <div key={artifact.artifact} className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone="info">Latest proof lane</StatusBadge>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Synced from final checklist
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="module-record-title">{artifact.label}</h3>
+                    <p className="module-record-summary">{artifact.role}</p>
+                    <p className="text-xs text-muted-foreground">{artifact.caveat}</p>
+                    <p className="font-mono text-[0.72rem] text-muted-foreground">{artifact.artifact}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">

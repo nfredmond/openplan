@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import PilotReadinessPage from "@/app/(app)/admin/pilot-readiness/page";
-import { releaseProofPosture } from "@/lib/operations/release-proof-packet";
+import { finalPilotReadinessChecklistSync, releaseProofPosture } from "@/lib/operations/release-proof-packet";
 
 vi.mock("@/lib/operations/pilot-readiness", () => ({
   getSmokeStatus: () => [
@@ -25,7 +25,22 @@ describe("PilotReadinessPage", () => {
     expect(cue).toHaveTextContent("Export caveats mirror Command Center release proof");
     expect(cue).toHaveTextContent(`${releaseProofPosture.caveats.length} required caveats`);
     expect(cue).toHaveTextContent(`${releaseProofPosture.proofItems.length} proof artifacts`);
+    expect(cue).toHaveTextContent(finalPilotReadinessChecklistSync.checklistArtifact);
     expect(cue).toHaveTextContent(salesCaveatProof?.artifact ?? "");
+    expect(screen.getByRole("heading", { name: /Export filenames and caveats before buyer reliance/i })).toBeInTheDocument();
+    expect(screen.getByText(finalPilotReadinessChecklistSync.operatorInstruction)).toBeInTheDocument();
+    expect(screen.getByText(finalPilotReadinessChecklistSync.supervisedOnboardingCaveat)).toBeInTheDocument();
+    expect(screen.getByText(finalPilotReadinessChecklistSync.checklistArtifact)).toBeInTheDocument();
+
+    for (const filename of finalPilotReadinessChecklistSync.exportFilenames) {
+      expect(screen.getAllByText(filename).length).toBeGreaterThan(0);
+    }
+
+    for (const artifact of finalPilotReadinessChecklistSync.latestProofArtifacts) {
+      expect(screen.getByText(artifact.label)).toBeInTheDocument();
+      expect(screen.getByText(artifact.artifact)).toBeInTheDocument();
+    }
+
     expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
     expect(screen.getByText(/The export below uses the same release-proof posture as Command Center/i)).toBeInTheDocument();
     expect(screen.getByText(/Sale readiness: names the current gate evidence/i)).toBeInTheDocument();
