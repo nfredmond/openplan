@@ -137,6 +137,24 @@ export type RtpPublicReviewSummary = {
   actionItems: string[];
 };
 
+export type RtpAdoptionRecordProofCheck = {
+  key: "adoption_target" | "public_review_window" | "required_chapters" | "board_packet_artifact";
+  label: string;
+  ready: boolean;
+  detail: string;
+};
+
+export type RtpAdoptionRecordProofSummary = {
+  label: string;
+  detail: string;
+  tone: "success" | "warning" | "neutral" | "info";
+  ready: boolean;
+  readyCheckCount: number;
+  totalCheckCount: number;
+  checks: RtpAdoptionRecordProofCheck[];
+  actionItems: string[];
+};
+
 export type RtpReleaseReviewSummary = {
   label: string;
   detail: string;
@@ -308,6 +326,112 @@ export function buildRtpCycleReadiness({
     missingCheckLabels: missingChecks.map((check) => check.label),
     nextSteps: missingChecks.map((check) => check.detail),
     checks,
+  };
+}
+
+export function buildRtpAdoptionRecordProofSummary({
+  status,
+  adoptionTargetDate,
+  publicReviewOpenAt,
+  publicReviewCloseAt,
+  requiredChapterCount,
+  requiredChaptersReadyForReviewCount,
+  requiredChaptersCompleteCount,
+  packetRecordCount,
+  generatedPacketCount,
+}: {
+  status: string | null | undefined;
+  adoptionTargetDate: string | null | undefined;
+  publicReviewOpenAt: string | null | undefined;
+  publicReviewCloseAt: string | null | undefined;
+  requiredChapterCount: number;
+  requiredChaptersReadyForReviewCount: number;
+  requiredChaptersCompleteCount: number;
+  packetRecordCount: number;
+  generatedPacketCount: number;
+}): RtpAdoptionRecordProofSummary {
+  const hasReviewWindow = Boolean(publicReviewOpenAt && publicReviewCloseAt);
+  const readyChapterCount = requiredChaptersReadyForReviewCount + requiredChaptersCompleteCount;
+  const requiredChaptersReady = requiredChapterCount > 0 && readyChapterCount >= requiredChapterCount;
+  const hasGeneratedPacket = generatedPacketCount > 0;
+  const checks: RtpAdoptionRecordProofCheck[] = [
+    {
+      key: "adoption_target",
+      label: "Adoption target",
+      ready: Boolean(adoptionTargetDate),
+      detail: adoptionTargetDate
+        ? `Target board date recorded as ${formatRtpDate(adoptionTargetDate)}.`
+        : "Record the target board adoption date before treating the closeout packet as assembled.",
+    },
+    {
+      key: "public_review_window",
+      label: "Public review window",
+      ready: hasReviewWindow,
+      detail: hasReviewWindow
+        ? `Review window recorded from ${formatRtpDate(publicReviewOpenAt)} through ${formatRtpDate(publicReviewCloseAt)}.`
+        : "Record both the public review open and close dates so the operator can verify the review record.",
+    },
+    {
+      key: "required_chapters",
+      label: "Required chapters",
+      ready: requiredChaptersReady,
+      detail: requiredChaptersReady
+        ? `${requiredChapterCount}/${requiredChapterCount} required chapters are complete or ready for review.`
+        : requiredChapterCount > 0
+          ? `${readyChapterCount}/${requiredChapterCount} required chapters are complete or ready for review; finish the remaining chapter posture before closeout review.`
+          : "Seed the required RTP chapter shell before treating the adoption record as proof-ready.",
+    },
+    {
+      key: "board_packet_artifact",
+      label: "Board-packet artifact",
+      ready: hasGeneratedPacket,
+      detail: hasGeneratedPacket
+        ? `${generatedPacketCount}/${packetRecordCount} packet record${packetRecordCount === 1 ? " has" : "s have"} a generated artifact for operator review.`
+        : packetRecordCount > 0
+          ? "A board-packet record exists, but it still needs a generated artifact before closeout review."
+          : "Create and generate a board-packet artifact before board closeout review.",
+    },
+  ];
+
+  const readyCheckCount = checks.filter((check) => check.ready).length;
+  const missingChecks = checks.filter((check) => !check.ready);
+
+  if (missingChecks.length === 0) {
+    return {
+      label: status === "adopted" ? "Adopted record assembled" : "Record assembly ready",
+      detail:
+        "Adoption date, public review window, required chapter posture, and a generated board-packet artifact are present. Operator review is still required before using this outside OpenPlan.",
+      tone: "success",
+      ready: true,
+      readyCheckCount,
+      totalCheckCount: checks.length,
+      checks,
+      actionItems: ["Have the responsible operator verify notices, resolutions, comment-response material, and the final board packet."],
+    };
+  }
+
+  if (status === "adopted") {
+    return {
+      label: "Adopted record needs backfill",
+      detail: `${missingChecks[0]?.detail ?? "Backfill the adoption record proof fields."} This is an operations cue, not a legal certification.`,
+      tone: "warning",
+      ready: false,
+      readyCheckCount,
+      totalCheckCount: checks.length,
+      checks,
+      actionItems: missingChecks.map((check) => check.detail).slice(0, 4),
+    };
+  }
+
+  return {
+    label: readyCheckCount >= 2 ? "Record proofing in progress" : "Record proofing needs setup",
+    detail: `${missingChecks[0]?.detail ?? "Add the missing adoption record proof fields."} OpenPlan keeps this as supervised workbench evidence, not an automated compliance finding.`,
+    tone: readyCheckCount === 0 ? "neutral" : "warning",
+    ready: false,
+    readyCheckCount,
+    totalCheckCount: checks.length,
+    checks,
+    actionItems: missingChecks.map((check) => check.detail).slice(0, 4),
   };
 }
 

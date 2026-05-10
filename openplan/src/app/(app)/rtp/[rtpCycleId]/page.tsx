@@ -17,6 +17,7 @@ import {
   projectFundingStackTone,
 } from "@/lib/projects/funding";
 import {
+  buildRtpAdoptionRecordProofSummary,
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
   buildRtpPublicReviewSummary,
@@ -457,6 +458,20 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
   const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
   const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
+  const requiredChapterCount = chapters.filter((chapter) => chapter.required).length;
+  const requiredChapterReadyForReviewCount = chapters.filter((chapter) => chapter.required && chapter.status === "ready_for_review").length;
+  const requiredChapterCompleteCount = chapters.filter((chapter) => chapter.required && chapter.status === "complete").length;
+  const adoptionRecordProof = buildRtpAdoptionRecordProofSummary({
+    status: cycle.status,
+    adoptionTargetDate: cycle.adoption_target_date,
+    publicReviewOpenAt: cycle.public_review_open_at,
+    publicReviewCloseAt: cycle.public_review_close_at,
+    requiredChapterCount,
+    requiredChaptersReadyForReviewCount: requiredChapterReadyForReviewCount,
+    requiredChaptersCompleteCount: requiredChapterCompleteCount,
+    packetRecordCount: packetReportsWithComparison.length,
+    generatedPacketCount,
+  });
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -905,6 +920,36 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   <p className="module-metric-label">Pending comments</p>
                   <p className="module-metric-value text-sm">{engagementSummary.moderationQueue.pendingCount}</p>
                   <p className="mt-1 text-xs text-muted-foreground">Items still waiting for operator review before packet closeout.</p>
+                </div>
+              </div>
+
+              <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Adoption record proof
+                    </p>
+                    <p className="mt-2 text-sm font-medium">{adoptionRecordProof.label}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{adoptionRecordProof.detail}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 text-right">
+                    <StatusBadge tone={adoptionRecordProof.tone}>{adoptionRecordProof.label}</StatusBadge>
+                    <p className="text-xs text-muted-foreground">
+                      {adoptionRecordProof.readyCheckCount}/{adoptionRecordProof.totalCheckCount} proof checks ready
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                  {adoptionRecordProof.checks.map((check) => (
+                    <div key={check.key} className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{check.label}</p>
+                        <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Needs operator"}</StatusBadge>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">{check.detail}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
