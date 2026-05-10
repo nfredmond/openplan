@@ -63,6 +63,18 @@ export type ReportAerialEvidenceSourceContext = {
   missionSummaries: ReportAerialMissionSourceSummary[];
 };
 
+export type ReportAerialEvidenceDisplayState = {
+  posture: AerialEvidenceAttachmentReadiness | "absent";
+  label: string;
+  detail: string;
+  missionCount: number;
+  packageCount: number;
+  sourceContextPackageCount: number;
+  blockers: string[];
+  caveat: string;
+  missionHref: string | null;
+};
+
 const AERIAL_ATTACHMENT_USES: AerialEvidenceAttachmentUse[] = [
   "project",
   "grant",
@@ -70,7 +82,7 @@ const AERIAL_ATTACHMENT_USES: AerialEvidenceAttachmentUse[] = [
   "public_response",
 ];
 
-const AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT =
+export const AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT =
   "Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.";
 
 const REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION = "2026-05-aerial-report-source-context";
@@ -307,6 +319,41 @@ export function buildReportAerialEvidenceSourceContext(input: {
     regulatoryComplianceClaim: false,
     surveyGradeCertificationClaim: false,
     missionSummaries,
+  };
+}
+
+export function describeReportAerialEvidenceDisplayState(
+  context: ReportAerialEvidenceSourceContext | null
+): ReportAerialEvidenceDisplayState {
+  if (!context) {
+    return {
+      posture: "absent",
+      label: "No aerial evidence source context captured",
+      detail:
+        "This packet has no report-adjacent aerial provenance. Add an operator-reviewed evidence package and regenerate before using aerial evidence in the report.",
+      missionCount: 0,
+      packageCount: 0,
+      sourceContextPackageCount: 0,
+      blockers: [
+        "No report-adjacent aerial source context was captured in the latest artifact.",
+      ],
+      caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+      missionHref: null,
+    };
+  }
+
+  return {
+    posture: context.readiness,
+    label: context.label,
+    detail: context.detail,
+    missionCount: context.missionCount,
+    packageCount: context.packageCount,
+    sourceContextPackageCount: context.sourceContextPackageCount,
+    blockers: context.blockers,
+    caveat: context.caveat || AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+    missionHref: context.missionSummaries[0]
+      ? `/aerial/missions/${context.missionSummaries[0].missionId}`
+      : null,
   };
 }
 
