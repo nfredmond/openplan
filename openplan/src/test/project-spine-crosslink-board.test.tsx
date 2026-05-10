@@ -58,6 +58,42 @@ const emptyInput: ProjectSpineCrosslinkInput = {
   },
 };
 
+const buyerSafeCaveatFragments = [
+  "not adopted policy or board-ready evidence",
+  "do not treat it as a validated forecast, legal finding, or autonomous prioritization decision",
+  "not an award commitment, eligibility opinion, or reimbursement approval",
+  "not a substitute for adopted outreach findings or public agency response records",
+  "does not certify travel behavior forecasts or prioritization outcomes",
+  "not a stamped survey, final engineering record, or autonomous verification",
+] as const;
+
+const selfServeSaasPattern = /\b(?:fully\s+)?self[- ]serve\b[^.\n;]*\bSaaS\b|\bSaaS\b[^.\n;]*\bself[- ]serve\b/i;
+const autonomousPattern = /\b(?:autonomous|autonomously)\b/i;
+const caveatContextPattern = /\b(?:not|no|non-autonomous|do not|does not|without|caveat|supervised|operator|human review|before reuse)\b/i;
+
+function renderedText() {
+  return document.body.textContent?.replace(/\s+/g, " ") ?? "";
+}
+
+function splitRenderedStatements(text: string) {
+  return text
+    .split(/[.;]/)
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+}
+
+function expectNoUnsupportedClaims(text: string) {
+  expect(text, "self-serve SaaS should not appear in project-spine proof copy").not.toMatch(selfServeSaasPattern);
+
+  const autonomousStatements = splitRenderedStatements(text).filter((statement) => autonomousPattern.test(statement));
+  for (const statement of autonomousStatements) {
+    expect(
+      caveatContextPattern.test(statement),
+      `autonomous wording must stay in caveat/negation context: ${statement}`,
+    ).toBe(true);
+  }
+}
+
 describe("ProjectSpineCrosslinkBoard", () => {
   it("renders an operator empty state without hiding row-level next actions", () => {
     const summary = buildProjectSpineCrosslinkSummary(emptyInput);
@@ -97,6 +133,49 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expect(screen.getAllByText(/Apply the scenario spine tables/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);
     expect(screen.getAllByText("setup").length).toBeGreaterThan(0);
+  });
+
+  it("renders empty-state proof links with buyer-safe caveats and no unsupported claims", () => {
+    const summary = buildProjectSpineCrosslinkSummary(emptyInput);
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    expect(screen.getByText("Phase 1 shared spine proof")).toHaveAttribute("href", "/admin/pilot-readiness");
+    expect(screen.getAllByText(/Proof reference:/i).length).toBeGreaterThanOrEqual(6);
+    expect(screen.getAllByText(/Caveat:/i).length).toBeGreaterThanOrEqual(6);
+
+    const text = renderedText();
+    for (const caveat of buyerSafeCaveatFragments) {
+      expect(text).toContain(caveat);
+    }
+    expectNoUnsupportedClaims(text);
+  });
+
+  it("keeps schema-pending proof copy inside setup and buyer-safe claim boundaries", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...emptyInput,
+      pendingSchema: {
+        rtp_packets: true,
+        scenario_sets: true,
+        funding_profile: true,
+        engagement_evidence: true,
+        analysis_modeling: true,
+        aerial_evidence: true,
+      },
+    });
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    expect(screen.getByText("Migration inventory preflight proof")).toHaveAttribute("href", "/admin/pilot-readiness");
+    expect(screen.getAllByText("docs/ops/2026-05-10-openplan-migration-inventory-preflight-proof.md").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Schema setup pending")).toHaveLength(6);
+    expect(screen.getAllByText("Setup needed")).toHaveLength(6);
+    expect(screen.getAllByText(/Do not cite this lane as empty or complete/i)).toHaveLength(7);
+
+    const text = renderedText();
+    expect(text).toContain("showing setup actions instead of pretending those lanes are empty");
+    expect(text).toContain("before deciding whether a lane is genuinely missing or only unavailable");
+    expectNoUnsupportedClaims(text);
   });
 
   it("keeps a worksurface loading skeleton available for source reads", () => {
