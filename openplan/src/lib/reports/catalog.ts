@@ -995,6 +995,7 @@ export function describeComparisonSnapshotAggregate(
       exportReadyLabel,
       caveatLabel,
       pairingLabel,
+      "Operator-review provenance only",
       updatedLabel,
     ]
       .filter((value): value is string => Boolean(value))

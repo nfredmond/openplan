@@ -6,6 +6,7 @@ import {
   describeReportAerialEvidenceDisplayState,
   parseReportAerialEvidenceSourceContext,
 } from "@/lib/reports/aerial-source-context";
+import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 
 describe("buildReportAerialEvidenceSourceContext", () => {
   it("returns null when no aerial rows are linked to the report", () => {
@@ -204,6 +205,7 @@ describe("buildReportAerialEvidenceSourceContext", () => {
     expect(display.caveat).toContain("No autonomous photogrammetry");
     expect(display.caveat).toContain("regulatory compliance");
     expect(display.caveat).toContain("survey-grade certification");
+    expectProvenanceLanguageOnly(`${display.label} ${display.detail} ${display.caveat} ${display.blockers.join(" ")}`);
   });
 
   it("describes ready aerial evidence for report display with caveat and mission link", () => {
@@ -244,6 +246,8 @@ describe("buildReportAerialEvidenceSourceContext", () => {
       caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
       missionHref: "/aerial/missions/mission-display-ready",
     });
+    expect(display.caveat).toContain("No autonomous photogrammetry");
+    expectProvenanceLanguageOnly(`${display.label} ${display.detail} ${display.caveat}`);
   });
 
   it("describes source-context-needed aerial evidence for report display with caveat and blocker", () => {

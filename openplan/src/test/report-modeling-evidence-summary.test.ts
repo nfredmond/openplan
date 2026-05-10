@@ -6,6 +6,7 @@ import {
   summarizeReportModelingEvidenceForMetadata,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
+import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 
 function linkedEvidence(overrides: Partial<ReportModelingEvidence> = {}): ReportModelingEvidence {
   return {
@@ -78,6 +79,33 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
     expect(summary.plannerReadout).toContain("Nevada County, CA");
     expect(summary.plannerReadout).toContain("1 public source");
     expect(summary.plannerReadout).toContain("5 validation checks");
+    expectProvenanceLanguageOnly(`${summary.headline} ${summary.plannerReadout} ${summary.caveats.join(" ")}`);
+  });
+
+  it("keeps claim-grade modeling evidence in supervised citation language", () => {
+    const baseEvidence = linkedEvidence().evidence;
+    if (!baseEvidence) throw new Error("Expected linked evidence fixture");
+
+    const summary = buildPlannerReadableModelingEvidenceSummary([
+      linkedEvidence({
+        evidence: {
+          ...baseEvidence,
+          reportLanguage: "Claim-grade evidence may be cited only with source and validation context.",
+          claimDecision: {
+            ...baseEvidence.claimDecision,
+            claimStatus: "claim_grade_passed",
+            statusReason: "All required public-data validation checks passed for packet citation.",
+            reasons: ["All required public-data validation checks passed for packet citation."],
+          },
+        },
+      }),
+    ]);
+
+    expect(summary.headline).toBe(
+      "Modeling evidence is ready for supervised planning citation when cited with its validation table."
+    );
+    expect(summary.headline).not.toMatch(/supports outward planning claims/i);
+    expectProvenanceLanguageOnly(`${summary.headline} ${summary.plannerReadout} ${summary.caveats.join(" ")}`);
   });
 
   it("is explicit when a report has no linked modeling evidence", () => {
@@ -102,6 +130,9 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
     );
     expect(proof.caveatCarryThrough).toContain("Worst matched facility APE 237.62% exceeds the 50% threshold.");
     expect(proof.stalePacketLanguage).toContain("regenerate the packet if county-run evidence");
+    expectProvenanceLanguageOnly(
+      `${proof.sourceContext} ${proof.exportReadiness} ${proof.caveatCarryThrough.join(" ")} ${proof.stalePacketLanguage}`
+    );
   });
 
   it("persists export-proof posture in compact report artifact metadata", () => {

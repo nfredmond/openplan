@@ -18,6 +18,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
+import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 
 describe("getReportPacketFreshness", () => {
   it("returns no-packet when no artifact exists", () => {
@@ -352,14 +353,18 @@ describe("getReportPacketFreshness", () => {
       latestComparisonSnapshotUpdatedAt: "2026-05-10T18:00:00.000Z",
     });
 
-    expect(describeComparisonSnapshotAggregate(aggregate)).toMatchObject({
+    const digest = describeComparisonSnapshotAggregate(aggregate);
+
+    expect(digest).toMatchObject({
       headline: "2 saved comparisons · 1 ready",
       detail: expect.stringContaining("2 source-context summaries"),
     });
-    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain("1 export-ready");
-    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain("2 caveat-backed");
-    expect(describeComparisonSnapshotAggregate(aggregate)?.detail).toContain(
+    expect(digest?.detail).toContain("1 export-ready");
+    expect(digest?.detail).toContain("2 caveat-backed");
+    expect(digest?.detail).toContain("Operator-review provenance only");
+    expect(digest?.detail).toContain(
       "Lead pairing: Safety package compared against Existing conditions"
     );
+    expectProvenanceLanguageOnly(`${digest?.headline} ${digest?.detail}`);
   });
 });

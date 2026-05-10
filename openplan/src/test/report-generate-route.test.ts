@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
@@ -968,6 +969,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
       fundingScanStatus: "attention",
       operatorReviewCaveat: expect.stringContaining("not legal compliance automation, award prediction, or autonomous approval"),
     });
+    expect(sourceContext.fundingSourceContextReadiness).toMatchObject({
+      label: expect.stringContaining("operator review"),
+      detail: expect.stringContaining("operator reviews"),
+    });
+    expectProvenanceLanguageOnly(JSON.stringify(sourceContext.fundingSourceContextReadiness));
   });
 
   it("adds modeling evidence claim posture to project report artifacts", async () => {
@@ -1081,6 +1087,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
     expect(metadata?.htmlContent).toContain("Observed count validation");
     expect(metadata?.htmlContent).toContain("Modeling claim posture");
+    expect(metadata?.htmlContent).toContain("not describe it as a validated behavioral forecast or certified calibration");
+    expectProvenanceLanguageOnly(metadata?.htmlContent);
   });
 
   it("uses a report-linked modeling county run before recent workspace runs", async () => {
@@ -1418,6 +1426,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
     expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
     expect(metadata?.htmlContent).toContain("Observed count validation");
+    expect(metadata?.htmlContent).toContain("not describe it as a validated behavioral forecast or certified calibration");
+    expectProvenanceLanguageOnly(metadata?.htmlContent);
   });
 
   it("persists RTP linked-project funding scans and funding source-context readiness", async () => {
@@ -1546,6 +1556,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
       attentionProjectScanCount: 1,
       operatorReviewCaveat: expect.stringContaining("not legal compliance automation, award prediction, or autonomous approval"),
     });
+    expect(sourceContext.rtpFundingSourceContextReadiness).toMatchObject({
+      label: expect.stringContaining("operator review"),
+      detail: expect.stringContaining("operator review"),
+    });
+    expectProvenanceLanguageOnly(JSON.stringify(sourceContext.rtpFundingSourceContextReadiness));
 
     const htmlContent = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
     expect(htmlContent).toContain("Funding source context");
@@ -1784,5 +1799,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Current live campaign counts: 1 ready for handoff • 1 total items.");
     expect(generatedHtml).toContain('/engagement/99999999-9999-4999-8999-999999999999');
     expect(generatedHtml).toContain('/engage/share-token-12345');
+    expect(generatedHtml).not.toMatch(/public consensus|public approval|community endorsement/i);
+    expectProvenanceLanguageOnly(generatedHtml);
   });
 });

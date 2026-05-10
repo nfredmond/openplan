@@ -175,7 +175,7 @@ export function buildPlannerReadableModelingEvidenceSummary(
   const tone = strongestStatus === "claim_grade_passed" ? "success" : strongestStatus ? "warning" : "neutral";
   const headline =
     strongestStatus === "claim_grade_passed"
-      ? "Modeling evidence supports outward planning claims when cited with its validation table."
+      ? "Modeling evidence is ready for supervised planning citation when cited with its validation table."
       : strongestStatus === "screening_grade"
         ? "Modeling evidence is suitable for planning context only."
         : strongestStatus === "prototype_only"
