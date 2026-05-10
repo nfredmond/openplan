@@ -5,6 +5,8 @@ import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operat
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
 import {
   finalPilotReadinessChecklistSync,
+  getAdminPilotReadinessProofArtifactCategoryLabel,
+  getAdminPilotReadinessProofArtifactIndex,
   getReleaseProofItemCaveats,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
@@ -23,6 +25,7 @@ function getStatusTone(status: SmokeStatus["status"]): "success" | "danger" | "w
 export default function PilotReadinessPage() {
   const statusList = getSmokeStatus();
   const pilotControl = buildPilotReadinessControlSummary(statusList);
+  const proofArtifactIndex = getAdminPilotReadinessProofArtifactIndex();
   const salesCaveatProof =
     releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats") ?? releaseProofPosture.proofItems[0];
 
@@ -151,6 +154,42 @@ export default function PilotReadinessPage() {
             No commands run in the browser; no schema changes, production writes, workspace provisioning, billing activity,
             or autonomous readiness claims are triggered from this panel.
           </p>
+        </div>
+      </article>
+
+      <article className="module-section-surface" aria-label="Compact proof artifact index">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Proof artifact index</p>
+            <h2 className="module-section-title">Current packet docs, static exports, and preflight proof</h2>
+            <p className="module-section-description">
+              A compact helper for buyer-safe review: proof packet documents, the generated MD/HTML/PDF sales packet,
+              and the read-only preflight proof note stay visible without implying self-serve activation or broader claims.
+            </p>
+          </div>
+          <StatusBadge tone="warning">Buyer-safe caveats required</StatusBadge>
+        </div>
+
+        <div className="mt-5 module-record-list">
+          {proofArtifactIndex.map((item) => (
+            <div key={item.key} className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={item.category === "preflight-proof" ? "warning" : "neutral"}>
+                      {getAdminPilotReadinessProofArtifactCategoryLabel(item.category)}
+                    </StatusBadge>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="module-record-title">{item.label}</h3>
+                    <p className="module-record-summary">{item.operatorUse}</p>
+                    <p className="text-xs text-muted-foreground">{item.buyerSafeCaveat}</p>
+                    <p className="font-mono text-[0.72rem] text-muted-foreground">{item.artifact}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </article>
 

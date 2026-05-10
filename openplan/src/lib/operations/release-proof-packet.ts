@@ -49,6 +49,20 @@ export type PilotReadinessSyncChecklist = {
   latestProofArtifacts: readonly PilotReadinessSyncArtifact[];
 };
 
+export type AdminPilotReadinessProofArtifactCategory =
+  | "proof-packet-doc"
+  | "static-sales-packet"
+  | "preflight-proof";
+
+export type AdminPilotReadinessProofArtifactIndexItem = {
+  key: string;
+  label: string;
+  category: AdminPilotReadinessProofArtifactCategory;
+  artifact: string;
+  buyerSafeCaveat: string;
+  operatorUse: string;
+};
+
 export const releaseProofCaveatItems = [
   {
     key: "billing-waiver",
@@ -122,6 +136,84 @@ export const finalPilotReadinessChecklistSync = {
     },
   ],
 } satisfies PilotReadinessSyncChecklist;
+
+export const adminPilotReadinessProofArtifactIndex = [
+  {
+    key: "final-checklist",
+    label: "Final pilot-readiness checklist",
+    category: "proof-packet-doc",
+    artifact: finalPilotReadinessChecklistSync.checklistArtifact,
+    buyerSafeCaveat:
+      "PASS supports a supervised pilot-readiness conversation only; it is not a finished-suite launch certificate.",
+    operatorUse: "Start here to confirm the current checklist verdict, caveat boundary, and named source docs.",
+  },
+  {
+    key: "managed-support-proof-map",
+    label: "Managed support proof map",
+    category: "proof-packet-doc",
+    artifact: "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
+    buyerSafeCaveat:
+      "Managed hosting, support, backup/restore, and pilot-closeout claims still require buyer-specific scope and terms.",
+    operatorUse: "Use before discussing managed service commitments or SOW-ready hosting language.",
+  },
+  {
+    key: "export-source-trace",
+    label: "Pilot-readiness export source trace",
+    category: "proof-packet-doc",
+    artifact: "openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md",
+    buyerSafeCaveat:
+      "Export traceability proves packet construction, not a fresh production smoke after later behavior changes.",
+    operatorUse: "Use when validating that the Admin export surface is still tied to reusable proof helpers.",
+  },
+  {
+    key: "static-markdown",
+    label: "Static sales packet — Markdown",
+    category: "static-sales-packet",
+    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
+    buyerSafeCaveat:
+      "Buyer-facing packet copy must travel with the caveat sheet and human review before external reliance.",
+    operatorUse: "Use as the editable source-style sales packet for diligence review.",
+  },
+  {
+    key: "static-html",
+    label: "Static sales packet — HTML",
+    category: "static-sales-packet",
+    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html",
+    buyerSafeCaveat:
+      "HTML is a generated presentation artifact; regenerate it when the Markdown/source helpers change.",
+    operatorUse: "Use for browser-readable packet review or lightweight sharing after caveat review.",
+  },
+  {
+    key: "static-pdf",
+    label: "Static sales packet — PDF",
+    category: "static-sales-packet",
+    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf",
+    buyerSafeCaveat:
+      "PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward.",
+    operatorUse: "Use as the fixed packet attachment only after confirming it matches the current generated packet.",
+  },
+  {
+    key: "pilot-preflight-proof",
+    label: "Pilot preflight operator proof",
+    category: "preflight-proof",
+    artifact: "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md",
+    buyerSafeCaveat:
+      "The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof.",
+    operatorUse: "Run or cite the preflight pattern immediately before serious buyer, demo, or pilot reliance.",
+  },
+] satisfies AdminPilotReadinessProofArtifactIndexItem[];
+
+export function getAdminPilotReadinessProofArtifactIndex() {
+  return adminPilotReadinessProofArtifactIndex;
+}
+
+export function getAdminPilotReadinessProofArtifactCategoryLabel(
+  category: AdminPilotReadinessProofArtifactCategory,
+) {
+  if (category === "proof-packet-doc") return "Proof packet doc";
+  if (category === "static-sales-packet") return "Static sales packet";
+  return "Preflight proof";
+}
 
 export const releaseProofPosture = {
   label: "Release proof packet",

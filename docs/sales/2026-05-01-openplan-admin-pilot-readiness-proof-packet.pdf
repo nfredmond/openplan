@@ -4,7 +4,7 @@
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] /Count 7 >>
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R] /Count 8 >>
 endobj
 3 0 obj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
@@ -231,7 +231,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 3432 >>
+<< /Length 3127 >>
 stream
 BT
 /F1 9 Tf
@@ -261,8 +261,91 @@ T*
 T*
 () Tj
 T*
+(Compact Proof Artifact Index) Tj
+T*
+(Use this index as the short operator map before buyer reliance. It names the current proof) Tj
+T*
+(packet docs, generated static sales packet files, and preflight proof note without expanding) Tj
+T*
+(the claim beyond supervised-pilot caveats.) Tj
+T*
+() Tj
+T*
+(Artifact    Category    Buyer-safe caveat) Tj
+T*
+() Tj
+T*
+(Final pilot-readiness checklist —) Tj
+T*
+(docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md Proof packet doc PASS) Tj
+T*
+(supports a supervised pilot-readiness conversation only; it is not a finished-suite launch) Tj
+T*
+(certificate.) Tj
+T*
+(Managed support proof map — docs/sales/2026-05-10-openplan-managed-support-proof-map.md) Tj
+T*
+(Proof packet doc Managed hosting, support, backup/restore, and pilot-closeout claims still) Tj
+T*
+(require buyer-specific scope and terms.) Tj
+T*
+(Pilot-readiness export source trace —) Tj
+T*
+(openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md Proof packet doc) Tj
+T*
+(Export traceability proves packet construction, not a fresh production smoke after later) Tj
+T*
+(behavior changes.) Tj
+T*
+(Static sales packet — Markdown —) Tj
+T*
+(docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md Static sales packet) Tj
+T*
+(Buyer-facing packet copy must travel with the caveat sheet and human review before external) Tj
+T*
+(reliance.) Tj
+T*
+(Static sales packet — HTML —) Tj
+T*
+(docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html Static sales packet) Tj
+T*
+(HTML is a generated presentation artifact; regenerate it when the Markdown/source helpers) Tj
+T*
+(change.) Tj
+T*
+(Static sales packet — PDF —) Tj
+T*
+(docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf Static sales packet) Tj
+T*
+(PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist) Tj
+T*
+(changed afterward.) Tj
+T*
+(Pilot preflight operator proof —) Tj
+T*
+(docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md Preflight proof The preflight) Tj
+T*
+(is read-only operational confidence, not self-serve activation, schema approval, or) Tj
+T*
+(production-write proof.) Tj
+T*
+() Tj
+T*
 (Final Pilot-Readiness Checklist Sync) Tj
 T*
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 3308 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) Tj
 T*
 (• Verdict: PASS for a supervised pilot-readiness conversation; not a launch certificate for) Tj
@@ -333,19 +416,6 @@ T*
 T*
 (changes.) Tj
 T*
-ET
-endstream
-endobj
-10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
-endobj
-11 0 obj
-<< /Length 3387 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 () Tj
 T*
 (Release Proof Packet Alignment) Tj
@@ -372,6 +442,19 @@ T*
 T*
 (• RPO/RTO commitments are filled per managed-hosting engagement, not promised globally here.) Tj
 T*
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 3668 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• Modeling outputs support planning review only inside the current proof boundary; no) Tj
 T*
 (validated behavioral forecasting claim is made.) Tj
@@ -442,19 +525,6 @@ T*
 T*
 (\(docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md\); Per-engagement) Tj
 T*
-ET
-endstream
-endobj
-12 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
-endobj
-13 0 obj
-<< /Length 3447 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (hosting terms \(docs/ops/2026-05-01-openplan-known-issues-register.md\); Modeling proof) Tj
 T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
@@ -481,6 +551,19 @@ T*
 T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
 T*
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 3243 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (legal/autonomous AI claim \(docs/ops/2026-05-01-openplan-known-issues-register.md\)) Tj
 T*
 () Tj
@@ -551,19 +634,6 @@ T*
 T*
 (• buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document) Tj
 T*
-ET
-endstream
-endobj
-14 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
-endobj
-15 0 obj
-<< /Length 1951 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (review;) Tj
 T*
 (• SSO, private cloud, agency-cloud deployment, custom security review, or enhanced) Tj
@@ -590,6 +660,19 @@ T*
 T*
 () Tj
 T*
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 2029 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (Buyer-Safe Language) Tj
 T*
 () Tj
@@ -660,19 +743,6 @@ T*
 T*
 () Tj
 T*
-ET
-endstream
-endobj
-16 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
-endobj
-17 0 obj
-<< /Length 2753 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• docs/ops/2026-05-01-openplan-rc-proof-log.md) Tj
 T*
 (• openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) Tj
@@ -699,6 +769,19 @@ T*
 T*
 (• docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) Tj
 T*
+ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
+endobj
+19 0 obj
+<< /Length 1975 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md) Tj
 T*
 (• docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md) Tj
@@ -727,9 +810,13 @@ T*
 T*
 (• docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md) Tj
 T*
+(• openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md) Tj
+T*
 (• docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) Tj
 T*
 (• docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf) Tj
+T*
+(• docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md) Tj
 T*
 (• docs/sales/2026-05-01-openplan-buyer-one-pager.md) Tj
 T*
@@ -755,27 +842,29 @@ ET
 endstream
 endobj
 xref
-0 18
+0 20
 0000000000 65535 f 
 0000000045 00000 n 
 0000000094 00000 n 
-0000000191 00000 n 
-0000000261 00000 n 
-0000000387 00000 n 
-0000003436 00000 n 
-0000003562 00000 n 
-0000007688 00000 n 
-0000007814 00000 n 
-0000011298 00000 n 
-0000011426 00000 n 
-0000014866 00000 n 
-0000014994 00000 n 
-0000018494 00000 n 
-0000018622 00000 n 
-0000020626 00000 n 
-0000020754 00000 n 
+0000000198 00000 n 
+0000000268 00000 n 
+0000000394 00000 n 
+0000003443 00000 n 
+0000003569 00000 n 
+0000007695 00000 n 
+0000007821 00000 n 
+0000011000 00000 n 
+0000011128 00000 n 
+0000014489 00000 n 
+0000014617 00000 n 
+0000018338 00000 n 
+0000018466 00000 n 
+0000021762 00000 n 
+0000021890 00000 n 
+0000023972 00000 n 
+0000024100 00000 n 
 trailer
-<< /Size 18 /Root 1 0 R >>
+<< /Size 20 /Root 1 0 R >>
 startxref
-23560
+26128
 %%EOF

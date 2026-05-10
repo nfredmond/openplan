@@ -3,11 +3,16 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
   buildAdminPilotReadinessProofPacketMarkdown,
+  buildAdminPilotReadinessProofArtifactIndexMarkdown,
   buildFinalPilotReadinessSyncMarkdown,
   buildPilotReadinessPacket,
   buildReleaseProofAlignmentMarkdown,
 } from "@/lib/operations/pilot-readiness-packet";
-import { finalPilotReadinessChecklistSync, releaseProofPosture } from "@/lib/operations/release-proof-packet";
+import {
+  finalPilotReadinessChecklistSync,
+  getAdminPilotReadinessProofArtifactIndex,
+  releaseProofPosture,
+} from "@/lib/operations/release-proof-packet";
 
 const repoRoot = path.resolve(process.cwd(), "..");
 
@@ -85,9 +90,26 @@ describe("pilot readiness export packet", () => {
     expect(packet).toContain("openplan/src/test/pilot-readiness-export-packet.test.ts");
   });
 
+  it("includes the compact proof artifact index with buyer-safe caveats", () => {
+    const packet = buildPilotReadinessPacket([], "2026-05-10T00:00:00.000Z");
+
+    expect(packet).toContain("## Compact Proof Artifact Index");
+    expect(packet).toContain(buildAdminPilotReadinessProofArtifactIndexMarkdown());
+
+    for (const artifact of getAdminPilotReadinessProofArtifactIndex()) {
+      expect(packet).toContain(`**${artifact.label}**`);
+      expect(packet).toContain(artifact.artifact);
+      expect(packet).toContain(artifact.buyerSafeCaveat);
+    }
+
+    expect(packet).toContain("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md");
+    expect(packet).toContain("read-only operational confidence");
+  });
+
   it("keeps synchronized proof filenames resolvable in the repo", () => {
     const syncedFiles = [
       finalPilotReadinessChecklistSync.checklistArtifact,
+      ...getAdminPilotReadinessProofArtifactIndex().map((artifact) => artifact.artifact),
       ...finalPilotReadinessChecklistSync.exportFilenames,
       ...finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => artifact.artifact),
     ];
@@ -105,6 +127,7 @@ describe("pilot readiness export packet", () => {
     const staticHtml = readFileSync(staticHtmlPath, "utf8");
     const staticPdf = readFileSync(staticPdfPath);
 
+    expect(staticMarkdown).toContain(buildAdminPilotReadinessProofArtifactIndexMarkdown());
     expect(staticMarkdown).toContain(buildFinalPilotReadinessSyncMarkdown());
     expect(staticMarkdown).toContain(buildReleaseProofAlignmentMarkdown());
     expect(staticMarkdown).toBe(`${buildAdminPilotReadinessProofPacketMarkdown()}\n`);

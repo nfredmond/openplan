@@ -266,6 +266,51 @@
 <td><code>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</code>; <code>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</code>; <code>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</code>; <code>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</code>; <code>openplan/src/test/pilot-readiness-export-packet.test.ts</code></td>
 </tr>
 </tbody></table></div>
+<h2>Compact Proof Artifact Index</h2>
+<p>Use this index as the short operator map before buyer reliance. It names the current proof packet docs, generated static sales packet files, and preflight proof note without expanding the claim beyond supervised-pilot caveats.</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Artifact</th>
+<th>Category</th>
+<th>Buyer-safe caveat</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>Final pilot-readiness checklist</strong> — <code>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</code></td>
+<td>Proof packet doc</td>
+<td>PASS supports a supervised pilot-readiness conversation only; it is not a finished-suite launch certificate.</td>
+</tr>
+<tr>
+<td><strong>Managed support proof map</strong> — <code>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</code></td>
+<td>Proof packet doc</td>
+<td>Managed hosting, support, backup/restore, and pilot-closeout claims still require buyer-specific scope and terms.</td>
+</tr>
+<tr>
+<td><strong>Pilot-readiness export source trace</strong> — <code>openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md</code></td>
+<td>Proof packet doc</td>
+<td>Export traceability proves packet construction, not a fresh production smoke after later behavior changes.</td>
+</tr>
+<tr>
+<td><strong>Static sales packet — Markdown</strong> — <code>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</code></td>
+<td>Static sales packet</td>
+<td>Buyer-facing packet copy must travel with the caveat sheet and human review before external reliance.</td>
+</tr>
+<tr>
+<td><strong>Static sales packet — HTML</strong> — <code>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html</code></td>
+<td>Static sales packet</td>
+<td>HTML is a generated presentation artifact; regenerate it when the Markdown/source helpers change.</td>
+</tr>
+<tr>
+<td><strong>Static sales packet — PDF</strong> — <code>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf</code></td>
+<td>Static sales packet</td>
+<td>PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward.</td>
+</tr>
+<tr>
+<td><strong>Pilot preflight operator proof</strong> — <code>docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md</code></td>
+<td>Preflight proof</td>
+<td>The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof.</td>
+</tr>
+</tbody></table></div>
 <h2>Final Pilot-Readiness Checklist Sync</h2>
 <ul>
 <li>Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</li>
@@ -439,8 +484,10 @@
 <li>docs/ops/2026-05-01-openplan-known-issues-register.md</li>
 <li>docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md</li>
 <li>docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md</li>
+<li>openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md</li>
 <li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html</li>
 <li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf</li>
+<li>docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md</li>
 <li>docs/sales/2026-05-01-openplan-buyer-one-pager.md</li>
 <li>docs/sales/2026-05-01-openplan-managed-hosting-service-description.md</li>
 <li>docs/sales/2026-05-01-openplan-pilot-sow-template.md</li>

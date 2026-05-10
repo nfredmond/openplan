@@ -45,6 +45,19 @@ What has been proven for this release-to-sale posture:
 | Backup/restore posture | PASS | The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. A dedicated staging Supabase project was created, migrated, restored from private production schema/public-data dumps, validated, and retired. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`; `docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md` |
 | Final checklist / managed support synchronization | PASS | The final pilot-readiness checklist, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet. | `docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md`; `docs/sales/2026-05-10-openplan-managed-support-proof-map.md`; `docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md`; `openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md`; `openplan/src/test/pilot-readiness-export-packet.test.ts` |
 
+## Compact Proof Artifact Index
+Use this index as the short operator map before buyer reliance. It names the current proof packet docs, generated static sales packet files, and preflight proof note without expanding the claim beyond supervised-pilot caveats.
+
+| Artifact | Category | Buyer-safe caveat |
+| --- | --- | --- |
+| **Final pilot-readiness checklist** — `docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md` | Proof packet doc | PASS supports a supervised pilot-readiness conversation only; it is not a finished-suite launch certificate. |
+| **Managed support proof map** — `docs/sales/2026-05-10-openplan-managed-support-proof-map.md` | Proof packet doc | Managed hosting, support, backup/restore, and pilot-closeout claims still require buyer-specific scope and terms. |
+| **Pilot-readiness export source trace** — `openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md` | Proof packet doc | Export traceability proves packet construction, not a fresh production smoke after later behavior changes. |
+| **Static sales packet — Markdown** — `docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md` | Static sales packet | Buyer-facing packet copy must travel with the caveat sheet and human review before external reliance. |
+| **Static sales packet — HTML** — `docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html` | Static sales packet | HTML is a generated presentation artifact; regenerate it when the Markdown/source helpers change. |
+| **Static sales packet — PDF** — `docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf` | Static sales packet | PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward. |
+| **Pilot preflight operator proof** — `docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md` | Preflight proof | The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof. |
+
 ## Final Pilot-Readiness Checklist Sync
 - Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md
 - Verdict: PASS for a supervised pilot-readiness conversation; not a launch certificate for a finished planning suite.
@@ -188,8 +201,10 @@ Avoid:
 - docs/ops/2026-05-01-openplan-known-issues-register.md
 - docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md
 - docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md
+- openplan/docs/ops/2026-05-09-pilot-readiness-export-source-trace-proof.md
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf
+- docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md
 - docs/sales/2026-05-01-openplan-buyer-one-pager.md
 - docs/sales/2026-05-01-openplan-managed-hosting-service-description.md
 - docs/sales/2026-05-01-openplan-pilot-sow-template.md

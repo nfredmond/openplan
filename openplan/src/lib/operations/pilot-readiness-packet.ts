@@ -1,5 +1,7 @@
 import {
   finalPilotReadinessChecklistSync,
+  getAdminPilotReadinessProofArtifactCategoryLabel,
+  getAdminPilotReadinessProofArtifactIndex,
   getReleaseProofItemCaveats,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
@@ -272,6 +274,23 @@ export function buildFinalPilotReadinessSyncMarkdown(level: MarkdownHeadingLevel
   ].join("\n");
 }
 
+export function buildAdminPilotReadinessProofArtifactIndexMarkdown(level: MarkdownHeadingLevel = 2) {
+  return [
+    heading(level, "Compact Proof Artifact Index"),
+    "Use this index as the short operator map before buyer reliance. It names the current proof packet docs, generated static sales packet files, and preflight proof note without expanding the claim beyond supervised-pilot caveats.",
+    "",
+    ...markdownTable([
+      ["Artifact", "Category", "Buyer-safe caveat"],
+      ["---", "---", "---"],
+      ...getAdminPilotReadinessProofArtifactIndex().map((item) => [
+        `**${item.label}** — \`${item.artifact}\``,
+        getAdminPilotReadinessProofArtifactCategoryLabel(item.category),
+        item.buyerSafeCaveat,
+      ]),
+    ]),
+  ].join("\n");
+}
+
 export function buildReleaseProofAlignmentMarkdown(level: MarkdownHeadingLevel = 2) {
   return [
     heading(level, "Release Proof Packet Alignment"),
@@ -306,6 +325,8 @@ export function buildPilotReadinessPacket(statusList: PilotReadinessPacketStatus
     "- Re-run or refresh any FAIL, PENDING, or UNKNOWN lane before using this packet for pilot diligence.",
     "- Treat this packet as an internal diligence aid; buyer-specific emails, public posts, and signed SOW language still need human review.",
     "",
+    buildAdminPilotReadinessProofArtifactIndexMarkdown(2),
+    "",
     buildFinalPilotReadinessSyncMarkdown(2),
     "",
     buildReleaseProofAlignmentMarkdown(2),
@@ -322,6 +343,7 @@ export function getAdminPilotReadinessStaticPacketSources() {
     ...adminPilotReadinessStaticPacket.proofSnapshotRows.flatMap((row) => [...row.sources]),
     ...releaseProofPosture.proofItems.map((item) => item.artifact),
     ...releaseProofPosture.caveatItems.map((caveat) => caveat.sourceArtifact),
+    ...getAdminPilotReadinessProofArtifactIndex().map((item) => item.artifact),
     finalPilotReadinessChecklistSync.checklistArtifact,
     ...finalPilotReadinessChecklistSync.exportFilenames,
     ...finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => artifact.artifact),
@@ -356,6 +378,8 @@ export function buildAdminPilotReadinessProofPacketMarkdown() {
       ["---", "---", "---", "---"],
       ...packet.proofSnapshotRows.map((row) => [row.area, row.status, row.evidence, row.sources.map((source) => `\`${source}\``).join("; ")]),
     ]),
+    "",
+    buildAdminPilotReadinessProofArtifactIndexMarkdown(2),
     "",
     buildFinalPilotReadinessSyncMarkdown(2),
     "",
