@@ -25,6 +25,61 @@ export function formatModelingValidationStatusLabel(status: ModelingValidationSt
   return "Fail";
 }
 
+export type ReportModelingEvidenceExportProof = {
+  sourceContext: string;
+  caveatCarryThrough: string[];
+  exportReadiness: string;
+  exportReady: boolean;
+  stalePacketLanguage: string;
+};
+
+function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter((value) => value.length > 0)
+    )
+  );
+}
+
+export function buildReportModelingEvidenceExportProof(
+  item: ReportModelingEvidence
+): ReportModelingEvidenceExportProof {
+  const evidence = item.evidence;
+  const claim = evidence?.claimDecision ?? null;
+  const sourceCount = evidence?.sourceManifests.length ?? 0;
+  const validationCount = evidence ? describeValidationCheckCount(item) : 0;
+  const statusLabel = claim ? formatModelingClaimStatusLabel(claim.claimStatus) : "No claim decision";
+  const runLabel = firstNonEmpty([item.geographyLabel, item.runName, item.countyRunId]) ?? "county model run";
+  const caveatCarryThrough = uniqueNonEmpty([
+    "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+    evidence?.reportLanguage,
+    claim?.statusReason,
+    ...(claim?.reasons ?? []),
+    ...(claim?.validationSummary.missingRequiredMetricKeys.map((key) => `Missing required validation metric: ${key}`) ?? []),
+    sourceCount === 0 ? "No source manifests were attached to this modeling evidence snapshot." : null,
+    validationCount === 0 ? "No validation checks were attached to this modeling evidence snapshot." : null,
+  ]).slice(0, 8);
+
+  const hasMinimumSourceContext = sourceCount > 0 && validationCount > 0 && Boolean(claim);
+  const exportReady = hasMinimumSourceContext && claim?.claimStatus !== "prototype_only";
+  const exportReadiness = exportReady
+    ? `${statusLabel} evidence is ready for supervised draft packet citation within the recorded source and validation limits; do not describe it as a validated behavioral forecast or certified calibration.`
+    : `Export hold: ${runLabel} needs a claim decision, source manifests, and validation checks before model-backed report language is used.`;
+  const stalePacketLanguage = item.updatedAt
+    ? `Modeling evidence snapshot updated ${item.updatedAt}; regenerate the packet if county-run evidence, source manifests, validation checks, or comparison snapshots changed afterward.`
+    : "Modeling evidence timestamp is missing; treat any exported packet as stale until the county-run evidence is refreshed.";
+
+  return {
+    sourceContext: `${runLabel} carries ${sourceCount} source manifest${sourceCount === 1 ? "" : "s"} and ${validationCount} validation check${validationCount === 1 ? "" : "s"} into this report artifact. No raw behavioral-onramp KPI rows are read by export metadata helpers.`,
+    caveatCarryThrough,
+    exportReadiness,
+    exportReady,
+    stalePacketLanguage,
+  };
+}
+
 export function summarizeReportModelingEvidenceForMetadata(modelingEvidence: ReportModelingEvidence[]) {
   return modelingEvidence.map((item) => ({
     countyRunId: item.countyRunId,
@@ -38,6 +93,7 @@ export function summarizeReportModelingEvidenceForMetadata(modelingEvidence: Rep
     sourceManifestCount: item.evidence?.sourceManifests.length ?? 0,
     validationResultCount: item.evidence?.validationResults.length ?? 0,
     validationSummary: item.evidence?.claimDecision?.validationSummary ?? null,
+    exportProof: buildReportModelingEvidenceExportProof(item),
   }));
 }
 

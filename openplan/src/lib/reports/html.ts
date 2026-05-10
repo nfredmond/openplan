@@ -13,6 +13,7 @@ import {
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import {
+  buildReportModelingEvidenceExportProof,
   formatModelingClaimStatusLabel,
   formatModelingValidationStatusLabel,
   type ReportModelingEvidence,
@@ -428,6 +429,7 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
           const validationSummary = claim?.validationSummary ?? null;
           const validationRows = evidence?.validationResults ?? [];
           const sourceRows = evidence?.sourceManifests ?? [];
+          const exportProof = buildReportModelingEvidenceExportProof(item);
           const validationSummaryText = validationSummary
             ? `${validationSummary.passed} pass • ${validationSummary.warned} warning • ${validationSummary.failed} fail`
             : `${validationRows.length} validation checks`;
@@ -455,7 +457,11 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
             <div class="metrics-grid" style="margin-top: 14px;">
               <div><span class="metric-label">Source manifests</span><strong>${sourceRows.length}</strong></div>
               <div><span class="metric-label">Validation checks</span><strong>${esc(validationSummaryText)}</strong></div>
+              <div><span class="metric-label">Export readiness</span><strong>${exportProof.exportReady ? "Ready with caveats" : "Hold"}</strong></div>
             </div>
+            <p class="meta" style="margin-top: 14px;">${esc(exportProof.sourceContext)}</p>
+            <p class="meta" style="margin-top: 8px;">${esc(exportProof.exportReadiness)}</p>
+            <p class="meta" style="margin-top: 8px;">${esc(exportProof.stalePacketLanguage)}</p>
             ${
               validationRows.length > 0
                 ? `<ul class="record-list" style="margin-top: 14px;">${validationRows

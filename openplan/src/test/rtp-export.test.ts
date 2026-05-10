@@ -284,6 +284,9 @@ describe("buildRtpExportHtml", () => {
     expect(html).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
     expect(html).toContain("3 pass · 1 warning · 1 fail");
     expect(html).toContain("Observed count validation");
+    expect(html).toContain("Export proof:");
+    expect(html).toContain("No raw behavioral-onramp KPI rows are read by export metadata helpers.");
+    expect(html).toContain("regenerate the packet if county-run evidence");
   });
 
   it("renders a scan-friendly adoption record checklist in adoption readiness", () => {
