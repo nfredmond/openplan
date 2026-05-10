@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
@@ -115,6 +115,48 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/grants#grants-gap-resolution-lane"
     );
+  });
+
+  it("defaults missing numeric counts to zero instead of rendering NaN", () => {
+    const {
+      reportPacketCurrent: _reportPacketCurrent,
+      rtpFundingReviewPackets: _rtpFundingReviewPackets,
+      openFundingOpportunities: _openFundingOpportunities,
+      comparisonBackedReports: _comparisonBackedReports,
+      queueDepth: _queueDepth,
+      aerialMissions: _aerialMissions,
+      aerialReadyPackages: _aerialReadyPackages,
+      ...partialCounts
+    } = summary.counts;
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    try {
+      render(
+        <WorkspaceCommandBoard
+          summary={{
+            ...summary,
+            counts: partialCounts as unknown as WorkspaceOperationsSummary["counts"],
+            nextCommand: null,
+            commandQueue: [],
+            fullCommandQueue: [],
+          }}
+        />
+      );
+
+      expect(screen.getByText(/0 refresh recommended, 0 without packets, 0 ready for release review\./i)).toBeInTheDocument();
+      expect(screen.getByText(/0 regenerate · 0 generate · 0 review/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 total commands · 0 proof-linked actions/i)).toBeInTheDocument();
+      expect(document.body).not.toHaveTextContent(/NaN/);
+      expect(
+        consoleErrorSpy.mock.calls.some((call) =>
+          call.some((part) => String(part).includes("Received NaN"))
+        )
+      ).toBe(false);
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
   });
 
   it("shows comparison-backed queue caveats as planning support", () => {

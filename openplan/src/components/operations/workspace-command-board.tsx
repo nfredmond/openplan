@@ -31,6 +31,10 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function safeCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function resolveNextActionHref(action: WorkflowNextActionEntry) {
   return action.command && isGrantsCommand(action.command)
     ? resolveSharedGrantsQueueHref(action.command)
@@ -62,10 +66,28 @@ export function WorkspaceCommandBoard({
   description?: string;
   children?: ReactNode;
 }) {
-  const reimbursementStartCount = summary.counts.projectFundingReimbursementStartProjects;
-  const reimbursementAdvanceCount = summary.counts.projectFundingReimbursementActiveProjects;
+  const counts = summary.counts;
+  const reportRefreshRecommendedCount = safeCount(counts.reportRefreshRecommended);
+  const reportNoPacketCount = safeCount(counts.reportNoPacket);
+  const reportPacketCurrentCount = safeCount(counts.reportPacketCurrent);
+  const plansNeedingSetupCount = safeCount(counts.plansNeedingSetup);
+  const planCount = safeCount(counts.plans);
+  const activeProjectCount = safeCount(counts.activeProjects);
+  const openFundingOpportunityCount = safeCount(counts.openFundingOpportunities);
+  const closingSoonFundingOpportunityCount = safeCount(counts.closingSoonFundingOpportunities);
+  const overdueDecisionFundingOpportunityCount = safeCount(counts.overdueDecisionFundingOpportunities);
+  const fundingNeedAnchorProjectCount = safeCount(counts.projectFundingNeedAnchorProjects);
+  const fundingSourcingProjectCount = safeCount(counts.projectFundingSourcingProjects);
+  const fundingDecisionProjectCount = safeCount(counts.projectFundingDecisionProjects);
+  const fundingAwardRecordProjectCount = safeCount(counts.projectFundingAwardRecordProjects);
+  const fundingGapProjectCount = safeCount(counts.projectFundingGapProjects);
+  const reimbursementStartCount = safeCount(counts.projectFundingReimbursementStartProjects);
+  const reimbursementAdvanceCount = safeCount(counts.projectFundingReimbursementActiveProjects);
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
-  const rtpFundingReviewCount = summary.counts.rtpFundingReviewPackets;
+  const rtpFundingReviewCount = safeCount(counts.rtpFundingReviewPackets);
+  const aerialMissionCount = safeCount(counts.aerialMissions);
+  const aerialActiveMissionCount = safeCount(counts.aerialActiveMissions);
+  const aerialReadyPackageCount = safeCount(counts.aerialReadyPackages);
   const baseDescription = description ?? summary.detail;
   const rtpFundingReviewRoutesThroughGrants =
     summary.nextCommand?.key === "review-current-report-packets" && summary.nextCommand.moduleKey === "grants";
@@ -90,39 +112,39 @@ export function WorkspaceCommandBoard({
         <div className="module-subpanel">
           <p className="module-summary-label">Packet work</p>
           <p className="module-summary-value">
-            {summary.counts.reportRefreshRecommended + summary.counts.reportNoPacket + summary.counts.reportPacketCurrent}
+            {reportRefreshRecommendedCount + reportNoPacketCount + reportPacketCurrentCount}
           </p>
           <p className="module-summary-detail">
-            {summary.counts.reportRefreshRecommended} refresh recommended, {summary.counts.reportNoPacket} without packets, {summary.counts.reportPacketCurrent} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
+            {reportRefreshRecommendedCount} refresh recommended, {reportNoPacketCount} without packets, {reportPacketCurrentCount} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
           </p>
         </div>
         <div className="module-subpanel">
           <p className="module-summary-label">Plan setup</p>
-          <p className="module-summary-value">{summary.counts.plansNeedingSetup}</p>
-          <p className="module-summary-detail">{summary.counts.plans} total plans, {summary.counts.activeProjects} active projects in scope.</p>
+          <p className="module-summary-value">{plansNeedingSetupCount}</p>
+          <p className="module-summary-detail">{planCount} total plans, {activeProjectCount} active projects in scope.</p>
         </div>
         <div className="module-subpanel">
           <p className="module-summary-label">Funding pressure</p>
-          <p className="module-summary-value">{summary.counts.openFundingOpportunities}</p>
+          <p className="module-summary-value">{openFundingOpportunityCount}</p>
           <p className="module-summary-detail">
-            {summary.counts.closingSoonFundingOpportunities} closing within 14 days
-            {summary.counts.overdueDecisionFundingOpportunities > 0
-              ? `, ${summary.counts.overdueDecisionFundingOpportunities} overdue decision${summary.counts.overdueDecisionFundingOpportunities === 1 ? "" : "s"}`
+            {closingSoonFundingOpportunityCount} closing within 14 days
+            {overdueDecisionFundingOpportunityCount > 0
+              ? `, ${overdueDecisionFundingOpportunityCount} overdue decision${overdueDecisionFundingOpportunityCount === 1 ? "" : "s"}`
               : ""}
-            {summary.counts.projectFundingNeedAnchorProjects > 0
-              ? `, ${summary.counts.projectFundingNeedAnchorProjects} missing funding anchors`
+            {fundingNeedAnchorProjectCount > 0
+              ? `, ${fundingNeedAnchorProjectCount} missing funding anchors`
               : ""}
-            {summary.counts.projectFundingSourcingProjects > 0
-              ? `, ${summary.counts.projectFundingSourcingProjects} needing sourcing`
+            {fundingSourcingProjectCount > 0
+              ? `, ${fundingSourcingProjectCount} needing sourcing`
               : ""}
-            {summary.counts.projectFundingDecisionProjects > 0
-              ? `, ${summary.counts.projectFundingDecisionProjects} needing pursue decisions`
+            {fundingDecisionProjectCount > 0
+              ? `, ${fundingDecisionProjectCount} needing pursue decisions`
               : ""}
-            {summary.counts.projectFundingAwardRecordProjects > 0
-              ? `, ${summary.counts.projectFundingAwardRecordProjects} awarded opportunities missing award records`
+            {fundingAwardRecordProjectCount > 0
+              ? `, ${fundingAwardRecordProjectCount} awarded opportunities missing award records`
               : ""}
-            {summary.counts.projectFundingGapProjects > 0
-              ? `, ${summary.counts.projectFundingGapProjects} project funding gaps.`
+            {fundingGapProjectCount > 0
+              ? `, ${fundingGapProjectCount} project funding gaps.`
               : "."}
           </p>
         </div>
@@ -135,12 +157,12 @@ export function WorkspaceCommandBoard({
               : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
           </p>
         </div>
-        {summary.counts.aerialMissions > 0 ? (
+        {aerialMissionCount > 0 ? (
           <div className="module-subpanel sm:col-span-2">
             <p className="module-summary-label">Aerial evidence</p>
-            <p className="module-summary-value">{summary.counts.aerialMissions}</p>
+            <p className="module-summary-value">{aerialMissionCount}</p>
             <p className="module-summary-detail">
-              {summary.counts.aerialActiveMissions} active, {summary.counts.aerialReadyPackages} evidence package{summary.counts.aerialReadyPackages === 1 ? "" : "s"} ready.
+              {aerialActiveMissionCount} active, {aerialReadyPackageCount} evidence package{aerialReadyPackageCount === 1 ? "" : "s"} ready.
               {summary.aerialPosture?.verificationReadiness === "ready"
                 ? " Field verification support packages are ready."
                 : summary.aerialPosture?.verificationReadiness === "partial"

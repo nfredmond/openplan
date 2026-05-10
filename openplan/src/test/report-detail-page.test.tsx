@@ -242,14 +242,29 @@ describe("ReportDetailPage", () => {
 
     loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
       posture: "under control",
+      headline: "Workspace clear",
+      detail: "No workspace command pressure is visible in the report-detail fixture.",
       nextCommand: null,
       nextActions: [],
       commandQueue: [],
+      fullCommandQueue: [],
       counts: {
+        projects: 1,
+        activeProjects: 1,
+        plans: 0,
+        plansNeedingSetup: 0,
+        programs: 0,
+        activePrograms: 0,
+        reports: 1,
         queueDepth: 0,
         reportRefreshRecommended: 0,
         reportNoPacket: 0,
+        reportPacketCurrent: 1,
         rtpFundingReviewPackets: 0,
+        comparisonBackedReports: 0,
+        fundingOpportunities: 0,
+        openFundingOpportunities: 0,
+        closingSoonFundingOpportunities: 0,
         projectFundingNeedAnchorProjects: 0,
         projectFundingSourcingProjects: 0,
         projectFundingDecisionProjects: 0,
@@ -257,6 +272,10 @@ describe("ReportDetailPage", () => {
         projectFundingReimbursementStartProjects: 0,
         projectFundingReimbursementActiveProjects: 0,
         projectFundingGapProjects: 0,
+        overdueDecisionFundingOpportunities: 0,
+        aerialMissions: 0,
+        aerialActiveMissions: 0,
+        aerialReadyPackages: 0,
       },
     });
 
@@ -671,11 +690,23 @@ describe("ReportDetailPage", () => {
   });
 
   it("shows richer engagement traceability with public page access when available", async () => {
-    const page = await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
-    });
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    render(page);
+    try {
+      const page = await ReportDetailPage({
+        params: Promise.resolve({ reportId: "report-1" }),
+      });
+
+      render(page);
+
+      expect(
+        consoleErrorSpy.mock.calls.some((call) =>
+          call.some((part) => String(part).includes("Received NaN"))
+        )
+      ).toBe(false);
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
 
     expect(screen.getByText("Engagement source")).toBeInTheDocument();
     expect(screen.getByText("Downtown listening campaign")).toBeInTheDocument();
