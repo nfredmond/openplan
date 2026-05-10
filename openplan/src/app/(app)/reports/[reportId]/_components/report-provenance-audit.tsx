@@ -7,7 +7,10 @@ import {
   parseStoredScenarioSpineSummary,
   titleize,
 } from "@/lib/reports/catalog";
-import type { ReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
+import {
+  describeReportAerialEvidenceDisplayState,
+  type ReportAerialEvidenceSourceContext,
+} from "@/lib/reports/aerial-source-context";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import type { ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import type { ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
@@ -73,6 +76,13 @@ export function ReportProvenanceAudit({
   projectRecordsSnapshot,
   scenarioSetLinks,
 }: Props) {
+  const aerialEvidenceDisplayState = describeReportAerialEvidenceDisplayState(
+    aerialEvidenceSourceContext
+  );
+  const shouldShowAerialEvidenceState = Boolean(
+    sourceContext || engagementCampaign || aerialEvidenceSourceContext
+  );
+
   return (
     <article className="module-section-surface">
       <div className="flex items-center gap-3">
@@ -298,7 +308,7 @@ export function ReportProvenanceAudit({
                 </p>
               </div>
             ) : null}
-            {aerialEvidenceSourceContext ? (
+            {shouldShowAerialEvidenceState ? (
               <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-1">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -306,45 +316,49 @@ export function ReportProvenanceAudit({
                       Aerial evidence
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      {aerialEvidenceSourceContext.label}
+                      {aerialEvidenceDisplayState.label}
                     </p>
                   </div>
                   <StatusBadge
                     tone={
-                      aerialEvidenceSourceContext.readiness === "ready"
+                      aerialEvidenceDisplayState.posture === "ready"
                         ? "success"
-                        : aerialEvidenceSourceContext.readiness === "needs_source_context"
+                        : aerialEvidenceDisplayState.posture === "needs_source_context"
                           ? "warning"
-                          : "danger"
+                          : aerialEvidenceDisplayState.posture === "absent"
+                            ? "neutral"
+                            : "danger"
                     }
                   >
-                    {titleize(aerialEvidenceSourceContext.readiness)}
+                    {aerialEvidenceDisplayState.posture === "absent"
+                      ? "Absent"
+                      : titleize(aerialEvidenceDisplayState.posture)}
                   </StatusBadge>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  {aerialEvidenceSourceContext.detail}
+                  {aerialEvidenceDisplayState.detail}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {aerialEvidenceSourceContext.missionCount} mission
-                  {aerialEvidenceSourceContext.missionCount === 1 ? "" : "s"} ·{" "}
-                  {aerialEvidenceSourceContext.packageCount} package
-                  {aerialEvidenceSourceContext.packageCount === 1 ? "" : "s"} ·{" "}
-                  {aerialEvidenceSourceContext.sourceContextPackageCount} source-context package
-                  {aerialEvidenceSourceContext.sourceContextPackageCount === 1 ? "" : "s"}
+                  {aerialEvidenceDisplayState.missionCount} mission
+                  {aerialEvidenceDisplayState.missionCount === 1 ? "" : "s"} ·{" "}
+                  {aerialEvidenceDisplayState.packageCount} package
+                  {aerialEvidenceDisplayState.packageCount === 1 ? "" : "s"} ·{" "}
+                  {aerialEvidenceDisplayState.sourceContextPackageCount} source-context package
+                  {aerialEvidenceDisplayState.sourceContextPackageCount === 1 ? "" : "s"}
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  {aerialEvidenceSourceContext.caveat}
+                  {aerialEvidenceDisplayState.caveat}
                 </p>
-                {aerialEvidenceSourceContext.blockers.length > 0 ? (
+                {aerialEvidenceDisplayState.blockers.length > 0 ? (
                   <ul className="mt-2 space-y-1 text-xs leading-relaxed text-muted-foreground">
-                    {aerialEvidenceSourceContext.blockers.slice(0, 2).map((blocker) => (
+                    {aerialEvidenceDisplayState.blockers.slice(0, 2).map((blocker) => (
                       <li key={blocker}>• {blocker}</li>
                     ))}
                   </ul>
                 ) : null}
-                {aerialEvidenceSourceContext.missionSummaries[0] ? (
+                {aerialEvidenceDisplayState.missionHref ? (
                   <Link
-                    href={`/aerial/missions/${aerialEvidenceSourceContext.missionSummaries[0].missionId}`}
+                    href={aerialEvidenceDisplayState.missionHref}
                     className="mt-3 inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-[0.72rem] font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
                   >
                     <Link2 className="h-3.5 w-3.5" />

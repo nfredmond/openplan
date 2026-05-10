@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
   buildReportAerialEvidenceSourceContext,
+  describeReportAerialEvidenceDisplayState,
   parseReportAerialEvidenceSourceContext,
 } from "@/lib/reports/aerial-source-context";
 
@@ -181,6 +183,141 @@ describe("buildReportAerialEvidenceSourceContext", () => {
         },
       ],
     });
+  });
+
+  it("returns an absent display state with the operator-assisted caveat when no report-adjacent aerial context exists", () => {
+    const display = describeReportAerialEvidenceDisplayState(null);
+
+    expect(display).toMatchObject({
+      posture: "absent",
+      label: "No aerial evidence source context captured",
+      missionCount: 0,
+      packageCount: 0,
+      sourceContextPackageCount: 0,
+      caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+      missionHref: null,
+    });
+    expect(display.detail).toContain("no report-adjacent aerial provenance");
+    expect(display.blockers).toContain(
+      "No report-adjacent aerial source context was captured in the latest artifact."
+    );
+    expect(display.caveat).toContain("No autonomous photogrammetry");
+    expect(display.caveat).toContain("regulatory compliance");
+    expect(display.caveat).toContain("survey-grade certification");
+  });
+
+  it("describes ready aerial evidence for report display with caveat and mission link", () => {
+    const context = buildReportAerialEvidenceSourceContext({
+      missions: [
+        {
+          id: "mission-display-ready",
+          title: "Ready aerial display mission",
+          status: "complete",
+          mission_type: "corridor_survey",
+          project_id: "project-display",
+          aoi_geojson: { type: "Polygon", coordinates: [] },
+          updated_at: "2026-05-09T22:00:00.000Z",
+        },
+      ],
+      packages: [
+        {
+          id: "package-display-ready",
+          mission_id: "mission-display-ready",
+          title: "Ready display package",
+          status: "ready",
+          verification_readiness: "ready",
+          notes: "Operator reviewed package for report context.",
+          updated_at: "2026-05-09T22:10:00.000Z",
+        },
+      ],
+    });
+
+    const display = describeReportAerialEvidenceDisplayState(context);
+
+    expect(display).toMatchObject({
+      posture: "ready",
+      label: "Aerial evidence source context attached",
+      missionCount: 1,
+      packageCount: 1,
+      sourceContextPackageCount: 1,
+      blockers: [],
+      caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+      missionHref: "/aerial/missions/mission-display-ready",
+    });
+  });
+
+  it("describes source-context-needed aerial evidence for report display with caveat and blocker", () => {
+    const context = buildReportAerialEvidenceSourceContext({
+      missions: [
+        {
+          id: "mission-display-needs-context",
+          title: "Needs context aerial mission",
+          status: "complete",
+          mission_type: "site_inspection",
+          project_id: "project-display",
+          aoi_geojson: { type: "Polygon", coordinates: [] },
+          updated_at: null,
+        },
+      ],
+      packages: [
+        {
+          id: "package-display-needs-context",
+          mission_id: "mission-display-needs-context",
+          title: "Needs context package",
+          status: "ready",
+          verification_readiness: "ready",
+          notes: " ",
+          updated_at: null,
+        },
+      ],
+    });
+
+    const display = describeReportAerialEvidenceDisplayState(context);
+
+    expect(display).toMatchObject({
+      posture: "needs_source_context",
+      label: "Aerial evidence source context needed",
+      missionCount: 1,
+      packageCount: 1,
+      sourceContextPackageCount: 0,
+      caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+      missionHref: "/aerial/missions/mission-display-needs-context",
+    });
+    expect(display.blockers).toContain(
+      "Add package notes or source-context text so reviewers can cite what the aerial evidence actually supports."
+    );
+  });
+
+  it("describes blocked aerial evidence for report display with caveat and no mission link when only orphan packages exist", () => {
+    const context = buildReportAerialEvidenceSourceContext({
+      missions: [],
+      packages: [
+        {
+          id: "package-display-blocked",
+          mission_id: "missing-display-mission",
+          title: "Blocked package",
+          status: "ready",
+          verification_readiness: "ready",
+          notes: "Operator note exists but mission provenance is missing.",
+          updated_at: "2026-05-09T22:20:00.000Z",
+        },
+      ],
+    });
+
+    const display = describeReportAerialEvidenceDisplayState(context);
+
+    expect(display).toMatchObject({
+      posture: "blocked",
+      label: "Aerial evidence blocked for report attachment",
+      missionCount: 0,
+      packageCount: 1,
+      sourceContextPackageCount: 0,
+      caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+      missionHref: null,
+    });
+    expect(display.blockers).toContain(
+      "1 aerial evidence package references a mission that was not loaded into the report source context."
+    );
   });
 
   it("fails closed when persisted metadata implies unsafe autonomous or certification claims", () => {
