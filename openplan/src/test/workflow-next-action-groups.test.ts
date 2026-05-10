@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildWorkflowNextActionGroups,
   classifyWorkflowNextAction,
+  getCommandCenterRoadmapWorkflowLaneKeys,
+  workflowGroupsCoverCommandCenterRoadmapLanes,
+  workflowGroupsPreserveStandingChecksWhenQueueIsEmpty,
 } from "@/lib/operations/workflow-next-action-groups";
 import type { WorkspaceCommandQueueItem, WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
@@ -112,14 +115,8 @@ describe("workflow next-action groups", () => {
   it("builds one operator lane for each required Command Center workflow", () => {
     const groups = buildWorkflowNextActionGroups(summary());
 
-    expect(groups.map((group) => group.key)).toEqual([
-      "rtp",
-      "grants",
-      "engagement",
-      "analysis-modeling",
-      "aerial",
-      "admin-release-proof",
-    ]);
+    expect(groups.map((group) => group.key)).toEqual(getCommandCenterRoadmapWorkflowLaneKeys());
+    expect(workflowGroupsCoverCommandCenterRoadmapLanes(groups)).toBe(true);
     expect(groups.find((group) => group.key === "rtp")?.actions[0]?.title).toBe("Run release review on current packets");
     expect(groups.find((group) => group.key === "grants")?.actions[0]?.title).toBe("Advance project funding decisions");
     expect(groups.find((group) => group.key === "engagement")?.actions[0]?.detail).toMatch(/review loop open/i);
@@ -128,20 +125,41 @@ describe("workflow next-action groups", () => {
     expect(groups.find((group) => group.key === "admin-release-proof")?.actions[0]?.title).toBe(
       "Run release review on current packets"
     );
+    expect(groups.find((group) => group.key === "grants")).toMatchObject({
+      queuedActionCount: 1,
+      displayedActionCount: 1,
+    });
+    expect(groups.find((group) => group.key === "rtp")?.actions[0]?.badges).toEqual([
+      { label: "Review loop open", value: 1 },
+    ]);
   });
 
   it("keeps standing check actions visible when a workflow has no queued pressure", () => {
     const groups = buildWorkflowNextActionGroups(summary({ fullCommandQueue: [], commandQueue: [], nextCommand: null }));
 
+    expect(workflowGroupsCoverCommandCenterRoadmapLanes(groups)).toBe(true);
+    expect(workflowGroupsPreserveStandingChecksWhenQueueIsEmpty(groups)).toBe(true);
+
     expect(groups.find((group) => group.key === "engagement")?.actions[0]).toMatchObject({
       title: "Inspect engagement handoff readiness",
       source: "standing-check",
       href: "/engagement",
+      badges: [{ label: "Standing check", value: "handoff" }],
     });
     expect(groups.find((group) => group.key === "admin-release-proof")?.actions[0]).toMatchObject({
       title: "Check release proof packet",
       source: "standing-check",
       href: "/admin/pilot-readiness",
+      badges: [{ label: "Total commands", value: 0 }],
+    });
+    expect(groups.find((group) => group.key === "rtp")?.actions[0]?.badges).toEqual([
+      { label: "Regenerate", value: 0 },
+      { label: "Generate", value: 0 },
+      { label: "Current", value: 1 },
+    ]);
+    expect(groups.find((group) => group.key === "rtp")).toMatchObject({
+      queuedActionCount: 0,
+      displayedActionCount: 1,
     });
   });
 });
