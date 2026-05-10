@@ -151,6 +151,14 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         paidAmount: 1_000_000,
         outstandingAmount: 0,
         coverageRatio: 1,
+        invoiceStatusBreakdown: {
+          paidCount: 1,
+          paidAmount: 1_000_000,
+          activeCount: 0,
+          activeAmount: 0,
+          draftCount: 0,
+          draftAmount: 0,
+        },
       })
     );
     expect(awardUpdateMock).toHaveBeenCalledWith({ spending_status: "fully_spent" });
@@ -220,6 +228,14 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
           paidAmount: 1_000_000,
           outstandingAmount: 0,
           coverageRatio: 1,
+          invoiceStatusBreakdown: {
+            paidCount: 1,
+            paidAmount: 1_000_000,
+            activeCount: 0,
+            activeAmount: 0,
+            draftCount: 0,
+            draftAmount: 0,
+          },
         }),
       })
     );
@@ -244,6 +260,24 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
           due_date: null,
           invoice_date: "2026-04-01",
         },
+        {
+          status: "approved",
+          amount: 200_000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 200_000,
+          due_date: null,
+          invoice_date: "2026-04-15",
+        },
+        {
+          status: "draft",
+          amount: 50_000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 50_000,
+          due_date: null,
+          invoice_date: "2026-04-20",
+        },
       ],
       error: null,
     });
@@ -257,6 +291,14 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         awardedAmount: 1_000_000,
         paidAmount: 400_000,
         outstandingAmount: 600_000,
+        invoiceStatusBreakdown: {
+          paidCount: 1,
+          paidAmount: 400_000,
+          activeCount: 1,
+          activeAmount: 200_000,
+          draftCount: 1,
+          draftAmount: 50_000,
+        },
       })
     );
     expect(awardUpdateMock).not.toHaveBeenCalled();

@@ -25,6 +25,39 @@ function toNumber(value: number | string | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+type CloseoutInvoiceCoverageBreakdown = {
+  paidCount: number;
+  paidAmount: number;
+  activeCount: number;
+  activeAmount: number;
+  draftCount: number;
+  draftAmount: number;
+};
+
+function buildCloseoutInvoiceCoverageBreakdown(
+  invoices: Array<{ status?: string | null; net_amount?: number | string | null; amount?: number | string | null }>
+): CloseoutInvoiceCoverageBreakdown {
+  return invoices.reduce<CloseoutInvoiceCoverageBreakdown>(
+    (breakdown, invoice) => {
+      const amount = toNumber(invoice.net_amount ?? invoice.amount);
+
+      if (invoice.status === "paid") {
+        breakdown.paidCount += 1;
+        breakdown.paidAmount += amount;
+      } else if (invoice.status === "submitted" || invoice.status === "approved") {
+        breakdown.activeCount += 1;
+        breakdown.activeAmount += amount;
+      } else if (invoice.status !== "rejected") {
+        breakdown.draftCount += 1;
+        breakdown.draftAmount += amount;
+      }
+
+      return breakdown;
+    },
+    { paidCount: 0, paidAmount: 0, activeCount: 0, activeAmount: 0, draftCount: 0, draftAmount: 0 }
+  );
+}
+
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("funding-awards.closeout", request);
   const startedAt = Date.now();
@@ -111,6 +144,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRows ?? []);
+    const invoiceCoverageBreakdown = buildCloseoutInvoiceCoverageBreakdown(invoiceRows ?? []);
     const awardedAmount = toNumber(award.awarded_amount);
     const paidAmount = invoiceSummary.paidNetAmount;
     const coverageRatio = awardedAmount > 0 ? paidAmount / awardedAmount : 0;
@@ -132,6 +166,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             paidAmount,
             outstandingAmount,
             coverageRatio,
+            invoiceStatusBreakdown: invoiceCoverageBreakdown,
           },
         },
         { status: 422 }
@@ -156,6 +191,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             paidAmount,
             outstandingAmount,
             coverageRatio,
+            invoiceStatusBreakdown: invoiceCoverageBreakdown,
           },
         },
         { status: 200 }
@@ -274,6 +310,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           paidAmount,
           outstandingAmount,
           coverageRatio,
+          invoiceStatusBreakdown: invoiceCoverageBreakdown,
         },
         closedAt: closedAtIso,
       },
