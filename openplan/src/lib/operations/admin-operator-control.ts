@@ -20,6 +20,9 @@ export type PilotReadinessControlSummary = {
   };
   openProofLaneLabels: string[];
   preflightCommand: string;
+  preflightProofArtifact: string;
+  preflightProofScope: string;
+  preflightOperatorInstruction: string;
   preflightPosture: string;
   proofPacketHref: string;
   proofPacketCaveat: string;
@@ -29,7 +32,22 @@ export type PilotReadinessControlSummary = {
 };
 
 const PILOT_PREFLIGHT_COMMAND =
-  "pnpm ops:check-pilot-preflight -- --deployment-target <production-url> --prod-health-target <production-url>";
+  "pnpm ops:check-pilot-preflight";
+
+const PILOT_PREFLIGHT_PROOF_ARTIFACT = "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md";
+
+const PILOT_PREFLIGHT_PROOF_SCOPE =
+  "Read-only pre-conversation readiness bundle covering local guard posture, migration inventory, production health, and Vercel deployment readiness.";
+
+const PILOT_PREFLIGHT_OPERATOR_INSTRUCTION =
+  "Run this in a terminal immediately before a buyer call, public demo, supervised pilot kickoff, sales-packet refresh, or post-deploy confidence check; this browser surface only points to the command and proof note.";
+
+const PILOT_PREFLIGHT_BASE = {
+  preflightCommand: PILOT_PREFLIGHT_COMMAND,
+  preflightProofArtifact: PILOT_PREFLIGHT_PROOF_ARTIFACT,
+  preflightProofScope: PILOT_PREFLIGHT_PROOF_SCOPE,
+  preflightOperatorInstruction: PILOT_PREFLIGHT_OPERATOR_INSTRUCTION,
+};
 
 function resolveLatestEvidenceDate(statusList: SmokeStatus[]): string {
   return statusList
@@ -64,7 +82,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,
       openProofLaneLabels,
-      preflightCommand: PILOT_PREFLIGHT_COMMAND,
+      ...PILOT_PREFLIGHT_BASE,
       preflightPosture: "Read-only preflight only; do not provision workspaces or imply automated activation from this surface.",
       proofPacketHref: "/admin/pilot-readiness",
       proofPacketCaveat: finalPilotReadinessChecklistSync.supervisedOnboardingCaveat,
@@ -83,7 +101,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,
       openProofLaneLabels,
-      preflightCommand: PILOT_PREFLIGHT_COMMAND,
+      ...PILOT_PREFLIGHT_BASE,
       preflightPosture: "Run the read-only preflight before demos, then resolve open proof lanes manually.",
       proofPacketHref: "/admin/pilot-readiness",
       proofPacketCaveat: finalPilotReadinessChecklistSync.supervisedOnboardingCaveat,
@@ -101,7 +119,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,
       openProofLaneLabels,
-      preflightCommand: PILOT_PREFLIGHT_COMMAND,
+      ...PILOT_PREFLIGHT_BASE,
       preflightPosture: "Run the read-only preflight immediately before buyer conversations to catch deployment drift.",
       proofPacketHref: "/admin/pilot-readiness",
       proofPacketCaveat: finalPilotReadinessChecklistSync.supervisedOnboardingCaveat,
@@ -118,7 +136,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
     latestEvidenceDate: resolveLatestEvidenceDate(statusList),
     counts,
     openProofLaneLabels,
-    preflightCommand: PILOT_PREFLIGHT_COMMAND,
+    ...PILOT_PREFLIGHT_BASE,
     preflightPosture: "Collect proof first; this control strip does not start deployments or enable self-serve activation.",
     proofPacketHref: "/admin/pilot-readiness",
     proofPacketCaveat: finalPilotReadinessChecklistSync.supervisedOnboardingCaveat,

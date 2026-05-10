@@ -112,8 +112,8 @@ export default function PilotReadinessPage() {
             <p className="module-section-label">Deployment preflight posture</p>
             <h2 className="module-section-title">Run a read-only preflight before outward reliance</h2>
             <p className="module-section-description">
-              The preflight is an operator check, not a deployment trigger or self-serve activation path. Replace the
-              target placeholders with the production URL immediately before a demo, diligence call, or proof-packet refresh.
+              The preflight is an operator check, not a deployment trigger or self-serve activation path. The proof note
+              below defines when to run it, how to read ATTENTION items, and which safety boundaries must stay intact.
             </p>
           </div>
           <StatusBadge tone="warning">Manual operator gate</StatusBadge>
@@ -127,7 +127,29 @@ export default function PilotReadinessPage() {
             {pilotControl.preflightCommand}
           </code>
           <p className="mt-3 text-[0.78rem] leading-relaxed text-muted-foreground">
-            {pilotControl.supervisedBoundary} {pilotControl.proofPacketCaveat}
+            {pilotControl.preflightOperatorInstruction}
+          </p>
+          <div className="mt-4 grid gap-3 border-t border-border/70 pt-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Proof source
+              </p>
+              <p className="mt-1 break-all font-mono text-[0.72rem] text-muted-foreground">
+                {pilotControl.preflightProofArtifact}
+              </p>
+            </div>
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Boundary
+              </p>
+              <p className="mt-1 text-[0.78rem] leading-relaxed text-muted-foreground">
+                {pilotControl.preflightProofScope} {pilotControl.supervisedBoundary} {pilotControl.proofPacketCaveat}
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 text-[0.72rem] leading-relaxed text-muted-foreground">
+            No commands run in the browser; no schema changes, production writes, workspace provisioning, billing activity,
+            or autonomous readiness claims are triggered from this panel.
           </p>
         </div>
       </article>

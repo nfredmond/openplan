@@ -43,6 +43,11 @@ describe("PilotReadinessPage", () => {
 
     expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
     expect(screen.getByText(/The export below uses the same release-proof posture as Command Center/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Run a read-only preflight before outward reliance/i })).toBeInTheDocument();
+    expect(screen.getByText("pnpm ops:check-pilot-preflight")).toBeInTheDocument();
+    expect(screen.getByText("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md")).toBeInTheDocument();
+    expect(screen.getByText(/Run this in a terminal immediately before a buyer call/i)).toBeInTheDocument();
+    expect(screen.getByText(/No commands run in the browser/i)).toBeInTheDocument();
     expect(screen.getByText(/Sale readiness: names the current gate evidence/i)).toBeInTheDocument();
     expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Billing proof waiver/i).length).toBeGreaterThan(0);
