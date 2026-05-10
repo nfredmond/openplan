@@ -797,6 +797,22 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.objectContaining({
         status: "generated",
         latest_artifact_kind: "html",
+        metadata_json: expect.objectContaining({
+          artifactHistory: [
+            expect.objectContaining({
+              artifactId: "artifact-1",
+              artifactKind: "html",
+              generatedBy: "22222222-2222-4222-8222-222222222222",
+              generationMode: "structured_html_packet",
+              sourceContextSummary: expect.objectContaining({
+                reportOrigin: "report_builder",
+                linkedRunCount: 1,
+                modelingEvidenceCount: 0,
+                engagementItemCount: 0,
+              }),
+            }),
+          ],
+        }),
         rtp_basis_stale: false,
         rtp_basis_stale_reason: null,
         rtp_basis_stale_run_id: null,

@@ -109,6 +109,64 @@ type ReportCountyRunEvidenceRow = {
 type ReportsGenerateSupabase = Awaited<ReturnType<typeof createClient>>;
 type ReportsGenerateAudit = Pick<ReturnType<typeof createApiAuditLogger>, "warn">;
 
+type ArtifactHistoryEntry = {
+  artifactId: string;
+  artifactKind: string;
+  generatedAt: string;
+  generatedBy: string;
+  generationMode: string;
+  sourceContextSummary: {
+    reportOrigin: string | null;
+    reportReason: string | null;
+    linkedRunCount: number | null;
+    modelingEvidenceCount: number | null;
+    engagementItemCount: number | null;
+  };
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function buildArtifactHistoryEntry(input: {
+  artifactId: string;
+  artifactKind: string;
+  generatedAt: string;
+  generatedBy: string;
+  generationMode: string;
+  sourceContext: Record<string, unknown>;
+}): ArtifactHistoryEntry {
+  const numberOrNull = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? value : null);
+  const stringOrNull = (value: unknown) => (typeof value === "string" && value.trim().length > 0 ? value : null);
+
+  return {
+    artifactId: input.artifactId,
+    artifactKind: input.artifactKind,
+    generatedAt: input.generatedAt,
+    generatedBy: input.generatedBy,
+    generationMode: input.generationMode,
+    sourceContextSummary: {
+      reportOrigin: stringOrNull(input.sourceContext.reportOrigin),
+      reportReason: stringOrNull(input.sourceContext.reportReason),
+      linkedRunCount: numberOrNull(input.sourceContext.linkedRunCount),
+      modelingEvidenceCount: numberOrNull(input.sourceContext.modelingEvidenceCount),
+      engagementItemCount: numberOrNull(input.sourceContext.engagementItemCount),
+    },
+  };
+}
+
+function appendArtifactHistory(metadata: unknown, entry: ArtifactHistoryEntry) {
+  const metadataRecord = asRecord(metadata) ?? {};
+  const existingHistory = Array.isArray(metadataRecord.artifactHistory)
+    ? metadataRecord.artifactHistory.filter((item) => asRecord(item))
+    : [];
+
+  return {
+    ...metadataRecord,
+    artifactHistory: [...existingHistory, entry].slice(-10),
+  };
+}
+
 function maxTimestamp(values: Array<string | null | undefined>) {
   const timestamps = values
     .map((value) => (value ? new Date(value).getTime() : Number.NaN))
@@ -681,8 +739,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
+      const artifactHistoryEntry = buildArtifactHistoryEntry({
+        artifactId: artifact.id,
+        artifactKind: format,
+        generatedAt,
+        generatedBy: user.id,
+        generationMode: artifactMetadata.generationMode,
+        sourceContext: artifactMetadata.sourceContext,
+      });
       const nextMetadataJson = {
-        ...(report.metadata_json && typeof report.metadata_json === "object" ? report.metadata_json : {}),
+        ...appendArtifactHistory(report.metadata_json, artifactHistoryEntry),
         queueTrace: {
           action: report.generated_at ? "refresh_artifact" : "generate_first_artifact",
           actedAt: generatedAt,
@@ -1245,8 +1311,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
+    const artifactHistoryEntry = buildArtifactHistoryEntry({
+      artifactId: artifact.id,
+      artifactKind: format,
+      generatedAt,
+      generatedBy: user.id,
+      generationMode: artifactMetadata.generationMode,
+      sourceContext: artifactMetadata.sourceContext,
+    });
     const nextMetadataJson = {
-      ...(report.metadata_json && typeof report.metadata_json === "object" ? report.metadata_json : {}),
+      ...appendArtifactHistory(report.metadata_json, artifactHistoryEntry),
       queueTrace: {
         action: report.generated_at ? "refresh_artifact" : "generate_first_artifact",
         actedAt: generatedAt,
