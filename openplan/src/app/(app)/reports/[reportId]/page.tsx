@@ -28,6 +28,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
+import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -263,6 +264,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
   const runAudit = asRunAudit(latestArtifact?.metadata_json);
   const sourceContext = asSourceContext(latestArtifact?.metadata_json);
+  const aerialEvidenceSourceContext = parseReportAerialEvidenceSourceContext(
+    sourceContext?.aerialEvidenceSourceContext
+  );
   const storedEvidenceChainSummary = parseStoredEvidenceChainSummary(
     latestArtifact?.metadata_json ?? null
   );
@@ -1158,6 +1162,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         engagementSnapshotCapturedAt,
         engagementSnapshotTotalItems,
         engagementSnapshotReadyForHandoff,
+        aerialEvidenceSourceContext,
         evidenceChainSummary,
         storedScenarioSpineSummary,
         projectId: project?.id ?? null,
