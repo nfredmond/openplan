@@ -11,6 +11,16 @@ Added a no-secret preflight command:
 pnpm ops:check-admin-operations-smoke -- --origin https://openplan-natford.vercel.app --reviewer-email <allowlisted-email>
 ```
 
+`--reviewer-email` is required on purpose, even for documentation/offline runs that use `--skip-network`. The reviewer identity anchors the smoke to the allowlisted account that will perform the manual browser check; without it, the result is not reproducible enough for admin-operations or pilot-readiness evidence.
+
+For local docs, packet prep, or outage-safe rehearsal where production network checks are intentionally out of scope, use:
+
+```text
+pnpm ops:check-admin-operations-smoke -- --reviewer-email <allowlisted-email> --skip-network
+```
+
+That mode is safe: it only validates the reviewer/optional local allowlist posture, prints a `network checks skipped by --skip-network` warning, and still does not accept cookies, auth headers, service-role keys, Vercel tokens, Supabase tokens, browser storage files, or prospect-row data. Treat it as rehearsal evidence, not a replacement for the production admin smoke before buyer or pilot reliance.
+
 The command performs only public or unauthenticated checks:
 
 - `GET /api/health` returns the expected OpenPlan health payload,
@@ -34,7 +44,7 @@ Do not click triage buttons, mark statuses, create workspaces, send email, alter
 
 1. Confirm the target Vercel production deployment is Ready for the commit being tested.
 2. Confirm `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS` is configured in Vercel Production and includes the reviewer email.
-3. Run the preflight command above from `openplan/`.
+3. Run the preflight command above from `openplan/`. Use `--skip-network` only for local docs/rehearsal; do not use a skipped-network result as the final buyer/pilot readiness proof.
 4. In a normal browser, sign in manually as the allowlisted reviewer.
 5. Open `https://openplan-natford.vercel.app/admin/operations`.
 6. Confirm the page renders:
@@ -62,5 +72,6 @@ rows changed: no
 emails sent: no
 workspaces created: no
 billing actions: no
+skip-network used: yes/no
 remaining blocker:
 ```

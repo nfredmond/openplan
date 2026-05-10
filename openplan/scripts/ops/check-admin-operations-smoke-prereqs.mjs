@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const DEFAULT_ORIGIN = "https://openplan-natford.vercel.app";
 const REVIEWER_EMAIL_ENV = "OPENPLAN_ADMIN_OPERATIONS_SMOKE_REVIEWER_EMAIL";
 const REVIEW_ALLOWLIST_ENV = "OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS";
@@ -14,6 +17,11 @@ function usage() {
     "  pnpm ops:check-admin-operations-smoke -- --reviewer-email <allowlisted-email>",
     "  pnpm ops:check-admin-operations-smoke -- --origin https://openplan-natford.vercel.app --reviewer-email <allowlisted-email>",
     "",
+    "Options:",
+    "  --reviewer-email <email>    Required allowlisted reviewer for the manual authenticated smoke",
+    "  --origin <url>              Admin Operations origin to check",
+    "  --skip-network              Only run local reviewer/allowlist posture checks; still requires --reviewer-email",
+    "",
     "Environment:",
     `  OPENPLAN_ADMIN_OPERATIONS_SMOKE_REVIEWER_EMAIL  Optional default for --reviewer-email`,
     `  OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS          Optional local allowlist check; values are not printed`,
@@ -23,7 +31,7 @@ function usage() {
   ].join("\n");
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const args = {
     origin: DEFAULT_ORIGIN,
     reviewerEmail: process.env[REVIEWER_EMAIL_ENV] ?? "",
@@ -261,45 +269,41 @@ function checkReviewerPrerequisites(reviewerEmail) {
   };
 }
 
-function printResult(result) {
+export function formatResult(result) {
   const status = result.warnings.length ? "passed with warnings" : "passed";
-  console.log(`OpenPlan admin operations smoke preflight ${status}.`);
-  console.log(`origin=${result.origin}`);
-  console.log(`reviewer=${maskEmail(result.reviewer)}`);
-  console.log("");
+  const lines = [
+    `OpenPlan admin operations smoke preflight ${status}.`,
+    `origin=${result.origin}`,
+    `reviewer=${maskEmail(result.reviewer)}`,
+    "",
+    "Checks:",
+  ];
 
-  console.log("Checks:");
   for (const check of result.checks) {
-    console.log(`  PASS ${check}`);
+    lines.push(`  PASS ${check}`);
   }
   for (const warning of result.warnings) {
-    console.log(`  WARN ${warning}`);
+    lines.push(`  WARN ${warning}`);
   }
 
-  console.log("");
-  console.log("Manual authenticated smoke:");
-  console.log("  1. In a normal browser, sign in manually as the allowlisted reviewer.");
-  console.log(`  2. Open ${pathUrl(result.origin, "/admin/operations")}.`);
-  console.log("  3. Confirm the page renders Warning watchboard, Recent supervised onboarding requests, and Assistant action activity.");
-  console.log("  4. Confirm the access-request lane is not locked for the reviewer.");
-  console.log("  5. Do not click triage buttons, create workspaces, send email, or record prospect PII unless separately approved.");
+  lines.push(
+    "",
+    "Manual authenticated smoke:",
+    "  1. In a normal browser, sign in manually as the allowlisted reviewer.",
+    `  2. Open ${pathUrl(result.origin, "/admin/operations")}.`,
+    "  3. Confirm the page renders Warning watchboard, Recent supervised onboarding requests, and Assistant action activity.",
+    "  4. Confirm the access-request lane is not locked for the reviewer.",
+    "  5. Do not click triage buttons, create workspaces, send email, or record prospect PII unless separately approved.",
+  );
+
+  return lines.join("\n");
 }
 
-async function main() {
-  let args;
-  try {
-    args = parseArgs(process.argv.slice(2));
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    console.error("");
-    console.error(usage());
-    process.exitCode = 1;
-    return;
-  }
+export async function runPreflight(argv = process.argv.slice(2)) {
+  const args = parseArgs(argv);
 
   if (args.help) {
-    console.log(usage());
-    return;
+    return { help: true, text: usage() };
   }
 
   const origin = parseOrigin(args.origin);
@@ -324,15 +328,28 @@ async function main() {
     checks.push(await checkAdminApiDenial(origin));
   }
 
-  printResult({
+  return {
     origin: origin.toString(),
     reviewer: reviewerCheck.reviewer,
     checks,
     warnings,
-  });
+  };
 }
 
-main().catch((error) => {
-  console.error(`OpenPlan admin operations smoke preflight failed: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+async function main(argv = process.argv.slice(2)) {
+  try {
+    const result = await runPreflight(argv);
+    console.log(result.help ? result.text : formatResult(result));
+  } catch (error) {
+    console.error(`OpenPlan admin operations smoke preflight failed: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && /^Unknown argument:/.test(error.message)) {
+      console.error("");
+      console.error(usage());
+    }
+    process.exitCode = 1;
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
+}
