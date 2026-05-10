@@ -355,4 +355,52 @@ describe("ScenarioSetDetailPage", () => {
       screen.getByText(/No linked reports yet\./i)
     ).toBeInTheDocument();
   });
+
+  it("renders caveat and source-context guidance on comparison cards", async () => {
+    buildScenarioComparisonBoardMock.mockReturnValueOnce([
+      {
+        entryId: "entry-alt-1",
+        candidateLabel: "Protected bike package",
+        candidateRunId: "run-alt-1",
+        candidateRunTitle: "Protected bike run",
+        baselineLabel: "Existing conditions",
+        baselineRunId: "run-baseline",
+        baselineRunTitle: "Existing conditions run",
+        changedMetricCount: 4,
+        analysisHref: "/explore?runId=run-alt-1&baselineRunId=run-baseline",
+        headlineMetrics: [
+          {
+            key: "overallScore",
+            label: "Overall Score",
+            current: 61,
+            baseline: 50,
+            delta: 11,
+            deltaLabel: "+11",
+            tone: "success",
+          },
+        ],
+        sourceContext: {
+          pairingLabel: "Protected bike package compared against Existing conditions",
+          sourceSummary:
+            "Source context: attached run scorecards from “Protected bike run” and “Existing conditions run”. No behavioral-onramp KPI rows are read by this board.",
+          baselineAssumptions: "Baseline: Horizon year: 2045",
+          alternativeAssumptions: "Alternative: Project package: Protected bike network",
+          caveatSummary:
+            "Caveat posture: planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+          exportReadiness:
+            "Export readiness: ready for a draft comparison packet when the report also carries these run links, assumptions, and caveats.",
+          evidenceLabels: ["Overall Score"],
+        },
+      },
+    ]);
+
+    await renderPage();
+
+    expect(screen.getByText(/Caveat and source context/i)).toBeInTheDocument();
+    expect(screen.getByText(/Protected bike package compared against Existing conditions/i)).toBeInTheDocument();
+    expect(screen.getByText(/No behavioral-onramp KPI rows are read by this board/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
+    expect(screen.getByText(/ready for a draft comparison packet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/overallScore/)).not.toBeInTheDocument();
+  });
 });

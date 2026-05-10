@@ -473,6 +473,20 @@ export default async function ScenarioSetDetailPage({
                       </div>
                     </div>
 
+                    <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        Caveat and source context
+                      </p>
+                      <h4 className="mt-2 text-sm font-semibold text-foreground">{card.sourceContext.pairingLabel}</h4>
+                      <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                        <p>{card.sourceContext.sourceSummary}</p>
+                        <p>{card.sourceContext.baselineAssumptions}</p>
+                        <p>{card.sourceContext.alternativeAssumptions}</p>
+                        <p>{card.sourceContext.caveatSummary}</p>
+                        <p>{card.sourceContext.exportReadiness}</p>
+                      </div>
+                    </div>
+
                     <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                       {card.headlineMetrics.map((metric) => (
                         <div key={`${card.entryId}-${metric.key}`} className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
