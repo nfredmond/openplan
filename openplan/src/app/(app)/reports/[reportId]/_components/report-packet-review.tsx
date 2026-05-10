@@ -6,11 +6,22 @@ import {
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
 import { describeComparisonSnapshotAggregate, titleize } from "@/lib/reports/catalog";
+import {
+  reportGenerationReadinessTone,
+  type ReportGenerationReadiness,
+  type ReportGenerationReadinessStatus,
+} from "@/lib/reports/generation-readiness";
 import type { PacketFreshness, ReportRow } from "./_types";
 
 type GrantModelingReadiness = ReturnType<typeof describeProjectGrantModelingReadiness>;
 type GrantModelingSupport = ReturnType<typeof buildGrantDecisionModelingSupport>;
 type ComparisonDigest = ReturnType<typeof describeComparisonSnapshotAggregate>;
+
+function toneForReadinessCheck(
+  status: ReportGenerationReadinessStatus
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  return reportGenerationReadinessTone(status);
+}
 
 export type GrantModelingEvidence = {
   leadComparisonReport: {
@@ -25,6 +36,7 @@ type Props = {
   >;
   projectId: string | null;
   packetFreshness: PacketFreshness;
+  generationReadiness: ReportGenerationReadiness;
   grantModelingReadiness: GrantModelingReadiness;
   grantModelingSupport: GrantModelingSupport;
   grantModelingEvidence: GrantModelingEvidence;
@@ -35,6 +47,7 @@ export function ReportPacketReview({
   report,
   projectId,
   packetFreshness,
+  generationReadiness,
   grantModelingReadiness,
   grantModelingSupport,
   grantModelingEvidence,
@@ -74,6 +87,9 @@ export function ReportPacketReview({
           ) : null}
           <StatusBadge tone={packetFreshness.tone}>
             {packetFreshness.label}
+          </StatusBadge>
+          <StatusBadge tone={reportGenerationReadinessTone(generationReadiness.status)}>
+            {generationReadiness.label}
           </StatusBadge>
           {grantModelingReadiness ? (
             <StatusBadge tone={grantModelingReadiness.tone}>
@@ -121,6 +137,56 @@ export function ReportPacketReview({
               "Saved comparison snapshots have not been captured here yet, so this packet should not drive pursue language on its own."}
           </p>
         </div>
+      </div>
+
+      <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Pre-generation readiness
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {generationReadiness.label}
+            </p>
+          </div>
+          <StatusBadge tone={reportGenerationReadinessTone(generationReadiness.status)}>
+            {generationReadiness.status === "not_started" ? "First packet" : titleize(generationReadiness.status)}
+          </StatusBadge>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {generationReadiness.detail} {generationReadiness.nextAction}
+        </p>
+        <div className="mt-4 grid gap-2 md:grid-cols-2">
+          {generationReadiness.checks.map((check) => (
+            <div
+              key={check.id}
+              className="rounded-[0.5rem] border border-border/75 bg-card/70 px-3 py-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {check.label}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {check.statusLabel}
+                  </p>
+                </div>
+                <StatusBadge tone={toneForReadinessCheck(check.status)}>
+                  {check.status === "not_started" ? "Not started" : titleize(check.status)}
+                </StatusBadge>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {check.detail}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Next: {check.nextAction}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          Data lineage scan: {generationReadiness.dataLineageSummary.outputReadyCount}/{generationReadiness.dataLineageSummary.datasetCount} project-linked datasets output-ready · {generationReadiness.dataLineageSummary.dependentOutputCount} dependent output checks passed.
+        </p>
       </div>
 
       <div className="mt-4 rounded-[20px] border border-border/80 bg-background/80 px-4 py-4">

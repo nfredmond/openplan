@@ -29,7 +29,14 @@ import {
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
+import {
+  buildReportDatasetOutputContexts,
+  type ReportDataHubDatasetRow,
+  type ReportDataHubProjectLinkRow,
+  type ReportDataHubRefreshJobRow,
+} from "@/lib/reports/data-lineage-output-contexts";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
+import { buildReportGenerationReadiness } from "@/lib/reports/generation-readiness";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildProjectStageGateSummary,
@@ -200,6 +207,41 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           { data: [], error: null },
           { data: [], error: null },
         ];
+
+  const projectDatasetLinksResult = report.project_id
+    ? await supabase
+        .from("data_dataset_project_links")
+        .select("dataset_id, project_id, relationship_type, linked_at")
+        .eq("project_id", report.project_id)
+        .order("linked_at", { ascending: false })
+    : { data: [], error: null };
+  const projectDatasetLinks = (projectDatasetLinksResult.data ?? []) as ReportDataHubProjectLinkRow[];
+  const projectDatasetIds = Array.from(
+    new Set(projectDatasetLinks.map((link) => link.dataset_id).filter(Boolean))
+  );
+  const [projectDatasetsResult, projectDatasetRefreshJobsResult] = projectDatasetIds.length
+    ? await Promise.all([
+        supabase
+          .from("data_datasets")
+          .select(
+            "id, name, status, geography_scope, geometry_attachment, thematic_metric_key, citation_text, source_url, license_label, vintage_label, schema_version, checksum, row_count, last_refreshed_at"
+          )
+          .in("id", projectDatasetIds),
+        supabase
+          .from("data_refresh_jobs")
+          .select("dataset_id, status, started_at, completed_at, created_at")
+          .in("dataset_id", projectDatasetIds)
+          .order("created_at", { ascending: false }),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  const datasetOutputContexts = buildReportDatasetOutputContexts({
+    datasets: (projectDatasetsResult.data ?? []) as ReportDataHubDatasetRow[],
+    links: projectDatasetLinks,
+    refreshJobs: (projectDatasetRefreshJobsResult.data ?? []) as ReportDataHubRefreshJobRow[],
+  });
 
   const rtpLinkedProjectIds = report.rtp_cycle_id
     ? ((rtpProjectLinks ?? []) as Array<{ project_id: string | null }>).map((link) => link.project_id).filter((value): value is string => Boolean(value))
@@ -1125,6 +1167,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         detail:
           "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
       };
+  const generationReadiness = buildReportGenerationReadiness({
+    hasGeneratedArtifact: Boolean(latestArtifact?.generated_at ?? report.generated_at),
+    sourceContext,
+    driftedSourceCount: driftedItems.length,
+    comparisonAggregate: currentReportComparisonAggregate,
+    fundingSnapshot,
+    datasetOutputContexts,
+  });
   return (
     <ReportStandardDetail
       report={report}
@@ -1141,6 +1191,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       engagementCampaign={engagementCampaign}
       engagementPublicHref={engagementPublicHref}
       currentReportPacketFreshness={currentReportPacketFreshness}
+      generationReadiness={generationReadiness}
       currentReportComparisonAggregate={currentReportComparisonAggregate}
       currentReportComparisonDigest={currentReportComparisonDigest}
       compositionAuditProps={{

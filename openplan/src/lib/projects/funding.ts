@@ -343,7 +343,7 @@ export function projectFundingProfileScanTone(
 }
 
 export function buildProjectFundingProfileScan(input: {
-  summary: ProjectFundingStackSummary;
+  summary: ProjectFundingStackSummary | ProjectFundingSnapshot;
   hasComparisonEvidence?: boolean;
   unlinkedInvoiceCount?: number;
   unlinkedInvoiceAmount?: number;

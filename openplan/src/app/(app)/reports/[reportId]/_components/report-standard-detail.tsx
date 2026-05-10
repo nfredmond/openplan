@@ -59,6 +59,7 @@ type ReportStandardDetailProps = {
   engagementCampaign: EngagementCampaignLinkRow | null;
   engagementPublicHref: string | null;
   currentReportPacketFreshness: ReportPacketReviewProps["packetFreshness"];
+  generationReadiness: ReportPacketReviewProps["generationReadiness"];
   currentReportComparisonAggregate: ReportComparisonSnapshotAggregate | null;
   currentReportComparisonDigest: ReportComparisonSnapshotDigest | null;
   compositionAuditProps: ReportCompositionAuditProps;
@@ -81,6 +82,7 @@ export function ReportStandardDetail({
   engagementCampaign,
   engagementPublicHref,
   currentReportPacketFreshness,
+  generationReadiness,
   currentReportComparisonAggregate,
   currentReportComparisonDigest,
   compositionAuditProps,
@@ -270,6 +272,7 @@ export function ReportStandardDetail({
         report={report}
         projectId={project?.id ?? null}
         packetFreshness={currentReportPacketFreshness}
+        generationReadiness={generationReadiness}
         grantModelingReadiness={currentReportGrantModelingReadiness}
         grantModelingSupport={currentReportGrantModelingSupport}
         grantModelingEvidence={currentReportGrantModelingEvidence}

@@ -82,6 +82,17 @@ const billingInvoicesOrderMock = vi.fn();
 const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
 const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
 
+const dataDatasetLinksOrderMock = vi.fn();
+const dataDatasetLinksEqMock = vi.fn(() => ({ order: dataDatasetLinksOrderMock }));
+const dataDatasetLinksSelectMock = vi.fn(() => ({ eq: dataDatasetLinksEqMock }));
+
+const dataDatasetsInMock = vi.fn();
+const dataDatasetsSelectMock = vi.fn(() => ({ in: dataDatasetsInMock }));
+
+const dataRefreshJobsOrderMock = vi.fn();
+const dataRefreshJobsInMock = vi.fn(() => ({ order: dataRefreshJobsOrderMock }));
+const dataRefreshJobsSelectMock = vi.fn(() => ({ in: dataRefreshJobsInMock }));
+
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
 const stageGateEqWorkspaceMock = vi.fn(() => ({ order: stageGateOrderMock }));
@@ -167,6 +178,15 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "billing_invoice_records") {
     return { select: billingInvoicesSelectMock };
+  }
+  if (table === "data_dataset_project_links") {
+    return { select: dataDatasetLinksSelectMock };
+  }
+  if (table === "data_datasets") {
+    return { select: dataDatasetsSelectMock };
+  }
+  if (table === "data_refresh_jobs") {
+    return { select: dataRefreshJobsSelectMock };
   }
   if (table === "stage_gate_decisions") {
     return { select: stageGateSelectMock };
@@ -588,12 +608,92 @@ describe("ReportDetailPage", () => {
     scenarioDataPackagesInMock.mockResolvedValue({ data: [], error: null });
     scenarioIndicatorSnapshotsInMock.mockResolvedValue({ data: [], error: null });
     scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [], error: null });
-    projectFundingProfileMaybeSingleMock.mockResolvedValue({ data: null, error: null });
-    fundingAwardsOrderMock.mockResolvedValue({ data: [], error: null });
-    fundingOpportunitiesOrderMock.mockResolvedValue({ data: [], error: null });
+    projectFundingProfileMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "profile-1",
+        funding_need_amount: 1000000,
+        local_match_need_amount: 100000,
+        notes: null,
+        updated_at: "2026-03-28T15:00:00.000Z",
+      },
+      error: null,
+    });
+    fundingAwardsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "award-1",
+          awarded_amount: 700000,
+          match_amount: 100000,
+          risk_flag: null,
+          obligation_due_at: "2026-06-30T00:00:00.000Z",
+          updated_at: "2026-03-28T15:15:00.000Z",
+          created_at: "2026-03-28T15:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    fundingOpportunitiesOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "opportunity-1",
+          expected_award_amount: 350000,
+          decision_state: "pursue",
+          opportunity_status: "open",
+          closes_at: "2026-04-30T00:00:00.000Z",
+          updated_at: "2026-03-28T15:20:00.000Z",
+          created_at: "2026-03-28T15:10:00.000Z",
+        },
+      ],
+      error: null,
+    });
     billingInvoicesOrderMock.mockResolvedValue({ data: [], error: null });
+    dataDatasetLinksOrderMock.mockResolvedValue({
+      data: [
+        {
+          dataset_id: "dataset-1",
+          project_id: "project-1",
+          relationship_type: "analysis_source",
+          linked_at: "2026-03-28T14:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    dataDatasetsInMock.mockResolvedValue({
+      data: [
+        {
+          id: "dataset-1",
+          name: "Downtown safety indicators",
+          status: "ready",
+          geography_scope: "corridor",
+          geometry_attachment: "analysis_corridor",
+          thematic_metric_key: "crash_rate",
+          citation_text: "Local safety inventory and TIMS extract.",
+          source_url: "https://example.test/safety",
+          license_label: "Public agency data",
+          vintage_label: "2026",
+          schema_version: "v1",
+          checksum: "checksum-1",
+          row_count: 128,
+          last_refreshed_at: "2026-03-28T13:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    dataRefreshJobsOrderMock.mockResolvedValue({
+      data: [
+        {
+          dataset_id: "dataset-1",
+          status: "succeeded",
+          started_at: "2026-03-28T12:50:00.000Z",
+          completed_at: "2026-03-28T13:00:00.000Z",
+          created_at: "2026-03-28T12:45:00.000Z",
+        },
+      ],
+      error: null,
+    });
 
     stageGateLimitMock.mockResolvedValue({
+
       data: [
         {
           gate_id: "G01",
@@ -789,6 +889,17 @@ describe("ReportDetailPage", () => {
     );
     expect(screen.getByText("Packet release review")).toBeInTheDocument();
     expect(screen.getByText("Carry this packet through readiness")).toBeInTheDocument();
+    expect(screen.getByText("Pre-generation readiness")).toBeInTheDocument();
+    expect(screen.getAllByText("Generation readiness blocked").length).toBeGreaterThan(0);
+    expect(screen.getByText("Packet source context")).toBeInTheDocument();
+    expect(screen.getByText("Funding profile scan")).toBeInTheDocument();
+    expect(screen.getByText("Data lineage")).toBeInTheDocument();
+    expect(screen.getByText(/1 output-ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/Data lineage scan: 1\/1 project-linked datasets output-ready · 4 dependent output checks passed\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Funding profile has blockers/i)).toBeInTheDocument();
+    expect(screen.getByText(/Funding target: Likely covered\./i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Committed awards exist, but no linked invoice requests/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Review changed source areas and regenerate/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
       "href",
       "/projects/project-1"
