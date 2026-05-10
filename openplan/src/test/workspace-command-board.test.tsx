@@ -111,6 +111,13 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText("Funding follow-through")).toBeInTheDocument();
     expect(screen.getByText(/1 current RTP packet still carries linked-project funding follow-through/i)).toBeInTheDocument();
     expect(screen.getByText("Proof review needed")).toBeInTheDocument();
+    expect(screen.getByText("Pilot proof reference")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /readiness packet \+ preflight proof/i })).toHaveAttribute(
+      "href",
+      "/admin/pilot-readiness"
+    );
+    expect(screen.getByText(/docs\/ops\/2026-05-10-openplan-pilot-preflight-operator-proof\.md/i)).toBeInTheDocument();
+    expect(screen.getByText(/Keep claims inside the supervised-pilot caveats before external use\./i)).toBeInTheDocument();
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();

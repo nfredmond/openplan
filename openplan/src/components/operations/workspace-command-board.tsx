@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { getAdminPilotReadinessProofArtifactIndex } from "@/lib/operations/release-proof-packet";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { buildWorkflowNextActionGroups, type WorkflowNextActionEntry } from "@/lib/operations/workflow-next-action-groups";
 
@@ -52,6 +53,10 @@ function groupCountLabel(group: ReturnType<typeof buildWorkflowNextActionGroups>
   }
   return pluralize(group.queuedActionCount, "queued action");
 }
+
+const pilotPreflightProofArtifact = getAdminPilotReadinessProofArtifactIndex().find(
+  (item) => item.key === "pilot-preflight-proof",
+);
 
 export function WorkspaceCommandBoard({
   summary,
@@ -235,6 +240,22 @@ export function WorkspaceCommandBoard({
                     </p>
                   ) : null}
                 </div>
+                {group.key === "admin-release-proof" ? (
+                  <div className="mt-3 border-l border-primary/35 pl-3">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                      Pilot proof reference
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Start with the{" "}
+                      <Link href="/admin/pilot-readiness" className="font-semibold text-primary hover:underline">
+                        readiness packet + preflight proof
+                      </Link>
+                      {pilotPreflightProofArtifact
+                        ? `; latest preflight note: ${pilotPreflightProofArtifact.artifact}.`
+                        : "."} Keep claims inside the supervised-pilot caveats before external use.
+                    </p>
+                  </div>
+                ) : null}
               </div>
               <div className="space-y-2">
                 {group.actions.map((action) => (
