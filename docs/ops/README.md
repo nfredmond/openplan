@@ -1,6 +1,6 @@
 # OpenPlan — docs/ops Index
 
-**Last updated:** 2026-05-01
+**Last updated:** 2026-05-10
 **Maintainer:** Mateo Ruiz (Assistant Planner — package-control lane)
 
 ---
@@ -34,6 +34,7 @@
 | [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) | **Current restore-drill proof** — dedicated staging Supabase project created, migrated, restored from private production schema/public-data dumps, validated, and retired |
 | [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) | **Buyer-safe proof export** — static HTML/PDF packet for supervised pilot and managed-service diligence |
 | [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) | **Buyer-facing support diligence map** — ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries |
+| [2026-05-10 final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) | **Final pilot-diligence index** — indexes latest proof lanes, smoke checks, proof links, caveats, and re-run gates for supervised pilot conversations |
 | [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) | **First buyer-specific release-to-sale package** — NCTC-geo demo posture, 30-minute walkthrough, outreach draft, pilot ask, and stop conditions |
 | [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
 | [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) | **Current UI proof review** — route-by-route pass/watch table over the 2026-04-29 local screenshot pack |
@@ -80,6 +81,7 @@
 - [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — completed staging restore drill with migration/data replay, RLS/count/storage validation, and dedicated project cleanup
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — buyer-safe static HTML/PDF proof packet for supervised pilot and managed-service diligence
 - [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) — buyer-facing diligence map that ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries
+- [2026-05-10 final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) — final internal pilot-diligence index tying latest proof lanes to smoke checks, links, caveats, and re-run gates
 - [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) — first buyer-specific release-to-sale package with demo posture, outreach draft, scoped pilot ask, and stop conditions
 - [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
 - [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
