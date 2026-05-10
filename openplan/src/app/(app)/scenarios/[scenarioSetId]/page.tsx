@@ -263,6 +263,10 @@ export default async function ScenarioSetDetailPage({
     indicatorDeltaCount: comparisonIndicatorDeltaCountBySnapshotId.get(snapshot.id) ?? 0,
     sourceContext: scenarioComparisonSourceContextFromMetadata(snapshot.metadata_json),
   }));
+  const comparisonSnapshotExportReadyCount = recentComparisonSnapshots.filter(
+    (snapshot) => snapshot.sourceContext?.exportReady
+  ).length;
+  const comparisonSnapshotReviewCount = recentComparisonSnapshots.length - comparisonSnapshotExportReadyCount;
   const comparisonReadyReportCount = linkedReportsWithFreshness.filter((report) => report.comparisonReady).length;
   const runLinkedOnlyReportCount = linkedReportsWithFreshness.length - comparisonReadyReportCount;
   const refreshRecommendedReportCount = linkedReportsWithFreshness.filter(
@@ -511,12 +515,28 @@ export default async function ScenarioSetDetailPage({
           </article>
 
           <article className="module-section-surface">
-            <div className="module-section-heading">
-              <p className="module-section-label">Persistent comparisons</p>
-              <h2 className="module-section-title">Saved comparison snapshots</h2>
-              <p className="module-section-description">
-                Comparison artifacts now persist as first-class scenario records, so narrative, caveats, and indicator deltas can be reused downstream instead of reassembled each time.
-              </p>
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Persistent comparisons</p>
+                <h2 className="module-section-title">Saved comparison snapshots</h2>
+                <p className="module-section-description">
+                  Comparison artifacts now persist as first-class scenario records, so narrative, caveats, and indicator deltas can be reused downstream instead of reassembled each time.
+                </p>
+              </div>
+              {!comparisonSnapshotsSchemaPending && recentComparisonSnapshots.length > 0 ? (
+                <div className="module-record-kicker">
+                  <StatusBadge tone="success">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {comparisonSnapshotExportReadyCount} export-ready
+                  </StatusBadge>
+                  {comparisonSnapshotReviewCount > 0 ? (
+                    <StatusBadge tone="warning">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      {comparisonSnapshotReviewCount} need{comparisonSnapshotReviewCount === 1 ? "s" : ""} source review
+                    </StatusBadge>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             {comparisonSnapshotsSchemaPending ? (
@@ -589,7 +609,35 @@ export default async function ScenarioSetDetailPage({
                           <p>{snapshot.sourceContext.exportReadiness}</p>
                         </div>
                       </div>
-                    ) : null}
+                    ) : (
+                      <div className="module-note mt-4 border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                              Source context review
+                            </p>
+                            <h4 className="mt-2 text-sm font-semibold text-foreground">
+                              Structured source context was not captured
+                            </h4>
+                          </div>
+                          <StatusBadge tone="warning">Review before export</StatusBadge>
+                        </div>
+                        <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                          <p>
+                            This saved comparison may predate structured source-context metadata or may have been saved without
+                            it. Treat it as a saved comparison record only until an operator verifies the run links, assumptions,
+                            caveats, and report packet linkage.
+                          </p>
+                          <p>
+                            No raw behavioral-onramp KPI rows are read or inferred here; regenerate the snapshot through the
+                            scenario comparison helper to capture planner-readable source context.
+                          </p>
+                          <p>
+                            Current pairing: {snapshot.candidateEntry?.label ?? "Unknown alternative"} vs {snapshot.baselineEntry?.label ?? "Unknown baseline"}.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

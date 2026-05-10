@@ -412,14 +412,126 @@ describe("ScenarioSetDetailPage", () => {
     expect(comparisonSnapshotsSelectMock).toHaveBeenCalledWith(
       expect.stringContaining("metadata_json")
     );
+    expect(screen.getByText(/1 export-ready/i)).toBeInTheDocument();
+    expect(screen.queryByText(/needs source review/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Protected bike package comparison/i)).toBeInTheDocument();
     expect(screen.getByText(/Saved source context/i)).toBeInTheDocument();
     expect(screen.getByText(/Protected bike package compared against Existing conditions/i)).toBeInTheDocument();
     expect(screen.getByText(/No behavioral-onramp KPI rows are read by this board or snapshot helper/i)).toBeInTheDocument();
     expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
     expect(screen.getByText(/ready for a draft comparison packet/i)).toBeInTheDocument();
-    expect(screen.getByText(/Export-ready/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Export-ready/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/internalSolverKey/i)).not.toBeInTheDocument();
+  });
+
+  it("flags saved comparison snapshots that are missing structured source context", async () => {
+    comparisonSnapshotsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "snapshot-legacy",
+          baseline_entry_id: "entry-baseline",
+          candidate_entry_id: "entry-alt-1",
+          label: "Legacy protected bike comparison",
+          summary: "Older saved comparison without structured metadata.",
+          status: "ready",
+          updated_at: "2026-03-28T21:30:00.000Z",
+          metadata_json: null,
+        },
+      ],
+      error: null,
+    });
+    comparisonIndicatorDeltasInMock.mockResolvedValueOnce({
+      data: [{ id: "delta-legacy", comparison_snapshot_id: "snapshot-legacy" }],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/Legacy protected bike comparison/i)).toBeInTheDocument();
+    expect(screen.getByText(/0 export-ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 needs source review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Source context review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Structured source context was not captured/i)).toBeInTheDocument();
+    expect(screen.getByText(/may predate structured source-context metadata/i)).toBeInTheDocument();
+    expect(screen.getByText(/operator verifies the run links, assumptions, caveats, and report packet linkage/i)).toBeInTheDocument();
+    expect(screen.getByText(/No raw behavioral-onramp KPI rows are read or inferred here/i)).toBeInTheDocument();
+    expect(screen.getByText(/Current pairing: Protected bike package vs Existing conditions\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Review before export/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Saved source context/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps export-ready and legacy comparison snapshots visually separated", async () => {
+    comparisonSnapshotsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "snapshot-export-ready",
+          baseline_entry_id: "entry-baseline",
+          candidate_entry_id: "entry-alt-1",
+          label: "Export-ready protected bike comparison",
+          summary: "Current saved comparison with planner-readable source context.",
+          status: "ready",
+          updated_at: "2026-03-28T22:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              kind: "scenario_comparison_snapshot_source_context",
+              pairingLabel: "Protected bike package compared against Existing conditions",
+              pairing: {
+                baselineEntryId: "entry-baseline",
+                baselineEntryLabel: "Existing conditions",
+                baselineRunId: "run-baseline",
+                candidateEntryId: "entry-alt-1",
+                candidateEntryLabel: "Protected bike package",
+                candidateRunId: "run-alt-1",
+              },
+              sourceSummary:
+                "Source context: attached run scorecards from “Protected bike run” and “Existing conditions run”. No behavioral-onramp KPI rows are read by this board or snapshot helper.",
+              baselineAssumptions: "Baseline: Horizon year: 2045",
+              alternativeAssumptions: "Alternative: Project package: Protected bike network",
+              caveatSummary:
+                "Caveat posture: planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+              caveats: [
+                "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+              ],
+              exportReadiness:
+                "Export readiness: ready for a draft comparison packet when the report also carries these run links, assumptions, and caveats.",
+              exportReady: true,
+              evidenceLabels: ["Overall Score"],
+            },
+            rawBehavioralOnrampKpiReader: "must not render",
+          },
+        },
+        {
+          id: "snapshot-old",
+          baseline_entry_id: "entry-baseline",
+          candidate_entry_id: "entry-alt-1",
+          label: "Old protected bike comparison",
+          summary: "Legacy saved comparison without source-context metadata.",
+          status: "ready",
+          updated_at: "2026-03-28T21:30:00.000Z",
+          metadata_json: null,
+        },
+      ],
+      error: null,
+    });
+    comparisonIndicatorDeltasInMock.mockResolvedValueOnce({
+      data: [
+        { id: "delta-ready", comparison_snapshot_id: "snapshot-export-ready" },
+        { id: "delta-old", comparison_snapshot_id: "snapshot-old" },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/1 export-ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 needs source review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Export-ready protected bike comparison/i)).toBeInTheDocument();
+    expect(screen.getByText(/Old protected bike comparison/i)).toBeInTheDocument();
+    expect(screen.getByText(/Saved source context/i)).toBeInTheDocument();
+    expect(screen.getByText(/Structured source context was not captured/i)).toBeInTheDocument();
+    expect(screen.getByText(/ready for a draft comparison packet/i)).toBeInTheDocument();
+    expect(screen.getByText(/No raw behavioral-onramp KPI rows are read or inferred here/i)).toBeInTheDocument();
+    expect(screen.queryByText(/rawBehavioralOnrampKpiReader/i)).not.toBeInTheDocument();
   });
 
   it("renders caveat and source-context guidance on comparison cards", async () => {
