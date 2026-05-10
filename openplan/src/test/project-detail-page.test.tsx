@@ -550,7 +550,7 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Showing 2 most recent report records/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Evidence-backed/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Evidence-backed/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
     expect(
@@ -559,6 +559,15 @@ describe("ProjectDetailPage", () => {
       )
     ).toBeInTheDocument();
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
+    expect(screen.getByText(/Shared project spine/i)).toBeInTheDocument();
+    expect(screen.getByText(/Regeneration needed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Funding target missing/i)).toBeInTheDocument();
+    expect(screen.getByText(/Moderation\/handoff pending/i)).toBeInTheDocument();
+    expect(screen.getByText(/Source context linked/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/No aerial evidence/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/4\/9 items ready for report handoff/i)).toBeInTheDocument();
+    expect(screen.getByText(/Screening\/source-context posture only/i)).toBeInTheDocument();
     expect(screen.getByText("Continue this pilot story")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
       "href",
@@ -581,7 +590,7 @@ describe("ProjectDetailPage", () => {
       "href",
       "/reports/report-1#drift-since-generation"
     );
-    expect(screen.getByRole("link", { name: /Open Grants OS/i })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Open Grants OS/i })[0]).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-1"
     );

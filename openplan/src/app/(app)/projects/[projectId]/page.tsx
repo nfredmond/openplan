@@ -19,6 +19,7 @@ import {
 } from "@/lib/aerial/catalog";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
+import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -37,6 +38,7 @@ import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
+import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
 import {
   fmtCurrency,
   titleize,
@@ -499,6 +501,9 @@ export default async function ProjectDetailPage({
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
+      const evidenceChainSummary = parseStoredEvidenceChainSummary(
+        latestArtifactByReportId.get(report.id)?.metadata_json ?? null
+      );
       const comparisonAggregate = parseStoredComparisonSnapshotAggregate(
         latestArtifactByReportId.get(report.id)?.metadata_json ?? null
       );
@@ -506,9 +511,7 @@ export default async function ProjectDetailPage({
         comparisonAggregate
       );
       const evidenceChainDigest = describeEvidenceChainSummary(
-        parseStoredEvidenceChainSummary(
-          latestArtifactByReportId.get(report.id)?.metadata_json ?? null
-        )
+        evidenceChainSummary
       );
 
       return {
@@ -520,6 +523,7 @@ export default async function ProjectDetailPage({
         }),
         comparisonAggregate,
         comparisonDigest,
+        evidenceChainSummary,
         evidenceChainDigest,
       };
     })
@@ -578,6 +582,10 @@ export default async function ProjectDetailPage({
     projectGrantModelingEvidence,
     project.name
   );
+  const strongestEngagementEvidence = projectReports
+    .map((report) => report.evidenceChainSummary)
+    .filter((summary): summary is NonNullable<typeof summary> => Boolean(summary))
+    .sort((left, right) => right.engagementItemCount - left.engagementItemCount)[0] ?? null;
   const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
     const badges: Array<{ label: string; value?: string | number | null }> = [];
     if (report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
@@ -662,6 +670,34 @@ export default async function ProjectDetailPage({
       }>);
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
   const aerialProjectPostureDetail = describeAerialProjectPosture(aerialProjectPosture);
+  const projectSpineCrosslinkSummary = buildProjectSpineCrosslinkSummary({
+    projectId: project.id,
+    linkedRtpCycleCount,
+    reportRecordCount,
+    reportAttentionCount,
+    evidenceBackedReportCount,
+    comparisonBackedReportCount,
+    funding: {
+      hasTargetNeed: fundingStackSummary.hasTargetNeed,
+      label: fundingStackSummary.label,
+      reason: fundingStackSummary.reason,
+      awardCount: fundingStackSummary.awardCount,
+      opportunityCount: fundingStackSummary.opportunityCount,
+      reimbursementPacketCount: fundingStackSummary.reimbursementPacketCount,
+      unfundedAfterLikelyAmount: fundingStackSummary.unfundedAfterLikelyAmount,
+      awardRiskCount: fundingStackSummary.awardRiskCount,
+    },
+    engagement: {
+      label: strongestEngagementEvidence?.engagementLabel ?? "Not linked",
+      itemCount: strongestEngagementEvidence?.engagementItemCount ?? 0,
+      handoffReadyCount: strongestEngagementEvidence?.engagementReadyForHandoffCount ?? 0,
+    },
+    analysis: {
+      recentRunCount: recentRuns?.length ?? 0,
+      comparisonBackedReportCount,
+    },
+    aerial: aerialProjectPosture,
+  });
 
   const operationsSummary = await operationsSummaryPromise;
 
@@ -814,6 +850,8 @@ export default async function ProjectDetailPage({
         aerialPosture={project.aerial_posture}
         aerialPostureUpdatedAt={project.aerial_posture_updated_at}
       />
+
+      <ProjectSpineCrosslinkBoard summary={projectSpineCrosslinkSummary} />
 
       <PilotWorkflowHandoff
         currentStep="context"
