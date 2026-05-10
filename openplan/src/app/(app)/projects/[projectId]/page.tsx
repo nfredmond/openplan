@@ -154,8 +154,9 @@ export default async function ProjectDetailPage({
         .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
         .in("id", linkedRtpCycleIds)
     : { data: [], error: null };
+  const linkedRtpCyclesPending = looksLikePendingSchema(linkedRtpCyclesResult.error?.message);
 
-  const linkedRtpCycles = looksLikePendingSchema(linkedRtpCyclesResult.error?.message)
+  const linkedRtpCycles = linkedRtpCyclesPending
     ? []
     : ((linkedRtpCyclesResult.data ?? []) as RtpCycleRow[]);
 
@@ -164,8 +165,9 @@ export default async function ProjectDetailPage({
     .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
     .eq("workspace_id", project.workspace_id)
     .order("updated_at", { ascending: false });
+  const workspaceRtpCyclesPending = looksLikePendingSchema(workspaceRtpCyclesResult.error?.message);
 
-  const workspaceRtpCycles = looksLikePendingSchema(workspaceRtpCyclesResult.error?.message)
+  const workspaceRtpCycles = workspaceRtpCyclesPending
     ? []
     : ((workspaceRtpCyclesResult.data ?? []) as RtpCycleRow[]);
 
@@ -188,22 +190,21 @@ export default async function ProjectDetailPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  const { data: recentRuns } = await supabase
+  const recentRunsResult = await supabase
     .from("runs")
     .select("id, title, created_at, summary_text")
     .eq("workspace_id", project.workspace_id)
     .order("created_at", { ascending: false })
     .limit(5);
+  const recentRunsPending = looksLikePendingSchema(recentRunsResult.error?.message);
+  const recentRuns = recentRunsPending ? [] : (recentRunsResult.data ?? []);
 
   const operationsSummaryPromise = loadWorkspaceOperationsSummaryForWorkspace(
     supabase as unknown as WorkspaceOperationsSupabaseLike,
     project.workspace_id
   );
 
-  const {
-    data: projectReportData,
-    count: projectReportCount,
-  } = await supabase
+  const projectReportResult = await supabase
     .from("reports")
     .select(
       "id, title, summary, report_type, status, updated_at, generated_at, latest_artifact_kind",
@@ -212,6 +213,9 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(4);
+  const projectReportsPending = looksLikePendingSchema(projectReportResult.error?.message);
+  const projectReportData = projectReportsPending ? [] : projectReportResult.data;
+  const projectReportCount = projectReportsPending ? 0 : projectReportResult.count;
 
   const scenarioSetsResult = await supabase
     .from("scenario_sets")
@@ -228,6 +232,7 @@ export default async function ProjectDetailPage({
         planning_question: string | null;
         updated_at: string;
       }>);
+  const scenarioSetsPending = looksLikePendingSchema(scenarioSetsResult.error?.message);
   const scenarioSetIds = scenarioSets.map((set) => set.id);
   const scenarioEntriesResult = scenarioSetIds.length
     ? await supabase
@@ -244,6 +249,7 @@ export default async function ProjectDetailPage({
         status: string;
         attached_run_id: string | null;
       }>);
+  const scenarioEntriesPending = looksLikePendingSchema(scenarioEntriesResult.error?.message);
 
   const { data: recentGateDecisions } = await supabase
     .from("stage_gate_decisions")
@@ -524,8 +530,9 @@ export default async function ProjectDetailPage({
         .in("report_id", projectReportIds)
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
+  const reportArtifactsPending = looksLikePendingSchema(reportArtifactsResult.error?.message);
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of (reportArtifactsResult.data ?? []) as ReportArtifactRow[]) {
+  for (const artifact of (reportArtifactsPending ? [] : (reportArtifactsResult.data ?? []) as ReportArtifactRow[])) {
     if (!latestArtifactByReportId.has(artifact.report_id)) {
       latestArtifactByReportId.set(artifact.report_id, artifact);
     }
@@ -670,7 +677,8 @@ export default async function ProjectDetailPage({
     .select("id, title, status, mission_type, geography_label, collected_at, updated_at")
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false });
-  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
+  const aerialMissionsPending = looksLikePendingSchema(aerialMissionsResult.error?.message);
+  const aerialMissions = aerialMissionsPending
     ? []
     : ((aerialMissionsResult.data ?? []) as Array<{
         id: string;
@@ -689,7 +697,8 @@ export default async function ProjectDetailPage({
         .in("mission_id", aerialMissionIds)
         .order("updated_at", { ascending: false })
     : { data: [], error: null };
-  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
+  const aerialPackagesPending = looksLikePendingSchema(aerialPackagesResult.error?.message);
+  const aerialPackages = aerialPackagesPending
     ? []
     : ((aerialPackagesResult.data ?? []) as Array<{
         id: string;
@@ -743,6 +752,15 @@ export default async function ProjectDetailPage({
       comparisonBackedReportCount,
     },
     aerial: aerialProjectPosture,
+    pendingSchema: {
+      rtp_packets: projectRtpLinksPending || linkedRtpCyclesPending || workspaceRtpCyclesPending || projectReportsPending,
+      scenario_sets: scenarioSetsPending || scenarioEntriesPending,
+      funding_profile:
+        projectFundingProfilePending || fundingAwardsPending || fundingOpportunitiesPending || projectInvoicesPending,
+      engagement_evidence: projectReportsPending || reportArtifactsPending,
+      analysis_modeling: recentRunsPending || projectReportsPending || reportArtifactsPending,
+      aerial_evidence: aerialMissionsPending || aerialPackagesPending,
+    },
   });
 
   const operationsSummary = await operationsSummaryPromise;

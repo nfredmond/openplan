@@ -26,9 +26,13 @@ function readinessRailClass(readiness: string) {
 
 export function ProjectSpineCrosslinkBoard({
   summary,
+  isLoading = false,
 }: {
   summary: ProjectSpineCrosslinkSummary;
+  isLoading?: boolean;
 }) {
+  const statGridClass = summary.schemaPendingCount > 0 ? "grid-cols-4" : "grid-cols-3";
+
   return (
     <article id="project-spine-crosslinks" className="module-section-surface scroll-mt-24">
       <div className="module-section-header">
@@ -46,9 +50,56 @@ export function ProjectSpineCrosslinkBoard({
         </div>
       </div>
 
+      <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(13rem,18rem)] md:items-start">
+          <div>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {isLoading ? "Loading state" : summary.boardState === "schema_pending" ? "Setup fallback" : summary.boardState === "empty" ? "Empty state" : "Operator queue"}
+            </p>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">
+              {isLoading ? "Loading crosslink queue" : summary.stateHeadline}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {isLoading
+                ? "Checking the shared project spine without hiding the worksurface. Rows will resolve into ready evidence, setup gaps, or schema actions."
+                : summary.stateDetail}
+            </p>
+          </div>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-foreground">Next:</span>{" "}
+            {isLoading ? "Keep the board visible while source reads finish." : summary.stateNextAction}
+          </p>
+        </div>
+      </div>
+
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,20rem)]">
         <div className="module-record-list">
-          {summary.rows.map((row) => (
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={`crosslink-loading-${index}`}
+                  className="module-record-row overflow-hidden border-border/80 bg-background/80"
+                  aria-label="Loading crosslink row"
+                >
+                  <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-muted-foreground/25" />
+                  <div className="module-record-head pl-2">
+                    <div className="module-record-main space-y-2">
+                      <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-56 animate-pulse rounded bg-muted" />
+                      <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
+                    </div>
+                    <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                  </div>
+                  <div className="grid gap-3 pl-2 md:grid-cols-[0.74fr_1.26fr]">
+                    <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+                    <div className="space-y-2">
+                      <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                      <div className="h-3 w-5/6 animate-pulse rounded bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            : summary.rows.map((row) => (
             <Link
               key={row.id}
               href={row.href}
@@ -64,7 +115,13 @@ export function ProjectSpineCrosslinkBoard({
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <h3 className="module-record-title">{row.statusLabel}</h3>
                     <span className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {row.readiness === "ready" ? "Ready" : row.readiness === "attention" ? "Needs review" : "Not linked"}
+                      {row.sourceState === "schema_pending"
+                        ? "Setup needed"
+                        : row.readiness === "ready"
+                          ? "Ready"
+                          : row.readiness === "attention"
+                            ? "Needs review"
+                            : "Not linked"}
                     </span>
                   </div>
                   <p className="module-record-summary">{row.headline}</p>
@@ -75,9 +132,15 @@ export function ProjectSpineCrosslinkBoard({
                 </span>
               </div>
               <div className="grid gap-3 pl-2 md:grid-cols-[0.74fr_1.26fr]">
-                <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                  {row.detail}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    {row.detail}
+                  </p>
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                    {row.sourceLabel}
+                  </p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{row.sourceDetail}</p>
+                </div>
                 <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
                   <p>{row.evidence}</p>
                   <p>
@@ -96,7 +159,7 @@ export function ProjectSpineCrosslinkBoard({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Crosslink inspector
           </p>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          <div className={`mt-4 grid ${statGridClass} gap-3 text-center`}>
             <div>
               <p className="text-xl font-semibold text-foreground">{summary.readyCount}</p>
               <p className="text-[0.67rem] uppercase tracking-[0.14em] text-muted-foreground">ready</p>
@@ -109,6 +172,12 @@ export function ProjectSpineCrosslinkBoard({
               <p className="text-xl font-semibold text-foreground">{summary.missingCount}</p>
               <p className="text-[0.67rem] uppercase tracking-[0.14em] text-muted-foreground">missing</p>
             </div>
+            {summary.schemaPendingCount > 0 ? (
+              <div>
+                <p className="text-xl font-semibold text-foreground">{summary.schemaPendingCount}</p>
+                <p className="text-[0.67rem] uppercase tracking-[0.14em] text-muted-foreground">setup</p>
+              </div>
+            ) : null}
           </div>
           <div className="mt-5 border-t border-border/70 pt-4">
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">

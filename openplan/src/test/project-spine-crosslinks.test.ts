@@ -120,10 +120,81 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.readyCount).toBe(0);
     expect(summary.attentionCount).toBe(0);
     expect(summary.missingCount).toBe(6);
+    expect(summary.boardState).toBe("empty");
+    expect(summary.stateHeadline).toMatch(/No downstream outputs/i);
+    expect(summary.emptyCount).toBe(6);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
+    expect(summary.rows.find((row) => row.id === "funding_profile")?.sourceLabel).toBe("No evidence yet");
     expect(summary.rows.find((row) => row.id === "analysis_modeling")?.evidence).toMatch(/no validated behavioral forecast/i);
     expect(summary.rows.find((row) => row.id === "scenario_sets")?.caveat).toMatch(/planning-support context/i);
+  });
+
+  it("turns pending schema lanes into setup actions instead of false missing evidence", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      linkedRtpCycleCount: 0,
+      reportRecordCount: 0,
+      reportAttentionCount: 0,
+      evidenceBackedReportCount: 0,
+      comparisonBackedReportCount: 0,
+      rtpLinks: {
+        constrainedCount: 0,
+        illustrativeCount: 0,
+        candidateCount: 0,
+      },
+      scenarios: {
+        scenarioSetCount: 0,
+        activeScenarioSetCount: 0,
+        baselineCount: 0,
+        readyAlternativeCount: 0,
+        attachedRunCount: 0,
+      },
+      funding: {
+        ...baseInput.funding,
+        hasTargetNeed: false,
+        awardCount: 0,
+        opportunityCount: 0,
+        reimbursementPacketCount: 0,
+        unfundedAfterLikelyAmount: 0,
+        awardRiskCount: 0,
+      },
+      engagement: {
+        label: "Not linked",
+        itemCount: 0,
+        handoffReadyCount: 0,
+      },
+      analysis: {
+        recentRunCount: 0,
+        comparisonBackedReportCount: 0,
+      },
+      aerial: {
+        missionCount: 0,
+        activeMissionCount: 0,
+        readyPackageCount: 0,
+        verificationReadiness: "none",
+      },
+      pendingSchema: {
+        scenario_sets: true,
+        funding_profile: true,
+      },
+    });
+
+    const scenarioRow = summary.rows.find((row) => row.id === "scenario_sets");
+    const fundingRow = summary.rows.find((row) => row.id === "funding_profile");
+
+    expect(summary.boardState).toBe("schema_pending");
+    expect(summary.schemaPendingCount).toBe(2);
+    expect(summary.attentionCount).toBe(2);
+    expect(summary.missingCount).toBe(4);
+    expect(summary.schemaPendingLanes).toEqual(["Scenario sets", "Grants / funding profile"]);
+    expect(summary.stateDetail).toMatch(/showing setup actions instead of pretending those lanes are empty/i);
+    expect(summary.leadAction.id).toBe("scenario_sets");
+    expect(scenarioRow?.statusLabel).toBe("Schema setup pending");
+    expect(scenarioRow?.sourceLabel).toBe("Schema setup");
+    expect(scenarioRow?.evidence).toMatch(/did not treat this as missing evidence/i);
+    expect(scenarioRow?.nextAction).toMatch(/Apply the scenario spine tables/i);
+    expect(fundingRow?.nextAction).toMatch(/funding profile, award, opportunity, and invoice tables/i);
   });
 
   it("keeps scenario sets in review posture until baseline and ready alternative evidence exist", () => {

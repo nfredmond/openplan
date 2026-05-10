@@ -1,15 +1,22 @@
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
+export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending";
+export type ProjectSpineCrosslinkBoardState = "active" | "empty" | "schema_pending";
+
+export type ProjectSpineCrosslinkRowId =
+  | "rtp_packets"
+  | "scenario_sets"
+  | "funding_profile"
+  | "engagement_evidence"
+  | "analysis_modeling"
+  | "aerial_evidence";
 
 export type ProjectSpineCrosslinkRow = {
-  id:
-    | "rtp_packets"
-    | "scenario_sets"
-    | "funding_profile"
-    | "engagement_evidence"
-    | "analysis_modeling"
-    | "aerial_evidence";
+  id: ProjectSpineCrosslinkRowId;
   lane: string;
   readiness: ProjectSpineCrosslinkReadiness;
+  sourceState: ProjectSpineCrosslinkSourceState;
+  sourceLabel: string;
+  sourceDetail: string;
   statusLabel: string;
   headline: string;
   detail: string;
@@ -21,9 +28,16 @@ export type ProjectSpineCrosslinkRow = {
 };
 
 export type ProjectSpineCrosslinkSummary = {
+  boardState: ProjectSpineCrosslinkBoardState;
+  stateHeadline: string;
+  stateDetail: string;
+  stateNextAction: string;
   readyCount: number;
   attentionCount: number;
   missingCount: number;
+  emptyCount: number;
+  schemaPendingCount: number;
+  schemaPendingLanes: string[];
   leadAction: ProjectSpineCrosslinkRow;
   rows: ProjectSpineCrosslinkRow[];
 };
@@ -72,6 +86,7 @@ export type ProjectSpineCrosslinkInput = {
     readyPackageCount: number;
     verificationReadiness: "none" | "pending" | "partial" | "ready";
   };
+  pendingSchema?: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>;
 };
 
 function pluralize(value: number, singular: string, plural = `${singular}s`) {
@@ -88,9 +103,91 @@ function formatMoney(value: number) {
 }
 
 function byPriority(row: ProjectSpineCrosslinkRow): number {
+  if (row.sourceState === "schema_pending") return -1;
   if (row.readiness === "attention") return 0;
   if (row.readiness === "missing") return 1;
   return 2;
+}
+
+const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
+  rtp_packets: "Apply or verify the RTP link/report packet schema, then reload this project before treating portfolio placement as missing.",
+  scenario_sets: "Apply the scenario spine tables and reload; then create the baseline-versus-alternative set this project is allowed to cite.",
+  funding_profile: "Apply the funding profile, award, opportunity, and invoice tables before deciding whether this project lacks a funding target.",
+  engagement_evidence: "Restore report artifact evidence-chain reads, then confirm which moderated engagement excerpts belong in the packet trail.",
+  analysis_modeling: "Restore run/report artifact reads, then bind the usable model run or comparison-backed packet to this project.",
+  aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
+};
+
+function withSourceState(
+  row: Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">,
+  pendingSchema: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>
+): ProjectSpineCrosslinkRow {
+  if (pendingSchema[row.id]) {
+    return {
+      ...row,
+      readiness: "attention",
+      sourceState: "schema_pending",
+      sourceLabel: "Schema setup",
+      sourceDetail: "This source table or evidence read is unavailable in the current environment.",
+      statusLabel: "Schema setup pending",
+      headline: `${row.lane} is waiting on schema setup before records can be trusted.`,
+      evidence:
+        "OpenPlan did not treat this as missing evidence; the lane is unavailable until the schema or source read is restored.",
+      nextAction: schemaSetupNextAction[row.id],
+      caveat:
+        "Do not cite this lane as empty or complete until the migration/read path is available and an operator reloads the project spine.",
+    };
+  }
+
+  const isEmpty = row.readiness === "missing";
+
+  return {
+    ...row,
+    sourceState: isEmpty ? "empty" : "linked",
+    sourceLabel: isEmpty ? "No evidence yet" : "Evidence visible",
+    sourceDetail: isEmpty
+      ? "No linked record was found; use the next action as the setup step."
+      : "At least one source signal is visible; review caveats before reuse.",
+  };
+}
+
+function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
+  ProjectSpineCrosslinkSummary,
+  "boardState" | "stateHeadline" | "stateDetail" | "stateNextAction" | "schemaPendingLanes"
+> {
+  const schemaPendingLanes = rows
+    .filter((row) => row.sourceState === "schema_pending")
+    .map((row) => row.lane);
+
+  if (schemaPendingLanes.length > 0) {
+    return {
+      boardState: "schema_pending",
+      stateHeadline: "Some spine lanes are waiting on schema setup",
+      stateDetail: `${schemaPendingLanes.join(", ")} ${schemaPendingLanes.length === 1 ? "is" : "are"} unavailable right now, so the board is showing setup actions instead of pretending those lanes are empty.`,
+      stateNextAction: "Apply or verify the missing migration/read path, reload the project, then decide which evidence is genuinely absent.",
+      schemaPendingLanes,
+    };
+  }
+
+  if (rows.every((row) => row.readiness === "missing")) {
+    return {
+      boardState: "empty",
+      stateHeadline: "No downstream outputs are linked yet",
+      stateDetail:
+        "This is a clean setup queue, not a broken board. Each row names the first operator move needed to turn the project record into reusable packet, funding, scenario, engagement, analysis, or aerial evidence.",
+      stateNextAction: rows[0]?.nextAction ?? "Attach the first project-linked output, then reload the spine.",
+      schemaPendingLanes,
+    };
+  }
+
+  return {
+    boardState: "active",
+    stateHeadline: "Crosslink queue is live",
+    stateDetail:
+      "Visible rows distinguish ready evidence, review items, and setup gaps so downstream packet work stays source-cited and supervised.",
+    stateNextAction: "Work the first operator move in the inspector before reusing this project downstream.",
+    schemaPendingLanes,
+  };
 }
 
 export function buildProjectSpineCrosslinkSummary(
@@ -137,7 +234,9 @@ export function buildProjectSpineCrosslinkSummary(
         ? "ready"
         : "attention";
 
-  const rows: ProjectSpineCrosslinkRow[] = [
+  const pendingSchema = input.pendingSchema ?? {};
+
+  const baseRows: Array<Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">> = [
     {
       id: "rtp_packets",
       lane: "RTP / report packets",
@@ -315,16 +414,23 @@ export function buildProjectSpineCrosslinkSummary(
       actionLabel: "Open aerial ops",
     },
   ];
+  const rows = baseRows.map((row) => withSourceState(row, pendingSchema));
 
   const readyCount = rows.filter((row) => row.readiness === "ready").length;
   const attentionCount = rows.filter((row) => row.readiness === "attention").length;
   const missingCount = rows.filter((row) => row.readiness === "missing").length;
+  const emptyCount = rows.filter((row) => row.sourceState === "empty").length;
+  const schemaPendingCount = rows.filter((row) => row.sourceState === "schema_pending").length;
   const leadAction = [...rows].sort((left, right) => byPriority(left) - byPriority(right))[0] ?? rows[0];
+  const boardState = buildBoardState(rows);
 
   return {
+    ...boardState,
     readyCount,
     attentionCount,
     missingCount,
+    emptyCount,
+    schemaPendingCount,
     leadAction,
     rows,
   };
