@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildPlannerReadableModelingEvidenceSummary,
+  buildReportModelingEvidenceExportProof,
+  summarizeReportModelingEvidenceForMetadata,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
 
@@ -85,5 +87,30 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
     expect(summary.label).toBe("No linked modeling evidence");
     expect(summary.headline).toBe("No county-run modeling evidence is attached to this report.");
     expect(summary.caveats[0]).toContain("Do not describe this report as model-backed");
+  });
+
+  it("builds export-proof language with source context, caveats, and stale-packet warning", () => {
+    const proof = buildReportModelingEvidenceExportProof(linkedEvidence());
+
+    expect(proof.exportReady).toBe(true);
+    expect(proof.sourceContext).toContain("1 source manifest");
+    expect(proof.sourceContext).toContain("5 validation checks");
+    expect(proof.sourceContext).toContain("No raw behavioral-onramp KPI rows are read");
+    expect(proof.exportReadiness).toContain("validated behavioral forecast or certified calibration");
+    expect(proof.caveatCarryThrough).toContain(
+      "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration."
+    );
+    expect(proof.caveatCarryThrough).toContain("Worst matched facility APE 237.62% exceeds the 50% threshold.");
+    expect(proof.stalePacketLanguage).toContain("regenerate the packet if county-run evidence");
+  });
+
+  it("persists export-proof posture in compact report artifact metadata", () => {
+    const [metadata] = summarizeReportModelingEvidenceForMetadata([linkedEvidence()]);
+
+    expect(metadata.exportProof.exportReady).toBe(true);
+    expect(metadata.exportProof.sourceContext).toContain("Nevada County, CA carries 1 source manifest");
+    expect(metadata.exportProof.caveatCarryThrough).toContain(
+      "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration."
+    );
   });
 });

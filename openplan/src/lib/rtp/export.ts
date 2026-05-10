@@ -1,5 +1,6 @@
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import {
+  buildReportModelingEvidenceExportProof,
   formatModelingClaimStatusLabel,
   formatModelingValidationStatusLabel,
   type ReportModelingEvidence,
@@ -273,6 +274,7 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
         const validationSummary = claim?.validationSummary ?? null;
         const validationRows = evidence?.validationResults ?? [];
         const sourceRows = evidence?.sourceManifests ?? [];
+        const exportProof = buildReportModelingEvidenceExportProof(item);
         const validationSummaryText = validationSummary
           ? `${validationSummary.passed} pass · ${validationSummary.warned} warning · ${validationSummary.failed} fail`
           : `${validationRows.length} validation checks`;
@@ -299,7 +301,11 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
           <div class="grid">
             <div class="card"><strong>Source manifests</strong><br/>${sourceRows.length}</div>
             <div class="card"><strong>Validation checks</strong><br/>${esc(validationSummaryText)}</div>
+            <div class="card"><strong>Export readiness</strong><br/>${exportProof.exportReady ? "Ready with caveats" : "Hold"}</div>
           </div>
+          <p class="muted"><strong>Export proof:</strong> ${esc(exportProof.sourceContext)}</p>
+          <p class="muted">${esc(exportProof.exportReadiness)}</p>
+          <p class="muted">${esc(exportProof.stalePacketLanguage)}</p>
           ${
             validationRows.length > 0
               ? `<ul class="compact-list">${validationRows
