@@ -131,7 +131,36 @@ export function WorkspaceCommandBoard({
         ) : null}
       </div>
 
+      {summary.nextCommand ? (
+        <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="module-summary-label">Primary next action</p>
+              <h3 className="mt-1 text-base font-semibold text-foreground">{summary.nextCommand.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{summary.nextCommand.detail}</p>
+            </div>
+            <StatusBadge tone={summary.nextCommand.tone}>{summary.nextCommand.tone === "warning" ? "Next" : "Queue"}</StatusBadge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {summary.nextCommand.moduleLabel ? <StatusBadge tone="neutral">{summary.nextCommand.moduleLabel}</StatusBadge> : null}
+            {summary.nextCommand.badges.map((badge) => (
+              <StatusBadge key={`next-${summary.nextCommand?.key}-${badge.label}`} tone="neutral">
+                {badge.label}
+                {badge.value !== null && badge.value !== undefined ? `: ${badge.value}` : ""}
+              </StatusBadge>
+            ))}
+          </div>
+          <Link
+            href={isGrantsCommand(summary.nextCommand) ? resolveSharedGrantsQueueHref(summary.nextCommand) : summary.nextCommand.href}
+            className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
+          >
+            Open primary action
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mt-5 space-y-1">
+        <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Command queue</p>
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
             <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">

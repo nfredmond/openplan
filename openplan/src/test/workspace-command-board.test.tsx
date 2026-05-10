@@ -97,7 +97,12 @@ describe("WorkspaceCommandBoard", () => {
       "/grants#grants-gap-resolution-lane"
     );
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
-    expect(screen.getByText(/Funding review: 1/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Primary next action")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open primary action/i })).toHaveAttribute(
+      "href",
+      "/grants#grants-gap-resolution-lane"
+    );
   });
 
   it("shows comparison-backed queue caveats as planning support", () => {
@@ -164,11 +169,10 @@ describe("WorkspaceCommandBoard", () => {
     );
 
     expect(
-      screen.getByText(/saved comparison context that can support grant planning language or prioritization framing/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/not proof of award likelihood or a replacement for funding-source review/i)
-    ).toBeInTheDocument();
+      screen.getAllByText(/saved comparison context that can support grant planning language or prioritization framing/i)
+        .length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Review comparison-backed packet posture/i })).toHaveAttribute(
       "href",
       "/reports?posture=comparison-backed"
@@ -233,7 +237,7 @@ describe("WorkspaceCommandBoard", () => {
       />
     );
 
-    expect(screen.getByText("Grants OS")).toBeInTheDocument();
+    expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Anchor project funding needs/i })).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
