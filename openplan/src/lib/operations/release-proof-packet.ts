@@ -7,6 +7,23 @@ export type ReleaseProofItem = {
   headline: string;
   detail: string;
   artifact: string;
+  readinessRole: string;
+  operatorCheck: string;
+  caveatKeys: readonly ReleaseProofCaveatKey[];
+};
+
+export type ReleaseProofCaveatKey =
+  | "billing-waiver"
+  | "supervised-onboarding"
+  | "hosting-rpo-rto"
+  | "modeling-boundary"
+  | "lapm-ai-boundary";
+
+export type ReleaseProofCaveat = {
+  key: ReleaseProofCaveatKey;
+  label: string;
+  text: string;
+  sourceArtifact: string;
 };
 
 export type ReleaseProofAction = {
@@ -14,6 +31,39 @@ export type ReleaseProofAction = {
   href: string;
   detail: string;
 };
+
+export const releaseProofCaveatItems = [
+  {
+    key: "billing-waiver",
+    label: "Billing proof waiver",
+    text: "No fresh same-cycle paid canary is claimed; current billing proof is waiver/non-money-moving posture.",
+    sourceArtifact: "docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md",
+  },
+  {
+    key: "supervised-onboarding",
+    label: "Supervised onboarding",
+    text: "Onboarding remains a supervised implementation step, not instant self-serve activation.",
+    sourceArtifact: "docs/ops/2026-05-01-openplan-release-to-sale-plan.md",
+  },
+  {
+    key: "hosting-rpo-rto",
+    label: "Per-engagement hosting terms",
+    text: "RPO/RTO commitments are filled per managed-hosting engagement, not promised globally here.",
+    sourceArtifact: "docs/ops/2026-05-01-openplan-known-issues-register.md",
+  },
+  {
+    key: "modeling-boundary",
+    label: "Modeling proof boundary",
+    text: "Modeling outputs support planning review only inside the current proof boundary; no validated behavioral forecasting claim is made.",
+    sourceArtifact: "docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md",
+  },
+  {
+    key: "lapm-ai-boundary",
+    label: "No legal/autonomous AI claim",
+    text: "OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning.",
+    sourceArtifact: "docs/ops/2026-05-01-openplan-known-issues-register.md",
+  },
+] satisfies ReleaseProofCaveat[];
 
 export const releaseProofPosture = {
   label: "Release proof packet",
@@ -31,6 +81,10 @@ export const releaseProofPosture = {
       detail:
         "The release-to-sale plan records PASS posture for proof repair, RC baseline, workspace isolation, RTP, grants, engagement, analysis, admin/support, billing posture, and restore-drill evidence.",
       artifact: "docs/ops/2026-05-01-openplan-release-to-sale-plan.md",
+      readinessRole: "Sale readiness: names the current gate evidence operators may cite for the supervised offer.",
+      operatorCheck:
+        "Use it to confirm a buyer or pilot claim maps to a PASS gate before it appears in demo copy, SOW language, or a readiness packet.",
+      caveatKeys: ["supervised-onboarding", "modeling-boundary", "lapm-ai-boundary"],
     },
     {
       key: "readiness-export",
@@ -40,6 +94,10 @@ export const releaseProofPosture = {
       detail:
         "Operators should use the readiness surface before external demos so smoke evidence, missing proof rows, and operational warnings are visible in one place.",
       artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
+      readinessRole: "Pilot readiness: turns smoke status and source documents into a reviewable operator packet.",
+      operatorCheck:
+        "Use it immediately before a pilot demo to verify PASS lanes have named source docs and every pending/failing lane has a follow-up owner.",
+      caveatKeys: ["billing-waiver", "supervised-onboarding", "hosting-rpo-rto"],
     },
     {
       key: "sales-caveats",
@@ -49,6 +107,16 @@ export const releaseProofPosture = {
       detail:
         "No fresh same-cycle paid canary is claimed; onboarding remains supervised; RPO/RTO commitments are set per engagement; modeling and LAPM/legal claims stay behind explicit proof gates.",
       artifact: "docs/ops/2026-05-01-openplan-known-issues-register.md",
+      readinessRole: "Sale readiness: keeps public, pricing, and buyer-facing language inside the current proof boundary.",
+      operatorCheck:
+        "Use it as the stop-list before sharing examples, pricing language, implementation scopes, or managed-hosting commitments.",
+      caveatKeys: [
+        "billing-waiver",
+        "supervised-onboarding",
+        "hosting-rpo-rto",
+        "modeling-boundary",
+        "lapm-ai-boundary",
+      ],
     },
     {
       key: "next-operator-action",
@@ -58,15 +126,14 @@ export const releaseProofPosture = {
       detail:
         "If the readiness packet is clean, compare request-access and examples copy against the caveat sheet before using the release packet in a buyer conversation.",
       artifact: "docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md",
+      readinessRole: "Sale and pilot readiness: gives the operator sequence after proof review, before external use.",
+      operatorCheck:
+        "Use it as the final supervised-readiness walk-through: readiness packet, request-access language, examples, then buyer-safe caveat sheet.",
+      caveatKeys: ["billing-waiver", "supervised-onboarding", "modeling-boundary", "lapm-ai-boundary"],
     },
   ] satisfies ReleaseProofItem[],
-  caveats: [
-    "No fresh same-cycle paid canary is claimed; current billing proof is waiver/non-money-moving posture.",
-    "Onboarding remains a supervised implementation step, not instant self-serve activation.",
-    "RPO/RTO commitments are filled per managed-hosting engagement, not promised globally here.",
-    "Modeling outputs support planning review only inside the current proof boundary; no validated behavioral forecasting claim is made.",
-    "OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning.",
-  ],
+  caveatItems: releaseProofCaveatItems,
+  caveats: releaseProofCaveatItems.map((caveat) => caveat.text),
   actions: [
     {
       label: "Open readiness packet",
@@ -86,12 +153,25 @@ export const releaseProofPosture = {
   ] satisfies ReleaseProofAction[],
 } as const;
 
+export function getReleaseProofItemCaveats(item: ReleaseProofItem): ReleaseProofCaveat[] {
+  return item.caveatKeys
+    .map((key) => releaseProofCaveatItems.find((caveat) => caveat.key === key))
+    .filter((caveat): caveat is ReleaseProofCaveat => Boolean(caveat));
+}
+
 export function releaseProofCopyBlock() {
   return [
     releaseProofPosture.summary,
     releaseProofPosture.wedge,
-    ...releaseProofPosture.proofItems.flatMap((item) => [item.headline, item.detail, item.artifact]),
-    ...releaseProofPosture.caveats,
+    ...releaseProofPosture.proofItems.flatMap((item) => [
+      item.headline,
+      item.detail,
+      item.artifact,
+      item.readinessRole,
+      item.operatorCheck,
+      ...getReleaseProofItemCaveats(item).map((caveat) => `${caveat.label}: ${caveat.text}`),
+    ]),
+    ...releaseProofPosture.caveatItems.flatMap((caveat) => [caveat.label, caveat.text, caveat.sourceArtifact]),
     ...releaseProofPosture.actions.flatMap((action) => [action.label, action.href, action.detail]),
   ].join("\n");
 }

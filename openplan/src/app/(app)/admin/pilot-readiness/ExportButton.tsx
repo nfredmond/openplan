@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { releaseProofPosture } from '@/lib/operations/release-proof-packet'
+import { getReleaseProofItemCaveats, releaseProofPosture } from '@/lib/operations/release-proof-packet'
 
 interface ExportButtonProps {
   statusList: {
@@ -32,7 +32,14 @@ export function buildPilotReadinessPacket(statusList: ExportButtonProps['statusL
     ...releaseProofPosture.caveats.map((caveat) => `- ${caveat}`),
     '',
     '### Proof artifacts synchronized with Command Center',
-    ...releaseProofPosture.proofItems.map((item) => `- **${item.label}**: ${item.headline} Source: ${item.artifact}`),
+    ...releaseProofPosture.proofItems.flatMap((item) => [
+      `- **${item.label}**: ${item.headline} Source: ${item.artifact}`,
+      `  - Supports: ${item.readinessRole}`,
+      `  - Operator check: ${item.operatorCheck}`,
+      `  - Caveats carried: ${getReleaseProofItemCaveats(item)
+        .map((caveat) => `${caveat.label} (${caveat.sourceArtifact})`)
+        .join('; ')}`,
+    ]),
     '',
     '## About OpenPlan Readiness',
     'OpenPlan is actively tested against production infrastructure. These smoke tests reflect the latest validation runs.',

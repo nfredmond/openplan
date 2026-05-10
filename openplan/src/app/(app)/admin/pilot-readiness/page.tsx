@@ -2,7 +2,7 @@ import { FileCheck2, ShieldCheck } from "lucide-react";
 import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
-import { releaseProofPosture } from "@/lib/operations/release-proof-packet";
+import { getReleaseProofItemCaveats, releaseProofPosture } from "@/lib/operations/release-proof-packet";
 
 export const metadata = {
   title: "Pilot Readiness Evidence Center | OpenPlan Admin",
@@ -143,6 +143,48 @@ export default function PilotReadinessPage() {
           </div>
         </article>
       </header>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Release-proof drilldown</p>
+            <h2 className="module-section-title">Which artifacts support sale and pilot readiness</h2>
+            <p className="module-section-description">
+              The export below uses the same release-proof posture as Command Center, so operators can see the source
+              artifact, what it supports, and which caveats must travel with the claim.
+            </p>
+          </div>
+          <StatusBadge tone="warning">Supervised workbench</StatusBadge>
+        </div>
+
+        <div className="mt-5 module-record-list">
+          {releaseProofPosture.proofItems.map((item) => (
+            <div key={item.key} className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={item.status === "pass" ? "success" : item.status === "next" ? "info" : "warning"}>
+                      {item.label}
+                    </StatusBadge>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      {item.status === "pass" ? "Evidence" : item.status === "next" ? "Next check" : "Caveat source"}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="module-record-title">{item.headline}</h3>
+                    <p className="module-record-summary">{item.readinessRole}</p>
+                    <p className="text-xs text-muted-foreground">{item.operatorCheck}</p>
+                    <p className="font-mono text-[0.72rem] text-muted-foreground">{item.artifact}</p>
+                    <p className="text-[0.72rem] text-muted-foreground">
+                      Caveats: {getReleaseProofItemCaveats(item).map((caveat) => caveat.label).join(" · ")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">

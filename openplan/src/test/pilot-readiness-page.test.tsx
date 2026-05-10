@@ -26,6 +26,11 @@ describe("PilotReadinessPage", () => {
     expect(cue).toHaveTextContent(`${releaseProofPosture.caveats.length} required caveats`);
     expect(cue).toHaveTextContent(`${releaseProofPosture.proofItems.length} proof artifacts`);
     expect(cue).toHaveTextContent(salesCaveatProof?.artifact ?? "");
+    expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
+    expect(screen.getByText(/The export below uses the same release-proof posture as Command Center/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sale readiness: names the current gate evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Billing proof waiver/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Export Readiness Packet/i })).toBeInTheDocument();
   });
 });

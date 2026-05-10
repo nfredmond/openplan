@@ -23,14 +23,18 @@ describe("ReleaseProofPacketPanel", () => {
 
     expect(screen.getByText(/Release gates are collected and traceable/i)).toBeInTheDocument();
     expect(screen.getByText(/Admin Pilot Readiness is the operator-facing packet check/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sale readiness: names the current gate evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
+    expect(screen.getByText(/Use it as the stop-list before sharing examples/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Caveats carried with this artifact/i).length).toBeGreaterThan(0);
     expect(screen.getByText("docs/ops/2026-05-01-openplan-release-to-sale-plan.md")).toBeInTheDocument();
     expect(screen.getByText("docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md")).toBeInTheDocument();
 
     expect(screen.getAllByText(/No fresh same-cycle paid canary is claimed/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Onboarding remains a supervised implementation step/i)).toBeInTheDocument();
-    expect(screen.getByText(/RPO\/RTO commitments are filled per managed-hosting engagement/i)).toBeInTheDocument();
-    expect(screen.getByText(/no validated behavioral forecasting claim is made/i)).toBeInTheDocument();
-    expect(screen.getByText(/not sold as legal-grade LAPM\/compliance automation or autonomous AI planning/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Onboarding remains a supervised implementation step/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/RPO\/RTO commitments are filled per managed-hosting engagement/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/no validated behavioral forecasting claim is made/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/not sold as legal-grade LAPM\/compliance automation or autonomous AI planning/i).length).toBeGreaterThan(0);
 
     expect(screen.getByRole("link", { name: /Open readiness packet/i })).toHaveAttribute(
       "href",
@@ -49,5 +53,8 @@ describe("ReleaseProofPacketPanel", () => {
     expect(copyBlock).toContain("RPO/RTO commitments");
     expect(copyBlock).toContain("no validated behavioral forecasting claim");
     expect(copyBlock).toContain("legal-grade LAPM/compliance automation");
+    expect(copyBlock).toContain("Sale readiness: names the current gate evidence");
+    expect(copyBlock).toContain("Billing proof waiver");
+    expect(copyBlock).toContain("docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md");
   });
 });
