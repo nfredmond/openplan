@@ -70,6 +70,16 @@ export function ProjectSpineCrosslinkBoard({
             {isLoading ? "Keep the board visible while source reads finish." : summary.stateNextAction}
           </p>
         </div>
+        {!isLoading ? (
+          <div className="mt-4 border-t border-border/70 pt-3 text-xs leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-foreground/80">Proof reference:</span>{" "}
+            <Link href={summary.stateProofReference.href} className="font-semibold text-primary hover:text-primary/80">
+              {summary.stateProofReference.label}
+            </Link>{" "}
+            <span className="font-mono text-[0.72rem]">{summary.stateProofReference.artifact}</span>
+            <span className="block mt-1">{summary.stateProofReference.relevance}</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,20rem)]">
@@ -149,6 +159,10 @@ export function ProjectSpineCrosslinkBoard({
                   <p>
                     <span className="font-semibold text-foreground/80">Caveat:</span> {row.caveat}
                   </p>
+                  <p>
+                    <span className="font-semibold text-foreground/80">Proof reference:</span>{" "}
+                    {row.proofReference.label} · <span className="font-mono">{row.proofReference.artifact}</span>
+                  </p>
                 </div>
               </div>
             </Link>
@@ -193,6 +207,14 @@ export function ProjectSpineCrosslinkBoard({
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
               <span className="font-semibold text-foreground/80">Caveat:</span> {summary.leadAction.caveat}
             </p>
+            <div className="mt-3 border-t border-border/70 pt-3 text-xs leading-relaxed text-muted-foreground">
+              <p className="font-semibold text-foreground/80">Readiness proof to check</p>
+              <Link href={summary.leadAction.proofReference.href} className="font-semibold text-primary hover:text-primary/80">
+                {summary.leadAction.proofReference.label}
+              </Link>
+              <p className="mt-1 font-mono text-[0.72rem]">{summary.leadAction.proofReference.artifact}</p>
+              <p className="mt-1">{summary.leadAction.proofReference.relevance}</p>
+            </div>
             <Link
               href={summary.leadAction.href}
               className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80"

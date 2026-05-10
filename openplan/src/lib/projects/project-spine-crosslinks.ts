@@ -10,6 +10,13 @@ export type ProjectSpineCrosslinkRowId =
   | "analysis_modeling"
   | "aerial_evidence";
 
+export type ProjectSpineProofReference = {
+  label: string;
+  artifact: string;
+  href: string;
+  relevance: string;
+};
+
 export type ProjectSpineCrosslinkRow = {
   id: ProjectSpineCrosslinkRowId;
   lane: string;
@@ -23,6 +30,7 @@ export type ProjectSpineCrosslinkRow = {
   evidence: string;
   nextAction: string;
   caveat: string;
+  proofReference: ProjectSpineProofReference;
   href: string;
   actionLabel: string;
 };
@@ -32,6 +40,7 @@ export type ProjectSpineCrosslinkSummary = {
   stateHeadline: string;
   stateDetail: string;
   stateNextAction: string;
+  stateProofReference: ProjectSpineProofReference;
   readyCount: number;
   attentionCount: number;
   missingCount: number;
@@ -118,6 +127,77 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
   aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
 };
 
+const proofHref = "/admin/pilot-readiness";
+
+const rowProofReferences: Record<ProjectSpineCrosslinkRowId, ProjectSpineProofReference> = {
+  rtp_packets: {
+    label: "RTP/report workflow smoke",
+    artifact: "docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md",
+    href: proofHref,
+    relevance:
+      "Use as the operator checklist for packet creation, artifact generation, and release-review navigation; rerun for this project before external reuse.",
+  },
+  scenario_sets: {
+    label: "Analysis/report linkage smoke",
+    artifact: "docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md",
+    href: proofHref,
+    relevance:
+      "Shows scenario attachment and source-context traceability in the proof packet; it is not a validated forecasting claim.",
+  },
+  funding_profile: {
+    label: "Grants/funding workflow smoke",
+    artifact: "docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md",
+    href: proofHref,
+    relevance:
+      "Use as the funding-need, award, reimbursement, and closeout proof map; confirm source documents for this project before citing.",
+  },
+  engagement_evidence: {
+    label: "Engagement handoff smoke",
+    artifact: "docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md",
+    href: proofHref,
+    relevance:
+      "Use as the moderated-intake and report-handoff proof path; raw intake still needs human review and agency response context.",
+  },
+  analysis_modeling: {
+    label: "Modeling caveat gate proof",
+    artifact: "docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md",
+    href: proofHref,
+    relevance:
+      "Keeps modeling language source-cited and caveated; project acceptance must stay supervised and non-autonomous.",
+  },
+  aerial_evidence: {
+    label: "Aerial evidence spine smoke",
+    artifact: "docs/ops/2026-05-02-openplan-local-aerial-evidence-smoke.md",
+    href: proofHref,
+    relevance:
+      "Use as the mission/package linkage proof map; do not treat aerial output as survey, engineering, or autonomous verification.",
+  },
+};
+
+const boardProofReferences: Record<ProjectSpineCrosslinkBoardState, ProjectSpineProofReference> = {
+  active: {
+    label: "Final pilot-readiness checklist",
+    artifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
+    href: proofHref,
+    relevance:
+      "Use this operator packet to confirm which proof lanes can be cited and which caveats must travel with them.",
+  },
+  empty: {
+    label: "Phase 1 shared spine proof",
+    artifact: "docs/ops/2026-05-02-openplan-local-spine-smoke.md",
+    href: proofHref,
+    relevance:
+      "Use the prior cross-surface proof as the setup checklist; this empty project still needs its own scoped acceptance rerun.",
+  },
+  schema_pending: {
+    label: "Migration inventory preflight proof",
+    artifact: "docs/ops/2026-05-10-openplan-migration-inventory-preflight-proof.md",
+    href: proofHref,
+    relevance:
+      "Use this migration/source-read proof before deciding whether a lane is genuinely missing or only unavailable.",
+  },
+};
+
 function withSourceState(
   row: Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">,
   pendingSchema: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>
@@ -153,7 +233,7 @@ function withSourceState(
 
 function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
   ProjectSpineCrosslinkSummary,
-  "boardState" | "stateHeadline" | "stateDetail" | "stateNextAction" | "schemaPendingLanes"
+  "boardState" | "stateHeadline" | "stateDetail" | "stateNextAction" | "stateProofReference" | "schemaPendingLanes"
 > {
   const schemaPendingLanes = rows
     .filter((row) => row.sourceState === "schema_pending")
@@ -165,6 +245,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       stateHeadline: "Some spine lanes are waiting on schema setup",
       stateDetail: `${schemaPendingLanes.join(", ")} ${schemaPendingLanes.length === 1 ? "is" : "are"} unavailable right now, so the board is showing setup actions instead of pretending those lanes are empty.`,
       stateNextAction: "Apply or verify the missing migration/read path, reload the project, then decide which evidence is genuinely absent.",
+      stateProofReference: boardProofReferences.schema_pending,
       schemaPendingLanes,
     };
   }
@@ -176,6 +257,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       stateDetail:
         "This is a clean setup queue, not a broken board. Each row names the first operator move needed to turn the project record into reusable packet, funding, scenario, engagement, analysis, or aerial evidence.",
       stateNextAction: rows[0]?.nextAction ?? "Attach the first project-linked output, then reload the spine.",
+      stateProofReference: boardProofReferences.empty,
       schemaPendingLanes,
     };
   }
@@ -186,6 +268,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
     stateDetail:
       "Visible rows distinguish ready evidence, review items, and setup gaps so downstream packet work stays source-cited and supervised.",
     stateNextAction: "Work the first operator move in the inspector before reusing this project downstream.",
+    stateProofReference: boardProofReferences.active,
     schemaPendingLanes,
   };
 }
@@ -271,6 +354,7 @@ export function buildProjectSpineCrosslinkSummary(
               ? "Create the first project-linked RTP packet from the visible RTP cycle anchor."
               : "Attach this project to the right RTP cycle, then create the first packet record.",
       caveat: "RTP links show portfolio placement and report reuse paths; they are not adopted policy or board-ready evidence until the packet trail is current and reviewed.",
+      proofReference: rowProofReferences.rtp_packets,
       href: "#project-reporting",
       actionLabel: "Review packet queue",
     },
@@ -302,6 +386,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Add or mark the baseline and at least one alternative as ready before using scenario language downstream."
             : "Review the scenario set, then confirm downstream report packets reference the same comparison basis.",
       caveat: "Scenario evidence is planning-support context only; do not treat it as a validated forecast, legal finding, or autonomous prioritization decision.",
+      proofReference: rowProofReferences.scenario_sets,
       href: "/scenarios",
       actionLabel: "Review scenarios",
     },
@@ -330,6 +415,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Resolve the funding gap, award risk, or reimbursement follow-through before reusing the packet funding language."
             : "Confirm source documents and award status before moving funding language into external packets.",
       caveat: "Funding evidence shows current source-context posture only; it is not an award commitment, eligibility opinion, or reimbursement approval.",
+      proofReference: rowProofReferences.funding_profile,
       href: `/grants?focusProjectId=${input.projectId}`,
       actionLabel: "Open Grants OS",
     },
@@ -356,6 +442,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Moderate or approve enough engagement items for clean packet handoff."
             : "Confirm the approved engagement excerpts are attached to the downstream report packet.",
       caveat: "Engagement rows are evidence of intake and moderation status, not a substitute for adopted outreach findings or public agency response records.",
+      proofReference: rowProofReferences.engagement_evidence,
       href: `/engagement?projectId=${input.projectId}`,
       actionLabel: "Open engagement",
     },
@@ -384,6 +471,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Bind the recent run to a scenario entry or comparison-backed report before citing the output."
             : "Open the comparison-backed packet and verify caveats before reusing analysis language.",
       caveat: "Modeling evidence must stay source-cited and supervised; this board does not certify travel behavior forecasts or prioritization outcomes.",
+      proofReference: rowProofReferences.analysis_modeling,
       href: "/models",
       actionLabel: "Open models",
     },
@@ -410,6 +498,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Finish package QA and verification before citing aerial evidence downstream."
             : "Confirm the ready package is linked to the report or grant evidence trail that needs it.",
       caveat: "Aerial evidence supports documentation and measurement review; it is not a stamped survey, final engineering record, or autonomous verification.",
+      proofReference: rowProofReferences.aerial_evidence,
       href: "/aerial",
       actionLabel: "Open aerial ops",
     },

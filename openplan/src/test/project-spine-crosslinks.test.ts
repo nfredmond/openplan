@@ -122,10 +122,16 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.missingCount).toBe(6);
     expect(summary.boardState).toBe("empty");
     expect(summary.stateHeadline).toMatch(/No downstream outputs/i);
+    expect(summary.stateProofReference.label).toBe("Phase 1 shared spine proof");
+    expect(summary.stateProofReference.artifact).toBe("docs/ops/2026-05-02-openplan-local-spine-smoke.md");
+    expect(summary.stateProofReference.relevance).toMatch(/own scoped acceptance rerun/i);
     expect(summary.emptyCount).toBe(6);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
     expect(summary.rows.find((row) => row.id === "funding_profile")?.sourceLabel).toBe("No evidence yet");
+    expect(summary.rows.find((row) => row.id === "funding_profile")?.proofReference.artifact).toBe(
+      "docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md"
+    );
     expect(summary.rows.find((row) => row.id === "analysis_modeling")?.evidence).toMatch(/no validated behavioral forecast/i);
     expect(summary.rows.find((row) => row.id === "scenario_sets")?.caveat).toMatch(/planning-support context/i);
   });
@@ -189,11 +195,14 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.missingCount).toBe(4);
     expect(summary.schemaPendingLanes).toEqual(["Scenario sets", "Grants / funding profile"]);
     expect(summary.stateDetail).toMatch(/showing setup actions instead of pretending those lanes are empty/i);
+    expect(summary.stateProofReference.label).toBe("Migration inventory preflight proof");
+    expect(summary.stateProofReference.href).toBe("/admin/pilot-readiness");
     expect(summary.leadAction.id).toBe("scenario_sets");
     expect(scenarioRow?.statusLabel).toBe("Schema setup pending");
     expect(scenarioRow?.sourceLabel).toBe("Schema setup");
     expect(scenarioRow?.evidence).toMatch(/did not treat this as missing evidence/i);
     expect(scenarioRow?.nextAction).toMatch(/Apply the scenario spine tables/i);
+    expect(scenarioRow?.proofReference.label).toBe("Analysis/report linkage smoke");
     expect(fundingRow?.nextAction).toMatch(/funding profile, award, opportunity, and invoice tables/i);
   });
 

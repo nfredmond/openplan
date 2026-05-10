@@ -67,8 +67,13 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expect(screen.getByText("Empty state")).toBeInTheDocument();
     expect(screen.getByText(/No downstream outputs are linked yet/i)).toBeInTheDocument();
     expect(screen.getByText(/clean setup queue, not a broken board/i)).toBeInTheDocument();
+    expect(screen.getByText("Phase 1 shared spine proof")).toHaveAttribute("href", "/admin/pilot-readiness");
+    expect(screen.getAllByText("docs/ops/2026-05-02-openplan-local-spine-smoke.md").length).toBeGreaterThan(0);
+    expect(screen.getByText(/this empty project still needs its own scoped acceptance rerun/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Attach this project to the right RTP cycle/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("No evidence yet").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Readiness proof to check/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/RTP\/report workflow smoke/i).length).toBeGreaterThan(0);
   });
 
   it("renders schema fallback rows as setup work instead of missing data", () => {
@@ -84,6 +89,8 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     expect(screen.getByText("Setup fallback")).toBeInTheDocument();
     expect(screen.getByText(/Some spine lanes are waiting on schema setup/i)).toBeInTheDocument();
+    expect(screen.getByText("Migration inventory preflight proof")).toHaveAttribute("href", "/admin/pilot-readiness");
+    expect(screen.getByText("docs/ops/2026-05-10-openplan-migration-inventory-preflight-proof.md")).toBeInTheDocument();
     expect(screen.getAllByText("Schema setup pending")).toHaveLength(2);
     expect(screen.getAllByText("Setup needed")).toHaveLength(2);
     expect(screen.getAllByText(/did not treat this as missing evidence/i)).toHaveLength(2);
