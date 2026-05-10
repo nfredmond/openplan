@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { buildReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
+import {
+  buildReportAerialEvidenceSourceContext,
+  parseReportAerialEvidenceSourceContext,
+} from "@/lib/reports/aerial-source-context";
 
 describe("buildReportAerialEvidenceSourceContext", () => {
   it("returns null when no aerial rows are linked to the report", () => {
@@ -133,5 +136,80 @@ describe("buildReportAerialEvidenceSourceContext", () => {
       "1 aerial evidence package references a mission that was not loaded into the report source context."
     );
     expect(context?.sourceContext).toContain("not traceable to a loaded mission record");
+  });
+
+  it("parses persisted helper output for report-adjacent provenance rendering", () => {
+    const context = buildReportAerialEvidenceSourceContext({
+      missions: [
+        {
+          id: "mission-4",
+          title: "Bridge approach photos",
+          status: "complete",
+          mission_type: "site_inspection",
+          project_id: "project-4",
+          aoi_geojson: { type: "Polygon", coordinates: [] },
+          updated_at: "2026-05-09T21:00:00.000Z",
+        },
+      ],
+      packages: [
+        {
+          id: "package-4",
+          mission_id: "mission-4",
+          title: "Bridge approach annotated photos",
+          status: "ready",
+          verification_readiness: "ready",
+          notes: "Operator checked the photos against the field log; not survey-grade.",
+          updated_at: "2026-05-09T21:15:00.000Z",
+        },
+      ],
+    });
+
+    const parsed = parseReportAerialEvidenceSourceContext(context);
+
+    expect(parsed).toMatchObject({
+      readiness: "ready",
+      label: "Aerial evidence source context attached",
+      operatorAssisted: true,
+      autonomousPhotogrammetryClaim: false,
+      regulatoryComplianceClaim: false,
+      surveyGradeCertificationClaim: false,
+      missionSummaries: [
+        {
+          missionId: "mission-4",
+          title: "Bridge approach photos",
+          readiness: "ready",
+        },
+      ],
+    });
+  });
+
+  it("fails closed when persisted metadata implies unsafe autonomous or certification claims", () => {
+    const context = buildReportAerialEvidenceSourceContext({
+      missions: [
+        {
+          id: "mission-5",
+          title: "Unsafe claim fixture",
+          status: "complete",
+          mission_type: "corridor_survey",
+          project_id: "project-5",
+          aoi_geojson: { type: "Polygon", coordinates: [] },
+          updated_at: null,
+        },
+      ],
+      packages: [],
+    });
+
+    expect(
+      parseReportAerialEvidenceSourceContext({
+        ...context,
+        autonomousPhotogrammetryClaim: true,
+      })
+    ).toBeNull();
+    expect(
+      parseReportAerialEvidenceSourceContext({
+        ...context,
+        surveyGradeCertificationClaim: true,
+      })
+    ).toBeNull();
   });
 });

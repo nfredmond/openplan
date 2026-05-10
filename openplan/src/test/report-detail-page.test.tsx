@@ -457,6 +457,48 @@ describe("ReportDetailPage", () => {
                 totalItems: 12,
                 readyForHandoffCount: 7,
               },
+              aerialEvidenceSourceContext: {
+                metadataSchemaVersion: "2026-05-aerial-report-source-context",
+                missionCount: 1,
+                packageCount: 1,
+                orphanPackageCount: 0,
+                attachmentReadyPackageCount: 1,
+                sourceContextPackageCount: 1,
+                readiness: "ready",
+                label: "Aerial evidence source context attached",
+                detail: "1 operator-reviewed aerial package can be cited after human report review.",
+                readyUses: ["project", "grant", "report", "public_response"],
+                blockedUses: [],
+                sourceContext:
+                  "Downtown shoulder inventory source context: Drone photo QA notes. Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.",
+                blockers: [],
+                caveat:
+                  "Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.",
+                operatorAssisted: true,
+                autonomousPhotogrammetryClaim: false,
+                regulatoryComplianceClaim: false,
+                surveyGradeCertificationClaim: false,
+                missionSummaries: [
+                  {
+                    missionId: "mission-1",
+                    title: "Downtown shoulder inventory",
+                    status: "complete",
+                    missionType: "corridor_survey",
+                    updatedAt: "2026-03-28T17:30:00.000Z",
+                    packageCount: 1,
+                    readiness: "ready",
+                    label: "Ready for project, grant, report, and public response support",
+                    detail:
+                      "1 operator-reviewed aerial package can be cited after human review.",
+                    sourceContext:
+                      "Downtown shoulder inventory source context: Drone photo QA notes. Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.",
+                    attachmentReadyPackageCount: 1,
+                    sourceContextPackageCount: 1,
+                    readyUses: ["project", "grant", "report", "public_response"],
+                    blockers: [],
+                  },
+                ],
+              },
             },
           },
         },
@@ -706,6 +748,14 @@ describe("ReportDetailPage", () => {
     );
     expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
     expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
+    expect(screen.getByText("Aerial evidence")).toBeInTheDocument();
+    expect(screen.getByText("Aerial evidence source context attached")).toBeInTheDocument();
+    expect(screen.getByText(/1 mission · 1 package · 1 source-context package/i)).toBeInTheDocument();
+    expect(screen.getByText(/No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open aerial mission/i })).toHaveAttribute(
+      "href",
+      "/aerial/missions/mission-1"
+    );
     expect(screen.getByText("Packet release review")).toBeInTheDocument();
     expect(screen.getByText("Carry this packet through readiness")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(

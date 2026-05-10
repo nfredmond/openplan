@@ -191,7 +191,9 @@ export function buildWorkflowNextActionGroups(summary: WorkspaceOperationsSummar
     groups.set(definition.key, []);
   }
 
-  const queue = summary.fullCommandQueue.length > 0 ? summary.fullCommandQueue : summary.commandQueue;
+  const fullCommandQueue = summary.fullCommandQueue ?? [];
+  const commandQueue = summary.commandQueue ?? [];
+  const queue = fullCommandQueue.length > 0 ? fullCommandQueue : commandQueue;
 
   for (const command of queue) {
     for (const groupKey of classifyWorkflowNextAction(command)) {

@@ -73,8 +73,94 @@ const AERIAL_ATTACHMENT_USES: AerialEvidenceAttachmentUse[] = [
 const AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT =
   "Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.";
 
+const REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION = "2026-05-aerial-report-source-context";
+
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asReadiness(value: unknown): AerialEvidenceAttachmentReadiness | null {
+  return value === "ready" || value === "needs_source_context" || value === "blocked"
+    ? value
+    : null;
+}
+
+function asAttachmentUse(value: unknown): AerialEvidenceAttachmentUse | null {
+  return AERIAL_ATTACHMENT_USES.includes(value as AerialEvidenceAttachmentUse)
+    ? (value as AerialEvidenceAttachmentUse)
+    : null;
+}
+
+function asAttachmentUses(value: unknown): AerialEvidenceAttachmentUse[] {
+  if (!Array.isArray(value)) return [];
+
+  return uniqueStrings(value.map((item) => asAttachmentUse(item) ?? "")) as AerialEvidenceAttachmentUse[];
+}
+
+function asStringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? uniqueStrings(value.filter((item): item is string => typeof item === "string"))
+    : [];
+}
+
+function parseMissionSummary(value: unknown): ReportAerialMissionSourceSummary | null {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const missionId = asString(record.missionId);
+  const title = asString(record.title);
+  const readiness = asReadiness(record.readiness);
+  const label = asString(record.label);
+  const detail = asString(record.detail);
+  const sourceContext = asString(record.sourceContext);
+  const packageCount = asNumber(record.packageCount);
+  const attachmentReadyPackageCount = asNumber(record.attachmentReadyPackageCount);
+  const sourceContextPackageCount = asNumber(record.sourceContextPackageCount);
+
+  if (
+    !missionId ||
+    !title ||
+    !readiness ||
+    !label ||
+    !detail ||
+    !sourceContext ||
+    packageCount === null ||
+    attachmentReadyPackageCount === null ||
+    sourceContextPackageCount === null
+  ) {
+    return null;
+  }
+
+  return {
+    missionId,
+    title,
+    status: asString(record.status),
+    missionType: asString(record.missionType),
+    updatedAt: asString(record.updatedAt),
+    packageCount,
+    readiness,
+    label,
+    detail,
+    sourceContext,
+    attachmentReadyPackageCount,
+    sourceContextPackageCount,
+    readyUses: asAttachmentUses(record.readyUses),
+    blockers: asStringList(record.blockers),
+  };
 }
 
 function missionTitle(row: ReportAerialMissionSourceRow, index: number): string {
@@ -202,7 +288,7 @@ export function buildReportAerialEvidenceSourceContext(input: {
       : blockers[0] ?? "Complete aerial evidence source context before report attachment.";
 
   return {
-    metadataSchemaVersion: "2026-05-aerial-report-source-context",
+    metadataSchemaVersion: REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION,
     missionCount: input.missions.length,
     packageCount: input.packages.length,
     orphanPackageCount,
@@ -216,6 +302,70 @@ export function buildReportAerialEvidenceSourceContext(input: {
     sourceContext: sourceContextParts.join(" ") || `Aerial evidence source context is incomplete. ${AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT}`,
     blockers,
     caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+    operatorAssisted: true,
+    autonomousPhotogrammetryClaim: false,
+    regulatoryComplianceClaim: false,
+    surveyGradeCertificationClaim: false,
+    missionSummaries,
+  };
+}
+
+export function parseReportAerialEvidenceSourceContext(
+  value: unknown
+): ReportAerialEvidenceSourceContext | null {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const readiness = asReadiness(record.readiness);
+  const missionCount = asNumber(record.missionCount);
+  const packageCount = asNumber(record.packageCount);
+  const orphanPackageCount = asNumber(record.orphanPackageCount);
+  const attachmentReadyPackageCount = asNumber(record.attachmentReadyPackageCount);
+  const sourceContextPackageCount = asNumber(record.sourceContextPackageCount);
+  const label = asString(record.label);
+  const detail = asString(record.detail);
+  const sourceContext = asString(record.sourceContext);
+
+  if (
+    record.metadataSchemaVersion !== REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION ||
+    !readiness ||
+    missionCount === null ||
+    packageCount === null ||
+    orphanPackageCount === null ||
+    attachmentReadyPackageCount === null ||
+    sourceContextPackageCount === null ||
+    !label ||
+    !detail ||
+    !sourceContext ||
+    record.operatorAssisted !== true ||
+    record.autonomousPhotogrammetryClaim !== false ||
+    record.regulatoryComplianceClaim !== false ||
+    record.surveyGradeCertificationClaim !== false
+  ) {
+    return null;
+  }
+
+  const missionSummaries = Array.isArray(record.missionSummaries)
+    ? record.missionSummaries
+        .map((summary) => parseMissionSummary(summary))
+        .filter((summary): summary is ReportAerialMissionSourceSummary => Boolean(summary))
+    : [];
+
+  return {
+    metadataSchemaVersion: REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION,
+    missionCount,
+    packageCount,
+    orphanPackageCount,
+    attachmentReadyPackageCount,
+    sourceContextPackageCount,
+    readiness,
+    label,
+    detail,
+    readyUses: asAttachmentUses(record.readyUses),
+    blockedUses: asAttachmentUses(record.blockedUses),
+    sourceContext,
+    blockers: asStringList(record.blockers),
+    caveat: asString(record.caveat) ?? AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
     operatorAssisted: true,
     autonomousPhotogrammetryClaim: false,
     regulatoryComplianceClaim: false,
