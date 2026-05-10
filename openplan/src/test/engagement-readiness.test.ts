@@ -19,7 +19,7 @@ describe("getEngagementHandoffReadiness", () => {
 
     expect(readiness.label).toBe("Ready for handoff");
     expect(readiness.tone).toBe("success");
-    expect(readiness.completeCount).toBe(5);
+    expect(readiness.completeCount).toBe(6);
     expect(readiness.nextAction).toMatch(/credible handoff posture/i);
   });
 
@@ -40,7 +40,7 @@ describe("getEngagementHandoffReadiness", () => {
 
     expect(readiness.label).toBe("Nearly ready");
     expect(readiness.tone).toBe("warning");
-    expect(readiness.completeCount).toBe(5);
+    expect(readiness.completeCount).toBe(6);
     expect(readiness.nextAction).toMatch(/close the campaign/i);
   });
 
@@ -63,6 +63,28 @@ describe("getEngagementHandoffReadiness", () => {
     expect(readiness.tone).toBe("neutral");
     expect(readiness.completeCount).toBe(0);
     expect(readiness.checks.find((check) => check.id === "project")?.passed).toBe(false);
+    expect(readiness.checks.find((check) => check.id === "categorization")?.detail).toMatch(/category before final matrix handoff/i);
     expect(readiness.nextAction).toMatch(/link the campaign to the correct project/i);
+  });
+
+  it("blocks final handoff when approved items remain uncategorized", () => {
+    const readiness = getEngagementHandoffReadiness({
+      campaignStatus: "closed",
+      projectLinked: true,
+      categoryCount: 2,
+      counts: {
+        totalItems: 4,
+        uncategorizedItems: 1,
+        moderationQueue: {
+          actionableCount: 0,
+          readyForHandoffCount: 3,
+        },
+      },
+    });
+
+    expect(readiness.label).toBe("Nearly ready");
+    expect(readiness.tone).toBe("warning");
+    expect(readiness.checks.find((check) => check.id === "categorization")?.passed).toBe(false);
+    expect(readiness.nextAction).toMatch(/categorize the 1 uncategorized item/i);
   });
 });

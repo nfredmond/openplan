@@ -17,7 +17,7 @@ type EngagementHandoffReadinessInput = {
 };
 
 export type EngagementHandoffReadinessCheck = {
-  id: "project" | "categories" | "review_queue" | "approved_items" | "campaign_status";
+  id: "project" | "categories" | "categorization" | "review_queue" | "approved_items" | "campaign_status";
   label: string;
   passed: boolean;
   detail: string;
@@ -54,6 +54,17 @@ export function getEngagementHandoffReadiness(
         categoryCount > 0
           ? `${categoryCount} categor${categoryCount === 1 ? "y" : "ies"} available for classification.`
           : "Define at least one category so intake does not remain a flat unstructured queue.",
+    },
+    {
+      id: "categorization",
+      label: "Items categorized",
+      passed: counts.totalItems === 0 || counts.uncategorizedItems === 0,
+      detail:
+        counts.totalItems === 0
+          ? "No intake items have been submitted yet; categorization is not blocking setup review."
+          : counts.uncategorizedItems === 0
+            ? "All submitted items have category assignments for matrix and appendix grouping."
+            : `${counts.uncategorizedItems} item${counts.uncategorizedItems === 1 ? " still needs" : "s still need"} a category before final matrix handoff.`,
     },
     {
       id: "review_queue",
@@ -109,6 +120,8 @@ export function getEngagementHandoffReadiness(
     nextAction = "Link the campaign to the correct project so report creation and planning traceability stay intact.";
   } else if (categoryCount === 0) {
     nextAction = "Add at least one category so incoming items can be classified before handoff.";
+  } else if (counts.uncategorizedItems > 0) {
+    nextAction = `Categorize the ${counts.uncategorizedItems} uncategorized item${counts.uncategorizedItems === 1 ? "" : "s"} before final report matrix handoff.`;
   } else if (counts.moderationQueue.actionableCount > 0) {
     nextAction = `Resolve the ${counts.moderationQueue.actionableCount} pending or flagged moderation item${counts.moderationQueue.actionableCount === 1 ? "" : "s"} before calling this packet ready.`;
   } else if (counts.moderationQueue.readyForHandoffCount === 0) {
