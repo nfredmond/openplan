@@ -2,6 +2,7 @@ import { FileCheck2, ShieldCheck } from "lucide-react";
 import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
+import { releaseProofPosture } from "@/lib/operations/release-proof-packet";
 
 export const metadata = {
   title: "Pilot Readiness Evidence Center | OpenPlan Admin",
@@ -61,6 +62,8 @@ export default function PilotReadinessPage() {
     .sort()
     .reverse()[0] ?? "No dated proof yet";
   const readinessHeadline = buildReadinessHeadline(statusList);
+  const salesCaveatProof =
+    releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats") ?? releaseProofPosture.proofItems[0];
 
   return (
     <section className="module-page">
@@ -105,8 +108,20 @@ export default function PilotReadinessPage() {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <ExportButton statusList={statusList} />
+            <div
+              aria-label="Export caveat sync status"
+              className="flex max-w-2xl items-start gap-3 rounded-[0.75rem] border border-emerald-300/40 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-700/45 dark:bg-emerald-950/20 dark:text-emerald-100"
+            >
+              <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]" />
+              <span>
+                <span className="block font-medium">Export caveats mirror Command Center release proof.</span>
+                <span className="block text-emerald-900/80 dark:text-emerald-100/75">
+                  The packet reuses {releaseProofPosture.caveats.length} required caveats and {releaseProofPosture.proofItems.length} proof artifacts from the shared release-proof posture; caveat source: {salesCaveatProof.artifact}.
+                </span>
+              </span>
+            </div>
           </div>
         </article>
 
