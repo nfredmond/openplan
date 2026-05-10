@@ -96,6 +96,8 @@ describe("model run KPI comparison helpers", () => {
   it("formats KPI values and deltas for display", () => {
     expect(formatModelRunKpiValue(1234.56, "jobs")).toBe("1,235 jobs");
     expect(formatModelRunKpiValue(12.345, "min")).toBe("12.35 min");
+    expect(formatModelRunKpiValue(0.0068, "ratio")).toBe("0.0068 ratio");
+    expect(formatModelRunKpiDelta(-0.0042, "ratio")).toBe("-0.0042 ratio");
     expect(formatModelRunKpiDelta(-2.5, "min")).toBe("-2.5 min");
     expect(formatModelRunKpiPercentDelta(7.25)).toBe("+7.25%");
     expect(formatModelRunKpiValue(null)).toBe("N/A");

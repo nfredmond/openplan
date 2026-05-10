@@ -120,13 +120,21 @@ export function buildModelRunKpiComparisonSummary(rows: Array<Record<string, unk
   } satisfies ModelRunKpiComparisonSummary;
 }
 
+function kpiFractionDigits(value: number) {
+  const absoluteValue = Math.abs(value);
+  if (absoluteValue > 0 && absoluteValue < 0.01) {
+    return 4;
+  }
+  return absoluteValue >= 100 ? 0 : 2;
+}
+
 export function formatModelRunKpiValue(value: number | null, unit?: string | null) {
   if (value === null) {
     return "N/A";
   }
 
   const formatted = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 2,
+    maximumFractionDigits: kpiFractionDigits(value),
   }).format(value);
 
   return unit ? `${formatted} ${unit}` : formatted;
@@ -138,7 +146,7 @@ export function formatModelRunKpiDelta(delta: number | null, unit?: string | nul
   }
 
   const formatted = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: Math.abs(delta) >= 100 ? 0 : 2,
+    maximumFractionDigits: kpiFractionDigits(delta),
     signDisplay: "always",
   }).format(delta);
 

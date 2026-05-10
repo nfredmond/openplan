@@ -380,7 +380,7 @@ export function ModelRunEvidencePanel({
                               {category.topItems.map((item, index) => (
                                 <li key={`${category.category}-${item.name ?? item.label ?? index}`}>
                                   <span className="text-foreground">{item.label ?? item.name ?? "Metric"}</span>
-                                  {typeof item.value === "number" ? ` · ${item.value}${item.unit ? ` ${item.unit}` : ""}` : ""}
+                                  {typeof item.value === "number" ? ` · ${formatModelRunKpiValue(item.value, item.unit)}` : ""}
                                 </li>
                               ))}
                             </ul>
