@@ -50,7 +50,7 @@ export const adminPilotReadinessStaticPacket = {
   audience: "rural RTPA, county, tribe, transportation commission, or consultant buyer diligence",
   buyerSafeSummary: [
     "OpenPlan is ready to discuss as a supervised planning workbench with an Apache-2.0 open-source core and optional Nat Ford managed hosting, onboarding, implementation, support, and planning services.",
-    "This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated behavioral forecasting platform, a complete legal/compliance automation system, or an autonomous AI planning product.",
+    "This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated behavioral forecasting platform, a complete legal/compliance automation system, a grant award prediction product, or an autonomous AI planning product.",
     "The static sales packet and the Admin Pilot Readiness export now reuse the same final-checklist sync, release-proof artifacts, and caveat list so buyer-facing diligence does not drift from the operator surface.",
   ],
   provenPostureItems: [
@@ -231,7 +231,7 @@ export const adminPilotReadinessStaticPacket = {
     "future quarterly restore drills for later production milestones;",
     "fresh same-cycle paid checkout proof if the buyer or procurement reviewer requires it;",
     "calibrated or certified behavioral-demand modeling and broader ActivitySim/MATSim readiness;",
-    "complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off;",
+    "no release-wide complete LAPM/legal/compliance automation, grant award prediction, certified grant scoring, or official legal sign-off;",
     "custom reports, integrations, migrations, or planning services beyond the scoped SOW; and",
     "aerial/field evidence workflows beyond the selected implementation scope.",
   ],
@@ -242,9 +242,10 @@ export const adminPilotReadinessStaticPacket = {
       "Managed hosting and implementation are service wrappers around the Apache-2.0 open-source core.",
     ],
     avoid: [
-      "OpenPlan is fully self-serve municipal SaaS.",
-      "OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.",
-      "Billing was freshly re-proven with a paid checkout in this release cycle.",
+      "Avoid claiming OpenPlan is fully self-serve municipal SaaS.",
+      "Avoid claiming OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.",
+      "Avoid claiming OpenPlan predicts grant awards or provides certified grant scoring.",
+      "Avoid claiming billing was freshly re-proven with a paid checkout in this release cycle.",
     ],
   } satisfies BuyerSafeLanguage,
   verdict:

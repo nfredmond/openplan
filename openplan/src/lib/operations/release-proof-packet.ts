@@ -77,7 +77,7 @@ export const releaseProofCaveatItems = [
   {
     key: "lapm-ai-boundary",
     label: "No legal/autonomous AI claim",
-    text: "OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning.",
+    text: "OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning, and no grant award prediction claim is made.",
     sourceArtifact: "docs/ops/2026-05-01-openplan-known-issues-register.md",
   },
 ] satisfies ReleaseProofCaveat[];

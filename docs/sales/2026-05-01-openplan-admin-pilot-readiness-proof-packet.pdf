@@ -13,7 +13,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
 endobj
 5 0 obj
-<< /Length 2963 >>
+<< /Length 2997 >>
 stream
 BT
 /F1 9 Tf
@@ -47,9 +47,9 @@ T*
 T*
 (This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated) Tj
 T*
-(behavioral forecasting platform, a complete legal/compliance automation system, or an) Tj
+(behavioral forecasting platform, a complete legal/compliance automation system, a grant) Tj
 T*
-(autonomous AI planning product.) Tj
+(award prediction product, or an autonomous AI planning product.) Tj
 T*
 () Tj
 T*
@@ -340,7 +340,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
 endobj
 11 0 obj
-<< /Length 3430 >>
+<< /Length 3387 >>
 stream
 BT
 /F1 9 Tf
@@ -376,7 +376,9 @@ T*
 T*
 (validated behavioral forecasting claim is made.) Tj
 T*
-(• OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning.) Tj
+(• OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning,) Tj
+T*
+(and no grant award prediction claim is made.) Tj
 T*
 () Tj
 T*
@@ -440,8 +442,6 @@ T*
 T*
 (\(docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md\); Per-engagement) Tj
 T*
-(hosting terms \(docs/ops/2026-05-01-openplan-known-issues-register.md\); Modeling proof) Tj
-T*
 ET
 endstream
 endobj
@@ -449,12 +449,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
 endobj
 13 0 obj
-<< /Length 3367 >>
+<< /Length 3447 >>
 stream
 BT
 /F1 9 Tf
 48 742 Td
 12 TL
+(hosting terms \(docs/ops/2026-05-01-openplan-known-issues-register.md\); Modeling proof) Tj
+T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
 T*
 (legal/autonomous AI claim \(docs/ops/2026-05-01-openplan-known-issues-register.md\)) Tj
@@ -549,8 +551,6 @@ T*
 T*
 (• buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document) Tj
 T*
-(review;) Tj
-T*
 ET
 endstream
 endobj
@@ -558,12 +558,14 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
 endobj
 15 0 obj
-<< /Length 2180 >>
+<< /Length 1951 >>
 stream
 BT
 /F1 9 Tf
 48 742 Td
 12 TL
+(review;) Tj
+T*
 (• SSO, private cloud, agency-cloud deployment, custom security review, or enhanced) Tj
 T*
 (support/SLA terms;) Tj
@@ -578,7 +580,9 @@ T*
 T*
 (readiness;) Tj
 T*
-(• complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off;) Tj
+(• no release-wide complete LAPM/legal/compliance automation, grant award prediction,) Tj
+T*
+(certified grant scoring, or official legal sign-off;) Tj
 T*
 (• custom reports, integrations, migrations, or planning services beyond the scoped SOW; and) Tj
 T*
@@ -622,7 +626,7 @@ T*
 T*
 () Tj
 T*
-(OpenPlan is fully self-serve municipal SaaS.) Tj
+(Avoid claiming OpenPlan is fully self-serve municipal SaaS.) Tj
 T*
 () Tj
 T*
@@ -630,7 +634,9 @@ T*
 T*
 () Tj
 T*
-(OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.) Tj
+(Avoid claiming OpenPlan replaces planners, engineers, attorneys, grant writers, or agency) Tj
+T*
+(review.) Tj
 T*
 () Tj
 T*
@@ -638,7 +644,15 @@ T*
 T*
 () Tj
 T*
-(Billing was freshly re-proven with a paid checkout in this release cycle.) Tj
+(Avoid claiming OpenPlan predicts grant awards or provides certified grant scoring.) Tj
+T*
+() Tj
+T*
+(Avoid:) Tj
+T*
+() Tj
+T*
+(Avoid claiming billing was freshly re-proven with a paid checkout in this release cycle.) Tj
 T*
 () Tj
 T*
@@ -646,6 +660,19 @@ T*
 T*
 () Tj
 T*
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 2753 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• docs/ops/2026-05-01-openplan-rc-proof-log.md) Tj
 T*
 (• openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) Tj
@@ -660,19 +687,6 @@ T*
 T*
 (• docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md) Tj
 T*
-ET
-endstream
-endobj
-16 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
-endobj
-17 0 obj
-<< /Length 2273 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md) Tj
 T*
 (• docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md) Tj
@@ -748,20 +762,20 @@ xref
 0000000191 00000 n 
 0000000261 00000 n 
 0000000387 00000 n 
-0000003402 00000 n 
-0000003528 00000 n 
-0000007654 00000 n 
-0000007780 00000 n 
-0000011264 00000 n 
-0000011392 00000 n 
-0000014875 00000 n 
-0000015003 00000 n 
-0000018423 00000 n 
-0000018551 00000 n 
-0000020784 00000 n 
-0000020912 00000 n 
+0000003436 00000 n 
+0000003562 00000 n 
+0000007688 00000 n 
+0000007814 00000 n 
+0000011298 00000 n 
+0000011426 00000 n 
+0000014866 00000 n 
+0000014994 00000 n 
+0000018494 00000 n 
+0000018622 00000 n 
+0000020626 00000 n 
+0000020754 00000 n 
 trailer
 << /Size 18 /Root 1 0 R >>
 startxref
-23238
+23560
 %%EOF

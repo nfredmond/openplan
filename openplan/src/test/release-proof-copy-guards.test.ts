@@ -1,10 +1,15 @@
 import { buildPilotReadinessPacket } from "@/app/(app)/admin/pilot-readiness/ExportButton";
+import { buildAdminPilotReadinessProofPacketMarkdown } from "@/lib/operations/pilot-readiness-packet";
 import {
   releaseProofCaveatItems,
   releaseProofCopyBlock,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
+
+const repoRoot = path.resolve(process.cwd(), "..");
 
 const requiredCaveatFragments = [
   "No fresh same-cycle paid canary is claimed",
@@ -12,6 +17,7 @@ const requiredCaveatFragments = [
   "RPO/RTO commitments are filled per managed-hosting engagement",
   "no validated behavioral forecasting claim is made",
   "not sold as legal-grade LAPM/compliance automation or autonomous AI planning",
+  "no grant award prediction claim is made",
 ] as const;
 
 const buyerSafeTermFragments = [
@@ -20,7 +26,7 @@ const buyerSafeTermFragments = [
   "supervised planning workbench",
 ] as const;
 
-const caveatContextPattern = /\b(no|not|never|without|avoid|unsupported|boundary|caveat|waiver|supervised|stop-list|behind explicit proof gates|not sold as|not broad|not instant|no validated|no .* claim|do not|before external use|current proof boundary)\b/i;
+const caveatContextPattern = /\b(no|not|never|without|avoid|unsupported|boundary|caveat|waiver|supervised|stop-list|behind explicit proof gates|not sold as|not broad|not instant|no validated|no .* claim|do not|before external use|current proof boundary|historical|non-money-moving)\b/i;
 
 const unsupportedClaimConcepts = [
   {
@@ -41,6 +47,12 @@ const unsupportedClaimConcepts = [
   {
     label: "validated behavioral forecasting",
     pattern: /\bvalidated\b[^.\n;]*(?:behavioral\s+)?forecast(?:ing)?|(?:behavioral\s+)?forecast(?:ing)?[^.\n;]*\bvalidated\b/i,
+    mustAppearCaveated: true,
+  },
+  {
+    label: "grant award prediction",
+    pattern:
+      /\bgrant\s+award\s+prediction\b|\bpredicts?\b[^.\n;]*\bgrant\s+awards?\b|\bcertified\s+grant\s+scoring\b|\bgrant\s+scoring\b[^.\n;]*\bcertified\b/i,
     mustAppearCaveated: true,
   },
   {
@@ -76,6 +88,9 @@ function buildPilotReadinessExportFixture() {
 
 function splitBuyerCopyStatements(text: string) {
   return text
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
     .split(/[\n.]/)
     .map((statement) => statement.trim())
     .filter(Boolean);
@@ -154,5 +169,28 @@ describe("release proof copy guards", () => {
     expect(packet).toContain("Treat PASS lanes as citeable only when the named source document is available");
     expect(packet).toContain("Re-run or refresh any FAIL, PENDING, or UNKNOWN lane before using this packet");
     expectBuyerSafeTerms(packet);
+  });
+
+  it("keeps the generated Admin Pilot Readiness sales packet inside buyer-safe claim boundaries", () => {
+    const packet = buildAdminPilotReadinessProofPacketMarkdown();
+
+    expect(packet).toContain("Buyer-Safe Summary");
+    expect(packet).toContain("Implementation-Specific Items Still To Scope");
+    expect(packet).toContain("Buyer-Safe Language");
+    expectBuyerSafeTerms(packet);
+  });
+
+  it("keeps checked-in static Admin Pilot Readiness sales packets inside the same claim boundaries", () => {
+    const staticMarkdown = readFileSync(
+      path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md"),
+      "utf8",
+    );
+    const staticHtml = readFileSync(
+      path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html"),
+      "utf8",
+    );
+
+    expectBuyerSafeTerms(staticMarkdown);
+    expectBuyerSafeTerms(staticHtml);
   });
 });
