@@ -185,6 +185,8 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("Command Center")).toBeInTheDocument();
     expect(screen.getByTestId("workspace-runtime-cue")).toBeInTheDocument();
     expect(screen.getByTestId("workspace-command-board")).toBeInTheDocument();
+    expect(screen.getByText("Release proof packet")).toBeInTheDocument();
+    expect(screen.getAllByText(/No fresh same-cycle paid canary is claimed/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
     expect(screen.getByText("Recent audited operator actions")).toBeInTheDocument();
     expect(screen.getByText("Generate Report Artifact")).toBeInTheDocument();

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, Compass, FileText, FolderKanban, Landmark, PlaneTakeoff, Radar } from "lucide-react";
 
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
+import { ReleaseProofPacketPanel } from "@/components/operations/release-proof-packet-panel";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StateBlock } from "@/components/ui/state-block";
@@ -137,6 +138,10 @@ export default async function CommandCenterPage() {
             operator actions from the same workspace audit log.
           </p>
         </WorkspaceCommandBoard>
+      </div>
+
+      <div className="mt-6">
+        <ReleaseProofPacketPanel />
       </div>
 
       <RecentActionActivity
