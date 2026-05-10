@@ -43,6 +43,19 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const reportRunsInMock = vi.fn();
+const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
+
+const engagementCampaignsLimitMock = vi.fn();
+const engagementCampaignsOrderMock = vi.fn(() => ({ limit: engagementCampaignsLimitMock }));
+const engagementCampaignsEqMock = vi.fn(() => ({ order: engagementCampaignsOrderMock }));
+const engagementCampaignsSelectMock = vi.fn(() => ({ eq: engagementCampaignsEqMock }));
+
+const engagementItemsLimitMock = vi.fn();
+const engagementItemsOrderMock = vi.fn(() => ({ limit: engagementItemsLimitMock }));
+const engagementItemsInMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
+const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
 const stageGateEqMock = vi.fn(() => ({ order: stageGateOrderMock }));
@@ -157,6 +170,15 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "report_runs") {
+    return { select: reportRunsSelectMock };
+  }
+  if (table === "engagement_campaigns") {
+    return { select: engagementCampaignsSelectMock };
+  }
+  if (table === "engagement_items") {
+    return { select: engagementItemsSelectMock };
   }
   if (table === "stage_gate_decisions") {
     return { select: stageGateSelectMock };
@@ -428,6 +450,9 @@ describe("ProjectDetailPage", () => {
       ],
       error: null,
     });
+    reportRunsInMock.mockResolvedValue({ data: [], error: null });
+    engagementCampaignsLimitMock.mockResolvedValue({ data: [], error: null });
+    engagementItemsLimitMock.mockResolvedValue({ data: [], error: null });
     stageGateLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     submittalsLimitMock.mockResolvedValue({ data: [], error: null });

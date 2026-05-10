@@ -21,6 +21,7 @@ import {
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
+import { buildProjectSpineReadinessRollup } from "@/lib/projects/spine-readiness";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -36,6 +37,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
 import { ProjectPostureUnified } from "./_components/project-posture-unified";
+import { ProjectSpineReadinessRollup } from "./_components/project-spine-readiness-rollup";
 import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
@@ -75,6 +77,21 @@ function parseSortableDate(value: string | null | undefined): number {
 
 function compareDateValues(left: string | null | undefined, right: string | null | undefined): number {
   return parseSortableDate(left) - parseSortableDate(right);
+}
+
+function latestKnownDate(...values: Array<string | null | undefined>): string | null {
+  const valid = values
+    .map((value) => {
+      if (!value) return null;
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? null : { value, time };
+    })
+    .filter((item): item is { value: string; time: number } => Boolean(item));
+
+  if (valid.length === 0) return null;
+
+  valid.sort((left, right) => right.time - left.time);
+  return valid[0].value;
 }
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
@@ -331,6 +348,38 @@ export default async function ProjectDetailPage({
     .order("updated_at", { ascending: false })
     .limit(6);
 
+  const engagementCampaignsResult = await supabase
+    .from("engagement_campaigns")
+    .select("id, title, status, updated_at, created_at")
+    .eq("project_id", project.id)
+    .order("updated_at", { ascending: false })
+    .limit(6);
+  const engagementCampaigns = looksLikePendingSchema(engagementCampaignsResult.error?.message)
+    ? []
+    : ((engagementCampaignsResult.data ?? []) as Array<{
+        id: string;
+        title: string;
+        status: string;
+        updated_at: string;
+        created_at: string;
+      }>);
+  const engagementCampaignIds = engagementCampaigns.map((campaign) => campaign.id);
+  const engagementItemsResult = engagementCampaignIds.length
+    ? await supabase
+        .from("engagement_items")
+        .select("campaign_id, updated_at, created_at")
+        .in("campaign_id", engagementCampaignIds)
+        .order("updated_at", { ascending: false })
+        .limit(20)
+    : { data: [], error: null };
+  const engagementItems = looksLikePendingSchema(engagementItemsResult.error?.message)
+    ? []
+    : ((engagementItemsResult.data ?? []) as Array<{
+        campaign_id: string;
+        updated_at: string;
+        created_at: string;
+      }>);
+
   const invoiceResult = await supabase
     .from("billing_invoice_records")
     .select(
@@ -551,6 +600,30 @@ export default async function ProjectDetailPage({
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
   const reportArtifactsPending = looksLikePendingSchema(reportArtifactsResult.error?.message);
+  const reportRunsResult = projectReportIds.length
+    ? await supabase
+        .from("report_runs")
+        .select("report_id, run_id, created_at, updated_at")
+        .in("report_id", projectReportIds)
+    : { data: [], error: null };
+  const linkedReportRuns = looksLikePendingSchema(reportRunsResult.error?.message)
+    ? []
+    : ((reportRunsResult.data ?? []) as Array<{
+        report_id: string;
+        run_id: string;
+        created_at: string;
+        updated_at: string;
+      }>);
+  const linkedReportRunIds = Array.from(new Set(linkedReportRuns.map((item) => item.run_id)));
+  const linkedRunsResult = linkedReportRunIds.length
+    ? await supabase
+        .from("runs")
+        .select("id, created_at")
+        .in("id", linkedReportRunIds)
+    : { data: [], error: null };
+  const linkedRuns = looksLikePendingSchema(linkedRunsResult.error?.message)
+    ? []
+    : ((linkedRunsResult.data ?? []) as Array<{ id: string; created_at: string }>);
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (reportArtifactsPending ? [] : (reportArtifactsResult.data ?? []) as ReportArtifactRow[])) {
     if (!latestArtifactByReportId.has(artifact.report_id)) {
@@ -783,6 +856,68 @@ export default async function ProjectDetailPage({
     },
   });
 
+  const latestPacketGeneratedAt = latestKnownDate(
+    ...projectReports.map((report) => latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at)
+  );
+  const latestFundingUpdatedAt = latestKnownDate(
+    projectFundingProfile?.updated_at,
+    ...fundingAwards.map((award) => award.updated_at ?? award.created_at),
+    ...fundingOpportunities.map((opportunity) => opportunity.updated_at ?? opportunity.created_at),
+    ...projectInvoices.map((invoice) => invoice.created_at)
+  );
+  const fundingSpineRecordCount =
+    (projectFundingProfile ? 1 : 0) + fundingAwards.length + fundingOpportunities.length + projectInvoices.length;
+  const latestEngagementUpdatedAt = latestKnownDate(
+    ...engagementCampaigns.map((campaign) => campaign.updated_at ?? campaign.created_at),
+    ...engagementItems.map((item) => item.updated_at ?? item.created_at)
+  );
+  const latestAnalysisUpdatedAt = latestKnownDate(
+    ...linkedRuns.map((run) => run.created_at),
+    ...linkedReportRuns.map((link) => link.updated_at ?? link.created_at)
+  );
+  const latestAerialUpdatedAt = latestKnownDate(
+    ...aerialMissions.map((mission) => mission.updated_at ?? mission.collected_at),
+    ...aerialPackages.map((pkg) => pkg.updated_at)
+  );
+  const projectSpineReadiness = buildProjectSpineReadinessRollup({
+    projectUpdatedAt: project.updated_at,
+    latestPacketGeneratedAt,
+    rtp: {
+      count: existingRtpLinks.length,
+      latestUpdatedAt: latestKnownDate(...projectRtpLinkRows.map((link) => link.created_at)),
+      postureUpdatedAt: project.rtp_posture_updated_at,
+    },
+    reports: {
+      count: reportRecordCount,
+      latestUpdatedAt: latestKnownDate(...projectReports.map((report) => report.updated_at)),
+      refreshRecommendedCount: refreshRecommendedReportCount,
+      noPacketCount: noPacketReportCount,
+      evidenceBackedCount: evidenceBackedReportCount,
+      comparisonBackedCount: comparisonBackedReportCount,
+    },
+    grants: {
+      count: fundingSpineRecordCount,
+      latestUpdatedAt: latestFundingUpdatedAt,
+    },
+    engagement: {
+      count: engagementCampaigns.length,
+      latestUpdatedAt: latestEngagementUpdatedAt,
+    },
+    analysis: {
+      count: linkedReportRunIds.length,
+      latestUpdatedAt: latestAnalysisUpdatedAt,
+      evidenceBackedReportCount,
+    },
+    aerial: {
+      count: aerialMissions.length + aerialPackages.length,
+      latestUpdatedAt: latestAerialUpdatedAt,
+      missionCount: aerialProjectPosture.missionCount,
+      packageCount: aerialPackages.length,
+      readyPackageCount: aerialProjectPosture.readyPackageCount,
+      verificationReadiness: aerialProjectPosture.verificationReadiness,
+    },
+  });
+
   const operationsSummary = await operationsSummaryPromise;
 
   const timelineItems: TimelineItem[] = [
@@ -936,6 +1071,7 @@ export default async function ProjectDetailPage({
       />
 
       <ProjectSpineCrosslinkBoard summary={projectSpineCrosslinkSummary} />
+      <ProjectSpineReadinessRollup rollup={projectSpineReadiness} />
 
       <PilotWorkflowHandoff
         currentStep="context"
