@@ -17,6 +17,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
+import { scenarioComparisonSourceContextFromMetadata } from "@/lib/scenarios/comparison-source-context";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -61,6 +62,7 @@ type ScenarioComparisonSnapshotRow = {
   candidate_entry_id: string;
   label: string;
   summary: string | null;
+  metadata_json: Record<string, unknown> | null;
   status: string;
   updated_at: string;
 };
@@ -156,7 +158,7 @@ export default async function ScenarioSetDetailPage({
   });
   const comparisonSnapshotsResult = await supabase
     .from("scenario_comparison_snapshots")
-    .select("id, baseline_entry_id, candidate_entry_id, label, summary, status, updated_at")
+    .select("id, baseline_entry_id, candidate_entry_id, label, summary, metadata_json, status, updated_at")
     .eq("scenario_set_id", scenarioSet.id)
     .order("updated_at", { ascending: false });
   const comparisonSnapshotsSchemaPending = looksLikePendingScenarioSpineSchema(
@@ -259,6 +261,7 @@ export default async function ScenarioSetDetailPage({
     baselineEntry: entryById.get(snapshot.baseline_entry_id) ?? null,
     candidateEntry: entryById.get(snapshot.candidate_entry_id) ?? null,
     indicatorDeltaCount: comparisonIndicatorDeltaCountBySnapshotId.get(snapshot.id) ?? 0,
+    sourceContext: scenarioComparisonSourceContextFromMetadata(snapshot.metadata_json),
   }));
   const comparisonReadyReportCount = linkedReportsWithFreshness.filter((report) => report.comparisonReady).length;
   const runLinkedOnlyReportCount = linkedReportsWithFreshness.length - comparisonReadyReportCount;
@@ -564,6 +567,29 @@ export default async function ScenarioSetDetailPage({
                         </div>
                       </div>
                     </div>
+
+                    {snapshot.sourceContext ? (
+                      <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                              Saved source context
+                            </p>
+                            <h4 className="mt-2 text-sm font-semibold text-foreground">
+                              {snapshot.sourceContext.pairingLabel}
+                            </h4>
+                          </div>
+                          <StatusBadge tone={snapshot.sourceContext.exportReady ? "success" : "warning"}>
+                            {snapshot.sourceContext.exportReady ? "Export-ready" : "Review before export"}
+                          </StatusBadge>
+                        </div>
+                        <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                          <p>{snapshot.sourceContext.sourceSummary}</p>
+                          <p>{snapshot.sourceContext.caveatSummary}</p>
+                          <p>{snapshot.sourceContext.exportReadiness}</p>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

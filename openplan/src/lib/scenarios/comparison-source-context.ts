@@ -63,6 +63,29 @@ const PLANNER_ASSUMPTION_LABELS: Record<string, string> = {
 const DEFAULT_SCENARIO_COMPARISON_CAVEAT =
   "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.";
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+export function asScenarioComparisonSourceContext(value: unknown): ScenarioComparisonSourceContext | null {
+  const record = asRecord(value);
+  if (!record || record.kind !== "scenario_comparison_snapshot_source_context") {
+    return null;
+  }
+
+  return record as unknown as ScenarioComparisonSourceContext;
+}
+
+export function scenarioComparisonSourceContextFromMetadata(
+  metadata: unknown
+): ScenarioComparisonSourceContext | null {
+  const record = asRecord(metadata);
+  return asScenarioComparisonSourceContext(record?.sourceContext);
+}
+
 function dedupeStrings(values: Array<string | null | undefined>): string[] {
   const seen = new Set<string>();
   const result: string[] = [];

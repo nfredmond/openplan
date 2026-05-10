@@ -3,7 +3,10 @@ import {
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
-import type { ScenarioComparisonSourceContext } from "@/lib/scenarios/comparison-source-context";
+import {
+  asScenarioComparisonSourceContext,
+  type ScenarioComparisonSourceContext,
+} from "@/lib/scenarios/comparison-source-context";
 
 export type ReportScenarioSupabaseLike = {
   from: (table: string) => {
@@ -153,14 +156,6 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     return null;
   }
   return value as Record<string, unknown>;
-}
-
-function asScenarioComparisonSourceContext(value: unknown): ScenarioComparisonSourceContext | null {
-  const record = asRecord(value);
-  if (!record || record.kind !== "scenario_comparison_snapshot_source_context") {
-    return null;
-  }
-  return record as unknown as ScenarioComparisonSourceContext;
 }
 
 export type ReportScenarioSetLink = {

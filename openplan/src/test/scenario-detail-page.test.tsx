@@ -356,6 +356,72 @@ describe("ScenarioSetDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("displays persisted source context on saved comparison snapshot rows", async () => {
+    comparisonSnapshotsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "snapshot-1",
+          baseline_entry_id: "entry-baseline",
+          candidate_entry_id: "entry-alt-1",
+          label: "Protected bike package comparison",
+          summary: "Saved comparison narrative for packet reuse.",
+          status: "ready",
+          updated_at: "2026-03-28T21:30:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              kind: "scenario_comparison_snapshot_source_context",
+              pairingLabel: "Protected bike package compared against Existing conditions",
+              pairing: {
+                baselineEntryId: "entry-baseline",
+                baselineEntryLabel: "Existing conditions",
+                baselineRunId: "run-baseline",
+                candidateEntryId: "entry-alt-1",
+                candidateEntryLabel: "Protected bike package",
+                candidateRunId: "run-alt-1",
+              },
+              sourceSummary:
+                "Source context: attached run scorecards from “Protected bike run” and “Existing conditions run”. No behavioral-onramp KPI rows are read by this board or snapshot helper.",
+              baselineAssumptions: "Baseline: Horizon year: 2045",
+              alternativeAssumptions: "Alternative: Project package: Protected bike network",
+              caveatSummary:
+                "Caveat posture: planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+              caveats: [
+                "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
+              ],
+              exportReadiness:
+                "Export readiness: ready for a draft comparison packet when the report also carries these run links, assumptions, and caveats.",
+              exportReady: true,
+              evidenceLabels: ["Overall Score", "Safety Score"],
+            },
+            internalSolverKey: "do not render",
+          },
+        },
+      ],
+      error: null,
+    });
+    comparisonIndicatorDeltasInMock.mockResolvedValueOnce({
+      data: [
+        { id: "delta-1", comparison_snapshot_id: "snapshot-1" },
+        { id: "delta-2", comparison_snapshot_id: "snapshot-1" },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(comparisonSnapshotsSelectMock).toHaveBeenCalledWith(
+      expect.stringContaining("metadata_json")
+    );
+    expect(screen.getByText(/Protected bike package comparison/i)).toBeInTheDocument();
+    expect(screen.getByText(/Saved source context/i)).toBeInTheDocument();
+    expect(screen.getByText(/Protected bike package compared against Existing conditions/i)).toBeInTheDocument();
+    expect(screen.getByText(/No behavioral-onramp KPI rows are read by this board or snapshot helper/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
+    expect(screen.getByText(/ready for a draft comparison packet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Export-ready/i)).toBeInTheDocument();
+    expect(screen.queryByText(/internalSolverKey/i)).not.toBeInTheDocument();
+  });
+
   it("renders caveat and source-context guidance on comparison cards", async () => {
     buildScenarioComparisonBoardMock.mockReturnValueOnce([
       {
