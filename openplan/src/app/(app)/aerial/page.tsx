@@ -11,6 +11,8 @@ import {
   aerialMissionStatusTone,
   formatAerialMissionStatusLabel,
   formatAerialMissionTypeLabel,
+  summarizeAerialMissionPackagePosture,
+  type AerialMissionPackagePosture,
   type AerialMissionStatus,
   type AerialMissionType,
 } from "@/lib/aerial/catalog";
@@ -29,6 +31,7 @@ type AerialMissionRow = {
   project_name: string | null;
   package_count: number;
   ready_package_count: number;
+  package_posture: AerialMissionPackagePosture;
 };
 
 export default async function AerialIndexPage() {
@@ -65,27 +68,24 @@ export default async function AerialIndexPage() {
     .limit(100);
 
   const missionIds = (missionsRaw ?? []).map((m) => m.id);
-  const packageCounts = new Map<string, { total: number; ready: number }>();
+  const packagesByMissionId = new Map<string, Array<{ status: string; verification_readiness: string | null }>>();
 
   if (missionIds.length > 0) {
     const { data: pkgs } = await supabase
       .from("aerial_evidence_packages")
-      .select("mission_id, status")
+      .select("mission_id, status, verification_readiness")
       .eq("workspace_id", workspaceId)
       .in("mission_id", missionIds);
 
     for (const pkg of pkgs ?? []) {
-      const existing = packageCounts.get(pkg.mission_id) ?? { total: 0, ready: 0 };
-      existing.total += 1;
-      if (pkg.status === "ready" || pkg.status === "shared") {
-        existing.ready += 1;
-      }
-      packageCounts.set(pkg.mission_id, existing);
+      const existing = packagesByMissionId.get(pkg.mission_id) ?? [];
+      existing.push({ status: pkg.status, verification_readiness: pkg.verification_readiness });
+      packagesByMissionId.set(pkg.mission_id, existing);
     }
   }
 
   const missions: AerialMissionRow[] = (missionsRaw ?? []).map((row) => {
-    const counts = packageCounts.get(row.id) ?? { total: 0, ready: 0 };
+    const packagePosture = summarizeAerialMissionPackagePosture(packagesByMissionId.get(row.id) ?? []);
     const project = Array.isArray(row.projects) ? row.projects[0] : row.projects;
     return {
       id: row.id,
@@ -97,8 +97,9 @@ export default async function AerialIndexPage() {
       created_at: row.created_at,
       project_id: row.project_id,
       project_name: project?.name ?? null,
-      package_count: counts.total,
-      ready_package_count: counts.ready,
+      package_count: packagePosture.packageCount,
+      ready_package_count: packagePosture.readyPackageCount,
+      package_posture: packagePosture,
     };
   });
 
@@ -162,9 +163,7 @@ export default async function AerialIndexPage() {
         row.package_count === 0 ? (
           <span className="text-muted-foreground">0</span>
         ) : (
-          <span>
-            {row.ready_package_count}/{row.package_count}
-          </span>
+          <StatusBadge tone={row.package_posture.tone}>{row.package_posture.label}</StatusBadge>
         ),
     },
   ];

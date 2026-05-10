@@ -11,6 +11,16 @@ export type AerialProjectPosture = {
   verificationReadiness: "none" | "pending" | "partial" | "ready";
 };
 
+export type AerialMissionPackagePosture = {
+  packageCount: number;
+  readyPackageCount: number;
+  qaPendingPackageCount: number;
+  processingPackageCount: number;
+  verificationReadyPackageCount: number;
+  label: string;
+  tone: "neutral" | "info" | "success" | "warning";
+};
+
 export function formatAerialMissionStatusLabel(status: string): string {
   switch (status) {
     case "planned":
@@ -143,6 +153,74 @@ export function buildAerialProjectPosture(
     completeMissionCount,
     readyPackageCount,
     verificationReadiness,
+  };
+}
+
+export function summarizeAerialMissionPackagePosture(
+  packages: Array<{ status: string; verification_readiness?: string | null }>
+): AerialMissionPackagePosture {
+  const packageCount = packages.length;
+  const readyPackageCount = packages.filter((p) => p.status === "ready" || p.status === "shared").length;
+  const qaPendingPackageCount = packages.filter((p) => p.status === "qa_pending").length;
+  const processingPackageCount = packages.filter((p) => p.status === "processing").length;
+  const verificationReadyPackageCount = packages.filter((p) => p.verification_readiness === "ready").length;
+
+  if (packageCount === 0) {
+    return {
+      packageCount,
+      readyPackageCount,
+      qaPendingPackageCount,
+      processingPackageCount,
+      verificationReadyPackageCount,
+      label: "No packages",
+      tone: "neutral",
+    };
+  }
+
+  if (readyPackageCount === packageCount && verificationReadyPackageCount === packageCount) {
+    return {
+      packageCount,
+      readyPackageCount,
+      qaPendingPackageCount,
+      processingPackageCount,
+      verificationReadyPackageCount,
+      label: `${readyPackageCount}/${packageCount} verification-ready`,
+      tone: "success",
+    };
+  }
+
+  if (qaPendingPackageCount > 0) {
+    return {
+      packageCount,
+      readyPackageCount,
+      qaPendingPackageCount,
+      processingPackageCount,
+      verificationReadyPackageCount,
+      label: `${readyPackageCount}/${packageCount} ready · ${qaPendingPackageCount} QA pending`,
+      tone: "info",
+    };
+  }
+
+  if (processingPackageCount > 0) {
+    return {
+      packageCount,
+      readyPackageCount,
+      qaPendingPackageCount,
+      processingPackageCount,
+      verificationReadyPackageCount,
+      label: `${readyPackageCount}/${packageCount} ready · ${processingPackageCount} processing`,
+      tone: "neutral",
+    };
+  }
+
+  return {
+    packageCount,
+    readyPackageCount,
+    qaPendingPackageCount,
+    processingPackageCount,
+    verificationReadyPackageCount,
+    label: `${readyPackageCount}/${packageCount} ready`,
+    tone: readyPackageCount > 0 ? "warning" : "neutral",
   };
 }
 
