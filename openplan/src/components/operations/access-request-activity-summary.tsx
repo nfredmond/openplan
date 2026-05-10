@@ -196,7 +196,7 @@ export function AccessRequestActivitySummaryPanel({ request }: { request: Access
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <History className="h-3.5 w-3.5 text-emerald-700" />
-          Access activity checkpoint
+          Review trail
         </div>
         <StatusBadge tone={summary.needsOperatorAction ? "warning" : "success"}>
           {summary.needsOperatorAction ? "Operator handoff" : "Pilot ready"}

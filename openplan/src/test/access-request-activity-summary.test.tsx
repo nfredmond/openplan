@@ -117,7 +117,7 @@ describe("access request activity summary", () => {
       />,
     );
 
-    expect(screen.getByText("Access activity checkpoint")).toBeInTheDocument();
+    expect(screen.getByText("Review trail")).toBeInTheDocument();
     expect(screen.getByText("Operator handoff")).toBeInTheDocument();
     expect(screen.getByText("Invite pending")).toBeInTheDocument();
     expect(screen.getByText(/Manual delivery remains the operator handoff item/i)).toBeInTheDocument();
