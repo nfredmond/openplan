@@ -41,7 +41,7 @@ type ReportProvenanceAuditProps = ComponentProps<typeof ReportProvenanceAudit>;
 type ReportNavigationPreviewProps = ComponentProps<typeof ReportNavigationPreview>;
 type StandardReportProvenanceProps = Omit<
   ReportProvenanceAuditProps,
-  "driftActionByKey"
+  "driftActionByKey" | "comparisonDigest"
 >;
 
 type ReportStandardDetailProps = {
@@ -283,6 +283,7 @@ export function ReportStandardDetail({
           <ReportProvenanceAudit
             {...provenanceAuditProps}
             driftActionByKey={driftActionByKey}
+            comparisonDigest={currentReportComparisonDigest}
           />
           <ReportNavigationPreview {...navigationPreviewProps} />
         </div>

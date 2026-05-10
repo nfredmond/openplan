@@ -6,6 +6,7 @@ import {
   formatDateTime,
   parseStoredScenarioSpineSummary,
   titleize,
+  type ReportComparisonSnapshotDigest,
 } from "@/lib/reports/catalog";
 import {
   describeReportAerialEvidenceDisplayState,
@@ -50,6 +51,7 @@ type Props = {
   stageGateSnapshot: ProjectStageGateSnapshot | null;
   projectRecordsSnapshot: ProjectRecordSnapshotListItem[];
   scenarioSetLinks: ReportScenarioSetLink[];
+  comparisonDigest: ReportComparisonSnapshotDigest | null;
 };
 
 export function ReportProvenanceAudit({
@@ -75,6 +77,7 @@ export function ReportProvenanceAudit({
   stageGateSnapshot,
   projectRecordsSnapshot,
   scenarioSetLinks,
+  comparisonDigest,
 }: Props) {
   const aerialEvidenceDisplayState = describeReportAerialEvidenceDisplayState(
     aerialEvidenceSourceContext
@@ -224,6 +227,28 @@ export function ReportProvenanceAudit({
                 </p>
               ) : null}
             </div>
+            {comparisonDigest ? (
+              <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Scenario comparison source context
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {comparisonDigest.headline}
+                    </p>
+                  </div>
+                  <StatusBadge tone="info">Operator review</StatusBadge>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {comparisonDigest.detail}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Treat this as report provenance for planning-analysis support only. Confirm assumptions,
+                  source context, export readiness, and caveats before using the packet externally.
+                </p>
+              </div>
+            ) : null}
           </div>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3">

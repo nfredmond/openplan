@@ -55,6 +55,7 @@ function baseProps(
     stageGateSnapshot: null,
     projectRecordsSnapshot: [],
     scenarioSetLinks: [],
+    comparisonDigest: null,
   };
 }
 
@@ -188,5 +189,22 @@ describe("ReportProvenanceAudit aerial evidence display", () => {
         .length
     ).toBeGreaterThan(0);
     expect(screen.queryByRole("link", { name: /Open aerial mission/i })).not.toBeInTheDocument();
+  });
+
+  it("surfaces scenario comparison source-context readiness in the audit trail", () => {
+    render(
+      <ReportProvenanceAudit
+        {...baseProps(null)}
+        comparisonDigest={{
+          headline: "2 source-context-backed comparisons",
+          detail:
+            "1 export-ready comparison and 2 caveat-backed snapshots are available for operator review.",
+        }}
+      />
+    );
+
+    expect(screen.getByText("Scenario comparison source context")).toBeInTheDocument();
+    expect(screen.getByText("2 source-context-backed comparisons")).toBeInTheDocument();
+    expect(screen.getByText(/confirm assumptions, source context, export readiness, and caveats/i)).toBeInTheDocument();
   });
 });
