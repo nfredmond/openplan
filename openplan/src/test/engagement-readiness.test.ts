@@ -19,7 +19,7 @@ describe("getEngagementHandoffReadiness", () => {
 
     expect(readiness.label).toBe("Ready for handoff");
     expect(readiness.tone).toBe("success");
-    expect(readiness.completeCount).toBe(6);
+    expect(readiness.completeCount).toBe(9);
     expect(readiness.nextAction).toMatch(/credible handoff posture/i);
   });
 
@@ -40,7 +40,7 @@ describe("getEngagementHandoffReadiness", () => {
 
     expect(readiness.label).toBe("Nearly ready");
     expect(readiness.tone).toBe("warning");
-    expect(readiness.completeCount).toBe(6);
+    expect(readiness.completeCount).toBe(9);
     expect(readiness.nextAction).toMatch(/close the campaign/i);
   });
 
@@ -61,7 +61,7 @@ describe("getEngagementHandoffReadiness", () => {
 
     expect(readiness.label).toBe("Needs attention");
     expect(readiness.tone).toBe("neutral");
-    expect(readiness.completeCount).toBe(0);
+    expect(readiness.completeCount).toBe(1);
     expect(readiness.checks.find((check) => check.id === "project")?.passed).toBe(false);
     expect(readiness.checks.find((check) => check.id === "categorization")?.detail).toMatch(/category before final matrix handoff/i);
     expect(readiness.nextAction).toMatch(/link the campaign to the correct project/i);
@@ -86,5 +86,67 @@ describe("getEngagementHandoffReadiness", () => {
     expect(readiness.tone).toBe("warning");
     expect(readiness.checks.find((check) => check.id === "categorization")?.passed).toBe(false);
     expect(readiness.nextAction).toMatch(/categorize the 1 uncategorized item/i);
+  });
+
+  it("holds appendix readiness when duplicate-looking public comments need staff review", () => {
+    const readiness = getEngagementHandoffReadiness({
+      campaignStatus: "closed",
+      projectLinked: true,
+      categoryCount: 2,
+      counts: {
+        totalItems: 5,
+        uncategorizedItems: 0,
+        moderationQueue: {
+          actionableCount: 0,
+          readyForHandoffCount: 4,
+        },
+        appendixReadiness: {
+          appendixReadyCount: 2,
+          publicApprovedCategorizedCount: 3,
+          nonPublicApprovedCategorizedCount: 1,
+          duplicateReviewCount: 1,
+          duplicateGroupCount: 1,
+          duplicateExcludedCount: 1,
+        },
+      },
+    });
+
+    expect(readiness.label).toBe("Nearly ready");
+    expect(readiness.checks.find((check) => check.id === "duplicate_review")?.passed).toBe(false);
+    expect(readiness.checks.find((check) => check.id === "report_appendix")?.detail).toMatch(
+      /approved public comments are appendix-ready/i
+    );
+    expect(readiness.nextAction).toMatch(/duplicate-review item/i);
+  });
+
+  it("does not treat internal notes as public-comment appendix candidates", () => {
+    const readiness = getEngagementHandoffReadiness({
+      campaignStatus: "closed",
+      projectLinked: true,
+      categoryCount: 2,
+      counts: {
+        totalItems: 2,
+        uncategorizedItems: 0,
+        moderationQueue: {
+          actionableCount: 0,
+          readyForHandoffCount: 2,
+        },
+        appendixReadiness: {
+          appendixReadyCount: 0,
+          publicApprovedCategorizedCount: 0,
+          nonPublicApprovedCategorizedCount: 2,
+          duplicateReviewCount: 0,
+          duplicateGroupCount: 0,
+          duplicateExcludedCount: 0,
+        },
+      },
+    });
+
+    expect(readiness.label).toBe("Nearly ready");
+    expect(readiness.checks.find((check) => check.id === "source_posture")?.detail).toMatch(
+      /0 public comments and 2 internal\/meeting\/email items/i
+    );
+    expect(readiness.checks.find((check) => check.id === "report_appendix")?.passed).toBe(false);
+    expect(readiness.nextAction).toMatch(/public comment/i);
   });
 });
